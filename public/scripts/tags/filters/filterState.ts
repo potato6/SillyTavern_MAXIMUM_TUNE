@@ -7,30 +7,25 @@ import {
     FILTER_TYPES,
     FILTER_STATES,
     DEFAULT_FILTER_STATE,
-    isFilterState,
 } from '../../filters.js';
 
 import {
     entitiesFilter,
     saveSettings,
-    characters,
-    DEFAULT_PRINT_TIMEOUT,
 } from '../../../script.js';
 
 import {
     groupCandidatesFilter,
     groupMembersFilter,
-    groups,
-    selected_group,
 } from '../../group-chats.js';
 
 import { tag_filter_type } from '../types.js';
 import { tags, tag_map, getTagIdsFromDOM } from '../store/tagStore.js';
 import { accountStorage } from '../../util/AccountStorage.js';
 import { power_user } from '../../power-user.js';
-import { flashHighlight, onlyUnique } from '../../utils.js';
-import { getOpenBogusFolders, isBogusFolder } from '../folders/bogusFolders.js';
-import { getFilterContext, getFilterHelper, isMainCharacterList, getFilterStorageKey } from './filterContext.js';
+import { flashHighlight } from '../../utils.js';
+import { getOpenBogusFolders } from '../folders/bogusFolders.js';
+import { getFilterHelper, isMainCharacterList, getFilterStorageKey } from './filterContext.js';
 
 // ──────────────────────────────────────────────
 // Constants
@@ -58,16 +53,16 @@ const ACTIONABLE_TAGS: {
         name: string;
         color?: string;
         filter_state?: undefined;
-        action: ((...args: any[]) => void) | undefined;
+        action: ((...args: unknown[]) => void) | undefined;
         icon?: string;
         class?: string;
     };
-    FAV: { id: string; sort_order: number; name: string; color: string; filter_state: undefined; action: ((...args: any[]) => void) | undefined; icon: string; class: string };
-    GROUP: { id: string; sort_order: number; name: string; color: string; filter_state: undefined; action: ((...args: any[]) => void) | undefined; icon: string; class: string };
-    FOLDER: { id: string; sort_order: number; name: string; color: string; filter_state: undefined; action: ((...args: any[]) => void) | undefined; icon: string; class: string };
-    VIEW: { id: string; sort_order: number; name: string; color: string; action: ((...args: any[]) => void) | undefined; icon: string; class: string };
-    HINT: { id: string; sort_order: number; name: string; color: string; action: ((...args: any[]) => void) | undefined; icon: string; class: string };
-    UNFILTER: { id: string; sort_order: number; name: string; action: ((...args: any[]) => void) | undefined; icon: string; class: string };
+    FAV: { id: string; sort_order: number; name: string; color: string; filter_state: undefined; action: ((...args: unknown[]) => void) | undefined; icon: string; class: string };
+    GROUP: { id: string; sort_order: number; name: string; color: string; filter_state: undefined; action: ((...args: unknown[]) => void) | undefined; icon: string; class: string };
+    FOLDER: { id: string; sort_order: number; name: string; color: string; filter_state: undefined; action: ((...args: unknown[]) => void) | undefined; icon: string; class: string };
+    VIEW: { id: string; sort_order: number; name: string; color: string; action: ((...args: unknown[]) => void) | undefined; icon: string; class: string };
+    HINT: { id: string; sort_order: number; name: string; color: string; action: ((...args: unknown[]) => void) | undefined; icon: string; class: string };
+    UNFILTER: { id: string; sort_order: number; name: string; action: ((...args: unknown[]) => void) | undefined; icon: string; class: string };
 } = {
     FAV: { id: '1', sort_order: 1, name: 'Show only favorites', color: 'rgba(255, 255, 0, 0.5)', filter_state: undefined, action: undefined, icon: 'fa-solid fa-star', class: 'filterByFavorites' },
     GROUP: { id: '0', sort_order: 2, name: 'Show only groups', color: 'rgba(100, 100, 100, 0.5)', filter_state: undefined, action: undefined, icon: 'fa-solid fa-users', class: 'filterByGroups' },
@@ -96,24 +91,15 @@ const InListActionable = {
 // ──────────────────────────────────────────────
 
 // Forward declarations for action functions that will be set during init
-let _filterByFav: (filterHelper: any) => void;
-let _filterByGroups: (filterHelper: any) => void;
-let _filterByFolder: (filterHelper: any) => void;
-let _onViewTagsListClick: () => void;
-let _onTagListHintClick: () => void;
-let _onClearAllFiltersClick: (filterHelper: any) => void;
+let _onViewTagsListClick: (() => void) | undefined;
+let _onTagListHintClick: (() => void) | undefined;
+let _onClearAllFiltersClick: ((filterHelper: unknown) => void) | undefined;
 
 /**
  * Sets the action references on ACTIONABLE_TAGS to break circular dependencies.
  * Must be called from the coordinator after all action functions are defined.
  */
 function initActionableTags() {
-    _filterByFav = filterByFav;
-    _filterByGroups = filterByGroups;
-    _filterByFolder = filterByFolder;
-
-    // These are defined elsewhere (UI layer) and injected here
-    // They are expected to be set by the coordinator
     ACTIONABLE_TAGS.FAV.action = filterByFav;
     ACTIONABLE_TAGS.GROUP.action = filterByGroups;
     ACTIONABLE_TAGS.FOLDER.action = filterByFolder;
@@ -129,7 +115,7 @@ function initActionableTags() {
 function registerActionableTagActions(actions: {
     onViewTagsListClick: () => void;
     onTagListHintClick: () => void;
-    onClearAllFiltersClick: (filterHelper: any) => void;
+    onClearAllFiltersClick: (filterHelper: unknown) => void;
 }) {
     _onViewTagsListClick = actions.onViewTagsListClick;
     _onTagListHintClick = actions.onTagListHintClick;
@@ -412,7 +398,7 @@ function loadFilterStatesForContext(filterHelper, storagePrefix) {
 
     // Load regular tag filter states
     const tagFilterData = filterHelper.getFilterData(FILTER_TYPES.TAG);
-    for (const tag of tags as any[]) {
+    for (const tag of tags) {
         const storageKey = `${storagePrefix}_tag_${tag.id}`;
         const state = readState(storageKey);
 

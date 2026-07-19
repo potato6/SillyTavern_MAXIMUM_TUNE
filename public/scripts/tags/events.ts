@@ -4,7 +4,6 @@
  */
 
 import {
-    characters,
     this_chid,
     menu_type,
     eventSource,
@@ -14,21 +13,20 @@ import { selected_group } from '../group-chats.js';
 
 // Store imports
 import {
-    tags, tag_map, getTag, createNewTag,
+    tags, getTag, createNewTag,
     getTagById,
-    addTagToMap, removeTagFromMap, copyTags,
-    getInlineListSelector,
+    copyTags,
 } from './store/tagStore.js';
 
 // Orchestrator imports (addTagsToEntity, removeTagFromEntity — separate to avoid circular deps)
 import { addTagsToEntity, removeTagFromEntity } from './orchestrator.js';
 
 // UI imports
-import { printTagList, appendTagToList } from './ui/tagList.js';
+import { printTagList } from './ui/tagList.js';
 import { printTagFilters } from './ui/tagFilters.js';
 import { onViewTagsListClick, onTagDeleteClick, onTagCreateClick, onTagAsFolderClick, onTagRenameInput } from './ui/tagEditor.js';
 import { onTagsBackupClick, onBackupRestoreClick, onTagsPruneClick } from './import/importer.js';
-import { createNewTag as _createNewTag } from './store/tagStore.js';
+
 import { tag_filter_type } from './types.js';
 import { applyCharacterTagsToMessageDivs } from './messageTags.js';
 import { restoreSavedTagFilters } from './filters/filterState.js';
@@ -36,7 +34,11 @@ import { registerTagsSlashCommands } from './commands/slashCommands.js';
 import { chooseBogusFolder } from './folders/bogusFolders.js';
 
 // TomSelect declaration
-declare const TomSelect: any;
+declare class TomSelect {
+    constructor(el: Element, options: Record<string, unknown>);
+    open(): void;
+    destroy(): void;
+}
 
 // ──────────────────────────────────────────────
 // Tag Input Helpers

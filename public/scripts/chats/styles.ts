@@ -11,7 +11,7 @@ import { selected_group } from '../group-chats.js';
 import { power_user } from '../power-user.js';
 import { POPUP_RESULT, POPUP_TYPE, callGenericPopup } from '../popup.js';
 import { t } from '../i18n.js';
-import { loadTemplate, confirmDialog } from './shared.js';
+import { loadTemplate } from './shared.js';
 
 /**
  * @typedef {import('./types.js').FileAttachment} FileAttachment
@@ -68,8 +68,8 @@ export function decodeStyleTags(
     { prefix }: { prefix?: string } = {},
 ): string {
     const styleDecodeRegex = /<custom-style>(.+?)<\/custom-style>/gms;
-    const mediaAllowed = isExternalMediaAllowed();
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     function sanitizeRule(rule: any): any {
         if (Array.isArray(rule.selectors)) {
             rule.selectors = rule.selectors
@@ -98,6 +98,7 @@ export function decodeStyleTags(
         return sanitized;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     function sanitizeRuleSet(ruleSet: any): string {
         if (Array.isArray(ruleSet.rules)) {
             for (const rule of ruleSet.rules) {

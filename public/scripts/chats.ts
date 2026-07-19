@@ -42,34 +42,9 @@
  * import/exporter.ts        — chat export
  */
 
-import { css, DOMPurify } from '../lib.js';
 import {
-    addCopyToCodeBlocks,
-    appendMediaToMessage,
     characters,
-    chat,
-    eventSource,
-    event_types,
-    getCurrentChatId,
-    getRequestHeaders,
-    name2,
-    reloadCurrentChat,
-    saveSettingsDebounced,
     this_chid,
-    saveChatConditional,
-    chat_metadata,
-    neutralCharacterName,
-    updateChatMetadata,
-    system_message_types,
-    converter,
-    substituteParams,
-    getSystemMessageByType,
-    printMessages,
-    clearChat,
-    refreshSwipeButtons,
-    getMediaIndex,
-    getMediaDisplay,
-    chatElement,
 } from '../script.js';
 import { selected_group } from './group-chats.js';
 import { power_user } from './power-user.js';
@@ -102,9 +77,6 @@ export function isExternalMediaAllowed(): boolean {
     }
     return !power_user.forbid_external_media;
 }
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import type { FileAttachment as _FileAttachment } from './chats/types.js';
 
 // ── Re-export types ──────────────────────────────────────────
 export type { FileAttachment, MediaAttachment, AttachmentSource, ChatEntity, CreateChatOptions, DuplicateChatOptions, ChatSnapshot } from './chats/types.js';

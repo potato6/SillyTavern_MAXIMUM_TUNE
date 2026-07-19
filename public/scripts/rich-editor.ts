@@ -3,7 +3,10 @@
  *
  * Two entry points:
  *   openRichEditor(el)       – content IS HTML, opens in WYSIWYG mode
- *   openMarkdownEditor(el)   – content is markdown, opens in markdown mode
+ *   openMarkdownEditor(el)   – content is markdown, opens in WYSIWYG mode
+ *
+ * Both use WYSIWYG by default. The useMarkdown flag only controls whether
+ * getMarkdown() or getHTML() is called on close (input/output format).
  *
  * ToastUI handles the markdown ↔ HTML round-trip natively, so we don't
  * need converter / turndown at all.
@@ -49,6 +52,19 @@ interface EditorOptions {
     contentEditable?: boolean;
 }
 
+/** Minimal interface for ToastUI editor methods we use. */
+interface ToastEditorHandle {
+    getMarkdown(): string;
+    getHTML(): string;
+    destroy(): void;
+    focus(): void;
+    getCurrentModeEditor(): {
+        getSelectedText?(): string;
+        replaceSelection(s: string): void;
+        view?: unknown;
+    };
+}
+
 // ---------------------------------------------------------------------------
 // Core popup
 // ---------------------------------------------------------------------------
@@ -67,11 +83,13 @@ async function openToastPopup(
     container.id = 'toast-editor';
     container.style.cssText = 'width:100%; height:100%; min-height:400px;';
 
+    let editorHandle: ToastEditorHandle | null = null;
+
     await callGenericPopup(container, POPUP_TYPE.TEXT, '', {
         wide: true,
         large: true,
 
-        onOpen: async (_popupInstance: any) => {
+        onOpen: async () => {
             // 1. Load ToastUI CSS
             await loadCSS('/lib/toastui/toastui-editor.css');
             await loadCSS('/lib/toastui/theme/toastui-editor-dark.css');
@@ -83,7 +101,7 @@ async function openToastPopup(
             const editor = new Editor({
                 el: container,
                 height: '100%',
-                initialEditType: useMarkdown ? 'markdown' : 'wysiwyg',
+                initialEditType: 'wysiwyg',
                 previewStyle: 'vertical',
                 initialValue: raw,
                 theme: 'dark',
@@ -97,7 +115,7 @@ async function openToastPopup(
                     ['scrollSync'],
                 ],
                 customHTMLRenderer: {
-                    text(node: any) {
+                    text(node: { literal?: string }) {
                         const text = node?.literal;
                         if (typeof text !== 'string') return [{ type: 'text', content: '' }];
                         if (!text.includes('"') && !text.includes('\u201C') && !text.includes('\u201D')) {
@@ -203,11 +221,11 @@ async function openToastPopup(
             setTimeout(() => clearInterval(pollInterval), 5000);
 
             // Store reference for onClose
-            (window as any).__toastEditor = editor;
+            editorHandle = editor as unknown as ToastEditorHandle;
         },
 
         onClose: async () => {
-            const editor = (window as any).__toastEditor;
+            const editor = editorHandle;
             if (!editor) return;
 
             try {
@@ -217,7 +235,7 @@ async function openToastPopup(
                 setRawValue(broEl, contentEditable, result);
             } finally {
                 editor.destroy();
-                (window as any).__toastEditor = null;
+                editorHandle = null;
             }
         },
     });

@@ -18,17 +18,8 @@ import {
     parseStringArray,
     uuidv4,
     getUniqueName,
-    getSanitizedFilename,
-    checkOverwriteExistingData,
-    escapeHtml,
-    flashHighlight,
-    select2ChoiceClickSubscribe,
-    debounce,
-    initScrollHeight,
-    resetScrollHeight,
-    cancelDebounce,
 } from '../utils.js';
-import { callGenericPopup, Popup, POPUP_RESULT, POPUP_TYPE } from '../popup.js';
+
 import { SlashCommandParser } from '../slash-commands/SlashCommandParser.js';
 import { SlashCommand } from '../slash-commands/SlashCommand.js';
 import { ARGUMENT_TYPE, SlashCommandArgument, SlashCommandNamedArgument } from '../slash-commands/SlashCommandArgument.js';
@@ -41,35 +32,25 @@ import {
     saveMetadata,
     getCurrentChatId,
     chat_metadata,
-    characters,
     name1,
     this_chid,
 } from '../../script.js';
-import { user_avatar, getOrCreatePersonaDescriptor, setPersonaDescription } from '../personas.js';
-import { accountStorage } from '../util/AccountStorage.js';
-import { getTokenCountAsync } from '../tokenizers.js';
+import { setPersonaDescription } from '../personas.js';
+
 
 // World-info internal modules
 import { world_info_position, world_info_logic, METADATA_KEY, originalWIDataKeyMap } from './constants.js';
 import {
     saveWorldInfo,
     createWorldInfoEntry,
-    getFreeWorldName,
     saveSettingsNow,
-    duplicateWorldInfoEntry,
-    deleteWorldInfoEntry,
-    getFreeWorldEntryUid,
     newWorldInfoEntryDefinition,
     newWorldInfoEntryTemplate,
-    importEmbeddedWorldInfo,
-    importWorldInfo,
-    moveWorldInfoEntry,
-    deleteWorldInfo,
     createNewWorldInfo,
 } from './data.js';
 import { wiManager } from './manager.js';
 import { worldInfoCache, WorldInfoTimedEffects, loadWorldInfo } from './engine.js';
-import { setWIOriginalDataValue, deleteWIOriginalDataValue } from './editor.js';
+import { setWIOriginalDataValue } from './editor.js';
 
 // Circular-safe imports from the parent world-info.ts (used at runtime only)
 import {
@@ -79,8 +60,6 @@ import {
     charUpdatePrimaryWorld,
     reloadEditor,
 } from '../world-info.js';
-
-declare const notyf: any;
 
 /**
  * Registers all world-info related slash commands.

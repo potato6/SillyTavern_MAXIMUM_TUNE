@@ -8,7 +8,7 @@
 
 import { getSelect2OptionId } from '../utils.js';
 import type { WorldInfoBook, WorldInfoEntryData } from './types.js';
-import { originalWIDataKeyMap, MAX_COMMENT_LENGTH } from './constants.js';
+
 import { setValueByPath } from '../utils.js';
 
 // ═══════════════════════════════════════════════════════════════
@@ -102,8 +102,7 @@ export function setWIOriginalDataValue(
     value: unknown,
 ) {
     if (data.originalData && Array.isArray(data.originalData.entries)) {
-        // @ts-expect-error TS(7006)
-        const originalEntry = data.originalData.entries.find((x: any) => x.uid === uid);
+        const originalEntry = data.originalData.entries.find((x: Record<string, unknown>) => x.uid === uid);
         if (originalEntry) {
             setValueByPath(originalEntry, key, value);
         }
@@ -118,8 +117,7 @@ export function deleteWIOriginalDataValue(
     uid: number | string,
 ) {
     if (data.originalData && Array.isArray(data.originalData.entries)) {
-        // @ts-expect-error TS(7006)
-        const originalIndex = data.originalData.entries.findIndex((x: any) => x.uid == uid);
+        const originalIndex = data.originalData.entries.findIndex((x: Record<string, unknown>) => x.uid == uid);
         if (originalIndex >= 0) {
             data.originalData.entries.splice(originalIndex, 1);
         }

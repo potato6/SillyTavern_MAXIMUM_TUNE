@@ -1,7 +1,6 @@
 import { saveSettings } from '../../script.js';
-import { world_info_insertion_strategy, originalWIDataKeyMap } from './constants.js';
+import { world_info_insertion_strategy } from './constants.js';
 import { FilterHelper } from '../filters.js';
-import { FILTER_TYPES } from '../filters.js';
 import { StructuredCloneMap } from '../util/StructuredCloneMap.js';
 import { WorldInfoStore } from './store.js';
 import type { WorldInfoEntryData, WorldInfoBook } from './types.js';
@@ -32,7 +31,7 @@ class WorldInfoManager {
 
     // ── Data ──
     /** Raw world_info settings blob from the server */
-    info: Record<string, any> = {};
+    info: Record<string, unknown> = {};
     /** Currently-selected global lorebook names */
     selectedWorlds: string[] = [];
     /** All known lorebook filenames */
@@ -69,7 +68,7 @@ class WorldInfoManager {
     };
 
     // Sort helper — used by the scanner
-    sortFn = (a: any, b: any) => b.order - a.order;
+    sortFn = (a: { order: number }, b: { order: number }) => b.order - a.order;
 
     /** Mutable reference — displayWorldEntries replaces this each navigation */
     onDataChanged: () => void = () => {};
@@ -116,7 +115,7 @@ class WorldInfoManager {
     }
 
     /** Get a resolved entry setting, falling back to the global default */
-    getEntrySetting(entry: WorldInfoEntryData, key: string): any {
+    getEntrySetting(entry: WorldInfoEntryData, key: string): unknown {
         const entryVal = (entry as any)[key];
         if (entryVal !== null && entryVal !== undefined) return entryVal;
         switch (key) {
@@ -164,7 +163,7 @@ class WorldInfoManager {
         const store = this.getStore(name);
         const entries = await store.toObject();
         const book: WorldInfoBook = { ...metadata, entries };
-        await this.saveWorld(name, book, true);
+        await this.saveWorld(name, book);
     }
 
     /**

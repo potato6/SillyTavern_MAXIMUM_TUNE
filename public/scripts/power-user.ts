@@ -1,5 +1,4 @@
 import { Fuse, Handlebars } from '../lib.js';
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -32,7 +31,7 @@ import {
     setActiveGroup,
     setActiveCharacter,
     entitiesFilter,
-    doNewChat,
+
     online_status,
     messageFormatting,
     extension_prompt_types,
@@ -63,13 +62,9 @@ declare const TomSelect: any;
 
 import { countOccurrences, debounce, delay, download, getFileText, getSanitizedFilename, getStringHash, isOdd, isTrueBoolean, onlyUnique, resetScrollHeight, shuffle, sortMoments, stringToRange, timestampToMoment } from './utils.js';
 import { FILTER_TYPES } from './filters.js';
-import { PARSER_FLAG, SlashCommandParser } from './slash-commands/SlashCommandParser.js';
-import { SlashCommand } from './slash-commands/SlashCommand.js';
-import { ARGUMENT_TYPE, SlashCommandArgument, SlashCommandNamedArgument } from './slash-commands/SlashCommandArgument.js';
+import { PARSER_FLAG } from './slash-commands/SlashCommandParser.js';
 import { AUTOCOMPLETE_SELECT_KEY, AUTOCOMPLETE_STATE, AUTOCOMPLETE_WIDTH } from './autocomplete/AutoComplete.js';
-import { SlashCommandEnumValue, enumTypes } from './slash-commands/SlashCommandEnumValue.js';
-import { commonEnumProviders, enumIcons } from './slash-commands/SlashCommandCommonEnumsProvider.js';
-import { POPUP_TYPE, callGenericPopup, fixToastrForDialogs } from './popup.js';
+import { POPUP_TYPE, callGenericPopup } from './popup.js';
 import { loadSystemPrompts } from './sysprompt.js';
 import { fuzzySearchCategories } from './filters.js';
 import { accountStorage } from './util/AccountStorage.js';
@@ -164,7 +159,7 @@ export const power_user = {
 
     sort_field: 'name',
     sort_order: 'asc',
-    sort_rule: null,
+    sort_rule: null as string | null,
     font_scale: 1,
     blur_strength: 10,
     shadow_width: 2,
@@ -192,7 +187,7 @@ export const power_user = {
     gestures: true,
     auto_swipe: false,
     auto_swipe_minimum_length: 0,
-    auto_swipe_blacklist: [],
+    auto_swipe_blacklist: [] as string[],
     auto_swipe_blacklist_threshold: 2,
     auto_scroll_chat_to_bottom: true,
     auto_fix_generated_markdown: true,
@@ -337,7 +332,7 @@ export const power_user = {
         },
         parser: {
             /**@type {Object.<PARSER_FLAG,boolean>} */
-            flags: {},
+            flags: {} as Record<string, boolean>,
         },
     },
     restore_user_input: true,
@@ -381,7 +376,7 @@ const contextControls = [
     { id: 'single_line', property: 'single_line', isCheckbox: true, isGlobalSetting: true, defaultValue: false },
 ];
 
-let browser_has_focus = true;
+const browser_has_focus = true;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const debug_functions: any[] = [];
 
@@ -3930,7 +3925,7 @@ function registerSettingsPanelHandlers() {
             if (field !== 'search') {
                 power_user.sort_field = field;
                 power_user.sort_order = selectedOption?.dataset.order ?? '';
-                (power_user as any).sort_rule = selectedOption?.dataset.rule ?? '';
+                power_user.sort_rule = selectedOption?.dataset.rule ?? '';
             }
         }
         printCharactersDebounced();
@@ -3954,7 +3949,7 @@ function registerSettingsPanelHandlers() {
     // Auto swipe blacklist
     const autoSwipeBlacklistEl = guardEl('auto_swipe_blacklist');
     if (autoSwipeBlacklistEl) autoSwipeBlacklistEl.addEventListener('input', function () {
-        (power_user as any).auto_swipe_blacklist = String((this instanceof HTMLInputElement && this.value) || '')
+        power_user.auto_swipe_blacklist = String((this instanceof HTMLInputElement && this.value) || '')
             .split(',')
             .map(str => str.trim())
             .filter(str => str);
@@ -4491,7 +4486,7 @@ function registerSettingsPanelHandlers() {
     const stsStrictEscEl = guardEl('stscript_parser_flag_strict_escaping');
     if (stsStrictEscEl) stsStrictEscEl.addEventListener('click', function () {
         const value = this instanceof HTMLInputElement && this.checked;
-        (power_user.stscript.parser.flags as any)[PARSER_FLAG.STRICT_ESCAPING] = value;
+        power_user.stscript.parser.flags[PARSER_FLAG.STRICT_ESCAPING] = value;
         saveSettingsDebounced();
     });
 
@@ -4499,7 +4494,7 @@ function registerSettingsPanelHandlers() {
     const stsReplaceGetvarEl = guardEl('stscript_parser_flag_replace_getvar');
     if (stsReplaceGetvarEl) stsReplaceGetvarEl.addEventListener('click', function () {
         const value = this instanceof HTMLInputElement && this.checked;
-        (power_user.stscript.parser.flags as any)[PARSER_FLAG.REPLACE_GETVAR] = value;
+        power_user.stscript.parser.flags[PARSER_FLAG.REPLACE_GETVAR] = value;
         saveSettingsDebounced();
     });
 
@@ -4629,10 +4624,11 @@ onDomReady(() => {
                     el.tomSelect.open();
                 }
             } else {
-                if (el && typeof (el as any).autocomplete === 'function') {
-                    const widget = (el as any).autocomplete('widget');
+                const jqEl = el as unknown as { autocomplete: (...args: string[]) => unknown };
+                if (el && typeof jqEl.autocomplete === 'function') {
+                    const widget = jqEl.autocomplete('widget') as unknown as HTMLElement[];
                     if (widget[0] && widget[0].style.display !== 'none') {
-                        (el as any).autocomplete('search');
+                        jqEl.autocomplete('search');
                     }
                 }
             }

@@ -7,9 +7,9 @@ import { renderTemplateAsync } from './templates.js';
 import { POPUP_TYPE, callGenericPopup } from './popup.js';
 import { t } from './i18n.js';
 import { accountStorage } from './util/AccountStorage.js';
-import { createPaginator, textValueMatcher } from './utils.js';
+import { createPaginator } from './utils.js';
 
-declare const $: any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare const TomSelect: any;
 
 // @ts-expect-error TS(7034) FIXME: Variable 'mancerModels' implicitly has type 'any[]... Remove this comment to see the full error message
@@ -523,14 +523,16 @@ export function updateNanoGptProvidersWarning(providersSelector) {
          ollamaSelect.appendChild(option);
      }
 
-     console.debug('[Ollama] Populated', (ollamaSelect as any).options?.length, 'options, tomSelect:', !!(ollamaSelect as any).tomSelect, 'tomselect:', !!(ollamaSelect as any).tomselect);
-     const existingTs = (ollamaSelect as any).tomSelect || (ollamaSelect as any).tomselect;
+     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     const ollamaSelectAny = ollamaSelect as any;
+     console.debug('[Ollama] Populated', ollamaSelectAny.options?.length, 'options, tomSelect:', !!ollamaSelectAny.tomSelect, 'tomselect:', !!ollamaSelectAny.tomselect);
+     const existingTs = ollamaSelectAny.tomSelect || ollamaSelectAny.tomselect;
      if (existingTs) {
          existingTs.sync();
          console.debug('[Ollama] sync() called');
      } else {
          // TomSelect not initialized — create it now
-         (ollamaSelect as any).tomSelect = new TomSelect(ollamaSelect, {
+         ollamaSelectAny.tomSelect = new TomSelect(ollamaSelect, {
              maxItems: 1,
              placeholder: t`Select a model`,
          });

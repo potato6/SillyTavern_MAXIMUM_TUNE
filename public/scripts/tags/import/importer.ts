@@ -3,10 +3,8 @@
  * Handles importing tags into character/group entities, backup, restore, and pruning.
  */
 
-declare const TomSelect: any;
-
-import { tags, tag_map, getTag, getTagById, createNewTag, newTag, getExistingTags, markDirty } from '../store/tagStore.js';
-import { getOpenBogusFolders, isBogusFolder } from '../folders/bogusFolders.js';
+import { tags, tag_map, getTag, getTagById, newTag, getExistingTags, markDirty } from '../store/tagStore.js';
+import { getOpenBogusFolders } from '../folders/bogusFolders.js';
 import { printTagList } from '../ui/tagList.js';
 import { tag_import_setting } from '../types.js';
 
@@ -17,7 +15,6 @@ import { download, onlyUnique, parseJsonFile, escapeHtml, removeFromArray } from
 import { POPUP_RESULT, POPUP_TYPE, Popup, callGenericPopup } from '../../popup.js';
 import { renderTemplateAsync } from '../../templates.js';
 import { DOMPurify } from '../../../lib.js';
-import { isMobile } from '../../RossAscends-mods.js';
 import { t } from '../../i18n.js';
 
 // ──────────────────────────────────────────────
@@ -39,7 +36,7 @@ export const ANTI_TROLL_MAX_TAGS = 50;
  * @param options.importSetting - Force a tag import setting
  * @returns Promise resolving to boolean indicating whether any tag was imported
  */
-export async function importTags(character: any, { importSetting = null }: { importSetting?: any } = {}): Promise<boolean> {
+export async function importTags(character: { avatar: string; name: string; tags: string[] }, { importSetting = null }: { importSetting?: number | null } = {}): Promise<boolean> {
     const tagNamesToImport = await handleTagImport(character, { importSetting });
     if (!tagNamesToImport?.length) {
         console.debug('No tags to import');
@@ -48,7 +45,7 @@ export async function importTags(character: any, { importSetting = null }: { imp
 
     const tagsToImport = tagNamesToImport.map((tag: string) => getTag(tag, { createNew: true }));
     const added = addTagsToEntity(tagsToImport, character.avatar);
-    const tagNames = tagsToImport.map((x: any) => escapeHtml(x.name)).join(', ');
+    const tagNames = tagsToImport.map((x: { name: string }) => escapeHtml(x.name)).join(', ');
 
     if (added) {
         notyf.success(t`Imported tags:` + `<br />${tagNames}`, t`Importing Tags`, { escapeHtml: false });
@@ -66,28 +63,28 @@ export async function importTags(character: any, { importSetting = null }: { imp
  * @param options.importSetting - Force a tag import setting
  * @returns Promise resolving to an array of strings representing the tags to import
  */
-export async function handleTagImport(character: any, { importSetting = null }: { importSetting?: any } = {}): Promise<string[]> {
-    const alreadyAssignedTags: string[] = (tag_map as any)[character.avatar] ?? [];
+export async function handleTagImport(character: { avatar: string; name: string; tags: string[] }, { importSetting = null }: { importSetting?: number | null } = {}): Promise<string[]> {
+    const alreadyAssignedTags: string[] = (tag_map as Record<string, string[] | undefined>)[character.avatar] ?? [];
     const importTagsList = character.tags.map((t: string) => t.trim()).filter((t: string) => t)
         .filter((t: string) => !IMPORT_EXLCUDED_TAGS.includes(t))
         .filter((t: string) => {
-            const foundTag: any = getTag(t);
+            const foundTag = getTag(t);
             return !foundTag || !alreadyAssignedTags.includes(foundTag.id);
         })
         .slice(0, ANTI_TROLL_MAX_TAGS);
     const existingTags = getExistingTags(importTagsList);
-    const newTags = importTagsList.filter((t: string) => !existingTags.some((existingTag: any) => existingTag.name.toLowerCase() === t.toLowerCase()))
+    const newTags = importTagsList.filter((t: string) => !existingTags.some((existingTag: { name: string }) => existingTag.name.toLowerCase() === t.toLowerCase()))
         .map(newTag);
     const folderTags = getOpenBogusFolders();
 
     const setting = importSetting ? importSetting :
-        Object.values(tag_import_setting).find((setting: any) => setting === power_user.tag_import_setting) ?? tag_import_setting.ASK;
+        Object.values(tag_import_setting).find((setting: number) => setting === power_user.tag_import_setting) ?? tag_import_setting.ASK;
 
     switch (setting) {
         case tag_import_setting.ALL:
-            return [...existingTags, ...newTags, ...folderTags].map((t: any) => t.name);
+            return [...existingTags, ...newTags, ...folderTags].map((t: { name: string }) => t.name);
         case tag_import_setting.ONLY_EXISTING:
-            return [...existingTags, ...folderTags].map((t: any) => t.name);
+            return [...existingTags, ...folderTags].map((t: { name: string }) => t.name);
         case tag_import_setting.ASK: {
             if (!existingTags.length && !newTags.length && !folderTags.length) {
                 return [];
@@ -108,13 +105,13 @@ export async function handleTagImport(character: any, { importSetting = null }: 
  * @param folderTags - List of tags in the current folder
  * @returns Promise resolving to an array of strings representing the tags to import
  */
-export async function showTagImportPopup(character: any, existingTags: any[], newTags: any[], folderTags: any[]): Promise<string[]> {
+export async function showTagImportPopup(character: { name: string }, existingTags: { id: string; name: string }[], newTags: { id: string; name: string }[], folderTags: { id: string; name: string }[]): Promise<string[]> {
     const importButtons = {
         NONE: { result: 2, text: 'Import None' },
         ALL: { result: 3, text: 'Import All' },
         EXISTING: { result: 4, text: 'Import Existing' },
     } as const;
-    const buttonSettingsMap: Record<number, any> = {
+    const buttonSettingsMap: Record<number, number> = {
         [POPUP_RESULT.AFFIRMATIVE]: tag_import_setting.ASK,
         [importButtons.NONE.result]: tag_import_setting.NONE,
         [importButtons.ALL.result]: tag_import_setting.ALL,
@@ -126,16 +123,16 @@ export async function showTagImportPopup(character: any, existingTags: any[], ne
     const popupEl = popupContent;
 
     // Print tags after popup is shown, so that events can be added
-    printTagList(popupEl?.querySelector('#import_existing_tags_list') as any, { tags: existingTags, tagOptions: { removable: true, removeAction: (tag: any) => removeFromArray(existingTags, tag) } } as any);
-    printTagList(popupEl?.querySelector('#import_new_tags_list') as any, { tags: newTags, tagOptions: { removable: true, removeAction: (tag: any) => removeFromArray(newTags, tag) } } as any);
-    printTagList(popupEl?.querySelector('#import_folder_tags_list') as any, { tags: folderTags, tagOptions: { removable: true, removeAction: (tag: any) => removeFromArray(folderTags, tag) } } as any);
+    printTagList(popupEl?.querySelector('#import_existing_tags_list'), { tags: existingTags, tagOptions: { removable: true, removeAction: (tag: { id: string; name: string }) => removeFromArray(existingTags, tag) } });
+    printTagList(popupEl?.querySelector('#import_new_tags_list'), { tags: newTags, tagOptions: { removable: true, removeAction: (tag: { id: string; name: string }) => removeFromArray(newTags, tag) } });
+    printTagList(popupEl?.querySelector('#import_folder_tags_list'), { tags: folderTags, tagOptions: { removable: true, removeAction: (tag: { id: string; name: string }) => removeFromArray(folderTags, tag) } });
 
     if (folderTags.length === 0) {
         const folderTagsBlock = popupEl?.querySelector('#folder_tags_block') as HTMLElement | null;
         if (folderTagsBlock) folderTagsBlock.style.display = 'none';
     }
 
-    function onCloseRemember(popup: any) {
+    function onCloseRemember(popup: { result: number; inputResults: Map<string, unknown> }) {
         if (popup.result && popup.inputResults.get('import_remember_option')) {
             const setting = buttonSettingsMap[popup.result];
             if (!setting) return;
@@ -145,7 +142,7 @@ export async function showTagImportPopup(character: any, existingTags: any[], ne
                 tagImportSetting.value = String(power_user.tag_import_setting);
             }
             markDirty();
-            console.log('Remembered tag import setting:', Object.entries(tag_import_setting).find((x: any) => x[1] === setting)?.[0], setting);
+            console.log('Remembered tag import setting:', Object.entries(tag_import_setting).find((x: [string, number]) => x[1] === setting)?.[0], setting);
         }
     }
 
@@ -162,9 +159,9 @@ export async function showTagImportPopup(character: any, existingTags: any[], ne
     switch (result) {
         case POPUP_RESULT.AFFIRMATIVE:
         case importButtons.ALL.result:
-            return [...existingTags, ...newTags, ...folderTags].map((t: any) => t.name);
+            return [...existingTags, ...newTags, ...folderTags].map((t: { name: string }) => t.name);
         case importButtons.EXISTING.result:
-            return [...existingTags, ...folderTags].map((t: any) => t.name);
+            return [...existingTags, ...folderTags].map((t: { name: string }) => t.name);
         case importButtons.NONE.result:
         default:
             return [];
@@ -212,7 +209,7 @@ export async function onTagRestoreFileSelect(e: Event) {
         return;
     }
 
-    const data: any = await parseJsonFile(file);
+    const data = await parseJsonFile(file);
 
     if (!data) {
         notyf.warning('Empty file data', 'Tag Restore');
@@ -242,7 +239,7 @@ export async function onTagRestoreFileSelect(e: Event) {
             continue;
         }
 
-        let existingTag: any = getTagById(tag.id);
+        let existingTag = getTagById(tag.id);
         if (existingTag && !overwrite) {
             warnings.push(`Tag '${tag.name}' with id ${tag.id} already exists.`);
             continue;
@@ -269,21 +266,21 @@ export async function onTagRestoreFileSelect(e: Event) {
             continue;
         }
 
-        const characterExists = characters.some((x: any) => String(x.avatar) === String(key));
-        const groupExists = groups.some((x: any) => String(x.id) === String(key));
+        const characterExists = characters.some((x: { avatar: string }) => String(x.avatar) === String(key));
+        const groupExists = groups.some((x: { id: string }) => String(x.id) === String(key));
 
         if (!characterExists && !groupExists) {
             warnings.push(`Tag map key ${key} does not exist as character or group.`);
             continue;
         }
 
-        const existingTagIds: string[] = (tag_map as any)[key] || [];
+        const existingTagIds: string[] = (tag_map as Record<string, string[] | undefined>)[key] || [];
 
         const combinedTags = existingTagIds.concat(tagIds)
             .map((tagId: string) => (idToActualTagIdMap.has(tagId)) ? idToActualTagIdMap.get(tagId)! : tagId)
             .filter(onlyUnique);
 
-        (tag_map as any)[key] = combinedTags.filter((tagId: string) => tags.some((y: any) => String(y.id) === String(tagId)));
+        (tag_map as Record<string, string[] | undefined>)[key] = combinedTags.filter((tagId: string) => tags.some((y: { id: string }) => String(y.id) === String(tagId)));
     }
 
     if (warnings.length) {
@@ -312,9 +309,9 @@ export async function onTagRestoreFileSelect(e: Event) {
  */
 export async function onTagsPruneClick() {
     const allTagsInTagMaps = new Set(Object.values(tag_map).flat());
-    const tagsToPrune = tags.filter((tag: any) => !allTagsInTagMaps.has(tag.id));
+    const tagsToPrune = tags.filter((tag: { id: string }) => !allTagsInTagMaps.has(tag.id));
 
-    const allEntityKeys = new Set([...characters.map((c: any) => String(c.avatar)), ...groups.map((g: any) => String(g.id))]);
+    const allEntityKeys = new Set([...characters.map((c: { avatar: string }) => String(c.avatar)), ...groups.map((g: { id: string }) => String(g.id))]);
     const tagMapsToPrune = Object.keys(tag_map).filter((key: string) => !allEntityKeys.has(key));
 
     if (!tagsToPrune.length && !tagMapsToPrune.length) {
@@ -333,7 +330,7 @@ export async function onTagsPruneClick() {
     }
 
     for (const key of tagMapsToPrune) {
-        delete (tag_map as any)[key];
+        delete (tag_map as Record<string, string[] | undefined>)[key];
     }
 
     markDirty();
@@ -354,19 +351,19 @@ export async function onTagsPruneClick() {
  * @param entityId - The entity key to add tags to
  * @returns Whether at least one tag was added
  */
-function addTagsToEntity(tag: any, entityId: any): boolean {
+function addTagsToEntity(tag: { id: string } | { id: string }[], entityId: string | string[]): boolean {
     const tagArray = Array.isArray(tag) ? tag : [tag];
     const entityIds = Array.isArray(entityId) ? entityId : [entityId];
 
     let result = false;
 
-    entityIds.forEach((id: any) => {
-        tagArray.forEach((t: any) => {
-            if (!(tag_map as any)[id]) {
-                (tag_map as any)[id] = [];
+    entityIds.forEach((id: string) => {
+        tagArray.forEach((t: { id: string }) => {
+            if (!(tag_map as Record<string, string[] | undefined>)[id]) {
+                (tag_map as Record<string, string[] | undefined>)[id] = [];
             }
-            if (!(tag_map as any)[id].includes(t.id)) {
-                (tag_map as any)[id].push(t.id);
+            if (!(tag_map as Record<string, string[] | undefined>)[id]!.includes(t.id)) {
+                (tag_map as Record<string, string[] | undefined>)[id]!.push(t.id);
                 result = true;
             }
         });

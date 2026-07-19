@@ -1,31 +1,20 @@
-declare const $: any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare const TomSelect: any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare const Sortable: any;
 
-import { Fuse } from '../lib.js';
-
-import { saveSettings, substituteParams, getRequestHeaders, chat_metadata, this_chid, characters, saveCharacterDebounced, menu_type, eventSource, event_types, getExtensionPromptByName, saveMetadata, getCurrentChatId, extension_prompt_roles, create_save, createOrEditCharacter, name1, getOneCharacter, select_selected_character } from '../script.js';
-import { download, debounce, initScrollHeight, resetScrollHeight, parseJsonFile, extractDataFromPng, getFileBuffer, getCharaFilename, getSortableDelay, escapeRegex, PAGINATION_TEMPLATE, navigation_option, waitUntilCondition, isTrueBoolean, setValueByPath, flashHighlight, select2ModifyOptions, getSelect2OptionId, dynamicSelect2DataViaAjax, highlightRegex, select2ChoiceClickSubscribe, isFalseBoolean, getSanitizedFilename, checkOverwriteExistingData, getStringHash, parseStringArray, cancelDebounce, findChar, onlyUnique, equalsIgnoreCaseAndAccents, uuidv4, normalizeArray, getUniqueName, logSlashCommandWarn, addLongPressEvent, escapeHtml, createPaginator } from './utils.js';
-import { extension_settings, getContext } from './extensions.js';
-import { NOTE_MODULE_NAME, metadata_keys, shouldWIAddPrompt } from './authors-note.js';
+import { saveSettings, getRequestHeaders, chat_metadata, this_chid, characters, saveCharacterDebounced, menu_type, eventSource, event_types, saveMetadata, getCurrentChatId, extension_prompt_roles, create_save, createOrEditCharacter, getOneCharacter, select_selected_character } from '../script.js';
+import { download, debounce, initScrollHeight, resetScrollHeight, getCharaFilename, getSortableDelay, navigation_option, waitUntilCondition, isTrueBoolean, flashHighlight, select2ModifyOptions, getSelect2OptionId, highlightRegex, select2ChoiceClickSubscribe, normalizeArray, addLongPressEvent, createPaginator } from './utils.js';
+import { getContext } from './extensions.js';
 import { isMobile } from './RossAscends-mods.js';
 import { FILTER_TYPES, FilterHelper } from './filters.js';
 import { getTokenCountAsync } from './tokenizers.js';
 import { power_user } from './power-user.js';
-import { getTagKeyForEntity } from './tags.js';
-import { debounce_timeout, GENERATION_TYPE_TRIGGERS } from './constants.js';
-import { getRegexedString, regex_placement } from './extensions/regex/engine.js';
-import { SlashCommandParser } from './slash-commands/SlashCommandParser.js';
-import { SlashCommand } from './slash-commands/SlashCommand.js';
-import { ARGUMENT_TYPE, SlashCommandArgument, SlashCommandNamedArgument } from './slash-commands/SlashCommandArgument.js';
-import { SlashCommandEnumValue, enumTypes } from './slash-commands/SlashCommandEnumValue.js';
-import { commonEnumProviders, enumIcons } from './slash-commands/SlashCommandCommonEnumsProvider.js';
-import { SlashCommandClosure } from './slash-commands/SlashCommandClosure.js';
+import { debounce_timeout } from './constants.js';
 import { callGenericPopup, Popup, POPUP_RESULT, POPUP_TYPE } from './popup.js';
 import { renderTemplateAsync } from './templates.js';
 import { t } from './i18n.js';
 import { accountStorage } from './util/AccountStorage.js';
-import { getOrCreatePersonaDescriptor, setPersonaDescription, user_avatar } from './personas.js';
 
 // ── Re-exported types & constants ──
 export type {
@@ -44,17 +33,11 @@ export type {
 import {
     world_info_insertion_strategy,
     world_info_logic,
-    scan_state,
     world_info_position,
-    wi_anchor_position,
-    DEFAULT_DEPTH,
-    DEFAULT_WEIGHT,
     MAX_SCAN_DEPTH,
     MAX_COMMENT_LENGTH,
     SORT_ORDER_KEY,
     METADATA_KEY,
-    KNOWN_DECORATORS,
-    defaultGlobalScanData,
     originalWIDataKeyMap,
 } from './world-info/constants.js';
 
@@ -63,15 +46,9 @@ import { wiManager } from './world-info/manager.js';
 // ── Engine imports ──
 import {
     WorldInfoBuffer,
-    WorldInfoTimedEffects,
-    parseRegexFromString,
     isValidRegex,
-    filterByInclusionGroups,
-    worldInfoCache,
-    getWorldInfoPrompt,
     loadWorldInfo,
     getSortedEntries,
-    checkWorldInfo,
 } from './world-info/engine.js';
 
 // Re-export scanning pipeline functions for external consumers
@@ -82,7 +59,6 @@ import {
     WI_ENTRY_HEADER_TEMPLATE,
     WI_ENTRY_EDIT_TEMPLATE,
     nullWorldInfo,
-    worldEntryKeyOptionsCache,
     updateWorldEntryKeyOptionsCache,
     clearEntryList,
     setWIOriginalDataValue,
@@ -96,17 +72,11 @@ import { registerWorldInfoSlashCommands } from './world-info/commands.js';
 import {
     saveWorldInfo,
     saveSettingsNow,
-    getFreeWorldEntryUid,
     getFreeWorldName,
-    newWorldInfoEntryDefinition,
     newWorldInfoEntryTemplate,
     createWorldInfoEntry,
     duplicateWorldInfoEntry,
     deleteWorldInfoEntry,
-    convertAgnaiMemoryBook,
-    convertRisuLorebook,
-    convertNovelLorebook,
-    convertCharacterBook,
     renameWorldInfo,
     deleteWorldInfo,
     createNewWorldInfo,
@@ -158,25 +128,25 @@ export {
 // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
 const WI_ENTRY_EDIT_TEMPLATE = /** @type {HTMLElement} */ (document.querySelector('#entry_edit_template .world_entry_edit'));
 
-export let world_info = {};
-export let selected_world_info = [];
+export const world_info = {};
+export const selected_world_info = [];
 /** @type {string[]} */
 // @ts-expect-error TS(7005) FIXME: Variable 'world_names' implicitly has an 'any' typ... Remove this comment to see the full error message
 export let world_names;
-export let world_info_depth = 2;
-export let world_info_min_activations = 0; // if > 0, will continue seeking chat until minimum world infos are activated
-export let world_info_min_activations_depth_max = 0; // used when (world_info_min_activations > 0)
+export const world_info_depth = 2;
+export const world_info_min_activations = 0; // if > 0, will continue seeking chat until minimum world infos are activated
+export const world_info_min_activations_depth_max = 0; // used when (world_info_min_activations > 0)
 
-export let world_info_budget = 25;
-export let world_info_include_names = true;
-export let world_info_recursive = false;
-export let world_info_overflow_alert = false;
-export let world_info_case_sensitive = false;
-export let world_info_match_whole_words = false;
-export let world_info_use_group_scoring = false;
-export let world_info_character_strategy = world_info_insertion_strategy.character_first;
-export let world_info_budget_cap = 0;
-export let world_info_max_recursion_steps = 0;
+export const world_info_budget = 25;
+export const world_info_include_names = true;
+export const world_info_recursive = false;
+export const world_info_overflow_alert = false;
+export const world_info_case_sensitive = false;
+export const world_info_match_whole_words = false;
+export const world_info_use_group_scoring = false;
+export const world_info_character_strategy = world_info_insertion_strategy.character_first;
+export const world_info_budget_cap = 0;
+export const world_info_max_recursion_steps = 0;
 // @ts-expect-error TS(7006) FIXME: Parameter 'navigation' implicitly has an 'any' typ... Remove this comment to see the full error message
 let updateEditor = (navigation, flashOnNav = true) => { console.debug('Triggered WI navigation', navigation, flashOnNav); };
 
@@ -1089,14 +1059,16 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
     });
 
     // Check if a sortable instance exists
-    const worldEntriesListAny = worldEntriesList as any;
-    if (worldEntriesListAny?.sortableInstance) {
+    const worldEntriesListAny = worldEntriesList;
+    if ((worldEntriesListAny as Element | null)?.sortableInstance) {
         // Destroy the instance
-        worldEntriesListAny.sortableInstance.destroy();
+        // @ts-expect-error TS(2339) FIXME: Property 'sortableInstance' does not exist on type 'Element'
+        (worldEntriesListAny as Element).sortableInstance.destroy();
     }
 
     if (worldEntriesListAny) {
         // @ts-expect-error TS(7006) FIXME: Parameter '_event' implicitly has an 'any' type.
+        // @ts-expect-error TS(2339) FIXME: Property 'sortableInstance' does not exist on type 'HTMLElement'
         worldEntriesListAny.sortableInstance = new Sortable(worldEntriesListAny, {
             delay: getSortableDelay(),
             handle: '.drag-handle',
@@ -1416,7 +1388,7 @@ const selEl = template[0]?.querySelector(`select[name="${entryPropName}"]`); if 
          * @param {Event} _event
          * @param {{ skipReset?: boolean, noSave?: boolean }} [arg]
          */
-        input.addEventListener('input', async function (this: any, _event: Event) {
+        input.addEventListener('input', async function (this: unknown, _event: Event) {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const uid = this.dataset.uid;
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -1474,26 +1446,29 @@ const selEl = template[0]?.querySelector(`select[name="${entryPropName}"]`); if 
  */
 function bindEntryField(
     el: HTMLElement,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     entry: any,
     fieldName: string,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     data: any,
     name: string,
     opts: {
-        read?: (el: any) => any;
-        write?: (el: any, v: any) => void;
+        read?: (el: unknown) => unknown;
+        write?: (el: unknown, v: unknown) => void;
         keyPath?: string;
-        init?: any;
-        transform?: (v: any) => any;
-        onSave?: (uid: string, value: any) => void;
+        init?: unknown;
+        transform?: (v: unknown) => unknown;
+        onSave?: (uid: string, value: unknown) => void;
     } = {},
 ) {
     const keyPath = opts.keyPath ?? originalWIDataKeyMap[fieldName] ?? fieldName;
-    const read = opts.read ?? ((el: any) => el.value);
-    const write = opts.write ?? ((el: any, v: any) => { el.value = v; });
-    const transform = opts.transform ?? ((v: any) => v);
+    const read = opts.read ?? ((el: unknown) => (el as HTMLInputElement).value);
+    const write = opts.write ?? ((el: unknown, v: unknown) => { (el as HTMLInputElement).value = v as string; });
+    const transform = opts.transform ?? ((v: unknown) => v);
 
-    el.dataset.uid = String(entry.uid);
-    el.addEventListener('input', async function (this: any, e: Event) {
+    // @ts-expect-error TS(2339) FIXME: Property 'uid' does not exist on type 'unknown'
+    el.dataset.uid = String((entry as Record<string, unknown>).uid);
+    el.addEventListener('input', async function (this: unknown, e: Event) {
         const uid = this.dataset.uid;
         const raw = read(this);
         const value = transform(raw);
@@ -1514,8 +1489,8 @@ function handleMatchCheckboxHelper({ template, entry, fieldName, data, name }) {
     const el = template.querySelector(`input[type="checkbox"][name="${fieldName}"]`);
     if (!el) return;
     bindEntryField(el, entry, fieldName, data, name, {
-        read: (el: any) => el.checked,
-        write: (el: any, v: any) => { el.checked = !!v; },
+        read: (el: unknown) => (el as HTMLInputElement).checked,
+        write: (el: unknown, v: unknown) => { (el as HTMLInputElement).checked = !!v; },
     });
 }
 
@@ -1616,12 +1591,15 @@ function handleCharacterFilterChangeHelper({ characterFilter, data, entry, name 
         await saveWorldInfo(name, data);
     }
 
-    characterFilter.addEventListener('mousedown', async function (this: any, e: Event) {
+    characterFilter.addEventListener('mousedown', async function (this: unknown, e: Event) {
         if (wiManager.worldNames.length === 0) { e.preventDefault(); return; }
+        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any'
         await saveFilterSelection(this.dataset.uid, this.selectedOptions);
     });
-    characterFilter.addEventListener('change', async function (this: any) {
+    characterFilter.addEventListener('change', async function (this: unknown) {
+        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any'
         if (wiManager.worldNames.length === 0) return;
+        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any'
         await saveFilterSelection(this.dataset.uid, this.selectedOptions);
     });
 }
@@ -1637,9 +1615,9 @@ function handleCharacterFilterChangeHelper({ characterFilter, data, entry, name 
 // @ts-expect-error TS(7031) FIXME: Binding element 'probabilityInput' implicitly has ... Remove this comment to see the full error message
 function handleProbabilityInputHelper({ probabilityInput, data, entry, name }) {
     bindEntryField(probabilityInput[0], entry, 'probability', data, name, {
-        read: (el: any) => Number(el.value),
-        write: (el: any, v: any) => { el.value = v ?? ''; },
-        transform: (v: any) => isNaN(v) ? null : Math.min(100, Math.max(0, v)),
+        read: (el: unknown) => Number((el as HTMLInputElement).value),
+        write: (el: unknown, v: unknown) => { (el as HTMLInputElement).value = v as string ?? ''; },
+        transform: (v: unknown) => isNaN(v as number) ? null : Math.min(100, Math.max(0, v as number)),
         onSave: (uid, value) => {
             if (value !== null && value !== Number(probabilityInput[0].value)) {
                 probabilityInput[0].value = value;
@@ -1661,7 +1639,8 @@ function handleProbabilityInputHelper({ probabilityInput, data, entry, name }) {
 // @ts-expect-error TS(7031) FIXME: Binding element 'probabilityToggle' implicitly has... Remove this comment to see the full error message
 function handleProbabilityToggleHelper({ probabilityToggle, data, entry, name, probabilityInput }) {
     probabilityToggle[0].dataset.uid = String(entry.uid);
-    probabilityToggle[0].addEventListener('input', async function (this: any, e: Event) {
+    probabilityToggle[0].addEventListener('input', async function (this: unknown, e: Event) {
+        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any'
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const uid = this.dataset.uid;
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -1697,11 +1676,11 @@ function handleProbabilityToggleHelper({ probabilityToggle, data, entry, name, p
 // @ts-expect-error TS(7031) FIXME: Binding element 'selectElem' implicitly has an 'an... Remove this comment to see the full error message
 function handleBooleanSelectHelper({ selectElem, entry, entryKey, data, name }) {
     bindEntryField(selectElem[0], entry, entryKey, data, name, {
-        read: (el: any) => el.value === 'null' ? null : el.value === 'true',
-        write: (el: any, v: any) => {
-            el.value = (v === null || v === undefined) ? 'null' : v ? 'true' : 'false';
+        read: (el: unknown) => (el as HTMLInputElement).value === 'null' ? null : (el as HTMLInputElement).value === 'true',
+        write: (el: unknown, v: unknown) => {
+            (el as HTMLInputElement).value = (v === null || v === undefined) ? 'null' : v ? 'true' : 'false';
         },
-        transform: (v: any) => v,
+        transform: (v: unknown) => v,
     });
 }
 
@@ -1720,9 +1699,9 @@ function handleBooleanSelectHelper({ selectElem, entry, entryKey, data, name }) 
 // @ts-expect-error TS(7031) FIXME: Binding element 'inputElem' implicitly has an 'any... Remove this comment to see the full error message
 function handleNumberInputHelper({ inputElem, entry, entryKey, data, name, min, max, clamp = false }) {
     bindEntryField(inputElem[0], entry, entryKey, data, name, {
-        read: (el: any) => !isNaN(Number(el.value)) ? Number(el.value) : null,
-        write: (el: any, v: any) => { el.value = v ?? (clamp ? min : ''); },
-        transform: (v: any) => {
+        read: (el: unknown) => !isNaN(Number((el as HTMLInputElement).value)) ? Number((el as HTMLInputElement).value) : null,
+        write: (el: unknown, v: unknown) => { (el as HTMLInputElement).value = v as string ?? (clamp ? min : ''); },
+        transform: (v: unknown) => {
             if (v === null || isNaN(v)) return null;
             if (clamp) {
                 if (v < min) return min;
@@ -1750,10 +1729,11 @@ function handleNumberInputHelper({ inputElem, entry, entryKey, data, name, min, 
 // @ts-expect-error TS(7031) FIXME: Binding element 'entryStateSelector' implicitly ha... Remove this comment to see the full error message
 function handleEntryStateSelectorHelper({ entryStateSelector, entry, data, name }) {
     entryStateSelector[0].dataset.uid = String(entry.uid);
-    entryStateSelector[0].addEventListener('click', function (this: any, event: Event) {
+    entryStateSelector[0].addEventListener('click', function (this: unknown, event: Event) {
         event.stopPropagation();
     });
-    entryStateSelector[0].addEventListener('input', async function (this: any, e: Event) {
+    entryStateSelector[0].addEventListener('input', async function (this: unknown, e: Event) {
+        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any'
         const uid = entry.uid;
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const value = this.value;
@@ -1869,12 +1849,15 @@ export async function getWorldEntry(name, data, entry) {
     setCommentPlaceholder(keys, commentInput);
 
     if (commentInput) commentInput.dataset.uid = String(entry.uid);
-    commentInput?.addEventListener('input', async function (this: any, e: Event) {
+    commentInput?.addEventListener('input', async function (this: unknown, e: Event) {
+        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any'
         const uid = this.dataset.uid;
+        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any'
         const value = this.value;
         const detail = e instanceof CustomEvent ? e.detail : {};
         const skipReset = detail.skipReset ?? false;
         const data_noSave = detail.noSave ?? false;
+        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any'
         if (!skipReset) await resetScrollHeight(this);
         data.entries[uid].comment = value;
         setWIOriginalDataValue(data, uid, 'comment', data.entries[uid].comment);
@@ -1919,7 +1902,8 @@ export async function getWorldEntry(name, data, entry) {
     const positionInput = headerTemplate.querySelectorAll('select[name="position"]');
     positionInput[0].dataset.uid = String(entry.uid);
     positionInput[0].addEventListener('click', (e: Event) => e.stopPropagation());
-    positionInput[0].addEventListener('input', async function (this: any, e: Event) {
+    positionInput[0].addEventListener('input', async function (this: unknown, e: Event) {
+        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any'
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const uid = this.dataset.uid;
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -1975,7 +1959,8 @@ export async function getWorldEntry(name, data, entry) {
     });
     const deleteBtn = headerTemplate.querySelectorAll('.delete_entry_button');
     deleteBtn[0].dataset.uid = String(entry.uid);
-    deleteBtn[0].addEventListener('click', async function (this: any, e: Event) {
+    deleteBtn[0].addEventListener('click', async function (this: unknown, e: Event) {
+        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any'
         e.stopPropagation();
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const uid = this.dataset.uid;
@@ -1989,7 +1974,8 @@ export async function getWorldEntry(name, data, entry) {
     const moveBtn = headerTemplate.querySelectorAll('.move_entry_button');
     moveBtn[0].setAttribute('data-uid', String(entry.uid));
     moveBtn[0].setAttribute('data-current-world', name);
-    moveBtn[0].addEventListener('click', async function (this: any, e: Event) {
+    moveBtn[0].addEventListener('click', async function (this: unknown, e: Event) {
+        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any'
         e.stopPropagation();
         const sourceUid = this.getAttribute('data-uid');
         const sourceWorld = this.getAttribute('data-current-world');
@@ -2121,10 +2107,10 @@ export async function getWorldEntry(name, data, entry) {
         // Comment toggle
         const commentToggle = editTemplate.querySelectorAll('input[name="addMemo"]');
         commentToggle[0].dataset.uid = String(entry.uid);
-        commentToggle[0].addEventListener('input', async function (this: any, e: Event) {
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        commentToggle[0].addEventListener('input', async function (this: unknown, e: Event) {
+            // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any'
             const uid = this.dataset.uid;
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any'
             const value = this.checked;
             const data_noSave = e instanceof CustomEvent ? e.detail?.noSave : false;
             const commentContainer = this.closest('.world_entry')?.querySelector('.commentContainer');
@@ -2140,7 +2126,8 @@ export async function getWorldEntry(name, data, entry) {
         const selectiveLogicDropdown = editTemplate.querySelectorAll('select[name="entryLogicType"]');
         selectiveLogicDropdown[0].dataset.uid = String(entry.uid);
         selectiveLogicDropdown[0].addEventListener('click', (e: Event) => e.stopPropagation());
-        selectiveLogicDropdown[0].addEventListener('input', async function (this: any, e: Event) {
+        selectiveLogicDropdown[0].addEventListener('input', async function (this: unknown, e: Event) {
+            // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any'
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const uid = this.dataset.uid;
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -2157,7 +2144,8 @@ export async function getWorldEntry(name, data, entry) {
         // Selective
         const selectiveInput = editTemplate.querySelectorAll('input[name="selective"]');
         selectiveInput[0].dataset.uid = String(entry.uid);
-        selectiveInput[0].addEventListener('input', async function (this: any, e: Event) {
+        selectiveInput[0].addEventListener('input', async function (this: unknown, e: Event) {
+            // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any'
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const uid = this.dataset.uid;
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -2184,7 +2172,8 @@ export async function getWorldEntry(name, data, entry) {
         }
         const characterExclusionInput = editTemplate.querySelectorAll('input[name="character_exclusion"]');
         characterExclusionInput[0].dataset.uid = String(entry.uid);
-        characterExclusionInput[0].addEventListener('input', async function (this: any, e: Event) {
+        characterExclusionInput[0].addEventListener('input', async function (this: unknown, e: Event) {
+            // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any'
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const uid = this.dataset.uid;
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -2235,7 +2224,8 @@ export async function getWorldEntry(name, data, entry) {
             contentInput.dataset.uid = String(entry.uid);
             contentInput.id = contentInputId;
             contentInput.dataset.macros = ''; // active
-            contentInput.addEventListener('input', async function (this: any, { skipCount = false, noSave = false } = {}) {
+            contentInput.addEventListener('input', async function (this: unknown, { skipCount = false, noSave = false } = {}) {
+                // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any'
                 const uid = this.dataset.uid;
                 const value = this.value;
                 data.entries[uid].content = value;
@@ -2252,7 +2242,8 @@ export async function getWorldEntry(name, data, entry) {
         const outletNameInput = editTemplate?.querySelector('input[name="outletName"]');
         if (outletNameInput) {
             outletNameInput.dataset.uid = String(entry.uid);
-            outletNameInput.addEventListener('input', async function (this: any, { noSave = false } = {}) {
+            outletNameInput.addEventListener('input', async function (this: unknown, { noSave = false } = {}) {
+                // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any'
                 const uid = this.dataset.uid;
                 const value = this.value;
                 data.entries[uid].outletName = value;
@@ -2268,7 +2259,8 @@ export async function getWorldEntry(name, data, entry) {
         const scanDepthInput = editTemplate?.querySelector('input[name="scanDepth"]');
         if (scanDepthInput) {
             scanDepthInput.dataset.uid = String(entry.uid);
-            scanDepthInput.addEventListener('input', async function (this: any, { noSave = false } = {}) {
+            scanDepthInput.addEventListener('input', async function (this: unknown, { noSave = false } = {}) {
+                // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any'
                 const uid = this.dataset.uid;
                 const isEmpty = this.value === '';
                 const value = Number(this.value);

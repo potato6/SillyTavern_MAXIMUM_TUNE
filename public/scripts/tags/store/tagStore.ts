@@ -9,7 +9,7 @@ import {
     this_chid,
     menu_type,
 } from '../../../script.js';
-import { groups, selected_group } from '../../group-chats.js';
+import { selected_group } from '../../group-chats.js';
 import { onlyUnique, uuidv4, equalsIgnoreCaseAndAccents, escapeHtml } from '../../utils.js';
 import { TAG_FOLDER_TYPES, TAG_FOLDER_DEFAULT_TYPE } from '../types.js';
 import { FILTER_STATES } from '../../filters.js';
@@ -314,7 +314,7 @@ export function resolveElement(selector) {
 // ──────────────────────────────────────────────
 
 type TagStoreEvent = 'added' | 'removed' | 'changed' | 'loaded';
-const tagListeners = new Map();
+const tagListeners = new Map<TagStoreEvent, Set<(...args: unknown[]) => void>>();
 
 /**
  * Subscribe to tag store events.
@@ -358,12 +358,12 @@ export function getTagIdsFromDOM(container, selector = '.tag') {
  * @param {string} ancestorSelector - CSS selector for the ancestor (default: '.tag_view_item')
  * @returns {{id: string, tag: Tag}|null} The tag ID and tag object, or null
  */
-export function getTagFromEvent(eventOrElement: any, ancestorSelector = '.tag_view_item'): { id: string, tag: any } | null {
+export function getTagFromEvent(eventOrElement: Event | HTMLElement, ancestorSelector = '.tag_view_item'): { id: string; tag: Record<string, unknown> } | null {
     const el = eventOrElement instanceof Event ? eventOrElement.target : eventOrElement;
-    const ancestor = el?.closest?.(ancestorSelector);
+    const ancestor = (el as Element | null)?.closest?.(ancestorSelector);
     const id = ancestor?.getAttribute?.('id');
     if (!id) return null;
-    const tag = getTagById(id) as any;
+    const tag = getTagById(id);
     return tag ? { id, tag } : null;
 }
 

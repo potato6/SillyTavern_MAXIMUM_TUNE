@@ -11,12 +11,12 @@ import { chat_metadata, characters, this_chid, getCurrentChatId } from '../../sc
 import { selected_group } from '../group-chats.js';
 import { extension_settings } from '../extensions.js';
 import { POPUP_RESULT, POPUP_TYPE, callGenericPopup } from '../popup.js';
-import { t } from '../i18n.js';
+
 import { loadTemplate } from './shared.js';
 import { accountStorage } from '../util/AccountStorage.js';
 import { ScraperManager } from '../scrapers.js';
 import { DragAndDropHandler } from '../dragdrop.js';
-import { ATTACHMENT_SOURCE } from './types.js';
+import { ATTACHMENT_SOURCE, FileAttachment } from './types.js';
 import {
     openFilePopup,
     editAttachment,
@@ -27,9 +27,7 @@ import {
     moveAttachment,
     deleteAttachment,
     uploadFileAttachmentToServer,
-    ensureAttachmentsExist,
     getDataBankAttachments,
-    getDataBankAttachmentsForSource,
     verifyAttachments,
     getAvailableTargets,
     runScraper,
@@ -42,8 +40,8 @@ export async function openAttachmentManager(): Promise<void> {
     /**
      * Renders a list of attachments for a given source.
      */
-    async function renderList(attachments: any[], source: string): Promise<void> {
-        function sortFn(a: any, b: any): number {
+    async function renderList(attachments: FileAttachment[], source: string): Promise<void> {
+        function sortFn(a: FileAttachment, b: FileAttachment): number {
             const sortValueA = a[sortField];
             const sortValueB = b[sortField];
             if (typeof sortValueA === 'string' && typeof sortValueB === 'string') {
@@ -52,7 +50,7 @@ export async function openAttachmentManager(): Promise<void> {
             return (sortValueA - sortValueB) * (sortOrder === 'asc' ? 1 : -1);
         }
 
-        function filterFn(a: any): boolean {
+        function filterFn(a: FileAttachment): boolean {
             if (!filterString) return true;
             return a.name.toLowerCase().includes(filterString.toLowerCase());
         }
@@ -169,7 +167,7 @@ export async function openAttachmentManager(): Promise<void> {
             button.addEventListener('click', () => {
                 modal?.setAttribute('data-attachment-manager-target', source);
                 (button as HTMLElement).style.setProperty('anchor-name', '--action-btn');
-                (modal as any)?.togglePopover();
+                (modal as HTMLElement)?.togglePopover();
             });
         });
 
@@ -180,9 +178,9 @@ export async function openAttachmentManager(): Promise<void> {
      * Renders all attachments across all sources.
      */
     async function renderAttachments(): Promise<void> {
-        const globalAttachments: any[] = extension_settings.attachments ?? [];
-        const chatAttachments: any[] = chat_metadata.attachments ?? [];
-        const characterAttachments: any[] = extension_settings.character_attachments?.[characters[this_chid]?.avatar] ?? [];
+        const globalAttachments: FileAttachment[] = extension_settings.attachments ?? [];
+        const chatAttachments: FileAttachment[] = chat_metadata.attachments ?? [];
+        const characterAttachments: FileAttachment[] = extension_settings.character_attachments?.[characters[this_chid]?.avatar] ?? [];
 
         await renderList(globalAttachments, ATTACHMENT_SOURCE.GLOBAL);
         await renderList(chatAttachments, ATTACHMENT_SOURCE.CHAT);
@@ -239,7 +237,7 @@ export async function openAttachmentManager(): Promise<void> {
     if (!template) return;
 
     // Search
-    template.querySelector('.attachmentSearch')?.addEventListener('input', function (this: any) {
+    template.querySelector('.attachmentSearch')?.addEventListener('input', function (this: HTMLInputElement) {
         if (this instanceof HTMLInputElement) {
             filterString = String(this.value);
         }
@@ -247,7 +245,7 @@ export async function openAttachmentManager(): Promise<void> {
     });
 
     // Sort
-    template.querySelector('.attachmentSort')?.addEventListener('change', function (this: any) {
+    template.querySelector('.attachmentSort')?.addEventListener('change', function (this: HTMLSelectElement) {
         if (!(this instanceof HTMLSelectElement) || this.selectedOptions.length === 0) return;
         sortField = this.selectedOptions[0].dataset.sortField;
         sortOrder = this.selectedOptions[0].dataset.sortOrder;
@@ -257,7 +255,7 @@ export async function openAttachmentManager(): Promise<void> {
     });
 
     // Bulk actions
-    function handleBulkAction(action: any) {
+    function handleBulkAction(action: { confirmMessage?: string; perform: (attachment: FileAttachment, source: string) => void }) {
         return async () => {
             const selectedAttachments = document.querySelectorAll('.attachmentListItemCheckboxContainer .attachmentListItemCheckbox:checked');
             if (selectedAttachments.length === 0) {
@@ -279,7 +277,7 @@ export async function openAttachmentManager(): Promise<void> {
 
                 const url = listItem.dataset.attachmentUrl;
                 const source = listItem.dataset.attachmentSource;
-                const attachment = attachments.find((a: any) => a.url === url);
+                const attachment = attachments.find((a: FileAttachment) => a.url === url);
                 if (!attachment) return;
 
                 await action.perform(attachment, source);
@@ -296,16 +294,16 @@ export async function openAttachmentManager(): Promise<void> {
     }
 
     template.querySelector('.bulkActionDisable')?.addEventListener('click', handleBulkAction({
-        perform: (attachment: any) => disableAttachment(attachment, () => { }),
+        perform: (attachment: FileAttachment) => disableAttachment(attachment, () => { }),
     }));
 
     template.querySelector('.bulkActionEnable')?.addEventListener('click', handleBulkAction({
-        perform: (attachment: any) => enableAttachment(attachment, () => { }),
+        perform: (attachment: FileAttachment) => enableAttachment(attachment, () => { }),
     }));
 
     template.querySelector('.bulkActionDelete')?.addEventListener('click', handleBulkAction({
         confirmMessage: 'Are you sure you want to delete the selected attachments?',
-        perform: async (attachment: any, source: string) => await deleteAttachment(attachment, source, () => { }, false),
+        perform: async (attachment: FileAttachment, source: string) => await deleteAttachment(attachment, source, () => { }, false),
     }));
 
     template.querySelector('.bulkActionSelectAll')?.addEventListener('click', () => {

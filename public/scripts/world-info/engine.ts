@@ -9,7 +9,7 @@ import { shouldWIAddPrompt, NOTE_MODULE_NAME, metadata_keys } from '../authors-n
 import { getTokenCountAsync } from '../tokenizers.js';
 import { power_user } from '../power-user.js';
 import { getTagKeyForEntity } from '../tags.js';
-import { GENERATION_TYPE_TRIGGERS, debounce_timeout } from '../constants.js';
+
 import { getRegexedString, regex_placement } from '../extensions/regex/engine.js';
 import { StructuredCloneMap } from '../util/StructuredCloneMap.js';
 
@@ -29,7 +29,7 @@ import {
 
 import { wiManager } from './manager.js';
 
-import type { WIActivated, WIGlobalScanData, WIPromptResult, WIScanEntry, WITimedEffect, TimedEffectType } from './types.js';
+import type { WIGlobalScanData, WIScanEntry, WITimedEffect } from './types.js';
 
 // ═══════════════════════════════════════════════════════════════
 //  Regex helpers
@@ -205,16 +205,16 @@ export class WorldInfoTimedEffects {
     #hash(e: WIScanEntry): number { return e.hash ?? 0; }
     #ekey(e: WIScanEntry): string { return `${e.world}.${e.uid}`; }
     #mkEffect(t: string, e: WIScanEntry, p: boolean): WITimedEffect {
-        return { hash: this.#hash(e), start: this.#chat.length, end: this.#chat.length + Number((e as any)[t]), protected: p };
+        return { hash: this.#hash(e), start: this.#chat.length, end: this.#chat.length + Number((e as Record<string, unknown>)[t]), protected: p };
     }
 
     #checkType(type: string, buf: WIScanEntry[], onEnded: (e: WIScanEntry) => void) {
-        const effects: [string, any][] = Object.entries(chat_metadata.timedWorldInfo[type] ?? {});
+        const effects = Object.entries(chat_metadata.timedWorldInfo[type] ?? {}) as [string, WITimedEffect][];
         for (const [key, val] of effects) {
             const entry = this.#entries.find(x => String(this.#hash(x)) === String(val.hash));
             if (this.#chat.length <= Number(val.start) && !val.protected) { delete chat_metadata.timedWorldInfo[type][key]; continue; }
             if (!entry) { if (this.#chat.length >= Number(val.end)) delete chat_metadata.timedWorldInfo[type][key]; continue; }
-            if (!(entry as any)[type]) { delete chat_metadata.timedWorldInfo[type][key]; continue; }
+            if (!(entry as Record<string, unknown>)[type]) { delete chat_metadata.timedWorldInfo[type][key]; continue; }
             if (this.#chat.length >= Number(val.end)) { delete chat_metadata.timedWorldInfo[type][key]; onEnded(entry); continue; }
             buf.push(entry);
         }
@@ -222,7 +222,7 @@ export class WorldInfoTimedEffects {
 
     #checkDelay(buf: WIScanEntry[]) {
         for (const e of this.#entries) {
-            if ((e as any).delay && this.#chat.length < Number((e as any).delay)) buf.push(e);
+            if ((e as Record<string, unknown>).delay && this.#chat.length < Number((e as Record<string, unknown>).delay)) buf.push(e);
         }
     }
 
@@ -243,7 +243,7 @@ export class WorldInfoTimedEffects {
         if (this.#isDryRun) return;
         for (const e of activated) {
             for (const t of ['sticky', 'cooldown'] as const) {
-                if (!(e as any)[t]) continue;
+                if (!e[t]) continue;
                 const k = this.#ekey(e);
                 if (!chat_metadata.timedWorldInfo[t][k])
                     chat_metadata.timedWorldInfo[t][k] = this.#mkEffect(t, e, false);
@@ -282,7 +282,7 @@ export function filterByInclusionGroups(
 ) {
     const grouped: Record<string, WIScanEntry[]> = {};
     for (const item of newEntries) {
-        const g = (item as any).group;
+        const g = (item as Record<string, unknown>).group;
         if (!g) continue;
         for (const gName of String(g).split(/,\s*/).filter(Boolean)) {
             if (!grouped[gName]) grouped[gName] = [];
@@ -325,16 +325,18 @@ export function filterByInclusionGroups(
     // Final selection per group
     for (const [gName, grp] of Object.entries(grouped)) {
         if (stickyMap.get(gName)) continue;
-        if (Array.from(allActivatedEntries.values()).some(x => (x as any).group === gName)) { removeAllBut(grp, null); continue; }
+        if (Array.from(allActivatedEntries.values()).some(x => (x as Record<string, unknown>).group === gName)) { removeAllBut(grp, null); continue; }
         if (grp.length <= 1) continue;
 
-        const prios = grp.filter(x => (x as any).groupOverride).sort((a, b) => (b as any).order - (a as any).order);
+        const prios = grp.filter(x => Boolean((x as Record<string, unknown>).groupOverride)).sort((a, b) => Number((b as Record<string, unknown>).order) - Number((a as Record<string, unknown>).order));
         if (prios.length) { removeAllBut(grp, prios[0]); continue; }
 
-        const totalW = grp.reduce((a, e) => a + ((e as any).groupWeight ?? DEFAULT_WEIGHT), 0);
-        let roll = Math.random() * totalW, acc = 0, winner: WIScanEntry | null = null;
+        const totalW = grp.reduce((a, e) => a + ((e as Record<string, unknown>).groupWeight ?? DEFAULT_WEIGHT), 0);
+        const roll = Math.random() * totalW;
+        let acc = 0;
+        let winner: WIScanEntry | null = null;
         for (const e of grp) {
-            acc += (e as any).groupWeight ?? DEFAULT_WEIGHT;
+            acc += (e as Record<string, unknown>).groupWeight ?? DEFAULT_WEIGHT;
             if (roll <= acc) { winner = e; break; }
         }
         if (winner) removeAllBut(grp, winner);
@@ -458,8 +460,7 @@ async function getCharacterLore() {
 
     // TODO: Maybe make the utility function not use the window context?
     const fileName = getCharaFilename(this_chid);
-    // @ts-expect-error TS(2339) FIXME: Property 'charLore' does not exist on type '{}'.
-    const extraCharLore = wiManager.info.charLore?.find((e) => e.name === fileName);
+    const extraCharLore = (wiManager.info.charLore as Array<{ name: string; extraBooks: string[] }> | undefined)?.find((e) => e.name === fileName);
     if (extraCharLore) {
         worldsToSearch = new Set([...worldsToSearch, ...extraCharLore.extraBooks]);
     }

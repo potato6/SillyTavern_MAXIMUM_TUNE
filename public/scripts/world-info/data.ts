@@ -12,13 +12,8 @@ import {
     event_types,
     extension_prompt_roles,
     characters,
-    this_chid,
-    chat_metadata,
-    getCurrentChatId,
-    saveMetadata,
     menu_type,
     saveCharacterDebounced,
-    select_selected_character,
 } from '../../script.js';
 import {
     escapeHtml,
@@ -40,7 +35,7 @@ import {
     DEFAULT_DEPTH,
     DEFAULT_WEIGHT,
 } from './constants.js';
-import { worldInfoCache, loadWorldInfo } from './engine.js';
+import { worldInfoCache } from './engine.js';
 import { deleteWIOriginalDataValue } from './editor.js';
 
 import { power_user } from '../power-user.js';

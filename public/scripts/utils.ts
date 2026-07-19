@@ -1,5 +1,3 @@
-declare const TomSelect: any;
-
 import {
     moment,
     DOMPurify,
@@ -120,6 +118,7 @@ export const paginationDropdownChangeHandler = function (event, size) {
  * @param {object} options Pagination options
  * @returns {{ getCurrentPage: () => number, go: (page: number) => void }}
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function createPaginator(container: any, options: any) {
     let currentPage = options.pageNumber || 1;
     let pageSize = options.pageSize;
@@ -174,7 +173,7 @@ export function createPaginator(container: any, options: any) {
         if (options.showSizeChanger && options.sizeChangerOptions) {
             const sizeSelect = document.createElement('select');
             sizeSelect.className = 'J-paginationjs-size-select';
-            let optionsList = [...options.sizeChangerOptions];
+            const optionsList = [...options.sizeChangerOptions];
             if (!optionsList.includes(pageSize)) optionsList.unshift(pageSize);
             optionsList.sort((a, b) => a - b);
             for (const opt of optionsList) {
@@ -201,6 +200,7 @@ export function createPaginator(container: any, options: any) {
 
     return {
         getCurrentPage: () => currentPage,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         go: function (page: any) { currentPage = Math.max(1, Math.min(Number(page), Math.ceil(getData().length / pageSize) || 1)); render(); },
     };
 }

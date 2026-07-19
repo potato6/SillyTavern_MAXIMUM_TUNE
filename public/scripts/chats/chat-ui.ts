@@ -11,7 +11,6 @@ import {
     chatElement,
     chat_metadata,
     reloadCurrentChat,
-    saveChatConditional,
     printMessages,
     clearChat,
     system_message_types,
@@ -114,9 +113,9 @@ export function initChatUtilities(): void {
         };
         const chatToSave = [
             chatHeader,
-            ...chat.filter((x: any) => x?.extra?.type !== system_message_types.ASSISTANT_NOTE),
+            ...chat.filter((x) => x?.extra?.type !== system_message_types.ASSISTANT_NOTE),
         ];
-        download(chatToSave.map((m: any) => JSON.stringify(m)).join('\n'), `Assistant - ${humanizedDateTime()}.jsonl`, 'application/json');
+        download(chatToSave.map((m) => JSON.stringify(m)).join('\n'), `Assistant - ${humanizedDateTime()}.jsonl`, 'application/json');
     });
 
     delegateClick('.assistant_note_import', () => {

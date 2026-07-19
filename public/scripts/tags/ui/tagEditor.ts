@@ -3,27 +3,51 @@
  * Handles creating, deleting, renaming, colorizing, and folder-typing of tags.
  */
 
-declare const TomSelect: any;
-declare const Sortable: any;
+interface TomSelectOptions {
+    maxItems?: number;
+    placeholder?: string;
+    allowEmptyOption?: boolean;
+}
 
-import { tags as _rawTags, tag_map, createNewTag, getTag, getTagById, markDirty, getTagFromEvent, getFolderType } from '../store/tagStore.js';
-import { TAG_FOLDER_TYPES, TAG_FOLDER_DEFAULT_TYPE } from '../types.js';
+declare const TomSelect: new (el: Element | null, opts: TomSelectOptions) => void;
+
+interface SortableOptions {
+    delay?: number;
+    onEnd?: () => void;
+    handle?: string;
+}
+
+declare const Sortable: new (el: Element, opts: SortableOptions) => void;
+
+import { tags as _rawTags, tag_map, createNewTag, getTagById, markDirty, getTagFromEvent, getFolderType } from '../store/tagStore.js';
+import { TAG_FOLDER_TYPES } from '../types.js';
 import { tag_sort_mode } from '../types.js';
-import { printTagList, appendTagToList } from './tagList.js';
-import { isBogusFolder } from '../folders/bogusFolders.js';
+import { appendTagToList } from './tagList.js';
+
 import { power_user } from '../../power-user.js';
 import { renderTemplateAsync } from '../../templates.js';
-import { POPUP_RESULT, POPUP_TYPE, Popup, callGenericPopup } from '../../popup.js';
+import { POPUP_RESULT, POPUP_TYPE, callGenericPopup } from '../../popup.js';
 import { isMobile } from '../../RossAscends-mods.js';
-import { getSortableDelay, flashHighlight, debounce, getFreeName, removeFromArray, escapeHtml } from '../../utils.js';
-import { t, translate } from '../../i18n.js';
+import { getSortableDelay, flashHighlight, debounce, getFreeName } from '../../utils.js';
+import { t } from '../../i18n.js';
 import { debounce_timeout } from '../../constants.js';
 import { applyCharacterTagsToMessageDivs } from '../messageTags.js';
 import { sortTags } from '../utils/sorting.js';
 
 // tags is exported as `let tags = []` (never[]) from the store.
 // Cast once so all downstream usage is untyped.
-const tags: any[] = _rawTags as any[];
+interface Tag {
+    id: string;
+    name: string;
+    color?: string;
+    color2?: string;
+    sort_order?: number;
+    is_hidden_on_character_card?: boolean;
+    folder_type?: string;
+    [key: string]: unknown;
+}
+
+const tags: Tag[] = _rawTags as Tag[];
 
 // ──────────────────────────────────────────────
 // Constants
@@ -41,7 +65,7 @@ const VIEW_TAG_TEMPLATE = document.querySelector('#tag_view_template .tag_view_i
  * @param {object} tag - The tag object
  * @param {number} count - How many characters/groups use this tag
  */
-function appendViewTagToList(list: Element | null, tag: any, count: number): void {
+function appendViewTagToList(list: Element | null, tag: Tag, count: number): void {
     if (!VIEW_TAG_TEMPLATE || !list) return;
     const template = VIEW_TAG_TEMPLATE.cloneNode(true) as HTMLElement;
     template.setAttribute('id', tag.id);
@@ -99,11 +123,11 @@ function appendViewTagToList(list: Element | null, tag: any, count: number): voi
     const tagAsFolderEl = template.querySelector('.tag_as_folder');
     tagAsFolderEl?.setAttribute('id', tagAsFolderId);
 
-    primaryColorPicker.addEventListener('change', (evt: any) => onTagColorize(evt, (tag: any, color: string) => tag.color = color, 'background-color'));
-    secondaryColorPicker.addEventListener('change', (evt: any) => onTagColorize(evt, (tag: any, color: string) => tag.color2 = color, 'color'));
+    primaryColorPicker.addEventListener('change', (evt: Event) => onTagColorize(evt as CustomEvent, (tag: Tag, color: string) => tag.color = color, 'background-color'));
+    secondaryColorPicker.addEventListener('change', (evt: Event) => onTagColorize(evt as CustomEvent, (tag: Tag, color: string) => tag.color2 = color, 'color'));
     template.querySelector('.tag_view_color_picker .link_icon')?.addEventListener('click', (evt: Event) => {
         const target = evt.target as HTMLElement;
-        const colorPickerEl = target.closest('.tag_view_color_picker')?.querySelector('toolcool-color-picker') as any;
+        const colorPickerEl = target.closest('.tag_view_color_picker')?.querySelector('toolcool-color-picker') as (HTMLElement & { color: string }) | null;
         const defaultColor = colorPickerEl?.getAttribute('data-default-color');
         if (colorPickerEl) colorPickerEl.color = defaultColor;
     });
@@ -145,15 +169,15 @@ function appendViewTagToList(list: Element | null, tag: any, count: number): voi
 /**
  * Prints the full tag list in the tag management popup.
  * @param {Element | null} tagContainer - Container element to print into
- * @param {boolean} [empty=true] - Whether to clear the container before printing
+ * @param {boolean} empty - Whether to clear the container before printing
  */
 function printViewTagList(tagContainer: Element | null, empty = true): void {
     if (!tagContainer) return;
     if (empty) tagContainer.innerHTML = '';
 
     const everything = Object.values(tag_map).flat();
-    const counts = new Map(tags.map((tag: any) => [tag.id, everything.filter((x: any) => x === tag.id).length]));
-    const sortedTags = sortTags(tags, counts as any);
+    const counts = new Map(tags.map((tag: Tag) => [tag.id, everything.filter((x: string) => x === tag.id).length]));
+    const sortedTags = sortTags(tags, counts);
     for (const tag of sortedTags) {
         const count = counts.get(tag.id) || 0;
         appendViewTagToList(tagContainer, tag, count);
@@ -204,7 +228,7 @@ export function makeTagListDraggable(tagContainer: Element): void {
     const onTagsSort = () => {
         tagContainer?.querySelectorAll('.tag_view_item').forEach(function (tagElement: Element, i: number) {
             const id = tagElement.getAttribute('id');
-            const tag = getTagById(id) as any;
+            const tag = getTagById(id) as Tag;
             if (tag) tag.sort_order = i;
         });
 
@@ -222,8 +246,8 @@ export function makeTagListDraggable(tagContainer: Element): void {
         markDirty();
     };
 
-    const tagContainerEl = tagContainer as any;
-    tagContainerEl.sortableInstance = new Sortable(tagContainerEl, {
+    const tagContainerEl = tagContainer as Element & { sortableInstance?: unknown };
+    new Sortable(tagContainerEl, {
         delay: getSortableDelay(),
         onEnd: () => onTagsSort(),
         handle: '.drag-handle',
@@ -239,14 +263,14 @@ export async function onTagDeleteClick(this: HTMLElement): Promise<void> {
     const tagResult = getTagFromEvent(this);
     const tag = tagResult?.tag;
     const id = tagResult?.id;
-    const otherTags = sortTags(tags.filter((x: any) => x.id !== id).map((x: any) => ({ id: x.id, name: x.name })));
+    const otherTags = sortTags(tags.filter((x: Tag) => x.id !== id).map((x: Tag) => ({ id: x.id, name: x.name })));
 
     const popupContent = document.createElement('div');
     popupContent.innerHTML = await renderTemplateAsync('deleteTag', { otherTags });
 
     const tagToDeleteEl = popupContent.querySelector('#tag_to_delete');
     if (tagToDeleteEl) {
-        appendTagToList(tagToDeleteEl as any, tag);
+        appendTagToList(tagToDeleteEl, tag);
     }
 
     // Make the select control more fancy on non-mobile
@@ -279,12 +303,12 @@ export async function onTagDeleteClick(this: HTMLElement): Promise<void> {
         }
     }
 
-    const index = tags.indexOf(getTagById(id) as any);
+    const index = tags.indexOf(getTagById(id) as Tag);
     tags.splice(index, 1);
     document.querySelectorAll(`.tag[id="${id}"]`).forEach(el => el.remove());
     document.querySelectorAll(`.tag_view_item[id="${id}"]`).forEach(el => el.remove());
 
-    notyf.success(`'${tag?.name}' deleted${mergeTagId ? ` and merged into '${(getTagById(mergeTagId) as any)?.name}'` : ''}`, 'Delete Tag');
+    notyf.success(`'${tag?.name}' deleted${mergeTagId ? ` and merged into '${(getTagById(mergeTagId) as Tag)?.name}'` : ''}`, 'Delete Tag');
 
     markDirty();
 
@@ -296,7 +320,7 @@ export async function onTagDeleteClick(this: HTMLElement): Promise<void> {
  * Scrolls to and highlights the newly created tag in the management popup.
  */
 export function onTagCreateClick(): void {
-    const tagName = getFreeName('New Tag', tags.map((x: any) => x.name));
+    const tagName = getFreeName('New Tag', tags.map((x: Tag) => x.name));
     const tag = createNewTag(tagName);
     printViewTagList(document.querySelector('#tag_view_list .tag_view_list_tags'));
 
@@ -317,7 +341,6 @@ export function onTagCreateClick(): void {
 export function onTagAsFolderClick(this: HTMLElement): void {
     const result = getTagFromEvent(this);
     const tag = result?.tag;
-    const id = result?.id;
     const element = this.closest('.tag_view_item');
 
     // Cycle through folder types
@@ -337,7 +360,7 @@ export function onTagAsFolderClick(this: HTMLElement): void {
  * @param {Element | null} element - The tag view item element
  * @param {object} tag - The tag object with folder_type
  */
-export function updateDrawTagFolder(element: Element | null, tag: any): void {
+export function updateDrawTagFolder(element: Element | null, tag: Tag): void {
     const tagFolder = getFolderType(tag);
     const folderElement = element?.querySelector('.tag_as_folder');
 
@@ -377,21 +400,22 @@ export function onTagRenameInput(this: HTMLElement): void {
 /**
  * Handles color picker changes for a tag's primary or secondary color.
  * Updates the tag's color property and the preview in the management popup.
- * @param {any} evt - The custom colorize event object (from toolcool-color-picker)
- * @param {(tag: any, color: string) => void} setColor - A function that sets the color on the tag object
+ * @param {Event} evt - The custom colorize event object (from toolcool-color-picker)
+ * @param {(tag: Tag, color: string) => void} setColor - A function that sets the color on the tag object
  * @param {string} cssProperty - The CSS property to apply the color to ('background-color' or 'color')
  */
-export function onTagColorize(evt: any, setColor: (tag: any, color: string) => void, cssProperty: string): void {
-    const isDefaultColor = evt.target.dataset?.defaultColor === evt.detail.rgba;
-    const colorPickerEl = evt.target.closest('.tag_view_color_picker');
+export function onTagColorize(evt: Event, setColor: (tag: Tag, color: string) => void, cssProperty: string): void {
+    const target = evt.target as HTMLElement;
+    const detail = (evt as CustomEvent).detail as Record<string, string>;
+    const isDefaultColor = target.dataset?.defaultColor === detail.rgba;
+    const colorPickerEl = target.closest('.tag_view_color_picker');
     const linkIcon = colorPickerEl?.querySelector('.link_icon') as HTMLElement | null;
     if (linkIcon) linkIcon.style.display = isDefaultColor ? 'none' : '';
 
-    const tagViewItem = evt.target.closest('.tag_view_item');
-    const result = getTagFromEvent(evt.target);
+    const tagViewItem = target.closest('.tag_view_item');
+    const result = getTagFromEvent(target);
     const tag = result?.tag;
-    const id = result?.id;
-    let newColor = evt.detail.rgba;
+    let newColor = detail.rgba;
     if (isDefaultColor) newColor = '';
 
     const tagViewName = tagViewItem?.querySelector('.tag_view_name') as HTMLElement | null;

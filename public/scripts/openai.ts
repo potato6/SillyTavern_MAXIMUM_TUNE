@@ -64,7 +64,6 @@ import {
     parseJsonFile,
     resetScrollHeight,
     stringFormat,
-    textValueMatcher,
     uuidv4,
 } from './utils.js';
 import { countTokensOpenAIAsync, getTokenizerModel } from './tokenizers.js';
@@ -82,7 +81,9 @@ import { accountStorage } from './util/AccountStorage.js';
 import { COMETAPI_IGNORE_PATTERNS, IGNORE_SYMBOL, MEDIA_DISPLAY, MEDIA_TYPE } from './constants.js';
 import { syncNanoGptProvidersForModel, syncOpenRouterProvidersForModel, updateNanoGptProvidersWarning, updateOpenRouterProvidersWarning } from './textgen-models.js';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare const TomSelect: any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare const Sortable: any;
 
 export {
@@ -1913,32 +1914,6 @@ export function getChatCompletionModel(settings = null) {
 
 /**
  *
- * @param option
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'option' implicitly has an 'any' type.
-function getOpenRouterModelTemplate(option) {
-    const model = model_list.find(x => x.id === option?.element?.value);
-
-    if (!option.id || !model) {
-        return option.text;
-    }
-
-    const tokens_dollar = Number(1 / (1000 * model.pricing?.prompt));
-    const tokens_rounded = (Math.round(tokens_dollar * 1000) / 1000).toFixed(0);
-
-    const price = 0 === Number(model.pricing?.prompt) ? 'Free' : `${tokens_rounded}k t/$ `;
-
-    const _div = document.createElement('div');
-    _div.innerHTML = `
-        <div class="flex-container flexFlowColumn" title="${DOMPurify.sanitize((model as Record<string, unknown>).id as string)}">
-            <div><strong>${DOMPurify.sanitize((model as Record<string, unknown>).name as string)}</strong> | ${String((model as Record<string, unknown>).context_length ?? '')} ctx | <small>${price}</small></div>
-        </div>
-    `;
-    return _div.firstElementChild ?? _div;
-}
-
-/**
- *
  */
 function calculateOpenRouterCost() {
     if (oai_settings.chat_completion_source !== chat_completion_sources.OPENROUTER) {
@@ -1970,54 +1945,6 @@ function calculateOpenRouterCost() {
 
 /**
  *
- * @param option
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'option' implicitly has an 'any' type.
-function getElectronHubModelTemplate(option) {
-    const model = model_list.find(x => x.id === option?.element?.value);
-
-    if (!option.id || !model) {
-        return option.text;
-    }
-
-    const inputPrice = model.pricing?.input;
-    const outputPrice = model.pricing?.output;
-    const price = inputPrice && outputPrice ? `$${inputPrice}/$${outputPrice} in/out Mtoken` : 'Unknown';
-
-    const visionIcon = model.metadata?.vision ? '<i class="fa-solid fa-eye fa-sm" title="This model supports vision"></i>' : '';
-    const reasoningIcon = model.metadata?.reasoning ? '<i class="fa-solid fa-brain fa-sm" title="This model supports reasoning"></i>' : '';
-    const toolCallsIcon = model.metadata?.function_call ? '<i class="fa-solid fa-wrench fa-sm" title="This model supports function tools"></i>' : '';
-    const premiumIcon = model?.premium_model ? '<i class="fa-solid fa-crown fa-sm" title="This model requires a subscription"></i>' : '';
-
-    const iconsContainer = document.createElement('span');
-    iconsContainer.insertAdjacentHTML('beforeend', visionIcon);
-    iconsContainer.insertAdjacentHTML('beforeend', reasoningIcon);
-    iconsContainer.insertAdjacentHTML('beforeend', toolCallsIcon);
-    iconsContainer.insertAdjacentHTML('beforeend', premiumIcon);
-
-    const capabilities = (iconsContainer.children.length) ? ` | ${iconsContainer.innerHTML}` : '';
-
-    const _div = document.createElement('div');
-    _div.innerHTML = `
-        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
-        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
-        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
-        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
-        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
-        <div class="flex-container alignItemsBaseline" title="${DOMPurify.sanitize(model.id)}">
-            // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
-            // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
-            // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
-            // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
-            // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
-            <strong>${DOMPurify.sanitize(model.name)}</strong> | ${model.tokens} ctx | <small>${price}</small>${capabilities}
-        </div>
-    `;
-    return _div.firstElementChild ?? _div;
-}
-
-/**
- *
  */
 function calculateElectronHubCost() {
     if (oai_settings.chat_completion_source !== chat_completion_sources.ELECTRONHUB) {
@@ -2040,62 +1967,6 @@ function calculateElectronHubCost() {
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     document.getElementById('electronhub_max_prompt_cost').textContent = cost;
-}
-
-/**
- *
- * @param option
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'option' implicitly has an 'any' type.
-function getChutesModelTemplate(option) {
-    const model = model_list.find(x => x.id === option?.element?.value);
-
-    if (!option.id || !model) {
-        return option.text;
-    }
-
-    const inputPrice = model.pricing?.input;
-    const outputPrice = model.pricing?.output;
-
-    let price = 'Unknown';
-    if (inputPrice !== undefined && outputPrice !== undefined) {
-        // Check if both prices are 0 (free model)
-        if (inputPrice === 0 && outputPrice === 0) {
-            price = 'Free';
-        } else {
-            price = `$${inputPrice}/$${outputPrice} in/out Mtoken`;
-        }
-    }
-
-    const contextLength = model.context_length || model.max_model_len || 'Unknown';
-    const visionIcon = model.input_modalities?.includes('image') ? '<i class="fa-solid fa-eye fa-sm" title="This model supports vision"></i>' : '';
-    const reasoningIcon = model.supported_features?.includes('reasoning') ? '<i class="fa-solid fa-brain fa-sm" title="This model supports reasoning"></i>' : '';
-    const toolCallsIcon = model.supported_features?.includes('structured_outputs') ? '<i class="fa-solid fa-wrench fa-sm" title="This model supports function tools"></i>' : '';
-
-    const iconsContainer = document.createElement('span');
-    iconsContainer.insertAdjacentHTML('beforeend', visionIcon);
-    iconsContainer.insertAdjacentHTML('beforeend', reasoningIcon);
-    iconsContainer.insertAdjacentHTML('beforeend', toolCallsIcon);
-
-    const capabilities = (iconsContainer.children.length) ? ` | ${iconsContainer.innerHTML}` : '';
-
-    const _div = document.createElement('div');
-    _div.innerHTML = `
-        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
-        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
-        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
-        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
-        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
-        <div class="flex-container alignItemsBaseline" title="${DOMPurify.sanitize(model.id)}">
-            // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
-            // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
-            // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
-            // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
-            // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
-            <strong>${DOMPurify.sanitize(model.id)}</strong> | ${contextLength} ctx | <small>${price}</small>${capabilities}
-        </div>
-    `;
-    return _div.firstElementChild ?? _div;
 }
 
 /**
@@ -2127,111 +1998,6 @@ function calculateChutesCost() {
 
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     document.getElementById('chutes_max_prompt_cost').textContent = cost;
-}
-
-/**
- *
- * @param option
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'option' implicitly has an 'any' type.
-function getNanoGptModelTemplate(option) {
-    const model = model_list.find(x => x.id === option?.element?.value);
-
-    if (!option.id || !model) {
-        return option.text;
-    }
-
-    const inputPrice = model.pricing?.prompt;
-    const outputPrice = model.pricing?.completion;
-    let price = 'Unknown';
-
-    if (inputPrice !== undefined && outputPrice !== undefined) {
-        if (inputPrice === 0 && outputPrice === 0) {
-            price = 'Free';
-        } else {
-            price = `$${Math.round(inputPrice * 100) / 100}/$${Math.round(outputPrice * 100) / 100} in/out Mtoken`;
-        }
-    }
-
-    const visionIcon = model.capabilities?.vision ? '<i class="fa-solid fa-eye fa-sm" title="This model supports vision"></i>' : '';
-    const reasoningIcon = model.capabilities?.reasoning ? '<i class="fa-solid fa-brain fa-sm" title="This model supports reasoning"></i>' : '';
-    const toolCallsIcon = model.capabilities?.tool_calling ? '<i class="fa-solid fa-wrench fa-sm" title="This model supports tool calling"></i>' : '';
-
-    let subHtml = '';
-    const sub = model.subscription;
-
-    if (sub) {
-        if (sub.included) {
-            let titleText = 'Included in subscription';
-            let multiplierText = '';
-
-            if (sub.inputTokenMultiplier && sub.inputTokenMultiplier !== 1) {
-                multiplierText = ` (${sub.inputTokenMultiplier}x)`;
-                titleText += ` - Input Multiplier: ${sub.inputTokenMultiplier}x`;
-            }
-            subHtml = ` <small title="${titleText}"><i class="fa-solid fa-crown fa-sm"></i> Sub${multiplierText}</small>`;
-        } else if (sub.note) {
-            const safeNote = DOMPurify.sanitize(sub.note);
-            subHtml = ` <small title="${safeNote}"><i class="fa-solid fa-circle-info fa-sm"></i> Not in Sub</small>`;
-        }
-    }
-
-    const iconsContainer = document.createElement('span');
-    iconsContainer.insertAdjacentHTML('beforeend', visionIcon);
-    iconsContainer.insertAdjacentHTML('beforeend', reasoningIcon);
-    iconsContainer.insertAdjacentHTML('beforeend', toolCallsIcon);
-    iconsContainer.insertAdjacentHTML('beforeend', subHtml);
-
-    const capabilities = (iconsContainer.children.length) ? ` | ${iconsContainer.innerHTML}` : '';
-
-    const contextLength = model.context_length || 'Unknown';
-    const modelName = model.name || model.id;
-
-    const _div = document.createElement('div');
-    _div.innerHTML = `
-        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
-        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
-        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
-        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
-        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
-        <div class="flex-container alignItemsBaseline" title="${DOMPurify.sanitize(model.id)}">
-            <strong>${DOMPurify.sanitize(modelName)}</strong> | ${contextLength} ctx | <small>${price}</small>${capabilities}
-        </div>
-    `;
-    return _div.firstElementChild ?? _div;
-}
-
-/**
- *
- * @param option
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'option' implicitly has an 'any' type.
-function getAimlapiModelTemplate(option) {
-    const model = model_list.find(x => x.id === option?.element?.value);
-
-    if (!option.id || !model) {
-        return option.text;
-    }
-
-    const vendor = model.id.split('/')[0];
-
-    const _div = document.createElement('div');
-    _div.innerHTML = `
-        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
-        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
-        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
-        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
-        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
-        <div class="flex-container flexFlowColumn" title="${DOMPurify.sanitize(model.id)}">
-            // @ts-expect-error TS(2339) FIXME: Property 'info' does not exist on type 'never'.
-            // @ts-expect-error TS(2339) FIXME: Property 'info' does not exist on type 'never'.
-            // @ts-expect-error TS(2339) FIXME: Property 'info' does not exist on type 'never'.
-            // @ts-expect-error TS(2339) FIXME: Property 'info' does not exist on type 'never'.
-            // @ts-expect-error TS(2339) FIXME: Property 'info' does not exist on type 'never'.
-            <div><strong>${DOMPurify.sanitize(model.info?.name || model.name || model.id)}</strong> | ${vendor}</div>
-        </div>
-    `;
-    return _div.firstElementChild ?? _div;
 }
 
 /**
@@ -5161,6 +4927,7 @@ function onLogitBiasPresetChange() {
     }
 
     // Check if a sortable instance exists
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const listAny = list as any;
     if (listAny?.sortableInstance) {
         // Destroy the instance
@@ -5544,7 +5311,6 @@ async function onDeletePresetClick() {
     if (Object.keys(openai_setting_names).length) {
         // @ts-expect-error TS(2322) FIXME: Type 'string | undefined' is not assignable to typ... Remove this comment to see the full error message
         oai_settings.preset_settings_openai = Object.keys(openai_setting_names)[0];
-        const newValue = openai_setting_names[oai_settings.preset_settings_openai];
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         document.querySelector('#settings_preset_openai option[value="${newValue}"]')?.selected(true);
         document.getElementById('settings_preset_openai')?.dispatchEvent(new Event('change'));

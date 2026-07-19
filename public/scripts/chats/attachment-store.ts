@@ -11,14 +11,10 @@ import {
     getStringHash,
     humanFileSize,
     saveBase64AsFile,
-    download,
-    getFileText,
     getFileExtension,
     convertTextToBase64,
-    isSameFile,
 } from '../utils.js';
 import {
-    getRequestHeaders,
     chat,
     chat_metadata,
     name2,
@@ -26,17 +22,15 @@ import {
     reloadCurrentChat,
     characters,
     this_chid,
-    eventSource,
     event_types,
     getCurrentChatId,
 } from '../../script.js';
-import { extension_settings, saveMetadataDebounced, renderExtensionTemplateAsync } from '../extensions.js';
+import { extension_settings, saveMetadataDebounced } from '../extensions.js';
 import { POPUP_RESULT, POPUP_TYPE, callGenericPopup } from '../popup.js';
-import { t } from '../i18n.js';
 import { MEDIA_SOURCE, MEDIA_TYPE } from '../constants.js';
 import { ScraperManager } from '../scrapers.js';
 import { isConvertible, getConverter } from './converter.js';
-import { ATTACHMENT_SOURCE } from './types.js';
+import { ATTACHMENT_SOURCE, FileAttachment } from './types.js';
 import { selected_group } from '../group-chats.js';
 import { serverDelete, apiPost, confirmDialog } from './shared.js';
 
@@ -91,7 +85,6 @@ export async function validateFile(file: File): Promise<boolean> {
         return false;
     }
 
-    const fileText = file.name;
     const isMedia = MEDIA_TYPE.getFromMime(file.type);
     const isBinary = file.type === 'application/octet-stream';
 
@@ -120,7 +113,7 @@ export function hasPendingFileAttachment(): boolean {
  * @param message Message object
  * @param inputId Input element ID
  */
-export async function populateFileAttachment(message: any, inputId: string = 'file_form_input'): Promise<void> {
+export async function populateFileAttachment(message: ChatMessage, inputId: string = 'file_form_input'): Promise<void> {
     try {
         if (!message) return;
         if (!message.extra || typeof message.extra !== 'object') message.extra = {};
@@ -199,7 +192,6 @@ export async function onFileAttach(files: FileList | File[]): Promise<void> {
 
         const name = file.name;
         const size = file.size;
-        const title = file.name;
 
         // Display attachment indicator
         const fileNameEl = document.getElementById('file_name');
@@ -323,7 +315,7 @@ export async function embedMessageFile(messageId: number, messageBlock: Element 
  * @param messageText Message text
  * @returns Appended message text
  */
-export async function appendFileContent(message: any, messageText: string): Promise<string> {
+export async function appendFileContent(message: ChatMessage, messageText: string): Promise<string> {
     if (!message || !message.extra || typeof message.extra !== 'object') {
         return messageText;
     }
@@ -412,7 +404,7 @@ export async function uploadFileAttachmentToServer(file: File, target: string): 
  * Opens a file attachment in a modal.
  * @param attachment File attachment
  */
-export async function openFilePopup(attachment: any): Promise<void> {
+export async function openFilePopup(attachment: FileAttachment): Promise<void> {
     const fileText = attachment.text || (await getFileAttachment(attachment.url));
 
     const modalTemplate = document.createElement('div');
@@ -431,7 +423,7 @@ export async function openFilePopup(attachment: any): Promise<void> {
  * @param source Attachment source
  * @param callback Render callback
  */
-export async function editAttachment(attachment: any, source: string, callback: () => void): Promise<void> {
+export async function editAttachment(attachment: FileAttachment, source: string, callback: () => void): Promise<void> {
     const originalFileText = attachment.text || (await getFileAttachment(attachment.url));
     const templateHTML = `
         <div class="flex-container flexFlowColumn">
@@ -478,7 +470,7 @@ export async function editAttachment(attachment: any, source: string, callback: 
  * Downloads an attachment to the user's machine.
  * @param attachment File attachment
  */
-export async function downloadAttachment(attachment: any): Promise<void> {
+export async function downloadAttachment(attachment: FileAttachment): Promise<void> {
     const fileText = attachment.text || (await getFileAttachment(attachment.url));
     const blob = new Blob([fileText], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
@@ -494,7 +486,7 @@ export async function downloadAttachment(attachment: any): Promise<void> {
  * @param attachment File attachment
  * @param callback Render callback
  */
-export function enableAttachment(attachment: any, callback: () => void): void {
+export function enableAttachment(attachment: FileAttachment, callback: () => void): void {
     const disabled = getDisabledAttachments();
     const index = disabled.indexOf(attachment.url);
     if (index !== -1) {
@@ -509,7 +501,7 @@ export function enableAttachment(attachment: any, callback: () => void): void {
  * @param attachment File attachment
  * @param callback Render callback
  */
-export function disableAttachment(attachment: any, callback: () => void): void {
+export function disableAttachment(attachment: FileAttachment, callback: () => void): void {
     const disabled = getDisabledAttachments();
     if (!disabled.includes(attachment.url)) {
         disabled.push(attachment.url);
@@ -523,7 +515,7 @@ export function disableAttachment(attachment: any, callback: () => void): void {
  * @param attachment File attachment
  * @returns Whether the attachment is disabled
  */
-export function isAttachmentDisabled(attachment: any): boolean {
+export function isAttachmentDisabled(attachment: FileAttachment): boolean {
     const disabled = getDisabledAttachments();
     return disabled.includes(attachment.url);
 }
@@ -541,7 +533,7 @@ function getDisabledAttachments(): string[] {
  * @param source Current source
  * @param callback Render callback
  */
-export async function moveAttachment(attachment: any, source: string, callback: () => void): Promise<void> {
+export async function moveAttachment(attachment: FileAttachment, source: string, callback: () => void): Promise<void> {
     const targets = getAvailableTargets().filter(t => t !== source);
 
     const templateHTML = `<div>
@@ -568,7 +560,7 @@ export async function moveAttachment(attachment: any, source: string, callback: 
 
     // Add to new target
     ensureAttachmentsExist();
-    const targetAttachments = getDataBankAttachmentsForSource(selectedTarget, true);
+    getDataBankAttachmentsForSource(selectedTarget, true);
 
     // Re-upload to ensure the file is accessible from the new source
     const content = attachment.text || (await getFileAttachment(attachment.url));
@@ -587,7 +579,7 @@ export async function moveAttachment(attachment: any, source: string, callback: 
  * @param callback Render callback
  * @param confirm Whether to show confirmation dialog
  */
-export async function deleteAttachment(attachment: any, source: string, callback: () => void, confirm: boolean = true): Promise<void> {
+export async function deleteAttachment(attachment: FileAttachment, source: string, callback: () => void, confirm: boolean = true): Promise<void> {
     if (confirm) {
         const result = await callGenericPopup('Are you sure you want to delete this attachment?', POPUP_TYPE.CONFIRM);
         if (result !== POPUP_RESULT.AFFIRMATIVE) return;
@@ -596,7 +588,7 @@ export async function deleteAttachment(attachment: any, source: string, callback
     ensureAttachmentsExist();
 
     const sourceArray = getDataBankAttachmentsForSource(source, true);
-    const index = sourceArray.findIndex((a: any) => a.url === attachment.url);
+    const index = sourceArray.findIndex((a: FileAttachment) => a.url === attachment.url);
     if (index !== -1) {
         sourceArray.splice(index, 1);
     }
@@ -630,7 +622,7 @@ export function ensureAttachmentsExist(): void {
  * @param includeDisabled Whether to include disabled attachments
  * @returns Array of attachments
  */
-export function getDataBankAttachments(includeDisabled: boolean = false): any[] {
+export function getDataBankAttachments(includeDisabled: boolean = false): FileAttachment[] {
     ensureAttachmentsExist();
     const globalAttachments = extension_settings.attachments ?? [];
     const chatAttachments = chat_metadata.attachments ?? [];
@@ -646,10 +638,10 @@ export function getDataBankAttachments(includeDisabled: boolean = false): any[] 
  * @param includeDisabled Whether to include disabled attachments
  * @returns Array of attachments
  */
-export function getDataBankAttachmentsForSource(source: string, includeDisabled: boolean = true): any[] {
+export function getDataBankAttachmentsForSource(source: string, includeDisabled: boolean = true): FileAttachment[] {
     ensureAttachmentsExist();
 
-    let attachments: any[];
+    let attachments: FileAttachment[];
     switch (source) {
         case ATTACHMENT_SOURCE.GLOBAL:
             attachments = extension_settings.attachments ?? [];
@@ -671,7 +663,7 @@ export function getDataBankAttachmentsForSource(source: string, includeDisabled:
             attachments = [];
     }
 
-    return includeDisabled ? attachments : attachments.filter((x: any) => !isAttachmentDisabled(x));
+    return includeDisabled ? attachments : attachments.filter((x: FileAttachment) => !isAttachmentDisabled(x));
 }
 
 /**
@@ -690,7 +682,7 @@ export async function verifyAttachments(): Promise<void> {
  */
 export async function verifyAttachmentsForSource(source: string): Promise<void> {
     const attachments = getDataBankAttachmentsForSource(source);
-    const urls = attachments.map((a: any) => a.url).filter(Boolean);
+    const urls = attachments.map((a: FileAttachment) => a.url).filter(Boolean);
 
     if (urls.length === 0) return;
 
