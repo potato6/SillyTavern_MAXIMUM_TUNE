@@ -48,10 +48,10 @@ export function parseRegexFromString(input: string): RegExp | null {
     const match = input.match(/^\/([\w\W]+?)\/([gimsuy]*)$/);
     if (!match) return null;
     const [, rawPattern, flags] = match;
-    let pattern = rawPattern;
+    let pattern = rawPattern!;
     if (pattern.match(/(^|[^\\])\//)) return null;
     pattern = pattern.replace('\\/', '/');
-    try { return new RegExp(pattern, flags); }
+    try { return new RegExp(pattern, flags!); }
     catch { return null; }
 }
 
@@ -78,7 +78,8 @@ export class WorldInfoBuffer {
         options?: { depth?: number; caseSensitive?: boolean; matchWholeWords?: boolean },
     ) {
         for (let depth = 0; depth < MAX_SCAN_DEPTH; depth++) {
-            if (messages[depth]) this.#depthBuffer[depth] = messages[depth].trim();
+            const msg = messages[depth];
+            if (msg) this.#depthBuffer[depth] = msg.trim();
             if (depth === messages.length - 1) break;
         }
         this.#globalScanData = globalScanData;
@@ -177,8 +178,8 @@ export class WorldInfoTimedEffects {
             if (!entry.cooldown) return;
             const key = this.#ekey(entry);
             const eff = this.#mkEffect('cooldown', entry, true);
-            chat_metadata.timedWorldInfo.cooldown[key] = eff;
-            this.#buffer.cooldown.push(entry);
+            chat_metadata.timedWorldInfo!.cooldown![key] = eff;
+            this.#buffer.cooldown!.push(entry);
         },
         cooldown: () => {},
         delay: () => {},
@@ -228,10 +229,10 @@ export class WorldInfoTimedEffects {
 
     checkTimedEffects() {
         if (!this.#isDryRun) {
-            this.#checkType('sticky', this.#buffer.sticky, this.#onEnded.sticky.bind(this));
-            this.#checkType('cooldown', this.#buffer.cooldown, this.#onEnded.cooldown.bind(this));
+            this.#checkType('sticky', this.#buffer.sticky!, this.#onEnded.sticky!.bind(this));
+            this.#checkType('cooldown', this.#buffer.cooldown!, this.#onEnded.cooldown!.bind(this));
         }
-        this.#checkDelay(this.#buffer.delay);
+        this.#checkDelay(this.#buffer.delay!);
     }
 
     getEffectMetadata(type: string, e: WIScanEntry): WITimedEffect | null {
@@ -317,8 +318,8 @@ export function filterByInclusionGroups(
         const scores = grp.map(e => buffer.getScore(e, scanState_));
         const max = Math.max(...scores);
         for (let i = 0; i < grp.length; i++) {
-            if (!(grp[i].useGroupScoring ?? useGroupScoring)) continue;
-            if (scores[i] < max) { remove(grp[i]); grp.splice(i, 1); scores.splice(i, 1); i--; }
+            if (!(grp[i]!.useGroupScoring ?? useGroupScoring)) continue;
+            if (scores[i]! < max) { remove(grp[i]!); grp.splice(i, 1); scores.splice(i, 1); i--; }
         }
     }
 
@@ -329,14 +330,14 @@ export function filterByInclusionGroups(
         if (grp.length <= 1) continue;
 
         const prios = grp.filter(x => Boolean((x as Record<string, unknown>).groupOverride)).sort((a, b) => Number((b as Record<string, unknown>).order) - Number((a as Record<string, unknown>).order));
-        if (prios.length) { removeAllBut(grp, prios[0]); continue; }
+        if (prios.length) { removeAllBut(grp, prios[0]!); continue; }
 
-        const totalW = grp.reduce((a, e) => a + ((e as Record<string, unknown>).groupWeight ?? DEFAULT_WEIGHT), 0);
+        const totalW = grp.reduce((a, e) => a + (Number((e as Record<string, unknown>).groupWeight) || DEFAULT_WEIGHT), 0);
         const roll = Math.random() * totalW;
         let acc = 0;
         let winner: WIScanEntry | null = null;
         for (const e of grp) {
-            acc += (e as Record<string, unknown>).groupWeight ?? DEFAULT_WEIGHT;
+            acc += (Number((e as Record<string, unknown>).groupWeight) || DEFAULT_WEIGHT);
             if (roll <= acc) { winner = e; break; }
         }
         if (winner) removeAllBut(grp, winner);
@@ -491,7 +492,6 @@ async function getCharacterLore() {
         // @ts-expect-error TS(7005) FIXME: Variable 'entries' implicitly has an 'any[]' type.
         entries = entries.concat(await loadLoreEntries([worldName]));
 
-        // @ts-expect-error TS(7005) FIXME: Variable 'entries' implicitly has an 'any[]' type.
         if (!entries.length) {
             console.debug(`[WI] Character ${name}'s world ${worldName} could not be found or is empty`);
         }
@@ -526,7 +526,6 @@ async function getChatLore() {
         return [];
     }
 
-    // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame...
     if (wiManager.selectedWorlds.includes(chatWorld)) {
         console.debug(`[WI] Chat world ${chatWorld} is already activated in global world info! Skipping...`);
         return [];
@@ -555,7 +554,6 @@ async function getPersonaLore() {
         return [];
     }
 
-    // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par...
     if (wiManager.selectedWorlds.includes(personaWorld)) {
         console.debug(`[WI] Persona world ${personaWorld} is already activated in global world info! Skipping...`);
         return [];
@@ -591,22 +589,22 @@ export async function getSortedEntries() {
 
         switch (Number(wiManager.characterStrategy)) {
             case world_info_insertion_strategy.evenly:
-                entries = [...globalLore, ...characterLore].sort(wiManager.sortFn);
+                entries = [...globalLore, ...characterLore].sort(wiManager.sortFn as (a: object, b: object) => number);
                 break;
             case world_info_insertion_strategy.character_first:
-                entries = [...characterLore.sort(wiManager.sortFn), ...globalLore.sort(wiManager.sortFn)];
+                entries = [...characterLore.sort(wiManager.sortFn as (a: object, b: object) => number), ...globalLore.sort(wiManager.sortFn as (a: object, b: object) => number)];
                 break;
             case world_info_insertion_strategy.global_first:
-                entries = [...globalLore.sort(wiManager.sortFn), ...characterLore.sort(wiManager.sortFn)];
+                entries = [...globalLore.sort(wiManager.sortFn as (a: object, b: object) => number), ...characterLore.sort(wiManager.sortFn as (a: object, b: object) => number)];
                 break;
             default:
                 console.error('[WI] Unknown WI insertion strategy:', wiManager.characterStrategy, 'defaulting to evenly');
-                entries = [...globalLore, ...characterLore].sort(wiManager.sortFn);
+                entries = [...globalLore, ...characterLore].sort(wiManager.sortFn as (a: object, b: object) => number);
                 break;
         }
 
         // Chat lore always goes first, then persona lore, then the rest
-        entries = [...chatLore.sort(wiManager.sortFn), ...personaLore.sort(wiManager.sortFn), ...entries];
+        entries = [...chatLore.sort(wiManager.sortFn as (a: object, b: object) => number), ...personaLore.sort(wiManager.sortFn as (a: object, b: object) => number), ...entries];
 
         // Calculate hash and parse decorators. Split maps to preserve old hashes.
         entries = entries.map((entry) => {
@@ -714,7 +712,7 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
     }
 
     /** @type {scan_state} */
-    let scanState = scan_state.INITIAL;
+    let scanState: number = scan_state.INITIAL;
     let token_budget_overflowed = false;
     let count = 0;
     const allActivatedEntries = new Map();
@@ -765,10 +763,10 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
         console.debug('[WI] Scan state', Object.entries(scan_state).find(x => x[1] === scanState));
 
         // Until decided otherwise, we set the loop to stop scanning after this
-        let nextScanState = scan_state.NONE;
+        let nextScanState: number = scan_state.NONE;
 
         // Loop and find all entries that can activate here
-        const activatedNow = new Set();
+        const activatedNow = new Set<WIScanEntry>();
 
         for (const entry of sortedEntries) {
             // Logging preparation
@@ -879,7 +877,7 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
 
             if (buffer.getExternallyActivated(entry)) {
                 log('externally activated');
-                activatedNow.add(buffer.getExternallyActivated(entry));
+                activatedNow.add(buffer.getExternallyActivated(entry) as WIScanEntry);
                 continue;
             }
 
@@ -988,8 +986,8 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
         // Sort the entries for the probability and the budget limit checks
         const newEntries = [...activatedNow]
             .sort((a, b) => {
-                const isASticky = timedEffects.isEffectActive('sticky', a) ? 1 : 0;
-                const isBSticky = timedEffects.isEffectActive('sticky', b) ? 1 : 0;
+                const isASticky = timedEffects.isEffectActive('sticky', a as WIScanEntry) ? 1 : 0;
+                const isBSticky = timedEffects.isEffectActive('sticky', b as WIScanEntry) ? 1 : 0;
                 return isBSticky - isASticky || sortedEntries.indexOf(a) - sortedEntries.indexOf(b);
             });
 
@@ -997,18 +995,15 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
         let newContent = '';
         const textToScanTokens = await getTokenCountAsync(allActivatedText);
 
-        filterByInclusionGroups(newEntries, allActivatedEntries, buffer, scanState, timedEffects);
+        filterByInclusionGroups(newEntries as WIScanEntry[], allActivatedEntries, buffer, scanState, timedEffects);
 
         console.debug('[WI] --- PROBABILITY CHECKS ---');
         if (!newEntries.length) console.debug('[WI] No probability checks to do');
 
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         let ignoresBudget = newEntries.filter(e => e.ignoreBudget).length;
 
         for (const entry of newEntries) {
-            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             ignoresBudget -= (entry.ignoreBudget ? 1 : 0);
-            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             if (token_budget_overflowed && !entry.ignoreBudget) {
                 if (ignoresBudget > 0) {
                     continue;
@@ -1021,24 +1016,19 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
              */
             function verifyProbability() {
                 // If we don't need to roll, it's always true
-                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 if (!entry.useProbability || entry.probability === 100) {
-                    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                     console.debug(`WI entry ${entry.uid} does not use probability`);
                     return true;
                 }
 
                 const isSticky = timedEffects.isEffectActive('sticky', entry);
                 if (isSticky) {
-                    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                     console.debug(`WI entry ${entry.uid} is sticky, does not need to re-roll probability`);
                     return true;
                 }
 
                 const rollValue = Math.random() * 100;
-                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-                if (rollValue <= entry.probability) {
-                    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+                if (rollValue <= (entry.probability as number)) {
                     console.debug(`WI entry ${entry.uid} passed probability check of ${entry.probability}%`);
                     return true;
                 }
@@ -1049,24 +1039,19 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
 
             const success = verifyProbability();
             if (!success) {
-                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 console.debug(`WI entry ${entry.uid} failed probability check, removing from activated entries`, entry);
                 continue;
             }
 
             // Substitute macros inline, for both this checking and also future processing
-            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             entry.content = substituteParams(entry.content);
-            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             newContent += `${entry.content}\n`;
 
-            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             if (!entry.ignoreBudget && (textToScanTokens + (await getTokenCountAsync(newContent))) >= budget) {
                 if (!token_budget_overflowed) {
                     console.debug('[WI] --- BUDGET OVERFLOW CHECK ---');
                     if (wiManager.overflowAlert) {
                         console.warn(`[WI] budget of ${budget} reached, stopping after ${allActivatedEntries.size} entries`);
-                        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                         notyf.warning(`World info budget reached after ${allActivatedEntries.size} entries.`, 'World Info');
                     } else {
                         console.debug(`[WI] budget of ${budget} reached, stopping after ${allActivatedEntries.size} entries`);
@@ -1076,14 +1061,11 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
                 continue;
             }
 
-            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             allActivatedEntries.set(`${entry.world}.${entry.uid}`, entry);
-            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             console.debug(`[WI] Entry ${entry.uid} activation successful, adding to prompt`, entry);
         }
 
         const successfulNewEntries = newEntries.filter(x => !failedProbabilityChecks.has(x));
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         const successfulNewEntriesForRecursion = successfulNewEntries.filter(x => !x.preventRecursion);
 
         console.debug(`[WI] --- LOOP #${count} RESULT ---`);
@@ -1149,7 +1131,6 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
         scanState = nextScanState;
         if (scanState) {
             const text = successfulNewEntriesForRecursion
-                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 .map(x => x.content).join('\n');
             if (text) {
                 buffer.addRecurse(text);

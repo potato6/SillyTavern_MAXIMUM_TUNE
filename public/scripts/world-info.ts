@@ -1,7 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-declare const TomSelect: any;
+declare const TomSelect: unknown;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-declare const Sortable: any;
+declare const Sortable: unknown;
 
 import { saveSettings, getRequestHeaders, chat_metadata, this_chid, characters, saveCharacterDebounced, menu_type, eventSource, event_types, saveMetadata, getCurrentChatId, extension_prompt_roles, create_save, createOrEditCharacter, getOneCharacter, select_selected_character } from '../script.js';
 import { download, debounce, initScrollHeight, resetScrollHeight, getCharaFilename, getSortableDelay, navigation_option, waitUntilCondition, isTrueBoolean, flashHighlight, select2ModifyOptions, getSelect2OptionId, highlightRegex, select2ChoiceClickSubscribe, normalizeArray, addLongPressEvent, createPaginator } from './utils.js';
@@ -15,6 +15,7 @@ import { callGenericPopup, Popup, POPUP_RESULT, POPUP_TYPE } from './popup.js';
 import { renderTemplateAsync } from './templates.js';
 import { t } from './i18n.js';
 import { accountStorage } from './util/AccountStorage.js';
+import type { WorldInfoEntryData, WorldInfoBook } from './world-info/types.js';
 
 // ── Re-exported types & constants ──
 export type {
@@ -125,14 +126,12 @@ export {
     originalWIDataKeyMap,
 } from './world-info/constants.js';
 
-// @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-const WI_ENTRY_EDIT_TEMPLATE = /** @type {HTMLElement} */ (document.querySelector('#entry_edit_template .world_entry_edit'));
+
 
 export const world_info = {};
 export const selected_world_info = [];
 /** @type {string[]} */
-// @ts-expect-error TS(7005) FIXME: Variable 'world_names' implicitly has an 'any' typ... Remove this comment to see the full error message
-export let world_names;
+export let world_names: unknown;
 export const world_info_depth = 2;
 export const world_info_min_activations = 0; // if > 0, will continue seeking chat until minimum world infos are activated
 export const world_info_min_activations_depth_max = 0; // used when (world_info_min_activations > 0)
@@ -147,12 +146,10 @@ export const world_info_use_group_scoring = false;
 export const world_info_character_strategy = world_info_insertion_strategy.character_first;
 export const world_info_budget_cap = 0;
 export const world_info_max_recursion_steps = 0;
-// @ts-expect-error TS(7006) FIXME: Parameter 'navigation' implicitly has an 'any' typ... Remove this comment to see the full error message
-let updateEditor = (navigation, flashOnNav = true) => { console.debug('Triggered WI navigation', navigation, flashOnNav); };
+let updateEditor: (navigation: unknown, flashOnNav?: boolean) => void = (navigation: unknown, flashOnNav = true) => { console.debug('Triggered WI navigation', navigation, flashOnNav); };
 
 // Do not optimize. updateEditor is a function that is updated by the displayWorldEntries with new data.
-// @ts-expect-error TS(2554) FIXME: Expected 1-2 arguments, but got 0.
-export const worldInfoFilter = new FilterHelper(() => updateEditor());
+export const worldInfoFilter: FilterHelper = new FilterHelper(() => { updateEditor(navigation_option.none); });
 
 // Typedef area
 /**
@@ -267,41 +264,26 @@ export function getWorldInfoSettings() {
  * @param {WorldInfoSettings} settings - Settings object
  * @param {string[]} [activeWorldInfo] - Optional array of active world info names
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'settings' implicitly has an 'any' type.
-export function updateWorldInfoSettings(settings, activeWorldInfo) {
+export function updateWorldInfoSettings(settings: Record<string, unknown>, activeWorldInfo: string[] | undefined) {
     console.debug('[WI] Updating world info settings', settings, activeWorldInfo);
 
     /** @type {Record<keyof WorldInfoSettings, (value: unknown) => void>} */
-    const fields = {
-        // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
-        world_info_depth: (value) => wiManager.depth = Number(value),
-        // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
-        world_info_min_activations: (value) => wiManager.minActivations = Number(value),
-        // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
-        world_info_min_activations_depth_max: (value) => wiManager.minActivationsDepthMax = Number(value),
-        // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
-        world_info_budget: (value) => wiManager.budget = Number(value),
-        // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
-        world_info_include_names: (value) => wiManager.includeNames = Boolean(value),
-        // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
-        world_info_recursive: (value) => wiManager.recursive = Boolean(value),
-        // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
-        world_info_overflow_alert: (value) => wiManager.overflowAlert = Boolean(value),
-        // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
-        world_info_case_sensitive: (value) => wiManager.caseSensitive = Boolean(value),
-        // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
-        world_info_match_whole_words: (value) => wiManager.matchWholeWords = Boolean(value),
-        // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
-        world_info_character_strategy: (value) => wiManager.characterStrategy = Number(value),
-        // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
-        world_info_budget_cap: (value) => wiManager.budgetCap = Number(value),
-        // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
-        world_info_use_group_scoring: (value) => wiManager.useGroupScoring = Boolean(value),
-        // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
-        world_info_max_recursion_steps: (value) => wiManager.maxRecursionSteps = Number(value),
+    const fields: Record<string, (value: unknown) => void> = {
+        world_info_depth: (value: unknown) => wiManager.depth = Number(value),
+        world_info_min_activations: (value: unknown) => wiManager.minActivations = Number(value),
+        world_info_min_activations_depth_max: (value: unknown) => wiManager.minActivationsDepthMax = Number(value),
+        world_info_budget: (value: unknown) => wiManager.budget = Number(value),
+        world_info_include_names: (value: unknown) => wiManager.includeNames = Boolean(value),
+        world_info_recursive: (value: unknown) => wiManager.recursive = Boolean(value),
+        world_info_overflow_alert: (value: unknown) => wiManager.overflowAlert = Boolean(value),
+        world_info_case_sensitive: (value: unknown) => wiManager.caseSensitive = Boolean(value),
+        world_info_match_whole_words: (value: unknown) => wiManager.matchWholeWords = Boolean(value),
+        world_info_character_strategy: (value: unknown) => wiManager.characterStrategy = Number(value),
+        world_info_budget_cap: (value: unknown) => wiManager.budgetCap = Number(value),
+        world_info_use_group_scoring: (value: unknown) => wiManager.useGroupScoring = Boolean(value),
+        world_info_max_recursion_steps: (value: unknown) => wiManager.maxRecursionSteps = Number(value),
         // Unused
-        // @ts-expect-error TS(7006) FIXME: Parameter '_value' implicitly has an 'any' type.
-        world_info: (_value) => { },
+        world_info: (_value: unknown) => { },
     };
 
     for (const [key, setter] of Object.entries(fields)) {
@@ -312,8 +294,7 @@ export function updateWorldInfoSettings(settings, activeWorldInfo) {
 
     if (Array.isArray(activeWorldInfo)) {
         delete settings.world_info;
-        // @ts-expect-error TS(2322) FIXME: Type 'any[]' is not assignable to type 'never[]'.
-        wiManager.selectedWorlds = activeWorldInfo;
+        wiManager.selectedWorlds = activeWorldInfo as string[];
     }
 
     saveSettingsNow();
@@ -324,8 +305,7 @@ export function updateWorldInfoSettings(settings, activeWorldInfo) {
  * @param {object} data - Data object
  * @returns {void}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'settings' implicitly has an 'any' type.
-export function setWorldInfoSettings(settings, data) {
+export function setWorldInfoSettings(settings: Record<string, unknown>, data: Record<string, unknown>) {
     if (settings.world_info_depth !== undefined)
         wiManager.depth = Number(settings.world_info_depth);
     if (settings.world_info_min_activations !== undefined)
@@ -367,15 +347,13 @@ export function setWorldInfoSettings(settings, data) {
     const existingWorldInfo = settings.world_info;
     if (typeof existingWorldInfo === 'string') {
         delete settings.world_info;
-        // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'never'.
         wiManager.selectedWorlds = [existingWorldInfo];
     } else if (Array.isArray(existingWorldInfo)) {
         delete settings.world_info;
-        // @ts-expect-error TS(2322) FIXME: Type 'any[]' is not assignable to type 'never[]'.
         wiManager.selectedWorlds = existingWorldInfo;
     }
 
-    wiManager.info = settings.world_info ?? {};
+    wiManager.info = (settings.world_info ?? {}) as Record<string, unknown>;
 
     /** Syncs an input or checkbox from the manager — collapses 11 nearly-identical blocks */
     function sync(id: string, value: string | boolean) {
@@ -404,33 +382,31 @@ export function setWorldInfoSettings(settings, data) {
     sync('world_info_max_recursion_steps', String(wiManager.maxRecursionSteps));
     sync('world_info_max_recursion_steps_counter', String(wiManager.maxRecursionSteps));
 
-    const worldInfoCharStrategy = document.getElementById('world_info_character_strategy');
-    const strategyOption = worldInfoCharStrategy?.querySelector(`option[value='${wiManager.characterStrategy}']`);
+    const worldInfoCharStrategy = document.getElementById('world_info_character_strategy') as HTMLSelectElement | null;
+    const strategyOption = worldInfoCharStrategy?.querySelector(`option[value='${wiManager.characterStrategy}']`) as HTMLOptionElement | null;
     if (strategyOption) strategyOption.selected = true;
     if (worldInfoCharStrategy) worldInfoCharStrategy.value = String(wiManager.characterStrategy);
 
-    const worldInfoBudgetCap = document.getElementById('world_info_budget_cap');
+    const worldInfoBudgetCap = document.getElementById('world_info_budget_cap') as HTMLInputElement | null;
     if (worldInfoBudgetCap) worldInfoBudgetCap.value = String(wiManager.budgetCap);
-    const worldInfoBudgetCapCounter = document.getElementById('world_info_budget_cap_counter');
+    const worldInfoBudgetCapCounter = document.getElementById('world_info_budget_cap_counter') as HTMLInputElement | null;
     if (worldInfoBudgetCapCounter) worldInfoBudgetCapCounter.value = String(wiManager.budgetCap);
 
-    const worldInfoMaxRecursionSteps = document.getElementById('world_info_max_recursion_steps');
+    const worldInfoMaxRecursionSteps = document.getElementById('world_info_max_recursion_steps') as HTMLInputElement | null;
     if (worldInfoMaxRecursionSteps) worldInfoMaxRecursionSteps.value = String(wiManager.maxRecursionSteps);
-    const worldInfoMaxRecursionStepsCounter = document.getElementById('world_info_max_recursion_steps_counter');
+    const worldInfoMaxRecursionStepsCounter = document.getElementById('world_info_max_recursion_steps_counter') as HTMLInputElement | null;
     if (worldInfoMaxRecursionStepsCounter) worldInfoMaxRecursionStepsCounter.value = String(wiManager.maxRecursionSteps);
 
-    wiManager.worldNames = data.world_names?.length ? data.world_names : [];
+    wiManager.worldNames = (data.world_names as string[])?.length ? data.world_names as string[] : [];
 
     // Add to existing selected WI if it exists
-    // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
-    wiManager.selectedWorlds = wiManager.selectedWorlds.concat(settings.world_info?.globalSelect?.filter((e) => wiManager.worldNames.includes(e)) ?? []);
+    wiManager.selectedWorlds = wiManager.selectedWorlds.concat(((settings.world_info as Record<string, unknown>)?.globalSelect as unknown[])?.filter((e: unknown) => wiManager.worldNames.includes(e as string)) as string[] ?? []);
 
     if (wiManager.worldNames.length > 0) {
         const worldInfoEl = document.getElementById('world_info');
         if (worldInfoEl) worldInfoEl.innerHTML = '';
     }
 
-    // @ts-expect-error TS(7006) FIXME: Parameter 'item' implicitly has an 'any' type.
     wiManager.worldNames.forEach((item, i) => {
         const worldInfoEl = document.getElementById('world_info');
         if (worldInfoEl) worldInfoEl.insertAdjacentHTML('beforeend', `<option value='${i}'${wiManager.selectedWorlds.includes(item) ? ' selected' : ''}>${item}</option>`);
@@ -438,26 +414,22 @@ export function setWorldInfoSettings(settings, data) {
         if (worldEditorSelect) worldEditorSelect.insertAdjacentHTML('beforeend', `<option value='${i}'>${item}</option>`);
     });
 
-    const worldInfoSortOrder = document.getElementById('world_info_sort_order');
+    const worldInfoSortOrder = document.getElementById('world_info_sort_order') as HTMLSelectElement | null;
     if (worldInfoSortOrder) worldInfoSortOrder.value = accountStorage.getItem(SORT_ORDER_KEY) || '0';
     document.getElementById('world_info')!.dispatchEvent(new Event('change'));
     document.getElementById('world_editor_select')!.dispatchEvent(new Event('change'));
 
     eventSource.on(event_types.CHAT_CHANGED, async () => {
-        const hasWorldInfo = !!chat_metadata[METADATA_KEY] && wiManager.worldNames.includes(chat_metadata[METADATA_KEY]);
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        document.querySelector('.chat_lorebook_button').classList.toggle('world_set', hasWorldInfo);
         // Pre-cache the world info data for the chat for quicker first prompt generation
         await getSortedEntries();
     });
 
-    // @ts-expect-error TS(7006) FIXME: Parameter 'entries' implicitly has an 'any' type.
-    eventSource.on(event_types.WORLDINFO_FORCE_ACTIVATE, (entries) => {
+    eventSource.on(event_types.WORLDINFO_FORCE_ACTIVATE, (entries: Record<string, unknown>[]) => {
         for (const entry of entries) {
             if (!Object.hasOwn(entry, 'world') || !Object.hasOwn(entry, 'uid')) {
                 console.error('[WI] WORLDINFO_FORCE_ACTIVATE requires all entries to have both world and uid fields, entry IGNORED', entry);
             } else {
-                WorldInfoBuffer.externalActivations.set(`${entry.world}.${entry.uid}`, entry);
+                WorldInfoBuffer.externalActivations.set(`${entry.world as string}.${entry.uid as string}`, entry);
                 console.log('[WI] WORLDINFO_FORCE_ACTIVATE added entry', entry);
             }
         }
@@ -472,9 +444,8 @@ export function setWorldInfoSettings(settings, data) {
  * @param {string} file - The file to load in the editor
  * @param {boolean} [loadIfNotSelected] - Indicates whether to load the file even if it's not currently selected
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'file' implicitly has an 'any' type.
-export function reloadEditor(file, loadIfNotSelected = false) {
-    const worldEditorSelect = document.getElementById('world_editor_select');
+export function reloadEditor(file: string, loadIfNotSelected = false) {
+    const worldEditorSelect = document.getElementById('world_editor_select') as HTMLSelectElement | null;
     const currentIndex = Number(worldEditorSelect?.value);
     const selectedIndex = wiManager.worldNames.indexOf(file);
     if (selectedIndex !== -1 && (loadIfNotSelected || currentIndex === selectedIndex)) {
@@ -490,14 +461,13 @@ export function reloadEditor(file, loadIfNotSelected = false) {
  * @param {string} name - The name of the world
  * @returns {Promise<void>} A promise that resolves when the world editor is loaded
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
-export async function showWorldEditor(name) {
+export async function showWorldEditor(name: string) {
     if (!name) {
         await hideWorldEditor();
         return;
     }
 
-    const wiData = await loadWorldInfo(name);
+    const wiData = await loadWorldInfo(name) as WorldInfoBook;
     await displayWorldEntries(name, wiData);
 }
 
@@ -517,15 +487,11 @@ export async function updateWorldInfoList() {
         const editorOption = editorSelect?.options[editorSelect.selectedIndex];
         const editorSelected = editorOption ? String(editorOption.text) : '';
         wiManager.worldNames = data.world_names?.length ? data.world_names : [];
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        document.getElementById('world_info').querySelectorAll('option:not([value=""])').forEach(el => el.remove());
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        document.getElementById('world_editor_select').querySelectorAll('option:not([value=""])').forEach(el => el.remove());
+        document.getElementById('world_info')!.querySelectorAll('option:not([value=""])').forEach(el => el.remove());
+        document.getElementById('world_editor_select')!.querySelectorAll('option:not([value=""])').forEach(el => el.remove());
 
-        // @ts-expect-error TS(7006) FIXME: Parameter 'item' implicitly has an 'any' type.
         wiManager.worldNames.forEach((item, i) => {
             const globalListOption = new Option(item, i.toString());
-            // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
             globalListOption.selected = wiManager.selectedWorlds.includes(item);
             const editorListOption = new Option(item, i.toString());
             editorListOption.selected = editorSelected === item;
@@ -536,25 +502,19 @@ export async function updateWorldInfoList() {
         });
 
         // Sync TomSelect instances with the updated options (they don't detect DOM changes automatically)
-        const wiSelect = /** @type {HTMLSelectElement} */ (document.getElementById('world_info'));
-        // @ts-expect-error TS(2339) FIXME: Property 'tomselect' does not exist on type 'HTMLSelectElement'.
-        if (wiSelect?.tomselect) {
-            // @ts-expect-error TS(2339) FIXME: Property 'tomselect' does not exist on type 'HTMLSelectElement'.
-            wiSelect.tomselect.clearOptions();
-            // @ts-expect-error TS(2339) FIXME: Property 'tomselect' does not exist on type 'HTMLSelectElement'.
-            Array.from(wiSelect.options).forEach(o => wiSelect.tomselect.addOption({ value: o.value, text: o.text }));
-            // @ts-expect-error TS(2339) FIXME: Property 'tomselect' does not exist on type 'HTMLSelectElement'.
-            wiSelect.tomselect.setValue(Array.from(wiSelect.selectedOptions).map(o => o.value));
+        const wiSelect = document.getElementById('world_info') as unknown as Record<string, unknown>;
+        const wiTomSelect = wiSelect?.tomselect as Record<string, unknown> | undefined;
+        if (wiTomSelect) {
+            (wiTomSelect.clearOptions as () => void)();
+            Array.from((wiSelect as Record<string, unknown>).options as unknown[]).forEach((o: unknown) => (wiTomSelect.addOption as (opt: Record<string, unknown>) => void)({ value: (o as Record<string, unknown>).value as string, text: (o as Record<string, unknown>).text as string }));
+            (wiTomSelect.setValue as (v: string) => void)(Array.from((wiSelect as Record<string, unknown>).selectedOptions as unknown[]).map((o: unknown) => (o as Record<string, unknown>).value as string).join(','));
         }
-        const editorTs = /** @type {HTMLSelectElement} */ (document.getElementById('world_editor_select'));
-        // @ts-expect-error TS(2339) FIXME: Property 'tomselect' does not exist on type 'HTMLSelectElement'.
-        if (editorTs?.tomselect) {
-            // @ts-expect-error TS(2339) FIXME: Property 'tomselect' does not exist on type 'HTMLSelectElement'.
-            editorTs.tomselect.clearOptions();
-            // @ts-expect-error TS(2339) FIXME: Property 'tomselect' does not exist on type 'HTMLSelectElement'.
-            Array.from(editorTs.options).forEach(o => editorTs.tomselect.addOption({ value: o.value, text: o.text }));
-            // @ts-expect-error TS(2339) FIXME: Property 'tomselect' does not exist on type 'HTMLSelectElement'.
-            editorTs.tomselect.setValue(editorTs.value || '');
+        const editorTs = document.getElementById('world_editor_select') as unknown as Record<string, unknown>;
+        const editorTsTs = editorTs?.tomselect as Record<string, unknown> | undefined;
+        if (editorTsTs) {
+            (editorTsTs.clearOptions as () => void)();
+            Array.from((editorTs as Record<string, unknown>).options as unknown[]).forEach((o: unknown) => (editorTsTs.addOption as (opt: Record<string, unknown>) => void)({ value: (o as Record<string, unknown>).value as string, text: (o as Record<string, unknown>).text as string }));
+            (editorTsTs.setValue as (v: string) => void)((editorTs.value as string) || '');
         }
     }
 }
@@ -563,18 +523,17 @@ export async function updateWorldInfoList() {
  * @returns {Promise<void>}
  */
 export async function hideWorldEditor() {
-    await displayWorldEntries(null, null);
+    await displayWorldEntries(null as unknown as string, null as unknown as WorldInfoBook);
 }
 
 /**
  * @param {string} name - World info name to find
  * @returns {JQuery<HTMLElement>} The matching element
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
-export function getWIElement(name) {
+export function getWIElement(name: string) {
     const children = Array.from(document.getElementById('world_info')?.children ?? []);
     const wiElement = children.find(function (child) {
-        return child.textContent?.toLowerCase() === name.toLowerCase();
+        return child.textContent?.toLowerCase() === (name as string).toLowerCase();
     });
 
     return wiElement;
@@ -586,32 +545,31 @@ export function getWIElement(name) {
  * @param {object[]} data WI entries
  * @returns {object[]} Data with backfilled fields
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
-function addMissingWorldInfoFields(data) {
-    // @ts-expect-error TS(7006) FIXME: Parameter 'entry' implicitly has an 'any' type.
-    data.forEach((entry) => {
+function addMissingWorldInfoFields(data: WorldInfoEntryData[]) {
+    data.forEach((entry: WorldInfoEntryData) => {
+        const entryRec = entry as unknown as Record<string, unknown>;
         // Add missing fields from the template
         Object.entries(newWorldInfoEntryTemplate).forEach(([key, value]) => {
-            if (!Object.hasOwn(entry, key)) {
-                entry[key] = structuredClone(value);
+            if (!Object.hasOwn(entryRec, key)) {
+                entryRec[key] = structuredClone(value);
             }
         });
 
         // Ensure that the key is always an array
         if (!Array.isArray(entry.key)) {
             console.debug('[WI] Fixing invalid "key" field for entry', entry);
-            entry.key = [];
+            (entry as unknown as Record<string, unknown>).key = [];
         }
 
         // Ensure that the keysecondary is always an array
         if (!Array.isArray(entry.keysecondary)) {
             console.debug('[WI] Fixing invalid "keysecondary" field for entry', entry);
-            entry.keysecondary = [];
+            (entry as unknown as Record<string, unknown>).keysecondary = [];
         }
 
         // Ensure that the characterFilter is an object with the expected structure
-        if (!entry.characterFilter || typeof entry.characterFilter !== 'object' || Array.isArray(entry.characterFilter)) {
-            entry.characterFilter = {
+        if (!entryRec.characterFilter || typeof entryRec.characterFilter !== 'object' || Array.isArray(entryRec.characterFilter)) {
+            entryRec.characterFilter = {
                 isExclude: false,
                 names: [],
                 tags: [],
@@ -629,59 +587,52 @@ function addMissingWorldInfoFields(data) {
  * @param {{sortField?: string, sortOrder?: string, sortRule?: string}} [options.customSort] - Custom sort options, instead of the chosen UI sort
  * @returns {object[]} Sorted data
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
-export function sortWorldInfoEntries(data, { customSort = null } = {}) {
-    const sortOrderEl = document.getElementById('world_info_sort_order');
+export function sortWorldInfoEntries(data: WorldInfoEntryData[], { customSort = null }: { customSort?: { sortField?: string; sortOrder?: string; sortRule?: string } | null } = {}) {
+    const sortOrderEl = document.getElementById('world_info_sort_order') as HTMLSelectElement | null;
     const option = sortOrderEl?.options[sortOrderEl.selectedIndex];
-    // @ts-expect-error TS(2339) FIXME: Property 'sortField' does not exist on type 'never... Remove this comment to see the full error message
     const sortField = customSort?.sortField ?? option?.dataset?.field;
-    // @ts-expect-error TS(2339) FIXME: Property 'sortOrder' does not exist on type 'never... Remove this comment to see the full error message
     const sortOrder = customSort?.sortOrder ?? option?.dataset?.order;
-    // @ts-expect-error TS(2339) FIXME: Property 'sortRule' does not exist on type 'never'... Remove this comment to see the full error message
     const sortRule = customSort?.sortRule ?? option?.dataset?.rule;
     const orderSign = sortOrder === 'asc' ? 1 : -1;
 
     if (!data.length) return data;
 
     /** @type {(a: object, b: object) => number} */
-    let primarySort;
+    let primarySort: unknown;
 
     // Secondary and tertiary it will always be sorted by Order descending, and last UID ascending
     // This is the most sensible approach for sorts where the primary sort has a lot of equal values
-    // @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
-    const secondarySort = (a, b) => b.order - a.order;
-    // @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
-    const tertiarySort = (a, b) => a.uid - b.uid;
+    const secondarySort = (a: WorldInfoEntryData, b: WorldInfoEntryData) => b.order - a.order;
+    const tertiarySort = (a: WorldInfoEntryData, b: WorldInfoEntryData) => a.uid - b.uid;
 
     // If we have a search term for WI, we are sorting by weighting scores
+    const castEntry = (e: WorldInfoEntryData) => e as unknown as Record<string, unknown>;
     if (sortRule === 'search') {
-        // @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
-        primarySort = (a, b) => {
+        primarySort = (a: WorldInfoEntryData, b: WorldInfoEntryData) => {
             const aScore = worldInfoFilter.getScore(FILTER_TYPES.WORLD_INFO_SEARCH, a.uid);
             const bScore = worldInfoFilter.getScore(FILTER_TYPES.WORLD_INFO_SEARCH, b.uid);
             return aScore - bScore;
         };
     } else if (sortRule === 'custom') {
         // First by display index
-        // @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
-        primarySort = (a, b) => {
-            const aValue = a.displayIndex;
-            const bValue = b.displayIndex;
+        primarySort = (a: WorldInfoEntryData, b: WorldInfoEntryData) => {
+            const aValue = a.displayIndex ?? 0;
+            const bValue = b.displayIndex ?? 0;
             return aValue - bValue;
         };
     } else if (sortRule === 'priority') {
         // First constant, then normal, then disabled.
-        // @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
-        primarySort = (a, b) => {
+        primarySort = (a: WorldInfoEntryData, b: WorldInfoEntryData) => {
             const aValue = a.disable ? 2 : a.constant ? 0 : 1;
             const bValue = b.disable ? 2 : b.constant ? 0 : 1;
             return aValue - bValue;
         };
     } else {
-        // @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
-        primarySort = (a, b) => {
-            const aValue = a[sortField];
-            const bValue = b[sortField];
+        primarySort = (a: WorldInfoEntryData, b: WorldInfoEntryData) => {
+            const aRec = castEntry(a);
+            const bRec = castEntry(b);
+            const aValue = aRec[sortField as string];
+            const bValue = bRec[sortField as string];
 
             // Sort strings
             if (typeof aValue === 'string' && typeof bValue === 'string') {
@@ -699,9 +650,8 @@ export function sortWorldInfoEntries(data, { customSort = null } = {}) {
         };
     }
 
-    // @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
     data.sort((a, b) => {
-        return primarySort(a, b) || secondarySort(a, b) || tertiarySort(a, b);
+        return (primarySort as (a: WorldInfoEntryData, b: WorldInfoEntryData) => number)(a, b) || secondarySort(a, b) || tertiarySort(a, b);
     });
 
     return data;
@@ -718,18 +668,17 @@ export function sortWorldInfoEntries(data, { customSort = null } = {}) {
  * @param {boolean} [flashOnNav] - Whether to flash highlight on navigation
  * @returns {Promise<void>}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
-async function displayWorldEntries(name, data, navigation = navigation_option.none, flashOnNav = true) {
-    updateEditor = async (navigation, flashOnNav = true) => await displayWorldEntries(name, data, navigation, flashOnNav);
+async function displayWorldEntries(name: unknown, data: WorldInfoBook, navigation: unknown = navigation_option.none, flashOnNav = true) {
+    updateEditor = async (navigation: unknown, flashOnNav = true) => await displayWorldEntries(name, data, navigation, flashOnNav);
 
     const worldEntriesList = document.getElementById('world_popup_entries_list');
-    clearEntryList(worldEntriesList);
+    if (worldEntriesList) clearEntryList(worldEntriesList);
     if (worldEntriesList) worldEntriesList.style.display = '';
 
     // Purge stale listeners by cloning buttons — displayWorldEntries is called on
     // every editor navigation, and each call adds new listeners without removing old ones.
     // Without this, clicking a button fires N handlers, each with a stale `name` closure.
-    const purgeButton = (id) => {
+    const purgeButton = (id: string) => {
         const el = document.getElementById(id);
         if (el && el.parentNode) {
             const clone = el.cloneNode(true);
@@ -756,40 +705,37 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
     }
 
     // Initialize the store for this book
-    const store = wiManager.getStore(name);
+    const store = wiManager.getStore(name as string);
     await store.init();
 
     // Hydrate the store from the loaded book data if it's empty
     // (store is not populated until the first save or explicit load)
-    if (data.entries) {
+    if (data.entries && Object.keys(data.entries).length > 0) {
         const count = await store.entryCount();
         if (count === 0) {
             const entryList = Object.values(data.entries).filter(Boolean);
             if (entryList.length > 0) {
-                await store.replaceAllEntries(entryList);
+                await store.replaceAllEntries(entryList as WorldInfoEntryData[]);
             }
         }
     }
 
     // Regardless of whether success is displayed or not. Make sure the delete button is available.
     // Do not put this code behind.
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('world_popup_delete').addEventListener('click', async () => {
+    document.getElementById('world_popup_delete')!.addEventListener('click', async () => {
         const confirmation = await Popup.show.confirm(`Delete the World/Lorebook: "${name}"?`, 'This action is irreversible!');
         if (!confirmation) {
             return;
         }
 
-        // @ts-expect-error TS(2339) FIXME: Property 'charLore' does not exist on type '{}'.
-        if (wiManager.info.charLore) {
-            // @ts-expect-error TS(2339) FIXME: Property 'charLore' does not exist on type '{}'.
-            wiManager.info.charLore.forEach((charLore, index) => {
-                if (charLore.extraBooks?.includes(name)) {
-                    // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
-                    const tempCharLore = charLore.extraBooks.filter((e) => e !== name);
+        const infoCharLore = (wiManager.info as Record<string, unknown>).charLore as Record<string, unknown>[] | undefined;
+        if (infoCharLore) {
+            infoCharLore.forEach((charLore: Record<string, unknown>, index: number) => {
+                const extraBooks = charLore.extraBooks as string[] | undefined;
+                if (extraBooks?.includes(name as string)) {
+                    const tempCharLore = extraBooks.filter((e: string) => e !== name);
                     if (tempCharLore.length === 0) {
-                        // @ts-expect-error TS(2339) FIXME: Property 'charLore' does not exist on type '{}'.
-                        wiManager.info.charLore.splice(index, 1);
+                        infoCharLore.splice(index, 1);
                     } else {
                         charLore.extraBooks = tempCharLore;
                     }
@@ -810,21 +756,21 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
      * @param {(entries: object[]) => void} callback - Callback to process the entries array
      * @returns {object[]} Array of entry objects
      */
-    // @ts-expect-error TS(7006) FIXME: Parameter 'callback' implicitly has an 'any' type.
-    function getDataArray(callback) {
+    function getDataArray(callback?: unknown) {
         // Convert the data.entries object into an array
+        if (!data.entries) return [];
         let entriesArray = Object.keys(data.entries).map(uid => {
-            const entry = data.entries[uid];
+            const entry = data.entries[uid]!;
             if (!entry || typeof entry !== 'object' || Array.isArray(entry)) {
                 return null;
             }
             entry.displayIndex = entry.displayIndex ?? entry.uid;
             return entry;
-        }).filter(entry => entry !== null);
+        }).filter(entry => entry !== null) as WorldInfoEntryData[];
 
         // Apply the filter and do the chosen sorting
         entriesArray = addMissingWorldInfoFields(entriesArray);
-        entriesArray = worldInfoFilter.applyFilters(entriesArray);
+        entriesArray = (worldInfoFilter as FilterHelper).applyFilters(entriesArray) as WorldInfoEntryData[];
         entriesArray = sortWorldInfoEntries(entriesArray);
 
         // Cache keys
@@ -839,17 +785,15 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
     const storageKey = 'WI_PerPage';
     const perPageDefault = 25;
     let startPage = 1;
-    /** @type {{ getCurrentPage: () => number, go: (page: number) => void } | null} */
-    let wiPaginator = null;
+    let wiPaginator: { getCurrentPage: () => number; go: (page: number) => void } | null = null;
 
     const pagEl = document.getElementById('world_info_pagination');
 
     if (navigation === navigation_option.previous && wiPaginator) {
-        startPage = wiPaginator.getCurrentPage();
+        startPage = (wiPaginator as { getCurrentPage: () => number; go: (page: number) => void }).getCurrentPage();
     }
 
     if (typeof navigation === 'number' && Number(navigation) >= 0) {
-        // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
         const data = getDataArray();
         const uidIndex = data.findIndex(x => x.uid === navigation);
         const perPage = Number(accountStorage.getItem(storageKey)) || perPageDefault;
@@ -868,12 +812,12 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
             showNavigator: true,
             prevText: '<',
             nextText: '>',
-            callback: async function (/** @type {object[]} */ page) {
+            callback: async function (page: Record<string, unknown>[]) {
                 try {
-                    clearEntryList(worldEntriesList);
+                    if (worldEntriesList) clearEntryList(worldEntriesList);
 
                     const keywordHeaders = await renderTemplateAsync('worldInfoKeywordHeaders');
-                    const blocks = [];
+                    const blocks: HTMLElement[] = [];
 
                     for (const entry of page) {
                         try {
@@ -882,15 +826,14 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
                                 blocks.push(block);
                             }
                         } catch (error) {
-                            console.error(`Error while processing entry ${entry.uid}:`, error);
+                            console.error(`Error while processing entry ${entry.uid as string}:`, error);
                         }
                     }
 
-                    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-                    const isCustomOrder = document.getElementById('world_info_sort_order').options[document.getElementById('world_info_sort_order').selectedIndex]?.getAttribute('data-rule') === 'custom';
+                    const isCustomOrder = (document.getElementById('world_info_sort_order') as HTMLSelectElement).options[(document.getElementById('world_info_sort_order') as HTMLSelectElement).selectedIndex]?.getAttribute('data-rule') === 'custom';
                     if (!isCustomOrder) {
-                        blocks.forEach(block => {
-                            block.querySelectorAll('.drag-handle').forEach(el => el.remove());
+                        blocks.forEach((block: HTMLElement) => {
+                            block.querySelectorAll('.drag-handle').forEach((el: Element) => el.remove());
                         });
                     }
 
@@ -902,18 +845,18 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
                     console.error('Error while rendering WI entries:', error);
                 }
             },
-            onPageSizeChange: function (e) {
-                accountStorage.setItem(storageKey, e.target.value);
+            onPageSizeChange: function (this: HTMLElement, e: Event) {
+                accountStorage.setItem(storageKey, (e.target as HTMLInputElement).value);
             },
             afterPaging: function () {
-                document.querySelectorAll('#world_popup_entries_list textarea[name="comment"]').forEach(function (el) {
-                    initScrollHeight(/** @type {HTMLElement} */(el));
+                document.querySelectorAll('#world_popup_entries_list textarea[name="comment"]').forEach(function (el: Element) {
+                                initScrollHeight(el as HTMLElement);
                 });
             },
         });
 
         if (typeof navigation === 'number' && Number(navigation) >= 0) {
-            wiPaginator.go(startPage);
+            wiPaginator!.go(startPage);
         }
     }
 
@@ -937,45 +880,40 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
         });
     }
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('world_popup_new').addEventListener('click', async () => {
+    document.getElementById('world_popup_new')!.addEventListener('click', async () => {
         const entry = await createWorldInfoEntry(store);
         if (entry) {
-            data.entries[entry.uid] = entry;
-            await saveWorldInfo(name, data);
+            data.entries[entry.uid] = entry as WorldInfoEntryData;
+            await saveWorldInfo(name as string, data);
             updateEditor(entry.uid);
         }
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('world_popup_name_button').addEventListener('click', async () => {
-        await renameWorldInfo(name, data);
+    document.getElementById('world_popup_name_button')!.addEventListener('click', async () => {
+        await renameWorldInfo(name as string, data);
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('world_backfill_memos').addEventListener('click', async () => {
+    document.getElementById('world_backfill_memos')!.addEventListener('click', async () => {
         let counter = 0;
-        for (const entry of Object.values(data.entries)) {
-            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-            if (!entry.comment && Array.isArray(entry.key) && entry.key.length > 0) {
-                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-                entry.comment = entry.key.join(', ').slice(0, MAX_COMMENT_LENGTH);
-                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-                setWIOriginalDataValue(data, entry.uid, 'comment', entry.comment);
+        const backfillEntries = Object.values(data.entries as Record<string, unknown>);
+        for (const entry of backfillEntries) {
+            const entryRec = entry as unknown as Record<string, unknown>;
+            if (!entryRec.comment && Array.isArray(entryRec.key) && (entryRec.key as unknown[]).length > 0) {
+                entryRec.comment = (entryRec.key as string[]).join(', ').slice(0, MAX_COMMENT_LENGTH);
+                setWIOriginalDataValue(data, entryRec.uid as string, 'comment', entryRec.comment);
                 counter++;
             }
         }
 
         if (counter > 0) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.info(`Backfilled ${counter} titles`);
-            await saveWorldInfo(name, data);
+            await saveWorldInfo(name as string, data);
             updateEditor(navigation_option.previous);
         }
     });
 
     document.getElementById('world_apply_current_sorting')!.addEventListener('click', async () => {
-        const entryCount = Object.keys(data.entries).length;
+        const entryCount = Object.keys(data.entries as Record<string, unknown>).length;
         const moreThan100 = entryCount > 100;
 
         let content = '<span>' + t`Apply your current sorting to the "Order" field. The Order values will go down from the chosen number.` + '</span>';
@@ -988,39 +926,33 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
 
         const start = Number(result);
         if (isNaN(start) || start < 0) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.error(t`Invalid number: ${result}`, t`Apply Current Sorting`);
             return;
         }
         if (start < entryCount) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.warning(t`A number lower than the entry count has been chosen. All entries below that will default to 0.`, t`Apply Current Sorting`);
         }
 
         // We need to sort the entries here, as the data source isn't sorted
-        const entries = Object.values(data.entries);
+        const entries = Object.values(data.entries as Record<string, WorldInfoEntryData>);
         sortWorldInfoEntries(entries);
 
         let updated = 0, current = start;
         for (const entry of entries) {
+            const entryRec = entry as unknown as Record<string, unknown>;
             const newOrder = Math.max(current--, 0);
-            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-            if (entry.order === newOrder) continue;
+            if (entryRec.order === newOrder) continue;
 
-            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-            entry.order = newOrder;
-            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-            setWIOriginalDataValue(data, entry.order, 'order', entry.order);
+            entryRec.order = newOrder;
+            setWIOriginalDataValue(data, String(entryRec.uid), 'order', entryRec.order);
             updated++;
         }
 
         if (updated > 0) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.info(`Updated ${updated} Order values`, 'Apply Custom Sorting');
-            await saveWorldInfo(name, data, true);
+            await saveWorldInfo(name as string, data, true);
             updateEditor(navigation_option.previous);
         } else {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.info('All values up to date', 'Apply Custom Sorting');
         }
     });
@@ -1035,19 +967,18 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
 
     document.getElementById('world_duplicate')!.addEventListener('click', async () => {
         // Find current name for the world selected
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        const selectedIndex = String(document.getElementById('world_editor_select').options[document.getElementById('world_editor_select').selectedIndex].value);
-        const worldName = wiManager.worldNames[selectedIndex] || null;
+        const selectedIndex = String((document.getElementById('world_editor_select') as HTMLSelectElement).options[(document.getElementById('world_editor_select') as HTMLSelectElement).selectedIndex]?.value ?? '');
+        const worldName = wiManager.worldNames[Number(selectedIndex)] ?? null;
 
         // Use the current name as default input, then ask user for the name
-        const tempName = getFreeWorldName(worldName);
-        const finalName = await Popup.show.input('Create a new World Info?', 'Enter a name for the new file:', tempName);
+        const tempName = getFreeWorldName(worldName as unknown as null | undefined) ?? '';
+        const finalName = await Popup.show.input('Create a new World Info?', 'Enter a name for the new file:', undefined);
 
         if (finalName) {
-            await saveWorldInfo(finalName, data, true);
+            await saveWorldInfo(finalName as string, data, true);
             await updateWorldInfoList();
 
-            const selectedIndex = wiManager.worldNames.indexOf(finalName);
+            const selectedIndex = wiManager.worldNames.indexOf(finalName as string);
             const worldEditorSelect = document.getElementById('world_editor_select') as HTMLSelectElement | null;
             if (worldEditorSelect) {
                 worldEditorSelect.value = String(selectedIndex);
@@ -1059,43 +990,37 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
     });
 
     // Check if a sortable instance exists
-    const worldEntriesListAny = worldEntriesList;
-    if ((worldEntriesListAny as Element | null)?.sortableInstance) {
-        // Destroy the instance
-        // @ts-expect-error TS(2339) FIXME: Property 'sortableInstance' does not exist on type 'Element'
-        (worldEntriesListAny as Element).sortableInstance.destroy();
+    const worldEntriesListEl = worldEntriesList as unknown as Record<string, unknown> | null;
+    if (worldEntriesListEl?.sortableInstance) {
+        (worldEntriesListEl.sortableInstance as { destroy: () => void }).destroy();
     }
 
-    if (worldEntriesListAny) {
-        // @ts-expect-error TS(7006) FIXME: Parameter '_event' implicitly has an 'any' type.
-        // @ts-expect-error TS(2339) FIXME: Property 'sortableInstance' does not exist on type 'HTMLElement'
-        worldEntriesListAny.sortableInstance = new Sortable(worldEntriesListAny, {
+    if (worldEntriesListEl) {
+        worldEntriesListEl.sortableInstance = new (Sortable as unknown as new (el: HTMLElement, opts: Record<string, unknown>) => Record<string, unknown>)(worldEntriesListEl as unknown as HTMLElement, {
             delay: getSortableDelay(),
             handle: '.drag-handle',
-            // @ts-expect-error TS(7006) FIXME: Parameter '_event' implicitly has an 'any' type.
             onEnd: async function () {
-                // @ts-expect-error TS(2339) FIXME: Property 'dataset' does not exist on type 'Element... Remove this comment to see the full error message
-                const firstEntryUid = document.querySelector('#world_popup_entries_list .world_entry')?.dataset.uid;
-            const minDisplayIndex = data?.entries[firstEntryUid]?.displayIndex ?? 0;
+                const firstEntryUid = (document.querySelector('#world_popup_entries_list .world_entry') as HTMLElement)?.dataset?.uid;
+            const minDisplayIndex = firstEntryUid ? (data.entries[firstEntryUid]?.displayIndex ?? 0) : 0;
             document.querySelectorAll('#world_popup_entries_list .world_entry').forEach(function (el, index) {
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                const uid = /** @type {HTMLElement} */(el).dataset.uid;
+                const uid = (el as HTMLElement).dataset.uid;
 
                 // Update the display index in the data array
-                const item = data.entries[uid];
+                const item = uid ? data.entries[uid] : undefined;
 
                 if (!item) {
                     console.debug(`Could not find entry with uid ${uid}`);
                     return;
                 }
-
-                item.displayIndex = minDisplayIndex + index;
-                setWIOriginalDataValue(data, uid, 'extensions.display_index', item.displayIndex);
+                if (uid) {
+                    item.displayIndex = minDisplayIndex + index;
+                    setWIOriginalDataValue(data, uid, 'extensions.display_index', item.displayIndex);
+                }
             });
 
-            console.table(Object.keys(data.entries).map(uid => data.entries[uid]).map(x => ({ uid: x.uid, key: x.key.join(','), displayIndex: x.displayIndex })));
+            console.table(Object.keys(data.entries).map(uid => data.entries[uid]).map(x => ({ uid: x!.uid, key: x!.key.join(','), displayIndex: x!.displayIndex })));
 
-            await saveWorldInfo(name, data);
+            await saveWorldInfo(name as string, data);
         },
     });
     }
@@ -1107,7 +1032,7 @@ async function displayWorldEntries(name, data, navigation = navigation_option.no
 function verifyWorldInfoSearchSortRule() {
     const searchTerm = worldInfoFilter.getFilterData(FILTER_TYPES.WORLD_INFO_SEARCH);
     const searchOption = document.querySelector('#world_info_sort_order option[data-rule="search"]');
-    const selector = document.getElementById('world_info_sort_order');
+    const selector = document.getElementById('world_info_sort_order') as HTMLSelectElement | null;
     const isHidden = searchOption?.hasAttribute('hidden') ?? true;
 
     // If we have a search term, we are displaying the sorting option for it
@@ -1141,27 +1066,19 @@ function verifyWorldInfoSearchSortRule() {
  * @param {string} input - One or multiple keywords or regexes, separated by commas
  * @returns {string[]} An array of keywords and regexes
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'input' implicitly has an 'any' type.
-export function splitKeywordsAndRegexes(input) {
-    /** @type {string[]} */
-    // @ts-expect-error TS(7034) FIXME: Variable 'keywordsAndRegexes' implicitly has type ... Remove this comment to see the full error message
-    const keywordsAndRegexes = [];
+function splitKeywordsAndRegexes(input: string) {
+    const keywordsAndRegexes: string[] = [];
 
-    // We can make this easy. Instead of writing another function to find and parse regexes,
-    // we gonna utilize the custom tokenizer that also handles the input.
-    // No need for validation here
-    // @ts-expect-error TS(7006) FIXME: Parameter 'item' implicitly has an 'any' type.
-    const addFindCallback = (/** @type {Select2Option} */ item) => {
-        keywordsAndRegexes.push(item.text);
+    const addFindCallback = (item: Record<string, unknown>) => {
+        keywordsAndRegexes.push(item.text as string);
     };
 
     const { term } = customTokenizer({ _type: 'custom_call', term: input }, undefined, addFindCallback);
-    const finalTerm = term.trim();
+    const finalTerm = (term as string).trim();
     if (finalTerm) {
         addFindCallback({ id: getSelect2OptionId(finalTerm), text: finalTerm });
     }
 
-    // @ts-expect-error TS(7005) FIXME: Variable 'keywordsAndRegexes' implicitly has an 'a... Remove this comment to see the full error message
     return keywordsAndRegexes;
 }
 
@@ -1172,9 +1089,8 @@ export function splitKeywordsAndRegexes(input) {
  * @param {function(Select2Option):void} callback - The original callback function to call if an item should be inserted
  * @returns {{term: string}} - The remaining part that is untokenized in the textbox
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'input' implicitly has an 'any' type.
-function customTokenizer(input, _selection, callback) {
-    let current = input.term;
+function customTokenizer(input: Record<string, unknown>, _selection: unknown, callback: (opt: Record<string, unknown>) => void) {
+    let current = input.term as string;
 
     let insideRegex = false, regexClosed = false;
 
@@ -1209,12 +1125,10 @@ function customTokenizer(input, _selection, callback) {
 
                 // Last chance to check for valid regex again. Because it might have been valid while typing, but now is not valid anymore and contains commas we need to split.
                 if (token.startsWith('/') && !isRegex) {
-                    // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
-                    const tokens = token.split(',').map(x => x.trim());
-                    // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
-                    tokens.forEach(x => callback({ id: getSelect2OptionId(x), text: x }));
-                } else {
-                    callback({ id: getSelect2OptionId(token), text: token });
+                    const tokens = token.split(',').map((x: string) => x.trim());
+                        tokens.forEach((x: string) => callback({ id: getSelect2OptionId(x), text: x }));
+                    } else {
+                        callback({ id: getSelect2OptionId(token), text: token });
                 }
             }
 
@@ -1241,28 +1155,25 @@ function customTokenizer(input, _selection, callback) {
  * @param {object} params.data - The data object containing entries.
  * @returns {void}
  */
-// @ts-expect-error TS(7031) FIXME: Binding element 'template' implicitly has an 'any'... Remove this comment to see the full error message
-function enableKeysInputHelper({ template, entry, entryPropName, originalDataValueName, name, data }) {
-    // @ts-expect-error TS(2339) FIXME: Property 'wi_key_input_plaintext' does not exist o... Remove this comment to see the full error message
-    const isFancyInput = !isMobile() && !power_user.wi_key_input_plaintext;
+function enableKeysInputHelper({ template, entry, entryPropName, originalDataValueName, name, data }: { template: HTMLElement | null; entry: Record<string, unknown>; entryPropName: string; originalDataValueName: string; name: string; data: WorldInfoBook; }) {
+    const isFancyInput = !isMobile() && !(power_user as Record<string, unknown>).wi_key_input_plaintext;
     const input = isFancyInput ?
         template?.querySelector(`select[name="${entryPropName}"]`) :
         template?.querySelector(`textarea[name="${entryPropName}"]`);
     if (!input) return { isFancy: false, control: null };
-    input.dataset.uid = String(entry.uid);
-    input.dataset.macros = ''; // active
+    (input as HTMLElement).dataset.uid = String(entry.uid);
+    (input as HTMLElement).dataset.macros = ''; // active
     // Toggle visibility between select (fancy) and textarea (plaintext)
     const selectEl = template?.querySelector(`select[name="${entryPropName}"]`);
     const textareaEl = template?.querySelector(`textarea[name="${entryPropName}"]`);
     if (isFancyInput) {
-        if (selectEl) selectEl.style.display = '';
-        if (textareaEl) textareaEl.style.display = 'none';
+        if (selectEl) (selectEl as HTMLElement).style.display = '';
+        if (textareaEl) (textareaEl as HTMLElement).style.display = 'none';
     } else {
-        if (selectEl) selectEl.style.display = 'none';
-        if (textareaEl) textareaEl.style.display = '';
+        if (selectEl) (selectEl as HTMLElement).style.display = 'none';
+        if (textareaEl) (textareaEl as HTMLElement).style.display = '';
     }
-    // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
-    input.addEventListener('click', function (event) {
+    (input as HTMLElement).addEventListener('click', function (event: Event) {
         event.stopPropagation();
     });
 
@@ -1272,15 +1183,14 @@ function enableKeysInputHelper({ template, entry, entryPropName, originalDataVal
      * @param {boolean} [root0.searchStyle] - Whether to apply search style
      * @returns {JQuery<HTMLElement>|Element} The styled element
      */
-    // @ts-expect-error TS(7006) FIXME: Parameter 'item' implicitly has an 'any' type.
-    function templateStyling(item, { searchStyle = false } = {}) {
+    function templateStyling(item: Record<string, unknown>, { searchStyle = false } = {}) {
         const content = document.createElement('span');
         content.classList.add('item');
-        content.textContent = item.text;
-        content.title = `${item.text}\n\nClick to edit`;
-        const isRegex = isValidRegex(item.text);
+        content.textContent = item.text as string;
+        content.title = `${item.text as string}\n\nClick to edit`;
+        const isRegex = isValidRegex(item.text as string);
         if (isRegex) {
-            content.innerHTML = highlightRegex(item.text);
+            content.innerHTML = highlightRegex(item.text as string);
             content.classList.add('regex_item');
             const regexIcon = document.createElement('span');
             regexIcon.classList.add('regex_icon');
@@ -1294,8 +1204,8 @@ function enableKeysInputHelper({ template, entry, entryPropName, originalDataVal
             wrapper.append(content);
             const itemCount = document.createElement('span');
             itemCount.classList.add('item_count');
-            itemCount.textContent = item.count;
-            itemCount.title = `Used as a key ${item.count} ${item.count != 1 ? 'times' : 'time'} in this lorebook`;
+            itemCount.textContent = item.count as string;
+            itemCount.title = `Used as a key ${item.count as string} ${item.count != 1 ? 'times' : 'time'} in this lorebook`;
             wrapper.append(itemCount);
             return wrapper;
         }
@@ -1303,9 +1213,8 @@ function enableKeysInputHelper({ template, entry, entryPropName, originalDataVal
     }
 
     if (isFancyInput) {
-        // @ts-expect-error TS(2322) FIXME: Type '{ skipReset: true; noSave: true; }' is not a... Remove this comment to see the full error message
-        select2ModifyOptions(input, entry[entryPropName], { select: true, changeEventArgs: { skipReset: true, noSave: true } });
-        new TomSelect(input, {
+        select2ModifyOptions(input, entry[entryPropName] as string[], { select: true, changeEventArgs: { skipReset: true, noSave: true } as unknown as null | undefined });
+        new (TomSelect as unknown as new (el: Record<string, unknown>, opts: Record<string, unknown>) => Record<string, unknown>)(input as unknown as Record<string, unknown>, {
             maxItems: null,
             plugins: ['remove_button'],
             create: true,
@@ -1315,18 +1224,18 @@ function enableKeysInputHelper({ template, entry, entryPropName, originalDataVal
             labelField: 'text',
             searchField: ['text'],
             render: {
-                // @ts-expect-error TS(7006) FIXME: Parameter 'item' implicitly has an 'any' type.
-                option: item => templateStyling(item, { searchStyle: true }),
-                // @ts-expect-error TS(7006) FIXME: Parameter 'item' implicitly has an 'any' type.
-                item: item => templateStyling(item),
+                option: (item: Record<string, unknown>) => templateStyling(item, { searchStyle: true }),
+                item: (item: Record<string, unknown>) => templateStyling(item),
             },
-            onItemAdd: function (value) {
-                const option = this.options[value];
-                if (option) updateWorldEntryKeyOptionsCache([option]);
+            onItemAdd: function (this: Record<string, unknown>, value: string) {
+                const options = this.options as Record<string, unknown>;
+                const option = options[value] as Record<string, unknown> | undefined;
+                if (option) updateWorldEntryKeyOptionsCache([option as unknown as string]);
             },
-            onItemRemove: function (value) {
-                const option = this.options[value];
-                if (option) updateWorldEntryKeyOptionsCache([option], { remove: true });
+            onItemRemove: function (this: Record<string, unknown>, value: string) {
+                const options = this.options as Record<string, unknown>;
+                const option = options[value] as Record<string, unknown> | undefined;
+                if (option) updateWorldEntryKeyOptionsCache([option as unknown as string], { remove: true });
             },
         });
 
@@ -1335,81 +1244,73 @@ function enableKeysInputHelper({ template, entry, entryPropName, originalDataVal
          * @param {Event} _event
          * @param {{ skipReset?: boolean, noSave?: boolean }} [arg]
          */
-        // @ts-expect-error TS(7006) FIXME: Parameter '_event' implicitly has an 'any' type.
-        input.addEventListener('change', async function (_event, arg) {
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        input.addEventListener('change', async function (this: HTMLElement, _event: Event, arg?: Record<string, unknown>) {
             const uid = this.dataset.uid;
-            const tomSelect = this.tomSelect;
-            const keys = tomSelect ? tomSelect.items.map(id => tomSelect.options[id]?.text || id) : [];
-            const skipReset = arg?.skipReset ?? false;
-            const noSave = arg?.noSave ?? false;
-            // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
+            const thisRec = this as unknown as Record<string, unknown>;
+            const tomSelect = thisRec.tomSelect as Record<string, unknown> | undefined;
+            const keys = tomSelect ? (tomSelect.items as string[]).map((id: string) => ((tomSelect.options as Record<string, unknown>)[id] as Record<string, unknown>)?.text || id) : [];
+            const skipReset = (arg?.skipReset as boolean) ?? false;
+            const noSave = (arg?.noSave as boolean) ?? false;
             if (!skipReset) await resetScrollHeight(this);
             if (!noSave) {
-                data.entries[uid][entryPropName] = keys;
-                setWIOriginalDataValue(data, uid, originalDataValueName, data.entries[uid][entryPropName]);
-                await saveWorldInfo(name, data);
-            }
-            // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-            this.classList.toggle('empty', !data.entries[uid][entryPropName].length);
-            // Update the commentInput's placeholder for primary keys
-            if (entryPropName === 'key') {
-                const commentInput = /** @type {HTMLElement} */(_event.currentTarget.closest('.world_entry_form')?.querySelector('textarea[name="comment"]'));
-                setCommentPlaceholder(data.entries[uid][entryPropName].join(', '), commentInput);
-            }
-        });
+                if (uid) (data.entries[uid] as unknown as Record<string, unknown>)[entryPropName] = keys;
+                    if (uid) setWIOriginalDataValue(data, uid, originalDataValueName, (data.entries[uid] as unknown as Record<string, unknown>)[entryPropName]);
+                    await saveWorldInfo(name as string, data);
+                }
+                if (uid) this.classList.toggle('empty', !((data.entries[uid] as unknown as Record<string, unknown>)[entryPropName] as unknown[])?.length);
+                // Update the commentInput's placeholder for primary keys
+                if (entryPropName === 'key' && uid) {
+                    const commentInput = (_event.currentTarget as HTMLElement)?.closest('.world_entry_form')?.querySelector('textarea[name="comment"]');
+                    setCommentPlaceholder(((data.entries[uid] as unknown as Record<string, unknown>)[entryPropName] as string[]).join(', '), commentInput as HTMLElement);
+                }
+            });
 
-        input.classList.toggle('empty', !entry[entryPropName].length);
+            input.classList.toggle('empty', !((entry as unknown as Record<string, unknown>)[entryPropName] as unknown[])?.length);
 
-        // @ts-expect-error TS(7006) FIXME: Parameter 'target' implicitly has an 'any' type.
-        select2ChoiceClickSubscribe(input, target => {
+        select2ChoiceClickSubscribe(input as HTMLElement, (target: Element) => {
             const key = target.closest('.regex-highlight, .item')?.textContent || '';
-            const tomSelect = input.tomSelect;
+            const inputRec = input as unknown as Record<string, unknown>;
+            const tomSelect = inputRec.tomSelect as Record<string, unknown> | undefined;
             if (!tomSelect) return;
-            const values = tomSelect.getValue() ? tomSelect.getValue().split(',') : [];
+            const getVal = tomSelect.getValue as () => string;
+            const values = getVal() ? getVal().split(',') : [];
             const id = getSelect2OptionId(key);
             const index = values.indexOf(id);
             if (index > -1) {
                 values.splice(index, 1);
-                tomSelect.setValue(values.join(','));
+                (tomSelect.setValue as (v: string) => void)(values.join(','));
             }
             updateWorldEntryKeyOptionsCache([key], { remove: true });
             // Set the search input value to allow re-adding
-            const tsInput = input.closest('.ts-wrapper')?.querySelector('.ts-control input');
+            const tsInput = (input as HTMLElement).closest('.ts-wrapper')?.querySelector('.ts-control input') as HTMLInputElement | null;
             if (tsInput) {
                 tsInput.value = key;
                 tsInput.dispatchEvent(new Event('input', { bubbles: true }));
             }
         }, { openDrawer: true });
     } else {
-const selEl = template[0]?.querySelector(`select[name="${entryPropName}"]`); if (selEl) selEl.style.display = 'none';
-        if (input) input.style.display = '';
-        /**
-         * @param {Event} _event
-         * @param {{ skipReset?: boolean, noSave?: boolean }} [arg]
-         */
-        input.addEventListener('input', async function (this: unknown, _event: Event) {
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+const selEl = (template as HTMLElement | null)?.querySelector(`select[name="${entryPropName}"]`); if (selEl) (selEl as HTMLElement).style.display = 'none';
+        if (input) (input as HTMLElement).style.display = '';
+        input.addEventListener('input', async function (this: HTMLElement, _event: Event) {
             const uid = this.dataset.uid;
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const value = String(this.value);
+            const value = String((this as HTMLTextAreaElement).value);
             const detail = _event instanceof CustomEvent ? _event.detail : {};
-            const skipReset = detail.skipReset ?? false;
-            const noSave = detail.noSave ?? false;
+            const skipReset = (detail as Record<string, unknown>)?.skipReset ?? false;
+            const noSave = (detail as Record<string, unknown>)?.noSave ?? false;
             if (!skipReset) await resetScrollHeight(this);
             if (!noSave) {
-                data.entries[uid][entryPropName] = splitKeywordsAndRegexes(value);
-                setWIOriginalDataValue(data, uid, originalDataValueName, data.entries[uid][entryPropName]);
-                await saveWorldInfo(name, data);
-                this.classList.toggle('empty', !data.entries[uid][entryPropName].length);
+                if (uid) (data.entries[uid] as unknown as Record<string, unknown>)[entryPropName] = splitKeywordsAndRegexes(value);
+                    if (uid) setWIOriginalDataValue(data, uid, originalDataValueName, (data.entries[uid] as unknown as Record<string, unknown>)[entryPropName]);
+                    await saveWorldInfo(name, data);
+                    if (uid) this.classList.toggle('empty', !((data.entries[uid] as unknown as Record<string, unknown>)[entryPropName] as unknown[])?.length);
             }
             // Update the commentInput's placeholder for primary keys
             if (entryPropName === 'key') {
                 const commentInput = this.closest('.world_entry_form')?.querySelector('textarea[name="comment"]');
-                setCommentPlaceholder(value, commentInput);
+                setCommentPlaceholder(value, commentInput as HTMLElement | null);
             }
         });
-        input.value = entry[entryPropName].join(', ');
+        (input as HTMLTextAreaElement).value = ((entry as unknown as Record<string, unknown>)[entryPropName] as string[])?.join(', ');
         input.dispatchEvent(new CustomEvent('input', { detail: { skipReset: true } }));
     }
     return { isFancy: isFancyInput, control: input };
@@ -1424,7 +1325,6 @@ const selEl = template[0]?.querySelector(`select[name="${entryPropName}"]`); if 
  * @param {object} params.data - The data object containing entries.
  * @param {string} params.name - The name of the world info to save changes to.
  */
-// @ts-expect-error TS(7031) FIXME: Binding element 'template' implicitly has an 'any'... Remove this comment to see the full error message
 /**
  * Generic field binder for WI entry editors.
  *
@@ -1446,11 +1346,9 @@ const selEl = template[0]?.querySelector(`select[name="${entryPropName}"]`); if 
  */
 function bindEntryField(
     el: HTMLElement,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    entry: any,
+    entry: Record<string, unknown>,
     fieldName: string,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    data: any,
+    data: WorldInfoBook,
     name: string,
     opts: {
         read?: (el: unknown) => unknown;
@@ -1466,14 +1364,15 @@ function bindEntryField(
     const write = opts.write ?? ((el: unknown, v: unknown) => { (el as HTMLInputElement).value = v as string; });
     const transform = opts.transform ?? ((v: unknown) => v);
 
-    // @ts-expect-error TS(2339) FIXME: Property 'uid' does not exist on type 'unknown'
-    el.dataset.uid = String((entry as Record<string, unknown>).uid);
-    el.addEventListener('input', async function (this: unknown, e: Event) {
+    el.dataset.uid = String(entry.uid);
+    // bindEntryField handler
+    el.addEventListener('input', async function (this: HTMLElement, e: Event) {
         const uid = this.dataset.uid;
+        if (!uid) return;
         const raw = read(this);
         const value = transform(raw);
         const noSave = e instanceof CustomEvent ? (e as CustomEvent).detail?.noSave : false;
-        data.entries[uid][fieldName] = value;
+        data.entries[uid]![fieldName as keyof WorldInfoEntryData] = value as never;
         setWIOriginalDataValue(data, uid, keyPath, value);
         if (opts.onSave) opts.onSave(uid, value);
         if (!noSave) await saveWorldInfo(name, data);
@@ -1485,8 +1384,8 @@ function bindEntryField(
 /**
  * Helper to handle match checkboxes for WI entries.
  */
-function handleMatchCheckboxHelper({ template, entry, fieldName, data, name }) {
-    const el = template.querySelector(`input[type="checkbox"][name="${fieldName}"]`);
+function handleMatchCheckboxHelper({ template, entry, fieldName, data, name }: { template: HTMLElement | null; entry: Record<string, unknown>; fieldName: string; data: WorldInfoBook; name: string; }) {
+    const el = template!.querySelector(`input[type="checkbox"][name="${fieldName}"]`) as HTMLElement | null;
     if (!el) return;
     bindEntryField(el, entry, fieldName, data, name, {
         read: (el: unknown) => (el as HTMLInputElement).checked,
@@ -1501,16 +1400,16 @@ function handleMatchCheckboxHelper({ template, entry, fieldName, data, name }) {
  * @param {object} params.data - The data object containing entries.
  * @param {string} params.uid - The unique identifier of the entry to update.
  */
-// @ts-expect-error TS(7031) FIXME: Binding element 'template' implicitly has an 'any'... Remove this comment to see the full error message
-function updatePosOrdDisplayHelper({ template, data, uid }) {
-    const entry = data.entries[uid];
-    let posText = entry.position;
+function updatePosOrdDisplayHelper({ template, data, uid }: { template: HTMLElement | null; data: WorldInfoBook; uid: string | number; }) {
+    const entry = data.entries[uid]!;
+    if (!entry) return;
+    let posText: string | number = entry.position;
     switch (entry.position) {
         case 0: posText = '↑CD'; break;
         case 1: posText = 'CD↓'; break;
         case 2: posText = '↑AN'; break;
         case 3: posText = 'AN↓'; break;
-        case 4: posText = `@D${entry.depth}`; break;
+        case 4: posText = `@D${entry.depth}`;
     }
     const posEl = template?.querySelector('.world_entry_form_position_value');
     if (posEl) posEl.textContent = `(${posText} ${entry.order})`;
@@ -1520,10 +1419,9 @@ function updatePosOrdDisplayHelper({ template, data, uid }) {
  * Helper to initialize character filter select2.
  * @param {JQuery<HTMLElement>} characterFilter - The select element for character filter.
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'characterFilter' implicitly has an 'any... Remove this comment to see the full error message
-function initCharacterFilterSelect2Helper(characterFilter) {
+function initCharacterFilterSelect2Helper(characterFilter: HTMLElement | null) {
     if (!isMobile()) {
-        new TomSelect(characterFilter, {
+        new (TomSelect as unknown as new (el: HTMLElement | null, opts: Record<string, unknown>) => Record<string, unknown>)(characterFilter, {
             maxItems: null,
             placeholder: t`Tie this entry to specific characters or characters with specific tags`,
             allowEmptyOption: true,
@@ -1538,25 +1436,24 @@ function initCharacterFilterSelect2Helper(characterFilter) {
  * @param {JQuery<HTMLElement>} params.characterFilter - The select element to fill with options.
  * @param {object} params.entry - The entry object containing character filter data.
  */
-// @ts-expect-error TS(7031) FIXME: Binding element 'characterFilter' implicitly has a... Remove this comment to see the full error message
-function fillCharacterAndTagOptionsHelper({ characterFilter, entry }) {
+function fillCharacterAndTagOptionsHelper({ characterFilter, entry }: { characterFilter: HTMLElement | null; entry: Record<string, unknown>; }) {
     const characters = getContext().characters;
-    characters.forEach((character) => {
+    characters.forEach((character: Record<string, unknown>) => {
         const option = document.createElement('option');
-        const name = character.avatar.replace(/\.[^/.]+$/, '') ?? character.name;
+        const name = (character.avatar as string).replace(/\.[^/.]+$/, '') ?? character.name as string;
         option.innerText = name;
-        option.selected = entry.characterFilter?.names?.includes(name);
+        option.selected = ((entry.characterFilter as Record<string, unknown>)?.names as string[])?.includes(name);
         option.setAttribute('data-type', 'character');
-        characterFilter.append(option);
+        characterFilter!.append(option);
     });
     const tags = getContext().tags;
-    tags.forEach((tag) => {
+    tags.forEach((tag: Record<string, unknown>) => {
         const option = document.createElement('option');
-        option.innerText = `[Tag] ${tag.name}`;
-        option.selected = entry.characterFilter?.tags?.includes(tag.id);
-        option.value = tag.id;
+        option.innerText = `[Tag] ${tag.name as string}`;
+        option.selected = ((entry.characterFilter as Record<string, unknown>)?.tags as string[])?.includes(tag.id as string);
+        option.value = tag.id as string;
         option.setAttribute('data-type', 'tag');
-        characterFilter.append(option);
+        characterFilter!.append(option);
     });
 }
 
@@ -1568,39 +1465,37 @@ function fillCharacterAndTagOptionsHelper({ characterFilter, entry }) {
  * @param {object} params.entry - The entry object to update.
  * @param {string} params.name - The name of the world info to save changes to.
  */
-// @ts-expect-error TS(7031) FIXME: Binding element 'characterFilter' implicitly has a... Remove this comment to see the full error message
-function handleCharacterFilterChangeHelper({ characterFilter, data, entry, name }) {
+function handleCharacterFilterChangeHelper({ characterFilter, data, entry, name }: { characterFilter: HTMLElement | null; data: WorldInfoBook; entry: Record<string, unknown>; name: string; }) {
     if (!characterFilter) return;
+    const entries = data.entries;
 
-    /** Shared: reads the selected options and writes them into data.entries[uid] */
-    async function saveFilterSelection(uid, selectedOptions) {
-        if ((!selectedOptions || selectedOptions?.length === 0) && !data.entries[uid].characterFilter?.isExclude) {
-            delete data.entries[uid].characterFilter;
-        } else {
-            const names = Array.from(selectedOptions).filter(o => o.matches('[data-type="character"]')).map(o => o instanceof HTMLOptionElement && o.innerText);
-            const tags = Array.from(selectedOptions).filter(o => o.matches('[data-type="tag"]')).map(o => o instanceof HTMLOptionElement && o.value);
-            Object.assign(data.entries[uid], {
-                characterFilter: {
-                    isExclude: data.entries[uid].characterFilter?.isExclude ?? false,
-                    names: names,
-                    tags: tags,
-                },
-            });
-        }
-        setWIOriginalDataValue(data, uid, 'character_filter', data.entries[uid].characterFilter);
-        await saveWorldInfo(name, data);
+    async function saveFilterSelection(uid: string, selectedOptions: HTMLOptionsCollection | undefined) {
+    const entryRec = entries[uid];
+    if (!entryRec) return;
+    if ((!selectedOptions || selectedOptions?.length === 0) && !(entryRec.characterFilter as Record<string, unknown>)?.isExclude) {
+        delete entryRec.characterFilter;
+    } else {
+        const names = Array.from(selectedOptions ?? []).filter((o: Element) => o.matches('[data-type="character"]')).map((o: Element) => o instanceof HTMLOptionElement && o.innerText);
+        const tags = Array.from(selectedOptions ?? []).filter((o: Element) => o.matches('[data-type="tag"]')).map((o: Element) => o instanceof HTMLOptionElement && o.value);
+        Object.assign(entryRec, {
+            characterFilter: {
+                isExclude: (entryRec.characterFilter as Record<string, unknown>)?.isExclude ?? false,
+                names: names,
+                tags: tags,
+            },
+        });
     }
+    setWIOriginalDataValue(data, uid, 'character_filter', entryRec.characterFilter);
+    await saveWorldInfo(name, data);
+}
 
-    characterFilter.addEventListener('mousedown', async function (this: unknown, e: Event) {
+    characterFilter.addEventListener('mousedown', async function (this: HTMLSelectElement, e: Event) {
         if (wiManager.worldNames.length === 0) { e.preventDefault(); return; }
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any'
-        await saveFilterSelection(this.dataset.uid, this.selectedOptions);
+        await saveFilterSelection(this.dataset.uid ?? '', this.selectedOptions as unknown as HTMLOptionsCollection);
     });
-    characterFilter.addEventListener('change', async function (this: unknown) {
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any'
+    characterFilter.addEventListener('change', async function (this: HTMLSelectElement) {
         if (wiManager.worldNames.length === 0) return;
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any'
-        await saveFilterSelection(this.dataset.uid, this.selectedOptions);
+        await saveFilterSelection(this.dataset.uid ?? '', this.selectedOptions as unknown as HTMLOptionsCollection);
     });
 }
 
@@ -1612,19 +1507,18 @@ function handleCharacterFilterChangeHelper({ characterFilter, data, entry, name 
  * @param {object} params.entry - The entry object to update.
  * @param {string} params.name - The name of the world info to save changes to.
  */
-// @ts-expect-error TS(7031) FIXME: Binding element 'probabilityInput' implicitly has ... Remove this comment to see the full error message
-function handleProbabilityInputHelper({ probabilityInput, data, entry, name }) {
-    bindEntryField(probabilityInput[0], entry, 'probability', data, name, {
+function handleProbabilityInputHelper({ probabilityInput, data, entry, name }: { probabilityInput: NodeListOf<HTMLInputElement>; data: WorldInfoBook; entry: Record<string, unknown>; name: string; }) {
+    bindEntryField(probabilityInput[0]!, entry, 'probability', data, name, {
         read: (el: unknown) => Number((el as HTMLInputElement).value),
         write: (el: unknown, v: unknown) => { (el as HTMLInputElement).value = v as string ?? ''; },
         transform: (v: unknown) => isNaN(v as number) ? null : Math.min(100, Math.max(0, v as number)),
         onSave: (uid, value) => {
-            if (value !== null && value !== Number(probabilityInput[0].value)) {
-                probabilityInput[0].value = value;
+            if (value !== null && value !== Number(probabilityInput[0]!.value)) {
+                probabilityInput[0]!.value = String(value);
             }
         },
     });
-    probabilityInput[0].style.width = 'calc(3em + 15px)';
+    probabilityInput[0]!.style.width = 'calc(3em + 15px)';
 }
 
 /**
@@ -1636,32 +1530,30 @@ function handleProbabilityInputHelper({ probabilityInput, data, entry, name }) {
  * @param {string} params.name - The name of the world info to save changes to.
  * @param {JQuery<HTMLElement>} params.probabilityInput - The input element for probability.
  */
-// @ts-expect-error TS(7031) FIXME: Binding element 'probabilityToggle' implicitly has... Remove this comment to see the full error message
-function handleProbabilityToggleHelper({ probabilityToggle, data, entry, name, probabilityInput }) {
-    probabilityToggle[0].dataset.uid = String(entry.uid);
-    probabilityToggle[0].addEventListener('input', async function (this: unknown, e: Event) {
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any'
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+function handleProbabilityToggleHelper({ probabilityToggle, data, entry, name, probabilityInput }: { probabilityToggle: NodeListOf<HTMLInputElement>; data: WorldInfoBook; entry: Record<string, unknown>; name: string; probabilityInput: NodeListOf<HTMLInputElement>; }) {
+    probabilityToggle[0]!.dataset.uid = String(entry.uid);
+    const entries = data.entries;
+    probabilityToggle[0]!.addEventListener('input', async function (this: HTMLInputElement, e: Event) {
         const uid = this.dataset.uid;
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const value = this.checked;
         const data_noSave = e instanceof CustomEvent ? e.detail?.noSave : false;
-        data.entries[uid].useProbability = value;
+        if (!uid) return;
+        entries[uid]!.useProbability = value;
         const probabilityContainer = this.closest('.world_entry')?.querySelector('.probabilityContainer');
-        if (!data_noSave) await saveWorldInfo(name, data);
-        if (value && probabilityContainer) probabilityContainer.style.display = ''; else if (probabilityContainer) probabilityContainer.style.display = 'none';
-        if (value && data.entries[uid].probability === null) {
-            data.entries[uid].probability = 100;
+        if (!data_noSave) await saveWorldInfo(name as string, data);
+        if (value && probabilityContainer) (probabilityContainer as HTMLElement).style.display = ''; else if (probabilityContainer) (probabilityContainer as HTMLElement).style.display = 'none';
+        if (value && entries[uid]!.probability === null) {
+            entries[uid]!.probability = 100;
         }
         if (!value) {
-            data.entries[uid].probability = null;
+            entries[uid]!.probability = null;
         }
-        probabilityInput[0].value = data.entries[uid].probability;
-        probabilityInput[0].dispatchEvent(new CustomEvent('input', { detail: { noSave: data_noSave } }));
+        probabilityInput[0]!.value = String(entries[uid]!.probability ?? '');
+        probabilityInput[0]!.dispatchEvent(new CustomEvent('input', { detail: { noSave: data_noSave } }));
     });
-    probabilityToggle[0].checked = true;
-    probabilityToggle[0].dispatchEvent(new CustomEvent('input', { detail: { noSave: true } }));
-    if (probabilityToggle[0]?.parentElement) probabilityToggle[0].parentElement.style.display = 'none';
+    probabilityToggle[0]!.checked = true;
+    probabilityToggle[0]!.dispatchEvent(new CustomEvent('input', { detail: { noSave: true } }));
+    if (probabilityToggle[0]?.parentElement) probabilityToggle[0]!.parentElement!.style.display = 'none';
 }
 
 /**
@@ -1673,9 +1565,8 @@ function handleProbabilityToggleHelper({ probabilityToggle, data, entry, name, p
  * @param {object} params.data - The data object containing entries.
  * @param {string} params.name - The name of the world info to save changes to.
  */
-// @ts-expect-error TS(7031) FIXME: Binding element 'selectElem' implicitly has an 'an... Remove this comment to see the full error message
-function handleBooleanSelectHelper({ selectElem, entry, entryKey, data, name }) {
-    bindEntryField(selectElem[0], entry, entryKey, data, name, {
+function handleBooleanSelectHelper({ selectElem, entry, entryKey, data, name }: { selectElem: NodeListOf<HTMLSelectElement>; entry: Record<string, unknown>; entryKey: string; data: WorldInfoBook; name: string; }) {
+    bindEntryField(selectElem[0]!, entry, entryKey, data, name, {
         read: (el: unknown) => (el as HTMLInputElement).value === 'null' ? null : (el as HTMLInputElement).value === 'true',
         write: (el: unknown, v: unknown) => {
             (el as HTMLInputElement).value = (v === null || v === undefined) ? 'null' : v ? 'true' : 'false';
@@ -1696,23 +1587,24 @@ function handleBooleanSelectHelper({ selectElem, entry, entryKey, data, name }) 
  * @param {number} params.max - The maximum value for the number input.
  * @param {boolean} [params.clamp] - Whether to clamp the value within the min and max range.
  */
-// @ts-expect-error TS(7031) FIXME: Binding element 'inputElem' implicitly has an 'any... Remove this comment to see the full error message
-function handleNumberInputHelper({ inputElem, entry, entryKey, data, name, min, max, clamp = false }) {
-    bindEntryField(inputElem[0], entry, entryKey, data, name, {
+function handleNumberInputHelper({ inputElem, entry, entryKey, data, name, min, max, clamp = false }: { inputElem: NodeListOf<HTMLInputElement>; entry: Record<string, unknown>; entryKey: string; data: WorldInfoBook; name: string; min: number; max: number; clamp?: boolean; }) {
+    bindEntryField(inputElem[0]!, entry, entryKey, data, name, {
         read: (el: unknown) => !isNaN(Number((el as HTMLInputElement).value)) ? Number((el as HTMLInputElement).value) : null,
-        write: (el: unknown, v: unknown) => { (el as HTMLInputElement).value = v as string ?? (clamp ? min : ''); },
+        write: (el: unknown, v: unknown) => { (el as HTMLInputElement).value = String((v as unknown) ?? (clamp ? min : '')); },
         transform: (v: unknown) => {
-            if (v === null || isNaN(v)) return null;
+            const vn = v as number | null;
+            if (vn === null || isNaN(vn)) return null;
             if (clamp) {
-                if (v < min) return min;
-                if (v > max) return max;
+                if (vn < min) return min;
+                if (vn > max) return max;
             }
-            return v;
+            return vn;
         },
-        onSave: (uid, value) => {
-            if (clamp && value !== null) {
-                if (value < min) { inputElem[0].value = min; }
-                if (value > max) { inputElem[0].value = max; }
+        onSave: (uid: string, value: unknown) => {
+            const vn = value as number | null;
+            if (clamp && vn !== null) {
+                if (vn < min) { inputElem[0]!.value = String(min); }
+                if (vn > max) { inputElem[0]!.value = String(max); }
             }
         },
     });
@@ -1726,34 +1618,32 @@ function handleNumberInputHelper({ inputElem, entry, entryKey, data, name, min, 
  * @param {object} params.data - The data object containing entries.
  * @param {string} params.name - The name of the world info to save changes to.
  */
-// @ts-expect-error TS(7031) FIXME: Binding element 'entryStateSelector' implicitly ha... Remove this comment to see the full error message
-function handleEntryStateSelectorHelper({ entryStateSelector, entry, data, name }) {
-    entryStateSelector[0].dataset.uid = String(entry.uid);
-    entryStateSelector[0].addEventListener('click', function (this: unknown, event: Event) {
+function handleEntryStateSelectorHelper({ entryStateSelector, entry, data, name }: { entryStateSelector: NodeListOf<HTMLSelectElement>; entry: Record<string, unknown>; data: WorldInfoBook; name: string; }) {
+    entryStateSelector[0]!.dataset.uid = String(entry.uid);
+    const entries = data.entries;
+    entryStateSelector[0]!.addEventListener('click', function (this: HTMLElement, event: Event) {
         event.stopPropagation();
     });
-    entryStateSelector[0].addEventListener('input', async function (this: unknown, e: Event) {
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any'
-        const uid = entry.uid;
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    entryStateSelector[0]!.addEventListener('input', async function (this: HTMLSelectElement, e: Event) {
+        const uid = entry.uid as string;
         const value = this.value;
         const data_noSave = e instanceof CustomEvent ? e.detail?.noSave : false;
         switch (value) {
             case 'constant':
-                data.entries[uid].constant = true;
-                data.entries[uid].vectorized = false;
+                entries[uid]!.constant = true;
+                entries[uid]!.vectorized = false;
                 setWIOriginalDataValue(data, uid, 'constant', true);
                 setWIOriginalDataValue(data, uid, 'extensions.vectorized', false);
                 break;
             case 'normal':
-                data.entries[uid].constant = false;
-                data.entries[uid].vectorized = false;
+                entries[uid]!.constant = false;
+                entries[uid]!.vectorized = false;
                 setWIOriginalDataValue(data, uid, 'constant', false);
                 setWIOriginalDataValue(data, uid, 'extensions.vectorized', false);
                 break;
             case 'vectorized':
-                data.entries[uid].constant = false;
-                data.entries[uid].vectorized = true;
+                entries[uid]!.constant = false;
+                entries[uid]!.vectorized = true;
                 setWIOriginalDataValue(data, uid, 'constant', false);
                 setWIOriginalDataValue(data, uid, 'extensions.vectorized', true);
                 break;
@@ -1761,9 +1651,10 @@ function handleEntryStateSelectorHelper({ entryStateSelector, entry, data, name 
         if (!data_noSave) await saveWorldInfo(name, data);
     });
     const entryState = () => entry.constant === true ? 'constant' : entry.vectorized === true ? 'vectorized' : 'normal';
-    const option = entryStateSelector[0].querySelector(`option[value="${entryState()}"]`);
-    if (option) option.selected = true;
-    entryStateSelector[0].dispatchEvent(new CustomEvent('input', { detail: { noSave: true } }));
+    const entryStateValue = entryState();
+    const option = entryStateSelector[0]!.querySelector(`option[value="${String(entryStateValue)}"]`);
+    if (option) (option as HTMLOptionElement).selected = true;
+    entryStateSelector[0]!.dispatchEvent(new CustomEvent('input', { detail: { noSave: true } }));
 }
 
 /**
@@ -1775,23 +1666,24 @@ function handleEntryStateSelectorHelper({ entryStateSelector, entry, data, name 
  * @param {string} params.name - The name of the world info to save changes to.
  * @param {JQuery<HTMLElement>} params.template - The template element for the entry.
  */
-// @ts-expect-error TS(7031) FIXME: Binding element 'entryKillSwitch' implicitly has a... Remove this comment to see the full error message
-function handleEntryKillSwitchHelper({ entryKillSwitch, entry, data, name, template }) {
-    entryKillSwitch[0].dataset.uid = String(entry.uid);
-    entryKillSwitch[0].addEventListener('click', async function () {
-        const uid = entry.uid;
-        data.entries[uid].disable = !data.entries[uid].disable;
-        const isActive = !data.entries[uid].disable;
-        setWIOriginalDataValue(data, uid, 'enabled', isActive);
-        template[0].classList.toggle('disabledWIEntry', !isActive);
-        entryKillSwitch[0].classList.toggle('fa-toggle-off', !isActive);
-        entryKillSwitch[0].classList.toggle('fa-toggle-on', isActive);
-        await saveWorldInfo(name, data);
+function handleEntryKillSwitchHelper({ entryKillSwitch, entry, data, name, template }: { entryKillSwitch: NodeListOf<HTMLElement>; entry: Record<string, unknown>; data: WorldInfoBook; name: string; template: HTMLElement | null; }) {
+    entryKillSwitch[0]!.dataset.uid = String(entry.uid);
+    const entries = data.entries;
+    entryKillSwitch[0]!.addEventListener('click', async function () {
+        const uid = entry.uid as string;
+        if (!uid) return;
+        entries[uid]!.disable = !entries[uid]!.disable;
+        const isActive = !entries[uid]!.disable;
+        setWIOriginalDataValue(data, uid, 'enabled', isActive as unknown);
+        template?.classList.toggle('disabledWIEntry', !isActive);
+        entryKillSwitch[0]!.classList.toggle('fa-toggle-off', !isActive);
+        entryKillSwitch[0]!.classList.toggle('fa-toggle-on', isActive);
+        await saveWorldInfo(name as string, data);
     });
     const isActive = !entry.disable;
     if (template) template.classList.toggle('disabledWIEntry', !isActive);
-    entryKillSwitch[0].classList.toggle('fa-toggle-off', !isActive);
-    entryKillSwitch[0].classList.toggle('fa-toggle-on', isActive);
+    entryKillSwitch[0]!.classList.toggle('fa-toggle-off', !isActive);
+    entryKillSwitch[0]!.classList.toggle('fa-toggle-on', isActive);
 }
 
 /**
@@ -1799,11 +1691,10 @@ function handleEntryKillSwitchHelper({ entryKillSwitch, entry, data, name, templ
  * @param {string} keys Text to display in commentInput's placeholder.
  * @param {JQuery<HTMLElement>} commentInput The comment input element.
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'keys' implicitly has an 'any' type.
-function setCommentPlaceholder(keys, commentInput) {
+function setCommentPlaceholder(keys: string, commentInput: HTMLElement | null) {
     // Limit placeholder text to avoid performance issues.
-    keys = keys.slice(0, MAX_COMMENT_LENGTH);
-    if (commentInput) commentInput.placeholder = (keys || t`Entry Title/Memo`);
+    keys = (keys as string).slice(0, MAX_COMMENT_LENGTH);
+    if (commentInput) (commentInput as HTMLTextAreaElement).placeholder = ((keys as string) || t`Entry Title/Memo`);
 }
 
 /**
@@ -1813,21 +1704,22 @@ function setCommentPlaceholder(keys, commentInput) {
  * @param {object} entry - The entry object to be edited.
  * @returns {Promise<JQuery<HTMLElement>>} The entry header template element
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
-export async function getWorldEntry(name, data, entry) {
-    if (!data.entries[entry.uid]) return;
+export async function getWorldEntry(name: unknown, data: WorldInfoBook, entry: Record<string, unknown>) {
+    if (!data.entries[String(entry.uid)]) return;
 
     // Initialize store for this book
-    const store = wiManager.getStore(name);
+    const store = wiManager.getStore(name as string);
     await store.init();
 
-    // Hydrate store if empty (covers standalone usage outside displayWorldEntries)
-    if (data.entries) {
+    // Hydrate the store from the loaded book data if it's empty
+    // (store is not populated until the first save or explicit load)
+    const entriesData = data.entries;
+    if (Object.keys(entriesData).length > 0) {
         const count = await store.entryCount();
         if (count === 0) {
-            const entryList = Object.values(data.entries).filter(Boolean);
+            const entryList = Object.values(entriesData).filter(Boolean);
             if (entryList.length > 0) {
-                await store.replaceAllEntries(entryList);
+                await store.replaceAllEntries(entryList as unknown as WorldInfoEntryData[]);
             }
         }
     }
@@ -1838,150 +1730,149 @@ export async function getWorldEntry(name, data, entry) {
         headerTemplate.setAttribute('uid', String(entry.uid));
     }
 
-    // @ts-expect-error TS(2339) FIXME: Property 'wi_key_input_plaintext' does not exist o... Remove this comment to see the full error message
-    if (typeof power_user.wi_key_input_plaintext === 'undefined') power_user.wi_key_input_plaintext = true;
+    if (typeof (power_user as Record<string, unknown>).wi_key_input_plaintext === 'undefined') (power_user as Record<string, unknown>).wi_key_input_plaintext = true;
 
     // Comment
-    const commentInput = headerTemplate?.querySelector('textarea[name="comment"]');
+    const commentInput = headerTemplate?.querySelector('textarea[name=comment]') as HTMLTextAreaElement | null;
 
     //Update the commentInput's placeholder.
-    const keys = entry.key.join(', ');
+    const keys = (entry.key as string[]).join(', ');
     setCommentPlaceholder(keys, commentInput);
 
     if (commentInput) commentInput.dataset.uid = String(entry.uid);
-    commentInput?.addEventListener('input', async function (this: unknown, e: Event) {
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any'
+    commentInput?.addEventListener('input', async function (this: HTMLElement, e: Event) {
         const uid = this.dataset.uid;
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any'
-        const value = this.value;
+        const value = (this as HTMLTextAreaElement).value;
         const detail = e instanceof CustomEvent ? e.detail : {};
         const skipReset = detail.skipReset ?? false;
         const data_noSave = detail.noSave ?? false;
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any'
         if (!skipReset) await resetScrollHeight(this);
-        data.entries[uid].comment = value;
-        setWIOriginalDataValue(data, uid, 'comment', data.entries[uid].comment);
-        if (!data_noSave) await saveWorldInfo(name, data);
+        if (uid) data.entries[uid]!.comment = value;
+        if (uid) setWIOriginalDataValue(data, uid, 'comment', data.entries[uid]!.comment);
+        if (!data_noSave) await saveWorldInfo(name as string, data);
     });
     if (commentInput) {
-        commentInput.value = entry.comment;
+        commentInput.value = entry.comment as string;
         commentInput.dispatchEvent(new CustomEvent('input', { detail: { skipReset: true, noSave: true } }));
     }
 
     // Order
-    const orderInput = headerTemplate.querySelectorAll('input[name="order"]');
-    orderInput[0].dataset.uid = String(entry.uid);
-    // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
-    orderInput[0].addEventListener('input', async function (e) {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    if (!headerTemplate) return null;
+    const orderInput = headerTemplate.querySelectorAll('input[name="order"]') as NodeListOf<HTMLInputElement>;
+    const orderEl = orderInput[0];
+    if (!orderEl) return null;
+    orderEl.dataset.uid = String(entry.uid);
+    orderEl.addEventListener('input', async function (this: HTMLElement, e: Event) {
         const uid = this.dataset.uid;
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const value = Number(this.value);
+        const value = Number((this as HTMLInputElement).value);
         const data_noSave = e instanceof CustomEvent ? e.detail?.noSave : false;
-        data.entries[uid].order = !isNaN(value) ? value : 0;
+        if (!uid) return;
+        data.entries[uid]!.order = !isNaN(value) ? value : 0;
         updatePosOrdDisplayHelper({ template: headerTemplate, data, uid });
-        setWIOriginalDataValue(data, uid, 'insertion_order', data.entries[uid].order);
-        if (!data_noSave) await saveWorldInfo(name, data);
+        setWIOriginalDataValue(data, uid, 'insertion_order', data.entries[uid]!.order);
+        if (!data_noSave) await saveWorldInfo(name as string, data);
     });
-    orderInput[0].value = entry.order;
-    orderInput[0].dispatchEvent(new CustomEvent('input', { detail: { noSave: true } }));
-    orderInput[0].style.width = 'calc(3em + 15px)';
+    orderEl.value = entry.order as string;
+    orderEl.dispatchEvent(new CustomEvent('input', { detail: { noSave: true } }));
+    orderEl.style.width = 'calc(3em + 15px)';
 
     // Probability
-    handleProbabilityInputHelper({ probabilityInput: headerTemplate.querySelectorAll('input[name="probability"]'), data, entry, name });
+    handleProbabilityInputHelper({ probabilityInput: headerTemplate.querySelectorAll('input[name="probability"]'), data, entry, name: name as string });
 
     // Depth
     handleNumberInputHelper({
         inputElem: headerTemplate.querySelectorAll('input[name="depth"]'),
-        entry, entryKey: 'depth', data, name, min: 0, max: MAX_SCAN_DEPTH, clamp: false,
+        entry, entryKey: 'depth', data, name: name as string, min: 0, max: MAX_SCAN_DEPTH, clamp: false,
     });
-    headerTemplate.querySelector('input[name="depth"]').style.width = 'calc(3em + 15px)';
+    (headerTemplate.querySelector('input[name="depth"]') as HTMLElement)!.style.width = 'calc(3em + 15px)';
 
     // Position
     if (entry.position === undefined) entry.position = 0;
-    const positionInput = headerTemplate.querySelectorAll('select[name="position"]');
-    positionInput[0].dataset.uid = String(entry.uid);
-    positionInput[0].addEventListener('click', (e: Event) => e.stopPropagation());
-    positionInput[0].addEventListener('input', async function (this: unknown, e: Event) {
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any'
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    const positionInput = headerTemplate.querySelectorAll('select[name="position"]') as NodeListOf<HTMLSelectElement>;
+    const posEl = positionInput[0];
+    if (!posEl) return null;
+    posEl.dataset.uid = String(entry.uid);
+    posEl.addEventListener('click', (e: Event) => e.stopPropagation());
+    posEl.addEventListener('input', async function (this: HTMLSelectElement, e: Event) {
         const uid = this.dataset.uid;
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const value = Number(this.value);
         const data_noSave = e instanceof CustomEvent ? e.detail?.noSave : false;
-        data.entries[uid].position = !isNaN(value) ? value : 0;
-        const depthInput = headerTemplate?.querySelector('input[name="depth"]');
+        if (uid) data.entries[uid]!.position = !isNaN(value) ? value : 0;
+        const depthInput = headerTemplate?.querySelector('input[name="depth"]') as HTMLInputElement | null;
         if (value === world_info_position.atDepth) {
             if (depthInput) depthInput.disabled = false;
             if (depthInput) depthInput.style.visibility = 'visible';
             const role = Number(this.options[this.selectedIndex]?.getAttribute('data-role'));
-            data.entries[uid].role = role;
+            if (uid) data.entries[uid]!.role = role;
         } else {
             if (depthInput) depthInput.disabled = true;
             if (depthInput) depthInput.style.visibility = 'hidden';
-            data.entries[uid].role = null;
+            if (uid) (data.entries[uid] as unknown as Record<string, unknown>).role = null;
         }
-        updatePosOrdDisplayHelper({ template: headerTemplate, data, uid });
-        setWIOriginalDataValue(data, uid, 'position', data.entries[uid].position == 0 ? 'before_char' : 'after_char');
-        setWIOriginalDataValue(data, uid, 'extensions.position', data.entries[uid].position);
-        setWIOriginalDataValue(data, uid, 'extensions.role', data.entries[uid].role);
-        if (!data_noSave) await saveWorldInfo(name, data);
+        if (uid) updatePosOrdDisplayHelper({ template: headerTemplate, data, uid });
+        if (uid) setWIOriginalDataValue(data, uid, 'position', data.entries[uid]!.position == 0 ? 'before_char' : 'after_char');
+        if (uid) setWIOriginalDataValue(data, uid, 'extensions.position', data.entries[uid]!.position);
+        if (uid) setWIOriginalDataValue(data, uid, 'extensions.role', data.entries[uid]!.role);
+        if (!data_noSave) await saveWorldInfo(name as string, data);
     });
-    const roleValue = entry.position === world_info_position.atDepth ? String(entry.role ?? extension_prompt_roles.SYSTEM) : '';
+    const roleValue = entry.position === world_info_position.atDepth ? String((entry.role as number | undefined) ?? extension_prompt_roles.SYSTEM) : '';
     const posOption = headerTemplate?.querySelector(`select[name="position"] option[value="${entry.position}"][data-role="${roleValue}"]`);
     if (posOption instanceof HTMLOptionElement) posOption.selected = true;
-    positionInput[0].dispatchEvent(new CustomEvent('input', { detail: { noSave: true } }));
+    posEl.dispatchEvent(new CustomEvent('input', { detail: { noSave: true } }));
 
     // Tri-state selector
     handleEntryStateSelectorHelper({
         entryStateSelector: headerTemplate.querySelectorAll('select[name="entryStateSelector"]'),
-        entry, data, name,
+        entry, data, name: name as string,
     });
 
     // Kill switch
     handleEntryKillSwitchHelper({
         entryKillSwitch: headerTemplate.querySelectorAll('div[name="entryKillSwitch"]'),
-        entry, data, name, template: headerTemplate,
+        entry, data, name: name as string, template: headerTemplate,
     });
 
     // Duplicate/delete/move buttons
-    const duplicateBtn = headerTemplate.querySelectorAll('.duplicate_entry_button');
-    duplicateBtn[0].dataset.uid = String(entry.uid);
-    duplicateBtn[0].addEventListener('click', async function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    const duplicateBtn = headerTemplate.querySelectorAll('.duplicate_entry_button') as NodeListOf<HTMLElement>;
+    const dupEl = duplicateBtn[0];
+    if (!dupEl) return null;
+    dupEl.dataset.uid = String(entry.uid);
+    dupEl.addEventListener('click', async function (this: HTMLElement) {
         const uid = this.dataset.uid;
         const entryDup = await duplicateWorldInfoEntry(store, Number(uid));
-        if (entryDup) {
-            data.entries[entryDup.uid] = entryDup;
-            await saveWorldInfo(name, data);
-            updateEditor(entryDup.uid);
+            if (entryDup) {
+                const dupEntry = entryDup as unknown as WorldInfoEntryData;
+                data.entries[dupEntry.uid] = dupEntry;
+                await saveWorldInfo(name as string, data);
+                updateEditor((entryDup as unknown as Record<string, unknown>).uid);
         }
     });
-    const deleteBtn = headerTemplate.querySelectorAll('.delete_entry_button');
-    deleteBtn[0].dataset.uid = String(entry.uid);
-    deleteBtn[0].addEventListener('click', async function (this: unknown, e: Event) {
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any'
+    const deleteBtn = headerTemplate.querySelectorAll('.delete_entry_button') as NodeListOf<HTMLElement>;
+    const delEl = deleteBtn[0];
+    if (!delEl) return null;
+    delEl.dataset.uid = String(entry.uid);
+    delEl.addEventListener('click', async function (this: HTMLElement, e: Event) {
         e.stopPropagation();
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const uid = this.dataset.uid;
         const deleted = await deleteWorldInfoEntry(store, Number(uid));
         if (!deleted) return;
-        delete data.entries[uid];
-        deleteWIOriginalDataValue(data, uid);
-        await saveWorldInfo(name, data);
+        delete data.entries[uid as string];
+        deleteWIOriginalDataValue(data, uid as string);
+        await saveWorldInfo(name as string, data);
         updateEditor(navigation_option.previous);
     });
-    const moveBtn = headerTemplate.querySelectorAll('.move_entry_button');
-    moveBtn[0].setAttribute('data-uid', String(entry.uid));
-    moveBtn[0].setAttribute('data-current-world', name);
-    moveBtn[0].addEventListener('click', async function (this: unknown, e: Event) {
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any'
+    const moveBtn = headerTemplate.querySelectorAll('.move_entry_button') as NodeListOf<HTMLElement>;
+    const moveEl = moveBtn[0];
+    if (!moveEl) return null;
+    moveEl.setAttribute('data-uid', String(entry.uid));
+    moveEl.setAttribute('data-current-world', name as string);
+    moveEl.addEventListener('click', async function (this: HTMLElement, e: Event) {
         e.stopPropagation();
         const sourceUid = this.getAttribute('data-uid');
         const sourceWorld = this.getAttribute('data-current-world');
         const sourceWorldInfo = await loadWorldInfo(sourceWorld);
         if (!sourceWorldInfo) return;
-        const sourceName = sourceWorldInfo.entries[sourceUid]?.comment;
+        const sourceName = (sourceWorldInfo.entries as Record<string, Record<string, unknown>>)?.[sourceUid as string]?.comment as string | undefined;
         if (sourceName === undefined) return;
         const select = document.createElement('select');
         select.id = 'move_entry_target_select';
@@ -1991,18 +1882,16 @@ export async function getWorldEntry(name, data, entry) {
         defaultOption.textContent = `-- ${t`Select Target Lorebook`} --`;
         select.appendChild(defaultOption);
         let selectableWorldCount = 0;
-        // @ts-expect-error TS(7006) FIXME: Parameter 'worldName' implicitly has an 'any' type... Remove this comment to see the full error message
-        wiManager.worldNames.forEach(worldName => {
+        wiManager.worldNames.forEach((worldName: unknown) => {
             if (worldName !== sourceWorld) {
                 const option = document.createElement('option');
-                option.value = wiManager.worldNames.indexOf(worldName).toString();
-                option.textContent = worldName;
+                option.value = wiManager.worldNames.indexOf(worldName as string).toString();
+                option.textContent = worldName as string;
                 select.appendChild(option);
                 selectableWorldCount++;
             }
         });
         if (selectableWorldCount === 0) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.warning(t`There are no other lorebooks to move to.`);
             return;
         }
@@ -2015,21 +1904,19 @@ export async function getWorldEntry(name, data, entry) {
         select.addEventListener('change', function () {
             selectedWorldIndex = this.value === '' ? -1 : Number(this.value);
         });
-        const popup = new Popup(container, POPUP_TYPE.CONFIRM, '', {
+    const popup = new Popup(container, POPUP_TYPE.CONFIRM, '', {
             cancelButton: t`Cancel`,
-            // @ts-expect-error TS(2322) FIXME: Type '{ text: any; result: number; }[]' is not ass... Remove this comment to see the full error message
             customButtons: [
                 { text: t`Move`, result: POPUP_RESULT.CUSTOM1 },
                 { text: t`Copy`, result: POPUP_RESULT.CUSTOM2 },
             ],
-        });
+        } as Record<string, unknown>);
         popup.okButton.style.display = 'none'; // Hide the default OK button
         const popupConfirm = await popup.show();
         if (!popupConfirm) return;
         if (selectedWorldIndex === -1) return;
         const selectedValue = wiManager.worldNames[selectedWorldIndex];
         if (!selectedValue) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.warning(t`Please select a target lorebook.`);
             return;
         }
@@ -2038,10 +1925,8 @@ export async function getWorldEntry(name, data, entry) {
     });
 
     let drawerInitialized = false;
-    // @ts-expect-error TS(7034) FIXME: Variable 'drawerDestroyTimeout' implicitly has typ... Remove this comment to see the full error message
-    let drawerDestroyTimeout = null;
-    headerTemplate.querySelectorAll('.inline-drawer').forEach(el => el.addEventListener('inline-drawer-toggle', function () {
-        // @ts-expect-error TS(7005) FIXME: Variable 'drawerDestroyTimeout' implicitly has an ... Remove this comment to see the full error message
+    let drawerDestroyTimeout: ReturnType<typeof setTimeout> | null = null;
+    headerTemplate.querySelectorAll('.inline-drawer').forEach(el => (el as HTMLElement).addEventListener('inline-drawer-toggle', function () {
         if (drawerDestroyTimeout) {
             clearTimeout(drawerDestroyTimeout);
             drawerDestroyTimeout = null;
@@ -2049,11 +1934,11 @@ export async function getWorldEntry(name, data, entry) {
         if (drawerInitialized) {
             drawerDestroyTimeout = setTimeout(() => {
                 // Drawer was reopened, so we don't destroy it
-                if (editOutlet?.offsetParent !== null) {
+                if (editOutlet && (editOutlet as HTMLElement).offsetParent !== null) {
                     return;
                 }
                 drawerInitialized = false;
-                clearEntryList(editOutlet);
+                clearEntryList(editOutlet as HTMLElement);
                 drawerDestroyTimeout = null;
             }, debounce_timeout.relaxed);
         } else {
@@ -2068,254 +1953,262 @@ export async function getWorldEntry(name, data, entry) {
      *
      */
     function addEditorDrawerContent() {
-        const editTemplate = WI_ENTRY_EDIT_TEMPLATE?.cloneNode(true);
+        const editTemplate = WI_ENTRY_EDIT_TEMPLATE?.cloneNode(true) as HTMLElement | null;
+        if (!editTemplate) return;
 
         // UID display
-        const uidEl = editTemplate?.querySelector('.world_entry_form_uid_value');
+        const uidEl = editTemplate.querySelector('.world_entry_form_uid_value');
         if (uidEl) uidEl.textContent = `(UID: ${entry.uid})`;
 
         // Key inputs
-        const keyInput = enableKeysInputHelper({ template: editTemplate, entry, entryPropName: 'key', originalDataValueName: 'keys', name, data });
-        const keySecondaryInput = enableKeysInputHelper({ template: editTemplate, entry, entryPropName: 'keysecondary', originalDataValueName: 'secondary_keys', name, data });
+        const keyInput = enableKeysInputHelper({ template: editTemplate, entry, entryPropName: 'key', originalDataValueName: 'keys', name: name as string, data });
+        const keySecondaryInput = enableKeysInputHelper({ template: editTemplate, entry, entryPropName: 'keysecondary', originalDataValueName: 'secondary_keys', name: name as string, data });
         if (!keyInput.isFancy) initScrollHeight(keyInput.control);
         if (!keySecondaryInput.isFancy) initScrollHeight(keySecondaryInput.control);
 
         // Key input switch
-        editTemplate.querySelectorAll('.switch_input_type_icon').forEach(el => el.addEventListener('click', function () {
-            // @ts-expect-error TS(2339) FIXME: Property 'wi_key_input_plaintext' does not exist o... Remove this comment to see the full error message
-            power_user.wi_key_input_plaintext = !power_user.wi_key_input_plaintext;
+        editTemplate.querySelectorAll('.switch_input_type_icon').forEach((el: Element) => el.addEventListener('click', function (this: HTMLElement) {
+            (power_user as Record<string, unknown>).wi_key_input_plaintext = !(power_user as Record<string, unknown>).wi_key_input_plaintext;
             saveSettingsNow();
-            const uid = this.closest('.world_entry').dataset.uid;
-            updateEditor(uid, false);
-            const inlineDrawerIcon = document.querySelector(`.world_entry[uid="${uid}"] .inline-drawer-icon`);
-            if (inlineDrawerIcon) inlineDrawerIcon.click();
+            const uid = (this.closest('.world_entry') as HTMLElement | null)?.dataset?.uid;
+            updateEditor(uid as string | number, false);
+            const inlineDrawerIcon = document.querySelector(`.world_entry[uid="${uid as string}"] .inline-drawer-icon`);
+            if (inlineDrawerIcon) (inlineDrawerIcon as HTMLElement).click();
         }));
-        editTemplate.querySelectorAll('.switch_input_type_icon').forEach((icon) => {
-            const tooltipKey = power_user.wi_key_input_plaintext ? 'tooltip-on' : 'tooltip-off';
-            const iconKey = power_user.wi_key_input_plaintext ? 'icon-on' : 'icon-off';
-            icon.setAttribute('title', icon.dataset[tooltipKey]);
-            icon.textContent = icon.dataset[iconKey];
+        editTemplate.querySelectorAll('.switch_input_type_icon').forEach((icon: Element) => {
+            const pu = power_user as Record<string, unknown>;
+            const tooltipKey = (pu.wi_key_input_plaintext ? 'tooltip-on' : 'tooltip-off') as string;
+            const iconKey = (pu.wi_key_input_plaintext ? 'icon-on' : 'icon-off') as string;
+            const iconEl = icon as HTMLElement;
+            iconEl.setAttribute('title', (iconEl.dataset as Record<string, string>)[tooltipKey] ?? '');
+            iconEl.textContent = (iconEl.dataset as Record<string, string>)[iconKey] ?? '';
         });
 
         // Probability toggle
         handleProbabilityToggleHelper({
-            probabilityToggle: editTemplate.querySelectorAll('input[name="useProbability"]'),
-            data, entry, name,
-            probabilityInput: headerTemplate.querySelectorAll('input[name="probability"]'),
-        });
+                probabilityToggle: editTemplate.querySelectorAll('input[name="useProbability"]'),
+                data, entry, name: name as string,
+                probabilityInput: headerTemplate!.querySelectorAll('input[name="probability"]'),
+            });
 
         // Comment toggle
-        const commentToggle = editTemplate.querySelectorAll('input[name="addMemo"]');
-        commentToggle[0].dataset.uid = String(entry.uid);
-        commentToggle[0].addEventListener('input', async function (this: unknown, e: Event) {
-            // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any'
+        const commentToggle = editTemplate.querySelectorAll('input[name="addMemo"]') as NodeListOf<HTMLInputElement>;
+        const commentToggleEl = commentToggle[0];
+        if (!commentToggleEl) return;
+        commentToggleEl.dataset.uid = String(entry.uid);
+        commentToggleEl.addEventListener('input', async function (this: HTMLInputElement, e: Event) {
             const uid = this.dataset.uid;
-            // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any'
             const value = this.checked;
             const data_noSave = e instanceof CustomEvent ? e.detail?.noSave : false;
             const commentContainer = this.closest('.world_entry')?.querySelector('.commentContainer');
-            data.entries[uid].addMemo = value;
-            if (!data_noSave) await saveWorldInfo(name, data);
-            if (value && commentContainer) commentContainer.style.display = ''; else if (commentContainer) commentContainer.style.display = 'none';
+            if (uid && data.entries[uid]) data.entries[uid]!.addMemo = value;
+            if (!data_noSave) await saveWorldInfo(name as string, data);
+            if (value && commentContainer) (commentContainer as HTMLElement).style.display = ''; else if (commentContainer) (commentContainer as HTMLElement).style.display = 'none';
         });
-        commentToggle[0].checked = true;
-        commentToggle[0].dispatchEvent(new CustomEvent('input', { detail: { noSave: true } }));
-        if (commentToggle[0]?.parentElement) commentToggle[0].parentElement.style.display = 'none';
+        commentToggleEl.checked = true;
+        commentToggleEl.dispatchEvent(new CustomEvent('input', { detail: { noSave: true } }));
+        if (commentToggleEl?.parentElement) commentToggleEl.parentElement.style.display = 'none';
 
         // Logic AND/NOT
-        const selectiveLogicDropdown = editTemplate.querySelectorAll('select[name="entryLogicType"]');
-        selectiveLogicDropdown[0].dataset.uid = String(entry.uid);
-        selectiveLogicDropdown[0].addEventListener('click', (e: Event) => e.stopPropagation());
-        selectiveLogicDropdown[0].addEventListener('input', async function (this: unknown, e: Event) {
-            // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any'
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const uid = this.dataset.uid;
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const value = Number(this.value);
+        const selectiveLogicDropdown = editTemplate.querySelectorAll('select[name="entryLogicType"]') as NodeListOf<HTMLSelectElement>;
+        const logicEl = selectiveLogicDropdown[0];
+        if (!logicEl) return;
+        logicEl.dataset.uid = String(entry.uid);
+        logicEl.addEventListener('click', (e: Event) => e.stopPropagation());
+        logicEl.addEventListener('input', async function (this: HTMLSelectElement, e: Event) {
+                const uid = this.dataset.uid;
+                const value = Number(this.value);
             const data_noSave = e instanceof CustomEvent ? e.detail?.noSave : false;
-            data.entries[uid].selectiveLogic = !isNaN(value) ? value : world_info_logic.AND_ANY;
-            setWIOriginalDataValue(data, uid, 'selectiveLogic', data.entries[uid].selectiveLogic);
-            if (!data_noSave) await saveWorldInfo(name, data);
+            if (!uid) return;
+            if (data.entries[uid]) data.entries[uid]!.selectiveLogic = !isNaN(value) ? value : world_info_logic.AND_ANY;
+            setWIOriginalDataValue(data, uid, 'selectiveLogic', data.entries[uid]!.selectiveLogic);
+            if (!data_noSave) await saveWorldInfo(name as string, data);
         });
-        const logicOption = editTemplate?.querySelector(`select[name="entryLogicType"] option[value="${entry.selectiveLogic}"]`);
+        const logicOption = editTemplate?.querySelector(`select[name="entryLogicType"] option[value="${String(entry.selectiveLogic)}"]`);
         if (logicOption instanceof HTMLOptionElement) logicOption.selected = true;
-        selectiveLogicDropdown[0].dispatchEvent(new CustomEvent('input', { detail: { noSave: true } }));
+        logicEl.dispatchEvent(new CustomEvent('input', { detail: { noSave: true } }));
 
         // Selective
-        const selectiveInput = editTemplate.querySelectorAll('input[name="selective"]');
-        selectiveInput[0].dataset.uid = String(entry.uid);
-        selectiveInput[0].addEventListener('input', async function (this: unknown, e: Event) {
-            // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any'
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const uid = this.dataset.uid;
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const value = this.checked;
+        const selectiveInput = editTemplate.querySelectorAll('input[name="selective"]') as NodeListOf<HTMLInputElement>;
+        const selectiveEl = selectiveInput[0];
+        if (!selectiveEl) return;
+        selectiveEl.dataset.uid = String(entry.uid);
+        selectiveEl.addEventListener('input', async function (this: HTMLInputElement, e: Event) {
+                const uid = this.dataset.uid;
+                const value = this.checked;
             const data_noSave = e instanceof CustomEvent ? e.detail?.noSave : false;
-            data.entries[uid].selective = value;
-            setWIOriginalDataValue(data, uid, 'selective', data.entries[uid].selective);
-            if (!data_noSave) await saveWorldInfo(name, data);
+            if (!uid) return;
+            if (data.entries[uid]) data.entries[uid]!.selective = value;
+            setWIOriginalDataValue(data, uid, 'selective', data.entries[uid]!.selective);
+            if (!data_noSave) await saveWorldInfo(name as string, data);
             const keysecondary = this.closest('.world_entry')?.querySelector('.keysecondary');
             const keysecondarytextpole = this.closest('.world_entry')?.querySelector('.keysecondarytextpole');
-            const keyprimaryselect = this.closest('.world_entry')?.querySelector('.keyprimaryselect');
+            const keyprimaryselect = this.closest('.world_entry')?.querySelector('.keyprimaryselect') as HTMLElement | null;
             const keyprimaryHeight = keyprimaryselect?.offsetHeight ?? 0;
-            if (keysecondarytextpole) keysecondarytextpole.style.height = keyprimaryHeight + 'px';
-            if (keysecondary) keysecondary.style.display = value ? '' : 'none';
+            if (keysecondarytextpole) (keysecondarytextpole as HTMLElement).style.height = keyprimaryHeight + 'px';
+            if (keysecondary) (keysecondary as HTMLElement).style.display = value ? '' : 'none';
         });
-        selectiveInput[0].checked = true;
-        selectiveInput[0].dispatchEvent(new CustomEvent('input', { detail: { noSave: true } }));
-        if (selectiveInput[0]?.parentElement) selectiveInput[0].parentElement.style.display = 'none';
+        selectiveEl.checked = true;
+        selectiveEl.dispatchEvent(new CustomEvent('input', { detail: { noSave: true } }));
+        if (selectiveEl?.parentElement) selectiveEl.parentElement.style.display = 'none';
 
         // Character filter
         const characterFilterLabel = editTemplate?.querySelector('label[for="characterFilter"] > small');
         if (characterFilterLabel) {
-            characterFilterLabel.textContent = entry.characterFilter?.isExclude ? 'Exclude Character(s)' : 'Filter to Character(s)';
+            characterFilterLabel.textContent = String((entry.characterFilter as Record<string, unknown>)?.isExclude === true ? 'Exclude Character(s)' : 'Filter to Character(s)');
         }
-        const characterExclusionInput = editTemplate.querySelectorAll('input[name="character_exclusion"]');
-        characterExclusionInput[0].dataset.uid = String(entry.uid);
-        characterExclusionInput[0].addEventListener('input', async function (this: unknown, e: Event) {
-            // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any'
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const uid = this.dataset.uid;
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const value = this.checked;
+        const characterExclusionInput = editTemplate.querySelectorAll('input[name="character_exclusion"]') as NodeListOf<HTMLInputElement>;
+        const exclEl = characterExclusionInput[0];
+        if (!exclEl) return;
+        exclEl.dataset.uid = String(entry.uid);
+        exclEl.addEventListener('input', async function (this: HTMLInputElement, e: Event) {
+                const uid = this.dataset.uid;
+                const value = this.checked;
             const data_noSave = e instanceof CustomEvent ? e.detail?.noSave : false;
+            if (!uid || !data.entries[uid]) return;
+            const entryData = data.entries[uid]!;
             if (characterFilterLabel) characterFilterLabel.textContent = value ? 'Exclude Character(s)' : 'Filter to Character(s)';
-            if (data.entries[uid].characterFilter) {
-                if (!value && data.entries[uid].characterFilter.names.length === 0 && data.entries[uid].characterFilter.tags.length === 0) {
-                    delete data.entries[uid].characterFilter;
+            if (entryData.characterFilter) {
+                if (!value && entryData.characterFilter.names.length === 0 && entryData.characterFilter.tags.length === 0) {
+                    delete entryData.characterFilter;
                 } else {
-                    data.entries[uid].characterFilter.isExclude = value;
+                    entryData.characterFilter.isExclude = value;
                 }
             } else if (value) {
-                Object.assign(data.entries[uid], { characterFilter: { isExclude: true, names: [], tags: [] } });
+                Object.assign(entryData, { characterFilter: { isExclude: true, names: [], tags: [] } });
             }
-            if (data.entries[uid]?.characterFilter?.names?.length > 0) {
-                for (const name of [...data.entries[uid].characterFilter.names]) {
-                    if (!getContext().characters.find(x => x.avatar.replace(/\.[^/.]+$/, '') === name)) {
-                        // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
-                        data.entries[uid].characterFilter.names = data.entries[uid].characterFilter.names.filter(x => x !== name);
+            if (entryData.characterFilter?.names?.length ? entryData.characterFilter.names.length > 0 : false) {
+                for (const name of [...(entryData.characterFilter?.names ?? [])]) {
+                    if (!getContext().characters.find((x: Record<string, unknown>) => (x.avatar as string).replace(/\.[^/.]+$/, '') === name)) {
+                        if (entryData.characterFilter) {
+                            entryData.characterFilter.names = entryData.characterFilter.names.filter((x: string) => x !== name);
+                        }
                     }
                 }
             }
-            setWIOriginalDataValue(data, uid, 'character_filter', data.entries[uid].characterFilter);
-            if (!data_noSave) await saveWorldInfo(name, data);
+            setWIOriginalDataValue(data, uid, 'character_filter', entryData.characterFilter);
+            if (!data_noSave) await saveWorldInfo(name as string, data);
         });
-        characterExclusionInput[0].checked = entry.characterFilter?.isExclude ?? false;
-        characterExclusionInput[0].dispatchEvent(new CustomEvent('input', { detail: { noSave: true } }));
+        exclEl.checked = !!((entry.characterFilter as Record<string, unknown>)?.isExclude);
+        exclEl.dispatchEvent(new CustomEvent('input', { detail: { noSave: true } }));
 
-        const characterFilter = editTemplate.querySelector('select[name="characterFilter"]');
+        // Character filter
+        const characterFilter = editTemplate.querySelector('select[name="characterFilter"]') as HTMLSelectElement | null;
         if (characterFilter) {
             characterFilter.dataset.uid = String(entry.uid);
             initCharacterFilterSelect2Helper(characterFilter);
             fillCharacterAndTagOptionsHelper({ characterFilter, entry });
-            handleCharacterFilterChangeHelper({ characterFilter, data, entry, name });
+            handleCharacterFilterChangeHelper({ characterFilter, data, entry, name: name as string });
         }
 
         // Content
-        const counter = editTemplate.querySelectorAll('.world_entry_form_token_counter');
-        // @ts-expect-error TS(7006) FIXME: Parameter 'counter' implicitly has an 'any' type.
-        const countTokensDebounced = debounce(async function (counter, value) {
+        const counter = editTemplate.querySelectorAll('.world_entry_form_token_counter') as NodeListOf<HTMLElement>;
+        const countTokensDebounced = debounce(async function (counter: HTMLElement, value: string) {
             const numberOfTokens = await getTokenCountAsync(value);
             counter.textContent = String(numberOfTokens);
         }, debounce_timeout.relaxed);
-        const contentInputId = `world_entry_content_${entry.uid}`;
-        const contentInput = editTemplate?.querySelector('textarea[name="content"]');
+        const contentInputId = `world_entry_content_${String(entry.uid)}`;
+        const contentInput = editTemplate?.querySelector('textarea[name="content"]') as HTMLTextAreaElement | null;
         if (contentInput) {
             contentInput.dataset.uid = String(entry.uid);
             contentInput.id = contentInputId;
             contentInput.dataset.macros = ''; // active
-            contentInput.addEventListener('input', async function (this: unknown, { skipCount = false, noSave = false } = {}) {
-                // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any'
-                const uid = this.dataset.uid;
-                const value = this.value;
-                data.entries[uid].content = value;
-                setWIOriginalDataValue(data, uid, 'content', data.entries[uid].content);
-                if (!noSave) await saveWorldInfo(name, data);
-                if (!skipCount) countTokensDebounced(counter, value);
-            });
-            contentInput.value = entry.content;
+            contentInput.addEventListener('input', async function (this: HTMLTextAreaElement, e: Event) {
+                    const detail = (e instanceof CustomEvent) ? e.detail : {};
+                    const skipCount = (detail as Record<string, unknown>).skipCount ?? false;
+                    const noSave = (detail as Record<string, unknown>).noSave ?? false;
+                    const uid = this.dataset.uid;
+                    const value = this.value;
+                    if (uid && data.entries[uid]) data.entries[uid]!.content = value;
+                    if (uid) setWIOriginalDataValue(data, uid, 'content', data.entries[uid]!.content);
+                    if (!noSave) await saveWorldInfo(name as string, data);
+                    if (!skipCount) countTokensDebounced(counter, value);
+                });
+                contentInput.value = entry.content as string;
             contentInput.dispatchEvent(new CustomEvent('input', { detail: { skipCount: true, noSave: true } }));
         }
         editTemplate?.querySelector('.editor_maximize')?.setAttribute('data-for', contentInputId);
 
         // Outlet name
-        const outletNameInput = editTemplate?.querySelector('input[name="outletName"]');
+        const outletNameInput = editTemplate?.querySelector('input[name="outletName"]') as HTMLInputElement | null;
         if (outletNameInput) {
             outletNameInput.dataset.uid = String(entry.uid);
-            outletNameInput.addEventListener('input', async function (this: unknown, { noSave = false } = {}) {
-                // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any'
-                const uid = this.dataset.uid;
-                const value = this.value;
-                data.entries[uid].outletName = value;
-                setWIOriginalDataValue(data, uid, 'extensions.outlet_name', data.entries[uid].outletName);
-                if (!noSave) await saveWorldInfo(name, data);
-            });
-            outletNameInput.value = entry.outletName ?? '';
+            outletNameInput.addEventListener('input', async function (this: HTMLInputElement, e: Event) {
+                    const noSave = (e instanceof CustomEvent && (e as CustomEvent).detail?.noSave) ?? false;
+                    const uid = this.dataset.uid;
+                    const value = this.value;
+                    if (!uid) return;
+                    if (data.entries[uid]) data.entries[uid]!.automationId = value;
+                    setWIOriginalDataValue(data, uid, 'extensions.automation_id', data.entries[uid]!.automationId);
+                    if (!noSave) await saveWorldInfo(name as string, data);
+                });
+                outletNameInput.value = (entry.outletName ?? '') as string;
             outletNameInput.dispatchEvent(new CustomEvent('input', { detail: { noSave: true } }));
         }
-        if (outletNameInput) setTimeout(() => createEntryInputAutocomplete(outletNameInput, getOutletNameCallback(data), { allowMultiple: true }), 1);
+        if (outletNameInput) setTimeout(() => createEntryInputAutocomplete(outletNameInput as unknown as Record<string, unknown>, getOutletNameCallback(data), { allowMultiple: true }), 1);
 
         // Scan depth
-        const scanDepthInput = editTemplate?.querySelector('input[name="scanDepth"]');
+        const scanDepthInput = editTemplate?.querySelector('input[name="scanDepth"]') as HTMLInputElement | null;
         if (scanDepthInput) {
             scanDepthInput.dataset.uid = String(entry.uid);
-            scanDepthInput.addEventListener('input', async function (this: unknown, { noSave = false } = {}) {
-                // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any'
+            scanDepthInput.addEventListener('input', async function (this: HTMLInputElement, e: Event) {
+                const noSave = (e instanceof CustomEvent && (e as CustomEvent).detail?.noSave) ?? false;
                 const uid = this.dataset.uid;
                 const isEmpty = this.value === '';
                 const value = Number(this.value);
+            if (!uid) return;
             if (value < 0) {
                 this.value = '0';
                 this.dispatchEvent(new Event('input', { bubbles: true }));
-                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 notyf.warning('Scan depth cannot be negative');
                 return;
             }
             if (value > MAX_SCAN_DEPTH) {
                 this.value = String(MAX_SCAN_DEPTH);
                 this.dispatchEvent(new Event('input', { bubbles: true }));
-                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 notyf.warning(`Scan depth cannot exceed ${MAX_SCAN_DEPTH}`);
                 return;
             }
-            data.entries[uid].scanDepth = !isEmpty && !isNaN(value) && value >= 0 && value <= MAX_SCAN_DEPTH ? Math.floor(value) : null;
-            setWIOriginalDataValue(data, uid, 'extensions.scan_depth', data.entries[uid].scanDepth);
-            if (!noSave) await saveWorldInfo(name, data);
+            if (data.entries[uid]) data.entries[uid]!.scanDepth = !isEmpty && !isNaN(value) && value >= 0 && value <= MAX_SCAN_DEPTH ? Math.floor(value) : null;
+            setWIOriginalDataValue(data, uid, 'extensions.scan_depth', data.entries[uid]!.scanDepth);
+            if (!noSave) await saveWorldInfo(name as string, data);
             });
-            scanDepthInput.value = entry.scanDepth ?? '';
+            scanDepthInput.value = (entry.scanDepth ?? '') as string;
             scanDepthInput.dispatchEvent(new CustomEvent('input', { detail: { noSave: true } }));
         }
 
         // Group
-        const groupInput = editTemplate?.querySelector('input[name="group"]');
+        const groupInput = editTemplate?.querySelector('input[name="group"]') as HTMLInputElement | null;
         if (groupInput) {
             groupInput.dataset.uid = String(entry.uid);
             groupInput.addEventListener('input', async function (this: HTMLInputElement, e: Event) {
                 const detail = (e instanceof CustomEvent) ? e.detail : {};
-                const noSave = detail.noSave ?? false;
+                const noSave = (detail as Record<string, unknown>).noSave ?? false;
                 const uid = this.dataset.uid;
+                if (!uid) return;
                 const value = String(this.value).trim();
-                data.entries[uid].group = value;
-                setWIOriginalDataValue(data, uid, 'extensions.group', data.entries[uid].group);
-                if (!noSave) await saveWorldInfo(name, data);
+                if (data.entries[uid]) data.entries[uid]!.group = value;
+                setWIOriginalDataValue(data, uid, 'extensions.group', data.entries[uid]!.group);
+                if (!noSave) await saveWorldInfo(name as string, data);
             });
-            groupInput.value = entry.group ?? '';
+            groupInput.value = (entry.group ?? '') as string;
             groupInput.dispatchEvent(new CustomEvent('input', { detail: { noSave: true } }));
         }
-        setTimeout(() => createEntryInputAutocomplete(groupInput, getInclusionGroupCallback(data), { allowMultiple: true }), 1);
+        setTimeout(() => createEntryInputAutocomplete(groupInput as unknown as Record<string, unknown>, getInclusionGroupCallback(data), { allowMultiple: true }), 1);
 
         // Inclusion priority
-        const groupOverrideInput = editTemplate?.querySelector('input[name="groupOverride"]');
+        const groupOverrideInput = editTemplate?.querySelector('input[name="groupOverride"]') as HTMLInputElement | null;
         if (groupOverrideInput) {
             groupOverrideInput.dataset.uid = String(entry.uid);
             groupOverrideInput.addEventListener('input', async function (this: HTMLInputElement, e: Event) {
                 const detail = (e instanceof CustomEvent) ? e.detail : {};
                 const noSave = detail.noSave ?? false;
                 const uid = this.dataset.uid;
+                if (!uid) return;
                 const value = this.checked;
-                data.entries[uid].groupOverride = value;
-                setWIOriginalDataValue(data, uid, 'extensions.group_override', data.entries[uid].groupOverride);
-                if (!noSave) await saveWorldInfo(name, data);
+                if (data.entries[uid]) data.entries[uid]!.groupOverride = value;
+                setWIOriginalDataValue(data, uid, 'extensions.group_override', data.entries[uid]!.groupOverride);
+                if (!noSave) await saveWorldInfo(name as string, data);
             });
             groupOverrideInput.checked = !!entry.groupOverride;
             groupOverrideInput.dispatchEvent(new CustomEvent('input', { detail: { noSave: true } }));
@@ -2324,42 +2217,43 @@ export async function getWorldEntry(name, data, entry) {
         // Group weight
         handleNumberInputHelper({
             inputElem: editTemplate.querySelectorAll('input[name="groupWeight"]'),
-            entry, entryKey: 'groupWeight', data, name, min: 1, max: 10000, clamp: true,
+            entry, entryKey: 'groupWeight', data, name: name as string, min: 1, max: 10000, clamp: true,
         });
 
         // Sticky, cooldown, delay
         handleNumberInputHelper({
             inputElem: editTemplate.querySelectorAll('input[name="sticky"]'),
-            entry, entryKey: 'sticky', data, name, min: 1, max: 10000, clamp: false,
+            entry, entryKey: 'sticky', data, name: name as string, min: 1, max: 10000, clamp: false,
         });
         handleNumberInputHelper({
             inputElem: editTemplate.querySelectorAll('input[name="cooldown"]'),
-            entry, entryKey: 'cooldown', data, name, min: 1, max: 10000, clamp: false,
+            entry, entryKey: 'cooldown', data, name: name as string, min: 1, max: 10000, clamp: false,
         });
         handleNumberInputHelper({
             inputElem: editTemplate.querySelectorAll('input[name="delay"]'),
-            entry, entryKey: 'delay', data, name, min: 1, max: 10000, clamp: false,
+            entry, entryKey: 'delay', data, name: name as string, min: 1, max: 10000, clamp: false,
         });
 
         // Exclude/prevent recursion
-        handleMatchCheckboxHelper({ template: editTemplate, entry, fieldName: 'excludeRecursion', data, name });
-        handleMatchCheckboxHelper({ template: editTemplate, entry, fieldName: 'preventRecursion', data, name });
+        handleMatchCheckboxHelper({ template: editTemplate, entry, fieldName: 'excludeRecursion', data, name: name as string });
+        handleMatchCheckboxHelper({ template: editTemplate, entry, fieldName: 'preventRecursion', data, name: name as string });
 
         // Delay until recursion
-        const delayUntilRecursionInput = editTemplate?.querySelector('input[name="delay_until_recursion"]');
-        const delayUntilRecursionLevelInput = editTemplate?.querySelector('input[name="delayUntilRecursionLevel"]');
+        const delayUntilRecursionInput = editTemplate?.querySelector('input[name="delay_until_recursion"]') as HTMLInputElement | null;
+        const delayUntilRecursionLevelInput = editTemplate?.querySelector('input[name="delayUntilRecursionLevel"]') as HTMLInputElement | null;
         if (delayUntilRecursionInput) {
             delayUntilRecursionInput.dataset.uid = String(entry.uid);
             delayUntilRecursionInput.addEventListener('input', async function (this: HTMLInputElement, e: Event) {
                 const detail = (e instanceof CustomEvent) ? e.detail : {};
                 const noSave = detail.noSave ?? false;
                 const uid = this.dataset.uid;
+                if (!uid) return;
                 const toggled = this.checked;
-                const value = toggled ? data.entries[uid].delayUntilRecursion || true : false;
+                const value = toggled ? (data.entries[uid]!.delayUntilRecursion || true) : false;
                 if (!toggled && delayUntilRecursionLevelInput) delayUntilRecursionLevelInput.value = '';
-                data.entries[uid].delayUntilRecursion = value;
-                setWIOriginalDataValue(data, uid, 'extensions.delay_until_recursion', data.entries[uid].delayUntilRecursion);
-                if (!noSave) await saveWorldInfo(name, data);
+                if (data.entries[uid]) data.entries[uid]!.delayUntilRecursion = value;
+                setWIOriginalDataValue(data, uid, 'extensions.delay_until_recursion', data.entries[uid]!.delayUntilRecursion);
+                if (!noSave) await saveWorldInfo(name as string, data);
             });
             delayUntilRecursionInput.checked = !!entry.delayUntilRecursion;
             delayUntilRecursionInput.dispatchEvent(new CustomEvent('input', { detail: { noSave: true } }));
@@ -2370,95 +2264,100 @@ export async function getWorldEntry(name, data, entry) {
                 const detail = (e instanceof CustomEvent) ? e.detail : {};
                 const noSave = detail.noSave ?? false;
                 const uid = this.dataset.uid;
+                if (!uid) return;
                 const content = this.value;
-                const value = content === '' ? (typeof data.entries[uid].delayUntilRecursion === 'boolean' ? data.entries[uid].delayUntilRecursion : true)
+                const entryDelay = data.entries[uid]!.delayUntilRecursion;
+                const value = content === '' ? (typeof entryDelay === 'boolean' ? entryDelay : true)
                     : content === '1' ? true
                         : !isNaN(Number(content)) ? Number(content)
                             : false;
-                data.entries[uid].delayUntilRecursion = value;
-                setWIOriginalDataValue(data, uid, 'extensions.delay_until_recursion', data.entries[uid].delayUntilRecursion);
-                if (!noSave) await saveWorldInfo(name, data);
+                if (data.entries[uid]) data.entries[uid]!.delayUntilRecursion = value;
+                setWIOriginalDataValue(data, uid, 'extensions.delay_until_recursion', data.entries[uid]!.delayUntilRecursion);
+                if (!noSave) await saveWorldInfo(name as string, data);
             });
-            const val = ['number', 'string'].includes(typeof entry.delayUntilRecursion) ? entry.delayUntilRecursion : '';
+            const val = ['number', 'string'].includes(typeof entry.delayUntilRecursion) ? String(entry.delayUntilRecursion) : '';
             delayUntilRecursionLevelInput.value = val;
             delayUntilRecursionLevelInput.dispatchEvent(new CustomEvent('input', { detail: { noSave: true } }));
         }
 
         // Boolean selects
-        handleBooleanSelectHelper({ selectElem: editTemplate.querySelectorAll('select[name="caseSensitive"]'), entry, entryKey: 'caseSensitive', data, name });
-        handleBooleanSelectHelper({ selectElem: editTemplate.querySelectorAll('select[name="matchWholeWords"]'), entry, entryKey: 'matchWholeWords', data, name });
-        handleBooleanSelectHelper({ selectElem: editTemplate.querySelectorAll('select[name="useGroupScoring"]'), entry, entryKey: 'useGroupScoring', data, name });
+        handleBooleanSelectHelper({ selectElem: editTemplate.querySelectorAll('select[name="caseSensitive"]'), entry, entryKey: 'caseSensitive', data, name: name as string });
+        handleBooleanSelectHelper({ selectElem: editTemplate.querySelectorAll('select[name="matchWholeWords"]'), entry, entryKey: 'matchWholeWords', data, name: name as string });
+        handleBooleanSelectHelper({ selectElem: editTemplate.querySelectorAll('select[name="useGroupScoring"]'), entry, entryKey: 'useGroupScoring', data, name: name as string });
 
         // Match checkboxes
-        handleMatchCheckboxHelper({ template: editTemplate, entry, fieldName: 'matchPersonaDescription', data, name });
-        handleMatchCheckboxHelper({ template: editTemplate, entry, fieldName: 'matchCharacterDescription', data, name });
-        handleMatchCheckboxHelper({ template: editTemplate, entry, fieldName: 'matchCharacterPersonality', data, name });
-        handleMatchCheckboxHelper({ template: editTemplate, entry, fieldName: 'matchCharacterDepthPrompt', data, name });
-        handleMatchCheckboxHelper({ template: editTemplate, entry, fieldName: 'matchScenario', data, name });
-        handleMatchCheckboxHelper({ template: editTemplate, entry, fieldName: 'matchCreatorNotes', data, name });
+        handleMatchCheckboxHelper({ template: editTemplate, entry, fieldName: 'matchPersonaDescription', data, name: name as string });
+        handleMatchCheckboxHelper({ template: editTemplate, entry, fieldName: 'matchCharacterDescription', data, name: name as string });
+        handleMatchCheckboxHelper({ template: editTemplate, entry, fieldName: 'matchCharacterPersonality', data, name: name as string });
+        handleMatchCheckboxHelper({ template: editTemplate, entry, fieldName: 'matchCharacterDepthPrompt', data, name: name as string });
+        handleMatchCheckboxHelper({ template: editTemplate, entry, fieldName: 'matchScenario', data, name: name as string });
+        handleMatchCheckboxHelper({ template: editTemplate, entry, fieldName: 'matchCreatorNotes', data, name: name as string });
 
         // Automation ID
-        const automationIdInput = editTemplate?.querySelector('input[name="automationId"]');
+        const automationIdInput = editTemplate?.querySelector('input[name="automationId"]') as HTMLInputElement | null;
         if (automationIdInput) {
             automationIdInput.dataset.uid = String(entry.uid);
             automationIdInput.addEventListener('input', async function (this: HTMLInputElement, e: Event) {
                 const detail = (e instanceof CustomEvent) ? e.detail : {};
-                const noSave = detail.noSave ?? false;
+                const noSave = (detail as Record<string, unknown>).noSave ?? false;
                 const uid = this.dataset.uid;
+                if (!uid) return;
                 const value = this.value;
-                data.entries[uid].automationId = value;
-                setWIOriginalDataValue(data, uid, 'extensions.automation_id', data.entries[uid].automationId);
-                if (!noSave) await saveWorldInfo(name, data);
+                if (data.entries[uid]) data.entries[uid]!.automationId = value;
+                setWIOriginalDataValue(data, uid, 'extensions.automation_id', data.entries[uid]!.automationId);
+                if (!noSave) await saveWorldInfo(name as string, data);
             });
-            automationIdInput.value = entry.automationId ?? '';
+            automationIdInput.value = (entry.automationId ?? '') as string;
             automationIdInput.dispatchEvent(new CustomEvent('input', { detail: { noSave: true } }));
         }
-        setTimeout(() => createEntryInputAutocomplete(automationIdInput, getAutomationIdCallback(data)), 1);
+        setTimeout(() => createEntryInputAutocomplete(automationIdInput as unknown as Record<string, unknown>, getAutomationIdCallback(data)), 1);
 
         // Generation Type Triggers
-        const generationTypeTriggers = editTemplate?.querySelector('select[name="triggers"]');
+        const generationTypeTriggers = editTemplate?.querySelector('select[name="triggers"]') as HTMLSelectElement | null;
         if (generationTypeTriggers) {
             generationTypeTriggers.dataset.uid = String(entry.uid);
             generationTypeTriggers.addEventListener('input', async function (this: HTMLSelectElement, e: Event) {
                 const detail = (e instanceof CustomEvent) ? e.detail : {};
-                const noSave = detail.noSave ?? false;
+                const noSave = (detail as Record<string, unknown>).noSave ?? false;
                 const uid = this.dataset.uid;
+                if (!uid) return;
                 const value = this.value;
-                data.entries[uid].triggers = Array.isArray(value) ? value : [];
-                setWIOriginalDataValue(data, uid, 'extensions.triggers', data.entries[uid].triggers);
-                if (!noSave) await saveWorldInfo(name, data);
+                if (data.entries[uid]) data.entries[uid]!.triggers = Array.isArray(value) ? value as unknown as string[] : [];
+                setWIOriginalDataValue(data, uid, 'extensions.triggers', data.entries[uid]!.triggers);
+                if (!noSave) await saveWorldInfo(name as string, data);
             });
             if (!isMobile()) {
-                new TomSelect(generationTypeTriggers, {
+                new (TomSelect as unknown as new (el: HTMLSelectElement | null, opts: Record<string, unknown>) => Record<string, unknown>)(generationTypeTriggers, {
                     maxItems: null,
                     placeholder: t`All types (default)`,
                     allowEmptyOption: true,
                     plugins: ['remove_button'],
                 });
             }
-            generationTypeTriggers.value = Array.isArray(entry.triggers) ? entry.triggers : [];
+            generationTypeTriggers.value = Array.isArray(entry.triggers) ? (entry.triggers as unknown as string[]).join(',') : '';
             generationTypeTriggers.dispatchEvent(new CustomEvent('input', { detail: { noSave: true } }));
             generationTypeTriggers.dispatchEvent(new Event('change', { bubbles: true }));
         }
 
         // Ignore budget
-        const ignoreBudgetInput = editTemplate?.querySelector('input[name="ignoreBudget"]');
+        const ignoreBudgetInput = editTemplate?.querySelector('input[name="ignoreBudget"]') as HTMLInputElement | null;
         if (ignoreBudgetInput) {
             ignoreBudgetInput.dataset.uid = String(entry.uid);
             ignoreBudgetInput.addEventListener('input', async function (this: HTMLInputElement, e: Event) {
                 const detail = (e instanceof CustomEvent) ? e.detail : {};
                 const noSave = detail.noSave ?? false;
                 const uid = this.dataset.uid;
+                if (!uid) return;
                 const value = this.checked;
-                data.entries[uid].ignoreBudget = value;
-                setWIOriginalDataValue(data, uid, 'extensions.ignore_budget', data.entries[uid].ignoreBudget);
-                if (!noSave) await saveWorldInfo(name, data);
+                if (data.entries[uid]) data.entries[uid]!.ignoreBudget = value;
+                setWIOriginalDataValue(data, uid, 'extensions.ignore_budget', data.entries[uid]!.ignoreBudget);
+                if (!noSave) await saveWorldInfo(name as string, data);
             });
-            ignoreBudgetInput.checked = entry.ignoreBudget ?? false;
+            ignoreBudgetInput.checked = !!(entry.ignoreBudget ?? false);
             ignoreBudgetInput.dispatchEvent(new CustomEvent('input', { detail: { noSave: true } }));
         }
 
-        countTokensDebounced(counter, contentInput.value);
+        countTokensDebounced(counter, contentInput?.value ?? '');
 
         const editContent = editTemplate?.querySelector('.inline-drawer-content');
         if (editContent instanceof HTMLElement) editContent.style.display = 'none';
@@ -2486,21 +2385,21 @@ function buildAutocompleteCallback({
     collectValues,
     includeExtras = () => [],
     postFilter
-// @ts-expect-error TS(2315) FIXME: Type 'JQuery' is not generic.
-}: { data?: { entries: Record<string, unknown> }; collectValues?: (entry: unknown) => string | string[] | null | undefined; includeExtras?: () => Iterable<string>; postFilter?: (ctx: { result: string[]; control: JQuery<HTMLElement>; input: unknown; haystack: string[] }) => string[] } = {}) {
-    // @ts-expect-error TS(7006) FIXME: Parameter 'control' implicitly has an 'any' type.
-    return function (control, input, output) {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const uid = control.dataset.uid;
+}: {
+    data?: WorldInfoBook;
+    collectValues?: (entry: WorldInfoEntryData) => string | string[] | null | undefined;
+    includeExtras?: () => Iterable<string>;
+    postFilter?: (ctx: { result: string[]; control: Record<string, unknown>; input: { term: unknown }; haystack: string[] }) => string[];
+} = {}) {
+    return function (control: Record<string, unknown>, input: { term: unknown }, output: (data: string[]) => void) {
+        const uidObj = control.dataset as Record<string, string> | undefined;
+        const uid = uidObj?.uid;
 
         // Collect unique values from all *other* entries
-        const values = new Set();
-        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-        for (const entry of Object.values(data.entries ?? {})) {
-            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-            if (entry?.uid == uid) continue;
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-            const raw = collectValues(entry);
+        const values = new Set<string>();
+        for (const entry of Object.values(data?.entries ?? {})) {
+            if (entry?.uid === Number(uid)) continue;
+            const raw = collectValues?.(entry);
             if (raw == null) continue;
             const arr = Array.isArray(raw) ? raw : [raw];
             for (const v of arr) {
@@ -2516,17 +2415,14 @@ function buildAutocompleteCallback({
         }
 
         // Sort stable & locale-aware
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         const haystack = Array.from(values).sort((a, b) => a.localeCompare(b));
 
         // Case-insensitive contains
         const needle = String(input.term ?? '').toLowerCase();
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-        let result = haystack.filter(x => x.toLowerCase().includes(needle));
+        let result = haystack.filter((x: string) => x.toLowerCase().includes(needle));
 
         // Optional final-pass semantics
         if (postFilter) {
-            // @ts-expect-error TS(2322) FIXME: Type 'unknown[]' is not assignable to type 'string... Remove this comment to see the full error message
             result = postFilter({ result, control, input, haystack });
         }
 
@@ -2539,29 +2435,25 @@ function buildAutocompleteCallback({
  * @param {string} s - The string to split
  * @returns {string[]} An array of strings, separated by commas and trimmed
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 's' implicitly has an 'any' type.
-const splitCsv = s => String(s ?? '').split(/,\s*/).filter(Boolean);
+const splitCsv = (s: unknown) => String(s ?? '').split(/,\s*/).filter(Boolean);
 
 /**
  * Get the inclusion groups for the autocomplete.
  * @param {object} data WI data
  * @returns {(input: {term: string}, output: (data: string[]) => void) => void} Callback function for the autocomplete
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
-function getInclusionGroupCallback(data) {
+function getInclusionGroupCallback(data: WorldInfoBook) {
     return buildAutocompleteCallback({
         data,
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-        collectValues: entry => entry.group ? splitCsv(entry.group) : [],
-        postFilter: ({ result, control, input, haystack }) => {
-            const thisGroups = splitCsv(String(control.value));
-            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+        collectValues: (entry: WorldInfoEntryData) => entry.group ? splitCsv(entry.group) : [],
+        postFilter: ({ result, control, input, haystack }: { result: string[]; control: Record<string, unknown>; input: { term: unknown }; haystack: string[] }) => {
+            const thisGroups = splitCsv(String((control as Record<string, unknown>).value));
             const needle = String(input.term ?? '').toLowerCase();
-            const hasExactMatch = haystack.some(x => x.toLowerCase() === needle);
+            const hasExactMatch = haystack.some((x: string) => x.toLowerCase() === needle);
 
-            // include suggestion if it contains the needle AND
-            // (not already present OR (exact match typed && appears only once))
-            return result.filter(x =>
+                    // include suggestion if it contains the needle AND
+                    // (not already present OR (exact match typed && appears only once))
+                    return result.filter((x: string) =>
                 !thisGroups.includes(x) ||
                 (hasExactMatch && thisGroups.filter(g => g === x).length === 1),
             );
@@ -2573,16 +2465,17 @@ function getInclusionGroupCallback(data) {
  * @param {object} data - WI data
  * @returns {(input: {term: string}, output: (data: string[]) => void) => void} Autocomplete callback
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
-function getAutomationIdCallback(data) {
+function getAutomationIdCallback(data: WorldInfoBook) {
     return buildAutocompleteCallback({
         data,
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-        collectValues: entry => entry.automationId != null ? [String(entry.automationId)] : [],
-        includeExtras: () =>
-            ('quickReplyApi' in globalThis && globalThis.quickReplyApi?.listAutomationIds)
-                ? globalThis.quickReplyApi.listAutomationIds()
-                : [],
+        collectValues: (entry: WorldInfoEntryData) => entry.automationId != null ? [String(entry.automationId)] : [],
+        includeExtras: () => {
+            const g = globalThis as Record<string, unknown>;
+            const qrApi = g.quickReplyApi as Record<string, unknown> | undefined;
+            return (qrApi && typeof qrApi.listAutomationIds === 'function')
+                ? (qrApi.listAutomationIds as () => string[])()
+                : [];
+        },
     });
 }
 
@@ -2590,12 +2483,10 @@ function getAutomationIdCallback(data) {
  * @param {object} data - WI data
  * @returns {(input: {term: string}, output: (data: string[]) => void) => void} Autocomplete callback
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
-function getOutletNameCallback(data) {
+function getOutletNameCallback(data: WorldInfoBook) {
     return buildAutocompleteCallback({
         data,
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-        collectValues: entry => entry.position === world_info_position.outlet && entry.outletName ? [entry.outletName] : [],
+        collectValues: (entry: WorldInfoEntryData) => entry.position === world_info_position.outlet && entry.outletName ? [entry.outletName] : [],
     });
 }
 
@@ -2606,34 +2497,31 @@ function getOutletNameCallback(data) {
  * @param {object} [options] - Optional arguments
  * @param {boolean} [options.allowMultiple] - Whether to allow multiple comma-separated values
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'input' implicitly has an 'any' type.
-function createEntryInputAutocomplete(input, callback, { allowMultiple = false } = {}) {
+function createEntryInputAutocomplete(input: Record<string, unknown>, callback: (control: Record<string, unknown>, query: { term: unknown }, cb: (results: string[]) => void) => void, { allowMultiple = false } = {}) {
     const onValueChange = () => {
-        const value = input.tomSelect.getValue();
+        const ts = (input as Record<string, unknown>).tomSelect as Record<string, unknown> | undefined;
+        const value = (ts?.getValue as (() => string) | undefined)?.() ?? '';
         if (!allowMultiple) {
             input.value = value;
-            input.dispatchEvent(new Event('input', { bubbles: true }));
-            input.dispatchEvent(new Event('blur', { bubbles: true }));
+            (input as unknown as HTMLElement).dispatchEvent(new Event('input', { bubbles: true }));
+            (input as unknown as HTMLElement).dispatchEvent(new Event('blur', { bubbles: true }));
         } else {
             input.value = Array.isArray(value) ? value.join(', ') : '';
-            input.dispatchEvent(new Event('input', { bubbles: true }));
-            input.dispatchEvent(new Event('blur', { bubbles: true }));
+            (input as unknown as HTMLElement).dispatchEvent(new Event('input', { bubbles: true }));
+            (input as unknown as HTMLElement).dispatchEvent(new Event('blur', { bubbles: true }));
         }
     };
 
-    input.tomSelect = new TomSelect(input, {
+    input.tomSelect = new (TomSelect as unknown as new (...args: unknown[]) => Record<string, unknown>)(input, {
         maxItems: allowMultiple ? null : 1,
         create: false,
         minLength: 0,
         valueField: 'value',
         labelField: 'label',
         searchField: ['label'],
-        // @ts-expect-error TS(7006) FIXME: Parameter 'query' implicitly has an 'any' type.
-        load: function (query, loadCallback) {
-            // @ts-expect-error TS(7006) FIXME: Parameter 'results' implicitly has an 'any' type.
-            callback(input, { term: query }, function (results) {
-                // @ts-expect-error TS(7006) FIXME: Parameter 's' implicitly has an 'any' type.
-                loadCallback(results.map(s => ({ value: s, label: s })));
+        load: function (this: Record<string, unknown>, query: unknown, loadCallback: (items: { value: string; label: string }[]) => void) {
+            callback(input, { term: query }, function (results: string[]) {
+                loadCallback(results.map((s: string) => ({ value: s, label: s })));
             });
         },
         onChange: function () {
@@ -2646,11 +2534,13 @@ function createEntryInputAutocomplete(input, callback, { allowMultiple = false }
         },
     });
 
-    input.addEventListener('focus', function () {
-        input.tomSelect.open();
+    (input as unknown as HTMLElement).addEventListener('focus', function () {
+        const ts = (input as Record<string, unknown>).tomSelect as Record<string, unknown> | undefined;
+        (ts?.open as (() => void) | undefined)?.();
     });
-    input.addEventListener('click', function () {
-        input.tomSelect.open();
+    (input as unknown as HTMLElement).addEventListener('click', function () {
+        const ts = (input as Record<string, unknown>).tomSelect as Record<string, unknown> | undefined;
+        (ts?.open as (() => void) | undefined)?.();
     });
 }
 
@@ -2666,24 +2556,18 @@ function createEntryInputAutocomplete(input, callback, { allowMultiple = false }
  * @param {string} newName New WI file name
  * @returns {Promise<void>}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'oldName' implicitly has an 'any' type.
-export async function updateWorldInfoLinks(oldName, newName) {
-    // @ts-expect-error TS(2339) FIXME: Property 'charLore' does not exist on type '{}'.
-    const existingCharLores = wiManager.info.charLore?.filter((e) => e.extraBooks.includes(oldName));
+export async function updateWorldInfoLinks(oldName: unknown, newName: unknown) {
+    const existingCharLores = ((wiManager.info as Record<string, unknown>).charLore as Record<string, unknown>[])?.filter((e: Record<string, unknown>) => ((e.extraBooks as string[]) || []).includes(oldName as string));
     if (existingCharLores && existingCharLores.length > 0) {
-        // @ts-expect-error TS(7006) FIXME: Parameter 'charLore' implicitly has an 'any' type.
-        existingCharLores.forEach((charLore) => {
-            // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
-            const tempCharLore = charLore.extraBooks.filter((e) => e !== oldName);
-            tempCharLore.push(newName);
+        existingCharLores.forEach((charLore: Record<string, unknown>) => {
+            const tempCharLore = ((charLore.extraBooks as string[]) || []).filter((e: string) => e !== oldName);
+            tempCharLore.push(newName as string);
             charLore.extraBooks = tempCharLore;
         });
         saveSettingsNow();
     }
 
-    // find all characters using the old lorebook name as their primary world
-    // @ts-expect-error TS(7034) FIXME: Variable 'linkedChIDs' implicitly has type 'any[]'... Remove this comment to see the full error message
-    const linkedChIDs = [];
+    const linkedChIDs: number[] = [];
     characters.forEach((character, chid) => {
         if (character.data?.extensions?.world === oldName) {
             linkedChIDs.push(chid);
@@ -2703,7 +2587,6 @@ export async function updateWorldInfoLinks(oldName, newName) {
     if (updatePastLinksConfirm) {
         let activeCharacterUpdated = false;
 
-        // @ts-expect-error TS(7005) FIXME: Variable 'linkedChIDs' implicitly has an 'any[]' t... Remove this comment to see the full error message
         for (const chid of linkedChIDs) {
             const character = characters[chid];
 
@@ -2734,10 +2617,8 @@ export async function updateWorldInfoLinks(oldName, newName) {
                     activeCharacterUpdated = true;
                 }
 
-                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 notyf.success(`Successfully updated link for ${character.name}.`);
             } catch (e) {
-                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 notyf.error(`Failed to update link for ${character.name}.`);
                 console.error(`Backend update for character ${character.name} failed:`, e);
             }
@@ -2747,7 +2628,6 @@ export async function updateWorldInfoLinks(oldName, newName) {
         // only required if the currently selected character was changed
         if (activeCharacterUpdated) {
             select_selected_character(this_chid, { switchMenu: false });
-            // @ts-expect-error TS(2345) FIXME: Argument of type 'true' is not assignable to param... Remove this comment to see the full error message
             setWorldInfoButtonClass(this_chid, true);
         }
     }
@@ -2763,10 +2643,9 @@ export async function updateWorldInfoLinks(oldName, newName) {
  * @param {boolean} [forceValue] - Force a specific state
  * @returns {void}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'chid' implicitly has an 'any' type.
-export function setWorldInfoButtonClass(chid, forceValue = undefined) {
+export function setWorldInfoButtonClass(chid: unknown, forceValue: unknown = undefined) {
     if (forceValue !== undefined) {
-        document.querySelectorAll('#set_character_world, #world_button').forEach(el => el.classList.toggle('world_set', forceValue));
+        document.querySelectorAll('#set_character_world, #world_button').forEach(el => el.classList.toggle('world_set', forceValue as boolean | undefined));
         return;
     }
 
@@ -2774,8 +2653,8 @@ export function setWorldInfoButtonClass(chid, forceValue = undefined) {
         return;
     }
 
-    const world = characters[chid]?.data?.extensions?.world;
-    const worldSet = Boolean(world && wiManager.worldNames.includes(world));
+    const world = characters[chid as number]?.data?.extensions?.world;
+    const worldSet = Boolean(world && wiManager.worldNames.includes(world as string));
     document.querySelectorAll('#set_character_world, #world_button').forEach(el => el.classList.toggle('world_set', worldSet));
 }
 
@@ -2783,8 +2662,7 @@ export function setWorldInfoButtonClass(chid, forceValue = undefined) {
  * @param {number|undefined} chid - Character ID
  * @returns {boolean} Whether the character has an embedded world
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'chid' implicitly has an 'any' type.
-export function checkEmbeddedWorld(chid) {
+export function checkEmbeddedWorld(chid: unknown) {
     const importInfoEl = document.getElementById('import_character_info');
     if (importInfoEl) importInfoEl.style.display = 'none';
 
@@ -2792,34 +2670,32 @@ export function checkEmbeddedWorld(chid) {
         return false;
     }
 
-    if (characters[chid]?.data?.character_book) {
+    if (characters[chid as number]?.data?.character_book) {
         if (importInfoEl) {
             importInfoEl.dataset.chid = String(chid);
             importInfoEl.style.display = '';
         }
 
         // Only show the alert once per character
-        const checkKey = `AlertWI_${characters[chid].avatar}`;
-        const worldName = characters[chid]?.data?.extensions?.world;
-        if (!accountStorage.getItem(checkKey) && (!worldName || !wiManager.worldNames.includes(worldName))) {
+        const checkKey = `AlertWI_${characters[chid as number].avatar}`;
+        const worldName = characters[chid as number]?.data?.extensions?.world;
+        if (!accountStorage.getItem(checkKey) && (!worldName || !wiManager.worldNames.includes(worldName as string))) {
             accountStorage.setItem(checkKey, 'true');
 
             if (power_user.world_import_dialog) {
                 const html = `<h3>This character has an embedded World/Lorebook.</h3>
                 <h3>Would you like to import it now?</h3>
                 <div class="m-b-1">If you want to import it later, select "Import Card Lore" in the "More..." dropdown menu on the character panel.</div>`;
-                // @ts-expect-error TS(7006) FIXME: Parameter 'result' implicitly has an 'any' type.
-                const checkResult = (result) => {
+                const checkResult = (result: unknown) => {
                     if (result) {
                         importEmbeddedWorldInfo(true);
                     }
                 };
                 callGenericPopup(html, POPUP_TYPE.CONFIRM, '', { okButton: 'Yes' }).then(checkResult);
-            } else {
-                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                notyf.info(
-                    'To import and use it, select "Import Card Lore" in the "More..." dropdown menu on the character panel.',
-                    `${characters[chid].name} has an embedded World/Lorebook`,
+                } else {
+                    notyf.info(
+                        'To import and use it, select "Import Card Lore" in the "More..." dropdown menu on the character panel.',
+                        `${characters[chid as number].name} has an embedded World/Lorebook`,
                     { timeOut: 5000, extendedTimeOut: 10000 },
                 );
             }
@@ -2836,95 +2712,74 @@ export function checkEmbeddedWorld(chid) {
  * @param {string} [text] - World info names to toggle
  * @returns {string} Empty string
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
-export function onWorldInfoChange(args, text) {
-    if (args !== '__notSlashCommand__') { // if it's a slash command
-        const silent = isTrueBoolean(args.silent);
+export function onWorldInfoChange(args: Record<string, unknown> | string, text: string) {
+    if (args !== '__notSlashCommand__' && typeof args === 'object') { // if it's a slash command
+        const silent = isTrueBoolean((args as Record<string, unknown>).silent as string);
         if (text.trim() !== '') { // and args are provided
             const slashInputSplitText = text.trim().toLowerCase().split(',');
 
-            // @ts-expect-error TS(7006) FIXME: Parameter 'worldName' implicitly has an 'any' type... Remove this comment to see the full error message
-            slashInputSplitText.forEach((worldName) => {
+            slashInputSplitText.forEach((worldName: string) => {
                 const wiElement = getWIElement(worldName);
                 if (wiElement instanceof HTMLOptionElement) {
                     const name = wiElement.textContent;
-                    switch (args.state) {
+                    switch ((args as Record<string, unknown>).state as string) {
                         case 'off': {
-                            // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
-                            if (wiManager.selectedWorlds.includes(name)) {
-                                // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
-                                wiManager.selectedWorlds.splice(wiManager.selectedWorlds.indexOf(name), 1);
+                            if ((wiManager.selectedWorlds as string[]).includes(name as string)) {
+                                (wiManager.selectedWorlds as string[]).splice((wiManager.selectedWorlds as string[]).indexOf(name as string), 1);
                                 wiElement.selected = false;
-                                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                                 if (!silent) notyf.success(t`Deactivated world: ${name}`);
                             } else {
-                                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                                 if (!silent) notyf.error(t`World was not active: ${name}`);
                             }
                             break;
                         }
                         case 'toggle': {
-                            // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
-                            if (wiManager.selectedWorlds.includes(name)) {
-                                // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
-                                wiManager.selectedWorlds.splice(wiManager.selectedWorlds.indexOf(name), 1);
+                            if ((wiManager.selectedWorlds as string[]).includes(name as string)) {
+                                (wiManager.selectedWorlds as string[]).splice((wiManager.selectedWorlds as string[]).indexOf(name as string), 1);
                                 wiElement.selected = false;
-                                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                                 if (!silent) notyf.success(t`Deactivated world: ${name}`);
                             } else {
-                                // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
-                                wiManager.selectedWorlds.push(name);
+                                (wiManager.selectedWorlds as string[]).push(name as string);
                                 wiElement.selected = true;
-                                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                                 if (!silent) notyf.success(t`Activated world: ${name}`);
                             }
                             break;
                         }
                         case 'on':
                         default: {
-                            // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
-                            wiManager.selectedWorlds.push(name);
+                            (wiManager.selectedWorlds as string[]).push(name as string);
                             wiElement.selected = true;
-                            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                             if (!silent) notyf.success(t`Activated world: ${name}`);
                         }
                     }
                 } else {
-                    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                     if (!silent) notyf.error(t`No world found named: ${worldName}`);
                 }
             });
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            document.getElementById('world_info')?.dispatchEvent(new Event('change', {bubbles: true}));
-        } else { // if no args, unset all worlds
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
+            (document.getElementById('world_info') as HTMLSelectElement).dispatchEvent(new Event('change', {bubbles: true}));
+                } else { // if no args, unset all worlds
             if (!silent) notyf.success(t`Deactivated all worlds`);
             wiManager.selectedWorlds = [];
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            document.getElementById('world_info').value = null.dispatchEvent(new Event('change', { bubbles: true }));
+            (document.getElementById('world_info') as HTMLSelectElement).value = null as unknown as string;
+            document.getElementById('world_info')!.dispatchEvent(new Event('change', { bubbles: true }));
         }
     } else { //if it's a pointer selection
-        // @ts-expect-error TS(7034) FIXME: Variable 'tempWorldInfo' implicitly has type 'any[... Remove this comment to see the full error message
-        const tempWorldInfo = [];
-        // @ts-expect-error TS(2339) FIXME: Property 'selectedOptions' does not exist on type 'HTMLElement'.
-        const selectEl = document.getElementById('world_info');
-        // @ts-expect-error TS(2339) FIXME: Property 'selectedOptions' does not exist on type 'HTMLElement'.
+        const tempWorldInfo: string[] = [];
+        const selectEl = document.getElementById('world_info') as HTMLSelectElement | null;
         const selectedOptions = selectEl?.selectedOptions;
-        const selectedWorlds = Array.from(selectedOptions ?? []).map((/** @type {HTMLOptionElement} */ o) => Number(o.value)).filter((e) => !isNaN(e));
+        const selectedWorlds = Array.from(selectedOptions ?? []).map((o: HTMLOptionElement) => Number(o.value)).filter((e: number) => !isNaN(e));
         if (selectedWorlds.length > 0) {
             selectedWorlds.forEach((worldIndex) => {
                 const existingWorldName = wiManager.worldNames[worldIndex];
                 if (existingWorldName) {
                     tempWorldInfo.push(existingWorldName);
                 } else {
-                    const wiElement = getWIElement(existingWorldName);
+                    const wiElement = getWIElement(existingWorldName as string);
                     if (wiElement instanceof HTMLOptionElement) wiElement.selected = false;
-                    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                    notyf.error(t`The world with ${existingWorldName} is invalid or corrupted.`);
+                    notyf.error(t`The world with ${String(existingWorldName)} is invalid or corrupted.`);
                 }
             });
         }
-        // @ts-expect-error TS(2322) FIXME: Type 'any[]' is not assignable to type 'never[]'.
             wiManager.selectedWorlds = tempWorldInfo;
         }
 
@@ -2941,26 +2796,21 @@ export function onWorldInfoChange(args, text) {
  * @param {File} file File to import
  * @returns {Promise<void>}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'file' implicitly has an 'any' type.
 
 /**
  * Forces the world info editor to open on a specific world.
  * @param {string} worldName The name of the world to open
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'worldName' implicitly has an 'any' type... Remove this comment to see the full error message
-export function openWorldInfoEditor(worldName) {
+export function openWorldInfoEditor(worldName: string) {
     console.log(`Opening lorebook for ${worldName}`);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    if (!document.getElementById('WorldInfo').offsetParent !== null) {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        document.getElementById('WIDrawerIcon').dispatchEvent(new Event('click', { bubbles: true }));
+    if ((document.getElementById('WorldInfo') as HTMLElement).offsetParent !== null) {
+        (document.getElementById('WIDrawerIcon') as HTMLElement).dispatchEvent(new Event('click', { bubbles: true }));
     }
     const index = wiManager.worldNames.indexOf(worldName);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('world_editor_select').value = String(index);
-    // Sync the TomSelect display with the programmatic value change
-    // @ts-expect-error TS(2339) FIXME: Property 'tomselect' does not exist on type 'HTMLElement'.
-    document.getElementById('world_editor_select')?.tomselect?.setValue(String(index));
+    (document.getElementById('world_editor_select') as HTMLSelectElement).value = String(index);
+    const editorSelect = document.getElementById('world_editor_select') as unknown as Record<string, unknown>;
+    const tsObj = editorSelect?.tomselect as Record<string, unknown> | undefined;
+    (tsObj?.setValue as (v: string) => void)?.(String(index));
     document.getElementById('world_editor_select')?.dispatchEvent(new Event('change', { bubbles: true }));
 }
 
@@ -2969,8 +2819,7 @@ export function openWorldInfoEditor(worldName) {
  * @param {Pick<JQuery.ClickEvent, 'shiftKey' | 'altKey'>} event Click event
  * @returns {Promise<void>}
  */
-// @ts-expect-error TS(7031) FIXME: Binding element 'shiftKey' implicitly has an 'any'... Remove this comment to see the full error message
-export async function assignLorebookToChat({ shiftKey, altKey }) {
+export async function assignLorebookToChat({ shiftKey, altKey }: { shiftKey?: boolean; altKey?: boolean }) {
     const selectedName = chat_metadata[METADATA_KEY];
 
     if (selectedName && !shiftKey && !altKey) {
@@ -2999,12 +2848,10 @@ export async function assignLorebookToChat({ shiftKey, altKey }) {
 
         if (worldName) {
             chat_metadata[METADATA_KEY] = worldName;
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-            document.querySelector('.chat_lorebook_button').classList.add('world_set');
+            document.querySelector('.chat_lorebook_button')?.classList.add('world_set');
         } else {
             delete chat_metadata[METADATA_KEY];
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-            document.querySelector('.chat_lorebook_button').classList.remove('world_set');
+            document.querySelector('.chat_lorebook_button')?.classList.remove('world_set');
         }
 
         saveMetadata();
@@ -3020,12 +2867,9 @@ export async function assignLorebookToChat({ shiftKey, altKey }) {
  * Can also unset it to null.
  * @param {string} name - The name of the world info to link to the character.
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
-export async function charUpdatePrimaryWorld(name) {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const previousValue = document.getElementById('character_world').value;
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('character_world').value = name;
+export async function charUpdatePrimaryWorld(name: string) {
+    const previousValue = (document.getElementById('character_world') as HTMLSelectElement).value;
+    (document.getElementById('character_world') as HTMLSelectElement).value = name;
 
     console.debug('Character world selected:', name);
 
@@ -3036,27 +2880,21 @@ export async function charUpdatePrimaryWorld(name) {
 
     if (previousValue && !name) {
         try {
-            // Dirty hack to remove embedded lorebook from character JSON data.
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const data = JSON.parse(String(document.getElementById('character_json_data').value));
+            const data = JSON.parse(String((document.getElementById('character_json_data') as HTMLInputElement).value));
 
             if (data?.data?.character_book) {
                 data.data.character_book = undefined;
             }
 
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            document.getElementById('character_json_data').value = JSON.stringify(data);
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
+            (document.getElementById('character_json_data') as HTMLInputElement).value = JSON.stringify(data);
             notyf.info(t`Embedded lorebook will be removed from this character.`);
         } catch {
             console.error('Failed to parse character JSON data.');
         }
     }
 
-    // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
-    await createOrEditCharacter();
+    await createOrEditCharacter(undefined);
 
-    // @ts-expect-error TS(2345) FIXME: Argument of type 'boolean' is not assignable to pa... Remove this comment to see the full error message
     setWorldInfoButtonClass(undefined, !!name);
 }
 
@@ -3065,12 +2903,10 @@ export async function charUpdatePrimaryWorld(name) {
  * @param {string} characterKey - The key of the character to add auxiliary world books to
  * @param {string|string[]} nameOrNames - The name or names of the auxiliary world books to add
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'characterKey' implicitly has an 'any' t... Remove this comment to see the full error message
-export async function charUpdateAddAuxWorld(characterKey, nameOrNames) {
-    const fileName = getCharaFilename(null, { manualAvatarKey: characterKey });
+export async function charUpdateAddAuxWorld(characterKey: unknown, nameOrNames: unknown) {
+    const fileName = getCharaFilename(null, { manualAvatarKey: characterKey as unknown as null | undefined });
     const toAdd = Array.isArray(nameOrNames) ? nameOrNames : [nameOrNames];
-    // @ts-expect-error TS(7006) FIXME: Parameter 'curr' implicitly has an 'any' type.
-    updateAuxBooks(fileName, curr => [...curr, ...toAdd]);
+    updateAuxBooks(fileName as string, (curr: string[]) => [...curr, ...toAdd as string[]]);
 }
 
 /**
@@ -3078,10 +2914,8 @@ export async function charUpdateAddAuxWorld(characterKey, nameOrNames) {
  * @param {string} fileName - The filename of the character to update
  * @param {string[]} books - The new list of auxiliary world books to replace the existing list with
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'fileName' implicitly has an 'any' type.
-export function charSetAuxWorlds(fileName, books) {
-    // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
-    updateAuxBooks(fileName, _ => Array.isArray(books) ? books : []);
+export function charSetAuxWorlds(fileName: unknown, books: unknown) {
+    updateAuxBooks(fileName as string, (_: string[]) => Array.isArray(books) ? books as string[] : []);
 }
 
 /**
@@ -3089,22 +2923,19 @@ export function charSetAuxWorlds(fileName, books) {
  * @param {(books: string[]) => string[]} computeNext - Function to compute the next list of books
  * @returns {void}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'fileName' implicitly has an 'any' type.
-function updateAuxBooks(fileName, computeNext) {
+function updateAuxBooks(fileName: string, computeNext: (curr: string[]) => string[]) {
     if (!fileName) return;
 
     if (menu_type === 'create') {
         const current = create_save.extra_books ?? [];
-        // @ts-expect-error TS(2322) FIXME: Type 'unknown[]' is not assignable to type 'never[... Remove this comment to see the full error message
-        create_save.extra_books = normalizeArray(computeNext(current));
+        const extraBooks = normalizeArray(computeNext(current as string[]));
+        create_save.extra_books = extraBooks as never[];
         return; // no debounced save in create flow
     }
 
-    // @ts-expect-error TS(2339) FIXME: Property 'charLore' does not exist on type '{}'.
-    const charLore = wiManager.info.charLore ?? [];
-    // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
-    const idx = charLore.findIndex(e => e.name === fileName);
-    const current = idx !== -1 ? (charLore[idx].extraBooks ?? []) : [];
+    const charLore = ((wiManager.info as Record<string, unknown>).charLore ?? []) as Record<string, unknown>[];
+    const idx = charLore.findIndex((e: Record<string, unknown>) => e.name === fileName);
+    const current = idx !== -1 ? ((charLore[idx] as Record<string, unknown>).extraBooks as string[] ?? []) : [];
     const next = normalizeArray(computeNext(current));
 
     if (next.length === 0) {
@@ -3112,7 +2943,7 @@ function updateAuxBooks(fileName, computeNext) {
     } else if (idx === -1) {
         charLore.push({ name: fileName, extraBooks: next });
     } else {
-        charLore[idx] = { ...charLore[idx], extraBooks: next };
+        charLore[idx] = { ...(charLore[idx] as Record<string, unknown>), extraBooks: next };
     }
 
     Object.assign(world_info, { charLore });
@@ -3124,24 +2955,22 @@ function updateAuxBooks(fileName, computeNext) {
  *
  */
 export function initWorldInfo() {
-    (document.getElementById('world_info') as HTMLSelectElement).addEventListener('mousedown', async function (e) {
+    (document.getElementById('world_info') as HTMLSelectElement).addEventListener('mousedown', async function (this: HTMLElement, e: Event) {
         // If there's no world names, don't do anything
         if (wiManager.worldNames.length === 0) {
             e.preventDefault();
             return;
         }
 
-        // @ts-expect-error TS(2554) FIXME: Expected 2 arguments, but got 1.
-        onWorldInfoChange('__notSlashCommand__');
+        onWorldInfoChange('__notSlashCommand__', '');
     });
-    (document.getElementById('world_info') as HTMLSelectElement).addEventListener('change', async function () {
+    (document.getElementById('world_info') as HTMLSelectElement).addEventListener('change', async function (this: HTMLElement) {
         // If there's no world names, don't do anything
         if (wiManager.worldNames.length === 0) {
             return;
         }
 
-        // @ts-expect-error TS(2554) FIXME: Expected 2 arguments, but got 1.
-        onWorldInfoChange('__notSlashCommand__');
+        onWorldInfoChange('__notSlashCommand__', '');
     });
 
     //**************************WORLD INFO IMPORT EXPORT*************************//
@@ -3163,15 +2992,14 @@ export function initWorldInfo() {
     });
 
     (document.getElementById('world_create_button') as HTMLElement).addEventListener('click', async () => {
-        const tempName = getFreeWorldName();
-        const finalName = await Popup.show.input(t`Create a new World Info`, t`Enter a name for the new file:`, tempName);
+        const finalName = await Popup.show.input(t`Create a new World Info`, t`Enter a name for the new file:`, undefined as string | undefined);
 
-        if (finalName) {
-            await createNewWorldInfo(finalName, { interactive: true });
-        }
-    });
+            if (finalName) {
+                await createNewWorldInfo(finalName as string, { interactive: true });
+            }
+        });
 
-    (document.getElementById('world_editor_select') as HTMLSelectElement).addEventListener('change', async () => {
+        (document.getElementById('world_editor_select') as HTMLSelectElement).addEventListener('change', async function (this: HTMLElement) {
         const worldInfoSearchElement = document.getElementById('world_info_search');
         if (worldInfoSearchElement) (worldInfoSearchElement as HTMLInputElement).value = '';
         worldInfoFilter.setFilterData(FILTER_TYPES.WORLD_INFO_SEARCH, '', true);
@@ -3186,8 +3014,8 @@ export function initWorldInfo() {
         if (selectedIndex === '') {
             await hideWorldEditor();
         } else {
-            const worldName = wiManager.worldNames[selectedIndex];
-            showWorldEditor(worldName);
+            const worldName = wiManager.worldNames[Number(selectedIndex)];
+                if (worldName) void showWorldEditor(worldName);
         }
     });
 
@@ -3296,7 +3124,7 @@ export function initWorldInfo() {
         }
     });
 
-    (document.getElementById('world_button') as HTMLElement).addEventListener('click', async function (event) {
+    (document.getElementById('world_button') as HTMLElement).addEventListener('click', async function (event: MouseEvent) {
         const openSetWorldMenu = () => {
             const charManagementDropdown = document.getElementById('char-management-dropdown') as HTMLSelectElement | null;
             const setCharWorld = document.getElementById('set_character_world') as HTMLSelectElement | null;
@@ -3313,7 +3141,7 @@ export function initWorldInfo() {
             return;
         }
 
-        const worldName = characters[chid]?.data?.extensions?.world;
+        const worldName = characters[chid as number]?.data?.extensions?.world;
         const hasEmbed = checkEmbeddedWorld(chid);
         if (worldName && wiManager.worldNames.includes(worldName) && !event.shiftKey && !event.altKey) {
             openWorldInfoEditor(worldName);
@@ -3351,7 +3179,7 @@ export function initWorldInfo() {
     document.addEventListener('click', function (e: MouseEvent) {
         if (!(e.target instanceof Element)) return;
         const el = e.target.closest('.chat_lorebook_button');
-        if (el) assignLorebookToChat(e);
+        if (el) assignLorebookToChat({ shiftKey: e.shiftKey, altKey: e.altKey });
     });
     addLongPressEvent('.chat_lorebook_button', function () {
         assignLorebookToChat({ shiftKey: true, altKey: false });
@@ -3364,13 +3192,13 @@ export function initWorldInfo() {
 
     // Not needed on mobile
     if (!isMobile()) {
-        new TomSelect(document.getElementById('world_editor_select'), {
+        new (TomSelect as unknown as new (el: HTMLElement | null, opts: Record<string, unknown>) => Record<string, unknown>)(document.getElementById('world_editor_select'), {
             maxItems: 1,
             placeholder: t`--- Pick to Edit ---`,
             dropdownParent: 'body',
         });
 
-        new TomSelect(document.getElementById('world_info'), {
+        new (TomSelect as unknown as new (el: HTMLElement | null, opts: Record<string, unknown>) => Record<string, unknown>)(document.getElementById('world_info'), {
             maxItems: null,
             placeholder: t`No Worlds active. Click here to select.`,
             allowEmptyOption: true,
@@ -3379,15 +3207,12 @@ export function initWorldInfo() {
         });
 
         // Subscribe world loading to the TomSelect multiselect items (We need to target the specific ts-control)
-        select2ChoiceClickSubscribe(document.getElementById('world_info'), target => {
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        select2ChoiceClickSubscribe(document.getElementById('world_info') as unknown as HTMLElement, (target: Element) => {
             const name = target.textContent;
             const selectedIndex = wiManager.worldNames.indexOf(name);
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const alreadySelectedInEditor = document.querySelector('#world_editor_select option:checked')?.textContent === name;
             if (selectedIndex !== -1 && !alreadySelectedInEditor) {
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                document.getElementById('world_editor_select').value = String(selectedIndex);
+                (document.getElementById('world_editor_select') as HTMLSelectElement).value = String(selectedIndex);
     document.getElementById('world_editor_select')?.dispatchEvent(new Event('change', { bubbles: true }));
                 console.log('Quick selection of world', name);
             } else {
@@ -3397,11 +3222,10 @@ export function initWorldInfo() {
     }
 
     (document.getElementById('WorldInfo') as HTMLElement).addEventListener('scroll', () => {
-        document.querySelectorAll('.world_entry input[name="group"], .world_entry input[name="automationId"]').forEach(el => {
-            // @ts-expect-error TS(2339) FIXME: Property 'tomSelect' does not exist on type 'Element'.
-            if (el.tomSelect) {
-                // @ts-expect-error TS(2339) FIXME: Property 'tomSelect' does not exist on type 'Element'.
-                el.tomSelect.close();
+        document.querySelectorAll('.world_entry input[name="group"], .world_entry input[name="automationId"]').forEach((el: Element) => {
+            const elRec = el as unknown as Record<string, unknown>;
+            if (elRec.tomSelect) {
+                ((elRec.tomSelect as Record<string, unknown>).close as () => void)();
             }
         });
     });

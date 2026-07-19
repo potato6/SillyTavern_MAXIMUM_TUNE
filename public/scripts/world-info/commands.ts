@@ -83,12 +83,11 @@ export function registerWorldInfoSlashCommands() {
      * @param {object} [root0.args] - Arguments
      * @param {unknown} [root0.unnamed] - Unnamed argument
      * @param {string} [root0.callbackName] - Callback name for logging
-     * @returns {Promise<string|object[]>} Entries from file or empty string
+     * @returns {Promise<string|import('./types.js').WorldInfoEntryData[]>} Entries from file or empty string
      */
     // @ts-expect-error TS(7006) FIXME: Parameter 'file' implicitly has an 'any' type.
     async function getEntriesFromFile(file, { args = {}, unnamed = null, callbackName = 'getEntriesFromFile' } = {}) {
         if (!file || !wiManager.worldNames.includes(file)) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.warning(t`Valid World Info file name is required`);
             logSlashCommandWarn(`${callbackName}: Valid World Info file name is required`, args, unnamed);
             return '';
@@ -97,16 +96,14 @@ export function registerWorldInfoSlashCommands() {
         const data = await loadWorldInfo(file);
 
         if (!data || !('entries' in data)) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.warning(t`World Info file has an invalid format`);
             logSlashCommandWarn(`${callbackName}: World Info file has an invalid format`, args, unnamed);
             return '';
         }
 
-        const entries = Object.values(data.entries);
+        const entries = Object.values(data.entries) as import('./types.js').WorldInfoEntryData[];
 
         if (!entries || entries.length === 0) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.warning(t`World Info file has no entries`);
             logSlashCommandWarn(`${callbackName}: World Info file has no entries`, args, unnamed);
             return '';
@@ -121,7 +118,7 @@ export function registerWorldInfoSlashCommands() {
      * @param {string} _unnamedArg not used
      * @returns {Promise<string>} The name of the persona-bound lorebook
      */
-    // @ts-expect-error TS(7031) FIXME: Binding element 'name' implicitly has an 'any' typ... Remove this comment to see the full error message
+    // @ts-expect-error TS(7031) FIXME: Binding element 'name' implicitly has an 'any' type.
     async function getPersonaBookCallback({ name, create }, _unnamedArg) {
         const bookName = power_user.persona_description_lorebook || '';
         if (bookName) {
@@ -146,7 +143,7 @@ export function registerWorldInfoSlashCommands() {
      * @param {string} characterIdentifier Character name
      * @returns {Promise<string>} The name of the character-bound lorebook, a JSON string of the character's lorebooks, or an empty string
      */
-    // @ts-expect-error TS(7031) FIXME: Binding element 'type' implicitly has an 'any' typ... Remove this comment to see the full error message
+    // @ts-expect-error TS(7031) FIXME: Binding element 'type' implicitly has an 'any' type.
     async function getCharBookCallback({ type, name, create }, characterIdentifier) {
         const context = getContext();
         if (context.groupId && !characterIdentifier) throw new Error('This command is not available in groups without providing a character name');
@@ -154,7 +151,6 @@ export function registerWorldInfoSlashCommands() {
         characterIdentifier = String(characterIdentifier ?? '') || context.characters[context.characterId]?.avatar || null;
         const character = findChar({ name: characterIdentifier });
         if (!character) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.error(t`Character not found.`);
             // @ts-expect-error TS(2345) FIXME: Argument of type '{ characterIdentifier: any; }' i... Remove this comment to see the full error message
             logSlashCommandWarn('getCharBookCallback: Character not found', { type, name, create }, { characterIdentifier });
@@ -201,7 +197,6 @@ export function registerWorldInfoSlashCommands() {
         const chatId = getCurrentChatId();
 
         if (!chatId) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.warning(t`Open a chat to get a name of the chat-bound lorebook`);
             logSlashCommandWarn('getChatBookCallback: Open a chat to get a name of the chat-bound lorebook', args);
             return '';
@@ -262,7 +257,7 @@ export function registerWorldInfoSlashCommands() {
         const file = args.file;
         const field = args.field || 'key';
 
-        // @ts-expect-error TS(2322) FIXME: Type '{ value: any; }' is not assignable to type '... Remove this comment to see the full error message
+        // @ts-expect-error TS(2322) FIXME: Type '{ value: any; }' is not assignable to type 'null | undefined'.
         const entries = await getEntriesFromFile(file, { args, unnamed: { value }, callbackName: 'findBookEntryCallback' });
 
         if (!entries) {
@@ -294,14 +289,13 @@ export function registerWorldInfoSlashCommands() {
             return '';
         }
 
-        // @ts-expect-error TS(2339) - results[0]?.item typed as {}
-        const result = results[0]?.item?.uid;
+            const result = (results[0]?.item as import('./types.js').WorldInfoEntryData | undefined)?.uid;
 
         if (result === undefined) {
             return '';
         }
 
-        return result;
+        return String(result);
     }
 
     /**
@@ -315,18 +309,16 @@ export function registerWorldInfoSlashCommands() {
         const field = args.field || 'content';
         const tags = getContext().tags;
 
-        // @ts-expect-error TS(2322) FIXME: Type '{ uid: any; }' is not assignable to type 'nu... Remove this comment to see the full error message
+        // @ts-expect-error TS(2322) FIXME: Type '{ uid: any; }' is not assignable to type 'null | undefined'.
         const entries = await getEntriesFromFile(file, { args, unnamed: { uid }, callbackName: 'getEntryFieldCallback' });
 
         if (!entries) {
             return '';
         }
 
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         const entry = entries.find(x => String(x.uid) === String(uid));
 
         if (!entry) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.warning('Valid UID is required');
             // @ts-expect-error TS(2345) FIXME: Argument of type '{ uid: any; }' is not assignable... Remove this comment to see the full error message
             logSlashCommandWarn('getEntryFieldCallback: Valid UID is required', args, { uid });
@@ -335,7 +327,6 @@ export function registerWorldInfoSlashCommands() {
         }
 
         if (!Object.hasOwn(newWorldInfoEntryDefinition, field)) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.warning('Valid field name is required');
             // @ts-expect-error TS(2345) FIXME: Argument of type '{ uid: any; }' is not assignable... Remove this comment to see the full error message
             logSlashCommandWarn('getEntryFieldCallback: Valid field name is required', args, { uid });
@@ -346,34 +337,29 @@ export function registerWorldInfoSlashCommands() {
         let fieldValue;
         switch (field) {
             case 'characterFilterNames':
-                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 if (entry.characterFilter) {
-                    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                     fieldValue = entry.characterFilter.names;
                 }
                 break;
             case 'characterFilterTags':
-                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 if (entry.characterFilter) {
-                    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                     if (!entry.characterFilter.tags) {
                         return '';
                     }
                     //Find the tag objects corresponding to each ID in the array, then return the names
-                    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-                    fieldValue = tags.filter((tag) => entry.characterFilter.tags.includes(tag.id)).map((tag) => tag.name);
+                    const filterTags = entry.characterFilter.tags;
+                    // @ts-expect-error tags is typed as any[] from the context
+                    fieldValue = tags.filter((tag) => filterTags.includes(tag.id)).map((tag) => tag.name);
                 }
                 break;
             case 'characterFilterExclude':
-                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 if (entry.characterFilter) {
-                    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                     fieldValue = entry.characterFilter.isExclude;
                 }
                 break;
             default:
-                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-                fieldValue = entry[field] ?? newWorldInfoEntryDefinition[field]?.default;
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type 'WorldInfoEntryData'
+                fieldValue = entry[/** @type {keyof import('./types.js').WorldInfoEntryData} */ (field)] ?? newWorldInfoEntryDefinition[/** @type {keyof typeof newWorldInfoEntryDefinition} */ (field)]?.default;
         }
 
         if (fieldValue === undefined) {
@@ -400,7 +386,6 @@ export function registerWorldInfoSlashCommands() {
         // Load book from server into the store
         const book = await wiManager.loadBookIntoStore(file);
         if (!book || !book.entries) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.warning('Valid World Info file name is required');
             logSlashCommandWarn('createEntryCallback: Valid World Info file name is required', args);
             return '';
@@ -408,7 +393,7 @@ export function registerWorldInfoSlashCommands() {
 
         const store = wiManager.getStore(file);
 
-        const entry = await createWorldInfoEntry(store);
+        const entry = await createWorldInfoEntry(store) as import('./types.js').WorldInfoEntryData | undefined;
 
         if (!entry) return '';
 
@@ -444,8 +429,8 @@ export function registerWorldInfoSlashCommands() {
         const tags = getContext().tags;
 
         // characterFilter is an object with internal fields we need to access, which may also may be null and need to be populated
-        // @ts-expect-error TS(7006) FIXME: Parameter 'currentEntry' implicitly has an 'any' t... Remove this comment to see the full error message
-        const createCharacterFilterFieldObjectIfNeeded = (currentEntry) => {
+        // @ts-expect-error TS(7006) FIXME: Parameter 'currentEntry' implicitly has an 'any' type.
+        const createCharacterFilterFieldObjectIfNeeded = (/** @type {import('./types.js').WorldInfoEntryData} */ currentEntry) => {
             if (!currentEntry.characterFilter) {
                 Object.assign(
                     currentEntry,
@@ -461,19 +446,17 @@ export function registerWorldInfoSlashCommands() {
         };
 
         if (value === undefined) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.warning('Value is required');
             // @ts-expect-error TS(2345) FIXME: Argument of type '{ value: any; }' is not assignab... Remove this comment to see the full error message
             logSlashCommandWarn('setEntryFieldCallback: Value is required', args, { value });
             return '';
         }
 
-        value = value.replace(/\\([{}|])/g, '$1');
+        value = value.replace(/\\([{}|])/g, "$1");
 
         const data = await loadWorldInfo(file);
 
         if (!data || !('entries' in data)) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.warning('Valid World Info file name is required');
             // @ts-expect-error TS(2345) FIXME: Argument of type '{ value: any; }' is not assignab... Remove this comment to see the full error message
             logSlashCommandWarn('setEntryFieldCallback: Valid World Info file name is required', args, { value });
@@ -483,7 +466,6 @@ export function registerWorldInfoSlashCommands() {
         const entry = data.entries[uid];
 
         if (!entry) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.warning('Valid UID is required');
             // @ts-expect-error TS(2345) FIXME: Argument of type '{ value: any; }' is not assignab... Remove this comment to see the full error message
             logSlashCommandWarn('setEntryFieldCallback: Valid UID is required', args, { value });
@@ -491,7 +473,6 @@ export function registerWorldInfoSlashCommands() {
         }
 
         if (!Object.hasOwn(newWorldInfoEntryDefinition, field)) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.warning('Valid field name is required');
             // @ts-expect-error TS(2345) FIXME: Argument of type '{ value: any; }' is not assignab... Remove this comment to see the full error message
             logSlashCommandWarn('setEntryFieldCallback: Valid field name is required', args, { value });
@@ -547,10 +528,8 @@ export function registerWorldInfoSlashCommands() {
                     entry[field] = value;
                 }
 
-                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                if (originalWIDataKeyMap[field]) {
-                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                    setWIOriginalDataValue(data, uid, originalWIDataKeyMap[field], entry[field]);
+                if (originalWIDataKeyMap[/** @type {keyof typeof originalWIDataKeyMap} */ (field)]) {
+                    setWIOriginalDataValue(data, uid, originalWIDataKeyMap[/** @type {keyof typeof originalWIDataKeyMap} */ (field)] as string, entry[field] as string);
                 }
         }
 
@@ -578,25 +557,20 @@ export function registerWorldInfoSlashCommands() {
             return '';
         }
 
-        /** @type {WIScanEntry} */
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-        const entry = structuredClone(entries.find(x => String(x.uid) === String(uid)));
+        const entry = structuredClone(entries.find(x => String(x.uid) === String(uid))) as import('./types.js').WIScanEntry | undefined;
 
         if (!entry) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.warning('Valid UID is required');
             // @ts-expect-error TS(2345) FIXME: Argument of type '{ uid: any; }' is not assignable... Remove this comment to see the full error message
             logSlashCommandWarn('getTimedEffectCallback: Valid UID is required', args, { uid });
             return '';
         }
 
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         entry.world = file; // Required by the timed effects manager
         const chat = getScanningChat();
         const timedEffects = new WorldInfoTimedEffects(chat, [entry]);
 
-        if (!timedEffects.isValidEffectType(effect)) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
+        if (!timedEffects.isValidType(effect)) {
             notyf.warning('Valid effect type is required');
             // @ts-expect-error TS(2345) FIXME: Argument of type '{ uid: any; }' is not assignable... Remove this comment to see the full error message
             logSlashCommandWarn('getTimedEffectCallback: Valid effect type is required', args, { uid });
@@ -628,7 +602,6 @@ export function registerWorldInfoSlashCommands() {
         const effect = args.effect;
 
         if (value === undefined) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.warning('New state is required');
             // @ts-expect-error TS(2345) FIXME: Argument of type '{ value: any; }' is not assignab... Remove this comment to see the full error message
             logSlashCommandWarn('setTimedEffectCallback: New state is required', args, { value });
@@ -642,34 +615,27 @@ export function registerWorldInfoSlashCommands() {
             return '';
         }
 
-        /** @type {WIScanEntry} */
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-        const entry = structuredClone(entries.find(x => String(x.uid) === String(uid)));
+        const entry = structuredClone(entries.find(x => String(x.uid) === String(uid))) as import('./types.js').WIScanEntry | undefined;
 
         if (!entry) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.warning('Valid UID is required');
             // @ts-expect-error TS(2345) FIXME: Argument of type '{ value: any; }' is not assignab... Remove this comment to see the full error message
             logSlashCommandWarn('setTimedEffectCallback: Valid UID is required', args, { value });
             return '';
         }
 
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         entry.world = file; // Required by the timed effects manager
         const chat = getScanningChat();
         const timedEffects = new WorldInfoTimedEffects(chat, [entry]);
 
-        if (!timedEffects.isValidEffectType(effect)) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
+        if (!timedEffects.isValidType(effect)) {
             notyf.warning('Valid effect type is required');
             // @ts-expect-error TS(2345) FIXME: Argument of type '{ value: any; }' is not assignab... Remove this comment to see the full error message
             logSlashCommandWarn('setTimedEffectCallback: Valid effect type is required', args, { value });
             return '';
         }
 
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         if (!entry[effect]) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.warning('This entry does not have the selected effect. Configure it in the editor first.');
             // @ts-expect-error TS(2345) FIXME: Argument of type '{ value: any; }' is not assignab... Remove this comment to see the full error message
             logSlashCommandWarn('setTimedEffectCallback: This entry does not have the selected effect', args, { value });
@@ -698,7 +664,6 @@ export function registerWorldInfoSlashCommands() {
         timedEffects.setTimedEffect(effect, entry, newEffectState);
 
         await saveMetadata();
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.success(`Timed effect "${effect}" for entry ${entry.uid} is now ${newEffectState ? 'active' : 'inactive'}`);
 
         return '';

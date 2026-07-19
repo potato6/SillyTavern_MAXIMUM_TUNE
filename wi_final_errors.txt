@@ -1,0 +1,220 @@
+public/scripts/world-info.ts(666,30): error TS2538: Type 'undefined' cannot be used as an index type.
+public/scripts/world-info.ts(667,30): error TS2538: Type 'undefined' cannot be used as an index type.
+public/scripts/world-info.ts(708,20): error TS2345: Argument of type 'HTMLElement | null' is not assignable to parameter of type 'HTMLElement'.
+public/scripts/world-info.ts(751,47): error TS2345: Argument of type 'unknown[]' is not assignable to parameter of type 'WorldInfoEntryData[]'.
+public/scripts/world-info.ts(758,5): error TS2531: Object is possibly 'null'.
+public/scripts/world-info.ts(826,33): error TS2339: Property 'getCurrentPage' does not exist on type 'never'.
+public/scripts/world-info.ts(830,22): error TS2554: Expected 1 arguments, but got 0.
+public/scripts/world-info.ts(848,63): error TS7006: Parameter 'page' implicitly has an 'any' type.
+public/scripts/world-info.ts(850,36): error TS2345: Argument of type 'HTMLElement | null' is not assignable to parameter of type 'HTMLElement'.
+public/scripts/world-info.ts(917,5): error TS2531: Object is possibly 'null'.
+public/scripts/world-info.ts(926,5): error TS2531: Object is possibly 'null'.
+public/scripts/world-info.ts(930,5): error TS2531: Object is possibly 'null'.
+public/scripts/world-info.ts(1009,48): error TS7015: Element implicitly has an 'any' type because index expression is not of type 'number'.
+public/scripts/world-info.ts(1041,136): error TS2339: Property 'dataset' does not exist on type 'Element'.
+public/scripts/world-info.ts(1044,62): error TS2339: Property 'dataset' does not exist on type 'Element'.
+public/scripts/world-info.ts(1078,32): error TS2339: Property 'value' does not exist on type 'HTMLElement'.
+public/scripts/world-info.ts(1084,32): error TS2339: Property 'value' does not exist on type 'HTMLElement'.
+public/scripts/world-info.ts(1295,30): error TS2538: Type 'undefined' cannot be used as an index type.
+public/scripts/world-info.ts(1296,46): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string | number'.
+public/scripts/world-info.ts(1296,87): error TS2538: Type 'undefined' cannot be used as an index type.
+public/scripts/world-info.ts(1299,58): error TS2538: Type 'undefined' cannot be used as an index type.
+public/scripts/world-info.ts(1303,52): error TS2538: Type 'undefined' cannot be used as an index type.
+public/scripts/world-info.ts(1343,30): error TS2538: Type 'undefined' cannot be used as an index type.
+public/scripts/world-info.ts(1344,46): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string | number'.
+public/scripts/world-info.ts(1344,87): error TS2538: Type 'undefined' cannot be used as an index type.
+public/scripts/world-info.ts(1346,62): error TS2538: Type 'undefined' cannot be used as an index type.
+public/scripts/world-info.ts(1412,21): error TS2571: Object is of type 'unknown'.
+public/scripts/world-info.ts(1630,37): error TS2345: Argument of type '{} | undefined' is not assignable to parameter of type 'number'.
+public/scripts/world-info.ts(1632,21): error TS18048: 'v' is possibly 'undefined'.
+public/scripts/world-info.ts(1633,21): error TS18048: 'v' is possibly 'undefined'.
+public/scripts/world-info.ts(1639,21): error TS18048: 'value' is possibly 'undefined'.
+public/scripts/world-info.ts(1640,21): error TS18048: 'value' is possibly 'undefined'.
+public/scripts/world-info.ts(1749,47): error TS2345: Argument of type 'unknown[]' is not assignable to parameter of type 'WorldInfoEntryData[]'.
+public/scripts/world-info.ts(1770,36): error TS2339: Property 'dataset' does not exist on type 'Element'.
+public/scripts/world-info.ts(1779,9): error TS2578: Unused '@ts-expect-error' directive.
+public/scripts/world-info.ts(1786,22): error TS2339: Property 'value' does not exist on type 'Element'.
+public/scripts/world-info.ts(1791,24): error TS18047: 'headerTemplate' is possibly 'null'.
+public/scripts/world-info.ts(1792,5): error TS2532: Object is possibly 'undefined'.
+public/scripts/world-info.ts(1792,19): error TS2339: Property 'dataset' does not exist on type 'Element'.
+public/scripts/world-info.ts(1795,22): error TS2683: 'this' implicitly has type 'any' because it does not have a type annotation.
+public/scripts/world-info.ts(1796,31): error TS2683: 'this' implicitly has type 'any' because it does not have a type annotation.
+public/scripts/world-info.ts(1803,5): error TS2532: Object is possibly 'undefined'.
+public/scripts/world-info.ts(1803,19): error TS2339: Property 'value' does not exist on type 'Element'.
+public/scripts/world-info.ts(1804,5): error TS2532: Object is possibly 'undefined'.
+public/scripts/world-info.ts(1805,5): error TS2532: Object is possibly 'undefined'.
+public/scripts/world-info.ts(1805,19): error TS2339: Property 'style' does not exist on type 'Element'.
+public/scripts/world-info.ts(1808,54): error TS18047: 'headerTemplate' is possibly 'null'.
+public/scripts/world-info.ts(1812,20): error TS18047: 'headerTemplate' is possibly 'null'.
+public/scripts/world-info.ts(1815,5): error TS18047: 'headerTemplate' is possibly 'null'.
+public/scripts/world-info.ts(1815,5): error TS2531: Object is possibly 'null'.
+public/scripts/world-info.ts(1815,57): error TS2339: Property 'style' does not exist on type 'Element'.
+public/scripts/world-info.ts(1819,27): error TS18047: 'headerTemplate' is possibly 'null'.
+public/scripts/world-info.ts(1820,5): error TS2532: Object is possibly 'undefined'.
+public/scripts/world-info.ts(1820,22): error TS2339: Property 'dataset' does not exist on type 'Element'.
+public/scripts/world-info.ts(1821,5): error TS2532: Object is possibly 'undefined'.
+public/scripts/world-info.ts(1822,5): error TS2532: Object is possibly 'undefined'.
+public/scripts/world-info.ts(1823,9): error TS2578: Unused '@ts-expect-error' directive.
+public/scripts/world-info.ts(1830,40): error TS2339: Property 'disabled' does not exist on type 'Element'.
+public/scripts/world-info.ts(1831,40): error TS2339: Property 'style' does not exist on type 'Element'.
+public/scripts/world-info.ts(1832,33): error TS2571: Object is of type 'unknown'.
+public/scripts/world-info.ts(1832,46): error TS2571: Object is of type 'unknown'.
+public/scripts/world-info.ts(1835,40): error TS2339: Property 'disabled' does not exist on type 'Element'.
+public/scripts/world-info.ts(1836,40): error TS2339: Property 'style' does not exist on type 'Element'.
+public/scripts/world-info.ts(1848,5): error TS2532: Object is possibly 'undefined'.
+public/scripts/world-info.ts(1852,29): error TS18047: 'headerTemplate' is possibly 'null'.
+public/scripts/world-info.ts(1858,26): error TS18047: 'headerTemplate' is possibly 'null'.
+public/scripts/world-info.ts(1863,26): error TS18047: 'headerTemplate' is possibly 'null'.
+public/scripts/world-info.ts(1864,5): error TS2532: Object is possibly 'undefined'.
+public/scripts/world-info.ts(1864,21): error TS2339: Property 'dataset' does not exist on type 'Element'.
+public/scripts/world-info.ts(1865,5): error TS2532: Object is possibly 'undefined'.
+public/scripts/world-info.ts(1866,22): error TS2683: 'this' implicitly has type 'any' because it does not have a type annotation.
+public/scripts/world-info.ts(1869,26): error TS2538: Type 'unknown' cannot be used as an index type.
+public/scripts/world-info.ts(1874,23): error TS18047: 'headerTemplate' is possibly 'null'.
+public/scripts/world-info.ts(1875,5): error TS2532: Object is possibly 'undefined'.
+public/scripts/world-info.ts(1875,18): error TS2339: Property 'dataset' does not exist on type 'Element'.
+public/scripts/world-info.ts(1876,5): error TS2532: Object is possibly 'undefined'.
+public/scripts/world-info.ts(1886,21): error TS18047: 'headerTemplate' is possibly 'null'.
+public/scripts/world-info.ts(1887,5): error TS2532: Object is possibly 'undefined'.
+public/scripts/world-info.ts(1888,5): error TS2532: Object is possibly 'undefined'.
+public/scripts/world-info.ts(1889,5): error TS2532: Object is possibly 'undefined'.
+public/scripts/world-info.ts(1890,9): error TS2578: Unused '@ts-expect-error' directive.
+public/scripts/world-info.ts(1892,27): error TS2571: Object is of type 'unknown'.
+public/scripts/world-info.ts(1893,29): error TS2571: Object is of type 'unknown'.
+public/scripts/world-info.ts(1906,9): error TS2578: Unused '@ts-expect-error' directive.
+public/scripts/world-info.ts(1917,13): error TS2578: Unused '@ts-expect-error' directive.
+public/scripts/world-info.ts(1944,13): error TS2578: Unused '@ts-expect-error' directive.
+public/scripts/world-info.ts(1955,5): error TS18047: 'headerTemplate' is possibly 'null'.
+public/scripts/world-info.ts(1964,33): error TS2339: Property 'offsetParent' does not exist on type 'Element'.
+public/scripts/world-info.ts(1968,32): error TS2345: Argument of type 'Element' is not assignable to parameter of type 'HTMLElement'.
+public/scripts/world-info.ts(1986,37): error TS2339: Property 'querySelector' does not exist on type 'Node'.
+public/scripts/world-info.ts(1996,9): error TS18048: 'editTemplate' is possibly 'undefined'.
+public/scripts/world-info.ts(1996,22): error TS2339: Property 'querySelectorAll' does not exist on type 'Node'.
+public/scripts/world-info.ts(1996,74): error TS7006: Parameter 'el' implicitly has an 'any' type.
+public/scripts/world-info.ts(2000,25): error TS2683: 'this' implicitly has type 'any' because it does not have a type annotation.
+public/scripts/world-info.ts(2003,52): error TS2339: Property 'click' does not exist on type 'Element'.
+public/scripts/world-info.ts(2005,9): error TS18048: 'editTemplate' is possibly 'undefined'.
+public/scripts/world-info.ts(2005,22): error TS2339: Property 'querySelectorAll' does not exist on type 'Node'.
+public/scripts/world-info.ts(2005,75): error TS7006: Parameter 'icon' implicitly has an 'any' type.
+public/scripts/world-info.ts(2006,43): error TS2339: Property 'wi_key_input_plaintext' does not exist on type '{ charListGrid: boolean; tokenizer: number; token_padding: number; collapse_newlines: boolean; pin_examples: boolean; strip_examples: boolean; trim_sentences: boolean; always_force_name2: boolean; ... 126 more ...; image_overswipe: string; }'.
+public/scripts/world-info.ts(2007,40): error TS2339: Property 'wi_key_input_plaintext' does not exist on type '{ charListGrid: boolean; tokenizer: number; token_padding: number; collapse_newlines: boolean; pin_examples: boolean; strip_examples: boolean; trim_sentences: boolean; always_force_name2: boolean; ... 126 more ...; image_overswipe: string; }'.
+public/scripts/world-info.ts(2014,32): error TS18048: 'editTemplate' is possibly 'undefined'.
+public/scripts/world-info.ts(2014,45): error TS2339: Property 'querySelectorAll' does not exist on type 'Node'.
+public/scripts/world-info.ts(2016,31): error TS18047: 'headerTemplate' is possibly 'null'.
+public/scripts/world-info.ts(2020,31): error TS18048: 'editTemplate' is possibly 'undefined'.
+public/scripts/world-info.ts(2020,44): error TS2339: Property 'querySelectorAll' does not exist on type 'Node'.
+public/scripts/world-info.ts(2028,38): error TS2571: Object is of type 'unknown'.
+public/scripts/world-info.ts(2038,40): error TS18048: 'editTemplate' is possibly 'undefined'.
+public/scripts/world-info.ts(2038,53): error TS2339: Property 'querySelectorAll' does not exist on type 'Node'.
+public/scripts/world-info.ts(2042,17): error TS2578: Unused '@ts-expect-error' directive.
+public/scripts/world-info.ts(2050,43): error TS2339: Property 'querySelector' does not exist on type 'Node'.
+public/scripts/world-info.ts(2055,32): error TS18048: 'editTemplate' is possibly 'undefined'.
+public/scripts/world-info.ts(2055,45): error TS2339: Property 'querySelectorAll' does not exist on type 'Node'.
+public/scripts/world-info.ts(2058,17): error TS2578: Unused '@ts-expect-error' directive.
+public/scripts/world-info.ts(2065,34): error TS2571: Object is of type 'unknown'.
+public/scripts/world-info.ts(2066,42): error TS2571: Object is of type 'unknown'.
+public/scripts/world-info.ts(2067,38): error TS2571: Object is of type 'unknown'.
+public/scripts/world-info.ts(2077,52): error TS2339: Property 'querySelector' does not exist on type 'Node'.
+public/scripts/world-info.ts(2081,41): error TS18048: 'editTemplate' is possibly 'undefined'.
+public/scripts/world-info.ts(2081,54): error TS2339: Property 'querySelectorAll' does not exist on type 'Node'.
+public/scripts/world-info.ts(2084,17): error TS2578: Unused '@ts-expect-error' directive.
+public/scripts/world-info.ts(2112,33): error TS18048: 'editTemplate' is possibly 'undefined'.
+public/scripts/world-info.ts(2112,46): error TS2339: Property 'querySelector' does not exist on type 'Node'.
+public/scripts/world-info.ts(2121,25): error TS18048: 'editTemplate' is possibly 'undefined'.
+public/scripts/world-info.ts(2121,38): error TS2339: Property 'querySelectorAll' does not exist on type 'Node'.
+public/scripts/world-info.ts(2128,44): error TS2339: Property 'querySelector' does not exist on type 'Node'.
+public/scripts/world-info.ts(2136,31): error TS2571: Object is of type 'unknown'.
+public/scripts/world-info.ts(2145,23): error TS2339: Property 'querySelector' does not exist on type 'Node'.
+public/scripts/world-info.ts(2148,47): error TS2339: Property 'querySelector' does not exist on type 'Node'.
+public/scripts/world-info.ts(2154,31): error TS2571: Object is of type 'unknown'.
+public/scripts/world-info.ts(2165,46): error TS2339: Property 'querySelector' does not exist on type 'Node'.
+public/scripts/world-info.ts(2171,33): error TS2571: Object is of type 'unknown'.
+public/scripts/world-info.ts(2172,38): error TS2571: Object is of type 'unknown'.
+public/scripts/world-info.ts(2174,17): error TS2571: Object is of type 'unknown'.
+public/scripts/world-info.ts(2175,17): error TS2571: Object is of type 'unknown'.
+public/scripts/world-info.ts(2176,17): error TS2578: Unused '@ts-expect-error' directive.
+public/scripts/world-info.ts(2181,17): error TS2571: Object is of type 'unknown'.
+public/scripts/world-info.ts(2182,17): error TS2571: Object is of type 'unknown'.
+public/scripts/world-info.ts(2183,17): error TS2578: Unused '@ts-expect-error' directive.
+public/scripts/world-info.ts(2196,42): error TS2339: Property 'querySelector' does not exist on type 'Node'.
+public/scripts/world-info.ts(2204,30): error TS2538: Type 'undefined' cannot be used as an index type.
+public/scripts/world-info.ts(2205,46): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string | number'.
+public/scripts/world-info.ts(2205,84): error TS2538: Type 'undefined' cannot be used as an index type.
+public/scripts/world-info.ts(2214,50): error TS2339: Property 'querySelector' does not exist on type 'Node'.
+public/scripts/world-info.ts(2222,30): error TS2538: Type 'undefined' cannot be used as an index type.
+public/scripts/world-info.ts(2223,46): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string | number'.
+public/scripts/world-info.ts(2223,93): error TS2538: Type 'undefined' cannot be used as an index type.
+public/scripts/world-info.ts(2232,24): error TS18048: 'editTemplate' is possibly 'undefined'.
+public/scripts/world-info.ts(2232,37): error TS2339: Property 'querySelectorAll' does not exist on type 'Node'.
+public/scripts/world-info.ts(2238,24): error TS18048: 'editTemplate' is possibly 'undefined'.
+public/scripts/world-info.ts(2238,37): error TS2339: Property 'querySelectorAll' does not exist on type 'Node'.
+public/scripts/world-info.ts(2242,24): error TS18048: 'editTemplate' is possibly 'undefined'.
+public/scripts/world-info.ts(2242,37): error TS2339: Property 'querySelectorAll' does not exist on type 'Node'.
+public/scripts/world-info.ts(2246,24): error TS18048: 'editTemplate' is possibly 'undefined'.
+public/scripts/world-info.ts(2246,37): error TS2339: Property 'querySelectorAll' does not exist on type 'Node'.
+public/scripts/world-info.ts(2255,56): error TS2339: Property 'querySelector' does not exist on type 'Node'.
+public/scripts/world-info.ts(2256,61): error TS2339: Property 'querySelector' does not exist on type 'Node'.
+public/scripts/world-info.ts(2264,54): error TS2538: Type 'undefined' cannot be used as an index type.
+public/scripts/world-info.ts(2266,30): error TS2538: Type 'undefined' cannot be used as an index type.
+public/scripts/world-info.ts(2267,46): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string | number'.
+public/scripts/world-info.ts(2267,100): error TS2538: Type 'undefined' cannot be used as an index type.
+public/scripts/world-info.ts(2280,69): error TS2538: Type 'undefined' cannot be used as an index type.
+public/scripts/world-info.ts(2280,123): error TS2538: Type 'undefined' cannot be used as an index type.
+public/scripts/world-info.ts(2284,30): error TS2538: Type 'undefined' cannot be used as an index type.
+public/scripts/world-info.ts(2285,46): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string | number'.
+public/scripts/world-info.ts(2285,100): error TS2538: Type 'undefined' cannot be used as an index type.
+public/scripts/world-info.ts(2294,49): error TS18048: 'editTemplate' is possibly 'undefined'.
+public/scripts/world-info.ts(2294,62): error TS2339: Property 'querySelectorAll' does not exist on type 'Node'.
+public/scripts/world-info.ts(2295,49): error TS18048: 'editTemplate' is possibly 'undefined'.
+public/scripts/world-info.ts(2295,62): error TS2339: Property 'querySelectorAll' does not exist on type 'Node'.
+public/scripts/world-info.ts(2296,49): error TS18048: 'editTemplate' is possibly 'undefined'.
+public/scripts/world-info.ts(2296,62): error TS2339: Property 'querySelectorAll' does not exist on type 'Node'.
+public/scripts/world-info.ts(2307,49): error TS2339: Property 'querySelector' does not exist on type 'Node'.
+public/scripts/world-info.ts(2315,30): error TS2538: Type 'undefined' cannot be used as an index type.
+public/scripts/world-info.ts(2316,46): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string | number'.
+public/scripts/world-info.ts(2316,92): error TS2538: Type 'undefined' cannot be used as an index type.
+public/scripts/world-info.ts(2325,54): error TS2339: Property 'querySelector' does not exist on type 'Node'.
+public/scripts/world-info.ts(2333,30): error TS2538: Type 'undefined' cannot be used as an index type.
+public/scripts/world-info.ts(2334,46): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string | number'.
+public/scripts/world-info.ts(2334,87): error TS2538: Type 'undefined' cannot be used as an index type.
+public/scripts/world-info.ts(2351,49): error TS2339: Property 'querySelector' does not exist on type 'Node'.
+public/scripts/world-info.ts(2359,30): error TS2538: Type 'undefined' cannot be used as an index type.
+public/scripts/world-info.ts(2360,46): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string | number'.
+public/scripts/world-info.ts(2360,92): error TS2538: Type 'undefined' cannot be used as an index type.
+public/scripts/world-info.ts(2369,43): error TS2339: Property 'querySelector' does not exist on type 'Node'.
+public/scripts/world-info.ts(2642,17): error TS2578: Unused '@ts-expect-error' directive.
+public/scripts/world-info.ts(2645,17): error TS2578: Unused '@ts-expect-error' directive.
+public/scripts/world-info.ts(2724,17): error TS2578: Unused '@ts-expect-error' directive.
+public/scripts/world-info.ts(2758,29): error TS2578: Unused '@ts-expect-error' directive.
+public/scripts/world-info.ts(2760,33): error TS2578: Unused '@ts-expect-error' directive.
+public/scripts/world-info.ts(2763,33): error TS2578: Unused '@ts-expect-error' directive.
+public/scripts/world-info.ts(2766,33): error TS2578: Unused '@ts-expect-error' directive.
+public/scripts/world-info.ts(2772,29): error TS2578: Unused '@ts-expect-error' directive.
+public/scripts/world-info.ts(2774,33): error TS2578: Unused '@ts-expect-error' directive.
+public/scripts/world-info.ts(2777,33): error TS2578: Unused '@ts-expect-error' directive.
+public/scripts/world-info.ts(2780,33): error TS2578: Unused '@ts-expect-error' directive.
+public/scripts/world-info.ts(2783,33): error TS2578: Unused '@ts-expect-error' directive.
+public/scripts/world-info.ts(2790,29): error TS2578: Unused '@ts-expect-error' directive.
+public/scripts/world-info.ts(2793,29): error TS2578: Unused '@ts-expect-error' directive.
+public/scripts/world-info.ts(2798,21): error TS2578: Unused '@ts-expect-error' directive.
+public/scripts/world-info.ts(2804,13): error TS2578: Unused '@ts-expect-error' directive.
+public/scripts/world-info.ts(2807,13): error TS2531: Object is possibly 'null'.
+public/scripts/world-info.ts(2807,51): error TS2339: Property 'value' does not exist on type 'HTMLElement'.
+public/scripts/world-info.ts(2807,59): error TS18050: The value 'null' cannot be used here.
+public/scripts/world-info.ts(2812,9): error TS2578: Unused '@ts-expect-error' directive.
+public/scripts/world-info.ts(2816,117): error TS18046: 'o' is of type 'unknown'.
+public/scripts/world-info.ts(2825,21): error TS2578: Unused '@ts-expect-error' directive.
+public/scripts/world-info.ts(2847,1): error TS2578: Unused '@ts-expect-error' directive.
+public/scripts/world-info.ts(2856,10): error TS2531: Object is possibly 'null'.
+public/scripts/world-info.ts(2857,9): error TS2531: Object is possibly 'null'.
+public/scripts/world-info.ts(2860,5): error TS2531: Object is possibly 'null'.
+public/scripts/world-info.ts(2860,52): error TS2339: Property 'value' does not exist on type 'HTMLElement'.
+public/scripts/world-info.ts(2944,13): error TS2578: Unused '@ts-expect-error' directive.
+public/scripts/world-info.ts(2998,5): error TS2578: Unused '@ts-expect-error' directive.
+public/scripts/world-info.ts(3002,35): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{}'.
+public/scripts/world-info.ts(3006,34): error TS2339: Property 'splice' does not exist on type '{}'.
+public/scripts/world-info.ts(3008,18): error TS2339: Property 'push' does not exist on type '{}'.
+public/scripts/world-info.ts(3010,9): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{}'.
+public/scripts/world-info.ts(3010,30): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{}'.
+public/scripts/world-info.ts(3084,52): error TS7015: Element implicitly has an 'any' type because index expression is not of type 'number'.
+public/scripts/world-info.ts(3277,76): error TS7006: Parameter 'target' implicitly has an 'any' type.

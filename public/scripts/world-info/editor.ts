@@ -15,9 +15,7 @@ import { setValueByPath } from '../utils.js';
 //  Template references
 // ═══════════════════════════════════════════════════════════════
 
-// @ts-expect-error TS(2592) Cannot find name '$'
 export const WI_ENTRY_HEADER_TEMPLATE = /** @type {HTMLElement} */ (document.querySelector('#entry_edit_template .world_entry'));
-// @ts-expect-error TS(2592) Cannot find name '$'
 export const WI_ENTRY_EDIT_TEMPLATE = /** @type {HTMLElement} */ (document.querySelector('#entry_edit_template .world_entry_edit'));
 
 // ═══════════════════════════════════════════════════════════════
@@ -28,7 +26,6 @@ export const WI_ENTRY_EDIT_TEMPLATE = /** @type {HTMLElement} */ (document.query
  * Shows a toast when no WI file is loaded.
  */
 export function nullWorldInfo() {
-    // @ts-expect-error TS(2304) Cannot find name 'notyf'
     notyf.info('Create or import a new World Info file first.', 'World Info is not set', { timeOut: 10000, preventDuplicates: true });
 }
 

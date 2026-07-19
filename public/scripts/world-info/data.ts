@@ -28,7 +28,10 @@ import { GENERATION_TYPE_TRIGGERS } from '../constants.js';
 import { t } from '../i18n.js';
 import { Popup } from '../popup.js';
 
+import type { WorldInfoEntryData } from './types.js';
+
 import { wiManager } from './manager.js';
+import type { WorldInfoStore } from './store.js';
 import {
     world_info_position,
     world_info_logic,
@@ -60,8 +63,7 @@ import {
  * @param {object} data - World info data to save
  * @returns {Promise<void>}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
-async function _save(name, data) {
+async function _save(name: string, data: Record<string, unknown>) {
     await fetch('/api/worldinfo/edit', {
         method: 'POST',
         headers: getRequestHeaders(),
@@ -147,7 +149,7 @@ export const newWorldInfoEntryTemplate = Object.fromEntries(
  * @param {import('./store.js').WorldInfoStore} store - The store for the target book
  * @returns {Promise<object|undefined>} New entry object or undefined if failed
  */
-export async function createWorldInfoEntry(store) {
+export async function createWorldInfoEntry(store: WorldInfoStore) {
     const newUid = await store.getFreeUid();
 
     if (!Number.isInteger(newUid)) {
@@ -155,7 +157,7 @@ export async function createWorldInfoEntry(store) {
         return;
     }
 
-    const newEntry = { uid: newUid, ...structuredClone(newWorldInfoEntryTemplate) };
+    const newEntry = { uid: newUid as number, ...structuredClone(newWorldInfoEntryTemplate) } as WorldInfoEntryData;
     await store.addEntry(newEntry);
 
     return newEntry;
@@ -167,12 +169,12 @@ export async function createWorldInfoEntry(store) {
  * @param {number} uid - The uid of the entry to copy
  * @returns {Promise<object|undefined>} The duplicated entry
  */
-export async function duplicateWorldInfoEntry(store, uid) {
+export async function duplicateWorldInfoEntry(store: WorldInfoStore, uid: number) {
     const original = await store.getEntry(uid);
     if (!original) return;
 
     // Clone and strip identifiers so createWorldInfoEntry assigns new ones
-    const clone = structuredClone(original);
+    const clone = structuredClone(original) as unknown as Record<string, unknown>;
     delete clone.id;
     delete clone.uid;
 
@@ -182,8 +184,8 @@ export async function duplicateWorldInfoEntry(store, uid) {
         return;
     }
 
-    clone.uid = newUid;
-    await store.addEntry(clone);
+    clone.uid = newUid as number;
+    await store.addEntry(clone as unknown as WorldInfoEntryData);
     return clone;
 }
 
@@ -195,7 +197,7 @@ export async function duplicateWorldInfoEntry(store, uid) {
  * @param {boolean} [options.silent] - Whether to prompt the user for deletion or just do it
  * @returns {Promise<boolean>} Whether the entry deletion was successful
  */
-export async function deleteWorldInfoEntry(store, uid, { silent = false } = {}) {
+export async function deleteWorldInfoEntry(store: WorldInfoStore, uid: number, { silent = false } = {}) {
     const entry = await store.getEntry(uid);
     if (!entry) return false;
 
@@ -203,7 +205,7 @@ export async function deleteWorldInfoEntry(store, uid, { silent = false } = {}) 
     if (entry.comment && entry.comment.trim()) {
         previewText = entry.comment.trim();
     } else if (entry.content) {
-        const lines = entry.content.split(/\r?\n/).filter(line => line.trim());
+        const lines = entry.content.split(/\r?\n/).filter((line: string) => line.trim());
         previewText = lines.slice(0, 2).join('\n');
     }
 
@@ -234,7 +236,7 @@ export async function deleteWorldInfoEntry(store, uid, { silent = false } = {}) 
  * @param {boolean} [immediately] - Whether to save immediately or use debouncing
  * @returns {Promise<void>}
  */
-export async function saveWorldInfo(name, bookData = {}, immediately = false) {
+export async function saveWorldInfo(name: string, bookData = {}, immediately = false) {
     if (!name) return;
 
     const store = wiManager.getStore(name);
@@ -246,9 +248,9 @@ export async function saveWorldInfo(name, bookData = {}, immediately = false) {
     // populated when the book was opened.
     if (bookData && typeof bookData === 'object' && 'entries' in bookData) {
         // @ts-expect-error TS(2571) entries is dynamic at runtime
-        const entryList = Object.values(bookData.entries).filter(Boolean);
-        if (entryList.length > 0) {
-            await store.replaceAllEntries(entryList);
+        const entryList = Object.values(bookData.entries).filter(Boolean) as WorldInfoEntryData[];
+                if (entryList.length > 0) {
+                    await store.replaceAllEntries(entryList);
         }
     }
 
@@ -272,7 +274,7 @@ export async function saveWorldInfo(name, bookData = {}, immediately = false) {
  * @param {import('./store.js').WorldInfoStore} store - The store for the target book
  * @returns {Promise<number|null>} A free UID or null if none available
  */
-export async function getFreeWorldEntryUid(store) {
+export async function getFreeWorldEntryUid(store: WorldInfoStore) {
     return store.getFreeUid();
 }
 
@@ -555,7 +557,6 @@ export async function renameWorldInfo(name, data) {
         return;
     }
     if (equalsIgnoreCaseAndAccents(oldName, newName)) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.warning(t`Name not accepted, as it is the same as before (ignoring case and accents).`, t`Rename World Info`);
         return;
     }
@@ -585,7 +586,6 @@ export async function renameWorldInfo(name, data) {
     if (entryPreviouslySelected !== -1) {
         const wiElement = getWIElement(newName);
         if (wiElement instanceof HTMLOptionElement) wiElement.selected = true;
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         document.getElementById('world_info')?.dispatchEvent(new Event('change', {bubbles: true}));
     }
 
@@ -638,15 +638,12 @@ export async function deleteWorldInfo(worldInfoName) {
     }
 
     await updateWorldInfoList();
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     document.getElementById('world_editor_select')?.dispatchEvent(new Event('change', {bubbles: true}));
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    if (document.getElementById('character_world').value === worldInfoName) {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        document.getElementById('character_world').value = '';
-    document.getElementById('character_world')?.dispatchEvent(new Event('change', { bubbles: true }));
-        // @ts-expect-error TS(2345) FIXME: Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
+    const charWorldEl = document.getElementById('character_world') as HTMLSelectElement | null;
+    if (charWorldEl && charWorldEl.value === worldInfoName) {
+        charWorldEl.value = '';
+        document.getElementById('character_world')?.dispatchEvent(new Event('change', { bubbles: true }));
         setWorldInfoButtonClass(undefined, false);
         if (menu_type != 'create') {
             saveCharacterDebounced();
@@ -719,7 +716,7 @@ export async function importEmbeddedWorldInfo(skipPopup = false) {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const chid = document.getElementById('import_character_info').dataset.chid;
 
-    if (chid === undefined || chid === -1) {
+    if (chid === undefined || Number(chid) === -1) {
         return;
     }
 
@@ -729,7 +726,7 @@ export async function importEmbeddedWorldInfo(skipPopup = false) {
         return;
     }
 
-    const bookName = characters[chid]?.data?.character_book?.name || `${characters[chid]?.name}'s Lorebook`;
+    const bookName = characters[Number(chid)]?.data?.character_book?.name || `${characters[Number(chid)]?.name}'s Lorebook`;
 
     if (!skipPopup) {
         const confirmation = await Popup.show.confirm(t`Are you sure you want to import '${bookName}'?`, wiManager.worldNames.includes(bookName) ? t`It will overwrite the World/Lorebook with the same name.` : '');
@@ -738,12 +735,12 @@ export async function importEmbeddedWorldInfo(skipPopup = false) {
         }
     }
 
-    const convertedBook = convertCharacterBook(characters[chid].data.character_book);
+    const convertedBook = convertCharacterBook(characters[Number(chid)].data.character_book);
 
     // Populate store with the imported entries
     const store = wiManager.getStore(bookName);
     await store.init();
-    const entryList = Object.values(convertedBook.entries ?? {});
+    const entryList = Object.values(convertedBook.entries ?? {}) as WorldInfoEntryData[];
     if (entryList.length > 0) {
         await store.replaceAllEntries(entryList);
     }
@@ -753,7 +750,6 @@ export async function importEmbeddedWorldInfo(skipPopup = false) {
     document.getElementById('character_world').value = bookName;
     document.getElementById('character_world')?.dispatchEvent(new Event('change', { bubbles: true }));
 
-    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
     notyf.success(t`The world '${bookName}' has been imported and linked to the character successfully.`, t`World/Lorebook imported`);
 
     const newIndex = wiManager.worldNames.indexOf(bookName);
@@ -767,7 +763,6 @@ export async function importEmbeddedWorldInfo(skipPopup = false) {
     document.getElementById('world_editor_select')?.dispatchEvent(new Event('change', { bubbles: true }));
     }
 
-    // @ts-expect-error TS(2345) FIXME: Argument of type 'true' is not assignable to para... Remove this comment to see the full error message
     setWorldInfoButtonClass(chid, true);
 }
 
@@ -797,7 +792,6 @@ export async function importWorldInfo(file) {
         }
 
         if (jsonData === undefined || jsonData === null) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.error(t`File is not valid: ${file.name}`);
             return;
         }
@@ -820,7 +814,6 @@ export async function importWorldInfo(file) {
             formData.append('convertedData', JSON.stringify(convertRisuLorebook(jsonData)));
         }
     } catch (error) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.error(`Error parsing file: ${error}`);
         return;
     }
@@ -860,12 +853,10 @@ export async function importWorldInfo(file) {
     document.getElementById('world_editor_select')?.dispatchEvent(new Event('change', { bubbles: true }));
             }
 
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.success(t`World Info "${data.name}" imported successfully!`);
         }
     } catch (error) {
         console.error('Error importing world info:', error);
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.error(t`Failed to import World Info`);
     }
 }
@@ -886,14 +877,12 @@ export async function moveWorldInfoEntry(sourceName, targetName, uid, { deleteOr
     }
 
     if (!wiManager.worldNames.includes(sourceName)) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.error(t`Source lorebook '${sourceName}' not found.`);
         console.error(`[WI Move] Source lorebook '${sourceName}' does not exist.`);
         return false;
     }
 
     if (!wiManager.worldNames.includes(targetName)) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.error(t`Target lorebook '${targetName}' not found.`);
         console.error(`[WI Move] Target lorebook '${targetName}' does not exist.`);
         return false;
@@ -907,13 +896,11 @@ export async function moveWorldInfoEntry(sourceName, targetName, uid, { deleteOr
         const targetBook = await wiManager.loadBookIntoStore(targetName);
 
         if (!sourceBook || !sourceBook.entries) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.error(t`Failed to load data for source lorebook '${sourceName}'.`);
             console.error(`[WI Move] Could not load source data for '${sourceName}'.`);
             return false;
         }
         if (!targetBook || !targetBook.entries) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.error(t`Failed to load data for target lorebook '${targetName}'.`);
             console.error(`[WI Move] Could not load target data for '${targetName}'.`);
             return false;
@@ -924,7 +911,6 @@ export async function moveWorldInfoEntry(sourceName, targetName, uid, { deleteOr
 
         const sourceEntry = await sourceStore.getEntry(Number(uid));
         if (!sourceEntry) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.error(t`Entry not found in source lorebook '${sourceName}'.`);
             console.error(`[WI Move] Entry UID ${entryUidString} not found in '${sourceName}'.`);
             return false;
@@ -968,12 +954,11 @@ export async function moveWorldInfoEntry(sourceName, targetName, uid, { deleteOr
         const currentEditorBookIndex = Number(document.getElementById('world_editor_select').value = String());
         if (!isNaN(currentEditorBookIndex)) {
             const currentEditorBookName = wiManager.worldNames[currentEditorBookIndex];
-            if (currentEditorBookName === sourceName || currentEditorBookName === targetName) {
+            if (currentEditorBookName && (currentEditorBookName === sourceName || currentEditorBookName === targetName)) {
                 reloadEditor(currentEditorBookName);
             }
         }
 
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.success(deleteOriginal
             ? t`Entry moved successfully from '${sourceName}' to '${targetName}'.`
             : t`Entry copied successfully to '${targetName}'.`);
