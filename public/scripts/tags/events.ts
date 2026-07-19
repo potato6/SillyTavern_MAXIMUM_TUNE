@@ -47,10 +47,8 @@ declare class TomSelect {
 /**
  * @param event
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
-function onTagRemoveClick(event) {
+function onTagRemoveClick(this: HTMLElement, event: Event) {
     event.stopPropagation();
-    // @ts-expect-error TS(2683)
     const tagElement = this.closest('.tag');
     const tagId = tagElement?.getAttribute('id');
 
@@ -61,21 +59,20 @@ function onTagRemoveClick(event) {
     }
 
     // Check if we are inside the drilldown. If so, we call remove on the bogus folder
-    // @ts-expect-error TS(2683)
     if (this.closest('.rm_tag_bogus_drilldown')) {
         console.debug('Bogus drilldown remove', tagId);
-        // @ts-expect-error TS(2683)
         chooseBogusFolder(this, tagId, true);
         return;
     }
 
-    const tag = getTagById(tagId);
+    const tag = getTagById(tagId!);
+    if (!tag) return;
 
     // Optional, check for multiple character ids being present.
-    const characterData = event.target.closest('#bulk_tags_div')?.dataset.characters;
+    const characterData = ((event.target as Element).closest('#bulk_tags_div') as HTMLElement)?.dataset.characters;
     const characterIds = characterData ? JSON.parse(characterData).characterIds : null;
 
-    removeTagFromEntity(tag, characterIds, { tagElement: tagElement });
+    removeTagFromEntity(tag, characterIds, { tagElement: tagElement as HTMLElement | null });
 
     applyCharacterTagsToMessageDivs();
 }
@@ -83,24 +80,19 @@ function onTagRemoveClick(event) {
 /**
  * @param event
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
-function onTagInput(event) {
+function onTagInput(this: HTMLInputElement, event: Event) {
     const val = (this instanceof HTMLInputElement) ? this.value : '';
     if (getTag(String(val))) return;
-    // @ts-expect-error TS(2683)
-    if (this.tomSelect) {
-        // @ts-expect-error TS(2683)
-        this.tomSelect.open();
+    if ((this as unknown as { tomSelect?: { open: () => void } }).tomSelect) {
+        (this as unknown as { tomSelect?: { open: () => void } }).tomSelect!.open();
     }
 }
 
 /**
  */
-function onTagInputFocus() {
-    // @ts-expect-error TS(2683)
-    if (this.tomSelect) {
-        // @ts-expect-error TS(2683)
-        this.tomSelect.open();
+function onTagInputFocus(this: HTMLInputElement) {
+    if ((this as unknown as { tomSelect?: { open: () => void } }).tomSelect) {
+        (this as unknown as { tomSelect?: { open: () => void } }).tomSelect!.open();
     }
 }
 
@@ -122,35 +114,36 @@ function onGroupCreateClick() {
 // Tag Input (TomSelect)
 // ──────────────────────────────────────────────
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'inputSelector' implicitly has an 'any' ...
-export function createTagInput(inputSelector, listSelector, tagListOptions = {}) {
+/**
+ *
+ * @param inputSelector
+ * @param listSelector
+ * @param tagListOptions
+ */
+export function createTagInput(inputSelector: string, listSelector: string, tagListOptions: Record<string, unknown> = {}) {
     const el = document.querySelector(inputSelector);
     if (!el) return;
 
     // Lazy import to avoid circular dep
     import('./utils/search.js').then(({ findTag }) => {
-        el.tomSelect = new TomSelect(el, {
+        (el as unknown as Record<string, unknown>).tomSelect = new TomSelect(el as HTMLInputElement, {
             maxItems: null,
             create: false,
             minLength: 0,
             valueField: 'value',
             labelField: 'label',
             searchField: ['label'],
-            // @ts-expect-error TS(7006)
-            load: function (query, loadCallback) {
-                // @ts-expect-error TS(7006)
-                findTag({ term: query }, function (results) {
-                    // @ts-expect-error TS(7006)
-                    loadCallback(results.map(s => ({ value: s, label: s })));
+            load: function (query: string, loadCallback: (results: { value: string; label: string }[]) => void) {
+                findTag({ term: query }, function (results: string[]) {
+                    loadCallback(results.map((s: string) => ({ value: s, label: s })));
                 }, listSelector);
             },
-            // @ts-expect-error TS(7006)
-            onItemAdd: function (value) {
+            onItemAdd: function (value: string) {
                 let tag = getTag(value);
                 if (!tag) {
                     tag = createNewTag(value);
                 }
-                const characterData = el.closest('#bulk_tags_div')?.dataset.characters;
+                const characterData = ((el as Element).closest('#bulk_tags_div') as HTMLElement)?.dataset.characters;
                 const characterIds = characterData ? JSON.parse(characterData).characterIds : null;
                 addTagsToEntity(tag, characterIds, { tagListSelector: listSelector, tagListOptions: tagListOptions });
                 applyCharacterTagsToMessageDivs();
@@ -168,40 +161,36 @@ export function createTagInput(inputSelector, listSelector, tagListOptions = {})
 /**
  * @param chid
  */
-export function applyTagsOnCharacterSelect(chid = null) {
+export function applyTagsOnCharacterSelect(chid: string | number | null = null) {
     // If we are in create window, we cannot simply redraw
     if (menu_type === 'create') {
         const tagListEl = document.querySelector('#tagList');
         const tagEls = tagListEl?.querySelectorAll('.tag') ?? [];
-        const currentTagIds = Array.from(tagEls, el => el.getAttribute('id'));
-        // @ts-expect-error TS(7005)
-        const currentTags = tags.filter(x => currentTagIds.includes(x.id));
+        const currentTagIds = Array.from(tagEls, (el: Element) => el.getAttribute('id'));
+        const currentTags = (tags as Record<string, unknown>[]).filter((x: Record<string, unknown>) => currentTagIds.includes(x.id as string));
         printTagList(document.getElementById('tagList'), { forEntityOrKey: undefined, tags: currentTags, tagOptions: { removable: true } });
         return;
     }
 
-    // @ts-expect-error TS(2322)
-    chid = chid ?? (this_chid !== undefined ? Number(this_chid) : undefined);
+    chid = chid ?? (this_chid !== undefined ? String(this_chid) : null);
     printTagList(document.getElementById('tagList'), { forEntityOrKey: chid, tagOptions: { removable: true } });
 }
 
 /**
  * @param groupId
  */
-export function applyTagsOnGroupSelect(groupId = null) {
+export function applyTagsOnGroupSelect(groupId: string | number | null = null) {
     // If we are in create window, we explicitly have to tell the system to print for the new group
     if (menu_type === 'group_create') {
         const tagListEl = document.querySelector('#groupTagList');
         const tagEls = tagListEl?.querySelectorAll('.tag') ?? [];
-        const currentTagIds = Array.from(tagEls, el => el.getAttribute('id'));
-        // @ts-expect-error TS(7005)
-        const currentTags = tags.filter(x => currentTagIds.includes(x.id));
+        const currentTagIds = Array.from(tagEls, (el: Element) => el.getAttribute('id'));
+        const currentTags = (tags as Record<string, unknown>[]).filter((x: Record<string, unknown>) => currentTagIds.includes(x.id as string));
         printTagList(document.getElementById('groupTagList'), { forEntityOrKey: undefined, tags: currentTags, tagOptions: { removable: true } });
         return;
     }
 
-    // @ts-expect-error TS(2322)
-    groupId = groupId ?? (selected_group ? Number(selected_group) : undefined);
+    groupId = groupId ?? (selected_group ? String(selected_group) : null);
     printTagList(document.getElementById('groupTagList'), { forEntityOrKey: groupId, tagOptions: { removable: true } });
     printTagFilters(tag_filter_type.group_candidates_list);
     printTagFilters(tag_filter_type.group_members_list);
@@ -222,17 +211,17 @@ export function initTags() {
     document.getElementById('rm_button_group_chats')?.addEventListener('click', onGroupCreateClick);
     document.addEventListener('click', function (event) {
         if (!(event.target instanceof Element)) return;
-        const el = event.target.closest('.tag_remove');
+        const el = event.target.closest('.tag_remove') as HTMLElement;
         if (el) onTagRemoveClick.call(el, event);
     });
     document.addEventListener('input', function (event) {
         if (!(event.target instanceof Element)) return;
-        const el = event.target.closest('.tag_input');
+        const el = event.target.closest('.tag_input') as HTMLInputElement;
         if (el) onTagInput.call(el, event);
     });
     document.addEventListener('click', function (event) {
         if (!(event.target instanceof Element)) return;
-        const el = event.target.closest('.tags_view');
+        const el = event.target.closest('.tags_view') as HTMLElement;
         if (el) {
             event.preventDefault();
             onViewTagsListClick();
@@ -240,17 +229,17 @@ export function initTags() {
     });
     document.addEventListener('click', function (event) {
         if (!(event.target instanceof Element)) return;
-        const el = event.target.closest('.tag_delete');
+        const el = event.target.closest('.tag_delete') as HTMLElement;
         if (el) onTagDeleteClick.call(el);
     });
     document.addEventListener('click', function (event) {
         if (!(event.target instanceof Element)) return;
-        const el = event.target.closest('.tag_as_folder');
+        const el = event.target.closest('.tag_as_folder') as HTMLElement;
         if (el) onTagAsFolderClick.call(el);
     });
     document.addEventListener('input', function (event) {
         if (!(event.target instanceof Element)) return;
-        const el = event.target.closest('.tag_view_name');
+        const el = event.target.closest('.tag_view_name') as HTMLElement;
         if (el) onTagRenameInput.call(el);
     });
     document.addEventListener('click', function (event) {
@@ -287,7 +276,7 @@ export function initTags() {
         const tagViewItems = document.querySelectorAll('#tag_view_list .tag_view_item');
         const oldOrder = Array.from(tagViewItems, el => el.id);
 
-        import('./ui/tagEditor.js').then(({ printViewTagList }) => {
+        import('./ui/tagEditor.js').then((mod: Record<string, unknown>) => { const printViewTagList = mod.printViewTagList as (el: Element | null) => void;
             printViewTagList(document.querySelector('#tag_view_list .tag_view_list_tags'));
 
             if (event.relatedTarget instanceof HTMLElement && event.relatedTarget.closest('#tag_view_list')) {

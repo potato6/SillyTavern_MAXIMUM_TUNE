@@ -2,7 +2,6 @@ import { chat_metadata, characters, substituteParams, chat, extension_prompt_rol
 import { extension_settings } from '../extensions.js';
 import { getGroupMembers, groups } from '../group-chats.js';
 import { power_user } from '../power-user.js';
-// @ts-expect-error TS(7034) FIXME: Variable 'tags' implicitly has type 'any[]' in som... Remove this comment to see the full error message
 import { searchCharByName, getTagsList, tags, tag_map } from '../tags.js';
 import { onlyUniqueJson, sortIgnoreCaseAndAccents } from '../utils.js';
 import { world_names } from '../world-info.js';
@@ -158,7 +157,7 @@ export const commonEnumProviders = {
             // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
             ...(isAll || types.includes('scope') ? scope.allVariableNames.map(name => new SlashCommandEnumValue(name, null, enumTypes.variable, enumIcons.scopeVariable)) : []),
             ...(isAll || types.includes('local') ? Object.keys(chat_metadata.variables ?? []).map(name => new SlashCommandEnumValue(name, null, enumTypes.name, enumIcons.localVariable)) : []),
-            ...(isAll || types.includes('global') ? Object.keys(extension_settings.variables.global ?? []).map(name => new SlashCommandEnumValue(name, null, enumTypes.macro, enumIcons.globalVariable)) : []),
+            ...(isAll || types.includes('global') ? Object.keys((extension_settings.variables as Record<string, unknown>).global ?? []).map((name: string) => new SlashCommandEnumValue(name, null, enumTypes.macro, enumIcons.globalVariable)) : []),
         ].filter((item, idx, list) => idx == list.findIndex(it => it.value == item.value));
     },
 
@@ -178,20 +177,16 @@ export const commonEnumProviders = {
             null,
             enumTypes.variable,
             enumIcons.variable,
-            // @ts-expect-error TS(2345) FIXME: Argument of type '(input: any) => boolean' is not ... Remove this comment to see the full error message
-            (input) => /^\w*$/.test(input),
-            // @ts-expect-error TS(7006) FIXME: Parameter 'input' implicitly has an 'any' type.
-            (input) => input,
+            (input: string) => /^\w*$/.test(input),
+            (input: string) => input,
         ),
         new SlashCommandEnumValue(
             'any number',
             null,
             enumTypes.number,
             enumIcons.number,
-            // @ts-expect-error TS(2345) FIXME: Argument of type '(input: any) => boolean' is not ... Remove this comment to see the full error message
-            (input) => input == '' || !Number.isNaN(Number(input)),
-            // @ts-expect-error TS(7006) FIXME: Parameter 'input' implicitly has an 'any' type.
-            (input) => input,
+            (input: string) => input == '' || !Number.isNaN(Number(input)),
+            (input: string) => input,
         ),
     ],
 
@@ -224,8 +219,7 @@ export const commonEnumProviders = {
     personas: ({ allowPersonaKey = false } = {}) => () => Object.entries(power_user.personas).map(([personaKey, personaName]) => {
         const existsMultiple = Object.values(power_user.personas).filter(p => p === personaName).length > 1;
         const returnValue = allowPersonaKey && existsMultiple ? personaKey : personaName;
-        // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
-        return new SlashCommandEnumValue(returnValue, allowPersonaKey && existsMultiple ? personaName : null, enumTypes.name, enumIcons.persona);
+        return new SlashCommandEnumValue(returnValue as string, allowPersonaKey && existsMultiple ? personaName : null, enumTypes.name, enumIcons.persona);
     }),
 
     /**
@@ -235,7 +229,6 @@ export const commonEnumProviders = {
      */
     tags: (mode = 'all') => () => {
         const assignedTags = mode === 'assigned' ? new Set(Object.values(tag_map).flat()) : new Set();
-        // @ts-expect-error TS(7005) FIXME: Variable 'tags' implicitly has an 'any[]' type.
         return tags.filter(tag => mode === 'all' || (mode === 'assigned' && assignedTags.has(tag.id)))
             .map(tag => new SlashCommandEnumValue(tag.name, null, enumTypes.command, enumIcons.tag));
     },
@@ -253,7 +246,6 @@ export const commonEnumProviders = {
         if (charName instanceof SlashCommandClosure) throw new Error('Argument \'name\' does not support closures');
         const key = searchCharByName(substituteParams(charName), { suppressLogging: true });
         const assigned = key ? getTagsList(key) : [];
-        // @ts-expect-error TS(7005) FIXME: Variable 'tags' implicitly has an 'any[]' type.
         return tags.filter(it => mode === 'all' || mode === 'existing' && assigned.includes(it) || mode === 'not-existing' && !assigned.includes(it))
             .map(tag => new SlashCommandEnumValue(tag.name, null, enumTypes.command, enumIcons.tag));
     },
@@ -272,10 +264,8 @@ export const commonEnumProviders = {
         // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
         const nameFilter = executor.namedArgumentList.find(it => it.name == 'name')?.value || '';
         return [
-            // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
-            ...chat.map((message, index) => new SlashCommandEnumValue(String(index), `${message.name}: ${message.mes}`, enumTypes.number, message.is_user ? enumIcons.user : message.is_system ? enumIcons.system : enumIcons.assistant)).filter(value => !nameFilter || value.description.startsWith(`${nameFilter}:`)),
-            // @ts-expect-error TS(2345) FIXME: Argument of type '">> After Last Message >>"' is n... Remove this comment to see the full error message
-            ...(allowIdAfter ? [new SlashCommandEnumValue(String(chat.length), '>> After Last Message >>', enumTypes.enum, '➕')] : []),
+            ...chat.map((message: ChatMessage, index: number) => new SlashCommandEnumValue(String(index), `${message.name}: ${message.mes}`, enumTypes.number, message.is_user ? enumIcons.user : message.is_system ? enumIcons.system : enumIcons.assistant)).filter(value => !nameFilter || value.description?.startsWith(`${nameFilter}:`)),
+            ...(allowIdAfter ? [new SlashCommandEnumValue(String(chat.length), '>> After Last Message >>' as string, enumTypes.enum, '➕')] : []),
             ...(allowVars ? commonEnumProviders.variables('all')(executor, scope) : []),
         ];
     },
@@ -291,13 +281,11 @@ export const commonEnumProviders = {
         if (isNaN(messageId) || messageId === null || messageId < 0 || messageId >= chat.length) {
             return [];
         }
-        const message = chat[messageId];
-        // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
+        const message = chat[messageId] as ChatMessage | undefined;
         if (!Array.isArray(message?.extra?.media)) {
             return [];
         }
-        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-        return message.extra.media.map((media, index) => new SlashCommandEnumValue(index.toString(), media.title || message.extra.title || '[Untitled]', enumTypes.enum, enumIcons[media.type] || enumIcons.file));
+        return message.extra.media.map((media: Record<string, unknown>, index: number) => new SlashCommandEnumValue(index.toString(), (media.title as string) || message.extra!.title || '[Untitled]', enumTypes.enum, (enumIcons as unknown as Record<string, string>)[media.type as string] || enumIcons.file));
     },
 
     /**
@@ -306,15 +294,12 @@ export const commonEnumProviders = {
      */
     messageNames: () => chat
         .map(message => ({
-            // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
-            name: message.name,
-            // @ts-expect-error TS(2339) FIXME: Property 'is_user' does not exist on type 'never'.
-            icon: message.is_user ? enumIcons.user : enumIcons.assistant,
+                name: (message as ChatMessage).name,
+            icon: (message as ChatMessage).is_user ? enumIcons.user : enumIcons.assistant,
         }))
         .filter(onlyUniqueJson)
         .sort((a, b) => sortIgnoreCaseAndAccents(a.name, b.name))
-        // @ts-expect-error TS(2345) FIXME: Argument of type 'null' is not assignable to param... Remove this comment to see the full error message
-        .map(name => new SlashCommandEnumValue(name.name, null, null, name.icon)),
+        .map((name: Record<string, unknown>) => new SlashCommandEnumValue(name.name as string, null as string | null, enumTypes.enum, name.icon as string)),
 
     /**
      * All existing worlds / lorebooks
@@ -344,20 +329,13 @@ export const commonEnumProviders = {
      * @returns {SlashCommandEnumValue[]}
      */
     types: () => [
-        // @ts-expect-error TS(2339) FIXME: Property 'type' does not exist on type '{ enum: st... Remove this comment to see the full error message
-        new SlashCommandEnumValue('string', null, enumTypes.type, enumIcons.string),
-        // @ts-expect-error TS(2339) FIXME: Property 'type' does not exist on type '{ enum: st... Remove this comment to see the full error message
-        new SlashCommandEnumValue('number', null, enumTypes.type, enumIcons.number),
-        // @ts-expect-error TS(2339) FIXME: Property 'type' does not exist on type '{ enum: st... Remove this comment to see the full error message
-        new SlashCommandEnumValue('boolean', null, enumTypes.type, enumIcons.boolean),
-        // @ts-expect-error TS(2339) FIXME: Property 'type' does not exist on type '{ enum: st... Remove this comment to see the full error message
-        new SlashCommandEnumValue('array', null, enumTypes.type, enumIcons.array),
-        // @ts-expect-error TS(2339) FIXME: Property 'type' does not exist on type '{ enum: st... Remove this comment to see the full error message
-        new SlashCommandEnumValue('object', null, enumTypes.type, enumIcons.dictionary),
-        // @ts-expect-error TS(2339) FIXME: Property 'type' does not exist on type '{ enum: st... Remove this comment to see the full error message
-        new SlashCommandEnumValue('null', null, enumTypes.type, enumIcons.null),
-        // @ts-expect-error TS(2339) FIXME: Property 'type' does not exist on type '{ enum: st... Remove this comment to see the full error message
-        new SlashCommandEnumValue('undefined', null, enumTypes.type, enumIcons.undefined),
+        new SlashCommandEnumValue('string', null, enumTypes.name, enumIcons.string),
+        new SlashCommandEnumValue('number', null, enumTypes.name, enumIcons.number),
+        new SlashCommandEnumValue('boolean', null, enumTypes.name, enumIcons.boolean),
+        new SlashCommandEnumValue('array', null, enumTypes.name, enumIcons.array),
+        new SlashCommandEnumValue('object', null, enumTypes.name, enumIcons.dictionary),
+        new SlashCommandEnumValue('null', null, enumTypes.name, enumIcons.null),
+        new SlashCommandEnumValue('undefined', null, enumTypes.name, enumIcons.undefined),
     ],
 
     messageRoles: () => [
@@ -367,7 +345,7 @@ export const commonEnumProviders = {
     ],
 
     backgrounds: () => Array.from(document.querySelectorAll('.bg_example'))
-        .map(it => new SlashCommandEnumValue(it.getAttribute('bgfile')))
+        .map(it => new SlashCommandEnumValue(it.getAttribute('bgfile')!))
         .filter(it => it.value?.length),
 
     connectionProfiles: ({ includeNone = false } = {}) => () => [

@@ -96,12 +96,10 @@ export async function checkForSystemPromptInInstructTemplate(name, template) {
         if (confirm) {
             const migratedName = `[Migrated] ${name}`;
             const prompt = { name: migratedName, content: template.system_prompt };
-            const presetManager = getPresetManager('sysprompt');
+            const presetManager = getPresetManager('sysprompt')!;
             await presetManager.savePreset(migratedName, prompt);
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.success(`System prompt "${migratedName}" has been saved.`);
         } else {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.info('System prompt has been discarded.');
         }
 
@@ -173,7 +171,6 @@ function selectSystemPromptCallback(args, name) {
         const result = fuse.search(name);
 
         if (result.length === 0) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             if (!quiet) notyf.warning(`System prompt "${name}" not found`);
             return '';
         }
@@ -183,7 +180,6 @@ function selectSystemPromptCallback(args, name) {
 
     $select.value = foundName;
     $select.dispatchEvent(new Event('change', {bubbles: true}));
-    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
     if (!quiet) notyf.success(`System prompt "${foundName}" selected`);
     return foundName;
 }

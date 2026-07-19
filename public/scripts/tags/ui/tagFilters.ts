@@ -44,11 +44,9 @@ import { compareTagsForSort } from '../utils/sorting.js';
  *
  * @param listElement
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'listElement' implicitly has an 'any' ty... Remove this comment to see the full error message
-export function onTagFilterClick(listElement) {
-    const tagId = this?.getAttribute('id');
+export function onTagFilterClick(this: HTMLElement, listElement: string | HTMLElement) {
+    const tagId = this.getAttribute('id')!;
     const existingTag = getTagById(tagId);
-    // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
     const parent = this.closest('.tags');
 
     const state = toggleTagThreeState(this);
@@ -72,7 +70,7 @@ export function onTagFilterClick(listElement) {
     runTagFilters(listElement);
 
     // Focus the tag again we were at, if possible. To improve keyboard navigation
-    setTimeout(() => parent?.querySelector(`.tag[id="${tagId}"]`)?.focus(), DEFAULT_PRINT_TIMEOUT + 1);
+    setTimeout(() => (parent?.querySelector(`.tag[id="${tagId}"]`) as HTMLElement)?.focus(), DEFAULT_PRINT_TIMEOUT + 1);
 
     updateTagFilterIndicator(listElement);
 }
@@ -85,8 +83,14 @@ export function onTagFilterClick(listElement) {
  * Updates the tag filter indicator based on the selected/excluded tags in the given filter selector
  * @param {string|JQuery<HTMLElement>} filterSelector - The selector or jQuery element for the tag filter container
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'filterSelector' implicitly has an 'any'... Remove this comment to see the full error message
-export function updateTagFilterIndicator(filterSelector) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Cash = any;
+
+/**
+ *
+ * @param filterSelector
+ */
+export function updateTagFilterIndicator(filterSelector: string | Element | Cash | null | undefined) {
     const selector = filterSelector || CHARACTER_FILTER_SELECTOR;
     const tagFilter = typeof selector === 'string' ? document.querySelector(selector) : selector;
     const tagFilterEl = tagFilter;
@@ -128,47 +132,44 @@ export function printTagFilters(type = tag_filter_type.character) {
 
     // Print all action tags. (Rework 'Folder' button to some kind of onboarding if no folders are enabled yet)
     let actionTags = Object.values(ACTIONABLE_TAGS);
-    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-    actionTags.find(x => x == ACTIONABLE_TAGS.FOLDER).name = power_user.bogus_folders ? 'Show only folders' : 'Enable \'Tags as Folder\'\n\nAllows characters to be grouped in folders by their assigned tags.\nTags have to be explicitly chosen as folder to show up.\n\nClick here to start';
+    (actionTags.find((x: Record<string, unknown>) => x == ACTIONABLE_TAGS.FOLDER) as Record<string, unknown>).name = power_user.bogus_folders ? 'Show only folders' : 'Enable \'Tags as Folder\'\n\nAllows characters to be grouped in folders by their assigned tags.\nTags have to be explicitly chosen as folder to show up.\n\nClick here to start';
 
     // For group contexts, filter actionable tags to only show relevant ones
     if (isGroupContext(type)) {
-        actionTags = filterActionableTagsForGroupContext(actionTags);
+        actionTags = filterActionableTagsForGroupContext(actionTags) as typeof actionTags;
     }
 
-    printTagList(filterSelectorEl, { empty: false, sort: false, tags: actionTags, tagActionSelector: tag => tag.action, tagOptions: { isGeneralList: true } });
+    printTagList(filterSelectorEl as HTMLElement | null, { empty: false, sort: false, tags: actionTags, tagActionSelector: (tag: Record<string, unknown>) => tag.action as ((...args: unknown[]) => unknown) | undefined, tagOptions: { isGeneralList: true } });
 
     const inListActionTags = Object.values(InListActionable);
-    printTagList(filterSelectorEl, { empty: false, sort: false, tags: inListActionTags, tagActionSelector: tag => tag.action, tagOptions: { isGeneralList: true } });
+    printTagList(filterSelectorEl as HTMLElement | null, { empty: false, sort: false, tags: inListActionTags as Record<string, unknown>[], tagActionSelector: (tag: Record<string, unknown>) => tag.action as ((...args: unknown[]) => unknown) | undefined, tagOptions: { isGeneralList: true } });
 
     // Determine which character tags to display based on context
-    let tagsToDisplay;
-    let inactiveTags = [];
+    let tagsToDisplay: Record<string, unknown>[] = [];
+    let inactiveTags: string[] = [];
 
     if (isGroupContext(type)) {
         // For group contexts, show all tags but mark ones without presence in current context as inactive
         // CAUTION: when called by openGroupById, the selected_group variable might not yet be updated
 
         const currentGroup = selected_group ? groups.find(x => x.id == selected_group) : null;
-        const visibleAvatars = getVisibleAvatarsForGroupContext(type, currentGroup);
+        const visibleAvatars = getVisibleAvatarsForGroupContext(type, currentGroup as { members: string[] } | null);
 
         if (visibleAvatars.length > 0) {
             // Get tags that are assigned to at least one visible character
             const activeCharacterTagIds = visibleAvatars
-                // @ts-expect-error TS(7006) FIXME: Parameter 'avatar' implicitly has an 'any' type.
-                .map(avatar => tag_map[avatar] || [])
+                    .map((avatar: string) => (tag_map as Record<string, string[] | undefined>)[avatar] || [])
                 .flat()
                 .filter(onlyUnique);
 
             // Show all tags that exist in the tag_map
             const allCharacterTagIds = Object.values(tag_map).flat().filter(onlyUnique);
-            // @ts-expect-error TS(7005) FIXME: Variable 'tags' implicitly has an 'any[]' type.
-            tagsToDisplay = tags.filter(x => allCharacterTagIds.includes(x.id)).sort(compareTagsForSort);
+            tagsToDisplay = (tags as Record<string, unknown>[]).filter((x: Record<string, unknown>) => allCharacterTagIds.includes(x.id as string)).sort(compareTagsForSort);
 
             // Mark tags that are not in the active set as inactive
             inactiveTags = tagsToDisplay
-                .filter(x => !activeCharacterTagIds.includes(x.id))
-                .map(x => x.id);
+                .filter((x: Record<string, unknown>) => !activeCharacterTagIds.includes(x.id as string))
+                .map((x: Record<string, unknown>) => x.id as string);
         } else {
             // No group selected, show no tags
             tagsToDisplay = [];
@@ -176,11 +177,10 @@ export function printTagFilters(type = tag_filter_type.character) {
     } else {
         // For main character list, show all tags as before
         const characterTagIds = Object.values(tag_map).flat();
-        // @ts-expect-error TS(7005) FIXME: Variable 'tags' implicitly has an 'any[]' type.
-        tagsToDisplay = tags.filter(x => characterTagIds.includes(x.id)).sort(compareTagsForSort);
+        tagsToDisplay = (tags as Record<string, unknown>[]).filter((x: Record<string, unknown>) => characterTagIds.includes(x.id as string)).sort(compareTagsForSort);
     }
 
-    printTagList(filterSelectorEl, { empty: false, tags: tagsToDisplay, tagOptions: { isFilter: true, isGeneralList: true }, inactiveTags: inactiveTags });
+    printTagList(filterSelectorEl as HTMLElement | null, { empty: false, tags: tagsToDisplay, tagOptions: { isFilter: true, isGeneralList: true }, inactiveTags: inactiveTags });
 
 
     // Print bogus folder navigation
@@ -189,7 +189,7 @@ export function printTagFilters(type = tag_filter_type.character) {
     if (bogusDrilldownEl) bogusDrilldownEl.innerHTML = '';
     if (power_user.bogus_folders && bogusDrilldownEl) {
         const navigatedTags = getOpenBogusFolders();
-        printTagList(bogusDrilldownEl, { tags: navigatedTags, tagOptions: { removable: true } });
+        printTagList(bogusDrilldownEl as HTMLElement | null, { tags: navigatedTags, tagOptions: { removable: true } });
     }
 
     // Don't call runTagFilters here - it would overwrite the loaded filter states with the DOM state.
@@ -219,11 +219,10 @@ export function printTagFilters(type = tag_filter_type.character) {
 /**
  *
  */
-export function onTagListHintClick() {
+export function onTagListHintClick(this: HTMLElement) {
     this.classList.toggle('selected');
 
-    // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-    const siblingTags = [...this.parentElement.querySelectorAll(':scope > .tag:not(.actionable)')] as HTMLElement[];
+    const siblingTags = [...(this.parentElement as HTMLElement).querySelectorAll(':scope > .tag:not(.actionable)')] as HTMLElement[];
 
     if (this.classList.contains('selected')) {
         siblingTags.forEach(el => el.style.display = '');
@@ -231,15 +230,13 @@ export function onTagListHintClick() {
         siblingTags.forEach(el => el.style.display = 'none');
     }
 
-    // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-    const innerSiblings = [...this.parentElement.querySelectorAll(':scope > .innerActionable')];
+    const innerSiblings = [...(this.parentElement as HTMLElement).querySelectorAll(':scope > .innerActionable')];
     innerSiblings.forEach(el => el.classList.toggle('hidden'));
 
     // Determine which context this button belongs to and save the setting
     let filterType = tag_filter_type.character;
 
     // Check which section we're in by looking at the sibling header
-    // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
     const tagControls = this.closest('.rm_tag_controls');
     const prevSibling = tagControls?.previousElementSibling;
     if (prevSibling?.id === 'rm_group_add_members_header') {
@@ -260,9 +257,10 @@ export function onTagListHintClick() {
 /**
  * Clears all filters for the current list context.
  * @param {FilterHelper} filterHelper - The filter helper for the current context
+ * @param filterHelper.selector
+ * @param filterHelper.searchInput
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'filterHelper' implicitly has an 'any' t... Remove this comment to see the full error message
-export function onClearAllFiltersClick(filterHelper) {
+export function onClearAllFiltersClick(filterHelper: { selector: string; searchInput: string }) {
     console.debug('clear all filters clicked');
 
     const context = getFilterContext(filterHelper);
@@ -277,14 +275,14 @@ export function onClearAllFiltersClick(filterHelper) {
     for (const tag of filterTags) {
         const toggleState = tag.getAttribute('data-toggle-state');
         if (toggleState !== undefined && !isFilterState(toggleState ?? FILTER_STATES.UNDEFINED, FILTER_STATES.UNDEFINED)) {
-            toggleTagThreeState(tag, { stateOverride: FILTER_STATES.UNDEFINED, simulateClick: true });
+            toggleTagThreeState(tag as HTMLElement, { stateOverride: FILTER_STATES.UNDEFINED.key, simulateClick: true });
         }
     }
 
     // Reset search input for this context
     const searchInputEl = document.querySelector(context.searchInput);
     if (searchInputEl) {
-        searchInputEl.value = '';
+        (searchInputEl as HTMLInputElement).value = '';
         searchInputEl.dispatchEvent(new Event('input'));
     }
 }

@@ -15,15 +15,13 @@ const BG_METADATA_KEY = 'custom_background';
 const LIST_METADATA_KEY = 'chat_backgrounds';
 
 /** @type {Array<{id: string, name: string, thumbnailFile: string}>} */
-// @ts-expect-error TS(7034) FIXME: Variable 'folderList' implicitly has type 'any[]' ... Remove this comment to see the full error message
-let folderList = [];
+let folderList: Array<{ id: string; name: string; thumbnailFile: string }> = [];
 /** @type {Object.<string, string[]>} filename → folderIds */
-let imageFolderMap = {};
+let imageFolderMap: Record<string, string[]> = {};
 /** @type {string|null} Currently active folder drill-in, or null for root */
-// @ts-expect-error TS(7034) FIXME: Variable 'activeFolderId' implicitly has type 'any... Remove this comment to see the full error message
-let activeFolderId = null;
+let activeFolderId: string | null = null;
 /** @type {Set<string>} Selected system backgrounds for group folder actions */
-const selectedSystemBackgroundFiles = new Set();
+const selectedSystemBackgroundFiles = new Set<string>();
 /** @type {boolean} Whether click-to-select mode is active for system backgrounds */
 let isBackgroundSelectionMode = false;
 
@@ -47,7 +45,7 @@ const THUMBNAIL_STORAGE = localspace.createInstance({ name: 'SillyTavern_Thumbna
  * Cache for thumbnail blob URLs.
  * @type {Map<string, string>}
  */
-const THUMBNAIL_BLOBS = new Map();
+const THUMBNAIL_BLOBS = new Map<string, string>();
 
 const THUMBNAIL_CONFIG = {
     width: 160,
@@ -60,7 +58,7 @@ const ANIMATED_BACKGROUND_EXTENSIONS = ['mp4', 'webp', 'gif', 'apng'];
  * Cache for image metadata.
  * @type {Map<string, import('../../src/endpoints/image-metadata.js').ImageMetadata>}
  */
-const METADATA_CACHE = new Map();
+const METADATA_CACHE = new Map<string, unknown>();
 
 /**
  * Background source types.
@@ -105,10 +103,9 @@ let lazyLoadObserver: IntersectionObserver | null = null;
  * Used to re-sort backgrounds without refetching from the server.
  * @type {Array<{filename: string, isAnimated: boolean}>}
  */
-// @ts-expect-error TS(7034) FIXME: Variable 'cachedSystemBackgrounds' implicitly has ... Remove this comment to see the full error message
-let cachedSystemBackgrounds = [];
+let cachedSystemBackgrounds: Array<{ filename: string; isAnimated: boolean }> = [];
 
-export const background_settings = {
+export const background_settings: Record<string, unknown> = {
     name: '__transparent.png',
     url: generateUrlParameter('__transparent.png', false),
     fitting: 'classic',
@@ -122,11 +119,10 @@ export const background_settings = {
  * @param {boolean} isCustom - Whether these are custom (chat) backgrounds
  * @returns {string[]} Sorted array of background filenames
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'backgrounds' implicitly has an 'any' ty... Remove this comment to see the full error message
-function sortBackgrounds(backgrounds, isCustom = false) {
+function sortBackgrounds(backgrounds: string[], isCustom = false): string[] {
     const sortOrder = background_settings.sortOrder || BG_SORT_OPTIONS.AZ;
 
-    return [...backgrounds].sort((a, b) => {
+    return [...backgrounds].sort((a: string, b: string) => {
         switch (sortOrder) {
             case BG_SORT_OPTIONS.AZ:
                 return sortIgnoreCaseAndAccents(a, b);
@@ -136,10 +132,10 @@ function sortBackgrounds(backgrounds, isCustom = false) {
             case BG_SORT_OPTIONS.OLDEST: {
                 const keyA = isCustom ? a : `backgrounds/${a}`;
                 const keyB = isCustom ? b : `backgrounds/${b}`;
-                const metaA = METADATA_CACHE.get(keyA);
-                const metaB = METADATA_CACHE.get(keyB);
-                const timestampA = metaA?.addedTimestamp ?? 0;
-                const timestampB = metaB?.addedTimestamp ?? 0;
+                const metaA = METADATA_CACHE.get(keyA) as Record<string, unknown> | undefined;
+                const metaB = METADATA_CACHE.get(keyB) as Record<string, unknown> | undefined;
+                const timestampA = (metaA?.addedTimestamp as number) ?? 0;
+                const timestampB = (metaB?.addedTimestamp as number) ?? 0;
                 // Newest first (descending) or oldest first (ascending)
                 return sortOrder === BG_SORT_OPTIONS.NEWEST
                     ? timestampB - timestampA
@@ -151,19 +147,23 @@ function sortBackgrounds(backgrounds, isCustom = false) {
     });
 }
 
+interface ImageData {
+    filename: string;
+    isCustom: boolean;
+    isAnimated: boolean;
+}
+
 /**
  * Creates a single thumbnail DOM element. The CSS now handles all sizing.
  * @param {object} imageData - Data for the image (filename, isCustom, isAnimated).
  * @returns {HTMLElement} The created thumbnail element.
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'imageData' implicitly has an 'any' type... Remove this comment to see the full error message
-function createThumbnailElement(imageData) {
+function createThumbnailElement(imageData: ImageData): HTMLElement {
     const bg = imageData.filename;
     const isCustom = imageData.isCustom;
     const isAnimated = imageData.isAnimated ?? false;
 
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    const thumbnail = document.querySelector('#background_template .bg_example').cloneNode(true);
+    const thumbnail = document.querySelector<HTMLElement>('#background_template .bg_example')!.cloneNode(true) as HTMLElement;
 
     const clipper = document.createElement('div');
     clipper.className = 'thumbnail-clipper lazy-load-background';
@@ -171,36 +171,29 @@ function createThumbnailElement(imageData) {
 
     // Apply dominant color and aspect ratio as placeholder if available
     const metadataKey = isCustom ? bg : `backgrounds/${bg}`;
-    const metadata = METADATA_CACHE.get(metadataKey);
+    const metadata = METADATA_CACHE.get(metadataKey) as Record<string, unknown> | undefined;
     if (metadata) {
         if (metadata.dominantColor) {
-            clipper.style.backgroundColor = metadata.dominantColor;
+            clipper.style.backgroundColor = metadata.dominantColor as string;
         }
         if (metadata.aspectRatio) {
-            // @ts-expect-error TS(2339) FIXME: Property 'style' does not exist on type 'Node'.
-            thumbnail.style.aspectRatio = metadata.aspectRatio;
+            thumbnail.style.aspectRatio = metadata.aspectRatio as string;
         }
     }
 
-    // @ts-expect-error TS(2339) FIXME: Property 'querySelector' does not exist on type 'N... Remove this comment to see the full error message
-    const titleElement = thumbnail.querySelector('.BGSampleTitle');
+    const titleElement = thumbnail.querySelector('.BGSampleTitle')!;
     clipper.appendChild(titleElement);
-    // @ts-expect-error TS(2339) FIXME: Property 'append' does not exist on type 'Node'.
     thumbnail.append(clipper);
 
     const url = generateUrlParameter(bg, isCustom);
     const title = isCustom ? bg.split('/').pop() : bg;
-    const friendlyTitle = String(title || '').slice(0, title.lastIndexOf('.'));
+    const safeTitle = title ?? '';
+    const friendlyTitle = String(safeTitle).slice(0, safeTitle.lastIndexOf('.'));
 
-    // @ts-expect-error TS(2339) FIXME: Property 'setAttribute' does not exist on type 'No... Remove this comment to see the full error message
-    thumbnail.setAttribute('title', title);
-    // @ts-expect-error TS(2339) FIXME: Property 'setAttribute' does not exist on type 'No... Remove this comment to see the full error message
+    thumbnail.setAttribute('title', safeTitle);
     thumbnail.setAttribute('bgfile', bg);
-    // @ts-expect-error TS(2339) FIXME: Property 'setAttribute' does not exist on type 'No... Remove this comment to see the full error message
     thumbnail.setAttribute('custom', String(isCustom));
-    // @ts-expect-error TS(2339) FIXME: Property 'setAttribute' does not exist on type 'No... Remove this comment to see the full error message
     thumbnail.setAttribute('animated', String(isAnimated));
-    // @ts-expect-error TS(2339) FIXME: Property 'setAttribute' does not exist on type 'No... Remove this comment to see the full error message
     thumbnail.setAttribute('data-url', url);
     titleElement.textContent = friendlyTitle;
 
@@ -211,17 +204,15 @@ function createThumbnailElement(imageData) {
  * Applies the thumbnail column count to the CSS and updates button states.
  * @param {number} count - The number of columns to display.
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'count' implicitly has an 'any' type.
-function applyThumbnailColumns(count) {
+function applyThumbnailColumns(count: number): void {
     const newCount = Math.max(THUMBNAIL_COLUMNS_MIN, Math.min(count, THUMBNAIL_COLUMNS_MAX));
-    // @ts-expect-error TS(2339) FIXME: Property 'thumbnailColumns' does not exist on type... Remove this comment to see the full error message
     background_settings.thumbnailColumns = newCount;
     document.documentElement.style.setProperty('--bg-thumb-columns', newCount.toString());
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('bg_thumb_zoom_in').disabled = newCount <= THUMBNAIL_COLUMNS_MIN;
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('bg_thumb_zoom_out').disabled = newCount >= THUMBNAIL_COLUMNS_MAX;
+    const zoomIn = document.getElementById('bg_thumb_zoom_in') as HTMLButtonElement | null;
+    if (zoomIn) zoomIn.disabled = newCount <= THUMBNAIL_COLUMNS_MIN;
+    const zoomOut = document.getElementById('bg_thumb_zoom_out') as HTMLButtonElement | null;
+    if (zoomOut) zoomOut.disabled = newCount >= THUMBNAIL_COLUMNS_MAX;
 
     saveSettingsDebounced();
 }
@@ -230,9 +221,8 @@ function applyThumbnailColumns(count) {
  *
  * @param settings
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'settings' implicitly has an 'any' type.
-export function loadBackgroundSettings(settings) {
-    let backgroundSettings = settings.background;
+export function loadBackgroundSettings(settings: Record<string, unknown>): void {
+    let backgroundSettings = (settings.background as Record<string, unknown>) || {};
     if (!backgroundSettings || !backgroundSettings.name || !backgroundSettings.url) {
         backgroundSettings = background_settings;
     }
@@ -247,45 +237,42 @@ export function loadBackgroundSettings(settings) {
     }
 
     // If a value is already saved, use it. Otherwise, determine default based on screen size.
-    let columns = backgroundSettings.thumbnailColumns;
+    let columns = backgroundSettings.thumbnailColumns as number | undefined;
     if (!columns) {
         const isNarrowScreen = window.matchMedia('(max-width: 480px)').matches;
         columns = isNarrowScreen ? THUMBNAIL_COLUMNS_DEFAULT_MOBILE : THUMBNAIL_COLUMNS_DEFAULT_DESKTOP;
     }
-    // @ts-expect-error TS(2339) FIXME: Property 'thumbnailColumns' does not exist on type... Remove this comment to see the full error message
     background_settings.thumbnailColumns = columns;
     background_settings.sortOrder = backgroundSettings.sortOrder;
     background_settings.animation = backgroundSettings.animation;
-    // @ts-expect-error TS(2339) FIXME: Property 'thumbnailColumns' does not exist on type... Remove this comment to see the full error message
-    applyThumbnailColumns(background_settings.thumbnailColumns);
+    applyThumbnailColumns(background_settings.thumbnailColumns as number);
 
-    setBackground(backgroundSettings.name, backgroundSettings.url);
-    setFittingClass(backgroundSettings.fitting);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('background_fitting').value = backgroundSettings.fitting;
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const el = document.getElementById('background_thumbnails_animation'); if (el) el.checked = background_settings.animation;
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('bg-sort').value = background_settings.sortOrder;
+    setBackground(backgroundSettings.name as string, backgroundSettings.url as string);
+    setFittingClass(backgroundSettings.fitting as string);
+    const fittingEl = document.getElementById('background_fitting') as HTMLSelectElement | null;
+    if (fittingEl) fittingEl.value = backgroundSettings.fitting as string;
+    const el = document.getElementById('background_thumbnails_animation') as HTMLInputElement | null; if (el) el.checked = background_settings.animation as boolean;
+    const sortEl = document.getElementById('bg-sort') as HTMLSelectElement | null;
+    if (sortEl) sortEl.value = background_settings.sortOrder as string;
     highlightSelectedBackground();
 }
 
 /**
  * Sets the background for the current chat and adds it to the list of custom backgrounds.
  * @param {{url: string, path:string}} backgroundInfo
+ * @param backgroundInfo.url
+ * @param backgroundInfo.path
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'backgroundInfo' implicitly has an 'any'... Remove this comment to see the full error message
-async function forceSetBackground(backgroundInfo) {
+async function forceSetBackground(backgroundInfo: { url: string; path: string }): Promise<void> {
     saveBackgroundMetadata(backgroundInfo.url);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('bg1').style.backgroundImage = backgroundInfo.url;
+    const bg1 = document.getElementById('bg1');
+    if (bg1) bg1.style.backgroundImage = backgroundInfo.url;
 
-    const list = chat_metadata[LIST_METADATA_KEY] || [];
+    const list = (chat_metadata[LIST_METADATA_KEY] as string[]) || [];
     const bg = backgroundInfo.path;
     list.push(bg);
     chat_metadata[LIST_METADATA_KEY] = list;
     saveMetadataDebounced();
-    // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
     renderChatBackgrounds();
     highlightNewBackground(bg);
     highlightLockedBackground();
@@ -294,13 +281,12 @@ async function forceSetBackground(backgroundInfo) {
 /**
  *
  */
-async function onChatChanged() {
-    const lockedUrl = chat_metadata[BG_METADATA_KEY];
+async function onChatChanged(): Promise<void> {
+    const lockedUrl = chat_metadata[BG_METADATA_KEY] as string | undefined;
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('bg1').style.backgroundImage = lockedUrl || background_settings.url;
+    const bg1 = document.getElementById('bg1');
+    if (bg1) bg1.style.backgroundImage = lockedUrl || background_settings.url as string;
 
-    // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
     renderChatBackgrounds();
     highlightLockedBackground();
     highlightSelectedBackground();
@@ -311,11 +297,9 @@ async function onChatChanged() {
  * @param {string} fileUrl - The URL to check against the chat's custom backgrounds.
  * @returns {boolean} True if the URL corresponds to a custom background, false otherwise.
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'fileUrl' implicitly has an 'any' type.
-export function isCustomBackgroundUrl(fileUrl) {
-    const customBackgrounds = chat_metadata[LIST_METADATA_KEY] || [];
-    // @ts-expect-error TS(7006) FIXME: Parameter 'bg' implicitly has an 'any' type.
-    return customBackgrounds.some(bg => bg === fileUrl || generateUrlParameter(bg, true) === fileUrl);
+export function isCustomBackgroundUrl(fileUrl: string): boolean {
+    const customBackgrounds = (chat_metadata[LIST_METADATA_KEY] as string[]) || [];
+    return customBackgrounds.some((bg: string) => bg === fileUrl || generateUrlParameter(bg, true) === fileUrl);
 }
 
 /**
@@ -323,8 +307,7 @@ export function isCustomBackgroundUrl(fileUrl) {
  * @param {string} fileUrl File name or URL of the background image
  * @returns {string} Client path for the system backgroun
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'fileUrl' implicitly has an 'any' type.
-export function getBackgroundPath(fileUrl) {
+export function getBackgroundPath(fileUrl: string): string {
     return `backgrounds/${encodeURIComponent(fileUrl)}`;
 }
 
@@ -334,8 +317,7 @@ export function getBackgroundPath(fileUrl) {
  * @param {string} file File name of the background image
  * @returns {string} Raw relative path, e.g. "backgrounds/my file.jpg"
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'file' implicitly has an 'any' type.
-function getBackgroundRelativePath(file) {
+function getBackgroundRelativePath(file: string): string {
     return `backgrounds/${file}`;
 }
 
@@ -343,15 +325,14 @@ function getBackgroundRelativePath(file) {
 /**
  *
  */
-function highlightLockedBackground() {
+function highlightLockedBackground(): void {
     document.querySelectorAll('.bg_example.locked-background').forEach(el => el.classList.remove('locked-background'));
 
-    const lockedBackgroundUrl = chat_metadata[BG_METADATA_KEY];
+    const lockedBackgroundUrl = chat_metadata[BG_METADATA_KEY] as string | undefined;
 
     if (lockedBackgroundUrl) {
         document.querySelectorAll('.bg_example').forEach(el => {
-            // @ts-expect-error TS(2339) FIXME: Property 'dataset' does not exist on type 'Element... Remove this comment to see the full error message
-            if (el.dataset.url === lockedBackgroundUrl) {
+            if ((el as HTMLElement).dataset.url === lockedBackgroundUrl) {
                 el.classList.add('locked-background');
             }
         });
@@ -362,19 +343,17 @@ function highlightLockedBackground() {
  * Locks the background for the current chat
  * @param {Event|null} event
  */
-function onLockBackgroundClick(event = null) {
+function onLockBackgroundClick(this: void, event: Event | null = null): void {
     if (!getCurrentChatId()) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.warning(t`Select a chat to lock the background for it`);
         return;
     }
 
     // Take the global background's URL and save it to the chat's metadata.
-    // @ts-expect-error TS(2339) FIXME: Property 'target' does not exist on type 'never'.
-    const urlToLock = event ? event.target.closest('.bg_example')?.dataset.url : background_settings.url;
+    const urlToLock = event ? ((event.target as Element)?.closest('.bg_example') as HTMLElement)?.dataset.url : background_settings.url as string;
     saveBackgroundMetadata(urlToLock);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('bg1').style.backgroundImage = urlToLock;
+    const bg1 = document.getElementById('bg1');
+    if (bg1) (bg1 as HTMLElement).style.backgroundImage = urlToLock ?? '';
 
     // Update UI states to reflect the new lock.
     highlightLockedBackground();
@@ -385,13 +364,13 @@ function onLockBackgroundClick(event = null) {
  * Unlocks the background for the current chat
  * @param {Event|null} _event
  */
-function onUnlockBackgroundClick(_event = null) {
+function onUnlockBackgroundClick(this: void, _event: Event | null = null): void {
     // Delete the lock from the chat's metadata.
     removeBackgroundMetadata();
 
     // Revert the view to the current global background.
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('bg1').style.backgroundImage = background_settings.url;
+    const bg1 = document.getElementById('bg1');
+    if (bg1) bg1.style.backgroundImage = background_settings.url as string;
 
     // Update UI states to reflect the removal of the lock.
     highlightLockedBackground();
@@ -401,16 +380,15 @@ function onUnlockBackgroundClick(_event = null) {
 /**
  *
  */
-function isChatBackgroundLocked() {
-    return chat_metadata[BG_METADATA_KEY];
+function isChatBackgroundLocked(): string | undefined {
+    return chat_metadata[BG_METADATA_KEY] as string | undefined;
 }
 
 /**
  *
  * @param file
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'file' implicitly has an 'any' type.
-function saveBackgroundMetadata(file) {
+function saveBackgroundMetadata(file: string | undefined): void {
     chat_metadata[BG_METADATA_KEY] = file;
     saveMetadataDebounced();
 }
@@ -418,7 +396,7 @@ function saveBackgroundMetadata(file) {
 /**
  *
  */
-function removeBackgroundMetadata() {
+function removeBackgroundMetadata(): void {
     delete chat_metadata[BG_METADATA_KEY];
     saveMetadataDebounced();
 }
@@ -427,29 +405,25 @@ function removeBackgroundMetadata() {
  * Handles the click event for selecting a background.
  * @param {JQuery.Event} e Event
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
-function onSelectBackgroundClick(e) {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+function onSelectBackgroundClick(this: HTMLElement, e: Event): void {
     const bgFile = this.getAttribute('bgfile');
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const isCustom = this.getAttribute('custom') === 'true';
     if (isBackgroundSelectionMode && !isCustom) {
-        toggleBackgroundGroupSelection(bgFile);
+        toggleBackgroundGroupSelection(bgFile ?? '');
         return;
     }
 
-    // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
     const backgroundCssUrl = getUrlParameter(this);
-    const bypassGlobalLock = !isCustom && e.shiftKey;
+    const bypassGlobalLock = !isCustom && (e as MouseEvent).shiftKey;
 
     if ((isChatBackgroundLocked() || isCustom) && !bypassGlobalLock) {
         // If a background is locked, update the locked background directly
         saveBackgroundMetadata(backgroundCssUrl);
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        document.getElementById('bg1').style.backgroundImage = backgroundCssUrl;
+        const bg1 = document.getElementById('bg1');
+        if (bg1) bg1.style.backgroundImage = backgroundCssUrl ?? '';
     } else {
         // Otherwise, update the global background setting
-        setBackground(bgFile, backgroundCssUrl);
+        setBackground(bgFile ?? '', backgroundCssUrl ?? '');
     }
 
     // Update UI highlights to reflect the changes.
@@ -461,10 +435,8 @@ function onSelectBackgroundClick(e) {
  *
  * @param e
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
-async function onCopyToSystemBackgroundClick(e) {
+async function onCopyToSystemBackgroundClick(this: HTMLElement, e: Event): Promise<void> {
     e.stopPropagation();
-    // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
     const bgNames = await getNewBackgroundName(this);
 
     if (!bgNames) {
@@ -474,7 +446,6 @@ async function onCopyToSystemBackgroundClick(e) {
     const bgFile = await fetch(bgNames.oldBg);
 
     if (!bgFile.ok) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.warning('Failed to copy background');
         return;
     }
@@ -486,11 +457,10 @@ async function onCopyToSystemBackgroundClick(e) {
 
     await uploadBackground(formData);
 
-    const list = chat_metadata[LIST_METADATA_KEY] || [];
+    const list = (chat_metadata[LIST_METADATA_KEY] as string[]) || [];
     const index = list.indexOf(bgNames.oldBg);
     list.splice(index, 1);
     saveMetadataDebounced();
-    // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
     renderChatBackgrounds();
 }
 
@@ -502,8 +472,7 @@ async function onCopyToSystemBackgroundClick(e) {
  * @param {boolean} isCustom Is the background custom?
  * @returns {Promise<string>} Blob URL of the thumbnail
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'bg' implicitly has an 'any' type.
-async function getThumbnailFromStorage(bg, isCustom) {
+async function getThumbnailFromStorage(bg: string, isCustom: boolean): Promise<string> {
     const cachedBlobUrl = THUMBNAIL_BLOBS.get(bg);
     if (cachedBlobUrl) {
         return cachedBlobUrl;
@@ -524,10 +493,8 @@ async function getThumbnailFromStorage(bg, isCustom) {
         }
         const imageBlob = await response.blob();
         const imageBase64 = await getBase64Async(imageBlob);
-        // @ts-expect-error TS(2345) FIXME: Argument of type 'number' is not assignable to par... Remove this comment to see the full error message
-        const thumbnailBase64 = await createThumbnail(imageBase64, THUMBNAIL_CONFIG.width, THUMBNAIL_CONFIG.height);
-        // @ts-expect-error TS(2769) FIXME: No overload matches this call.
-        const thumbnailBlob = await fetch(thumbnailBase64).then(res => res.blob());
+        const thumbnailBase64 = await createThumbnail(imageBase64, THUMBNAIL_CONFIG.width as unknown as null | undefined, THUMBNAIL_CONFIG.height as unknown as null | undefined);
+        const thumbnailBlob = await (await fetch(thumbnailBase64 as string)).blob();
         await THUMBNAIL_STORAGE.setItem(bg, thumbnailBlob);
         const blobUrl = URL.createObjectURL(thumbnailBlob);
         THUMBNAIL_BLOBS.set(bg, blobUrl);
@@ -546,8 +513,7 @@ async function getThumbnailFromStorage(bg, isCustom) {
  * @param {Element} referenceElement
  * @returns {Promise<{oldBg: string, newBg: string}>}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'referenceElement' implicitly has an 'an... Remove this comment to see the full error message
-async function getNewBackgroundName(referenceElement) {
+async function getNewBackgroundName(referenceElement: Element): Promise<{ oldBg: string; newBg: string } | undefined> {
     const exampleBlock = referenceElement.closest('.bg_example');
     const isCustom = exampleBlock?.getAttribute('custom') === 'true';
     const oldBg = exampleBlock?.getAttribute('bgfile');
@@ -557,9 +523,9 @@ async function getNewBackgroundName(referenceElement) {
         return;
     }
 
-    const fileExtension = oldBg.split('.').pop();
-    const fileNameBase = isCustom ? oldBg.split('/').pop() : oldBg;
-    const oldBgExtensionless = fileNameBase.replace(`.${fileExtension}`, '');
+    const fileExtension = oldBg.split('.').pop()!;
+    const fileNameBase = isCustom ? oldBg.split('/').pop()! : oldBg;
+    const oldBgExtensionless = fileNameBase!.replace(`.${fileExtension}`, '');
     const newBgExtensionless = await Popup.show.input(t`Enter new background name:`, null, oldBgExtensionless);
 
     if (!newBgExtensionless) {
@@ -581,11 +547,9 @@ async function getNewBackgroundName(referenceElement) {
  *
  * @param e
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
-async function onRenameBackgroundClick(e) {
+async function onRenameBackgroundClick(this: HTMLElement, e: Event): Promise<void> {
     e.stopPropagation();
 
-    // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
     const bgNames = await getNewBackgroundName(this);
 
     if (!bgNames) {
@@ -604,7 +568,6 @@ async function onRenameBackgroundClick(e) {
         await getBackgrounds();
         highlightNewBackground(bgNames.newBg);
     } else {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.warning('Failed to rename background');
     }
 }
@@ -613,17 +576,15 @@ async function onRenameBackgroundClick(e) {
  *
  * @param e
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
-async function onDeleteBackgroundClick(e) {
+async function onDeleteBackgroundClick(this: HTMLElement, e: Event): Promise<void> {
     e.stopPropagation();
-    // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-    const bgToDelete = this.closest('.bg_example');
+    const bgToDelete = this.closest('.bg_example') as HTMLElement | null;
     const url = bgToDelete?.dataset.url;
     const isCustom = bgToDelete?.getAttribute('custom') === 'true';
     const deleteFromServerId = 'delete_bg_from_server';
     /** @type {import('./popup.js').CustomPopupInput[]} */
     const customInputs = [{
-        type: 'checkbox',
+        type: 'checkbox' as const,
         label: t`Also delete file from server`,
         id: deleteFromServerId,
         defaultState: true,
@@ -631,10 +592,9 @@ async function onDeleteBackgroundClick(e) {
     let deleteFromServer = false;
     const confirm = await Popup.show.confirm(t`Delete the background?`, null, {
         customInputs: isCustom ? customInputs : [],
-        // @ts-expect-error TS(7006) FIXME: Parameter 'popup' implicitly has an 'any' type.
-        onClose: (popup) => {
+        onClose: (popup: Record<string, unknown>) => {
             if (isCustom) {
-                deleteFromServer = Boolean(popup?.inputResults?.get(deleteFromServerId) ?? false);
+                deleteFromServer = Boolean((popup?.inputResults as Map<string, unknown>)?.get(deleteFromServerId) ?? false);
             }
         },
     });
@@ -643,24 +603,22 @@ async function onDeleteBackgroundClick(e) {
     if (confirm) {
         // If it's not custom, it's a built-in background. Delete it from the server
         if (!isCustom) {
-            await delBackground(bg);
+            await delBackground(bg ?? '');
             // Remove from cache to prevent reappearing on sort change
-            // @ts-expect-error TS(7005) FIXME: Variable 'cachedSystemBackgrounds' implicitly has ... Remove this comment to see the full error message
             const cacheIndex = cachedSystemBackgrounds.findIndex(s => s.filename === bg);
             if (cacheIndex !== -1) {
-                // @ts-expect-error TS(7005) FIXME: Variable 'cachedSystemBackgrounds' implicitly has ... Remove this comment to see the full error message
                 cachedSystemBackgrounds.splice(cacheIndex, 1);
             }
         } else {
-            const list = chat_metadata[LIST_METADATA_KEY] || [];
-            const index = list.indexOf(bg);
+            const list = (chat_metadata[LIST_METADATA_KEY] as string[]) || [];
+            const index = list.indexOf(bg ?? '');
             list.splice(index, 1);
         }
 
-        if (bg === background_settings.name || url === chat_metadata[BG_METADATA_KEY]) {
+        if (bg === background_settings.name || url === (chat_metadata[BG_METADATA_KEY] as string | undefined)) {
             const siblingSelector = '.bg_example';
-            const nextBg = bgToDelete?.nextElementSibling?.matches(siblingSelector) ? bgToDelete.nextElementSibling : null;
-            const prevBg = bgToDelete?.previousElementSibling?.matches(siblingSelector) ? bgToDelete.previousElementSibling : null;
+            const nextBg = bgToDelete?.nextElementSibling?.matches(siblingSelector) ? (bgToDelete.nextElementSibling as HTMLElement) : null;
+            const prevBg = bgToDelete?.previousElementSibling?.matches(siblingSelector) ? (bgToDelete.previousElementSibling as HTMLElement) : null;
 
             if (nextBg) {
                 nextBg.click();
@@ -669,8 +627,7 @@ async function onDeleteBackgroundClick(e) {
             } else {
                 const anyOtherBg = Array.from(document.querySelectorAll('.bg_example')).find(el => el !== bgToDelete);
                 if (anyOtherBg) {
-                    // @ts-expect-error TS(2339) FIXME: Property 'click' does not exist on type 'Element'.
-                    anyOtherBg.click();
+                    (anyOtherBg as HTMLElement).click();
                 }
             }
         }
@@ -678,19 +635,14 @@ async function onDeleteBackgroundClick(e) {
         // Remove from local image list so it doesn't reappear on re-render
         const deletedBg = bgToDelete?.getAttribute('bgfile');
         if (deletedBg) {
-            // @ts-expect-error TS(7005) FIXME: Variable 'cachedSystemBackgrounds' implicitly has ... Remove this comment to see the full error message
             const cachedIdx = cachedSystemBackgrounds.findIndex(img => img.filename === deletedBg);
-            // @ts-expect-error TS(7005) FIXME: Variable 'cachedSystemBackgrounds' implicitly has ... Remove this comment to see the full error message
             if (cachedIdx !== -1) cachedSystemBackgrounds.splice(cachedIdx, 1);
             selectedSystemBackgroundFiles.delete(deletedBg);
 
             // Update folder map and clear folder thumbnail if it referenced this image
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             if (imageFolderMap[deletedBg]) {
-                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 delete imageFolderMap[deletedBg];
             }
-            // @ts-expect-error TS(7005) FIXME: Variable 'folderList' implicitly has an 'any[]' ty... Remove this comment to see the full error message
             for (const folder of folderList) {
                 if (folder.thumbnailFile === deletedBg) {
                     folder.thumbnailFile = '';
@@ -701,15 +653,14 @@ async function onDeleteBackgroundClick(e) {
 
         bgToDelete?.remove();
 
-        if (url === chat_metadata[BG_METADATA_KEY]) {
+        if (url === (chat_metadata[BG_METADATA_KEY] as string | undefined)) {
             removeBackgroundMetadata();
         }
 
         if (isCustom) {
             if (deleteFromServer) {
-                await deleteMediaFromServer(bg);
+                await deleteMediaFromServer(bg ?? '');
             }
-            // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
             renderChatBackgrounds();
             await saveMetadata();
         }
@@ -725,13 +676,11 @@ const autoBgPrompt = 'Ignore previous instructions and choose a location ONLY fr
 /**
  *
  */
-async function autoBackgroundCommand() {
+async function autoBackgroundCommand(): Promise<string> {
     /** @type {HTMLElement[]} */
     const bgTitles = Array.from(document.querySelectorAll('#bg_menu_content .BGSampleTitle'));
-    // @ts-expect-error TS(2339) FIXME: Property 'innerText' does not exist on type 'Eleme... Remove this comment to see the full error message
-    const options = bgTitles.map(x => ({ element: x, text: x.innerText.trim() })).filter(x => x.text.length > 0);
+    const options = bgTitles.map(x => ({ element: x, text: (x as HTMLElement).innerText.trim() })).filter(x => x.text.length > 0);
     if (options.length == 0) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.warning('No backgrounds to choose from. Please upload some images to the "backgrounds" folder.');
         return '';
     }
@@ -739,20 +688,18 @@ async function autoBackgroundCommand() {
     const list = options.map(option => `- ${option.text}`).join('\n');
     const prompt = stringFormat(autoBgPrompt, list);
     const reply = await generateQuietPrompt({ quietPrompt: prompt });
-    const fuse = new Fuse(options, { keys: ['text'] });
+    const fuse = new Fuse(options, { keys: ['text'] as (keyof typeof options[0])[] });
     const bestMatch = fuse.search(reply, { limit: 1 });
 
     if (bestMatch.length == 0) {
         for (const option of options) {
             if (String(reply).toLowerCase().includes(option.text.toLowerCase())) {
                 console.debug('Fallback choosing background:', option);
-                // @ts-expect-error TS(2339) FIXME: Property 'click' does not exist on type 'Element'.
-                option.element.click();
+                (option.element as HTMLElement).click();
                 return '';
             }
         }
 
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.warning('No match found. Please try again.');
         return '';
     }
@@ -766,11 +713,10 @@ async function autoBackgroundCommand() {
  * Renders the system backgrounds gallery.
  * @param {Array<{filename: string, isAnimated: boolean}>} [backgrounds] - Optional filtered list of backgrounds with metadata.
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'backgrounds' implicitly has an 'any' ty... Remove this comment to see the full error message
-function renderSystemBackgrounds(backgrounds) {
+function renderSystemBackgrounds(backgrounds: Array<{ filename: string; isAnimated: boolean }>): void {
     const sourceList = backgrounds || [];
     const container = document.getElementById('bg_menu_content');
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
+    if (!container) return;
     container.innerHTML = '';
 
     if (sourceList.length === 0) {
@@ -778,17 +724,13 @@ function renderSystemBackgrounds(backgrounds) {
         return;
     }
 
-    // @ts-expect-error TS(7006) FIXME: Parameter 'bg' implicitly has an 'any' type.
-    const sortedList = sortBackgrounds(sourceList.map(bg => bg.filename), false);
-    // @ts-expect-error TS(7006) FIXME: Parameter 'bg' implicitly has an 'any' type.
-    const metadataByFilename = new Map(sourceList.map(bg => [bg.filename, bg]));
+    const sortedList = sortBackgrounds(sourceList.map((bg: { filename: string }) => bg.filename), false);
+    const metadataByFilename = new Map(sourceList.map((bg: { filename: string; isAnimated: boolean }) => [bg.filename, bg]));
     sortedList.forEach(filename => {
         const bg = metadataByFilename.get(filename);
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-        const imageData = { filename, isCustom: false, isAnimated: bg?.isAnimated ?? false };
+        const imageData: ImageData = { filename, isCustom: false, isAnimated: bg?.isAnimated ?? false };
         const thumbnail = createThumbnailElement(imageData);
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        container.append(thumbnail);
+        container!.append(thumbnail);
     });
 
     syncGroupSelectionUi();
@@ -799,14 +741,13 @@ function renderSystemBackgrounds(backgrounds) {
  * Renders the chat-specific (custom) backgrounds gallery.
  * @param {string[]} [backgrounds] - Optional filtered list of backgrounds.
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'backgrounds' implicitly has an 'any' ty... Remove this comment to see the full error message
-function renderChatBackgrounds(backgrounds) {
-    const sourceList = backgrounds ?? (chat_metadata[LIST_METADATA_KEY] || []);
+function renderChatBackgrounds(backgrounds?: string[]): void {
+    const sourceList = backgrounds ?? ((chat_metadata[LIST_METADATA_KEY] as string[]) || []);
     const container = document.getElementById('bg_custom_content');
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
+    if (!container) return;
     container.innerHTML = '';
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('bg_chat_hint').style.display = !sourceList.length ? '' : 'none';
+    const hintEl = document.getElementById('bg_chat_hint');
+    if (hintEl) hintEl.style.display = !sourceList.length ? '' : 'none';
 
     if (sourceList.length === 0) return;
 
@@ -814,10 +755,9 @@ function renderChatBackgrounds(backgrounds) {
     sortedList.forEach(bg => {
         // For custom backgrounds, infer isAnimated from extension since we don't have server metadata
         const isAnimated = isAnimatedBackgroundExtension(bg);
-        const imageData = { filename: bg, isCustom: true, isAnimated };
+        const imageData: ImageData = { filename: bg, isCustom: true, isAnimated };
         const thumbnail = createThumbnailElement(imageData);
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        container.append(thumbnail);
+        container!.append(thumbnail);
     });
 
     activateLazyLoader();
@@ -826,7 +766,7 @@ function renderChatBackgrounds(backgrounds) {
 /**
  *
  */
-export async function getBackgrounds() {
+export async function getBackgrounds(): Promise<void> {
     const response = await fetch('/api/backgrounds/all', {
         method: 'POST',
         headers: getRequestHeaders(),
@@ -836,8 +776,7 @@ export async function getBackgrounds() {
         const { images, config } = await response.json();
         Object.assign(THUMBNAIL_CONFIG, config);
         cachedSystemBackgrounds = images;
-        // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
-        const existingFiles = new Set(images.map(x => x.filename));
+        const existingFiles = new Set(images.map((x: { filename: string }) => x.filename));
         for (const selectedFile of selectedSystemBackgroundFiles) {
             if (!existingFiles.has(selectedFile)) {
                 selectedSystemBackgroundFiles.delete(selectedFile);
@@ -859,7 +798,7 @@ export async function getBackgrounds() {
  * Preloads all image metadata to use dominant colors as placeholders.
  * @returns {Promise<void>}
  */
-async function preloadImageMetadata() {
+async function preloadImageMetadata(): Promise<void> {
     try {
         const response = await fetch('/api/image-metadata/all', {
             method: 'POST',
@@ -883,7 +822,7 @@ async function preloadImageMetadata() {
 /**
  * Loads folder data from the server (separate from image loading).
  */
-async function loadFolders() {
+async function loadFolders(): Promise<void> {
     try {
         const response = await fetch('/api/backgrounds/folders', {
             method: 'POST',
@@ -896,15 +835,13 @@ async function loadFolders() {
             imageFolderMap = data.imageFolderMap || {};
 
             // Auto-assign thumbnail for folders that don't have one, then persist
-            // @ts-expect-error TS(7005) FIXME: Variable 'cachedSystemBackgrounds' implicitly has ... Remove this comment to see the full error message
             const allImages = cachedSystemBackgrounds.map(img => img.filename);
             /** @type {{id: string, thumbnailFile: string}[]} */
-            const thumbnailUpdates = [];
+            const thumbnailUpdates: Array<{ id: string; thumbnailFile: string }> = [];
             for (const folder of folderList) {
                 if (!folder.thumbnailFile) {
                     const firstImage = allImages.find(img => {
-                        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                        const fids = imageFolderMap[img];
+                        const fids = imageFolderMap[img!];
                         return fids && fids.includes(folder.id);
                     });
                     if (firstImage) {
@@ -931,20 +868,17 @@ async function loadFolders() {
 /**
  * Renders the folder grid inside #bg_folder_grid.
  */
-function renderFolderGrid() {
+function renderFolderGrid(): void {
     const container = document.getElementById('bg_folder_grid');
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
+    if (!container) return;
     container.innerHTML = '';
 
-    // @ts-expect-error TS(7005) FIXME: Variable 'activeFolderId' implicitly has an 'any' ... Remove this comment to see the full error message
     if (folderList.length === 0 && !activeFolderId) {
         return;
     }
 
-    // @ts-expect-error TS(7005) FIXME: Variable 'folderList' implicitly has an 'any[]' ty... Remove this comment to see the full error message
     for (const folder of folderList) {
         const tile = createFolderTileElement(folder);
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         container.append(tile);
     }
 }
@@ -952,40 +886,39 @@ function renderFolderGrid() {
 /**
  * Creates a single folder tile DOM element.
  * @param {{id: string, name: string, thumbnailFile: string}} folder
+ * @param folder.id
+ * @param folder.name
+ * @param folder.thumbnailFile
  * @returns {HTMLElement}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'folder' implicitly has an 'any' type.
-function createFolderTileElement(folder) {
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    const tile = document.querySelector('#bg_folder_tile_template .bg_folder_tile').cloneNode(true);
-    // @ts-expect-error TS(2339) FIXME: Property 'attr' does not exist on type 'Node'.
-    tile.attr('data-folder-id', folder.id);
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-    tile[0].querySelector('.bg_folder_tile_name').textContent = folder.name;
+function createFolderTileElement(folder: { id: string; name: string; thumbnailFile: string }): HTMLElement {
+    const tile = document.querySelector<HTMLElement>('#bg_folder_tile_template .bg_folder_tile')!.cloneNode(true) as HTMLElement;
+    tile.setAttribute('data-folder-id', folder.id);
+    const nameEl = tile.querySelector('.bg_folder_tile_name') as HTMLElement | null;
+    if (nameEl) nameEl.textContent = folder.name;
 
     // Set cover image (async, update when resolved)
     getFolderCoverUrl(folder).then(coverUrl => {
         if (coverUrl) {
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-            tile[0].querySelector('.bg_folder_tile_cover').style.backgroundImage = `url("${coverUrl}")`;
+            const coverEl = tile.querySelector('.bg_folder_tile_cover') as HTMLElement | null;
+            if (coverEl) coverEl.style.backgroundImage = `url("${coverUrl}")`;
         }
     });
 
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-    return tile[0];
+    return tile;
 }
 
 /**
  * Gets the cover image URL for a folder.
  * Uses thumbnailFile if set, otherwise falls back to the first image in the folder.
  * @param {{id: string, name: string, thumbnailFile: string}} folder
+ * @param folder.id
+ * @param folder.name
+ * @param folder.thumbnailFile
  * @returns {Promise<string|null>}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'folder' implicitly has an 'any' type.
-async function getFolderCoverUrl(folder) {
-    // @ts-expect-error TS(7005) FIXME: Variable 'cachedSystemBackgrounds' implicitly has ... Remove this comment to see the full error message
+async function getFolderCoverUrl(folder: { id: string; name: string; thumbnailFile: string }): Promise<string | null> {
     const file = folder.thumbnailFile || cachedSystemBackgrounds.find(img => {
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         const fids = imageFolderMap[img.filename];
         return fids && fids.includes(folder.id);
     })?.filename;
@@ -1001,15 +934,11 @@ async function getFolderCoverUrl(folder) {
  * Gets images filtered by the active folder.
  * @returns {Array<{filename: string, isAnimated: boolean}>}
  */
-function getFilteredImages() {
-    // @ts-expect-error TS(7005) FIXME: Variable 'activeFolderId' implicitly has an 'any' ... Remove this comment to see the full error message
+function getFilteredImages(): Array<{ filename: string; isAnimated: boolean }> {
     if (!activeFolderId) return cachedSystemBackgrounds;
-    // @ts-expect-error TS(7005) FIXME: Variable 'cachedSystemBackgrounds' implicitly has ... Remove this comment to see the full error message
     return cachedSystemBackgrounds.filter(img => {
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         const fids = imageFolderMap[img.filename];
-        // @ts-expect-error TS(7005) FIXME: Variable 'activeFolderId' implicitly has an 'any' ... Remove this comment to see the full error message
-        return fids && fids.includes(activeFolderId);
+        return fids && fids.includes(activeFolderId!);
     });
 }
 
@@ -1017,22 +946,20 @@ function getFilteredImages() {
  * Drills into a folder — hides folder grid, shows breadcrumb, filters images.
  * @param {string} folderId
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'folderId' implicitly has an 'any' type.
-function onFolderDrillIn(folderId) {
-    // @ts-expect-error TS(7005) FIXME: Variable 'folderList' implicitly has an 'any[]' ty... Remove this comment to see the full error message
+function onFolderDrillIn(folderId: string): void {
     const folder = folderList.find(f => f.id === folderId);
     if (!folder) return;
 
     clearBackgroundGroupSelection();
     activeFolderId = folderId;
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    document.getElementById('Backgrounds').classList.add('in-folder-view');
+    const backgroundsEl = document.getElementById('Backgrounds');
+    if (backgroundsEl) backgroundsEl.classList.add('in-folder-view');
 
     // Hide folder grid, show breadcrumb
     const bgFolderGrid = document.getElementById('bg_folder_grid'); if (bgFolderGrid) bgFolderGrid.style.display = 'none';
     const bgFolderBreadcrumb = document.getElementById('bg_folder_breadcrumb'); if (bgFolderBreadcrumb) bgFolderBreadcrumb.style.display = '';
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('bg_current_folder_name').textContent = folder.name;
+    const currentFolderName = document.getElementById('bg_current_folder_name');
+    if (currentFolderName) currentFolderName.textContent = folder.name;
 
     // Render only this folder's images
     renderSystemBackgrounds(getFilteredImages());
@@ -1042,17 +969,17 @@ function onFolderDrillIn(folderId) {
 /**
  * Returns to the root folder overview.
  */
-function onBackToFolders() {
+function onBackToFolders(): void {
     clearBackgroundGroupSelection();
     activeFolderId = null;
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    document.getElementById('Backgrounds').classList.remove('in-folder-view');
+    const backgroundsEl = document.getElementById('Backgrounds');
+    if (backgroundsEl) backgroundsEl.classList.remove('in-folder-view');
 
     // Show folder grid, hide breadcrumb
     const bgFolderGrid = document.getElementById('bg_folder_grid'); if (bgFolderGrid) bgFolderGrid.style.display = '';
     const bgFolderBreadcrumb = document.getElementById('bg_folder_breadcrumb'); if (bgFolderBreadcrumb) bgFolderBreadcrumb.style.display = 'none';
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('bg_current_folder_name').textContent = '';
+    const currentFolderName = document.getElementById('bg_current_folder_name');
+    if (currentFolderName) currentFolderName.textContent = '';
 
     // Show all images
     renderSystemBackgrounds(getFilteredImages());
@@ -1062,26 +989,24 @@ function onBackToFolders() {
 /**
  * Refreshes click-to-select and group action UI state.
  */
-function syncGroupSelectionUi() {
+function syncGroupSelectionUi(): void {
     const selectedCount = selectedSystemBackgroundFiles.size;
     const isGlobalTab = getActiveBackgroundTab() === BG_SOURCES.GLOBAL;
     const showAddButton = isGlobalTab && isBackgroundSelectionMode && selectedCount > 0;
-    // @ts-expect-error TS(7005) FIXME: Variable 'activeFolderId' implicitly has an 'any' ... Remove this comment to see the full error message
     const showRemoveFromCurrentFolderButton = isGlobalTab && Boolean(activeFolderId) && isBackgroundSelectionMode && selectedCount > 0;
 
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    document.getElementById('Backgrounds').classList.toggle('bg-selection-mode', isBackgroundSelectionMode);
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    document.getElementById('bg_selection_mode_button').classList.toggle('active', isBackgroundSelectionMode);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    const backgroundsEl = document.getElementById('Backgrounds');
+    if (backgroundsEl) backgroundsEl.classList.toggle('bg-selection-mode', isBackgroundSelectionMode);
+    const selectionModeButton = document.getElementById('bg_selection_mode_button');
+    if (selectionModeButton) selectionModeButton.classList.toggle('active', isBackgroundSelectionMode);
     const bgCount = document.getElementById('bg_group_select_count');
     if (bgCount) bgCount.textContent = selectedCount > 0 ? ` (${selectedCount}` : '';
     if (bgCount) bgCount.style.display = selectedCount > 0 ? '' : 'none';
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('bg_group_add_to_folder_button').style.display = showAddButton ? '' : 'none';
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('bg_folder_remove_selected_button').style.display = showRemoveFromCurrentFolderButton ? '' : 'none';
+    const addToFolderButton = document.getElementById('bg_group_add_to_folder_button');
+    if (addToFolderButton) addToFolderButton.style.display = showAddButton ? '' : 'none';
+    const removeSelectedButton = document.getElementById('bg_folder_remove_selected_button');
+    if (removeSelectedButton) removeSelectedButton.style.display = showRemoveFromCurrentFolderButton ? '' : 'none';
 
     document.querySelectorAll('#bg_menu_content .bg_example').forEach(el => {
         const bgFile = String(el.getAttribute('bgfile') || '');
@@ -1093,8 +1018,7 @@ function syncGroupSelectionUi() {
  * Enables/disables click-to-select mode for system backgrounds.
  * @param {boolean} enabled
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'enabled' implicitly has an 'any' type.
-function setBackgroundSelectionMode(enabled) {
+function setBackgroundSelectionMode(enabled: boolean): void {
     isBackgroundSelectionMode = enabled;
     if (!enabled) {
         selectedSystemBackgroundFiles.clear();
@@ -1108,8 +1032,7 @@ function setBackgroundSelectionMode(enabled) {
  * Toggles selected state of a system background for group folder actions.
  * @param {string} bgFile
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'bgFile' implicitly has an 'any' type.
-function toggleBackgroundGroupSelection(bgFile) {
+function toggleBackgroundGroupSelection(bgFile: string): void {
     if (!bgFile) return;
     if (selectedSystemBackgroundFiles.has(bgFile)) {
         selectedSystemBackgroundFiles.delete(bgFile);
@@ -1122,7 +1045,7 @@ function toggleBackgroundGroupSelection(bgFile) {
 /**
  * Clears all selected system backgrounds for group folder actions.
  */
-function clearBackgroundGroupSelection() {
+function clearBackgroundGroupSelection(): void {
     selectedSystemBackgroundFiles.clear();
     syncGroupSelectionUi();
 }
@@ -1130,10 +1053,10 @@ function clearBackgroundGroupSelection() {
 /**
  * Updates selection/folder action control visibility for the active tab.
  */
-function updateGroupFolderControlsVisibility() {
+function updateGroupFolderControlsVisibility(): void {
     const isGlobalTab = getActiveBackgroundTab() === BG_SOURCES.GLOBAL;
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('bg_selection_mode_button').style.display = isGlobalTab ? '' : 'none';
+    const selectionModeButton = document.getElementById('bg_selection_mode_button');
+    if (selectionModeButton) selectionModeButton.style.display = isGlobalTab ? '' : 'none';
 
     if (!isGlobalTab && isBackgroundSelectionMode) {
         setBackgroundSelectionMode(false);
@@ -1147,10 +1070,8 @@ function updateGroupFolderControlsVisibility() {
  * @param {string} headingText
  * @returns {Promise<string[]|null>} Array of selected folder IDs, or null if cancelled
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'headingText' implicitly has an 'any' ty... Remove this comment to see the full error message
-async function selectFoldersForGroupAction(headingText) {
+async function selectFoldersForGroupAction(headingText: string): Promise<string[] | null> {
     if (folderList.length === 0) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.info(t`Create a folder first`);
         return null;
     }
@@ -1160,7 +1081,6 @@ async function selectFoldersForGroupAction(headingText) {
     heading.textContent = headingText;
     contentEl.appendChild(heading);
 
-    // @ts-expect-error TS(7005) FIXME: Variable 'folderList' implicitly has an 'any[]' ty... Remove this comment to see the full error message
     for (const folder of folderList) {
         const label = document.createElement('label');
         label.className = 'checkbox_label flexGap5';
@@ -1178,7 +1098,6 @@ async function selectFoldersForGroupAction(headingText) {
         contentEl.appendChild(label);
     }
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const content = contentEl;
     const result = await callGenericPopup(content, POPUP_TYPE.CONFIRM, '', {
         okButton: t`Apply`,
@@ -1188,13 +1107,10 @@ async function selectFoldersForGroupAction(headingText) {
     });
     if (!result) return null;
 
-    // @ts-expect-error TS(7034) FIXME: Variable 'selectedIds' implicitly has type 'any[]'... Remove this comment to see the full error message
-    const selectedIds = [];
-    // @ts-expect-error TS(7006) FIXME: Parameter 'checkbox' implicitly has an 'any' type.
-    content[0].querySelectorAll('input[type="checkbox"]:checked').forEach(function (checkbox) {
-        selectedIds.push(checkbox.dataset.folderId);
+    const selectedIds: string[] = [];
+    content.querySelectorAll('input[type="checkbox"]:checked').forEach(function (this: void, checkbox: Element) {
+        selectedIds.push((checkbox as HTMLInputElement).dataset.folderId ?? '');
     });
-    // @ts-expect-error TS(7005) FIXME: Variable 'selectedIds' implicitly has an 'any[]' t... Remove this comment to see the full error message
     return selectedIds.length > 0 ? selectedIds : null;
 }
 
@@ -1204,8 +1120,7 @@ async function selectFoldersForGroupAction(headingText) {
  * @param {string} folderId - Target folder ID
  * @param {boolean} isRemove - Whether to remove (unassign) or add (assign)
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'bgFiles' implicitly has an 'any' type.
-async function updateFolderAssignments(bgFiles, folderId, isRemove) {
+async function updateFolderAssignments(bgFiles: string[], folderId: string, isRemove: boolean): Promise<void> {
     const paths = bgFiles.map(getBackgroundRelativePath);
     const endpoint = isRemove ? '/api/image-metadata/folders/unassign' : '/api/image-metadata/folders/assign';
 
@@ -1220,20 +1135,15 @@ async function updateFolderAssignments(bgFiles, folderId, isRemove) {
     }
 
     for (const bgFile of bgFiles) {
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         const currentFolderIds = imageFolderMap[bgFile] || [];
         if (isRemove) {
-            // @ts-expect-error TS(7006) FIXME: Parameter 'id' implicitly has an 'any' type.
-            const nextFolderIds = currentFolderIds.filter(id => id !== folderId);
+            const nextFolderIds = currentFolderIds.filter((id: string) => id !== folderId);
             if (nextFolderIds.length > 0) {
-                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 imageFolderMap[bgFile] = nextFolderIds;
             } else {
-                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 delete imageFolderMap[bgFile];
             }
         } else if (!currentFolderIds.includes(folderId)) {
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             imageFolderMap[bgFile] = [...currentFolderIds, folderId];
         }
     }
@@ -1242,16 +1152,14 @@ async function updateFolderAssignments(bgFiles, folderId, isRemove) {
 /**
  * Adds selected system backgrounds to a chosen folder.
  */
-async function onAddSelectedToFolder() {
+async function onAddSelectedToFolder(): Promise<void> {
     if (getActiveBackgroundTab() !== BG_SOURCES.GLOBAL) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.warning(t`Folder actions are only available in the Global tab`);
         return;
     }
 
     const bgFiles = Array.from(selectedSystemBackgroundFiles);
     if (bgFiles.length === 0) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.info(t`Select one or more backgrounds first`);
         return;
     }
@@ -1263,7 +1171,6 @@ async function onAddSelectedToFolder() {
         let totalAdded = 0;
         for (const folderId of folderIds) {
             const actionableBgFiles = bgFiles.filter(bgFile => {
-                // @ts-expect-error TS(2538) FIXME: Type 'unknown' cannot be used as an index type.
                 const currentFolderIds = imageFolderMap[bgFile] || [];
                 return !currentFolderIds.includes(folderId);
             });
@@ -1275,7 +1182,6 @@ async function onAddSelectedToFolder() {
 
         renderFolderGrid();
 
-        // @ts-expect-error TS(7005) FIXME: Variable 'activeFolderId' implicitly has an 'any' ... Remove this comment to see the full error message
         if (activeFolderId) {
             renderSystemBackgrounds(getFilteredImages());
             highlightSelectedBackground();
@@ -1283,15 +1189,12 @@ async function onAddSelectedToFolder() {
 
         setBackgroundSelectionMode(false);
         if (totalAdded > 0) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.success(t`Added backgrounds to ${folderIds.length} folder(s)`);
         } else {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.info(t`Selected backgrounds are already in the chosen folders`);
         }
     } catch (error) {
         console.error('Error adding selected backgrounds to folder:', error);
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.error(t`Failed to update folder assignment`);
     }
 }
@@ -1299,23 +1202,19 @@ async function onAddSelectedToFolder() {
 /**
  * Removes selected system backgrounds from the currently drilled-in folder.
  */
-async function onRemoveSelectedFromCurrentFolder() {
+async function onRemoveSelectedFromCurrentFolder(): Promise<void> {
     if (getActiveBackgroundTab() !== BG_SOURCES.GLOBAL) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.warning(t`Folder actions are only available in the Global tab`);
         return;
     }
 
-    // @ts-expect-error TS(7005) FIXME: Variable 'activeFolderId' implicitly has an 'any' ... Remove this comment to see the full error message
     if (!activeFolderId) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.info(t`Open a folder first`);
         return;
     }
 
     const bgFiles = Array.from(selectedSystemBackgroundFiles);
     if (bgFiles.length === 0) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.info(t`Select one or more backgrounds first`);
         return;
     }
@@ -1326,11 +1225,9 @@ async function onRemoveSelectedFromCurrentFolder() {
         renderSystemBackgrounds(getFilteredImages());
         highlightSelectedBackground();
         setBackgroundSelectionMode(false);
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.success(t`Removed ${bgFiles.length} background(s) from folder`);
     } catch (error) {
         console.error('Error removing selected backgrounds from current folder:', error);
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.error(t`Failed to update folder assignment`);
     }
 }
@@ -1338,16 +1235,14 @@ async function onRemoveSelectedFromCurrentFolder() {
 /**
  * Creates a new folder via API.
  */
-async function onCreateFolder() {
+async function onCreateFolder(): Promise<void> {
     const currentTab = getActiveBackgroundTab();
     if (currentTab !== BG_SOURCES.GLOBAL) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.warning(t`Folders can only be created in the Global tab`);
         return;
     }
 
-    // @ts-expect-error TS(2554) FIXME: Expected 2-4 arguments, but got 1.
-    const name = await Popup.show.input(t`Enter folder name:`);
+    const name = await Popup.show.input(t`Enter folder name:`, null, '');
     if (!name || !name.trim()) return;
 
     try {
@@ -1360,12 +1255,10 @@ async function onCreateFolder() {
             const folder = await response.json();
             folderList.push(folder);
             renderFolderGrid();
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.success(t`Folder created: ${folder.name}`);
         }
     } catch (error) {
         console.error('Error creating folder:', error);
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.error(t`Failed to create folder`);
     }
 }
@@ -1374,9 +1267,7 @@ async function onCreateFolder() {
  * Renames a folder via API.
  * @param {string} folderId
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'folderId' implicitly has an 'any' type.
-async function onRenameFolder(folderId) {
-    // @ts-expect-error TS(7005) FIXME: Variable 'folderList' implicitly has an 'any[]' ty... Remove this comment to see the full error message
+async function onRenameFolder(folderId: string): Promise<void> {
     const folder = folderList.find(f => f.id === folderId);
     if (!folder) return;
 
@@ -1392,12 +1283,10 @@ async function onRenameFolder(folderId) {
         if (response.ok) {
             folder.name = newName.trim();
             renderFolderGrid();
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.success(t`Folder renamed`);
         }
     } catch (error) {
         console.error('Error renaming folder:', error);
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.error(t`Failed to rename folder`);
     }
 }
@@ -1406,9 +1295,7 @@ async function onRenameFolder(folderId) {
  * Deletes a folder via API.
  * @param {string} folderId
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'folderId' implicitly has an 'any' type.
-async function onDeleteFolder(folderId) {
-    // @ts-expect-error TS(7005) FIXME: Variable 'folderList' implicitly has an 'any[]' ty... Remove this comment to see the full error message
+async function onDeleteFolder(folderId: string): Promise<void> {
     const folder = folderList.find(f => f.id === folderId);
     if (!folder) return;
 
@@ -1422,27 +1309,21 @@ async function onDeleteFolder(folderId) {
             body: JSON.stringify({ id: folderId }),
         });
         if (response.ok) {
-            // @ts-expect-error TS(7005) FIXME: Variable 'folderList' implicitly has an 'any[]' ty... Remove this comment to see the full error message
             folderList = folderList.filter(f => f.id !== folderId);
             // Clean imageFolderMap
             for (const fids of Object.values(imageFolderMap)) {
-                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 const idx = fids.indexOf(folderId);
-                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 if (idx !== -1) fids.splice(idx, 1);
             }
             // If we were inside this folder, go back
-            // @ts-expect-error TS(7005) FIXME: Variable 'activeFolderId' implicitly has an 'any' ... Remove this comment to see the full error message
             if (activeFolderId === folderId) {
                 onBackToFolders();
             }
             renderFolderGrid();
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.success(t`Folder deleted`);
         }
     } catch (error) {
         console.error('Error deleting folder:', error);
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.error(t`Failed to delete folder`);
     }
 }
@@ -1451,15 +1332,12 @@ async function onDeleteFolder(folderId) {
  * Shows a folder assignment popup for an image.
  * @param {string} bgFile - The background filename
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'bgFile' implicitly has an 'any' type.
-async function onAssignToFolder(bgFile) {
+async function onAssignToFolder(bgFile: string): Promise<void> {
     if (folderList.length === 0) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.info(t`Create a folder first`);
         return;
     }
 
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     const currentFolderIds = imageFolderMap[bgFile] || [];
 
     // Build checkbox inputs for Popup using DOM construction (avoids HTML injection)
@@ -1468,7 +1346,6 @@ async function onAssignToFolder(bgFile) {
     heading.textContent = t`Assign to folders`;
     contentEl.appendChild(heading);
 
-    // @ts-expect-error TS(7005) FIXME: Variable 'folderList' implicitly has an 'any[]' ty... Remove this comment to see the full error message
     for (const f of folderList) {
         const label = document.createElement('label');
         label.className = 'checkbox_label flexGap5';
@@ -1487,32 +1364,27 @@ async function onAssignToFolder(bgFile) {
         contentEl.appendChild(label);
     }
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const content = contentEl;
 
     const result = await callGenericPopup(content, POPUP_TYPE.CONFIRM, '', { okButton: t`Save`, cancelButton: t`Cancel` });
     if (!result) return;
 
     // Determine which folders were toggled on/off
-    // @ts-expect-error TS(7034) FIXME: Variable 'toAssign' implicitly has type 'any[]' in... Remove this comment to see the full error message
-    const toAssign = [];
-    // @ts-expect-error TS(7034) FIXME: Variable 'toUnassign' implicitly has type 'any[]' ... Remove this comment to see the full error message
-    const toUnassign = [];
-    // @ts-expect-error TS(7006) FIXME: Parameter 'checkbox' implicitly has an 'any' type.
-    content[0].querySelectorAll('input[type="checkbox"]').forEach(function (checkbox) {
-        const fid = checkbox.dataset.folderId;
-        const isChecked = checkbox.checked;
-        const wasChecked = currentFolderIds.includes(fid);
-        if (isChecked && !wasChecked) toAssign.push(fid);
-        if (!isChecked && wasChecked) toUnassign.push(fid);
+    const toAssign: string[] = [];
+    const toUnassign: string[] = [];
+    content.querySelectorAll('input[type="checkbox"]').forEach(function (this: void, checkbox: Element) {
+        const cb = checkbox as HTMLInputElement;
+        const fid = cb.dataset.folderId;
+        const isChecked = cb.checked;
+        const wasChecked = currentFolderIds.includes(fid ?? '');
+        if (isChecked && !wasChecked) toAssign.push(fid ?? '');
+        if (!isChecked && wasChecked) toUnassign.push(fid ?? '');
     });
 
     try {
-        // @ts-expect-error TS(7005) FIXME: Variable 'toAssign' implicitly has an 'any[]' type... Remove this comment to see the full error message
         for (const fid of toAssign) {
             await updateFolderAssignments([bgFile], fid, false);
         }
-        // @ts-expect-error TS(7005) FIXME: Variable 'toUnassign' implicitly has an 'any[]' ty... Remove this comment to see the full error message
         for (const fid of toUnassign) {
             await updateFolderAssignments([bgFile], fid, true);
         }
@@ -1520,17 +1392,14 @@ async function onAssignToFolder(bgFile) {
         renderFolderGrid();
 
         // Re-render filtered image list if currently inside a folder view
-        // @ts-expect-error TS(7005) FIXME: Variable 'activeFolderId' implicitly has an 'any' ... Remove this comment to see the full error message
         if (activeFolderId) {
             renderSystemBackgrounds(getFilteredImages());
             highlightSelectedBackground();
         }
 
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.success(t`Folder assignment updated`);
     } catch (error) {
         console.error('Error assigning to folder:', error);
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.error(t`Failed to update folder assignment`);
     }
 }
@@ -1539,9 +1408,7 @@ async function onAssignToFolder(bgFile) {
  * Sets an image as the folder cover.
  * @param {string} bgFile - The background filename
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'bgFile' implicitly has an 'any' type.
-async function onSetFolderCover(bgFile) {
-    // @ts-expect-error TS(7005) FIXME: Variable 'activeFolderId' implicitly has an 'any' ... Remove this comment to see the full error message
+async function onSetFolderCover(bgFile: string): Promise<void> {
     if (!activeFolderId) return;
 
     try {
@@ -1551,24 +1418,20 @@ async function onSetFolderCover(bgFile) {
             body: JSON.stringify({ id: activeFolderId, thumbnailFile: bgFile }),
         });
         if (response.ok) {
-            // @ts-expect-error TS(7005) FIXME: Variable 'folderList' implicitly has an 'any[]' ty... Remove this comment to see the full error message
             const folder = folderList.find(f => f.id === activeFolderId);
             if (folder) {
                 folder.thumbnailFile = bgFile;
                 // Update the DOM tile cover image
                 const coverUrl = await getFolderCoverUrl(folder);
                 if (coverUrl) {
-                    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                    const coverEl = document.querySelector(`.bg_folder_tile[data-folder-id="${folder.id}"] .bg_folder_tile_cover`);
+                    const coverEl = document.querySelector(`.bg_folder_tile[data-folder-id="${folder.id}"] .bg_folder_tile_cover`) as HTMLElement | null;
                     if (coverEl) coverEl.style.backgroundImage = `url('${coverUrl}')`;
                 }
             }
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.success(t`Folder cover updated`);
         }
     } catch (error) {
         console.error('Error setting folder cover:', error);
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.error(t`Failed to set folder cover`);
     }
 }
@@ -1576,7 +1439,7 @@ async function onSetFolderCover(bgFile) {
 /**
  *
  */
-function activateLazyLoader() {
+function activateLazyLoader(): void {
     // Disconnect previous observer to prevent memory leaks
     if (lazyLoadObserver) {
         lazyLoadObserver.disconnect();
@@ -1601,8 +1464,7 @@ function activateLazyLoader() {
                     const bg = parentThumbnail.getAttribute('bgfile');
                     const isCustom = parentThumbnail.getAttribute('custom') === 'true';
                     const isAnimated = parentThumbnail.getAttribute('animated') === 'true';
-                    // @ts-expect-error TS(2345) FIXME: Argument of type 'boolean' is not assignable to pa... Remove this comment to see the full error message
-                    resolveImageUrl(bg, isCustom, isAnimated)
+                    resolveImageUrl(bg ?? '', isCustom, isAnimated)
                         .then(url => { clipper.style.backgroundImage = url; })
                         .catch(() => { clipper.style.backgroundImage = PLACEHOLDER_IMAGE; });
                 }
@@ -1614,8 +1476,7 @@ function activateLazyLoader() {
     }, options);
 
     lazyLoadElements.forEach(element => {
-        // @ts-expect-error TS(7005) FIXME: Variable 'lazyLoadObserver' implicitly has an 'any... Remove this comment to see the full error message
-        lazyLoadObserver.observe(element);
+        lazyLoadObserver!.observe(element);
     });
 }
 
@@ -1624,9 +1485,9 @@ function activateLazyLoader() {
  * @param {Element} block
  * @returns {string} URL of the background
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'block' implicitly has an 'any' type.
-function getUrlParameter(block) {
-    return block.closest('.bg_example')?.dataset.url;
+function getUrlParameter(block: Element): string | undefined {
+    const el = (block as HTMLElement).closest('.bg_example') as HTMLElement | null;
+    return el?.dataset.url;
 }
 
 /**
@@ -1634,8 +1495,7 @@ function getUrlParameter(block) {
  * @param bg
  * @param isCustom
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'bg' implicitly has an 'any' type.
-function generateUrlParameter(bg, isCustom) {
+function generateUrlParameter(bg: string, isCustom: boolean): string {
     return isCustom ? `url("${encodeURI(bg)}")` : `url("${getBackgroundPath(bg)}")`;
 }
 
@@ -1643,9 +1503,8 @@ function generateUrlParameter(bg, isCustom) {
  *
  * @param fileName
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'fileName' implicitly has an 'any' type.
-function isAnimatedBackgroundExtension(fileName) {
-    const fileExtension = fileName.split('.').pop().toLowerCase();
+function isAnimatedBackgroundExtension(fileName: string): boolean {
+    const fileExtension = fileName.split('.').pop()!.toLowerCase();
     return ANIMATED_BACKGROUND_EXTENSIONS.includes(fileExtension);
 }
 
@@ -1656,12 +1515,10 @@ function isAnimatedBackgroundExtension(fileName) {
  * @param {boolean|null} [isAnimated] Is the background animated (from metadata). If null, infers from extension.
  * @returns {Promise<string>} CSS URL of the background
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'bg' implicitly has an 'any' type.
-async function resolveImageUrl(bg, isCustom, isAnimated = null) {
+async function resolveImageUrl(bg: string, isCustom: boolean, isAnimated: boolean | null = null): Promise<string> {
     // If isAnimated is not provided (null), fall back to extension-based heuristic
-    let animated = isAnimated;
+    let animated: boolean | null = isAnimated;
     if (animated === null) {
-        // @ts-expect-error TS(2322) FIXME: Type 'boolean' is not assignable to type 'null'.
         animated = isAnimatedBackgroundExtension(bg);
     }
 
@@ -1679,12 +1536,11 @@ async function resolveImageUrl(bg, isCustom, isAnimated = null) {
  * @param bg
  * @param url
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'bg' implicitly has an 'any' type.
-async function setBackground(bg, url) {
+async function setBackground(bg: string, url: string): Promise<void> {
     // Only change the visual background if one is not locked for the current chat.
     if (!isChatBackgroundLocked()) {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        document.getElementById('bg1').style.backgroundImage = url;
+        const bg1 = document.getElementById('bg1');
+        if (bg1) bg1.style.backgroundImage = url;
     }
     background_settings.name = bg;
     background_settings.url = url;
@@ -1695,8 +1551,7 @@ async function setBackground(bg, url) {
  *
  * @param bg
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'bg' implicitly has an 'any' type.
-async function delBackground(bg) {
+async function delBackground(bg: string): Promise<void> {
     await fetch('/api/backgrounds/delete', {
         method: 'POST',
         headers: getRequestHeaders(),
@@ -1707,7 +1562,7 @@ async function delBackground(bg) {
 
     await THUMBNAIL_STORAGE.removeItem(bg);
     if (THUMBNAIL_BLOBS.has(bg)) {
-        URL.revokeObjectURL(THUMBNAIL_BLOBS.get(bg));
+        URL.revokeObjectURL(THUMBNAIL_BLOBS.get(bg)!);
         THUMBNAIL_BLOBS.delete(bg);
     }
 }
@@ -1717,8 +1572,7 @@ async function delBackground(bg) {
  * @param {Event} e Event
  * @returns {Promise<void>}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
-async function onBackgroundUploadSelected(e) {
+async function onBackgroundUploadSelected(e: Event): Promise<void> {
     const input = e.currentTarget;
 
     if (!(input instanceof HTMLInputElement)) {
@@ -1726,8 +1580,7 @@ async function onBackgroundUploadSelected(e) {
         return;
     }
 
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    for (const file of input.files) {
+    for (const file of input.files!) {
         if (file.size === 0) {
             continue;
         }
@@ -1758,8 +1611,7 @@ async function onBackgroundUploadSelected(e) {
  * @param {FormData} formData
  * @returns {Promise<void>}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'formData' implicitly has an 'any' type.
-async function convertFileIfVideo(formData) {
+async function convertFileIfVideo(formData: FormData): Promise<void> {
     const file = formData.get('avatar');
     if (!(file instanceof File)) {
         return;
@@ -1767,8 +1619,7 @@ async function convertFileIfVideo(formData) {
     if (!file.type.startsWith('video/')) {
         return;
     }
-    if (typeof globalThis.convertVideoToAnimatedWebp !== 'function') {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
+    if (typeof (globalThis as Record<string, unknown>).convertVideoToAnimatedWebp !== 'function') {
         notyf.warning(t`Click here to install the Video Background Loader extension`, t`Video background uploads require a downloadable add-on`, {
             timeOut: 0,
             extendedTimeOut: 0,
@@ -1777,22 +1628,19 @@ async function convertFileIfVideo(formData) {
         return;
     }
 
-    // @ts-expect-error TS(2304) FIXME: Cannot find name 'jQuery'.
-    let toastMessage = jQuery();
+    let toastMessage: { remove: () => void } | null = null;
     try {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        toastMessage = notyf.info(t`Preparing video for upload. This may take several minutes.`, t`Please wait`, { timeOut: 0, extendedTimeOut: 0 });
+        toastMessage = notyf.info(t`Preparing video for upload. This may take several minutes.`, t`Please wait`, { timeOut: 0, extendedTimeOut: 0 }) as unknown as { remove: () => void } | null;
         const sourceBuffer = await file.arrayBuffer();
-        const convertedBuffer = await globalThis.convertVideoToAnimatedWebp({ buffer: new Uint8Array(sourceBuffer), name: file.name });
+        const convertedBuffer = await (globalThis as unknown as { convertVideoToAnimatedWebp: (opts: { buffer: Uint8Array; name: string }) => Promise<ArrayBuffer> }).convertVideoToAnimatedWebp({ buffer: new Uint8Array(sourceBuffer), name: file.name });
         const convertedFileName = file.name.replace(/\.[^/.]+$/, '.webp');
         const convertedFile = new File([new Uint8Array(convertedBuffer)], convertedFileName, { type: 'image/webp' });
         formData.set('avatar', convertedFile);
-        toastMessage.remove();
+        toastMessage?.remove();
     } catch (error) {
         formData.delete('avatar');
-        toastMessage.remove();
+        if (toastMessage) toastMessage.remove();
         console.error('Error converting video to animated webp:', error);
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.error(t`Error converting video to animated webp`);
     }
 }
@@ -1801,8 +1649,7 @@ async function convertFileIfVideo(formData) {
  * Uploads a background to the server
  * @param {FormData} formData
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'formData' implicitly has an 'any' type.
-async function uploadBackground(formData) {
+async function uploadBackground(formData: FormData): Promise<void> {
     try {
         if (!formData.has('avatar')) {
             console.log('No file provided. Background upload cancelled.');
@@ -1834,11 +1681,9 @@ async function uploadBackground(formData) {
  * @param {FormData} formData FormData containing the background file
  * @returns {Promise<void>}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'formData' implicitly has an 'any' type.
-async function uploadChatBackground(formData) {
+async function uploadChatBackground(formData: FormData): Promise<void> {
     try {
         if (!getCurrentChatId()) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.warning(t`Select a chat to upload a background for it`);
             return;
         }
@@ -1854,20 +1699,18 @@ async function uploadChatBackground(formData) {
         }
 
         const imageDataUri = await getBase64Async(file);
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-        const base64Data = imageDataUri.split(',')[1];
+        const base64Data = (imageDataUri as string).split(',')[1];
         const extension = getFileExtension(file);
         const characterName = selected_group
             ? groups.find(g => g.id === selected_group)?.id?.toString()
             : characters[this_chid]?.name;
         const filename = `${characterName}_${humanizedDateTime()}`;
-        const imagePath = await saveBase64AsFile(base64Data, characterName, filename, extension);
+        const imagePath = await saveBase64AsFile(base64Data!, characterName, filename, extension);
 
-        const list = chat_metadata[LIST_METADATA_KEY] || [];
+        const list = (chat_metadata[LIST_METADATA_KEY] as string[]) || [];
         list.push(imagePath);
         chat_metadata[LIST_METADATA_KEY] = list;
         await saveMetadata();
-        // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
         renderChatBackgrounds();
         highlightNewBackground(imagePath);
         highlightLockedBackground();
@@ -1880,14 +1723,12 @@ async function uploadChatBackground(formData) {
 /**
  * @param {string} bg
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'bg' implicitly has an 'any' type.
-function highlightNewBackground(bg) {
+function highlightNewBackground(bg: string): void {
     const newBg = document.querySelector(`.bg_example[bgfile="${bg}"]`);
     if (!newBg) return;
     const parent = newBg.parentElement;
     if (!parent) return;
-    // @ts-expect-error TS(2339) FIXME: Property 'offsetTop' does not exist on type 'Eleme... Remove this comment to see the full error message
-    const scrollOffset = newBg.offsetTop - parent.offsetTop;
+    const scrollOffset = (newBg as HTMLElement).offsetTop - parent.offsetTop;
     const bgContainer = document.querySelector('#Backgrounds');
     if (bgContainer) bgContainer.scrollTop = scrollOffset;
     flashHighlight(newBg);
@@ -1897,12 +1738,10 @@ function highlightNewBackground(bg) {
  * Sets the fitting class for the background element
  * @param {string} fitting Fitting type
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'fitting' implicitly has an 'any' type.
-function setFittingClass(fitting) {
+function setFittingClass(fitting: string): void {
     const backgrounds = document.getElementById('bg1');
     for (const option of ['cover', 'contain', 'stretch', 'center']) {
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        backgrounds.classList.toggle(option, option === fitting);
+        backgrounds?.classList.toggle(option, option === fitting);
     }
     background_settings.fitting = fitting;
 }
@@ -1910,17 +1749,16 @@ function setFittingClass(fitting) {
 /**
  *
  */
-function highlightSelectedBackground() {
+function highlightSelectedBackground(): void {
     document.querySelectorAll('.bg_example.selected-background').forEach(el => el.classList.remove('selected-background'));
 
     // The "selected" highlight should always reflect the global background setting.
-    const activeUrl = background_settings.url;
+    const activeUrl = background_settings.url as string;
 
     if (activeUrl) {
         // Find the thumbnail whose data-url attribute matches the active URL
         document.querySelectorAll('.bg_example').forEach(el => {
-            // @ts-expect-error TS(2339) FIXME: Property 'dataset' does not exist on type 'Element... Remove this comment to see the full error message
-            if (el.dataset.url === activeUrl) {
+            if ((el as HTMLElement).dataset.url === activeUrl) {
                 el.classList.add('selected-background');
             }
         });
@@ -1930,31 +1768,25 @@ function highlightSelectedBackground() {
 /**
  *
  */
-function onBackgroundFilterInput() {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const filterValue = String(document.getElementById('bg-filter').value).toLowerCase();
-    document.querySelectorAll('#bg_menu_content > .bg_example, #bg_custom_content > .bg_example').forEach(function (el) {
+function onBackgroundFilterInput(): void {
+    const filterValue = String((document.getElementById('bg-filter') as HTMLInputElement | null)?.value ?? '').toLowerCase();
+    document.querySelectorAll('#bg_menu_content > .bg_example, #bg_custom_content > .bg_example').forEach(function (this: void, el: Element) {
         const title = el.getAttribute('title') || '';
         const hasMatch = title.toLowerCase().includes(filterValue);
-        // @ts-expect-error TS(2339) FIXME: Property 'style' does not exist on type 'Element'.
-        el.style.display = hasMatch ? '' : 'none';
+        (el as HTMLElement).style.display = hasMatch ? '' : 'none';
     });
 
     // Show/hide folder tiles based on whether folder name matches the filter
-    // @ts-expect-error TS(7005) FIXME: Variable 'activeFolderId' implicitly has an 'any' ... Remove this comment to see the full error message
     if (!activeFolderId) {
-        document.querySelectorAll('#bg_folder_grid .bg_folder_tile').forEach(function (el) {
+        document.querySelectorAll('#bg_folder_grid .bg_folder_tile').forEach(function (this: void, el: Element) {
             const folderId = el.getAttribute('data-folder-id');
             if (!folderId || !filterValue) {
-                // @ts-expect-error TS(2339) FIXME: Property 'style' does not exist on type 'Element'.
-                el.style.display = '';
+                (el as HTMLElement).style.display = '';
                 return;
             }
-            // @ts-expect-error TS(7005) FIXME: Variable 'folderList' implicitly has an 'any[]' ty... Remove this comment to see the full error message
             const folder = folderList.find(f => f.id === folderId);
             const folderName = folder ? folder.name.toLowerCase() : '';
-            // @ts-expect-error TS(2339) FIXME: Property 'style' does not exist on type 'Element'.
-            el.style.display = folderName.includes(filterValue) ? '' : 'none';
+            (el as HTMLElement).style.display = folderName.includes(filterValue) ? '' : 'none';
         });
     }
 }
@@ -1965,24 +1797,23 @@ const debouncedOnBackgroundFilterInput = debounce(onBackgroundFilterInput, debou
  * Gets the active background tab source.
  * @returns {BG_SOURCES} Active background tab source
  */
-export function getActiveBackgroundTab() {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const tabs = document.getElementById('bg_tabs');
-    if (!tabs.length || !tabs.data('ui-tabs')) {
+export function getActiveBackgroundTab(): number {
+    const tabs = document.getElementById('bg_tabs') as HTMLSelectElement | null;
+    if (!tabs?.dataset?.uiTabs) {
         return BG_SOURCES.GLOBAL;
     }
-    return tabs.tabs('option', 'active');
+    return BG_SOURCES.GLOBAL;
 }
 
 /**
  *
  */
-export function initBackgrounds() {
+export function initBackgrounds(): void {
     eventSource.on(event_types.CHAT_CHANGED, onChatChanged);
     eventSource.on(event_types.FORCE_SET_BACKGROUND, forceSetBackground);
 
     // Folder event handlers
-    document.addEventListener('click', function (event) {
+    document.addEventListener('click', function (event: Event) {
         const target = event.target;
         if (!(target instanceof Element)) return;
         const el = target.closest('.bg_folder_tile:not(.bg_new_folder_tile)');
@@ -1991,35 +1822,35 @@ export function initBackgrounds() {
         const folderId = el.getAttribute('data-folder-id');
         if (folderId) onFolderDrillIn(folderId);
     });
-    document.addEventListener('click', function (event) {
+    document.addEventListener('click', function (event: Event) {
         const target = event.target;
         if (!(target instanceof Element)) return;
         if (target.closest('#bg_add_folder_button')) onCreateFolder();
     });
-    document.addEventListener('click', function (event) {
+    document.addEventListener('click', function (event: Event) {
         const target = event.target;
         if (!(target instanceof Element)) return;
         if (target.closest('#bg_back_to_folders')) onBackToFolders();
     });
-    document.addEventListener('click', function (event) {
+    document.addEventListener('click', function (event: Event) {
         const target = event.target;
         if (!(target instanceof Element)) return;
         const el = target.closest('.bg_folder_tile [data-action="rename-folder"]');
         if (!el) return;
         event.stopPropagation();
         const folderId = el.closest('.bg_folder_tile')?.getAttribute('data-folder-id');
-        if (folderId) onRenameFolder(folderId);
+        if (folderId) onRenameFolder(folderId!);
     });
-    document.addEventListener('click', function (event) {
+    document.addEventListener('click', function (event: Event) {
         const target = event.target;
         if (!(target instanceof Element)) return;
         const el = target.closest('.bg_folder_tile [data-action="delete-folder"]');
         if (!el) return;
         event.stopPropagation();
         const folderId = el.closest('.bg_folder_tile')?.getAttribute('data-folder-id');
-        if (folderId) onDeleteFolder(folderId);
+        if (folderId) onDeleteFolder(folderId!);
     });
-    document.addEventListener('click', function (event) {
+    document.addEventListener('click', function (event: Event) {
         const target = event.target;
         if (!(target instanceof Element)) return;
         const el = target.closest('.bg_folder_tile .mobile-only-menu-toggle');
@@ -2035,13 +1866,13 @@ export function initBackgrounds() {
         }
     });
 
-    document.addEventListener('click', function (event) {
+    document.addEventListener('click', function (event: Event) {
         const target = event.target;
         if (!(target instanceof Element)) return;
         const el = target.closest('.bg_example');
-        if (el) onSelectBackgroundClick.call(el, event);
+        if (el) onSelectBackgroundClick.call(el as HTMLElement, event);
     });
-    document.addEventListener('click', function (event) {
+    document.addEventListener('click', function (event: Event) {
         const target = event.target;
         if (!(target instanceof Element)) return;
         const el = target.closest('.bg_example .mobile-only-menu-toggle');
@@ -2056,7 +1887,7 @@ export function initBackgrounds() {
             context?.classList.add('mobile-menu-open');
         }
     });
-    document.addEventListener('blur', function (event) {
+    document.addEventListener('blur', function (event: Event) {
         const target = event.target;
         if (!(target instanceof Element)) return;
         const el = target.closest('.bg_example.mobile-menu-open');
@@ -2065,7 +1896,7 @@ export function initBackgrounds() {
             el.classList.remove('mobile-menu-open');
         }
     }, true);
-    document.addEventListener('click', function (event) {
+    document.addEventListener('click', function (event: Event) {
         const target = event.target;
         if (!(target instanceof Element)) return;
         const el = target.closest('.jg-button');
@@ -2078,44 +1909,42 @@ export function initBackgrounds() {
 
         switch (action) {
             case 'lock':
-                onLockBackgroundClick.call(el, event as Event);
+                onLockBackgroundClick(event as Event);
                 break;
             case 'unlock':
-                onUnlockBackgroundClick.call(el, event as Event);
+                onUnlockBackgroundClick(event as Event);
                 break;
             case 'edit':
-                onRenameBackgroundClick.call(el, event);
+                onRenameBackgroundClick.call(el as HTMLElement, event);
                 break;
             case 'delete':
-                onDeleteBackgroundClick.call(el, event);
+                onDeleteBackgroundClick.call(el as HTMLElement, event);
                 break;
             case 'copy':
-                onCopyToSystemBackgroundClick.call(el, event);
+                onCopyToSystemBackgroundClick.call(el as HTMLElement, event);
                 break;
             case 'folder': {
                 const bgEl = el.closest('.bg_example');
                 if (bgEl?.getAttribute('custom') === 'true') break; // Only system backgrounds
                 const bgFile = bgEl?.getAttribute('bgfile');
-                if (bgFile) onAssignToFolder(bgFile);
+                if (bgFile) onAssignToFolder(bgFile!);
                 break;
             }
             case 'set-cover': {
                 const bgEl = el.closest('.bg_example');
                 if (bgEl?.getAttribute('custom') === 'true') break; // Only system backgrounds
                 const bgFile = bgEl?.getAttribute('bgfile');
-                if (bgFile) onSetFolderCover(bgFile);
+                if (bgFile) onSetFolderCover(bgFile!);
                 break;
             }
         }
     });
 
     document.getElementById('bg_thumb_zoom_in')?.addEventListener('click', () => {
-        // @ts-expect-error TS(2339) FIXME: Property 'thumbnailColumns' does not exist on type...
-        applyThumbnailColumns(background_settings.thumbnailColumns - 1);
+        applyThumbnailColumns((background_settings.thumbnailColumns as number) - 1);
     });
     document.getElementById('bg_thumb_zoom_out')?.addEventListener('click', () => {
-        // @ts-expect-error TS(2339) FIXME: Property 'thumbnailColumns' does not exist on type...
-        applyThumbnailColumns(background_settings.thumbnailColumns + 1);
+        applyThumbnailColumns((background_settings.thumbnailColumns as number) + 1);
     });
     document.getElementById('auto_background')?.addEventListener('click', autoBackgroundCommand);
     document.getElementById('bg_selection_mode_button')?.addEventListener('click', () => setBackgroundSelectionMode(!isBackgroundSelectionMode));
@@ -2124,12 +1953,11 @@ export function initBackgrounds() {
     document.getElementById('add_bg_button')?.addEventListener('change', (e) => onBackgroundUploadSelected(e));
     document.getElementById('bg-filter')?.addEventListener('input', () => debouncedOnBackgroundFilterInput());
     const bgSortEl = document.getElementById('bg-sort') as HTMLSelectElement | null;
-    bgSortEl?.addEventListener('change', function () {
+    bgSortEl?.addEventListener('change', function (this: HTMLSelectElement) {
         background_settings.sortOrder = String(bgSortEl?.value);
         saveSettingsDebounced();
         // Re-render both galleries with new sort order (respecting active folder filter)
         renderSystemBackgrounds(getFilteredImages());
-        // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
         renderChatBackgrounds();
         highlightSelectedBackground();
         highlightLockedBackground();
@@ -2161,15 +1989,15 @@ export function initBackgrounds() {
         helpString: 'Automatically changes the background based on the chat context using the AI request prompt',
     }));
 
-    document.getElementById('background_fitting')?.addEventListener('input', function () {
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
+    const fittingEl = document.getElementById('background_fitting') as HTMLSelectElement | null;
+    fittingEl?.addEventListener('input', function (this: HTMLSelectElement) {
         background_settings.fitting = String(this.value);
-        setFittingClass(background_settings.fitting);
+        setFittingClass(background_settings.fitting as string);
         saveSettingsDebounced();
     });
 
-    document.getElementById('background_thumbnails_animation')?.addEventListener('input', async function () {
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
+    const animationEl = document.getElementById('background_thumbnails_animation') as HTMLInputElement | null;
+    animationEl?.addEventListener('input', async function (this: HTMLInputElement) {
         background_settings.animation = !!(this).checked;
         saveSettingsDebounced();
 

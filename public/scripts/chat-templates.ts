@@ -171,7 +171,6 @@ export async function bindModelTemplates(power_user, online_status) {
         // unmap current preset
         delete power_user.model_templates_mappings[chatTemplateHash];
         delete power_user.model_templates_mappings[online_status];
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.info(t`Context preset for ${online_status} will use defaults when loaded the next time.`);
     } else {
         if (power_user.context_derived) {
@@ -183,7 +182,6 @@ export async function bindModelTemplates(power_user, online_status) {
                 bindModelTemplates.context = power_user.context.preset;
             }
         } else {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.warning(t`Note: Context derivation is disabled. Not including context preset.`);
         }
         if (power_user.instruct.enabled) {
@@ -193,17 +191,14 @@ export async function bindModelTemplates(power_user, online_status) {
                     bindModelTemplates.instruct = power_user.instruct.preset;
                 }
             } else {
-                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 notyf.warning(t`Note: Instruct derivation is disabled. Not including instruct preset.`);
             }
         }
         if (bound.length == 0) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.warning(t`No applicable presets available.`);
             return false;
         }
 
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.info(t`Bound ${online_status} to ${bound.join(', ')}.`);
         if (!online_status.startsWith('koboldcpp/ggml-model-')) {
             power_user.model_templates_mappings[online_status] = bindModelTemplates;

@@ -77,9 +77,9 @@ export const SECRET_KEYS = {
     VOLCENGINE_APP_ID: 'volcengine_app_id',
     VOLCENGINE_ACCESS_KEY: 'volcengine_access_key',
     WORKERS_AI: 'api_key_workers_ai',
-};
+} as const;
 
-const FRIENDLY_NAMES = {
+const FRIENDLY_NAMES: Record<string, string> = {
     [SECRET_KEYS.HORDE]: 'AI Horde',
     [SECRET_KEYS.MANCER]: 'Mancer',
     [SECRET_KEYS.OPENAI]: 'OpenAI',
@@ -144,7 +144,7 @@ const FRIENDLY_NAMES = {
     [SECRET_KEYS.WORKERS_AI]: 'Cloudflare Workers AI',
 };
 
-const INPUT_MAP = {
+const INPUT_MAP: Record<string, string> = {
     [SECRET_KEYS.HORDE]: '#horde_api_key',
     [SECRET_KEYS.MANCER]: '#api_key_mancer',
     [SECRET_KEYS.OPENAI]: '#api_key_openai',
@@ -196,10 +196,10 @@ const getLabel = () => moment().format('L LT');
  * @returns {string|null} The secret key corresponding to the selected API, or null if no key is found.
  */
 export function resolveSecretKey() {
-    // @ts-expect-error TS(2339) FIXME: Property 'mainApi' does not exist on type '() => {... Remove this comment to see the full error message
-    const { mainApi, chatCompletionSettings, textCompletionSettings } = SillyTavern.getContext();
-    const chatCompletionSource = chatCompletionSettings.chat_completion_source;
-    const textCompletionType = textCompletionSettings.type;
+    const context = (SillyTavern as unknown as Record<string, unknown>).getContext as (...args: unknown[]) => unknown;
+    const { mainApi, chatCompletionSettings, textCompletionSettings } = context as unknown as { mainApi: string; chatCompletionSettings: Record<string, unknown>; textCompletionSettings: Record<string, unknown> };
+    const chatCompletionSource = chatCompletionSettings.chat_completion_source as string;
+    const textCompletionType = textCompletionSettings.type as string;
 
     if (mainApi === 'koboldhorde') {
         return SECRET_KEYS.HORDE;
@@ -211,16 +211,14 @@ export function resolveSecretKey() {
 
     if (mainApi === 'textgenerationwebui') {
         const [key] = Object.entries(textgen_types).find(([, value]) => value === textCompletionType) ?? [null];
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        if (key && SECRET_KEYS[key]) {
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-            return SECRET_KEYS[key];
+        if (key && (SECRET_KEYS as Record<string, string | undefined>)[key as string]) {
+            return (SECRET_KEYS as Record<string, string | undefined>)[key as string]!;
         }
     }
 
     if (mainApi === 'openai') {
         if (chatCompletionSource === chat_completion_sources.VERTEXAI) {
-            switch (chatCompletionSettings.vertexai_auth_mode) {
+            switch ((chatCompletionSettings as Record<string, unknown>).vertexai_auth_mode as string) {
                 case 'express':
                     return SECRET_KEYS.VERTEXAI;
                 case 'full':
@@ -229,10 +227,8 @@ export function resolveSecretKey() {
         }
 
         const [key] = Object.entries(chat_completion_sources).find(([, value]) => value === chatCompletionSource) ?? [null];
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        if (key && SECRET_KEYS[key]) {
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-            return SECRET_KEYS[key];
+        if (key && (SECRET_KEYS as Record<string, string | undefined>)[key as string]) {
+            return (SECRET_KEYS as Record<string, string | undefined>)[key as string]!;
         }
     }
 
@@ -244,17 +240,15 @@ export function resolveSecretKey() {
  * @param {string} id The ID of the secret to find.
  * @returns {string} The label of the secret with the given ID, or an empty string if not found.
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'id' implicitly has an 'any' type.
-export function getSecretLabelById(id) {
+export function getSecretLabelById(id: string) {
     for (const key of Object.values(SECRET_KEYS)) {
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        const secrets = secret_state[key];
+        const secrets = (secret_state as Record<string, unknown>)[key] as Array<Record<string, unknown>> | undefined;
         if (!Array.isArray(secrets)) {
             continue;
         }
         const secret = secrets.find(s => s.id === id);
         if (secret) {
-            return `${secret.label} (${secret.value})`;
+            return `${secret.label as string} (${secret.value as string})`;
         }
     }
     return '';
@@ -265,14 +259,11 @@ export function getSecretLabelById(id) {
  */
 export function updateSecretDisplay() {
     for (const [secret_key, input_selector] of Object.entries(INPUT_MAP)) {
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        const validSecret = !!secret_state[secret_key];
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        const validSecret = !!((secret_state as Record<string, unknown>)[secret_key]);
         const placeholder = document.getElementById('viewSecrets')?.getAttribute(validSecret ? 'key_saved_text' : 'missing_key_text');
         const label = getActiveSecretLabel(secret_key);
         const placeholderWithLabel = label ? `${placeholder} (${label})` : placeholder;
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        document.querySelector(input_selector)?.setAttribute('placeholder', placeholderWithLabel);
+        document.querySelector(input_selector)?.setAttribute('placeholder', placeholderWithLabel ?? '');
     }
 }
 
@@ -281,16 +272,14 @@ export function updateSecretDisplay() {
  * @param {string} key Gets the active secret label for a given key.
  * @returns {string} The label of the active secret, or '[No label]' if none is active.
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'key' implicitly has an 'any' type.
-function getActiveSecretLabel(key) {
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-    const selectedSecret = secret_state[key];
+function getActiveSecretLabel(key: string) {
+    const selectedSecret = (secret_state as Record<string, unknown>)[key] as Array<Record<string, unknown>> | undefined;
     if (Array.isArray(selectedSecret)) {
         const activeSecret = selectedSecret.find(x => x.active);
         if (!activeSecret) {
             return '';
         }
-        return activeSecret.label || activeSecret.value || t`[No label]`;
+        return (activeSecret.label as string) || (activeSecret.value as string) || t`[No label]`;
     }
     return '';
 }
@@ -310,7 +299,7 @@ export async function canViewSecrets() {
             return null;
         }
 
-        const data = await response.json();
+        const data = await response.json() as Record<string, unknown>;
         return data?.allowKeysExposure === true;
     } catch (error) {
         console.error('Error getting secrets settings:', error);
@@ -336,15 +325,16 @@ async function viewSecrets() {
         return;
     }
 
-    const data = await response.json();
+    const data = await response.json() as Record<string, string>;
+
     const table = document.createElement('table');
     table.classList.add('responsiveTable');
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    table.append('<thead><th>Key</th><th>Value</th></thead>');
+    table.innerHTML = '<thead><th>Key</th><th>Value</th></thead>';
 
     for (const [key, value] of Object.entries(data)) {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        table.append(`<tr><td>${DOMPurify.sanitize(key)}</td><td>${DOMPurify.sanitize(value)}</td></tr>`);
+        const row = document.createElement('tr');
+        row.innerHTML = `<td>${DOMPurify.sanitize(key)}</td><td>${DOMPurify.sanitize(value)}</td>`;
+        table.appendChild(row);
     }
 
     await callGenericPopup(table.outerHTML, POPUP_TYPE.TEXT, '', { wide: true, large: true, allowVerticalScrolling: true });
@@ -353,7 +343,7 @@ async function viewSecrets() {
 /**
  * @type {import('../../src/endpoints/secrets.js').SecretStateMap}
  */
-export let secret_state = {};
+export let secret_state: Record<string, unknown> = {};
 
 /**
  * Write a secret value to the server.
@@ -364,14 +354,12 @@ export let secret_state = {};
  * @param {boolean} [options.allowEmpty] Whether to allow writing empty values. If false and value is empty, the secret will be deleted.
  * @returns {Promise<string?>} The ID of the newly created secret key, or null if no value is provided.
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'key' implicitly has an 'any' type.
-export async function writeSecret(key, value, label, {
+export async function writeSecret(key: string, value: string, label?: string, {
     allowEmpty
 }: { allowEmpty?: boolean } = {}) {
     try {
         if (!value && !allowEmpty) {
             console.warn(`No value provided for ${key} in writeSecret, redirecting to deleteSecret`);
-            // @ts-expect-error TS(2554) FIXME: Expected 2 arguments, but got 1.
             await deleteSecret(key);
             return null;
         }
@@ -390,7 +378,7 @@ export async function writeSecret(key, value, label, {
             return null;
         }
 
-        const { id } = await response.json();
+        const { id } = await response.json() as { id: string };
         // Clear the input field
         const inputSelector = INPUT_MAP[key];
         const inputEl = inputSelector ? document.querySelector(inputSelector) : null;
@@ -412,8 +400,7 @@ export async function writeSecret(key, value, label, {
  * @param {string} key Secret key
  * @param {string} [id] (Optional) ID of the secret key to delete. If not provided, deletes an active key.
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'key' implicitly has an 'any' type.
-export async function deleteSecret(key, id) {
+export async function deleteSecret(key: string, id?: string) {
     try {
         const response = await fetch('/api/secrets/delete', {
             method: 'POST',
@@ -444,7 +431,7 @@ export async function readSecretState() {
         });
 
         if (response.ok) {
-            secret_state = await response.json();
+            secret_state = await response.json() as Record<string, unknown>;
             updateSecretDisplay();
             updateInputDataLists();
         }
@@ -459,8 +446,7 @@ export async function readSecretState() {
  * @param {string} [id] ID of the secret to find. If not provided, will return the active secret.
  * @returns {Promise<string?>} Secret value, or null if keys are not exposed
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'key' implicitly has an 'any' type.
-export async function findSecret(key, id) {
+export async function findSecret(key: string, id?: string) {
     try {
         const response = await fetch('/api/secrets/find', {
             method: 'POST',
@@ -472,8 +458,8 @@ export async function findSecret(key, id) {
             return null;
         }
 
-        const data = await response.json();
-        return data.value;
+        const data = await response.json() as Record<string, unknown>;
+        return data.value as string;
     } catch {
         console.error('Could not find secret value: ', key);
         return null;
@@ -485,8 +471,7 @@ export async function findSecret(key, id) {
  * @param {string} key Secret key to rotate
  * @param {string} id ID of the secret to rotate
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'key' implicitly has an 'any' type.
-export async function rotateSecret(key, id) {
+export async function rotateSecret(key: string, id: string) {
     try {
         const response = await fetch('/api/secrets/rotate', {
             method: 'POST',
@@ -511,8 +496,7 @@ export async function rotateSecret(key, id) {
  * @param {string} id ID of the secret to rename
  * @param {string} label Label to rename the secret to
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'key' implicitly has an 'any' type.
-export async function renameSecret(key, id, label) {
+export async function renameSecret(key: string, id: string, label: string) {
     try {
         const response = await fetch('/api/secrets/rename', {
             method: 'POST',
@@ -534,16 +518,14 @@ export async function renameSecret(key, id, label) {
  * @param {string} source Source for which to generate the storage key (e.g. 'openrouter')
  * @returns {string} The storage key for the PKCE code verifier for a given source.
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'source' implicitly has an 'any' type.
-const getVerifierKey = (source) => `${getCurrentUserHandle()}_${source}_code_verifier`;
+const getVerifierKey = (source: string) => `${getCurrentUserHandle()}_${source}_code_verifier`;
 
 /**
  * Generates a code challenge for PKCE authentication flows.
  * @param {string} input Input secret string to generate the code challenge from.
  * @returns {string} S256 code challenge generated from the input string, encoded in base64url format.
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'input' implicitly has an 'any' type.
-const generateChallenge = (input) => {
+const generateChallenge = (input: string) => {
     const encoder = new TextEncoder();
     const data = encoder.encode(input);
     const hashBytes = sha256.array(data);
@@ -554,8 +536,7 @@ const generateChallenge = (input) => {
  * Redirects the user to authorize OpenRouter.
  */
 async function authorizeOpenRouter() {
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-    if (secret_state[SECRET_KEYS.OPENROUTER]) {
+    if ((secret_state as Record<string, unknown>)[SECRET_KEYS.OPENROUTER]) {
         const confirmed = await Popup.show.confirm(t`OpenRouter API key already exists`, t`Do you really wish to create a new OpenRouter key? Your existing key will not be deleted.`);
         if (!confirmed) {
             return;
@@ -610,23 +591,19 @@ export async function checkOpenRouterAuth() {
                 throw new Error('OpenRouter exchange error');
             }
 
-            const data = await response.json();
+            const data = await response.json() as Record<string, unknown>;
             if (!data || !data.key) {
                 throw new Error('OpenRouter invalid response');
             }
 
-            // @ts-expect-error TS(2554) FIXME: Expected 3-4 arguments, but got 2.
-            await writeSecret(SECRET_KEYS.OPENROUTER, data.key);
+            await writeSecret(SECRET_KEYS.OPENROUTER, data.key as string);
 
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-            if (secret_state[SECRET_KEYS.OPENROUTER]) {
-                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
+            if ((secret_state as Record<string, unknown>)[SECRET_KEYS.OPENROUTER]) {
                 notyf.success('OpenRouter token saved');
             } else {
                 throw new Error('OpenRouter token not saved');
             }
         } catch (err) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.error('Could not verify OpenRouter token. Please try again.');
             console.error('OpenRouter OAuth error:', err);
         } finally {
@@ -671,16 +648,15 @@ function updateInputDataLists() {
         // Clear existing options
         dataList.innerHTML = '';
 
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        const secrets = secret_state[key];
+        const secrets = (secret_state as Record<string, unknown>)[key] as Array<Record<string, unknown>> | undefined;
         if (!Array.isArray(secrets)) {
             continue;
         }
 
         for (const secret of secrets) {
             const option = document.createElement('option');
-            option.value = secret.id;
-            option.textContent = `${secret.label} (${secret.value})`;
+            option.value = secret.id as string;
+            option.textContent = `${secret.label as string} (${secret.value as string})`;
             dataList.appendChild(option);
         }
 
@@ -695,14 +671,12 @@ function updateInputDataLists() {
  * Opens the key manager dialog for a specific key.
  * @param {string} key Key for which to open the key manager dialog.
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'key' implicitly has an 'any' type.
-async function openKeyManagerDialog(key) {
+async function openKeyManagerDialog(key: string) {
     const name = FRIENDLY_NAMES[key] || key;
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const wrapper = document.createElement('div');
     wrapper.innerHTML = await renderTemplateAsync('secretKeyManager', { name, key });
     const template = wrapper;
-    const addSecretBtn = template.querySelector('button[data-action="add-secret"]');
+    const addSecretBtn = template.querySelector('button[data-action="add-secret"]') as HTMLElement | null;
     if (addSecretBtn) addSecretBtn.addEventListener('click', async function () {
         let label = '';
         let result = POPUP_RESULT.CANCELLED;
@@ -712,11 +686,10 @@ async function openKeyManagerDialog(key) {
                 type: 'text',
                 label: t`Label (optional):`,
             }],
-            // @ts-expect-error TS(7006) FIXME: Parameter 'popup' implicitly has an 'any' type.
-            onClose: popup => {
+            onClose: (popup: Record<string, unknown>) => {
                 if (popup.result) {
-                    label = popup.inputResults.get('newSecretLabel').toString().trim();
-                    result = popup.result;
+                    label = String((popup.inputResults as Map<string, unknown>)?.get('newSecretLabel') ?? '').trim();
+                    result = popup.result as unknown as typeof POPUP_RESULT.CANCELLED;
                 }
             },
         });
@@ -729,7 +702,7 @@ async function openKeyManagerDialog(key) {
                 return;
             }
         }
-        await writeSecret(key, value, label, { allowEmpty: true });
+        await writeSecret(key, value ?? '', label, { allowEmpty: true });
         await renderSecretsList();
     });
 
@@ -740,61 +713,56 @@ async function openKeyManagerDialog(key) {
      *
      */
     async function renderSecretsList() {
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        const secrets = secret_state[key] ?? [];
-        const list = template.querySelector('.secretKeyManagerList');
+        const secrets = ((secret_state as Record<string, unknown>)[key] ?? []) as Array<Record<string, unknown>>;
+        const list = template.querySelector('.secretKeyManagerList') as HTMLElement | null;
         const previousScrollTop = list?.scrollTop ?? 0;
 
-        const emptyMessage = template.querySelector('.secretKeyManagerListEmpty');
+        const emptyMessage = template.querySelector('.secretKeyManagerListEmpty') as HTMLElement | null;
         if (emptyMessage instanceof HTMLElement) {
             emptyMessage.style.display = secrets.length === 0 ? '' : 'none';
         }
 
         const itemBlocks: HTMLElement[] = [];
         for (const secret of secrets) {
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const itemWrapper = document.createElement('div');
             itemWrapper.innerHTML = await renderTemplateAsync('secretKeyManagerListItem', secret);
             const itemTemplate = itemWrapper;
-            const copyIdBtn = itemTemplate.querySelector('button[data-action="copy-id"]');
+            const copyIdBtn = itemTemplate.querySelector('button[data-action="copy-id"]') as HTMLElement | null;
             if (copyIdBtn) copyIdBtn.addEventListener('click', async function () {
-                await copyText(secret.id);
-                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
+                await copyText(secret.id as string);
                 notyf.info(t`Secret ID copied to clipboard.`);
             });
-            const rotateSecretBtn = itemTemplate.querySelector('button[data-action="rotate-secret"]');
+            const rotateSecretBtn = itemTemplate.querySelector('button[data-action="rotate-secret"]') as HTMLElement | null;
             if (rotateSecretBtn) rotateSecretBtn.addEventListener('click', async function () {
-                await rotateSecret(key, secret.id);
+                await rotateSecret(key, secret.id as string);
                 await renderSecretsList();
             });
-            const copySecretBtn = itemTemplate.querySelector('button[data-action="copy-secret"]');
+            const copySecretBtn = itemTemplate.querySelector('button[data-action="copy-secret"]') as HTMLElement | null;
             if (copySecretBtn) copySecretBtn.addEventListener('click', async function () {
-                const secretValue = await findSecret(key, secret.id);
+                const secretValue = await findSecret(key, secret.id as string);
                 if (secretValue === null) {
-                    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                     notyf.error(t`The key exposure might be disabled by the server config.`, t`Failed to copy secret value`);
                     return;
                 }
                 await copyText(secretValue);
-                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 notyf.info(t`Secret value copied to clipboard.`);
             });
-            const renameSecretBtn = itemTemplate.querySelector('button[data-action="rename-secret"]');
+            const renameSecretBtn = itemTemplate.querySelector('button[data-action="rename-secret"]') as HTMLElement | null;
             if (renameSecretBtn) renameSecretBtn.addEventListener('click', async function () {
-                const label = await Popup.show.input(t`Rename Secret`, t`Enter new label for the secret:`, secret?.label || getLabel());
+                const label = await Popup.show.input(t`Rename Secret`, t`Enter new label for the secret:`, (secret as Record<string, unknown>)?.label as string || getLabel());
                 if (!label) {
                     return;
                 }
-                await renameSecret(key, secret.id, label);
+                await renameSecret(key, secret.id as string, label);
                 await renderSecretsList();
             });
-            const deleteSecretBtn = itemTemplate.querySelector('button[data-action="delete-secret"]');
+            const deleteSecretBtn = itemTemplate.querySelector('button[data-action="delete-secret"]') as HTMLElement | null;
             if (deleteSecretBtn) deleteSecretBtn.addEventListener('click', async function () {
-                const confirm = await Popup.show.confirm(t`Delete Secret: ${secret?.label}`, t`Are you sure you want to delete this secret? This action cannot be undone.`);
+                const confirm = await Popup.show.confirm(t`Delete Secret: ${(secret as Record<string, unknown>)?.label as string}`, t`Are you sure you want to delete this secret? This action cannot be undone.`);
                 if (!confirm) {
                     return;
                 }
-                await deleteSecret(key, secret.id);
+                await deleteSecret(key, secret.id as string);
                 await renderSecretsList();
             });
             itemBlocks.push(itemTemplate);
@@ -813,7 +781,7 @@ async function openKeyManagerDialog(key) {
      *
      */
     function scrollToActive() {
-        const list = template.querySelector('.secretKeyManagerList');
+        const list = template.querySelector('.secretKeyManagerList') as HTMLElement | null;
         const activeKey = list?.querySelector('.active');
         if (activeKey instanceof HTMLElement && list instanceof HTMLElement) {
             const activeKeyScrollTop = activeKey.offsetTop + list.scrollTop - list.clientHeight / 2;
@@ -826,21 +794,15 @@ async function openKeyManagerDialog(key) {
  *
  */
 function registerSecretSlashCommands() {
-    // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
-    const secretKeyEnumProvider = () => Object.values(SECRET_KEYS).map(key => new SlashCommandEnumValue(key, FRIENDLY_NAMES[key] || key, enumTypes.name, enumIcons.key));
-    // @ts-expect-error TS(7006) FIXME: Parameter 'executor' implicitly has an 'any' type.
-    const secretIdEnumProvider = (/** @type {SlashCommandExecutor} */ executor, /** @type {SlashCommandScope} */ _scope) => {
-        // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
-        const key = executor?.namedArgumentList?.find(x => x.name === 'key')?.value?.toString() || resolveSecretKey();
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        if (!key || !secret_state[key] || !Array.isArray(secret_state[key]) || secret_state[key].length === 0) {
+    const secretKeyEnumProvider = () => Object.values(SECRET_KEYS).map(key => new SlashCommandEnumValue(key, (FRIENDLY_NAMES[key] || key), enumTypes.name, enumIcons.key));
+    const secretIdEnumProvider = (executor: Record<string, unknown> | undefined, _scope: unknown) => {
+        const key = (executor?.namedArgumentList as Array<Record<string, unknown>> | undefined)?.find(x => x.name === 'key')?.value?.toString() || resolveSecretKey();
+        if (!key || !(secret_state as Record<string, unknown>)[key] || !Array.isArray((secret_state as Record<string, unknown>)[key]) || ((secret_state as Record<string, unknown>)[key] as unknown[]).length === 0) {
             return [];
         }
 
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        return secret_state[key].map(secret => {
-            // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
-            return new SlashCommandEnumValue(secret.id, `${secret.label} (${secret.value})`, enumTypes.name, enumIcons.key);
+        return ((secret_state as Record<string, unknown>)[key] as Array<Record<string, unknown>>).map(secret => {
+            return new SlashCommandEnumValue(secret.id as string, `${secret.label as string} (${secret.value as string})`, enumTypes.name, enumIcons.key);
         });
     };
 
@@ -873,25 +835,21 @@ function registerSecretSlashCommands() {
                 enumProvider: secretIdEnumProvider,
             }),
         ],
-        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
-        callback: async (args, value) => {
+        callback: async (args: Record<string, unknown>, value: string) => {
             const quiet = isTrueBoolean(args?.quiet?.toString());
             const id = value?.toString()?.trim();
             const key = args?.key?.toString()?.trim() || resolveSecretKey();
 
             if (!key) {
                 if (!quiet) {
-                    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                     notyf.error(t`No secret key provided, and the key can't be resolved for the currently selected API type.`);
                 }
                 return '';
             }
 
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-            const secrets = secret_state[key];
+            const secrets = (secret_state as Record<string, unknown>)[key] as Array<Record<string, unknown>> | undefined;
             if (!Array.isArray(secrets) || secrets.length === 0) {
                 if (!quiet) {
-                    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                     notyf.error(t`No saved secrets found for the key: ${key}`);
                 }
                 return '';
@@ -901,31 +859,28 @@ function registerSecretSlashCommands() {
                 const activeSecret = secrets.find(s => s.active);
                 if (!activeSecret) {
                     if (!quiet) {
-                        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                         notyf.error(t`No active secret found for the key: ${key}`);
                     }
                     return '';
                 }
-                return activeSecret.id;
+                return activeSecret.id as string;
             }
 
             const savedSecret = secrets.find(s => s.id === id) ?? secrets.find(s => s.label === id);
             if (!savedSecret) {
                 if (!quiet) {
-                    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                     notyf.error(t`No secret found with ID: ${id} for the key: ${key}`);
                 }
                 return '';
             }
 
             // Set the secret as active
-            await rotateSecret(key, savedSecret.id);
+            await rotateSecret(key, savedSecret.id as string);
             if (!quiet) {
-                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 notyf.success(t`Secret with ID: ${id} is now active for the key: ${key}`);
             }
 
-            return savedSecret.id;
+            return savedSecret.id as string;
         },
     }));
 
@@ -956,25 +911,21 @@ function registerSecretSlashCommands() {
                 enumProvider: secretIdEnumProvider,
             }),
         ],
-        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
-        callback: async (args, value) => {
+        callback: async (args: Record<string, unknown>, value: string) => {
             const quiet = isTrueBoolean(args?.quiet?.toString());
             const id = value?.toString()?.trim();
             const key = args?.key?.toString()?.trim() || resolveSecretKey();
 
             if (!key) {
                 if (!quiet) {
-                    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                     notyf.error(t`No secret key provided, and the key can't be resolved for the currently selected API type.`);
                 }
                 return '';
             }
 
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-            const secrets = secret_state[key];
+            const secrets = (secret_state as Record<string, unknown>)[key] as Array<Record<string, unknown>> | undefined;
             if (!Array.isArray(secrets) || secrets.length === 0) {
                 if (!quiet) {
-                    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                     notyf.error(t`No saved secrets found for the key: ${key}`);
                 }
                 return '';
@@ -983,20 +934,18 @@ function registerSecretSlashCommands() {
             const savedSecret = secrets.find(s => s.id === id) ?? secrets.find(s => s.label === id) ?? secrets.find(s => s.active);
             if (!savedSecret) {
                 if (!quiet) {
-                    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                     notyf.error(t`No secret found with ID: ${id} for the key: ${key}`);
                 }
                 return '';
             }
 
             // Delete the secret
-            await deleteSecret(key, savedSecret.id);
+            await deleteSecret(key, savedSecret.id as string);
             if (!quiet) {
-                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 notyf.success(t`Secret with ID: ${id} has been deleted for the key: ${key}`);
             }
 
-            return savedSecret.id;
+            return savedSecret.id as string;
         },
     }));
 
@@ -1040,25 +989,21 @@ function registerSecretSlashCommands() {
                 typeList: [ARGUMENT_TYPE.STRING],
             }),
         ],
-        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
-        callback: async (args, value) => {
+        callback: async (args: Record<string, unknown>, value: string) => {
             const quiet = isTrueBoolean(args?.quiet?.toString());
             const allowEmpty = isTrueBoolean(args?.empty?.toString());
             const key = args?.key?.toString()?.trim() || resolveSecretKey();
 
             if (!key) {
                 if (!quiet) {
-                    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                     notyf.error(t`No secret key provided, and the key can't be resolved for the currently selected API type.`);
                 }
                 return '';
             }
 
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-            const secrets = secret_state[key];
+            const secrets = (secret_state as Record<string, unknown>)[key] as Array<Record<string, unknown>> | undefined;
             if (!Array.isArray(secrets) || secrets.length === 0) {
                 if (!quiet) {
-                    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                     notyf.error(t`No saved secrets found for the key: ${key}`);
                 }
                 return '';
@@ -1067,7 +1012,6 @@ function registerSecretSlashCommands() {
             const valueStr = value?.toString()?.trim();
             if (!valueStr && !allowEmpty) {
                 if (!quiet) {
-                    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                     notyf.error(t`No value provided for the secret key: ${key}`);
                 }
                 return '';
@@ -1077,7 +1021,6 @@ function registerSecretSlashCommands() {
             const id = await writeSecret(key, valueStr, label, { allowEmpty });
 
             if (!quiet) {
-                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 notyf.success(t`Secret has been written for the key: ${key}`);
             }
 
@@ -1117,25 +1060,21 @@ function registerSecretSlashCommands() {
                 typeList: [ARGUMENT_TYPE.STRING],
             }),
         ],
-        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
-        callback: async (args, value) => {
+        callback: async (args: Record<string, unknown>, value: string) => {
             const quiet = isTrueBoolean(args?.quiet?.toString());
             const key = args?.key?.toString()?.trim() || resolveSecretKey();
             const id = args?.id?.toString()?.trim();
 
             if (!key) {
                 if (!quiet) {
-                    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                     notyf.error(t`No secret key provided, and the key can't be resolved for the currently selected API type.`);
                 }
                 return '';
             }
 
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-            const secrets = secret_state[key];
+            const secrets = (secret_state as Record<string, unknown>)[key] as Array<Record<string, unknown>> | undefined;
             if (!Array.isArray(secrets) || secrets.length === 0) {
                 if (!quiet) {
-                    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                     notyf.error(t`No saved secrets found for the key: ${key}`);
                 }
                 return '';
@@ -1144,7 +1083,6 @@ function registerSecretSlashCommands() {
             const newLabel = value?.toString()?.trim();
             if (!newLabel) {
                 if (!quiet) {
-                    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                     notyf.error(t`No new label provided for the secret key: ${key}`);
                 }
                 return '';
@@ -1153,20 +1091,18 @@ function registerSecretSlashCommands() {
             const savedSecret = secrets.find(s => s.id === id) ?? secrets.find(s => s.label === id) ?? secrets.find(s => s.active);
             if (!savedSecret) {
                 if (!quiet) {
-                    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                     notyf.error(t`No secret found with ID: ${id} for the key: ${key}`);
                 }
                 return '';
             }
 
             // Rename the secret
-            await renameSecret(key, savedSecret.id, newLabel);
+            await renameSecret(key, savedSecret.id as string, newLabel);
             if (!quiet) {
-                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 notyf.success(t`Secret with ID: ${id} has been renamed to "${newLabel}" for the key: ${key}`);
             }
 
-            return savedSecret.id;
+            return savedSecret.id as string;
         },
     }));
 
@@ -1199,25 +1135,21 @@ function registerSecretSlashCommands() {
                 enumProvider: secretIdEnumProvider,
             }),
         ],
-        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
-        callback: async (args, value) => {
+        callback: async (args: Record<string, unknown>, value: string) => {
             const quiet = isTrueBoolean(args?.quiet?.toString());
             const key = args?.key?.toString()?.trim() || resolveSecretKey();
             const id = value?.toString()?.trim();
 
             if (!key) {
                 if (!quiet) {
-                    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                     notyf.error(t`No secret key provided, and the key can't be resolved for the currently selected API type.`);
                 }
                 return '';
             }
 
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-            const secrets = secret_state[key];
+            const secrets = (secret_state as Record<string, unknown>)[key] as Array<Record<string, unknown>> | undefined;
             if (!Array.isArray(secrets) || secrets.length === 0) {
                 if (!quiet) {
-                    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                     notyf.error(t`No saved secrets found for the key: ${key}`);
                 }
                 return '';
@@ -1226,16 +1158,14 @@ function registerSecretSlashCommands() {
             const savedSecret = secrets.find(s => s.id === id) ?? secrets.find(s => s.label === id) ?? secrets.find(s => s.active);
             if (!savedSecret) {
                 if (!quiet) {
-                    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                     notyf.error(t`No secret found with ID: ${id} for the key: ${key}`);
                 }
                 return '';
             }
 
-            const secretValue = await findSecret(key, savedSecret.id);
+            const secretValue = await findSecret(key, savedSecret.id as string);
             if (secretValue === null) {
                 if (!quiet) {
-                    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                     notyf.error(t`Could not retrieve the secret value for key: ${key}. Key exposure might be disabled.`);
                 }
                 return '';
@@ -1253,10 +1183,10 @@ export async function initSecrets() {
     document.getElementById('viewSecrets')?.addEventListener('click', viewSecrets);
     document.addEventListener('click', async function (e: Event) {
         if (!(e.target instanceof Element)) return;
-        const manageBtn = e.target.closest('.manage-api-keys');
+        const manageBtn = e.target.closest('.manage-api-keys') as HTMLElement | null;
         if (!manageBtn) return;
         const key = manageBtn.getAttribute('data-key');
-        if (!key || !Object.values(SECRET_KEYS).includes(key)) {
+        if (!key || !(Object.values(SECRET_KEYS) as string[]).includes(key)) {
             console.error('Invalid key for manage-api-keys:', key);
             return;
         }
@@ -1272,15 +1202,14 @@ export async function initSecrets() {
             if (!value || !e.target.matches(inputSelector)) {
                 continue;
             }
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-            const secrets = secret_state[key];
+            const secrets = (secret_state as Record<string, unknown>)[key] as Array<Record<string, unknown>> | undefined;
             if (!Array.isArray(secrets)) {
                 continue;
             }
             const secretMatch = secrets.find(secret => secret.id === value);
             if (secretMatch) {
                 (e.target as HTMLInputElement).value = '';
-                return rotateSecret(key, secretMatch.id);
+                return rotateSecret(key, secretMatch.id as string);
             }
         }
 
@@ -1291,10 +1220,10 @@ export async function initSecrets() {
     });
     document.querySelector('.openrouter_authorize')?.addEventListener('click', authorizeOpenRouter);
     document.addEventListener('click', async function (e: Event) {
-        const creditsBtn = e.target instanceof Element ? e.target.closest('.openrouter_view_credits') : null;
+        const creditsBtn = e.target instanceof Element ? e.target.closest('.openrouter_view_credits') as HTMLElement | null : null;
         if (!creditsBtn) return;
         e.preventDefault();
-        const display = creditsBtn.parentElement?.querySelector('.openrouter_credits_display');
+        const display = creditsBtn.parentElement?.querySelector('.openrouter_credits_display') as HTMLElement | null;
         if (!display) return;
         display.textContent = t`Loading…`;
         try {
@@ -1305,21 +1234,19 @@ export async function initSecrets() {
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}`);
             }
-            const data = await response.json();
+            const data = await response.json() as Record<string, unknown>;
             if (typeof data.remaining !== 'number') {
                 throw new Error('Invalid response');
             }
-            display.textContent = `$${data.remaining.toFixed(2)}`;
+            display.textContent = `$${(data.remaining as number).toFixed(2)}`;
         } catch (error) {
             console.error('Failed to fetch OpenRouter credits:', error);
             display.textContent = '';
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.error(t`Could not fetch OpenRouter credits. Please try again.`);
         }
     });
 
-    // @ts-expect-error TS(7006) FIXME: Parameter 'num' implicitly has an 'any' type.
-    const formatNanoGptNumber = (num, decimals = null) => {
+    const formatNanoGptNumber = (num: unknown, decimals: number | null = null) => {
         const number = Number(num);
         if (!Number.isFinite(number)) return decimals === null ? '0' : (0).toFixed(decimals);
         if (decimals !== null) return number.toFixed(decimals);
@@ -1328,45 +1255,37 @@ export async function initSecrets() {
         return number.toString();
     };
 
-    // @ts-expect-error TS(7006) FIXME: Parameter 'credits' implicitly has an 'any' type.
-    const createNanoGptCreditsPopup = (credits) => {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    const createNanoGptCreditsPopup = (credits: Record<string, unknown>) => {
         const root = document.createElement('div');
         root.className = 'nanogpt-credits-popup';
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const heading = document.createElement('h3');
         heading.textContent = t`NanoGPT Credits & Usage`;
         root.appendChild(heading);
 
-        const rows = [
-            // @ts-expect-error TS(2345) FIXME: Argument of type '2' is not assignable to paramete... Remove this comment to see the full error message
-            [t`USD`, `$${formatNanoGptNumber(credits.usdBalance, 2)}`],
-            // @ts-expect-error TS(2345) FIXME: Argument of type '3' is not assignable to paramete... Remove this comment to see the full error message
-            [t`NANO`, formatNanoGptNumber(credits.nanoBalance, 3)],
+        const rows: Array<[string, string]> = [
+            [t`USD`, `$${formatNanoGptNumber(credits.usdBalance as number, 2)}`],
+            [t`NANO`, formatNanoGptNumber(credits.nanoBalance as number, 3)],
         ];
 
-        // @ts-expect-error TS(7006) FIXME: Parameter 'label' implicitly has an 'any' type.
-        const addUsage = (label, usage, limit) => {
+        const addUsage = (label: string, usage: Record<string, unknown> | undefined, limit: number | undefined) => {
             if (usage) {
-                rows.push([label, t`${formatNanoGptNumber(usage.used)} / ${formatNanoGptNumber(limit)} (${formatNanoGptNumber(usage.remaining)} left)`]);
+                rows.push([label, t`${formatNanoGptNumber(usage.used)} / ${formatNanoGptNumber(limit ?? 0)} (${formatNanoGptNumber(usage.remaining)} left)`]);
             }
         };
 
-        if (credits.subscription?.active) {
-            const sub = credits.subscription;
-            const subEndDate = sub.period?.currentPeriodEnd ? moment(sub.period.currentPeriodEnd).format('LL') : t`Unknown`;
+        if ((credits.subscription as Record<string, unknown>)?.active) {
+            const sub = credits.subscription as Record<string, unknown>;
+            const subEndDate = (sub.period as Record<string, unknown>)?.currentPeriodEnd ? moment((sub.period as Record<string, unknown>).currentPeriodEnd as string).format('LL') : t`Unknown`;
             rows.push([t`Sub`, t`Active (until ${subEndDate})`]);
-            addUsage(t`Tokens/wk`, sub.weekly_tokens, sub.limits?.weeklyInputTokens);
-            addUsage(t`Tokens/day`, sub.daily_tokens, sub.limits?.dailyInputTokens);
-            addUsage(t`Images/day`, sub.daily_images, sub.limits?.dailyImages);
+            addUsage(t`Tokens/wk`, sub.weekly_tokens as Record<string, unknown>, (sub.limits as Record<string, unknown>)?.weeklyInputTokens as number);
+            addUsage(t`Tokens/day`, sub.daily_tokens as Record<string, unknown>, (sub.limits as Record<string, unknown>)?.dailyInputTokens as number);
+            addUsage(t`Images/day`, sub.daily_images as Record<string, unknown>, (sub.limits as Record<string, unknown>)?.dailyImages as number);
         }
 
         for (const [label, value] of rows) {
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const labelDiv = document.createElement('div');
             labelDiv.textContent = label;
             root.appendChild(labelDiv);
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const valueDiv = document.createElement('div');
             valueDiv.textContent = value;
             root.appendChild(valueDiv);
@@ -1376,10 +1295,10 @@ export async function initSecrets() {
     };
 
     document.addEventListener('click', async function (event: Event) {
-        const target = event.target instanceof Element ? event.target.closest('.nanogpt_view_credits') : null;
+        const target = event.target instanceof Element ? event.target.closest('.nanogpt_view_credits') as HTMLElement | null : null;
         if (!target) return;
         event.preventDefault();
-        const display = target.parentElement?.querySelector('.nanogpt_credits_display');
+        const display = target.parentElement?.querySelector('.nanogpt_credits_display') as HTMLElement | null;
         if (!display) return;
         display.textContent = t`Loading…`;
 
@@ -1393,7 +1312,7 @@ export async function initSecrets() {
                 throw new Error(`HTTP ${response.status}`);
             }
 
-            const data = await response.json();
+            const data = await response.json() as Record<string, unknown>;
 
             const usdBalance = Number(data.usd_balance);
             const nanoBalance = Number(data.nano_balance);
@@ -1401,15 +1320,13 @@ export async function initSecrets() {
                 throw new Error('Invalid response');
             }
 
-            // @ts-expect-error TS(2345) FIXME: Argument of type '2' is not assignable to paramete... Remove this comment to see the full error message
             const balances = [`$${formatNanoGptNumber(usdBalance, 2)}`];
             if (nanoBalance > 0) {
-                // @ts-expect-error TS(2345) FIXME: Argument of type '3' is not assignable to paramete... Remove this comment to see the full error message
                 balances.push(`${formatNanoGptNumber(nanoBalance, 3)} NANO`);
             }
             let shortInlineText = balances.join(' | ');
 
-            if (data.subscription?.active) {
+            if ((data.subscription as Record<string, unknown>)?.active) {
                 shortInlineText += ` | ${t`Sub Active`}`;
             }
 
@@ -1427,15 +1344,14 @@ export async function initSecrets() {
         } catch (error) {
             console.error('Failed to fetch NanoGPT credits:', error);
             if (display) display.textContent = '';
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.error(t`Could not fetch NanoGPT credits. Please try again.`);
         }
     });
 
     document.addEventListener('click', async function (e: Event) {
-        const target = e.target instanceof Element ? e.target.closest('.nanogpt_info_btn') : null;
+        const target = e.target instanceof Element ? e.target.closest('.nanogpt_info_btn') as HTMLElement | null : null;
         if (!target) return;
-        const credits = (target as unknown as Record<string, unknown>).__creditsData;
+        const credits = (target as unknown as Record<string, unknown>).__creditsData as Record<string, unknown> | undefined;
         if (credits) {
             await callGenericPopup(createNanoGptCreditsPopup(credits), POPUP_TYPE.TEXT);
         }

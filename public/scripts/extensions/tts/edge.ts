@@ -220,7 +220,7 @@ class EdgeTtsProvider {
      */
     getGenerateUrl() {
         if (this.settings.provider === EDGE_TTS_PROVIDER.extras) {
-            const url = new URL(getApiUrl());
+            const url = new URL(getApiUrl() as string);
             url.pathname = '/api/edge-tts/generate';
             return url.toString();
         }
@@ -238,7 +238,7 @@ class EdgeTtsProvider {
      */
     getVoicesUrl() {
         if (this.settings.provider === EDGE_TTS_PROVIDER.extras) {
-            const url = new URL(getApiUrl());
+            const url = new URL(getApiUrl() as string);
             url.pathname = '/api/edge-tts/list';
             return url.toString();
         }
@@ -251,7 +251,6 @@ class EdgeTtsProvider {
     }
 
     async throwIfModuleMissing() {
-        // @ts-expect-error TS(2345): Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
         if (this.settings.provider === EDGE_TTS_PROVIDER.extras && !modules.includes('edge-tts')) {
             const message = 'Edge TTS module not loaded. Add edge-tts to enable-modules and restart the Extras API.';
             // notyf.error(message)

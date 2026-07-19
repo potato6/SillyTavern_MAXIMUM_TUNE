@@ -16,7 +16,7 @@ import { loadTemplate } from './shared.js';
 import { accountStorage } from '../util/AccountStorage.js';
 import { ScraperManager } from '../scrapers.js';
 import { DragAndDropHandler } from '../dragdrop.js';
-import { ATTACHMENT_SOURCE, FileAttachment } from './types.js';
+import { ATTACHMENT_SOURCE, type FileAttachment } from './types.js';
 import {
     openFilePopup,
     editAttachment,
@@ -39,17 +39,28 @@ import {
 export async function openAttachmentManager(): Promise<void> {
     /**
      * Renders a list of attachments for a given source.
+     * @param attachments
+     * @param source
      */
     async function renderList(attachments: FileAttachment[], source: string): Promise<void> {
+        /**
+         *
+         * @param a
+         * @param b
+         */
         function sortFn(a: FileAttachment, b: FileAttachment): number {
-            const sortValueA = a[sortField];
-            const sortValueB = b[sortField];
+            const sortValueA = (a as unknown as Record<string, unknown>)[sortField];
+            const sortValueB = (b as unknown as Record<string, unknown>)[sortField];
             if (typeof sortValueA === 'string' && typeof sortValueB === 'string') {
                 return sortValueA.localeCompare(sortValueB) * (sortOrder === 'asc' ? 1 : -1);
             }
-            return (sortValueA - sortValueB) * (sortOrder === 'asc' ? 1 : -1);
+            return (Number(sortValueA) - Number(sortValueB)) * (sortOrder === 'asc' ? 1 : -1);
         }
 
+        /**
+         *
+         * @param a
+         */
         function filterFn(a: FileAttachment): boolean {
             if (!filterString) return true;
             return a.name.toLowerCase().includes(filterString.toLowerCase());
@@ -61,18 +72,18 @@ export async function openAttachmentManager(): Promise<void> {
             [ATTACHMENT_SOURCE.CHAT]: '.chatAttachmentsList',
         };
 
-        const containerEl = template.querySelector(sources[source]);
+        const containerEl = (template as HTMLElement).querySelector(sources[source]!);
         const selected = Array.from(containerEl?.querySelectorAll('.attachmentListItemCheckbox:checked') ?? [])
             .map(el => (el as Element).closest('.attachmentListItem')?.getAttribute('data-attachment-url'));
 
-        const sourceContainer = template.querySelector(sources[source]);
+        const sourceContainer = (template as HTMLElement).querySelector(sources[source]!);
         if (sourceContainer) sourceContainer.innerHTML = '';
 
         const sortedAttachmentList = attachments.slice().filter(filterFn).sort(sortFn);
 
         for (const attachment of sortedAttachmentList) {
             const disabled = isAttachmentDisabled(attachment);
-            const attachmentTemplate = (template.querySelector('.attachmentListItemTemplate .attachmentListItem') as Element)?.cloneNode(true) as HTMLElement;
+            const attachmentTemplate = (template!.querySelector('.attachmentListItemTemplate .attachmentListItem') as Element)?.cloneNode(true) as HTMLElement;
             if (!attachmentTemplate) continue;
 
             attachmentTemplate.classList.toggle('disabled', disabled);
@@ -109,7 +120,7 @@ export async function openAttachmentManager(): Promise<void> {
                 disableBtn.addEventListener('click', () => disableAttachment(attachment, renderAttachments));
             }
 
-            const sourceCont = template.querySelector(sources[source]);
+            const sourceCont = (template as HTMLElement).querySelector(sources[source]!);
             if (sourceCont) sourceCont.appendChild(attachmentTemplate);
 
             if (selected.includes(attachment.url)) {
@@ -129,14 +140,14 @@ export async function openAttachmentManager(): Promise<void> {
             [ATTACHMENT_SOURCE.CHAT]: '.chatAttachmentsTitle',
         };
 
-        const modal = template.querySelector('.actionButtonsModal');
+        const modal = template!.querySelector('.actionButtonsModal');
         const scrapers = ScraperManager.getDataBankScrapers();
 
         for (const scraper of scrapers) {
             const isAvailable = await ScraperManager.isScraperAvailable(scraper.id);
             if (!isAvailable) continue;
 
-            const buttonTemplate = (template.querySelector('.actionButtonTemplate .actionButton') as Element)?.cloneNode(true) as HTMLElement;
+            const buttonTemplate = (template!.querySelector('.actionButtonTemplate .actionButton') as Element)?.cloneNode(true) as HTMLElement;
             if (!buttonTemplate) continue;
 
             if (scraper.iconAvailable) {
@@ -152,7 +163,7 @@ export async function openAttachmentManager(): Promise<void> {
 
             buttonTemplate.setAttribute('title', scraper.description);
             buttonTemplate.addEventListener('click', () => {
-                const target = modal?.getAttribute('data-attachment-manager-target');
+                const target = modal?.getAttribute('data-attachment-manager-target') ?? null;
                 runScraper(scraper.id, target, renderAttachments);
             });
             modal?.append(buttonTemplate);
@@ -178,9 +189,9 @@ export async function openAttachmentManager(): Promise<void> {
      * Renders all attachments across all sources.
      */
     async function renderAttachments(): Promise<void> {
-        const globalAttachments: FileAttachment[] = extension_settings.attachments ?? [];
-        const chatAttachments: FileAttachment[] = chat_metadata.attachments ?? [];
-        const characterAttachments: FileAttachment[] = extension_settings.character_attachments?.[characters[this_chid]?.avatar] ?? [];
+        const globalAttachments: FileAttachment[] = (extension_settings.attachments ?? []) as FileAttachment[];
+        const chatAttachments: FileAttachment[] = (chat_metadata.attachments ?? []) as FileAttachment[];
+        const characterAttachments: FileAttachment[] = ((extension_settings.character_attachments as Record<string, FileAttachment[]> | undefined)?.[characters[this_chid]?.avatar] ?? []) as FileAttachment[];
 
         await renderList(globalAttachments, ATTACHMENT_SOURCE.GLOBAL);
         await renderList(chatAttachments, ATTACHMENT_SOURCE.CHAT);
@@ -189,18 +200,18 @@ export async function openAttachmentManager(): Promise<void> {
         const isNotCharacter = this_chid === undefined || selected_group;
         const isNotInChat = getCurrentChatId() === undefined;
 
-        const charBlock = template.querySelector('.characterAttachmentsBlock') as HTMLElement;
+        const charBlock = template!.querySelector('.characterAttachmentsBlock') as HTMLElement;
         if (charBlock) charBlock.style.display = isNotCharacter ? 'none' : '';
 
-        const chatBlock = template.querySelector('.chatAttachmentsBlock') as HTMLElement;
+        const chatBlock = template!.querySelector('.chatAttachmentsBlock') as HTMLElement;
         if (chatBlock) chatBlock.style.display = isNotInChat ? 'none' : '';
 
         const characterName = characters[this_chid]?.name || 'Anonymous';
-        const charNameEl = template.querySelector('.characterAttachmentsName');
+        const charNameEl = template!.querySelector('.characterAttachmentsName');
         if (charNameEl) charNameEl.textContent = characterName;
 
         const chatName = getCurrentChatId() || 'Unnamed chat';
-        const chatNameEl = template.querySelector('.chatAttachmentsName');
+        const chatNameEl = template!.querySelector('.chatAttachmentsName');
         if (chatNameEl) chatNameEl.textContent = chatName;
     }
 
@@ -216,7 +227,7 @@ export async function openAttachmentManager(): Promise<void> {
         const targetInput = targetSelectTemplate.querySelector('.droppedFilesTarget');
         if (targetInput instanceof HTMLInputElement) {
             targetInput.addEventListener('input', function () {
-                selectedTarget = String(this.value);
+                selectedTarget = String(this.value) as typeof selectedTarget;
             });
         }
 
@@ -247,14 +258,20 @@ export async function openAttachmentManager(): Promise<void> {
     // Sort
     template.querySelector('.attachmentSort')?.addEventListener('change', function (this: HTMLSelectElement) {
         if (!(this instanceof HTMLSelectElement) || this.selectedOptions.length === 0) return;
-        sortField = this.selectedOptions[0].dataset.sortField;
-        sortOrder = this.selectedOptions[0].dataset.sortOrder;
+        sortField = this.selectedOptions[0]!.dataset.sortField ?? 'created';
+        sortOrder = this.selectedOptions[0]!.dataset.sortOrder ?? 'desc';
         accountStorage.setItem('DataBank_sortField', sortField);
         accountStorage.setItem('DataBank_sortOrder', sortOrder);
         renderAttachments();
     });
 
     // Bulk actions
+    /**
+     *
+     * @param action
+     * @param action.confirmMessage
+     * @param action.perform
+     */
     function handleBulkAction(action: { confirmMessage?: string; perform: (attachment: FileAttachment, source: string) => void }) {
         return async () => {
             const selectedAttachments = document.querySelectorAll('.attachmentListItemCheckboxContainer .attachmentListItemCheckbox:checked');
@@ -276,7 +293,7 @@ export async function openAttachmentManager(): Promise<void> {
                 if (!listItem) return;
 
                 const url = listItem.dataset.attachmentUrl;
-                const source = listItem.dataset.attachmentSource;
+                const source = listItem.dataset.attachmentSource ?? '';
                 const attachment = attachments.find((a: FileAttachment) => a.url === url);
                 if (!attachment) return;
 

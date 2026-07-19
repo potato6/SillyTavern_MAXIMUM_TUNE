@@ -69,7 +69,6 @@ export class QuickReplySettings {
 
 
     save() {
-        // @ts-expect-error TS(2551): Property 'quickReplyV2' does not exist on type '{ ... Remove this comment to see the full error message
         extension_settings.quickReplyV2 = this.toJSON();
         saveSettingsDebounced();
         if (this.chatConfig) {

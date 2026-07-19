@@ -898,7 +898,7 @@ export function getVariableNames(scope) {
             return Object.keys(chat_metadata?.variables ?? {});
         } else {
             // Global variables are in extension_settings.variables.global
-            return Object.keys(extension_settings?.variables?.global ?? {});
+            return Object.keys((extension_settings?.variables as Record<string, unknown>)?.global ?? {} as Record<string, unknown>);
         }
     } catch {
         return [];

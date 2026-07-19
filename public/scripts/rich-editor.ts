@@ -18,7 +18,10 @@ import { callGenericPopup, POPUP_TYPE } from './popup.js';
 // Helpers
 // ---------------------------------------------------------------------------
 
-/** Load CSS by URL and resolve when loaded (skip if already present). */
+/**
+ * Load CSS by URL and resolve when loaded (skip if already present).
+ * @param url
+ */
 function loadCSS(url: string): Promise<void> {
     if (document.querySelector(`link[href="${url}"]`)) return Promise.resolve();
     return new Promise((resolve, reject) => {
@@ -31,10 +34,21 @@ function loadCSS(url: string): Promise<void> {
     });
 }
 
+/**
+ *
+ * @param el
+ * @param contentEditable
+ */
 function getRawValue(el: HTMLElement, contentEditable: boolean): string {
     return String(contentEditable ? el.innerText : (el as HTMLInputElement).value);
 }
 
+/**
+ *
+ * @param el
+ * @param contentEditable
+ * @param value
+ */
 function setRawValue(el: HTMLElement, contentEditable: boolean, value: string): void {
     if (contentEditable) {
         el.innerText = value;
@@ -69,6 +83,12 @@ interface ToastEditorHandle {
 // Core popup
 // ---------------------------------------------------------------------------
 
+/**
+ *
+ * @param broEl
+ * @param useMarkdown
+ * @param _options
+ */
 async function openToastPopup(
     broEl: HTMLElement,
     useMarkdown: boolean,
@@ -95,6 +115,7 @@ async function openToastPopup(
             await loadCSS('/lib/toastui/theme/toastui-editor-dark.css');
 
             // 2. Dynamically import ToastUI Editor
+            // @ts-expect-error ToastUI Editor types not available
             const Editor = (await import('@toast-ui/editor')).default;
 
             // 3. Init editor
@@ -214,7 +235,7 @@ async function openToastPopup(
             const pollInterval = setInterval(() => {
                 const toolbar = container.querySelector('.toastui-editor-defaultUI-toolbar');
                 if (toolbar && toolbar.querySelector('.toastui-editor-toolbar-group')) {
-                    addQuoteBtn(toolbar);
+                    addQuoteBtn(toolbar as HTMLElement);
                     clearInterval(pollInterval);
                 }
             }, 50);
@@ -245,6 +266,11 @@ async function openToastPopup(
 // Public API
 // ---------------------------------------------------------------------------
 
+/**
+ *
+ * @param broEl
+ * @param options
+ */
 export async function openRichEditor(
     broEl: HTMLElement,
     options: EditorOptions = {},
@@ -252,6 +278,11 @@ export async function openRichEditor(
     return openToastPopup(broEl, false, options);
 }
 
+/**
+ *
+ * @param broEl
+ * @param options
+ */
 export async function openMarkdownEditor(
     broEl: HTMLElement,
     options: EditorOptions = {},

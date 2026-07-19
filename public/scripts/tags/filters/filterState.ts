@@ -53,16 +53,16 @@ const ACTIONABLE_TAGS: {
         name: string;
         color?: string;
         filter_state?: undefined;
-        action: ((...args: unknown[]) => void) | undefined;
+        action: ((this: HTMLElement, ...args: unknown[]) => void) | undefined;
         icon?: string;
         class?: string;
     };
-    FAV: { id: string; sort_order: number; name: string; color: string; filter_state: undefined; action: ((...args: unknown[]) => void) | undefined; icon: string; class: string };
-    GROUP: { id: string; sort_order: number; name: string; color: string; filter_state: undefined; action: ((...args: unknown[]) => void) | undefined; icon: string; class: string };
-    FOLDER: { id: string; sort_order: number; name: string; color: string; filter_state: undefined; action: ((...args: unknown[]) => void) | undefined; icon: string; class: string };
-    VIEW: { id: string; sort_order: number; name: string; color: string; action: ((...args: unknown[]) => void) | undefined; icon: string; class: string };
-    HINT: { id: string; sort_order: number; name: string; color: string; action: ((...args: unknown[]) => void) | undefined; icon: string; class: string };
-    UNFILTER: { id: string; sort_order: number; name: string; action: ((...args: unknown[]) => void) | undefined; icon: string; class: string };
+    FAV: { id: string; sort_order: number; name: string; color: string; filter_state: undefined; action: ((this: HTMLElement, ...args: unknown[]) => void) | undefined; icon: string; class: string };
+    GROUP: { id: string; sort_order: number; name: string; color: string; filter_state: undefined; action: ((this: HTMLElement, ...args: unknown[]) => void) | undefined; icon: string; class: string };
+    FOLDER: { id: string; sort_order: number; name: string; color: string; filter_state: undefined; action: ((this: HTMLElement, ...args: unknown[]) => void) | undefined; icon: string; class: string };
+    VIEW: { id: string; sort_order: number; name: string; color: string; action: ((this: HTMLElement, ...args: unknown[]) => void) | undefined; icon: string; class: string };
+    HINT: { id: string; sort_order: number; name: string; color: string; action: ((this: HTMLElement, ...args: unknown[]) => void) | undefined; icon: string; class: string };
+    UNFILTER: { id: string; sort_order: number; name: string; action: ((this: HTMLElement, ...args: unknown[]) => void) | undefined; icon: string; class: string };
 } = {
     FAV: { id: '1', sort_order: 1, name: 'Show only favorites', color: 'rgba(255, 255, 0, 0.5)', filter_state: undefined, action: undefined, icon: 'fa-solid fa-star', class: 'filterByFavorites' },
     GROUP: { id: '0', sort_order: 2, name: 'Show only groups', color: 'rgba(100, 100, 100, 0.5)', filter_state: undefined, action: undefined, icon: 'fa-solid fa-users', class: 'filterByGroups' },
@@ -100,9 +100,9 @@ let _onClearAllFiltersClick: ((filterHelper: unknown) => void) | undefined;
  * Must be called from the coordinator after all action functions are defined.
  */
 function initActionableTags() {
-    ACTIONABLE_TAGS.FAV.action = filterByFav;
-    ACTIONABLE_TAGS.GROUP.action = filterByGroups;
-    ACTIONABLE_TAGS.FOLDER.action = filterByFolder;
+    ACTIONABLE_TAGS.FAV.action = filterByFav as (this: HTMLElement, ...args: unknown[]) => void;
+    ACTIONABLE_TAGS.GROUP.action = filterByGroups as (this: HTMLElement, ...args: unknown[]) => void;
+    ACTIONABLE_TAGS.FOLDER.action = filterByFolder as (this: HTMLElement, ...args: unknown[]) => void;
     ACTIONABLE_TAGS.VIEW.action = _onViewTagsListClick;
     ACTIONABLE_TAGS.HINT.action = _onTagListHintClick;
     ACTIONABLE_TAGS.UNFILTER.action = _onClearAllFiltersClick;
@@ -111,6 +111,10 @@ function initActionableTags() {
 /**
  * Registers external action functions into the ACTIONABLE_TAGS object.
  * Called by the coordinator to wire up UI-layer functions without circular imports.
+ * @param actions
+ * @param actions.onViewTagsListClick
+ * @param actions.onTagListHintClick
+ * @param actions.onClearAllFiltersClick
  */
 function registerActionableTagActions(actions: {
     onViewTagsListClick: () => void;
@@ -135,8 +139,7 @@ function registerActionableTagActions(actions: {
  * @param {number} type - The tag_filter_type
  * @returns {string} The power_user setting key
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'type' implicitly has an 'any' type.
-function getTagFilterVisibilitySetting(type) {
+function getTagFilterVisibilitySetting(type: number): string {
     switch (type) {
         case tag_filter_type.character:
             return 'show_tag_filters';
@@ -154,11 +157,9 @@ function getTagFilterVisibilitySetting(type) {
  * @param {number} type - The tag_filter_type
  * @returns {boolean} Whether tag filters should be shown
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'type' implicitly has an 'any' type.
-function getTagFilterVisibility(type) {
+function getTagFilterVisibility(type: number): boolean {
     const settingKey = getTagFilterVisibilitySetting(type);
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-    return power_user[settingKey] ?? false;
+    return (power_user as Record<string, unknown>)[settingKey] as boolean ?? false;
 }
 
 /**
@@ -166,11 +167,9 @@ function getTagFilterVisibility(type) {
  * @param {number} type - The tag_filter_type
  * @param {boolean} visible - Whether tag filters should be shown
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'type' implicitly has an 'any' type.
-function setTagFilterVisibility(type, visible) {
+function setTagFilterVisibility(type: number, visible: boolean): void {
     const settingKey = getTagFilterVisibilitySetting(type);
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-    power_user[settingKey] = visible;
+    (power_user as Record<string, unknown>)[settingKey] = visible;
     saveSettings();
 }
 
@@ -183,25 +182,25 @@ function setTagFilterVisibility(type, visible) {
  * For actionable tags: reads from persisted state via filter helper.
  * For regular tags: reads from the filter helper's TAG filter data.
  * @param {FilterHelper} filterHelper - The filter helper for the current context
+ * @param filterHelper.getFilterData
  * @param {object} tag - The tag object
  * @param {boolean} isFilterActionable - Whether the tag is an actionable filter tag
  * @returns {string} The filter state
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'filterHelper' implicitly has an 'any' t... Remove this comment to see the full error message
-function determineTagFilterState(filterHelper, tag, isFilterActionable) {
+function determineTagFilterState(filterHelper: { getFilterData: (type: string) => { excluded: string[]; selected: string[] } | string }, tag: Record<string, unknown>, isFilterActionable: boolean): string {
     if (isFilterActionable) {
         // For actionable tags: read from filter helper (which is loaded from storage)
-        const filterType = TAG_ID_TO_FILTER_TYPE.get(tag.id) || null;
+        const filterType = TAG_ID_TO_FILTER_TYPE.get(tag.id as string) || null;
         if (filterType) {
-            return filterHelper.getFilterData(filterType) || DEFAULT_FILTER_STATE;
+            return (filterHelper.getFilterData(filterType) as string) || DEFAULT_FILTER_STATE;
         }
     } else {
         // For regular tags: read from the filter helper's TAG filter data
-        const tagFilterData = filterHelper.getFilterData(FILTER_TYPES.TAG);
-        if (tagFilterData.excluded.includes(tag.id)) {
+        const tagFilterData = filterHelper.getFilterData(FILTER_TYPES.TAG) as { excluded: string[]; selected: string[] };
+        if (tagFilterData.excluded.includes(tag.id as string)) {
             return 'EXCLUDED';
         }
-        if (tagFilterData.selected.includes(tag.id)) {
+        if (tagFilterData.selected.includes(tag.id as string)) {
             return 'SELECTED';
         }
     }
@@ -217,30 +216,25 @@ function determineTagFilterState(filterHelper, tag, isFilterActionable) {
  * @param {boolean} [param1.simulateClick] - Optionally specify that the state should not just be set on the html element, but actually achieved via triggering the "click" on it, which follows up with the general click handlers and reprinting
  * @returns {string} The string representing the new state
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'element' implicitly has an 'any' type.
-function toggleTagThreeState(element, { stateOverride = undefined, simulateClick = false } = {}) {
+function toggleTagThreeState(element: HTMLElement | null, { stateOverride = undefined, simulateClick = false }: { stateOverride?: string | symbol | undefined; simulateClick?: boolean } = {}): string {
     const states = Object.keys(FILTER_STATES);
 
-    // Make it clear we're getting indexes and handling the 'not found' case in one place
     /**
      *
      * @param key
      * @param fallback
      */
-    // @ts-expect-error TS(7006) FIXME: Parameter 'key' implicitly has an 'any' type.
-    function getStateIndex(key, fallback) {
-        const index = states.indexOf(key);
+    function getStateIndex(key: string | null | undefined, fallback: string): number {
+        const index = states.indexOf(key ?? '');
         return index !== -1 ? index : states.indexOf(fallback);
     }
 
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-    const overrideKey = typeof stateOverride == 'string' && states.includes(stateOverride) ? stateOverride : Object.keys(FILTER_STATES).find(key => FILTER_STATES[key] === stateOverride);
+    const overrideKey = typeof stateOverride == 'string' && states.includes(stateOverride) ? stateOverride : Object.keys(FILTER_STATES).find(key => (FILTER_STATES as Record<string, unknown>)[key] === stateOverride);
 
     const currentStateIndex = getStateIndex(element?.getAttribute('data-toggle-state'), DEFAULT_FILTER_STATE);
     const targetStateIndex = overrideKey !== undefined ? getStateIndex(overrideKey, DEFAULT_FILTER_STATE) : (currentStateIndex + 1) % states.length;
 
     if (simulateClick) {
-        // Calculate how many clicks are needed to go from the current state to the target state
         let clickCount = 0;
         if (targetStateIndex >= currentStateIndex) {
             clickCount = targetStateIndex - currentStateIndex;
@@ -254,12 +248,10 @@ function toggleTagThreeState(element, { stateOverride = undefined, simulateClick
 
         console.debug('manually click-toggle three-way filter from', states[currentStateIndex], 'to', states[targetStateIndex], 'on', element);
     } else {
-        element?.setAttribute('data-toggle-state', states[targetStateIndex]);
+        element?.setAttribute('data-toggle-state', states[targetStateIndex]!);
 
-        // Update css class and remove all others
         states.forEach(state => {
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-            element?.classList.toggle(FILTER_STATES[state].class, state === states[targetStateIndex]);
+            element?.classList.toggle(((FILTER_STATES as Record<string, { class: string }>)[state])?.class ?? '', state === states[targetStateIndex]);
         });
 
         if (states[currentStateIndex] !== states[targetStateIndex]) {
@@ -268,7 +260,7 @@ function toggleTagThreeState(element, { stateOverride = undefined, simulateClick
     }
 
 
-    return states[targetStateIndex];
+    return states[targetStateIndex]!;
 }
 
 // ──────────────────────────────────────────────
@@ -279,13 +271,14 @@ function toggleTagThreeState(element, { stateOverride = undefined, simulateClick
  * Common logic for applying actionable tag filters (Favorites, Groups, Folders).
  * Persists state to storage for all filter contexts.
  * @param {FilterHelper} filterHelper - Instance of FilterHelper class
+ * @param filterHelper.getFilterData
+ * @param filterHelper.setFilterData
+ * @param filterHelper.getFilterStorageKey
  * @param {object} tag - The actionable tag object
  * @param {string} filterType - The filter type constant
  * @param {string} storageKey - The storage key base for persistence
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'filterHelper' implicitly has an 'any' t... Remove this comment to see the full error message
-function applyActionableTagFilter(filterHelper, tag, filterType, storageKey) {
-    // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does not have a type annotation.
+function applyActionableTagFilter(this: HTMLElement, filterHelper: { getFilterData: (type: string) => unknown; setFilterData: (type: string, state: string) => void; getFilterStorageKey?: () => string | null }, tag: Record<string, unknown>, filterType: string, storageKey: string): void {
     const state = toggleTagThreeState(this);
 
     // Persist to storage for all contexts
@@ -307,41 +300,41 @@ function applyActionableTagFilter(filterHelper, tag, filterType, storageKey) {
 /**
  * Applies the favorite filter to the character list.
  * @param {FilterHelper} filterHelper Instance of FilterHelper class.
+ * @param filterHelper.getFilterData
+ * @param filterHelper.setFilterData
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'filterHelper' implicitly has an 'any' t... Remove this comment to see the full error message
-function filterByFav(filterHelper) {
-    // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
+function filterByFav(this: HTMLElement, filterHelper: { getFilterData: (type: string) => unknown; setFilterData: (type: string, state: string) => void }): void {
     applyActionableTagFilter.call(this, filterHelper, ACTIONABLE_TAGS.FAV, FILTER_TYPES.FAV, ACTIONABLE_FILTER_STORAGE_KEYS.FAV);
 }
 
 /**
  * Applies the "is group" filter to the character list.
  * @param {FilterHelper} filterHelper Instance of FilterHelper class.
+ * @param filterHelper.getFilterData
+ * @param filterHelper.setFilterData
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'filterHelper' implicitly has an 'any' t... Remove this comment to see the full error message
-function filterByGroups(filterHelper) {
-    // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
+function filterByGroups(this: HTMLElement, filterHelper: { getFilterData: (type: string) => unknown; setFilterData: (type: string, state: string) => void }): void {
     applyActionableTagFilter.call(this, filterHelper, ACTIONABLE_TAGS.GROUP, FILTER_TYPES.GROUP, ACTIONABLE_FILTER_STORAGE_KEYS.GROUP);
 }
 
 /**
  * Applies the "only folder" filter to the character list.
  * @param {FilterHelper} filterHelper Instance of FilterHelper class.
+ * @param filterHelper.getFilterData
+ * @param filterHelper.setFilterData
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'filterHelper' implicitly has an 'any' t... Remove this comment to see the full error message
-function filterByFolder(filterHelper) {
+function filterByFolder(this: HTMLElement, filterHelper: { getFilterData: (type: string) => unknown; setFilterData: (type: string, state: string) => void }): void {
     if (!power_user.bogus_folders) {
         const bogusFolders = document.getElementById('bogus_folders');
         if (bogusFolders) {
             (bogusFolders as HTMLInputElement).checked = true;
             bogusFolders.dispatchEvent(new Event('input', { bubbles: true }));
         }
-        _onViewTagsListClick();
+        _onViewTagsListClick?.();
         flashHighlight(document.querySelector('#tag_view_list .tag_as_folder, #tag_view_list .tag_folder_indicator'));
         return;
     }
 
-    // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
     applyActionableTagFilter.call(this, filterHelper, ACTIONABLE_TAGS.FOLDER, FILTER_TYPES.FOLDER, ACTIONABLE_FILTER_STORAGE_KEYS.FOLDER);
 }
 
@@ -353,12 +346,11 @@ function filterByFolder(filterHelper) {
  *
  * @param listElement
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'listElement' implicitly has an 'any' ty... Remove this comment to see the full error message
-function runTagFilters(listElement) {
+function runTagFilters(listElement: string | HTMLElement | null): void {
     const $listEl = typeof listElement === 'string' ? document.querySelector(listElement) : listElement;
-    const tagIds = getTagIdsFromDOM($listEl, '.tag.selected:not(.actionable)');
-    const excludedTagIds = getTagIdsFromDOM($listEl, '.tag.excluded:not(.actionable)');
-    const filterHelper = getFilterHelper(listElement);
+    const tagIds = getTagIdsFromDOM($listEl as HTMLElement | null, '.tag.selected:not(.actionable)');
+    const excludedTagIds = getTagIdsFromDOM($listEl as HTMLElement | null, '.tag.excluded:not(.actionable)');
+    const filterHelper = getFilterHelper(listElement) as { setFilterData: (type: string, data: unknown) => void };
     filterHelper.setFilterData(FILTER_TYPES.TAG, { excluded: excludedTagIds, selected: tagIds });
 }
 
@@ -369,13 +361,13 @@ function runTagFilters(listElement) {
 /**
  * Loads persisted filter states for a given filter context.
  * @param {FilterHelper} filterHelper - The filter helper instance
+ * @param filterHelper.setFilterData
+ * @param filterHelper.getFilterData
  * @param {string} storagePrefix - The storage key prefix for this context
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'filterHelper' implicitly has an 'any' t... Remove this comment to see the full error message
-function loadFilterStatesForContext(filterHelper, storagePrefix) {
+function loadFilterStatesForContext(filterHelper: { setFilterData: (type: string, data: unknown, quiet?: boolean) => void; getFilterData: (type: string) => { excluded: string[]; selected: string[] } }, storagePrefix: string): void {
     const validStates = new Set(Object.keys(FILTER_STATES));
-    // @ts-expect-error TS(7006) FIXME: Parameter 'storageKey' implicitly has an 'any' typ... Remove this comment to see the full error message
-    const readState = (/** @type {string} */ storageKey) => {
+    const readState = (storageKey: string): string | null => {
         const v = accountStorage.getItem(storageKey);
         return v && validStates.has(v) ? v : null;
     };
@@ -423,9 +415,9 @@ function loadFilterStatesForContext(filterHelper, storagePrefix) {
 function restoreSavedTagFilters() {
     try {
         // Load persisted filter states for all contexts (including character list)
-        loadFilterStatesForContext(entitiesFilter, 'CharacterList');
-        loadFilterStatesForContext(groupCandidatesFilter, 'GroupCandidates');
-        loadFilterStatesForContext(groupMembersFilter, 'GroupMembers');
+        loadFilterStatesForContext(entitiesFilter as { setFilterData: (type: string, data: unknown, quiet?: boolean) => void; getFilterData: (type: string) => { excluded: string[]; selected: string[] } }, 'CharacterList');
+        loadFilterStatesForContext(groupCandidatesFilter as { setFilterData: (type: string, data: unknown, quiet?: boolean) => void; getFilterData: (type: string) => { excluded: string[]; selected: string[] } }, 'GroupCandidates');
+        loadFilterStatesForContext(groupMembersFilter as { setFilterData: (type: string, data: unknown, quiet?: boolean) => void; getFilterData: (type: string) => { excluded: string[]; selected: string[] } }, 'GroupMembers');
     } catch (e) {
         console.warn('Failed to restore actionable filter states from account storage', e);
     }
@@ -434,22 +426,20 @@ function restoreSavedTagFilters() {
 /**
  *
  */
-function removeMissingTagFilters() {
-    // @ts-expect-error TS(7005) FIXME: Variable 'tags' implicitly has an 'any[]' type.
-    const tagIds = new Set(tags.map(tag => tag.id));
+function removeMissingTagFilters(): void {
+    const tagIds = new Set((tags as Record<string, unknown>[]).map(tag => tag.id as string));
     const assignedTagIds = new Set(Object.values(tag_map).flat());
-    // @ts-expect-error TS(7006) FIXME: Parameter 'tag' implicitly has an 'any' type.
-    const openBogusFolderIds = new Set(getOpenBogusFolders().map(tag => tag.id));
-    // @ts-expect-error TS(7006) FIXME: Parameter 'tagId' implicitly has an 'any' type.
-    const isEmptyOpenBogusFolder = (tagId) => openBogusFolderIds.has(tagId) && !assignedTagIds.has(tagId);
+    const openBogusFolderIds = new Set(getOpenBogusFolders().map(tag => tag.id as string));
+    const isEmptyOpenBogusFolder = (tagId: string): boolean => openBogusFolderIds.has(tagId) && !assignedTagIds.has(tagId);
 
     for (const helper of [groupCandidatesFilter, groupMembersFilter, entitiesFilter]) {
-        const { selected, excluded } = helper.getFilterData(FILTER_TYPES.TAG);
+        const { selected, excluded } = helper.getFilterData(FILTER_TYPES.TAG) as { selected: string[]; excluded: string[] };
         let anyRemoved = false;
 
         if (Array.isArray(selected)) {
             for (let i = selected.length - 1; i >= 0; i--) {
-                if (!tagIds.has(selected[i]) || isEmptyOpenBogusFolder(selected[i])) {
+                const id = selected[i]!;
+                if (!tagIds.has(id) || isEmptyOpenBogusFolder(id)) {
                     selected.splice(i, 1);
                     anyRemoved = true;
                 }
@@ -458,7 +448,8 @@ function removeMissingTagFilters() {
 
         if (Array.isArray(excluded)) {
             for (let i = excluded.length - 1; i >= 0; i--) {
-                if (!tagIds.has(excluded[i]) || isEmptyOpenBogusFolder(excluded[i])) {
+                const id = excluded[i]!;
+                if (!tagIds.has(id) || isEmptyOpenBogusFolder(id)) {
                     excluded.splice(i, 1);
                     anyRemoved = true;
                 }
@@ -481,10 +472,8 @@ function removeMissingTagFilters() {
  * @param {object[]} actionTags - Array of actionable tag objects
  * @returns {object[]} Filtered array of actionable tags
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'actionTags' implicitly has an 'any' typ... Remove this comment to see the full error message
-function filterActionableTagsForGroupContext(actionTags) {
-    // @ts-expect-error TS(7006) FIXME: Parameter 'tag' implicitly has an 'any' type.
-    return actionTags.filter(tag => {
+function filterActionableTagsForGroupContext(actionTags: Record<string, unknown>[]): Record<string, unknown>[] {
+    return actionTags.filter((tag: Record<string, unknown>) => {
         // Always show Favorites
         if (tag.id === ACTIONABLE_TAGS.FAV.id) {
             return true;

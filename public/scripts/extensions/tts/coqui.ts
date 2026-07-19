@@ -43,7 +43,6 @@ const languageLabels = {
 };
 
 function throwIfModuleMissing() {
-    // @ts-expect-error TS(2345): Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
     if (!modules.includes('coqui-tts')) {
         const message = 'Coqui TTS module not loaded. Add coqui-tts to enable-modules and restart the Extras API.';
         // notyf.error(message, { timeOut: 10000, extendedTimeOut: 20000, preventDuplicates: true });
@@ -586,7 +585,7 @@ class CoquiTtsProvider {
                     }
                 } catch (error) {
                     console.error(error);
-                    notyf.error(error, DEBUG_PREFIX + ' error with model download', { timeOut: 10000, extendedTimeOut: 20000, preventDuplicates: true });
+                    notyf.error(String(error), DEBUG_PREFIX + ' error with model download', { timeOut: 10000, extendedTimeOut: 20000, preventDuplicates: true });
                     onModelNameChange_pointer();
                 }
                 // will refresh model status
@@ -607,7 +606,7 @@ class CoquiTtsProvider {
     */
     static async checkmodel_state(model_id: any) {
         throwIfModuleMissing();
-        const url = new URL(getApiUrl());
+        const url = new URL(getApiUrl() as string);
         url.pathname = '/api/text-to-speech/coqui/coqui-api/check-model-state';
 
         const apiResult = await doExtrasFetch(url, {
@@ -631,7 +630,7 @@ class CoquiTtsProvider {
 
     static async installModel(model_id: any, action: any) {
         throwIfModuleMissing();
-        const url = new URL(getApiUrl());
+        const url = new URL(getApiUrl() as string);
         url.pathname = '/api/text-to-speech/coqui/coqui-api/install-model';
 
         const apiResult = await doExtrasFetch(url, {
@@ -659,7 +658,7 @@ class CoquiTtsProvider {
     */
     static async getLocalModelList() {
         throwIfModuleMissing();
-        const url = new URL(getApiUrl());
+        const url = new URL(getApiUrl() as string);
         url.pathname = '/api/text-to-speech/coqui/local/get-models';
 
         const apiResult = await doExtrasFetch(url, {
@@ -691,7 +690,7 @@ class CoquiTtsProvider {
         throwIfModuleMissing();
         voiceId = this.settings.customVoices[voiceId];
 
-        const url = new URL(getApiUrl());
+        const url = new URL(getApiUrl() as string);
         url.pathname = '/api/text-to-speech/coqui/generate-tts';
 
         let language = 'none';
@@ -756,7 +755,6 @@ class CoquiTtsProvider {
 }
 
 async function initLocalModels() {
-    // @ts-expect-error TS(2345): Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
     if (!modules.includes('coqui-tts'))
         return;
 

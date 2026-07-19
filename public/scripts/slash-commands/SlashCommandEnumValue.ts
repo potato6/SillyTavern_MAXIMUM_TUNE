@@ -1,6 +1,4 @@
-/**
- * @typedef {'enum' | 'command' | 'namedArgument' | 'variable' | 'qr' | 'macro' | 'number' | 'name'} EnumType
- */
+type EnumType = 'enum' | 'command' | 'namedArgument' | 'variable' | 'qr' | 'macro' | 'number' | 'name';
 
 /**
  * Collection of the enum types that can be used with `SlashCommandEnumValue`
@@ -8,22 +6,14 @@
  * Contains documentation on which color this will result to
  */
 export const enumTypes = {
-    /** 'enum' - [string] - light orange @type {EnumType} */
-    enum: 'enum',
-    /** 'command' - [cmd] - light yellow @type {EnumType} */
-    command: 'command',
-    /** 'namedArgument' - [argName] - sky blue @type {EnumType} */
-    namedArgument: 'namedArgument',
-    /** 'variable' - [punctuationL1] - pink @type {EnumType} */
-    variable: 'variable',
-    /** 'qr' - [variable] - light blue @type {EnumType} */
-    qr: 'qr',
-    /** 'macro' - [variableLanguage] - blue @type {EnumType} */
-    macro: 'macro',
-    /** 'number' - [number] - light green @type {EnumType} */
-    number: 'number',
-    /** 'name' - [type] - forest green @type {EnumType} */
-    name: 'name',
+    enum: 'enum' as EnumType,
+    command: 'command' as EnumType,
+    namedArgument: 'namedArgument' as EnumType,
+    variable: 'variable' as EnumType,
+    qr: 'qr' as EnumType,
+    macro: 'macro' as EnumType,
+    number: 'number' as EnumType,
+    name: 'name' as EnumType,
 
     /**
      * Gets the value of the enum type based on the provided index
@@ -41,16 +31,13 @@ export const enumTypes = {
 };
 
 export class SlashCommandEnumValue {
-    /**@type {string}*/ value;
-    // @ts-expect-error TS(7008) FIXME: Member 'description' implicitly has an 'any' type.
-    /**@type {string}*/ description;
-    /**@type {EnumType}*/ type = 'enum';
-    /**@type {string}*/ typeIcon = '◊';
-    // @ts-expect-error TS(7008) FIXME: Member 'matchProvider' implicitly has an 'any' typ... Remove this comment to see the full error message
-    /**@type {(input:string)=>boolean}*/ matchProvider;
-    // @ts-expect-error TS(7008) FIXME: Member 'valueProvider' implicitly has an 'any' typ... Remove this comment to see the full error message
-    /**@type {(input:string)=>string}*/ valueProvider;
-    /**@type {boolean}*/ makeSelectable = false;
+    value!: string;
+    description: string | null = null;
+    type: EnumType = 'enum';
+    typeIcon = '◊';
+    matchProvider: ((input: string) => boolean | SlashCommandEnumValue[]) | null = null;
+    valueProvider: ((input: string) => string) | null = null;
+    makeSelectable = false;
 
     /**
      * A constructor for creating a SlashCommandEnumValue instance.
@@ -62,8 +49,7 @@ export class SlashCommandEnumValue {
      * @param {(input:string)=>string?} valueProvider - A function returning a value to be used in autocomplete instead of the enum value. "input" is the part of the text that is getting auto completed. By default, values with a valueProvider will not be selectable in the autocomplete (with tab/enter).
      * @param {boolean?} makeSelectable - Set to true to make the value selectable (through tab/enter) even though a valueProvider exists.
      */
-    // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
-    constructor(value, description = null, type = 'enum', typeIcon = '◊', matchProvider = null, valueProvider = null, makeSelectable = false) {
+    constructor(value: string, description: string | null = null, type: EnumType = 'enum', typeIcon: string = '◊', matchProvider: ((input: string) => boolean | SlashCommandEnumValue[]) | null = null, valueProvider: ((input: string) => string) | null = null, makeSelectable: boolean = false) {
         this.value = value;
         this.description = description;
         this.type = type ?? 'enum';

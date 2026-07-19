@@ -61,17 +61,17 @@ import { addTagsToEntity } from './orchestrator.js';
  * Applies the basic filter for the current state of the tags and their selection on an entity list.
  * @param {Array<object>} entities List of entities for display
  * @param {object} param1 Optional parameters
+ * @param param1.globalDisplayFilters
+ * @param param1.subForEntity
+ * @param param1.filterHidden
  * @returns The filtered list of entities
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'entities' implicitly has an 'any' type.
-export function filterByTagState(entities, { globalDisplayFilters = false, subForEntity = undefined, filterHidden = true } = {}) {
-    const filterData = structuredClone(entitiesFilter.getFilterData(FILTER_TYPES.TAG));
+export function filterByTagState(entities: Record<string, unknown>[], { globalDisplayFilters = false, subForEntity = undefined, filterHidden = true }: { globalDisplayFilters?: boolean; subForEntity?: Record<string, unknown>; filterHidden?: boolean } = {}): Record<string, unknown>[] {
+    const filterData = structuredClone(entitiesFilter.getFilterData(FILTER_TYPES.TAG)) as { excluded: string[]; selected: string[] };
 
-    // @ts-expect-error TS(7006)
-    entities = entities.filter(entity => {
+    entities = entities.filter((entity: Record<string, unknown>) => {
         if (entity.type === 'tag') {
-            // @ts-expect-error TS(2532)
-            if (filterData.selected.includes(entity.id) || filterData.excluded.includes(entity.id)) {
+            if (filterData.selected.includes(entity.id as string) || filterData.excluded.includes(entity.id as string)) {
                 return false;
             }
         }
@@ -79,26 +79,21 @@ export function filterByTagState(entities, { globalDisplayFilters = false, subFo
     });
 
     if (globalDisplayFilters) {
-        // @ts-expect-error TS(7006)
-        const closedFolders = entities.filter(x => x.type === 'tag' && getFolderType(x.item).class === TAG_FOLDER_TYPES.CLOSED.class);
+        const closedFolders = entities.filter((x: Record<string, unknown>) => x.type === 'tag' && (getFolderType(x.item as Record<string, unknown>) as Record<string, unknown>).class === (TAG_FOLDER_TYPES as Record<string, { class: string }>).CLOSED!.class);
 
-        // @ts-expect-error TS(7006)
-        entities = entities.filter(entity => {
-            // @ts-expect-error TS(7006)
-            if (filterHidden && entity.type !== 'tag' && closedFolders.some(f => entitiesFilter.isElementTagged(entity, f.id) && !filterData.selected.includes(f.id))) {
+        entities = entities.filter((entity: Record<string, unknown>) => {
+            if (filterHidden && entity.type !== 'tag' && closedFolders.some((f: Record<string, unknown>) => entitiesFilter.isElementTagged(entity, f.id) && !filterData.selected.includes(f.id as string))) {
                 return false;
             }
             if (entity.type === 'tag') {
-                return entity.entities.length > 0 || entitiesFilter.getFilterData(FILTER_TYPES.SEARCH);
+                return (entity.entities as unknown[]).length > 0 || entitiesFilter.getFilterData(FILTER_TYPES.SEARCH);
             }
             return true;
         });
     }
 
-    // @ts-expect-error TS(2339)
     if (subForEntity !== undefined && subForEntity.type === 'tag') {
-        // @ts-expect-error TS(2339)
-        entities = filterTagSubEntities(subForEntity.item, entities, { filterHidden: filterHidden });
+        entities = filterTagSubEntities(subForEntity.item as Record<string, unknown>, entities, { filterHidden: filterHidden });
     }
 
     return entities;
@@ -106,21 +101,21 @@ export function filterByTagState(entities, { globalDisplayFilters = false, subFo
 
 /**
  * Filter entities based on a given tag, returning all entities that represent "sub entities"
+ * @param tag
+ * @param entities
+ * @param root0
+ * @param root0.filterHidden
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'tag' implicitly has an 'any' type.
-function filterTagSubEntities(tag, entities, { filterHidden = true } = {}) {
-    const filterData = structuredClone(entitiesFilter.getFilterData(FILTER_TYPES.TAG));
+function filterTagSubEntities(tag: Record<string, unknown>, entities: Record<string, unknown>[], { filterHidden = true }: { filterHidden?: boolean } = {}): Record<string, unknown>[] {
+    const filterData = structuredClone(entitiesFilter.getFilterData(FILTER_TYPES.TAG)) as { excluded: string[]; selected: string[] };
 
-    // @ts-expect-error TS(7006)
-    const closedFolders = entities.filter(x => x.type === 'tag' && getFolderType(x.item).class === TAG_FOLDER_TYPES.CLOSED.class);
+    const closedFolders = entities.filter((x: Record<string, unknown>) => x.type === 'tag' && (getFolderType(x.item as Record<string, unknown>) as Record<string, unknown>).class === (TAG_FOLDER_TYPES as Record<string, { class: string }>).CLOSED!.class);
 
-    // @ts-expect-error TS(7006)
-    entities = entities.filter(sub => {
-        if (sub.type === 'tag' || !entitiesFilter.isElementTagged(sub, tag.id)) {
+    entities = entities.filter((sub: Record<string, unknown>) => {
+        if (sub.type === 'tag' || !entitiesFilter.isElementTagged(sub, tag.id as string)) {
             return false;
         }
-        // @ts-expect-error TS(7053)
-        if (filterHidden && sub.type !== 'tag' && getFolderType(tag).class !== TAG_FOLDER_TYPES.CLOSED.class && closedFolders.some(f => entitiesFilter.isElementTagged(sub, f.id) && !filterData.selected.includes(f.id))) {
+        if (filterHidden && sub.type !== 'tag' && (getFolderType(tag) as Record<string, unknown>).class !== (TAG_FOLDER_TYPES as Record<string, { class: string }>).CLOSED!.class && closedFolders.some((f: Record<string, unknown>) => entitiesFilter.isElementTagged(sub, f.id as string) && !filterData.selected.includes(f.id as string))) {
             return false;
         }
         return true;
@@ -135,9 +130,15 @@ function filterTagSubEntities(tag, entities, { filterHidden = true } = {}) {
 
 /**
  * Select a tag from autocomplete and add to list
+ * @param event
+ * @param ui
+ * @param ui.item
+ * @param ui.item.value
+ * @param listSelector
+ * @param root1
+ * @param root1.tagListOptions
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
-export function selectTag(event, ui, listSelector, { tagListOptions = {} } = {}) {
+export function selectTag(event: Event | HTMLElement, ui: { item: { value: string } }, listSelector: string, { tagListOptions = {} }: { tagListOptions?: Record<string, unknown> } = {}): boolean {
     const tagName = ui.item.value;
     let tag = getTag(tagName);
 
@@ -145,12 +146,13 @@ export function selectTag(event, ui, listSelector, { tagListOptions = {} } = {})
         tag = createNewTag(tagName);
     }
 
-    if (event.target instanceof HTMLInputElement) {
-        event.target.value = '';
-        event.target.dispatchEvent(new Event('input', { bubbles: true }));
+    const evtTarget = (event as Event).target as HTMLElement;
+    if (evtTarget instanceof HTMLInputElement) {
+        evtTarget.value = '';
+        evtTarget.dispatchEvent(new Event('input', { bubbles: true }));
     }
 
-    const characterData = event.target.closest('#bulk_tags_div')?.dataset.characters;
+    const characterData = (evtTarget.closest('#bulk_tags_div') as HTMLElement)?.dataset.characters;
     const characterIds = characterData ? JSON.parse(characterData).characterIds : null;
 
     addTagsToEntity(tag, characterIds, { tagListSelector: listSelector, tagListOptions: tagListOptions });
@@ -166,7 +168,8 @@ export function selectTag(event, ui, listSelector, { tagListOptions = {} } = {})
 
 /**
  * Converts a tag to an entity format used by the entity list system.
+ * @param tag
  */
-export function tagToEntity(tag) {
-    return { item: structuredClone(tag), id: tag.id, type: 'tag', entities: [] };
+export function tagToEntity(tag: Record<string, unknown>): { item: Record<string, unknown>; id: string; type: string; entities: unknown[] } {
+    return { item: structuredClone(tag), id: tag.id as string, type: 'tag', entities: [] };
 }

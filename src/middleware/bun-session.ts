@@ -13,10 +13,19 @@ declare global {
 
 const encoder = new TextEncoder();
 
+/**
+ *
+ * @param payload
+ * @param secret
+ */
 function sign(payload: string, secret: string): string {
     return createHmac('sha256', secret).update(payload).digest('base64url');
 }
 
+/**
+ *
+ * @param value
+ */
 function unsafeDecode(value: string): { data: Record<string, unknown> | null; sig: string } | null {
     const dot = value.indexOf('.');
     if (dot === -1) return null;
@@ -43,6 +52,12 @@ function unsafeDecode(value: string): { data: Record<string, unknown> | null; si
  * - Set `req.session = null` to destroy the session (clears the cookie)
  * - Setting any property triggers a cookie re-sign on response
  * - `req.session.touch = Date.now()` refreshes the cookie expiry
+ * @param opts
+ * @param opts.name
+ * @param opts.maxAge
+ * @param opts.secret
+ * @param opts.httpOnly
+ * @param opts.sameSite
  */
 export default function bunSessionMiddleware(opts: {
     name: string;
@@ -172,7 +187,7 @@ export default function bunSessionMiddleware(opts: {
 
         const finish = (...args: unknown[]) => {
             if (dirty) setSessionCookie();
-            return originalEnd(args[0], args[1]);
+            return (originalEnd as (...a: unknown[]) => ReturnType<typeof res.end>)(args[0], args[1]);
         };
 
         res.end = finish as unknown as typeof res.end;

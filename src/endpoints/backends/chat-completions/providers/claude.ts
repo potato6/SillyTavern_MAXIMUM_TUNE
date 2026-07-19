@@ -187,7 +187,6 @@ const provider: ChatProvider = {
             });
 
             if (req.body.stream) {
-                // @ts-expect-error TS(2345) — web Response vs node-fetch Response; works on Bun
                 await forwardFetchResponse(generateResponse, res);
             } else {
                 if (!generateResponse.ok) {

@@ -649,7 +649,7 @@ export async function forwardFetchResponse(from: Response, to: import('express')
         // Convert to Node.js Readable for cross-runtime compatibility.
         const stream: Readable = typeof (from.body as unknown as { pipe?: unknown }).pipe === 'function'
             ? from.body as unknown as Readable
-            : Readable.fromWeb(from.body as unknown as ReadableStream<Uint8Array>);
+            : Readable.fromWeb(from.body as unknown as import('node:stream/web').ReadableStream<Uint8Array>);
 
         stream.pipe(to);
 

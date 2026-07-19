@@ -7,6 +7,7 @@
  * Usage:
  *   const { signal } = createSocketAbortController(req);
  *   const response = await fetch(url, { signal, ... });
+ * @param socket
  */
 export function createSocketAbortController(
     socket: import('net').Socket | import('node:net').Socket | undefined,

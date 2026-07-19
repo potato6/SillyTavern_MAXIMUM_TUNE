@@ -190,7 +190,6 @@ export function updateBindModelTemplatesState() {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'preset' implicitly has an 'any' type.
 export function selectContextPreset(preset, { quiet = false, isAuto = false } = {}) {
-    // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
     const presetExists = context_presets.some(x => x.name === preset);
     if (!presetExists) {
         console.warn(`Context template "${preset}" not found`);
@@ -204,7 +203,6 @@ export function selectContextPreset(preset, { quiet = false, isAuto = false } = 
             cp.value = preset;
             cp.dispatchEvent(new Event('change'));
         }
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         if (!quiet) notyf.info(`Context Template: "${preset}" ${isAuto ? 'auto-' : ''}selected`);
     }
 
@@ -236,7 +234,6 @@ export function selectInstructPreset(preset, { quiet = false, isAuto = false } =
             ip.value = preset;
             ip.dispatchEvent(new Event('change'));
         }
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         if (!quiet) notyf.info(`Instruct Template: "${preset}" ${isAuto ? 'auto-' : ''}selected`);
     }
 
@@ -248,7 +245,6 @@ export function selectInstructPreset(preset, { quiet = false, isAuto = false } =
             ie.checked = true;
             ie.dispatchEvent(new Event('change'));
         }
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         if (!quiet) notyf.info('Instruct Mode enabled');
     }
 
@@ -715,9 +711,7 @@ export function formatInstructModePrompt(name, isImpersonate, promptBias, name1,
 function selectMatchingContextTemplate(name) {
     for (const context_preset of context_presets) {
         // If context template matches the instruct preset
-        // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
         if (context_preset.name === name) {
-            // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
             selectContextPreset(context_preset.name, { isAuto: true });
             break;
         }

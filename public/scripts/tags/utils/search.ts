@@ -9,17 +9,23 @@ import { equalsIgnoreCaseAndAccents, includesIgnoreCaseAndAccents, findChar } fr
 import { compareTagsForSort } from './sorting.js';
 import { tags, getTagKeyForEntity, getTagIdsFromDOM } from '../store/tagStore.js';
 
+declare const notyf: {
+    warning: (msg: string, ...args: unknown[]) => void;
+    success: (msg: string, ...args: unknown[]) => void;
+    error: (msg: string, ...args: unknown[]) => void;
+    info: (msg: string, ...args: unknown[]) => void;
+};
+
 /**
  * @param request
+ * @param request.term
  * @param resolve
  * @param listSelector
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'request' implicitly has an 'any' type.
-export function findTag(request, resolve, listSelector) {
-    const $listEl = typeof listSelector === 'string' ? document.querySelector(listSelector) : listSelector;
+export function findTag(request: { term: string }, resolve: (results: string[]) => void, listSelector: string | HTMLElement | null) {
+    const $listEl: HTMLElement | null = typeof listSelector === 'string' ? document.querySelector(listSelector) : listSelector as HTMLElement | null;
     const skipIds = getTagIdsFromDOM($listEl);
-    // @ts-expect-error TS(7005) FIXME: Variable 'tags' implicitly has an 'any[]' type.
-    const haystack = tags.filter(t => !skipIds.includes(t.id)).sort(compareTagsForSort).map(t => t.name);
+    const haystack = tags.filter((t: { id: string; name: string }) => !skipIds.includes(t.id)).sort(compareTagsForSort).map(t => t.name);
     const needle = request.term;
     const hasExactMatch = haystack.findIndex(x => equalsIgnoreCaseAndAccents(x, needle)) !== -1;
     const result = haystack.filter(x => includesIgnoreCaseAndAccents(x, needle));
@@ -39,16 +45,14 @@ export function findTag(request, resolve, listSelector) {
  * @param {boolean} [options.suppressLogging] - Whether to suppress the toastr warning
  * @returns {string?} - The char/group key, or null if none found
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'charName' implicitly has an 'any' type.
-export function searchCharByName(charName, { suppressLogging = false } = {}) {
+export function searchCharByName(charName: string | undefined, { suppressLogging = false }: { suppressLogging?: boolean } = {}) {
     const entity = charName
 
-        ? (findChar({ name: charName }) || groups.find(x => equalsIgnoreCaseAndAccents(x.name, charName)))
+        ? (findChar({ name: charName as unknown as null }) || groups.find(x => equalsIgnoreCaseAndAccents(x.name, charName as string)))
 
-        : (selected_group ? groups.find(x => x.id == selected_group) : characters[this_chid]);
+        : (selected_group ? groups.find(x => x.id == selected_group) : characters[this_chid!]);
     const key = getTagKeyForEntity(entity);
     if (!key) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         if (!suppressLogging) notyf.warning(`Character ${charName} not found.`);
         return null;
     }

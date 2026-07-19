@@ -30,6 +30,7 @@ class SwipeService {
 
     /**
      * Return the current swipe text for a message, or the raw message text.
+     * @param message
      */
     getCurrentText(message: ChatMessage): string {
         if (Array.isArray(message.swipes) && message.swipes.length > 0) {
@@ -41,6 +42,7 @@ class SwipeService {
 
     /**
      * Return all swipes for a message.
+     * @param message
      */
     getAll(message: ChatMessage): string[] {
         return message.swipes ?? [];
@@ -48,6 +50,7 @@ class SwipeService {
 
     /**
      * The number of swipes on a message.
+     * @param message
      */
     count(message: ChatMessage): number {
         return message.swipes?.length ?? 0;
@@ -55,6 +58,7 @@ class SwipeService {
 
     /**
      * Whether the message has more than one swipe.
+     * @param message
      */
     hasMultiple(message: ChatMessage): boolean {
         return (message.swipes?.length ?? 0) > 1;
@@ -65,6 +69,7 @@ class SwipeService {
     /**
      * Switch to the next swipe (forward).
      * Wraps to the first swipe at the end.
+     * @param messageIndex
      */
     async next(messageIndex: number): Promise<SwipeResult> {
         const message = chatSession.getMessage(messageIndex);
@@ -83,6 +88,7 @@ class SwipeService {
     /**
      * Switch to the previous swipe (backward).
      * Wraps to the last swipe at the beginning.
+     * @param messageIndex
      */
     async prev(messageIndex: number): Promise<SwipeResult> {
         const message = chatSession.getMessage(messageIndex);
@@ -100,6 +106,8 @@ class SwipeService {
 
     /**
      * Jump to a specific swipe id.
+     * @param messageIndex
+     * @param swipeId
      */
     async goTo(messageIndex: number, swipeId: number): Promise<SwipeResult> {
         const message = chatSession.getMessage(messageIndex);
@@ -116,6 +124,8 @@ class SwipeService {
 
     /**
      * Append a new swipe to a message.
+     * @param messageIndex
+     * @param text
      */
     async append(messageIndex: number, text: string): Promise<SwipeResult> {
         const message = chatSession.getMessage(messageIndex);
@@ -138,6 +148,8 @@ class SwipeService {
     /**
      * Delete a specific swipe from a message.
      * If the current swipe is deleted, switches to an adjacent one.
+     * @param messageIndex
+     * @param swipeId
      */
     async delete(messageIndex: number, swipeId: number): Promise<SwipeResult> {
         const message = chatSession.getMessage(messageIndex);

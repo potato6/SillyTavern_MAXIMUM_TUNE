@@ -191,31 +191,26 @@ async function enableDataBankAttachment(args: any, value: any) {
         return '';
     }
 
-    // @ts-expect-error TS(2345): Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
-    const index = extension_settings.disabled_attachments.indexOf(attachment.url);
+    const index = (extension_settings.disabled_attachments as string[]).indexOf(attachment.url);
     if (index === -1) {
         return '';
     }
 
-    extension_settings.disabled_attachments.splice(index, 1);
+    (extension_settings.disabled_attachments as string[]).splice(index, 1);
     return '';
 }
 
 function cleanUpAttachments() {
     let shouldSaveSettings = false;
     if (extension_settings.character_attachments) {
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         Object.values(extension_settings.character_attachments).flat().filter(a => a.text).forEach(a => {
             shouldSaveSettings = true;
-            // @ts-expect-error TS(2571): Object is of type 'unknown'.
             delete a.text;
         });
     }
     if (Array.isArray(extension_settings.attachments)) {
-        // @ts-expect-error TS(2339): Property 'text' does not exist on type 'never'.
         extension_settings.attachments.filter(a => a.text).forEach(a => {
             shouldSaveSettings = true;
-            // @ts-expect-error TS(2339): Property 'text' does not exist on type 'never'.
             delete a.text;
         });
     }

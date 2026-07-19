@@ -369,7 +369,7 @@ async function listVariablesCallback(args) {
     const includeGlobalVariables = scope === 'all' || scope === 'global';
 
     const localVariables = includeLocalVariables ? Object.entries(chat_metadata.variables).map(([name, value]) => `${name}: ${value}`) : [];
-    const globalVariables = includeGlobalVariables ? Object.entries(extension_settings.variables.global).map(([name, value]) => `${name}: ${value}`) : [];
+    const globalVariables = includeGlobalVariables ? Object.entries((extension_settings.variables as { global: Record<string, string> }).global).map(([name, value]) => `${name}: ${value}`) : [];
 
     // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
     const buildTextValue = (_) => {
@@ -386,7 +386,7 @@ async function listVariablesCallback(args) {
 
     const jsonVariables = [
         ...Object.entries(chat_metadata.variables).map(x => ({ key: x[0], value: x[1], scope: 'local' })),
-        ...Object.entries(extension_settings.variables.global).map(x => ({ key: x[0], value: x[1], scope: 'global' })),
+        ...Object.entries((extension_settings.variables as { global: Record<string, string> }).global).map(x => ({ key: x[0], value: x[1], scope: 'global' })),
     ];
 
     return await slashCommandReturnHelper.doReturn(returnType ?? 'popup-html', jsonVariables, { objectToStringFunc: buildTextValue });
@@ -1168,11 +1168,8 @@ export function registerVariableCommands() {
                 isRequired: false,
                 forceEnum: true,
                 enumList: [
-                    // @ts-expect-error TS(2345) FIXME: Argument of type '"All variables"' is not assignab... Remove this comment to see the full error message
                     new SlashCommandEnumValue('all', 'All variables', enumTypes.enum, enumIcons.variable),
-                    // @ts-expect-error TS(2345) FIXME: Argument of type '"Local variables"' is not assign... Remove this comment to see the full error message
                     new SlashCommandEnumValue('local', 'Local variables', enumTypes.enum, enumIcons.localVariable),
-                    // @ts-expect-error TS(2345) FIXME: Argument of type '"Global variables"' is not assig... Remove this comment to see the full error message
                     new SlashCommandEnumValue('global', 'Global variables', enumTypes.enum, enumIcons.globalVariable),
                 ],
             }),
@@ -1584,23 +1581,14 @@ export function registerVariableCommands() {
                 typeList: [ARGUMENT_TYPE.STRING],
                 defaultValue: 'eq',
                 enumList: [
-                    // @ts-expect-error TS(2345) FIXME: Argument of type '"a == b (strings & numbers)"' is... Remove this comment to see the full error message
                     new SlashCommandEnumValue('eq', 'a == b (strings & numbers)'),
-                    // @ts-expect-error TS(2345) FIXME: Argument of type '"a !== b (strings & numbers)"' i... Remove this comment to see the full error message
                     new SlashCommandEnumValue('neq', 'a !== b (strings & numbers)'),
-                    // @ts-expect-error TS(2345) FIXME: Argument of type '"a includes b (strings & numbers... Remove this comment to see the full error message
                     new SlashCommandEnumValue('in', 'a includes b (strings & numbers as strings)'),
-                    // @ts-expect-error TS(2345) FIXME: Argument of type '"a not includes b (strings & num... Remove this comment to see the full error message
                     new SlashCommandEnumValue('nin', 'a not includes b (strings & numbers as strings)'),
-                    // @ts-expect-error TS(2345) FIXME: Argument of type '"a > b (numbers)"' is not assign... Remove this comment to see the full error message
                     new SlashCommandEnumValue('gt', 'a > b (numbers)'),
-                    // @ts-expect-error TS(2345) FIXME: Argument of type '"a >= b (numbers)"' is not assig... Remove this comment to see the full error message
                     new SlashCommandEnumValue('gte', 'a >= b (numbers)'),
-                    // @ts-expect-error TS(2345) FIXME: Argument of type '"a < b (numbers)"' is not assign... Remove this comment to see the full error message
                     new SlashCommandEnumValue('lt', 'a < b (numbers)'),
-                    // @ts-expect-error TS(2345) FIXME: Argument of type '"a <= b (numbers)"' is not assig... Remove this comment to see the full error message
                     new SlashCommandEnumValue('lte', 'a <= b (numbers)'),
-                    // @ts-expect-error TS(2345) FIXME: Argument of type '"!a (truthy)"' is not assignable... Remove this comment to see the full error message
                     new SlashCommandEnumValue('not', '!a (truthy)'),
                 ],
                 forceEnum: true,
@@ -1694,23 +1682,14 @@ export function registerVariableCommands() {
                 typeList: [ARGUMENT_TYPE.STRING],
                 defaultValue: 'eq',
                 enumList: [
-                    // @ts-expect-error TS(2345) FIXME: Argument of type '"a == b (strings & numbers)"' is... Remove this comment to see the full error message
                     new SlashCommandEnumValue('eq', 'a == b (strings & numbers)'),
-                    // @ts-expect-error TS(2345) FIXME: Argument of type '"a !== b (strings & numbers)"' i... Remove this comment to see the full error message
                     new SlashCommandEnumValue('neq', 'a !== b (strings & numbers)'),
-                    // @ts-expect-error TS(2345) FIXME: Argument of type '"a includes b (strings & numbers... Remove this comment to see the full error message
                     new SlashCommandEnumValue('in', 'a includes b (strings & numbers as strings)'),
-                    // @ts-expect-error TS(2345) FIXME: Argument of type '"a not includes b (strings & num... Remove this comment to see the full error message
                     new SlashCommandEnumValue('nin', 'a not includes b (strings & numbers as strings)'),
-                    // @ts-expect-error TS(2345) FIXME: Argument of type '"a > b (numbers)"' is not assign... Remove this comment to see the full error message
                     new SlashCommandEnumValue('gt', 'a > b (numbers)'),
-                    // @ts-expect-error TS(2345) FIXME: Argument of type '"a >= b (numbers)"' is not assig... Remove this comment to see the full error message
                     new SlashCommandEnumValue('gte', 'a >= b (numbers)'),
-                    // @ts-expect-error TS(2345) FIXME: Argument of type '"a < b (numbers)"' is not assign... Remove this comment to see the full error message
                     new SlashCommandEnumValue('lt', 'a < b (numbers)'),
-                    // @ts-expect-error TS(2345) FIXME: Argument of type '"a <= b (numbers)"' is not assig... Remove this comment to see the full error message
                     new SlashCommandEnumValue('lte', 'a <= b (numbers)'),
-                    // @ts-expect-error TS(2345) FIXME: Argument of type '"!a (truthy)"' is not assignable... Remove this comment to see the full error message
                     new SlashCommandEnumValue('not', '!a (truthy)'),
                 ],
                 forceEnum: true,

@@ -86,7 +86,7 @@ export function registerChatMacros() {
  * @param root0.exclude_swipe_in_propress
  * @param root0.filter
  */
-function getLastMessageId({ exclude_swipe_in_propress = true, filter = null } = {}) {
+function getLastMessageId({ exclude_swipe_in_propress = true, filter = null as ((m: ChatMessage) => boolean) | null } = {}) {
     if (!Array.isArray(chat) || chat.length === 0) {
         return null;
     }
@@ -99,8 +99,7 @@ function getLastMessageId({ exclude_swipe_in_propress = true, filter = null } = 
             continue;
         }
 
-        // @ts-expect-error TS(2349) FIXME: This expression is not callable.
-        if (!filter || filter(message)) {
+        if (!filter || filter(message as ChatMessage)) {
             return i;
         }
     }
@@ -113,7 +112,6 @@ function getLastMessageId({ exclude_swipe_in_propress = true, filter = null } = 
  */
 function getLastMessage() {
     const mid = getLastMessageId();
-    // @ts-expect-error TS(2339) FIXME: Property 'mes' does not exist on type 'never'.
     return typeof mid === 'number' ? (chat[mid]?.mes ?? '') : '';
 }
 
@@ -121,9 +119,7 @@ function getLastMessage() {
  *
  */
 function getLastUserMessage() {
-    // @ts-expect-error TS(2322) FIXME: Type '(m: any) => any' is not assignable to type '... Remove this comment to see the full error message
-    const mid = getLastMessageId({ filter: m => m.is_user && !m.is_system });
-    // @ts-expect-error TS(2339) FIXME: Property 'mes' does not exist on type 'never'.
+    const mid = getLastMessageId({ filter: (m: ChatMessage) => !!(m.is_user && !m.is_system) });
     return typeof mid === 'number' ? (chat[mid]?.mes ?? '') : '';
 }
 
@@ -131,9 +127,7 @@ function getLastUserMessage() {
  *
  */
 function getLastCharMessage() {
-    // @ts-expect-error TS(2322) FIXME: Type '(m: any) => boolean' is not assignable to ty... Remove this comment to see the full error message
-    const mid = getLastMessageId({ filter: m => !m.is_user && !m.is_system });
-    // @ts-expect-error TS(2339) FIXME: Property 'mes' does not exist on type 'never'.
+    const mid = getLastMessageId({ filter: (m: ChatMessage) => !m.is_user && !m.is_system });
     return typeof mid === 'number' ? (chat[mid]?.mes ?? '') : '';
 }
 
@@ -165,7 +159,6 @@ function getLastSwipeId() {
     if (typeof mid !== 'number') {
         return null;
     }
-    // @ts-expect-error TS(2339) FIXME: Property 'swipes' does not exist on type 'never'.
     const swipes = chat[mid]?.swipes;
     return Array.isArray(swipes) ? swipes.length : null;
 }
@@ -178,7 +171,6 @@ function getCurrentSwipeId() {
     if (typeof mid !== 'number') {
         return null;
     }
-    // @ts-expect-error TS(2339) FIXME: Property 'swipe_id' does not exist on type 'never'... Remove this comment to see the full error message
     const swipeId = chat[mid]?.swipe_id;
     return typeof swipeId === 'number' ? swipeId + 1 : null;
 }

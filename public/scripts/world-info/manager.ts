@@ -57,6 +57,8 @@ class WorldInfoManager {
     /**
      * Save helpers.
      * Kept as arrow-properties so `this` is always the manager instance.
+     * @param name
+     * @param data
      */
     saveWorldNow = async (name: string, data: WorldInfoBook) => {
         return await this._saveWorld(name, data);
@@ -83,7 +85,10 @@ class WorldInfoManager {
         this.onDataChanged = fn;
     }
 
-    /** Bulk-apply settings */
+    /**
+     * Bulk-apply settings
+     * @param settings
+     */
     applySettings(settings: Partial<{
         depth: number;
         minActivations: number;
@@ -114,7 +119,11 @@ class WorldInfoManager {
         if (settings.maxRecursionSteps !== undefined) this.maxRecursionSteps = Number(settings.maxRecursionSteps);
     }
 
-    /** Get a resolved entry setting, falling back to the global default */
+    /**
+     * Get a resolved entry setting, falling back to the global default
+     * @param entry
+     * @param key
+     */
     getEntrySetting(entry: WorldInfoEntryData, key: string): unknown {
         const entryVal = (entry as unknown as Record<string, unknown>)[key];
         if (entryVal !== null && entryVal !== undefined) return entryVal;
@@ -131,6 +140,7 @@ class WorldInfoManager {
     /**
      * Get or create a WorldInfoStore for the given book.
      * Stores are lazily initialized on first access.
+     * @param bookName
      */
     getStore(bookName: string): WorldInfoStore {
         if (!this.stores.has(bookName)) {
@@ -142,6 +152,7 @@ class WorldInfoManager {
     /**
      * Load a book's entries from the server into its store.
      * Replaces all existing entries in the store.
+     * @param name
      */
     async loadBookIntoStore(name: string): Promise<WorldInfoBook | null> {
         const book = await this.loadWorld(name);
@@ -158,6 +169,8 @@ class WorldInfoManager {
 
     /**
      * Serialize a store's entries back into a book object and persist to server.
+     * @param name
+     * @param metadata
      */
     async saveStoreToServer(name: string, metadata: Partial<WorldInfoBook> = {}): Promise<void> {
         const store = this.getStore(name);
@@ -168,6 +181,7 @@ class WorldInfoManager {
 
     /**
      * Release a store (e.g. when a book is deleted).
+     * @param name
      */
     releaseStore(name: string): void {
         this.stores.delete(name);
@@ -189,14 +203,21 @@ class WorldInfoManager {
         this.saveSettingsNow();
     }
 
-    /** Mark a world-info file save (saves immediately, no debounce) */
+    /**
+     * Mark a world-info file save (saves immediately, no debounce)
+     * @param name
+     * @param data
+     */
     async saveWorld(name: string, data: WorldInfoBook) {
         if (!name || !data) return;
         this.cache.set(name, data);
         return await this._saveWorld(name, data);
     }
 
-    /** Load a WI book, using cache if available */
+    /**
+     * Load a WI book, using cache if available
+     * @param name
+     */
     async loadWorld(name: string): Promise<WorldInfoBook | null> {
         if (!name) return null;
         if (this.cache.has(name)) return this.cache.get(name) as WorldInfoBook;

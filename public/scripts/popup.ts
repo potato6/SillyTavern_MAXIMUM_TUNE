@@ -174,11 +174,8 @@ export class Popup {
     // @ts-expect-error TS(7008) FIXME: Member 'customInputs' implicitly has an 'any' type... Remove this comment to see the full error message
     /** @readonly */ customInputs;
 
-    // @ts-expect-error TS(7008) FIXME: Member 'onClosing' implicitly has an 'any' type.
     /** @type {(popup: Popup) => Promise<boolean?>|boolean?} */ onClosing;
-    // @ts-expect-error TS(7008) FIXME: Member 'onClose' implicitly has an 'any' type.
     /** @type {(popup: Popup) => Promise<void?>|void?} */ onClose;
-    // @ts-expect-error TS(7008) FIXME: Member 'onOpen' implicitly has an 'any' type.
     /** @type {(popup: Popup) => Promise<void?>|void?} */ onOpen;
 
     // @ts-expect-error TS(7008) FIXME: Member 'result' implicitly has an 'any' type.
@@ -231,9 +228,9 @@ export class Popup {
         customButtons = null,
         customInputs = null,
         allowEscapeClose = true,
-        onClosing = null,
-        onClose = null,
-        onOpen = null,
+        onClosing = null as ((popup: Popup) => boolean | undefined | Promise<boolean | undefined>) | null,
+        onClose = null as ((popup: Popup) => void | Promise<void>) | null,
+        onOpen = null as ((popup: Popup) => void | Promise<void>) | null,
         cropAspect = null,
         cropImage = null,
     } = {}) {
@@ -450,7 +447,6 @@ export class Popup {
 
                     if (clamped !== value) {
                         inputElement.value = String(clamped);
-                        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                         notyf.warning(t`Value must be between ${min} and ${max}. Clamped to ${clamped}.`);
                     }
                 });
@@ -735,7 +731,6 @@ export class Popup {
                     await this.onOpen(this);
                 } catch (error) {
                     console.error('Error in Popup.onOpen handler:', error);
-                    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                     notyf.error(t`An error occurred during popup initialization. Check console for details.`, t`Popup Init Error`);
                 }
             }
@@ -811,7 +806,7 @@ export class Popup {
         // Cropped image should be returned as a data URL
         if (this.type === POPUP_TYPE.CROP) {
             value = result >= POPUP_RESULT.AFFIRMATIVE
-                ? this.cropper.getCroppedCanvas().toDataURL('image/jpeg')
+                ? this.cropper!.getCroppedCanvas().toDataURL('image/jpeg')
                 : null;
         }
 
@@ -971,7 +966,6 @@ export function callGenericPopup(content, type, inputValue = '', popupOptions = 
         return popup.show();
     } catch (error) {
         console.error('Error showing generic popup:', error);
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.error(t`An error occurred while opening the popup. Check console for details.`, t`Popup Error`);
         return Promise.resolve(POPUP_RESULT.CANCELLED);
     }

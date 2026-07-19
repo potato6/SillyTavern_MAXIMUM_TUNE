@@ -324,7 +324,7 @@ function splitByChunks(items: any) {
  */
 async function summarizeExtra(element: any) {
     try {
-        const url = new URL(getApiUrl());
+        const url = new URL(String(getApiUrl()));
         url.pathname = '/api/summarize';
 
         const apiResult = await doExtrasFetch(url, {
@@ -467,8 +467,7 @@ async function synchronizeChat(batchSize = 5) {
         }
 
         /** @type {HashedMessage[]} */
-        // @ts-expect-error TS(2339): Property 'is_system' does not exist on type 'never... Remove this comment to see the full error message
-        const hashedMessages = context.chat.filter(x => settings.keep_hidden || !x.is_system).map(x => ({ text: String(substituteParams(x.mes)), hash: getStringHash(substituteParams(x.mes)), index: context.chat.indexOf(x) }));
+        const hashedMessages = context.chat.filter((x: ChatMessage) => settings.keep_hidden || !x.is_system).map((x: ChatMessage) => ({ text: String(substituteParams(x.mes)), hash: getStringHash(substituteParams(x.mes)), index: context.chat.indexOf(x) }));
         const hashesInCollection = await getSavedHashes(chatId);
 
         const newVectorItems = hashedMessages
@@ -743,10 +742,10 @@ async function vectorizeFile(fileText: any, fileName: any, collectionId: any, ch
 
     try {
 
-        if (settings.translate_files && typeof globalThis.translate === 'function') {
+        if (settings.translate_files && typeof (globalThis as Record<string, any>).translate === 'function') {
             console.log(`Vectors: Translating file ${fileName} to English...`);
 
-            const translatedText = await globalThis.translate(fileText, 'en');
+            const translatedText = await (globalThis as Record<string, any>).translate(fileText, 'en');
             fileText = translatedText;
         }
 
@@ -1128,32 +1127,20 @@ async function insertVectorItems(collectionId: any, items: any) {
  * Throws an error if the source is invalid (missing API key or URL, or missing module)
  */
 function throwIfSourceInvalid() {
-    // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-    if (settings.source === 'openai' && !secret_state[SECRET_KEYS.OPENAI] ||
-        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        settings.source === 'electronhub' && !secret_state[SECRET_KEYS.ELECTRONHUB] ||
-        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        settings.source === 'chutes' && !secret_state[SECRET_KEYS.CHUTES] ||
-        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        settings.source === 'nanogpt' && !secret_state[SECRET_KEYS.NANOGPT] ||
-        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        settings.source === 'openrouter' && !secret_state[SECRET_KEYS.OPENROUTER] ||
-        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        settings.source === 'palm' && !secret_state[SECRET_KEYS.MAKERSUITE] ||
-        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        settings.source === 'vertexai' && !secret_state[SECRET_KEYS.VERTEXAI] && !secret_state[SECRET_KEYS.VERTEXAI_SERVICE_ACCOUNT] ||
-        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        settings.source === 'mistral' && !secret_state[SECRET_KEYS.MISTRALAI] ||
-        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        settings.source === 'togetherai' && !secret_state[SECRET_KEYS.TOGETHERAI] ||
-        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        settings.source === 'nomicai' && !secret_state[SECRET_KEYS.NOMICAI] ||
-        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        settings.source === 'cohere' && !secret_state[SECRET_KEYS.COHERE] ||
-        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        settings.source === 'workers_ai' && !secret_state[SECRET_KEYS.WORKERS_AI] ||
-        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        settings.source === 'siliconflow' && !secret_state[SECRET_KEYS.SILICONFLOW]) {
+    const sec = secret_state as Record<string, boolean>;
+    if (settings.source === 'openai' && !sec[SECRET_KEYS.OPENAI] ||
+        settings.source === 'electronhub' && !sec[SECRET_KEYS.ELECTRONHUB] ||
+        settings.source === 'chutes' && !sec[SECRET_KEYS.CHUTES] ||
+        settings.source === 'nanogpt' && !sec[SECRET_KEYS.NANOGPT] ||
+        settings.source === 'openrouter' && !sec[SECRET_KEYS.OPENROUTER] ||
+        settings.source === 'palm' && !sec[SECRET_KEYS.MAKERSUITE] ||
+        settings.source === 'vertexai' && !sec[SECRET_KEYS.VERTEXAI] && !sec[SECRET_KEYS.VERTEXAI_SERVICE_ACCOUNT] ||
+        settings.source === 'mistral' && !sec[SECRET_KEYS.MISTRALAI] ||
+        settings.source === 'togetherai' && !sec[SECRET_KEYS.TOGETHERAI] ||
+        settings.source === 'nomicai' && !sec[SECRET_KEYS.NOMICAI] ||
+        settings.source === 'cohere' && !sec[SECRET_KEYS.COHERE] ||
+        settings.source === 'workers_ai' && !sec[SECRET_KEYS.WORKERS_AI] ||
+        settings.source === 'siliconflow' && !sec[SECRET_KEYS.SILICONFLOW]) {
 
         throw new Error('Vectors: API key missing', { cause: 'api_key_missing' });
     }
@@ -1182,7 +1169,6 @@ function throwIfSourceInvalid() {
         throw new Error('Vectors: API model missing', { cause: 'api_model_missing' });
     }
 
-    // @ts-expect-error TS(2345): Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
     if (settings.source === 'extras' && !modules.includes('embeddings')) {
 
         throw new Error('Vectors: Embeddings module missing', { cause: 'extras_module_missing' });
@@ -1426,15 +1412,12 @@ async function loadRemoteEmbeddingModels(source: any) {
             option.text = textProperty ? (m[textProperty] || m[valueProperty]) : m[valueProperty];
             select.append(option);
         }
-        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        if (!settings[settingsKey] && models.length) {
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-            settings[settingsKey] = models[0][valueProperty];
-            Object.assign(extension_settings.vectors, settings);
+        if (!(settings as Record<string, any>)[settingsKey] && models.length) {
+            (settings as Record<string, any>)[settingsKey] = models[0][valueProperty];
+            Object.assign(extension_settings.vectors as Record<string, unknown>, settings);
             saveSettingsDebounced();
         }
-        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        select.val(settings[settingsKey]);
+        select.val((settings as Record<string, any>)[settingsKey]);
     }
 
     try {
@@ -1609,8 +1592,7 @@ async function onViewStatsClick() {
     $('#chat .mes.vectorized').removeClass('vectorized');
     const chat = getContext().chat;
     for (const message of chat) {
-        // @ts-expect-error TS(2339): Property 'mes' does not exist on type 'never'.
-        if (hashesInCollection.includes(getStringHash(substituteParams(message.mes)))) {
+        if (hashesInCollection.includes(getStringHash(substituteParams((message as ChatMessage).mes ?? '')))) {
             const messageElement = $(`#chat .mes[mesid="${chat.indexOf(message)}"]`);
             messageElement.addClass('vectorized');
         }
@@ -1620,8 +1602,7 @@ async function onViewStatsClick() {
 async function onVectorizeAllFilesClick() {
     try {
         const dataBank = getDataBankAttachments();
-        // @ts-expect-error TS(2339): Property 'extra' does not exist on type 'never'.
-        const chatAttachments = getContext().chat.filter(x => Array.isArray(x.extra?.files)).map(x => x.extra.files).flat();
+        const chatAttachments = getContext().chat.filter((x: ChatMessage) => Array.isArray(x.extra?.files)).map((x: ChatMessage) => x.extra!.files!).flat();
         const allFiles = [...dataBank, ...chatAttachments];
 
         /**
@@ -1698,8 +1679,7 @@ async function onVectorizeAllFilesClick() {
 async function onPurgeFilesClick() {
     try {
         const dataBank = getDataBankAttachments();
-        // @ts-expect-error TS(2339): Property 'extra' does not exist on type 'never'.
-        const chatAttachments = getContext().chat.filter(x => Array.isArray(x.extra?.files)).map(x => x.extra.files).flat();
+        const chatAttachments = getContext().chat.filter((x: ChatMessage) => Array.isArray(x.extra?.files)).map((x: ChatMessage) => x.extra!.files!).flat();
         const allFiles = [...dataBank, ...chatAttachments];
 
         for (const file of allFiles) {
@@ -1851,7 +1831,7 @@ export async function init() {
         elEnabledChats.addEventListener('input', () => {
             // @ts-expect-error TS(2339): Property 'checked' does not exist on type 'HTMLEle... Remove this comment to see the full error message
             settings.enabled_chats = elEnabledChats.checked;
-            Object.assign(extension_settings.vectors, settings);
+            Object.assign(extension_settings.vectors as Record<string, unknown>, settings);
             saveSettingsDebounced();
             toggleSettings();
         });
@@ -1863,7 +1843,7 @@ export async function init() {
         elKeepHidden.addEventListener('input', () => {
             // @ts-expect-error TS(2339): Property 'checked' does not exist on type 'HTMLEle... Remove this comment to see the full error message
             settings.keep_hidden = !!elKeepHidden.checked;
-            Object.assign(extension_settings.vectors, settings);
+            Object.assign(extension_settings.vectors as Record<string, unknown>, settings);
             saveSettingsDebounced();
         });
     }
@@ -1874,7 +1854,7 @@ export async function init() {
         elEnabledFiles.addEventListener('input', () => {
             // @ts-expect-error TS(2339): Property 'checked' does not exist on type 'HTMLEle... Remove this comment to see the full error message
             settings.enabled_files = elEnabledFiles.checked;
-            Object.assign(extension_settings.vectors, settings);
+            Object.assign(extension_settings.vectors as Record<string, unknown>, settings);
             saveSettingsDebounced();
             toggleSettings();
         });
@@ -1886,7 +1866,7 @@ export async function init() {
         elSource.addEventListener('change', () => {
             // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
             settings.source = String(elSource.value);
-            Object.assign(extension_settings.vectors, settings);
+            Object.assign(extension_settings.vectors as Record<string, unknown>, settings);
             saveSettingsDebounced();
             toggleSettings();
         });
@@ -1898,7 +1878,7 @@ export async function init() {
         elAltEndpoint.addEventListener('input', () => {
             // @ts-expect-error TS(2339): Property 'checked' does not exist on type 'HTMLEle... Remove this comment to see the full error message
             settings.use_alt_endpoint = elAltEndpoint.checked;
-            Object.assign(extension_settings.vectors, settings);
+            Object.assign(extension_settings.vectors as Record<string, unknown>, settings);
             saveSettingsDebounced();
         });
     }
@@ -1909,7 +1889,7 @@ export async function init() {
         elAltAddress.addEventListener('change', () => {
             // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
             settings.alt_endpoint_url = String(elAltAddress.value);
-            Object.assign(extension_settings.vectors, settings);
+            Object.assign(extension_settings.vectors as Record<string, unknown>, settings);
             saveSettingsDebounced();
         });
     }
@@ -1920,7 +1900,7 @@ export async function init() {
         elTogether.addEventListener('change', () => {
             // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
             settings.togetherai_model = String(elTogether.value);
-            Object.assign(extension_settings.vectors, settings);
+            Object.assign(extension_settings.vectors as Record<string, unknown>, settings);
             saveSettingsDebounced();
         });
     }
@@ -1931,7 +1911,7 @@ export async function init() {
         elOpenAI.addEventListener('change', () => {
             // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
             settings.openai_model = String(elOpenAI.value);
-            Object.assign(extension_settings.vectors, settings);
+            Object.assign(extension_settings.vectors as Record<string, unknown>, settings);
             saveSettingsDebounced();
         });
     }
@@ -1942,7 +1922,7 @@ export async function init() {
         elElectronHub.addEventListener('change', () => {
             // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
             settings.electronhub_model = String(elElectronHub.value);
-            Object.assign(extension_settings.vectors, settings);
+            Object.assign(extension_settings.vectors as Record<string, unknown>, settings);
             saveSettingsDebounced();
         });
     }
@@ -1953,7 +1933,7 @@ export async function init() {
         elChutes.addEventListener('change', () => {
             // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
             settings.chutes_model = String(elChutes.value);
-            Object.assign(extension_settings.vectors, settings);
+            Object.assign(extension_settings.vectors as Record<string, unknown>, settings);
             saveSettingsDebounced();
         });
     }
@@ -1964,7 +1944,7 @@ export async function init() {
         elNanoGPT.addEventListener('change', () => {
             // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
             settings.nanogpt_model = String(elNanoGPT.value);
-            Object.assign(extension_settings.vectors, settings);
+            Object.assign(extension_settings.vectors as Record<string, unknown>, settings);
             saveSettingsDebounced();
         });
     }
@@ -1975,7 +1955,7 @@ export async function init() {
         elSilicon.addEventListener('change', () => {
             // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
             settings.siliconflow_model = String(elSilicon.value);
-            Object.assign(extension_settings.vectors, settings);
+            Object.assign(extension_settings.vectors as Record<string, unknown>, settings);
             saveSettingsDebounced();
         });
     }
@@ -1986,7 +1966,7 @@ export async function init() {
         elWorkers.addEventListener('change', () => {
             // @ts-expect-error TS(2339): Property 'workers_ai_model' does not exist on type... Remove this comment to see the full error message
             settings.workers_ai_model = String(elWorkers.value);
-            Object.assign(extension_settings.vectors, settings);
+            Object.assign(extension_settings.vectors as Record<string, unknown>, settings);
             saveSettingsDebounced();
         });
     }
@@ -1997,7 +1977,7 @@ export async function init() {
         elOpenRouter.addEventListener('change', () => {
             // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
             settings.openrouter_model = String(elOpenRouter.value);
-            Object.assign(extension_settings.vectors, settings);
+            Object.assign(extension_settings.vectors as Record<string, unknown>, settings);
             saveSettingsDebounced();
         });
     }
@@ -2008,7 +1988,7 @@ export async function init() {
         elCohere.addEventListener('change', () => {
             // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
             settings.cohere_model = String(elCohere.value);
-            Object.assign(extension_settings.vectors, settings);
+            Object.assign(extension_settings.vectors as Record<string, unknown>, settings);
             saveSettingsDebounced();
         });
     }
@@ -2019,7 +1999,7 @@ export async function init() {
         elOllamaModel.addEventListener('input', () => {
             // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
             settings.ollama_model = String(elOllamaModel.value);
-            Object.assign(extension_settings.vectors, settings);
+            Object.assign(extension_settings.vectors as Record<string, unknown>, settings);
             saveSettingsDebounced();
         });
     }
@@ -2030,7 +2010,7 @@ export async function init() {
         elVllm.addEventListener('input', () => {
             // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
             settings.vllm_model = String(elVllm.value);
-            Object.assign(extension_settings.vectors, settings);
+            Object.assign(extension_settings.vectors as Record<string, unknown>, settings);
             saveSettingsDebounced();
         });
     }
@@ -2041,7 +2021,7 @@ export async function init() {
         elOllamaKeep.addEventListener('input', () => {
             // @ts-expect-error TS(2339): Property 'checked' does not exist on type 'HTMLEle... Remove this comment to see the full error message
             settings.ollama_keep = elOllamaKeep.checked;
-            Object.assign(extension_settings.vectors, settings);
+            Object.assign(extension_settings.vectors as Record<string, unknown>, settings);
             saveSettingsDebounced();
         });
     }
@@ -2052,7 +2032,7 @@ export async function init() {
         elTemplate.addEventListener('input', () => {
             // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
             settings.template = String(elTemplate.value);
-            Object.assign(extension_settings.vectors, settings);
+            Object.assign(extension_settings.vectors as Record<string, unknown>, settings);
             saveSettingsDebounced();
         });
     }
@@ -2063,7 +2043,7 @@ export async function init() {
         elDepth.addEventListener('input', () => {
             // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
             settings.depth = Number(elDepth.value);
-            Object.assign(extension_settings.vectors, settings);
+            Object.assign(extension_settings.vectors as Record<string, unknown>, settings);
             saveSettingsDebounced();
         });
     }
@@ -2074,7 +2054,7 @@ export async function init() {
         elProtect.addEventListener('input', () => {
             // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
             settings.protect = Number(elProtect.value);
-            Object.assign(extension_settings.vectors, settings);
+            Object.assign(extension_settings.vectors as Record<string, unknown>, settings);
             saveSettingsDebounced();
         });
     }
@@ -2085,7 +2065,7 @@ export async function init() {
         elInsert.addEventListener('input', () => {
             // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
             settings.insert = Number(elInsert.value);
-            Object.assign(extension_settings.vectors, settings);
+            Object.assign(extension_settings.vectors as Record<string, unknown>, settings);
             saveSettingsDebounced();
         });
     }
@@ -2096,7 +2076,7 @@ export async function init() {
         elQuery.addEventListener('input', () => {
             // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
             settings.query = Number(elQuery.value);
-            Object.assign(extension_settings.vectors, settings);
+            Object.assign(extension_settings.vectors as Record<string, unknown>, settings);
             saveSettingsDebounced();
         });
     }
@@ -2107,7 +2087,7 @@ export async function init() {
         const checked = document.querySelector('input[name="vectors_position"]:checked');
         // @ts-expect-error TS(2339): Property 'value' does not exist on type 'Element'.
         settings.position = Number(checked?.value ?? settings.position);
-        Object.assign(extension_settings.vectors, settings);
+        Object.assign(extension_settings.vectors as Record<string, unknown>, settings);
         saveSettingsDebounced();
     }));
     document.getElementById('vectors_vectorize_all')?.addEventListener('click', onVectorizeAllClick);
@@ -2122,7 +2102,7 @@ export async function init() {
         elSizeThreshold.addEventListener('input', () => {
             // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
             settings.size_threshold = Number(elSizeThreshold.value);
-            Object.assign(extension_settings.vectors, settings);
+            Object.assign(extension_settings.vectors as Record<string, unknown>, settings);
             saveSettingsDebounced();
         });
     }
@@ -2133,7 +2113,7 @@ export async function init() {
         elChunkSize.addEventListener('input', () => {
             // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
             settings.chunk_size = Number(elChunkSize.value);
-            Object.assign(extension_settings.vectors, settings);
+            Object.assign(extension_settings.vectors as Record<string, unknown>, settings);
             saveSettingsDebounced();
         });
     }
@@ -2144,7 +2124,7 @@ export async function init() {
         elChunkCount.addEventListener('input', () => {
             // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
             settings.chunk_count = Number(elChunkCount.value);
-            Object.assign(extension_settings.vectors, settings);
+            Object.assign(extension_settings.vectors as Record<string, unknown>, settings);
             saveSettingsDebounced();
         });
     }
@@ -2155,7 +2135,7 @@ export async function init() {
         elIncludeWi.addEventListener('input', () => {
             // @ts-expect-error TS(2339): Property 'checked' does not exist on type 'HTMLEle... Remove this comment to see the full error message
             settings.include_wi = !!elIncludeWi.checked;
-            Object.assign(extension_settings.vectors, settings);
+            Object.assign(extension_settings.vectors as Record<string, unknown>, settings);
             saveSettingsDebounced();
         });
     }
@@ -2166,7 +2146,7 @@ export async function init() {
         elSummarize.addEventListener('input', () => {
             // @ts-expect-error TS(2339): Property 'checked' does not exist on type 'HTMLEle... Remove this comment to see the full error message
             settings.summarize = !!elSummarize.checked;
-            Object.assign(extension_settings.vectors, settings);
+            Object.assign(extension_settings.vectors as Record<string, unknown>, settings);
             saveSettingsDebounced();
         });
     }
@@ -2177,7 +2157,7 @@ export async function init() {
         elSummarizeUser.addEventListener('input', () => {
             // @ts-expect-error TS(2339): Property 'checked' does not exist on type 'HTMLEle... Remove this comment to see the full error message
             settings.summarize_sent = !!elSummarizeUser.checked;
-            Object.assign(extension_settings.vectors, settings);
+            Object.assign(extension_settings.vectors as Record<string, unknown>, settings);
             saveSettingsDebounced();
         });
     }
@@ -2188,7 +2168,7 @@ export async function init() {
         elSummarySource.addEventListener('change', () => {
             // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
             settings.summary_source = String(elSummarySource.value);
-            Object.assign(extension_settings.vectors, settings);
+            Object.assign(extension_settings.vectors as Record<string, unknown>, settings);
             saveSettingsDebounced();
         });
     }
@@ -2199,7 +2179,7 @@ export async function init() {
         elSummaryPrompt.addEventListener('input', () => {
             // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
             settings.summary_prompt = String(elSummaryPrompt.value);
-            Object.assign(extension_settings.vectors, settings);
+            Object.assign(extension_settings.vectors as Record<string, unknown>, settings);
             saveSettingsDebounced();
         });
     }
@@ -2211,7 +2191,7 @@ export async function init() {
             // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
             const parsed = Number(elSummaryRetries.value);
             settings.summary_retries = Number.isFinite(parsed) && parsed >= 1 ? Math.floor(parsed) : 1;
-            Object.assign(extension_settings.vectors, settings);
+            Object.assign(extension_settings.vectors as Record<string, unknown>, settings);
             saveSettingsDebounced();
         });
     }
@@ -2223,7 +2203,7 @@ export async function init() {
             // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
             const parsed = Number(elSummaryThreshold.value);
             settings.summary_threshold = Number.isFinite(parsed) && parsed >= 0 ? Math.floor(parsed) : 0;
-            Object.assign(extension_settings.vectors, settings);
+            Object.assign(extension_settings.vectors as Record<string, unknown>, settings);
             saveSettingsDebounced();
         });
     }
@@ -2234,7 +2214,7 @@ export async function init() {
         elMsgChunkSize.addEventListener('input', () => {
             // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
             settings.message_chunk_size = Number(elMsgChunkSize.value);
-            Object.assign(extension_settings.vectors, settings);
+            Object.assign(extension_settings.vectors as Record<string, unknown>, settings);
             saveSettingsDebounced();
         });
     }
@@ -2245,7 +2225,7 @@ export async function init() {
         elSizeThresholdDb.addEventListener('input', () => {
             // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
             settings.size_threshold_db = Number(elSizeThresholdDb.value);
-            Object.assign(extension_settings.vectors, settings);
+            Object.assign(extension_settings.vectors as Record<string, unknown>, settings);
             saveSettingsDebounced();
         });
     }
@@ -2256,7 +2236,7 @@ export async function init() {
         elChunkSizeDb.addEventListener('input', () => {
             // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
             settings.chunk_size_db = Number(elChunkSizeDb.value);
-            Object.assign(extension_settings.vectors, settings);
+            Object.assign(extension_settings.vectors as Record<string, unknown>, settings);
             saveSettingsDebounced();
         });
     }
@@ -2267,7 +2247,7 @@ export async function init() {
         elChunkCountDb.addEventListener('input', () => {
             // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
             settings.chunk_count_db = Number(elChunkCountDb.value);
-            Object.assign(extension_settings.vectors, settings);
+            Object.assign(extension_settings.vectors as Record<string, unknown>, settings);
             saveSettingsDebounced();
         });
     }
@@ -2278,7 +2258,7 @@ export async function init() {
         elOverlapPercent.addEventListener('input', () => {
             // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
             settings.overlap_percent = Number(elOverlapPercent.value);
-            Object.assign(extension_settings.vectors, settings);
+            Object.assign(extension_settings.vectors as Record<string, unknown>, settings);
             saveSettingsDebounced();
         });
     }
@@ -2289,7 +2269,7 @@ export async function init() {
         elOverlapPercentDb.addEventListener('input', () => {
             // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
             settings.overlap_percent_db = Number(elOverlapPercentDb.value);
-            Object.assign(extension_settings.vectors, settings);
+            Object.assign(extension_settings.vectors as Record<string, unknown>, settings);
             saveSettingsDebounced();
         });
     }
@@ -2300,7 +2280,7 @@ export async function init() {
         elFileTemplateDb.addEventListener('input', () => {
             // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
             settings.file_template_db = String(elFileTemplateDb.value);
-            Object.assign(extension_settings.vectors, settings);
+            Object.assign(extension_settings.vectors as Record<string, unknown>, settings);
             saveSettingsDebounced();
         });
     }
@@ -2311,7 +2291,7 @@ export async function init() {
         const checked = document.querySelector('input[name="vectors_file_position_db"]:checked');
         // @ts-expect-error TS(2339): Property 'value' does not exist on type 'Element'.
         settings.file_position_db = Number(checked?.value ?? settings.file_position_db);
-        Object.assign(extension_settings.vectors, settings);
+        Object.assign(extension_settings.vectors as Record<string, unknown>, settings);
         saveSettingsDebounced();
     }));
     const elFileDepthDb = document.getElementById('vectors_file_depth_db');
@@ -2321,7 +2301,7 @@ export async function init() {
         elFileDepthDb.addEventListener('input', () => {
             // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
             settings.file_depth_db = Number(elFileDepthDb.value);
-            Object.assign(extension_settings.vectors, settings);
+            Object.assign(extension_settings.vectors as Record<string, unknown>, settings);
             saveSettingsDebounced();
         });
     }
@@ -2332,7 +2312,7 @@ export async function init() {
         elFileDepthRoleDb.addEventListener('input', () => {
             // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
             settings.file_depth_role_db = Number(elFileDepthRoleDb.value);
-            Object.assign(extension_settings.vectors, settings);
+            Object.assign(extension_settings.vectors as Record<string, unknown>, settings);
             saveSettingsDebounced();
         });
     }
@@ -2343,7 +2323,7 @@ export async function init() {
         elTranslate.addEventListener('input', () => {
             // @ts-expect-error TS(2339): Property 'checked' does not exist on type 'HTMLEle... Remove this comment to see the full error message
             settings.translate_files = !!elTranslate.checked;
-            Object.assign(extension_settings.vectors, settings);
+            Object.assign(extension_settings.vectors as Record<string, unknown>, settings);
             saveSettingsDebounced();
         });
     }
@@ -2354,7 +2334,7 @@ export async function init() {
         elWorldInfo.addEventListener('input', () => {
             // @ts-expect-error TS(2339): Property 'checked' does not exist on type 'HTMLEle... Remove this comment to see the full error message
             settings.enabled_world_info = !!elWorldInfo.checked;
-            Object.assign(extension_settings.vectors, settings);
+            Object.assign(extension_settings.vectors as Record<string, unknown>, settings);
             saveSettingsDebounced();
             toggleSettings();
         });
@@ -2366,7 +2346,7 @@ export async function init() {
         elEnabledForAll.addEventListener('input', () => {
             // @ts-expect-error TS(2339): Property 'checked' does not exist on type 'HTMLEle... Remove this comment to see the full error message
             settings.enabled_for_all = !!elEnabledForAll.checked;
-            Object.assign(extension_settings.vectors, settings);
+            Object.assign(extension_settings.vectors as Record<string, unknown>, settings);
             saveSettingsDebounced();
         });
     }
@@ -2377,7 +2357,7 @@ export async function init() {
         elMaxEntries.addEventListener('input', () => {
             // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
             settings.max_entries = Number(elMaxEntries.value);
-            Object.assign(extension_settings.vectors, settings);
+            Object.assign(extension_settings.vectors as Record<string, unknown>, settings);
             saveSettingsDebounced();
         });
     }
@@ -2388,7 +2368,7 @@ export async function init() {
         elScoreThreshold.addEventListener('input', () => {
             // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
             settings.score_threshold = Number(elScoreThreshold.value);
-            Object.assign(extension_settings.vectors, settings);
+            Object.assign(extension_settings.vectors as Record<string, unknown>, settings);
             saveSettingsDebounced();
         });
     }
@@ -2399,7 +2379,7 @@ export async function init() {
         elForceDelim.addEventListener('input', () => {
             // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
             settings.force_chunk_delimiter = String(elForceDelim.value);
-            Object.assign(extension_settings.vectors, settings);
+            Object.assign(extension_settings.vectors as Record<string, unknown>, settings);
             saveSettingsDebounced();
         });
     }
@@ -2410,7 +2390,7 @@ export async function init() {
         elCustomBoundary.addEventListener('input', () => {
             // @ts-expect-error TS(2339): Property 'checked' does not exist on type 'HTMLEle... Remove this comment to see the full error message
             settings.only_custom_boundary = !!elCustomBoundary.checked;
-            Object.assign(extension_settings.vectors, settings);
+            Object.assign(extension_settings.vectors as Record<string, unknown>, settings);
             saveSettingsDebounced();
         });
     }
@@ -2441,7 +2421,7 @@ export async function init() {
         elWebllmModel.addEventListener('input', () => {
             // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
             settings.webllm_model = String(elWebllmModel.value);
-            Object.assign(extension_settings.vectors, settings);
+            Object.assign(extension_settings.vectors as Record<string, unknown>, settings);
             saveSettingsDebounced();
         });
     }
@@ -2457,18 +2437,16 @@ export async function init() {
         elGoogleModel.addEventListener('input', () => {
             // @ts-expect-error TS(2339): Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
             settings.google_model = String(elGoogleModel.value);
-            Object.assign(extension_settings.vectors, settings);
+            Object.assign(extension_settings.vectors as Record<string, unknown>, settings);
             saveSettingsDebounced();
         });
     }
 
-    // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-    $('#api_key_nomicai').toggleClass('success', !!secret_state[SECRET_KEYS.NOMICAI]);
+    $('#api_key_nomicai').toggleClass('success', !!(secret_state as Record<string, boolean>)[SECRET_KEYS.NOMICAI]);
     [event_types.SECRET_WRITTEN, event_types.SECRET_DELETED, event_types.SECRET_ROTATED].forEach(event => {
         eventSource.on(event, (/** @type {string} */ key: any) => {
             if (key !== SECRET_KEYS.NOMICAI) return;
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-            $('#api_key_nomicai').toggleClass('success', !!secret_state[SECRET_KEYS.NOMICAI]);
+            $('#api_key_nomicai').toggleClass('success', !!(secret_state as Record<string, boolean>)[SECRET_KEYS.NOMICAI]);
         });
     });
 
@@ -2490,8 +2468,7 @@ export async function init() {
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
         name: 'db-ingest',
         callback: async () => {
-            // @ts-expect-error TS(2554): Expected 1 arguments, but got 0.
-            await ingestDataBankAttachments();
+            await ingestDataBankAttachments('');
             return '';
         },
         aliases: ['databank-ingest', 'data-bank-ingest'],
@@ -2526,11 +2503,11 @@ export async function init() {
             const queryResults = await queryMultipleCollections(collectionIds, String(query), count, threshold);
 
             // Get URLs
-            const urls = Object
+            const urls: string[] = Object
                 .keys(queryResults)
                 .map(x => attachments.find((y: any) => getFileCollectionId(y.url) === x))
-                .filter(x => x)
-                .map(x => x.url);
+                .filter((x: any) => !!x)
+                .map((x: any) => x.url);
 
             // Gets the actual text content of chunks
             const getChunksText = () => {
@@ -2563,7 +2540,6 @@ export async function init() {
                 typeList: [ARGUMENT_TYPE.STRING],
                 defaultValue: 'object',
                 enumList: [
-                    // @ts-expect-error TS(2345): Argument of type '"Return the actual content chunk... Remove this comment to see the full error message
                     new SlashCommandEnumValue('chunks', 'Return the actual content chunks', enumTypes.enum, '{}'),
                     ...slashCommandReturnHelper.enumList({ allowObject: true }),
                 ],

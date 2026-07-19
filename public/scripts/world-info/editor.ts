@@ -31,6 +31,10 @@ export function nullWorldInfo() {
 
 /**
  * Updates the global key-options cache used by TomSelect autocomplete.
+ * @param keyOptions
+ * @param root0
+ * @param root0.remove
+ * @param root0.reset
  */
 export function updateWorldEntryKeyOptionsCache(
     keyOptions: (string | { id: string; text: string })[],
@@ -55,6 +59,7 @@ export const worldEntryKeyOptionsCache: { id: string; text: string; count: numbe
 
 /**
  * Clears all child elements and TomSelect instances from a list element.
+ * @param listElement
  */
 export function clearEntryList(listElement: HTMLElement) {
     if (!listElement.children.length) return;
@@ -91,6 +96,10 @@ export function clearEntryList(listElement: HTMLElement) {
 
 /**
  * Sets a value in the original book data at the given key path.
+ * @param data
+ * @param uid
+ * @param key
+ * @param value
  */
 export function setWIOriginalDataValue(
     data: WorldInfoBook,
@@ -108,6 +117,8 @@ export function setWIOriginalDataValue(
 
 /**
  * Deletes an entry from the original book data.
+ * @param data
+ * @param uid
  */
 export function deleteWIOriginalDataValue(
     data: WorldInfoBook,

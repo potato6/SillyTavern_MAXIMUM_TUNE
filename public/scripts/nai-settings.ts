@@ -32,10 +32,8 @@ const default_presets = {
     'llama-3-erato-v1': 'Erato-Dragonfruit',
 };
 
-// @ts-expect-error TS(7005) FIXME: Variable 'novelai_settings' implicitly has an 'any... Remove this comment to see the full error message
-export let novelai_settings;
-// @ts-expect-error TS(7005) FIXME: Variable 'novelai_setting_names' implicitly has an... Remove this comment to see the full error message
-export let novelai_setting_names;
+export let novelai_settings: unknown[] = [];
+export let novelai_setting_names: Record<string, number> = {};
 
 export const nai_settings = {
     temperature: 1.5,
@@ -61,7 +59,7 @@ export const nai_settings = {
     prefix: '',
     banned_tokens: '',
     order: default_order,
-    logit_bias: [],
+    logit_bias: [] as number[],
     extensions: {},
 };
 
@@ -85,17 +83,15 @@ const samplers = {
     min_p: 10,
 };
 
-// @ts-expect-error TS(7034) FIXME: Variable 'novel_data' implicitly has type 'any' in... Remove this comment to see the full error message
-let novel_data = null;
-const badWordsCache = {};
+let novel_data: Record<string, unknown> | null = null;
+const badWordsCache: Record<string, unknown> = {};
 const BIAS_KEY = '#range_block_novel';
 
 /**
  *
  * @param data
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
-export function setNovelData(data) {
+export function setNovelData(data: Record<string, unknown>) {
     novel_data = data;
 }
 
@@ -103,7 +99,6 @@ export function setNovelData(data) {
  *
  */
 export function getKayraMaxContextTokens() {
-    // @ts-expect-error TS(7005) FIXME: Variable 'novel_data' implicitly has an 'any' type... Remove this comment to see the full error message
     switch (novel_data?.tier) {
         case 1:
             return 4096;
@@ -120,7 +115,6 @@ export function getKayraMaxContextTokens() {
  *
  */
 export function getNovelMaxResponseTokens() {
-    // @ts-expect-error TS(7005) FIXME: Variable 'novel_data' implicitly has an 'any' type... Remove this comment to see the full error message
     switch (novel_data?.tier) {
         case 1:
             return 150;
@@ -137,36 +131,35 @@ export function getNovelMaxResponseTokens() {
  *
  * @param data
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
-export function convertNovelPreset(data) {
-    if (!data || typeof data !== 'object' || data.presetVersion !== 3 || !data.parameters || typeof data.parameters !== 'object') {
+export function convertNovelPreset(data: Record<string, unknown>) {
+    if (!data || typeof data !== 'object' || (data as Record<string, unknown>).presetVersion !== 3 || !(data as Record<string, unknown>).parameters || typeof (data as Record<string, unknown>).parameters !== 'object') {
         return data;
     }
 
+    const params = data.parameters as Record<string, unknown>;
     return {
         max_context: 8000,
-        temperature: data.parameters.temperature,
-        max_length: data.parameters.max_length,
-        min_length: data.parameters.min_length,
-        top_k: data.parameters.top_k,
-        top_p: data.parameters.top_p,
-        top_a: data.parameters.top_a,
-        typical_p: data.parameters.typical_p,
-        tail_free_sampling: data.parameters.tail_free_sampling,
-        repetition_penalty: data.parameters.repetition_penalty,
-        repetition_penalty_range: data.parameters.repetition_penalty_range,
-        repetition_penalty_slope: data.parameters.repetition_penalty_slope,
-        repetition_penalty_frequency: data.parameters.repetition_penalty_frequency,
-        repetition_penalty_presence: data.parameters.repetition_penalty_presence,
-        phrase_rep_pen: data.parameters.phrase_rep_pen,
-        mirostat_lr: data.parameters.mirostat_lr,
-        mirostat_tau: data.parameters.mirostat_tau,
-        math1_temp: data.parameters.math1_temp,
-        math1_quad: data.parameters.math1_quad,
-        math1_quad_entropy_scale: data.parameters.math1_quad_entropy_scale,
-        min_p: data.parameters.min_p,
-        // @ts-expect-error TS(7006) FIXME: Parameter 's' implicitly has an 'any' type.
-        order: Array.isArray(data.parameters.order) ? data.parameters.order.filter(s => s.enabled && Object.keys(samplers).includes(s.id)).map(s => samplers[s.id]) : default_order,
+        temperature: params.temperature,
+        max_length: params.max_length,
+        min_length: params.min_length,
+        top_k: params.top_k,
+        top_p: params.top_p,
+        top_a: params.top_a,
+        typical_p: params.typical_p,
+        tail_free_sampling: params.tail_free_sampling,
+        repetition_penalty: params.repetition_penalty,
+        repetition_penalty_range: params.repetition_penalty_range,
+        repetition_penalty_slope: params.repetition_penalty_slope,
+        repetition_penalty_frequency: params.repetition_penalty_frequency,
+        repetition_penalty_presence: params.repetition_penalty_presence,
+        phrase_rep_pen: params.phrase_rep_pen,
+        mirostat_lr: params.mirostat_lr,
+        mirostat_tau: params.mirostat_tau,
+        math1_temp: params.math1_temp,
+        math1_quad: params.math1_quad,
+        math1_quad_entropy_scale: params.math1_quad_entropy_scale,
+        min_p: params.min_p,
+        order: Array.isArray(params.order) ? (params.order as { enabled: boolean; id: string }[]).filter(s => s.enabled && Object.keys(samplers).includes(s.id)).map(s => (samplers as Record<string, number>)[s.id]) : default_order,
         extensions: {},
     };
 }
@@ -175,24 +168,21 @@ export function convertNovelPreset(data) {
  *
  */
 export function getNovelTier() {
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-    return nai_tiers[novel_data?.tier] ?? 'no_connection';
+    return (nai_tiers as Record<string, string>)[String(novel_data?.tier)] ?? 'no_connection';
 }
 
 /**
  *
  */
 export function getNovelAnlas() {
-    // @ts-expect-error TS(7005) FIXME: Variable 'novel_data' implicitly has an 'any' type... Remove this comment to see the full error message
-    return novel_data?.trainingStepsLeft?.fixedTrainingStepsLeft ?? 0;
+    return ((novel_data as Record<string, unknown>)?.trainingStepsLeft as Record<string, unknown>)?.fixedTrainingStepsLeft ?? 0;
 }
 
 /**
  *
  */
 export function getNovelUnlimitedImageGeneration() {
-    // @ts-expect-error TS(7005) FIXME: Variable 'novel_data' implicitly has an 'any' type... Remove this comment to see the full error message
-    return novel_data?.perks?.unlimitedImageGeneration ?? false;
+    return ((novel_data as Record<string, unknown>)?.perks as Record<string, unknown>)?.unlimitedImageGeneration ?? false;
 }
 
 /**
@@ -248,9 +238,13 @@ interface NovelAIPreset {
     extensions?: Record<string, unknown>;
 }
 
+/**
+ *
+ * @param preset
+ */
 export function loadNovelPreset(preset: NovelAIPreset) {
     if (preset.genamt === undefined) {
-        const needsUnlock = preset.max_context > MAX_CONTEXT_DEFAULT || preset.max_length > MAX_RESPONSE_DEFAULT;
+        const needsUnlock = (preset.max_context ?? 0) > MAX_CONTEXT_DEFAULT || (preset.max_length ?? 0) > MAX_RESPONSE_DEFAULT;
         const amountGen = document.getElementById('amount_gen') as HTMLInputElement | null;
         if (amountGen) {
             amountGen.value = String(preset.max_length);
@@ -270,33 +264,30 @@ export function loadNovelPreset(preset: NovelAIPreset) {
         setGenerationParamsFromPreset(preset);
     }
 
-    nai_settings.temperature = preset.temperature;
-    nai_settings.repetition_penalty = preset.repetition_penalty;
-    nai_settings.repetition_penalty_range = preset.repetition_penalty_range;
-    nai_settings.repetition_penalty_slope = preset.repetition_penalty_slope;
-    nai_settings.repetition_penalty_frequency = preset.repetition_penalty_frequency;
-    nai_settings.repetition_penalty_presence = preset.repetition_penalty_presence;
-    nai_settings.tail_free_sampling = preset.tail_free_sampling;
-    nai_settings.top_k = preset.top_k;
-    nai_settings.top_p = preset.top_p;
-    nai_settings.top_a = preset.top_a;
-    nai_settings.typical_p = preset.typical_p;
-    nai_settings.min_length = preset.min_length;
-    // @ts-expect-error TS(2339) FIXME: Property 'phrase_rep_pen' does not exist on type '... Remove this comment to see the full error message
-    nai_settings.phrase_rep_pen = preset.phrase_rep_pen;
-    // @ts-expect-error TS(2339) FIXME: Property 'mirostat_lr' does not exist on type '{ t... Remove this comment to see the full error message
-    nai_settings.mirostat_lr = preset.mirostat_lr;
-    // @ts-expect-error TS(2339) FIXME: Property 'mirostat_tau' does not exist on type '{ ... Remove this comment to see the full error message
-    nai_settings.mirostat_tau = preset.mirostat_tau;
-    nai_settings.prefix = preset.prefix;
+    nai_settings.temperature = preset.temperature ?? 0;
+    nai_settings.repetition_penalty = preset.repetition_penalty ?? 0;
+    nai_settings.repetition_penalty_range = preset.repetition_penalty_range ?? 0;
+    nai_settings.repetition_penalty_slope = preset.repetition_penalty_slope ?? 0;
+    nai_settings.repetition_penalty_frequency = preset.repetition_penalty_frequency ?? 0;
+    nai_settings.repetition_penalty_presence = preset.repetition_penalty_presence ?? 0;
+    nai_settings.tail_free_sampling = (preset.tail_free_sampling ?? 0) as number;
+    nai_settings.top_k = preset.top_k ?? 0;
+    nai_settings.top_p = preset.top_p ?? 0;
+    nai_settings.top_a = preset.top_a ?? 0;
+    nai_settings.typical_p = preset.typical_p ?? 0;
+    nai_settings.min_length = preset.min_length ?? 0;
+    (nai_settings as Record<string, unknown>).phrase_rep_pen = preset.phrase_rep_pen;
+    (nai_settings as Record<string, unknown>).mirostat_lr = preset.mirostat_lr;
+    (nai_settings as Record<string, unknown>).mirostat_tau = preset.mirostat_tau;
+    nai_settings.prefix = preset.prefix ?? '';
     nai_settings.banned_tokens = preset.banned_tokens || '';
-    nai_settings.order = preset.order || default_order;
-    nai_settings.logit_bias = preset.logit_bias || [];
+    nai_settings.order = (preset.order || default_order) as number[];
+    nai_settings.logit_bias = (preset.logit_bias || []) as unknown as number[];
     nai_settings.preamble = preset.preamble || default_preamble;
-    nai_settings.min_p = preset.min_p || 0;
-    nai_settings.math1_temp = preset.math1_temp || 1;
-    nai_settings.math1_quad = preset.math1_quad || 0;
-    nai_settings.math1_quad_entropy_scale = preset.math1_quad_entropy_scale || 0;
+    nai_settings.min_p = preset.min_p ?? 0;
+    nai_settings.math1_temp = preset.math1_temp ?? 1;
+    nai_settings.math1_quad = preset.math1_quad ?? 0;
+    nai_settings.math1_quad_entropy_scale = preset.math1_quad_entropy_scale ?? 0;
     nai_settings.extensions = preset.extensions || {};
     loadNovelSettingsUi(nai_settings);
 }
@@ -306,69 +297,59 @@ export function loadNovelPreset(preset: NovelAIPreset) {
  * @param data
  * @param settings
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
-export function loadNovelSettings(data, settings) {
-    novelai_setting_names = data.novelai_setting_names;
-    novelai_settings = data.novelai_settings;
-    // @ts-expect-error TS(7006) FIXME: Parameter 'item' implicitly has an 'any' type.
-    novelai_settings.forEach(function (item, i, arr) {
-        novelai_settings[i] = JSON.parse(item);
+export function loadNovelSettings(data: Record<string, unknown>, settings: Record<string, unknown>) {
+    novelai_setting_names = data.novelai_setting_names as unknown as Record<string, number>;
+    novelai_settings = data.novelai_settings as unknown[];
+    novelai_settings.forEach(function (item: unknown, i: number) {
+        novelai_settings[i] = JSON.parse(item as string);
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('settings_preset_novel').innerHTML = '';
-    const presetNames = {};
-    // @ts-expect-error TS(7006) FIXME: Parameter 'item' implicitly has an 'any' type.
-    novelai_setting_names.forEach(function (item, i, arr) {
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
+    const settingsPresetNovel = document.getElementById('settings_preset_novel')!;
+    settingsPresetNovel.innerHTML = '';
+    const presetNames: Record<string, number> = {};
+    Object.keys(novelai_setting_names).forEach(function (item: string, i: number) {
         presetNames[item] = i;
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        document.getElementById('settings_preset_novel').append(`<option value=${i}>${item}</option>`);
+        settingsPresetNovel.insertAdjacentHTML('beforeend', `<option value=${i}>${item}</option>`);
     });
     novelai_setting_names = presetNames;
 
     //load the rest of the Novel settings without any checks
-    nai_settings.model_novel = settings.model_novel;
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('model_novel_select').value = nai_settings.model_novel;
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    nai_settings.model_novel = settings.model_novel as string;
+    (document.getElementById('model_novel_select') as HTMLSelectElement | null)!.value = nai_settings.model_novel;
         const selectedOption = document.querySelector(`#model_novel_select option[value="${nai_settings.model_novel}"]`);
     if (selectedOption instanceof HTMLOptionElement) selectedOption.selected = true;
 
     if (settings.nai_preamble !== undefined) {
-        nai_settings.preamble = settings.nai_preamble;
+        nai_settings.preamble = settings.nai_preamble as string;
         delete settings.nai_preamble;
     }
-    nai_settings.preset_settings_novel = settings.preset_settings_novel;
-    nai_settings.temperature = settings.temperature;
-    nai_settings.repetition_penalty = settings.repetition_penalty;
-    nai_settings.repetition_penalty_range = settings.repetition_penalty_range;
-    nai_settings.repetition_penalty_slope = settings.repetition_penalty_slope;
-    nai_settings.repetition_penalty_frequency = settings.repetition_penalty_frequency;
-    nai_settings.repetition_penalty_presence = settings.repetition_penalty_presence;
-    nai_settings.tail_free_sampling = settings.tail_free_sampling;
-    nai_settings.top_k = settings.top_k;
-    nai_settings.top_p = settings.top_p;
-    nai_settings.top_a = settings.top_a;
-    nai_settings.typical_p = settings.typical_p;
-    nai_settings.min_length = settings.min_length;
-    // @ts-expect-error TS(2339) FIXME: Property 'phrase_rep_pen' does not exist on type '... Remove this comment to see the full error message
-    nai_settings.phrase_rep_pen = settings.phrase_rep_pen;
-    // @ts-expect-error TS(2339) FIXME: Property 'mirostat_lr' does not exist on type '{ t... Remove this comment to see the full error message
-    nai_settings.mirostat_lr = settings.mirostat_lr;
-    // @ts-expect-error TS(2339) FIXME: Property 'mirostat_tau' does not exist on type '{ ... Remove this comment to see the full error message
-    nai_settings.mirostat_tau = settings.mirostat_tau;
+    nai_settings.preset_settings_novel = (settings.preset_settings_novel ?? '') as string;
+    nai_settings.temperature = (settings.temperature ?? 0) as number;
+    nai_settings.repetition_penalty = (settings.repetition_penalty ?? 0) as number;
+    nai_settings.repetition_penalty_range = (settings.repetition_penalty_range ?? 0) as number;
+    nai_settings.repetition_penalty_slope = (settings.repetition_penalty_slope ?? 0) as number;
+    nai_settings.repetition_penalty_frequency = (settings.repetition_penalty_frequency ?? 0) as number;
+    nai_settings.repetition_penalty_presence = (settings.repetition_penalty_presence ?? 0) as number;
+    nai_settings.tail_free_sampling = (settings.tail_free_sampling ?? 0) as number;
+    nai_settings.top_k = (settings.top_k ?? 0) as number;
+    nai_settings.top_p = (settings.top_p ?? 0) as number;
+    nai_settings.top_a = (settings.top_a ?? 0) as number;
+    nai_settings.typical_p = (settings.typical_p ?? 0) as number;
+    nai_settings.min_length = (settings.min_length ?? 0) as number;
+    (nai_settings as Record<string, unknown>).phrase_rep_pen = settings.phrase_rep_pen;
+    (nai_settings as Record<string, unknown>).mirostat_lr = settings.mirostat_lr;
+    (nai_settings as Record<string, unknown>).mirostat_tau = settings.mirostat_tau;
     nai_settings.streaming_novel = !!settings.streaming_novel;
-    nai_settings.preamble = settings.preamble || default_preamble;
-    nai_settings.prefix = settings.prefix;
-    nai_settings.banned_tokens = settings.banned_tokens || '';
-    nai_settings.order = settings.order || default_order;
-    nai_settings.logit_bias = settings.logit_bias || [];
-    nai_settings.min_p = settings.min_p || 0;
-    nai_settings.math1_temp = settings.math1_temp || 1;
-    nai_settings.math1_quad = settings.math1_quad || 0;
-    nai_settings.math1_quad_entropy_scale = settings.math1_quad_entropy_scale || 0;
-    nai_settings.extensions = settings.extensions || {};
+    nai_settings.preamble = (settings.preamble || default_preamble) as string;
+    nai_settings.prefix = (settings.prefix ?? '') as string;
+    nai_settings.banned_tokens = (settings.banned_tokens || '') as string;
+    nai_settings.order = (settings.order || default_order) as number[];
+    nai_settings.logit_bias = (settings.logit_bias || []) as never[];
+    nai_settings.min_p = (settings.min_p ?? 0) as number;
+    nai_settings.math1_temp = (settings.math1_temp ?? 1) as number;
+    nai_settings.math1_quad = (settings.math1_quad ?? 0) as number;
+    nai_settings.math1_quad_entropy_scale = (settings.math1_quad_entropy_scale ?? 0) as number;
+    nai_settings.extensions = (settings.extensions || {}) as Record<string, unknown>;
     loadNovelSettingsUi(nai_settings);
 }
 
@@ -376,250 +357,181 @@ export function loadNovelSettings(data, settings) {
  *
  * @param ui_settings
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'ui_settings' implicitly has an 'any' ty... Remove this comment to see the full error message
-function loadNovelSettingsUi(ui_settings) {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('temp_novel').value = ui_settings.temperature;
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('temp_counter_novel').value = Number(ui_settings.temperature ?? 0).toFixed(2);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('rep_pen_novel').value = ui_settings.repetition_penalty;
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('rep_pen_counter_novel').value = Number(ui_settings.repetition_penalty ?? 0).toFixed(3);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('rep_pen_size_novel').value = ui_settings.repetition_penalty_range;
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('rep_pen_size_counter_novel').value = Number(ui_settings.repetition_penalty_range).toFixed(0);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('rep_pen_slope_novel').value = ui_settings.repetition_penalty_slope;
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('rep_pen_slope_counter_novel').value = Number(ui_settings.repetition_penalty_slope).toFixed(2);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('rep_pen_freq_novel').value = ui_settings.repetition_penalty_frequency;
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('rep_pen_freq_counter_novel').value = Number(ui_settings.repetition_penalty_frequency ?? 0).toFixed(3);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('rep_pen_presence_novel').value = ui_settings.repetition_penalty_presence;
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('rep_pen_presence_counter_novel').value = Number(ui_settings.repetition_penalty_presence ?? 0).toFixed(3);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('tail_free_sampling_novel').value = ui_settings.tail_free_sampling;
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('tail_free_sampling_counter_novel').value = Number(ui_settings.tail_free_sampling ?? 0).toFixed(3);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('top_k_novel').value = ui_settings.top_k;
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('top_k_counter_novel').value = Number(ui_settings.top_k ?? 0).toFixed(0);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('top_p_novel').value = ui_settings.top_p;
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('top_p_counter_novel').value = Number(ui_settings.top_p ?? 0).toFixed(3);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('top_a_novel').value = ui_settings.top_a;
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('top_a_counter_novel').value = Number(ui_settings.top_a ?? 0).toFixed(3);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('typical_p_novel').value = ui_settings.typical_p;
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('typical_p_counter_novel').value = Number(ui_settings.typical_p ?? 0).toFixed(3);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('phrase_rep_pen_novel').value = ui_settings.phrase_rep_pen || 'off';
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('mirostat_lr_novel').value = ui_settings.mirostat_lr;
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('mirostat_lr_counter_novel').value = Number(ui_settings.mirostat_lr ?? 0).toFixed(2);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('mirostat_tau_novel').value = ui_settings.mirostat_tau;
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('mirostat_tau_counter_novel').value = Number(ui_settings.mirostat_tau ?? 0).toFixed(2);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('min_length_novel').value = ui_settings.min_length;
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('min_length_counter_novel').value = Number(ui_settings.min_length ?? 0).toFixed(0);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('nai_preamble_textarea').value = ui_settings.preamble;
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('nai_prefix').value = ui_settings.prefix || 'vanilla';
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('nai_banned_tokens').value = ui_settings.banned_tokens || '';
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('min_p_novel').value = ui_settings.min_p;
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('min_p_counter_novel').value = Number(ui_settings.min_p ?? 0).toFixed(3);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('math1_temp_novel').value = ui_settings.math1_temp;
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('math1_temp_counter_novel').value = Number(ui_settings.math1_temp.toFixed(2));
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('math1_quad_novel').value = ui_settings.math1_quad;
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('math1_quad_counter_novel').value = Number(ui_settings.math1_quad.toFixed(2));
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('math1_quad_entropy_scale_novel').value = ui_settings.math1_quad_entropy_scale;
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('math1_quad_entropy_scale_counter_novel').value = Number(ui_settings.math1_quad_entropy_scale.toFixed(2));
-        const selectedPresetOption = document.querySelector(`#settings_preset_novel option[value="${novelai_setting_names[nai_settings.preset_settings_novel]}"]`);
+function loadNovelSettingsUi(ui_settings: Record<string, unknown>) {
+    const setVal = (id: string, val: unknown) => {
+        const el = document.getElementById(id) as HTMLInputElement | null;
+        if (el) el.value = String(val ?? '');
+    };
+    setVal('temp_novel', ui_settings.temperature);
+    setVal('temp_counter_novel', Number(ui_settings.temperature ?? 0).toFixed(2));
+    setVal('rep_pen_novel', ui_settings.repetition_penalty);
+    setVal('rep_pen_counter_novel', Number(ui_settings.repetition_penalty ?? 0).toFixed(3));
+    setVal('rep_pen_size_novel', ui_settings.repetition_penalty_range);
+    setVal('rep_pen_size_counter_novel', Number(ui_settings.repetition_penalty_range).toFixed(0));
+    setVal('rep_pen_slope_novel', ui_settings.repetition_penalty_slope);
+    setVal('rep_pen_slope_counter_novel', Number(ui_settings.repetition_penalty_slope).toFixed(2));
+    setVal('rep_pen_freq_novel', ui_settings.repetition_penalty_frequency);
+    setVal('rep_pen_freq_counter_novel', Number(ui_settings.repetition_penalty_frequency ?? 0).toFixed(3));
+    setVal('rep_pen_presence_novel', ui_settings.repetition_penalty_presence);
+    setVal('rep_pen_presence_counter_novel', Number(ui_settings.repetition_penalty_presence ?? 0).toFixed(3));
+    setVal('tail_free_sampling_novel', ui_settings.tail_free_sampling);
+    setVal('tail_free_sampling_counter_novel', Number(ui_settings.tail_free_sampling ?? 0).toFixed(3));
+    setVal('top_k_novel', ui_settings.top_k);
+    setVal('top_k_counter_novel', Number(ui_settings.top_k ?? 0).toFixed(0));
+    setVal('top_p_novel', ui_settings.top_p);
+    setVal('top_p_counter_novel', Number(ui_settings.top_p ?? 0).toFixed(3));
+    setVal('top_a_novel', ui_settings.top_a);
+    setVal('top_a_counter_novel', Number(ui_settings.top_a ?? 0).toFixed(3));
+    setVal('typical_p_novel', ui_settings.typical_p);
+    setVal('typical_p_counter_novel', Number(ui_settings.typical_p ?? 0).toFixed(3));
+    setVal('phrase_rep_pen_novel', ui_settings.phrase_rep_pen || 'off');
+    setVal('mirostat_lr_novel', ui_settings.mirostat_lr);
+    setVal('mirostat_lr_counter_novel', Number(ui_settings.mirostat_lr ?? 0).toFixed(2));
+    setVal('mirostat_tau_novel', ui_settings.mirostat_tau);
+    setVal('mirostat_tau_counter_novel', Number(ui_settings.mirostat_tau ?? 0).toFixed(2));
+    setVal('min_length_novel', ui_settings.min_length);
+    setVal('min_length_counter_novel', Number(ui_settings.min_length ?? 0).toFixed(0));
+    setVal('nai_preamble_textarea', ui_settings.preamble);
+    setVal('nai_prefix', ui_settings.prefix || 'vanilla');
+    setVal('nai_banned_tokens', ui_settings.banned_tokens || '');
+    setVal('min_p_novel', ui_settings.min_p);
+    setVal('min_p_counter_novel', Number(ui_settings.min_p ?? 0).toFixed(3));
+    setVal('math1_temp_novel', ui_settings.math1_temp);
+    setVal('math1_temp_counter_novel', Number(Number(ui_settings.math1_temp).toFixed(2)));
+    setVal('math1_quad_novel', ui_settings.math1_quad);
+    setVal('math1_quad_counter_novel', Number(Number(ui_settings.math1_quad).toFixed(2)));
+    setVal('math1_quad_entropy_scale_novel', ui_settings.math1_quad_entropy_scale);
+    setVal('math1_quad_entropy_scale_counter_novel', Number(Number(ui_settings.math1_quad_entropy_scale).toFixed(2)));
+        const selectedPresetOption = document.querySelector(`#settings_preset_novel option[value="${(novelai_setting_names as Record<string, number>)[nai_settings.preset_settings_novel]}"]`);
     if (selectedPresetOption instanceof HTMLOptionElement) selectedPresetOption.selected = true;
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const streamingNovelEl = document.getElementById('streaming_novel');
-    if (streamingNovelEl) (streamingNovelEl as HTMLInputElement).checked = ui_settings.streaming_novel;
-    sortItemsByOrder(ui_settings.order);
-    displayLogitBias(ui_settings.logit_bias, BIAS_KEY);
+    if (streamingNovelEl) (streamingNovelEl as HTMLInputElement).checked = !!ui_settings.streaming_novel;
+    sortItemsByOrder(ui_settings.order as number[]);
+    displayLogitBias(ui_settings.logit_bias as unknown[], BIAS_KEY);
 }
 
-const sliders = [
+interface SliderDef {
+    sliderId: string;
+    counterId: string;
+    format: (val: unknown) => string | number;
+    setValue: (val: unknown) => void;
+}
+
+const sliders: SliderDef[] = [
     {
         sliderId: '#temp_novel',
         counterId: '#temp_counter_novel',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        format: (val) => Number(val).toFixed(2),
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        setValue: (val) => { nai_settings.temperature = Number(val); },
+        format: (val: unknown) => Number(val).toFixed(2),
+        setValue: (val: unknown) => { nai_settings.temperature = Number(val); },
     },
     {
         sliderId: '#rep_pen_novel',
         counterId: '#rep_pen_counter_novel',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        format: (val) => Number(val).toFixed(3),
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        setValue: (val) => { nai_settings.repetition_penalty = Number(val); },
+        format: (val: unknown) => Number(val).toFixed(3),
+        setValue: (val: unknown) => { nai_settings.repetition_penalty = Number(val); },
     },
     {
         sliderId: '#rep_pen_size_novel',
         counterId: '#rep_pen_size_counter_novel',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        format: (val) => `${val}`,
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        setValue: (val) => { nai_settings.repetition_penalty_range = Number(val); },
+        format: (val: unknown) => `${val}`,
+        setValue: (val: unknown) => { nai_settings.repetition_penalty_range = Number(val); },
     },
     {
         sliderId: '#rep_pen_slope_novel',
         counterId: '#rep_pen_slope_counter_novel',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        format: (val) => `${val}`,
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        setValue: (val) => { nai_settings.repetition_penalty_slope = Number(val); },
+        format: (val: unknown) => `${val}`,
+        setValue: (val: unknown) => { nai_settings.repetition_penalty_slope = Number(val); },
     },
     {
         sliderId: '#rep_pen_freq_novel',
         counterId: '#rep_pen_freq_counter_novel',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        format: (val) => Number(val).toFixed(2),
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        setValue: (val) => { nai_settings.repetition_penalty_frequency = Number(val); },
+        format: (val: unknown) => Number(val).toFixed(2),
+        setValue: (val: unknown) => { nai_settings.repetition_penalty_frequency = Number(val); },
     },
     {
         sliderId: '#rep_pen_presence_novel',
         counterId: '#rep_pen_presence_counter_novel',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        format: (val) => `${val}`,
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        setValue: (val) => { nai_settings.repetition_penalty_presence = Number(val); },
+        format: (val: unknown) => `${val}`,
+        setValue: (val: unknown) => { nai_settings.repetition_penalty_presence = Number(val); },
     },
     {
         sliderId: '#tail_free_sampling_novel',
         counterId: '#tail_free_sampling_counter_novel',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        format: (val) => `${val}`,
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        setValue: (val) => { nai_settings.tail_free_sampling = Number(val); },
+        format: (val: unknown) => `${val}`,
+        setValue: (val: unknown) => { nai_settings.tail_free_sampling = Number(val); },
     },
     {
         sliderId: '#top_k_novel',
         counterId: '#top_k_counter_novel',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        format: (val) => `${val}`,
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        setValue: (val) => { nai_settings.top_k = Number(val); },
+        format: (val: unknown) => `${val}`,
+        setValue: (val: unknown) => { nai_settings.top_k = Number(val); },
     },
     {
         sliderId: '#top_p_novel',
         counterId: '#top_p_counter_novel',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        format: (val) => Number(val).toFixed(3),
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        setValue: (val) => { nai_settings.top_p = Number(val); },
+        format: (val: unknown) => Number(val).toFixed(3),
+        setValue: (val: unknown) => { nai_settings.top_p = Number(val); },
     },
     {
         sliderId: '#top_a_novel',
         counterId: '#top_a_counter_novel',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        format: (val) => Number(val).toFixed(2),
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        setValue: (val) => { nai_settings.top_a = Number(val); },
+        format: (val: unknown) => Number(val).toFixed(2),
+        setValue: (val: unknown) => { nai_settings.top_a = Number(val); },
     },
     {
         sliderId: '#typical_p_novel',
         counterId: '#typical_p_counter_novel',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        format: (val) => Number(val).toFixed(3),
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        setValue: (val) => { nai_settings.typical_p = Number(val); },
+        format: (val: unknown) => Number(val).toFixed(3),
+        setValue: (val: unknown) => { nai_settings.typical_p = Number(val); },
     },
     {
         sliderId: '#mirostat_tau_novel',
         counterId: '#mirostat_tau_counter_novel',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        format: (val) => Number(val).toFixed(2),
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        setValue: (val) => { nai_settings.mirostat_tau = Number(val); },
+        format: (val: unknown) => Number(val).toFixed(2),
+        setValue: (val: unknown) => { (nai_settings as Record<string, unknown>).mirostat_tau = Number(val); },
     },
     {
         sliderId: '#mirostat_lr_novel',
         counterId: '#mirostat_lr_counter_novel',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        format: (val) => Number(val).toFixed(2),
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        setValue: (val) => { nai_settings.mirostat_lr = Number(val); },
+        format: (val: unknown) => Number(val).toFixed(2),
+        setValue: (val: unknown) => { (nai_settings as Record<string, unknown>).mirostat_lr = Number(val); },
     },
     {
         sliderId: '#min_length_novel',
         counterId: '#min_length_counter_novel',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        format: (val) => `${val}`,
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        setValue: (val) => { nai_settings.min_length = Number(val); },
+        format: (val: unknown) => `${val}`,
+        setValue: (val: unknown) => { nai_settings.min_length = Number(val); },
     },
     {
         sliderId: '#nai_banned_tokens',
         counterId: '#nai_banned_tokens_counter',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        format: (val) => val,
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        setValue: (val) => { nai_settings.banned_tokens = val; },
+        format: (val: unknown) => String(val),
+        setValue: (val: unknown) => { nai_settings.banned_tokens = String(val); },
     },
     {
         sliderId: '#min_p_novel',
         counterId: '#min_p_counter_novel',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        format: (val) => Number(val).toFixed(3),
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        setValue: (val) => { nai_settings.min_p = Number(val); },
+        format: (val: unknown) => Number(val).toFixed(3),
+        setValue: (val: unknown) => { nai_settings.min_p = Number(val); },
     },
     {
         sliderId: '#math1_temp_novel',
         counterId: '#math1_temp_counter_novel',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        format: (val) => Number(val).toFixed(2),
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        setValue: (val) => { nai_settings.math1_temp = Number(val); },
+        format: (val: unknown) => Number(val).toFixed(2),
+        setValue: (val: unknown) => { nai_settings.math1_temp = Number(val); },
     },
     {
         sliderId: '#math1_quad_novel',
         counterId: '#math1_quad_counter_novel',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        format: (val) => Number(val).toFixed(2),
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        setValue: (val) => { nai_settings.math1_quad = Number(val); },
+        format: (val: unknown) => Number(val).toFixed(2),
+        setValue: (val: unknown) => { nai_settings.math1_quad = Number(val); },
     },
     {
         sliderId: '#math1_quad_entropy_scale_novel',
         counterId: '#math1_quad_entropy_scale_counter_novel',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        format: (val) => Number(val).toFixed(2),
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        setValue: (val) => { nai_settings.math1_quad_entropy_scale = Number(val); },
+        format: (val: unknown) => Number(val).toFixed(2),
+        setValue: (val: unknown) => { nai_settings.math1_quad_entropy_scale = Number(val); },
     },
 ];
 
@@ -628,20 +540,16 @@ const sliders = [
  * @param banned_tokens
  * @param tokenizerType
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'banned_tokens' implicitly has an 'any' ... Remove this comment to see the full error message
-function getBadWordIds(banned_tokens, tokenizerType) {
+function getBadWordIds(banned_tokens: string, tokenizerType: number) {
     if (tokenizerType === tokenizers.NONE) {
         return [];
     }
 
     const cacheKey = `${getStringHash(banned_tokens)}-${tokenizerType}`;
 
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     if (cacheKey in badWordsCache && Array.isArray(badWordsCache[cacheKey])) {
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         console.debug(`Bad words ids cache hit for "${banned_tokens}"`, badWordsCache[cacheKey]);
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        return badWordsCache[cacheKey];
+        return badWordsCache[cacheKey] as number[][];
     }
 
     const result = [];
@@ -681,7 +589,6 @@ function getBadWordIds(banned_tokens, tokenizerType) {
 
     // Cache the result
     console.debug(`Bad words ids for "${banned_tokens}"`, result);
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     badWordsCache[cacheKey] = result;
 
     return result;
@@ -691,22 +598,21 @@ function getBadWordIds(banned_tokens, tokenizerType) {
  *
  * @param text
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'text' implicitly has an 'any' type.
-function getBadWordPermutations(text) {
-    const result = [];
+function getBadWordPermutations(text: string): string[] {
+    const result: string[] = [];
 
     // Original text
     result.push(text);
     // Original text + leading space
     result.push(` ${text}`);
     // First letter capitalized
-    result.push(text[0].toUpperCase() + text.slice(1));
+    result.push((text[0] ?? '').toUpperCase() + text.slice(1));
     // Ditto + leading space
-    result.push(` ${text[0].toUpperCase() + text.slice(1)}`);
+    result.push(` ${(text[0] ?? '').toUpperCase() + text.slice(1)}`);
     // First letter lower cased
-    result.push(text[0].toLowerCase() + text.slice(1));
+    result.push((text[0] ?? '').toLowerCase() + text.slice(1));
     // Ditto + leading space
-    result.push(` ${text[0].toLowerCase() + text.slice(1)}`);
+    result.push(` ${(text[0] ?? '').toLowerCase() + text.slice(1)}`);
     // Original all upper cased
     result.push(text.toUpperCase());
     // Ditto + leading space
@@ -729,8 +635,7 @@ function getBadWordPermutations(text) {
  * @param _cfgValues
  * @param type
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'finalPrompt' implicitly has an 'any' ty... Remove this comment to see the full error message
-export function getNovelGenerationData(finalPrompt, settings, maxLength, isImpersonate, isContinue, _cfgValues, type) {
+export function getNovelGenerationData(finalPrompt: string, settings: Record<string, unknown>, maxLength: number, isImpersonate: boolean, isContinue: boolean, _cfgValues: unknown, type: string) {
     console.debug('NovelAI generation data for', type);
     const isKayra = nai_settings.model_novel.includes('kayra');
     const isErato = nai_settings.model_novel.includes('erato');
@@ -809,12 +714,9 @@ export function getNovelGenerationData(finalPrompt, settings, maxLength, isImper
         'math1_quad': Number(nai_settings.math1_quad),
         'math1_quad_entropy_scale': Number(nai_settings.math1_quad_entropy_scale),
         'typical_p': Number(nai_settings.typical_p),
-        // @ts-expect-error TS(2339) FIXME: Property 'mirostat_lr' does not exist on type '{ t... Remove this comment to see the full error message
-        'mirostat_lr': Number(nai_settings.mirostat_lr),
-        // @ts-expect-error TS(2339) FIXME: Property 'mirostat_tau' does not exist on type '{ ... Remove this comment to see the full error message
-        'mirostat_tau': Number(nai_settings.mirostat_tau),
-        // @ts-expect-error TS(2339) FIXME: Property 'phrase_rep_pen' does not exist on type '... Remove this comment to see the full error message
-        'phrase_rep_pen': nai_settings.phrase_rep_pen,
+        'mirostat_lr': Number((nai_settings as Record<string, unknown>).mirostat_lr ?? 0),
+        'mirostat_tau': Number((nai_settings as Record<string, unknown>).mirostat_tau ?? 0),
+        'phrase_rep_pen': (nai_settings as Record<string, unknown>).phrase_rep_pen ?? 'off',
         'stop_sequences': stopSequences,
         'bad_words_ids': badWordIds,
         'logit_bias_exp': logitBias,
@@ -833,8 +735,7 @@ export function getNovelGenerationData(finalPrompt, settings, maxLength, isImper
  * @param selected_prefix
  * @param finalPrompt
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'selected_prefix' implicitly has an 'any... Remove this comment to see the full error message
-function selectPrefix(selected_prefix, finalPrompt) {
+function selectPrefix(selected_prefix: string, finalPrompt: string) {
     let useInstruct = false;
     const clio = nai_settings.model_novel.includes('clio');
     const kayra = nai_settings.model_novel.includes('kayra');
@@ -855,8 +756,7 @@ function selectPrefix(selected_prefix, finalPrompt) {
  *
  * @param model
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'model' implicitly has an 'any' type.
-function getTokenizerTypeForModel(model) {
+function getTokenizerTypeForModel(model: string) {
     if (model.includes('clio')) {
         return tokenizers.NERD;
     }
@@ -874,29 +774,22 @@ function getTokenizerTypeForModel(model) {
  *
  * @param orderArray
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'orderArray' implicitly has an 'any' typ... Remove this comment to see the full error message
-function sortItemsByOrder(orderArray) {
+function sortItemsByOrder(orderArray: number[]) {
     console.debug('Preset samplers order: ' + orderArray);
     const draggableItems = document.getElementById('novel_order');
 
     for (let i = 0; i < orderArray.length; i++) {
         const index = orderArray[i];
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        const item = draggableItems.querySelector(`[data-id="${index}"]`);
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        draggableItems.appendChild(item);
+        const item = draggableItems!.querySelector(`[data-id="${index}"]`);
+        if (item) draggableItems!.appendChild(item);
     }
 
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    Array.from(draggableItems.children).forEach(function (child) {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const isEnabled = orderArray.includes(parseInt(child.dataset.id));
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                child.classList.toggle('disabled', !isEnabled);
+    Array.from(draggableItems!.children).forEach(function (child) {
+        const isEnabled = orderArray.includes(parseInt((child as HTMLElement).dataset.id!));
+        (child as HTMLElement).classList.toggle('disabled', !isEnabled);
 
         if (!isEnabled) {
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-            draggableItems.appendChild(child);
+            draggableItems!.appendChild(child);
         }
     });
 }
@@ -905,19 +798,15 @@ function sortItemsByOrder(orderArray) {
  *
  */
 function saveSamplingOrder() {
-    // @ts-expect-error TS(7034) FIXME: Variable 'order' implicitly has type 'any[]' in so... Remove this comment to see the full error message
-    const order = [];
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    Array.from(document.getElementById('novel_order').children).forEach(function (child) {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const isEnabled = !child.hasClass('disabled');
+    const order: string[] = [];
+    Array.from(document.getElementById('novel_order')!.children).forEach(function (child) {
+        const el = child as HTMLElement;
+        const isEnabled = !el.classList.contains('disabled');
         if (isEnabled) {
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            order.push(child.dataset.id);
+            order.push(el.dataset.id!);
         }
     });
-    // @ts-expect-error TS(7005) FIXME: Variable 'order' implicitly has an 'any[]' type.
-    nai_settings.order = order;
+    nai_settings.order = order as unknown as number[];
     console.log('Samplers reordered:', nai_settings.order);
     saveSettingsDebounced();
 }
@@ -940,8 +829,7 @@ function calculateLogitBias() {
      * @param {number} bias Bias value
      * @param {number[]} sequence Sequence of token ids
      */
-    // @ts-expect-error TS(7006) FIXME: Parameter 'bias' implicitly has an 'any' type.
-    function getBiasObject(bias, sequence) {
+    function getBiasObject(bias: number, sequence: number[]) {
         return {
             bias: bias,
             ensure_sequence_finish: false,
@@ -961,8 +849,7 @@ function calculateLogitBias() {
  * @param {string} prompt Original instruction prompt
  * @returns Processed prompt
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'prompt' implicitly has an 'any' type.
-export function adjustNovelInstructionPrompt(prompt) {
+export function adjustNovelInstructionPrompt(prompt: string) {
     const stripedPrompt = prompt.replace(/[[\]]/g, '').trim();
     if (!stripedPrompt.includes('{ ')) {
         return `{ ${stripedPrompt} }`;
@@ -975,8 +862,7 @@ export function adjustNovelInstructionPrompt(prompt) {
  * @param response
  * @param decoded
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'response' implicitly has an 'any' type.
-function tryParseStreamingError(response, decoded) {
+function tryParseStreamingError(response: Response, decoded: string) {
     try {
         const data = JSON.parse(decoded);
 
@@ -985,9 +871,8 @@ function tryParseStreamingError(response, decoded) {
         }
 
         if (data.message || data.error) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.error(data.message || data.error?.message || response.statusText, 'NovelAI API');
-            throw new Error(data);
+            throw new Error(String(data));
         }
     } catch {
         // No JSON. Do nothing.
@@ -999,8 +884,7 @@ function tryParseStreamingError(response, decoded) {
  * @param generate_data
  * @param signal
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'generate_data' implicitly has an 'any' ... Remove this comment to see the full error message
-export async function generateNovelWithStreaming(generate_data, signal) {
+export async function generateNovelWithStreaming(generate_data: Record<string, unknown>, signal: AbortSignal) {
     generate_data.streaming = nai_settings.streaming_novel;
 
     const response = await fetch('/api/novelai/generate', {
@@ -1014,10 +898,8 @@ export async function generateNovelWithStreaming(generate_data, signal) {
         throw new Error(`Got response status ${response.status}`);
     }
     const eventStream = getEventSourceStream();
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    response.body.pipeThrough(eventStream);
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    const reader = eventStream.readable.getReader();
+    response.body!.pipeThrough(eventStream as unknown as TransformStream<Uint8Array, Uint8Array>);
+    const reader = eventStream.readable!.getReader();
 
     return async function* streamData() {
         let text = '';
@@ -1064,31 +946,29 @@ export async function generateNovelWithStreaming(generate_data, signal) {
  * @param {NAITokenLogprobs} data - NAI logprobs object for one token
  * @returns {import('./logprobs.js').TokenLogprobs | null} converted logprobs
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
-export function parseNovelAILogprobs(data) {
+export function parseNovelAILogprobs(data: {
+    before: [[number], [number, number]][];
+    after: [[number], [number, number]][];
+    chosen: [[number], [number, number]][];
+} | null) {
     if (!data) {
         return null;
     }
-    // @ts-expect-error TS(7031) FIXME: Binding element 'tokenId' implicitly has an 'any' ... Remove this comment to see the full error message
-    const befores = data.before.map(([[tokenId], [before, _]]) => [tokenId, before]);
-    // @ts-expect-error TS(7031) FIXME: Binding element 'tokenId' implicitly has an 'any' ... Remove this comment to see the full error message
-    const afters = data.after.map(([[tokenId], [_, after]]) => [tokenId, after]);
+    const befores: [number, number][] = data.before.map(([[tokenId], [before, _]]) => [tokenId, before]);
+    const afters: [number, number][] = data.after.map(([[tokenId], [_, after]]) => [tokenId, after]);
 
     // Find any tokens in `befores` that are missing from `afters`. Then add
     // them with a logprob of -Infinity (0% probability)
-    const notInAfter = befores
-        // @ts-expect-error TS(7031) FIXME: Binding element 'id' implicitly has an 'any' type.
+    const notInAfter: [number, number][] = befores
         .filter(([id]) => !afters.some(([aid]) => aid === id))
-        // @ts-expect-error TS(7031) FIXME: Binding element 'id' implicitly has an 'any' type.
-        .map(([id]) => [id, -Infinity]);
+        .map(([id]): [number, number] => [id, -Infinity]);
     const merged = afters.concat(notInAfter);
 
     // Add the chosen token to `merged` if it's not already there. This can
     // happen if the chosen token was not among the top 10 most likely ones.
      
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [[chosenId], [_, chosenAfter]] = data.chosen[0];
-    // @ts-expect-error TS(7031) FIXME: Binding element 'id' implicitly has an 'any' type.
+    const [[chosenId], [_, chosenAfter]] = data.chosen[0]!;
     if (!merged.some(([id]) => id === chosenId)) {
         merged.push([chosenId, chosenAfter]);
     }
@@ -1101,16 +981,15 @@ export function parseNovelAILogprobs(data) {
     return { token: chosenId, topLogprobs: merged };
 }
 
-document.getElementById('nai_preamble_textarea')?.addEventListener('input', function () {
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
+document.getElementById('nai_preamble_textarea')?.addEventListener('input', function (this: HTMLTextAreaElement) {
     nai_settings.preamble = String(this.value);
     saveSettingsDebounced();
 });
 
 document.getElementById('nai_preamble_restore')?.addEventListener('click', function () {
     nai_settings.preamble = default_preamble;
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    document.getElementById('nai_preamble_textarea').value = nai_settings.preamble;
+    const el = document.getElementById('nai_preamble_textarea') as HTMLTextAreaElement | null;
+    if (el) el.value = nai_settings.preamble;
     saveSettingsDebounced();
 });
 
@@ -1146,22 +1025,20 @@ export function initNovelAISettings() {
             const formattedValue = slider.format(value);
             slider.setValue(value);
             const counter = document.querySelector(slider.counterId);
-            if (counter) (counter as HTMLInputElement).value = formattedValue;
+            if (counter) (counter as HTMLInputElement).value = String(formattedValue);
             saveSettingsDebounced();
         });
     });
 
-    document.getElementById('api_button_novel')?.addEventListener('click', async function (e) {
+    document.getElementById('api_button_novel')?.addEventListener('click', async function (e: Event) {
         e.stopPropagation();
         const api_key_novel = String((document.getElementById('api_key_novel') as HTMLInputElement | null)?.value).trim();
 
         if (api_key_novel.length) {
-            // @ts-expect-error TS(2554) FIXME: Expected 3-4 arguments, but got 2.
-            await writeSecret(SECRET_KEYS.NOVEL, api_key_novel);
+            await writeSecret(SECRET_KEYS.NOVEL, api_key_novel, '', undefined);
         }
 
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        if (!secret_state[SECRET_KEYS.NOVEL]) {
+        if (!(secret_state as Record<string, unknown>)[SECRET_KEYS.NOVEL]) {
             console.log('No secret key saved for NovelAI');
             return;
         }
@@ -1170,45 +1047,42 @@ export function initNovelAISettings() {
         await getStatusNovel();
     });
 
-    document.getElementById('settings_preset_novel')?.addEventListener('change', async function () {
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        nai_settings.preset_settings_novel = this.options[this.selectedIndex].text;
-        const preset = novelai_settings[novelai_setting_names[nai_settings.preset_settings_novel]];
+    document.getElementById('settings_preset_novel')?.addEventListener('change', async function (this: HTMLSelectElement) {
+        nai_settings.preset_settings_novel = this.options[this.selectedIndex]!.text;
+        const preset = novelai_settings[novelai_setting_names[nai_settings.preset_settings_novel] ?? 0] as unknown as NovelAIPreset;
         loadNovelPreset(preset);
         saveSettingsDebounced();
         await eventSource.emit(event_types.PRESET_CHANGED, { apiId: 'novel', name: nai_settings.preset_settings_novel });
     });
 
-    document.getElementById('streaming_novel')?.addEventListener('input', function () {
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
+    document.getElementById('streaming_novel')?.addEventListener('input', function (this: HTMLInputElement) {
         const value = !!(this).checked;
         nai_settings.streaming_novel = value;
         saveSettingsDebounced();
     });
 
-    document.getElementById('model_novel_select')?.addEventListener('change', function () {
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        nai_settings.model_novel = String(this.options[this.selectedIndex].value);
+    document.getElementById('model_novel_select')?.addEventListener('change', function (this: HTMLSelectElement) {
+        nai_settings.model_novel = String(this.options[this.selectedIndex]!.value);
         saveSettingsDebounced();
 
         // Update the selected preset to something appropriate
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        const default_preset = default_presets[nai_settings.model_novel];
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        document.getElementById('settings_preset_novel').value = novelai_setting_names[default_preset];
-        document.querySelector(`#settings_preset_novel option[value="${novelai_setting_names[default_preset]}"]`)?.setAttribute('selected', 'true');
+        const default_preset = (default_presets as Record<string, string>)[nai_settings.model_novel];
+        const settingsPresetNovel = document.getElementById('settings_preset_novel') as HTMLSelectElement | null;
+        if (settingsPresetNovel && default_preset) {
+            settingsPresetNovel.value = String((novelai_setting_names as Record<string, number>)[default_preset]);
+        }
+        document.querySelector(`#settings_preset_novel option[value="${novelai_setting_names[default_preset ?? '']}"]`)?.setAttribute('selected', 'true');
         document.getElementById('settings_preset_novel')?.dispatchEvent(new Event('change'));
     });
 
-    document.getElementById('nai_prefix')?.addEventListener('change', function () {
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        nai_settings.prefix = String(this.options[this.selectedIndex].value);
+    document.getElementById('nai_prefix')?.addEventListener('change', function (this: HTMLSelectElement) {
+        nai_settings.prefix = String(this.options[this.selectedIndex]!.value);
         saveSettingsDebounced();
     });
 
     document.getElementById('phrase_rep_pen_novel')?.addEventListener('change', function () {
-        // @ts-expect-error TS(2339) FIXME: Property 'phrase_rep_pen' does not exist on type '... Remove this comment to see the full error message
-        nai_settings.phrase_rep_pen = String(document.getElementById('phrase_rep_pen_novel').options[document.getElementById('phrase_rep_pen_novel').selectedIndex].value);
+        const el = document.getElementById('phrase_rep_pen_novel') as HTMLSelectElement | null;
+        (nai_settings as Record<string, unknown>).phrase_rep_pen = String(el?.options[el?.selectedIndex ?? 0]?.value ?? '');
         saveSettingsDebounced();
     });
 

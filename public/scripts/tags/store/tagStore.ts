@@ -15,6 +15,13 @@ import { TAG_FOLDER_TYPES, TAG_FOLDER_DEFAULT_TYPE } from '../types.js';
 import { FILTER_STATES } from '../../filters.js';
 import { compareTagsForSort } from '../utils/sorting.js';
 
+declare const notyf: {
+    warning: (msg: string, ...args: unknown[]) => void;
+    success: (msg: string, ...args: unknown[]) => void;
+    error: (msg: string, ...args: unknown[]) => void;
+    info: (msg: string, ...args: unknown[]) => void;
+};
+
 const DEFAULT_FILTER_STATE = FILTER_STATES.UNDEFINED.key;
 
 // ──────────────────────────────────────────────
@@ -35,8 +42,7 @@ const DEFAULT_TAGS = [
  * An list of all tags that are available
  * @type {Tag[]}
  */
-// @ts-expect-error TS(7034) FIXME: Variable 'tags' implicitly has type 'any[]' in som...
-export let tags = [];
+export let tags: { id: string; name: string; folder_type?: string; filter_state?: string; sort_order?: number; is_hidden_on_character_card?: boolean; color?: string; color2?: string; create_date?: number; action?: (...args: unknown[]) => unknown; class?: string; icon?: string; title?: string }[] = [];
 
 /**
  * A map representing the key of an entity with a corresponding array of tags.
@@ -48,29 +54,39 @@ export let tag_map = {};
 // Load / Save
 // ──────────────────────────────────────────────
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'settings' implicitly has an 'any' type.
-export function loadTagsSettings(settings) {
+/**
+ *
+ * @param settings
+ * @param settings.tags
+ * @param settings.tag_map
+ */
+export function loadTagsSettings(settings: { tags?: typeof tags; tag_map?: typeof tag_map }) {
     tags = settings.tags !== undefined ? settings.tags : DEFAULT_TAGS;
     tag_map = settings.tag_map !== undefined ? settings.tag_map : Object.create(null);
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'oldKey' implicitly has an 'any' type.
-export function renameTagKey(oldKey, newKey) {
-    // @ts-expect-error TS(7053)
-    const value = tag_map[oldKey];
-    // @ts-expect-error TS(7053)
-    tag_map[newKey] = value || [];
-    // @ts-expect-error TS(7053)
-    delete tag_map[oldKey];
+/**
+ *
+ * @param oldKey
+ * @param newKey
+ */
+export function renameTagKey(oldKey: string, newKey: string) {
+    const typedMap = tag_map as Record<string, string[] | undefined>;
+    const value = typedMap[oldKey];
+    typedMap[newKey] = value || [];
+    delete typedMap[oldKey];
     markDirty();
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'listElement' implicitly has an 'any' ty...
-export function createTagMapFromList(listElement, key) {
+/**
+ *
+ * @param listElement
+ * @param key
+ */
+export function createTagMapFromList(listElement: string | HTMLElement | null, key: string) {
     const $listEl = typeof listElement === 'string' ? document.querySelector(listElement) : listElement;
-    const tagIds = getTagIdsFromDOM($listEl);
-    // @ts-expect-error TS(7053)
-    tag_map[key] = tagIds;
+    const tagIds = getTagIdsFromDOM($listEl as HTMLElement | null);
+    (tag_map as Record<string, string[]>)[key] = tagIds;
     markDirty();
 }
 
@@ -78,6 +94,9 @@ export function createTagMapFromList(listElement, key) {
 // Tag Key Resolution
 // ──────────────────────────────────────────────
 
+/**
+ *
+ */
 export function getTagKey() {
     if (selected_group && menu_type === 'group_edit') {
         return selected_group;
@@ -88,6 +107,9 @@ export function getTagKey() {
     return null;
 }
 
+/**
+ *
+ */
 export function getInlineListSelector() {
     if (selected_group && menu_type === 'group_edit') {
         return `.group_select[grid="${selected_group}"] .tags`;
@@ -98,42 +120,50 @@ export function getInlineListSelector() {
     return null;
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'entityOrKey' implicitly has an 'any' ty...
-export function getTagKeyForEntity(entityOrKey) {
-    let x = entityOrKey;
+/**
+ *
+ * @param entityOrKey
+ */
+export function getTagKeyForEntity(entityOrKey: unknown) {
+    let x: unknown = entityOrKey;
 
     if (typeof x === 'object' && x !== null && 'id' in x) {
-        x = x.id;
+        x = (x as Record<string, unknown>).id;
     }
 
-    let character;
-    if (!character && characters.indexOf(x) >= 0) character = x;
-    if (!character && !isNaN(parseInt(entityOrKey))) character = characters[x];
+    let character: unknown;
+    if (!character && characters.indexOf(x as unknown as Character) >= 0) character = x;
+    if (!character && !isNaN(parseInt(entityOrKey as string))) character = characters[x as unknown as number];
     if (!character) character = characters.find(y => y.avatar === x);
 
     if (character) {
-        x = character.avatar;
+        x = (character as Record<string, unknown>).avatar;
     }
 
-    if (character && !(x in tag_map)) {
-        // @ts-expect-error TS(7053)
-        tag_map[x] = [];
-        return x;
+    if (character && !((x as string) in tag_map)) {
+        (tag_map as Record<string, string[]>)[x as string] = [];
+        return x as string;
     }
 
-    if (x in tag_map) {
-        return x;
+    if ((x as string) in tag_map) {
+        return x as string;
     }
 
     return undefined;
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'element' implicitly has an 'any' type.
-export function getTagKeyForEntityElement(element) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Cash = any;
+
+/**
+ *
+ * @param element
+ */
+export function getTagKeyForEntityElement(element: string | HTMLElement | Cash | null | undefined) {
     let el = typeof element === 'string'
         ? document.querySelector(element)
         : (element?.[0] instanceof Node ? element[0] : element);
-    while (el?.getAttribute) {
+    while (el instanceof Element && el.getAttribute) {
         const grid = el.getAttribute('data-grid');
         const chid = el.getAttribute('data-chid');
         if (grid || chid) {
@@ -148,43 +178,52 @@ export function getTagKeyForEntityElement(element) {
 // Tag CRUD (data-only)
 // ──────────────────────────────────────────────
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'key' implicitly has an 'any' type.
-export function getTagsList(key, sort = true) {
+/**
+ *
+ * @param key
+ * @param sort
+ */
+export function getTagsList(key: string | null | undefined, sort = true) {
     if (key === null || key === undefined) {
         return [];
     }
-    // @ts-expect-error TS(7053)
-    if (!Array.isArray(tag_map[key])) {
-        // @ts-expect-error TS(7053)
-        tag_map[key] = [];
+    const typedMap = tag_map as Record<string, string[] | undefined>;
+    if (!Array.isArray(typedMap[key])) {
+        typedMap[key] = [];
         return [];
     }
-    // @ts-expect-error TS(7053)
-    const list = tag_map[key]
+    const list = (typedMap[key]!)
         .map(x => getTagById(x))
-        .filter(x => x);
+        .filter((x): x is NonNullable<typeof x> => x !== undefined);
     if (sort) list.sort(compareTagsForSort);
     return list;
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'tagName' implicitly has an 'any' type.
-export function getTag(tagName, { createNew = false } = {}) {
-    let tag = tags.find(t => equalsIgnoreCaseAndAccents(t.name, tagName)) ?? undefined;
+/**
+ *
+ * @param tagName
+ * @param root0
+ * @param root0.createNew
+ */
+export function getTag(tagName: string, { createNew = false }: { createNew?: boolean } = {}): Record<string, unknown> | undefined {
+    let tag: Record<string, unknown> | undefined = tags.find(t => equalsIgnoreCaseAndAccents(t.name, tagName)) ?? undefined;
     if (!tag && createNew) {
         tag = createNewTag(tagName);
     }
     return tag;
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'tagName' implicitly has an 'any' type.
-export function newTag(tagName) {
+/**
+ *
+ * @param tagName
+ */
+export function newTag(tagName: string): Record<string, unknown> {
     return {
         id: uuidv4(),
         name: tagName,
         folder_type: TAG_FOLDER_DEFAULT_TYPE,
         filter_state: DEFAULT_FILTER_STATE,
-        // @ts-expect-error TS(7005)
-        sort_order: Math.max(0, ...tags.map(t => t.sort_order)) + 1,
+        sort_order: Math.max(0, ...tags.map((t: Record<string, unknown>) => t.sort_order as number || 0)) + 1,
         is_hidden_on_character_card: false,
         color: '',
         color2: '',
@@ -192,22 +231,27 @@ export function newTag(tagName) {
     };
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'tagName' implicitly has an 'any' type.
-export function createNewTag(tagName) {
+/**
+ *
+ * @param tagName
+ */
+export function createNewTag(tagName: string): Record<string, unknown> {
     const existing = getTag(tagName);
     if (existing) {
-        // @ts-expect-error TS(2304) Cannot find name 'notyf'
-        notyf.warning(`Cannot create new tag. A tag with the name already exists:<br />${escapeHtml(existing.name)}`, 'Creating Tag', { escapeHtml: false });
+        notyf.warning(`Cannot create new tag. A tag with the name already exists:<br />${escapeHtml(existing.name as string)}`, 'Creating Tag', { escapeHtml: false });
         return existing;
     }
     const tag = newTag(tagName);
-    tags.push(tag);
+    tags.push(tag as typeof tags[number]);
     console.debug('Created new tag', tag.name, 'with id', tag.id);
     return tag;
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'newTags' implicitly has an 'any' type.
-export function getExistingTags(newTags) {
+/**
+ *
+ * @param newTags
+ */
+export function getExistingTags(newTags: string[]): Record<string, unknown>[] {
     const existingTags = [];
     for (const tagName of newTags) {
         const foundTag = getTag(tagName);
@@ -222,56 +266,60 @@ export function getExistingTags(newTags) {
 // Tag Map Operations (low-level)
 // ──────────────────────────────────────────────
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'tagId' implicitly has an 'any' type.
-export function addTagToMap(tagId, characterId = null) {
+/**
+ *
+ * @param tagId
+ * @param characterId
+ */
+export function addTagToMap(tagId: string, characterId: string | null = null) {
     const key = characterId !== null && characterId !== undefined ? getTagKeyForEntity(characterId) : getTagKey();
     if (!key) {
         return false;
     }
-    // @ts-expect-error TS(7053)
-    if (!Array.isArray(tag_map[key])) {
-        // @ts-expect-error TS(7053)
-        tag_map[key] = [tagId];
+    const typedMap = tag_map as Record<string, string[] | undefined>;
+    if (!Array.isArray(typedMap[key])) {
+        typedMap[key] = [tagId];
         return true;
     } else {
-        // @ts-expect-error TS(7053)
-        if (tag_map[key].includes(tagId)) return false;
-        // @ts-expect-error TS(7053)
-        tag_map[key].push(tagId);
-        // @ts-expect-error TS(7053)
-        tag_map[key] = tag_map[key].filter(onlyUnique);
+        if (typedMap[key]!.includes(tagId)) return false;
+        typedMap[key]!.push(tagId);
+        typedMap[key] = typedMap[key]!.filter(onlyUnique);
         return true;
     }
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'tagId' implicitly has an 'any' type.
-export function removeTagFromMap(tagId, characterId = null) {
+/**
+ *
+ * @param tagId
+ * @param characterId
+ */
+export function removeTagFromMap(tagId: string, characterId: string | null = null) {
     const key = characterId !== null && characterId !== undefined ? getTagKeyForEntity(characterId) : getTagKey();
     if (!key) {
         return false;
     }
-    // @ts-expect-error TS(7053)
-    if (!Array.isArray(tag_map[key])) {
-        // @ts-expect-error TS(7053)
-        tag_map[key] = [];
+    const typedMap = tag_map as Record<string, string[] | undefined>;
+    if (!Array.isArray(typedMap[key])) {
+        typedMap[key] = [];
         return false;
     } else {
-        // @ts-expect-error TS(7053)
-        const indexOf = tag_map[key].indexOf(tagId);
-        // @ts-expect-error TS(7053)
-        tag_map[key].splice(indexOf, 1);
+        const indexOf = typedMap[key]!.indexOf(tagId);
+        typedMap[key]!.splice(indexOf, 1);
         return indexOf !== -1;
     }
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
-export function copyTags(data) {
-    // @ts-expect-error TS(7053)
-    const prevTagMap = tag_map[data.oldAvatar] || [];
-    // @ts-expect-error TS(7053)
-    const newTagMap = tag_map[data.newAvatar] || [];
-    // @ts-expect-error TS(7053)
-    tag_map[data.newAvatar] = Array.from(new Set([...prevTagMap, ...newTagMap]));
+/**
+ *
+ * @param data
+ * @param data.oldAvatar
+ * @param data.newAvatar
+ */
+export function copyTags(data: { oldAvatar: string; newAvatar: string }) {
+    const typedMap = tag_map as Record<string, string[] | undefined>;
+    const prevTagMap = typedMap[data.oldAvatar] || [];
+    const newTagMap = typedMap[data.newAvatar] || [];
+    typedMap[data.newAvatar] = Array.from(new Set([...prevTagMap, ...newTagMap]));
 }
 
 // ──────────────────────────────────────────────
@@ -283,7 +331,7 @@ export function copyTags(data) {
  * @param {string} id - The tag id
  * @returns {Tag|undefined} The tag or undefined
  */
-export function getTagById(id) {
+export function getTagById(id: string) {
     return tags.find(t => t.id === id);
 }
 
@@ -292,9 +340,9 @@ export function getTagById(id) {
  * @param {string} key - The entity key
  * @returns {string[]} Array of tag IDs (empty if none)
  */
-export function getTagIdsForKey(key) {
-    // @ts-expect-error TS(7053)
-    return Array.isArray(tag_map[key]) ? tag_map[key] : [];
+export function getTagIdsForKey(key: string): string[] {
+    const typedMap = tag_map as Record<string, string[] | undefined>;
+    return Array.isArray(typedMap[key]) ? typedMap[key]! : [];
 }
 
 /**
@@ -303,7 +351,7 @@ export function getTagIdsForKey(key) {
  * @param {string|HTMLElement|null} selector - String selector or element
  * @returns {HTMLElement|null} The resolved element
  */
-export function resolveElement(selector) {
+export function resolveElement(selector: string | HTMLElement | null | undefined): HTMLElement | null {
     if (!selector) return null;
     if (typeof selector === 'string') return document.querySelector(selector);
     return selector;
@@ -322,15 +370,15 @@ const tagListeners = new Map<TagStoreEvent, Set<(...args: unknown[]) => void>>()
  * @example tagStoreEvents.on('changed', () => { ... });
  */
 export const tagStoreEvents = {
-    on(event, callback) {
+    on(event: TagStoreEvent, callback: (...args: unknown[]) => void) {
         let set = tagListeners.get(event);
         if (!set) { set = new Set(); tagListeners.set(event, set); }
         set.add(callback);
     },
-    off(event, callback) {
+    off(event: TagStoreEvent, callback: (...args: unknown[]) => void) {
         tagListeners.get(event)?.delete(callback);
     },
-    emit(event, data) {
+    emit(event: TagStoreEvent, data: unknown) {
         tagListeners.get(event)?.forEach(cb => {
             try { cb(data); } catch(e) { console.error('TagStore event error:', e); }
         });
@@ -344,12 +392,12 @@ export const tagStoreEvents = {
 /**
  * Extract tag IDs from DOM elements. Replaces 6× Array.from(querySelectorAll(...), el => el.getAttribute('id')) patterns.
  * @param {HTMLElement|string} container - Container element or selector
-* @param {string} selector - CSS selector for tag elements
+ * @param {string} selector - CSS selector for tag elements
  * @returns {string[]} Array of tag ID strings
  */
-export function getTagIdsFromDOM(container, selector = '.tag') {
+export function getTagIdsFromDOM(container: string | HTMLElement | null | undefined, selector = '.tag'): string[] {
     const el = resolveElement(container);
-    return Array.from(el?.querySelectorAll(selector) ?? [], x => x.getAttribute('id')).filter(Boolean);
+    return Array.from(el?.querySelectorAll(selector) ?? [], (x: Element) => x.getAttribute('id')).filter((x): x is string => x !== null);
 }
 
 /**
@@ -372,9 +420,9 @@ export function getTagFromEvent(eventOrElement: Event | HTMLElement, ancestorSel
  * @param {object} tag - Tag with folder_type property
  * @returns {object} The folder type config
  */
-export function getFolderType(tag) {
-    // @ts-expect-error TS(7053)
-    return TAG_FOLDER_TYPES[tag?.folder_type] || TAG_FOLDER_TYPES[TAG_FOLDER_DEFAULT_TYPE];
+export function getFolderType(tag: Record<string, unknown> | undefined) {
+    const typedTypes = TAG_FOLDER_TYPES as Record<string, { icon: string; class: string; fa_icon?: string; tooltip?: string; color?: string; size?: string }>;
+    return typedTypes[tag?.folder_type as string] || typedTypes[TAG_FOLDER_DEFAULT_TYPE];
 }
 
 /**

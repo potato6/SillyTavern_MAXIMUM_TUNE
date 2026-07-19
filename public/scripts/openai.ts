@@ -173,8 +173,7 @@ const textCompletionModels = [
     'code-search-ada-code-001',
 ];
 
-// @ts-expect-error TS(7034) FIXME: Variable 'biasCache' implicitly has type 'any' in ... Remove this comment to see the full error message
-let biasCache = undefined;
+let biasCache: Record<string, unknown> | undefined = undefined;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic model data from API response
 export let model_list: any[] = [];
 
@@ -475,8 +474,8 @@ const default_settings = {
     custom_include_headers: '',
     openrouter_model: openrouter_website_model,
     openrouter_use_fallback: false,
-    openrouter_providers: [],
-    openrouter_quantizations: [],
+    openrouter_providers: [] as string[],
+    openrouter_quantizations: [] as string[],
     openrouter_allow_fallbacks: true,
     openrouter_middleout: openrouter_middleout_types.ON,
     tool_reasoning_mode: tool_reasoning_modes.DISABLED,
@@ -525,13 +524,11 @@ export let proxies = [
 ];
 export let selected_proxy = proxies[0];
 
-// @ts-expect-error TS(7005) FIXME: Variable 'openai_setting_names' implicitly has an ... Remove this comment to see the full error message
-export let openai_setting_names;
-// @ts-expect-error TS(7005) FIXME: Variable 'openai_settings' implicitly has an 'any'... Remove this comment to see the full error message
-export let openai_settings;
+export let openai_setting_names: Record<string, number> | unknown[];
+export let openai_settings: Record<string, unknown>[];
 
 /** @type {import('./PromptManager.js').PromptManager} */
-export let promptManager = null;
+export let promptManager: import('./PromptManager.js').PromptManager | null = null;
 
 /**
  *
@@ -544,7 +541,6 @@ async function validateReverseProxy() {
     try {
         new URL(oai_settings.reverse_proxy);
     } catch (err) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.error(t`Entered reverse proxy address is not a valid URL`);
         setOnlineStatus('no_connection');
         resultCheckStatus();
@@ -556,7 +552,6 @@ async function validateReverseProxy() {
     const confirmation = skipConfirm || (await Popup.show.confirm(t`Connecting To Proxy`, await renderTemplateAsync('proxyConnectionWarning', { proxyURL: DOMPurify.sanitize(oai_settings.reverse_proxy) })));
 
     if (!confirmation) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.error(t`Update or remove your reverse proxy settings.`);
         setOnlineStatus('no_connection');
         resultCheckStatus();
@@ -571,8 +566,7 @@ async function validateReverseProxy() {
  * @param {ChatMessage[]} chat - Array containing all messages.
  * @returns {object[]} - Array containing all messages formatted for chat completion.
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'chat' implicitly has an 'any' type.
-function setOpenAIMessages(chat) {
+function setOpenAIMessages(chat: ChatMessage[]) {
     let j = 0;
     // clean openai msgs
     const messages = [];
@@ -581,18 +575,18 @@ function setOpenAIMessages(chat) {
     const currentModel = getChatCompletionModel();
 
     for (let i = chat.length - 1; i >= 0; i--) {
-        let role = chat[j].is_user ? 'user' : 'assistant';
-        let content = chat[j].mes;
+        let role = chat[j]!.is_user ? 'user' : 'assistant';
+        let content = chat[j]!.mes;
 
         // If this symbol flag is set, completely ignore the message.
         // This can be used to hide messages without affecting the number of messages in the chat.
-        if (chat[j].extra?.[IGNORE_SYMBOL]) {
+        if (chat[j]!.extra?.[IGNORE_SYMBOL]) {
             j++;
             continue;
         }
 
         // 100% legal way to send a message as system
-        if (chat[j].extra?.type === system_message_types.NARRATOR) {
+        if (chat[j]!.extra?.type === system_message_types.NARRATOR) {
             role = 'system';
         }
 
@@ -601,13 +595,13 @@ function setOpenAIMessages(chat) {
             case character_names_behavior.NONE:
                 break;
             case character_names_behavior.DEFAULT:
-                if ((selected_group && chat[j].name !== name1) || (chat[j].force_avatar && chat[j].name !== name1 && chat[j].extra?.type !== system_message_types.NARRATOR)) {
-                    content = `${chat[j].name}: ${content}`;
+                if ((selected_group && chat[j]!.name !== name1) || (chat[j]!.force_avatar && chat[j]!.name !== name1 && chat[j]!.extra?.type !== system_message_types.NARRATOR)) {
+                    content = `${chat[j]!.name}: ${content}`;
                 }
                 break;
             case character_names_behavior.CONTENT:
-                if (chat[j].extra?.type !== system_message_types.NARRATOR) {
-                    content = `${chat[j].name}: ${content}`;
+                if (chat[j]!.extra?.type !== system_message_types.NARRATOR) {
+                    content = `${chat[j]!.name}: ${content}`;
                 }
                 break;
             case character_names_behavior.COMPLETION:
@@ -617,12 +611,12 @@ function setOpenAIMessages(chat) {
         }
 
         // remove caret return (waste of tokens)
-        content = content.replace(/\r/gm, '');
+        content = content!.replace(/\r/gm, '');
 
-        const name = chat[j].name;
+        const name = chat[j]!.name;
         const media = chat[j]?.extra?.media;
-        const mediaDisplay = getMediaDisplay(chat[j]);
-        const mediaIndex = getMediaIndex(chat[j]);
+        const mediaDisplay = getMediaDisplay(chat[j]!);
+        const mediaIndex = getMediaIndex(chat[j]!);
         const invocations = chat[j]?.extra?.tool_invocations?.slice();
 
         // Only send thought signatures if they were generated by the same API and model
@@ -630,7 +624,7 @@ function setOpenAIMessages(chat) {
         const originModel = chat[j]?.extra?.model;
         const isSameModel = originApi === currentApi && originModel === currentModel;
         // In group chats, only include reasoning from the currently generating character
-        const isOtherGroupMember = selected_group && chat[j].name !== name2;
+        const isOtherGroupMember = selected_group && chat[j]!.name !== name2;
         const signature = isSameModel && !isOtherGroupMember ? chat[j]?.extra?.reasoning_signature : null;
         const reasoning = isSameModel && !isOtherGroupMember ? String(chat[j]?.extra?.reasoning ?? '') : '';
 
@@ -658,8 +652,7 @@ function setOpenAIMessages(chat) {
  * @param {string[]} mesExamplesArray - Array containing all examples.
  * @returns {object[]} - Array containing all examples formatted for chat completion.
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'mesExamplesArray' implicitly has an 'an... Remove this comment to see the full error message
-function setOpenAIMessageExamples(mesExamplesArray) {
+function setOpenAIMessageExamples(mesExamplesArray: string) {
     // get a nice array of all blocks of all example messages = array of arrays (important!)
     const examples = [];
     for (const item of mesExamplesArray) {
@@ -677,16 +670,13 @@ function setOpenAIMessageExamples(mesExamplesArray) {
  * @param openAiSettings
  * @returns {PromptManager|null}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'openAiSettings' implicitly has an 'any'... Remove this comment to see the full error message
-function setupChatCompletionPromptManager(openAiSettings) {
+function setupChatCompletionPromptManager(openAiSettings: Record<string, unknown>) {
     // Do not set up prompt manager more than once
     if (promptManager) {
-        // @ts-expect-error TS(2339) FIXME: Property 'render' does not exist on type 'never'.
         promptManager.render(false);
         return promptManager;
     }
 
-    // @ts-expect-error TS(2322) FIXME: Type 'PromptManager' is not assignable to type 'nu... Remove this comment to see the full error message
     promptManager = new PromptManager();
 
     const configuration = {
@@ -707,28 +697,22 @@ function setupChatCompletionPromptManager(openAiSettings) {
         },
     };
 
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    promptManager.saveServiceSettings = () => {
-        saveSettingsDebounced();
-        return new Promise((resolve) => eventSource.once(event_types.SETTINGS_UPDATED, resolve));
-    };
+    if (promptManager) {
+        promptManager.saveServiceSettings = async () => {
+            saveSettingsDebounced();
+        };
 
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    promptManager.tryGenerate = () => {
-        if (characters[this_chid]) {
-            return Generate('normal', {}, true);
-        } else {
-            return Promise.resolve();
-        }
-    };
+        promptManager.tryGenerate = async () => {
+            if (characters[this_chid]) {
+                Generate('manual');
+            }
+        };
 
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    promptManager.tokenHandler = tokenHandler;
+        promptManager.tokenHandler = tokenHandler;
 
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    promptManager.init(configuration, openAiSettings);
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    promptManager.render(false);
+        promptManager.init(configuration, openAiSettings);
+        promptManager.render(false);
+    }
 
     return promptManager;
 }
@@ -739,15 +723,12 @@ function setupChatCompletionPromptManager(openAiSettings) {
  * @param {boolean} appendNamesForGroup - Whether to append the character name for group chats
  * @returns {Message[]} Array of message objects
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'messageExampleString' implicitly has an... Remove this comment to see the full error message
-export function parseExampleIntoIndividual(messageExampleString, appendNamesForGroup = true) {
+export function parseExampleIntoIndividual(messageExampleString: string, appendNamesForGroup = true) {
     const groupBotNames = getGroupNames().map(name => `${name}:`);
 
-    // @ts-expect-error TS(7034) FIXME: Variable 'result' implicitly has type 'any[]' in s... Remove this comment to see the full error message
-    const result = []; // array of msgs
+    const result: Record<string, unknown>[] = []; // array of msgs
     const tmp = messageExampleString.split('\n');
-    // @ts-expect-error TS(7034) FIXME: Variable 'cur_msg_lines' implicitly has type 'any[... Remove this comment to see the full error message
-    let cur_msg_lines = [];
+    let cur_msg_lines: string[] = [];
     let in_user = false;
     let in_bot = false;
     let botName = name2;
@@ -759,12 +740,10 @@ export function parseExampleIntoIndividual(messageExampleString, appendNamesForG
      * @param role
      * @param system_name
      */
-    // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
-    function add_msg(name, role, system_name) {
+    function add_msg(name: string, role: string, system_name: string) {
         // join different newlines (we split them by \n and join by \n)
         // remove char name
         // strip to remove extra spaces
-        // @ts-expect-error TS(7005) FIXME: Variable 'cur_msg_lines' implicitly has an 'any[]'... Remove this comment to see the full error message
         let parsed_msg = cur_msg_lines.join('\n').replace(name + ':', '').trim();
 
         if (appendNamesForGroup && selected_group && ['example_user', 'example_assistant'].includes(system_name)) {
@@ -776,7 +755,7 @@ export function parseExampleIntoIndividual(messageExampleString, appendNamesForG
     }
     // skip first line as it'll always be "This is how {bot name} should talk"
     for (let i = 1; i < tmp.length; i++) {
-        const cur_str = tmp[i];
+        const cur_str = tmp[i]!;
         // if it's the user message, switch into user mode and out of bot mode
         // yes, repeated code, but I don't care
         if (cur_str.startsWith(name1 + ':')) {
@@ -788,7 +767,7 @@ export function parseExampleIntoIndividual(messageExampleString, appendNamesForG
             in_bot = false;
         } else if (cur_str.startsWith(name2 + ':') || groupBotNames.some(n => cur_str.startsWith(n))) {
             if (!cur_str.startsWith(name2 + ':') && groupBotNames.length) {
-                botName = cur_str.split(':')[0];
+                botName = cur_str.split(':')[0] ?? '';
             }
 
             in_bot = true;
@@ -807,7 +786,6 @@ export function parseExampleIntoIndividual(messageExampleString, appendNamesForG
     } else if (in_bot) {
         add_msg(botName, 'system', 'example_assistant');
     }
-    // @ts-expect-error TS(7005) FIXME: Variable 'result' implicitly has an 'any[]' type.
     return result;
 }
 
@@ -817,8 +795,7 @@ export function parseExampleIntoIndividual(messageExampleString, appendNamesForG
  * @param root0
  * @param root0.wiFormat
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
-export function formatWorldInfo(value, { wiFormat = null } = {}) {
+export function formatWorldInfo(value: string, { wiFormat = null }: { wiFormat?: string | null } = {}) {
     if (!value) {
         return '';
     }
@@ -959,13 +936,11 @@ async function populateChatHistory(messages, prompts, chatCompletion, type = nul
         if (continueMessageIndex >= 0) {
             const continueMessage = messages.splice(continueMessageIndex, 1)[0];
             const prompt = new Prompt(continueMessage);
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-            const chatMessage = await Message.fromPromptAsync(promptManager.preparePrompt(prompt));
+            const chatMessage = await Message.fromPromptAsync(promptManager!.preparePrompt(prompt));
             continueMessageCollection.add(chatMessage);
         }
         const continueNudgePrompt = new Prompt(promptObject);
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        const preparedNudgePrompt = promptManager.preparePrompt(continueNudgePrompt);
+        const preparedNudgePrompt = promptManager!.preparePrompt(continueNudgePrompt);
         const continueNudgeMessage = await Message.fromPromptAsync(preparedNudgePrompt);
         continueMessageCollection.add(continueNudgeMessage);
         chatCompletion.reserveBudget(continueMessageCollection);
@@ -998,13 +973,10 @@ async function populateChatHistory(messages, prompts, chatCompletion, type = nul
         // We do not want to mutate the prompt
         const prompt = new Prompt(chatPrompt);
         prompt.identifier = `chatHistory-${messages.length - index}`;
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        const chatMessage = await Message.fromPromptAsync(promptManager.preparePrompt(prompt));
+        const chatMessage = await Message.fromPromptAsync(promptManager!.preparePrompt(prompt));
 
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        if (promptManager.serviceSettings.names_behavior === character_names_behavior.COMPLETION && prompt.name) {
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-            const messageName = promptManager.isValidName(prompt.name) ? prompt.name : promptManager.sanitizeName(prompt.name);
+        if ((promptManager!.serviceSettings as Record<string, unknown>).names_behavior === character_names_behavior.COMPLETION && prompt.name) {
+            const messageName = promptManager!.isValidName(prompt.name) ? prompt.name : promptManager!.sanitizeName(prompt.name);
             await chatMessage.setName(messageName);
         }
 
@@ -1243,18 +1215,15 @@ async function populateChatCompletion(prompts, chatCompletion, { bias, quietProm
         // We need the prompts array to determine a position for the source.
         if (false === prompts.has(source)) return;
 
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        if (promptManager.isPromptDisabledForActiveCharacter(source) && source !== 'main') {
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-            promptManager.log(`Skipping prompt ${source} because it is disabled`);
+        if (promptManager!.isPromptDisabledForActiveCharacter(source) && source !== 'main') {
+            promptManager!.log(`Skipping prompt ${source} because it is disabled`);
             return;
         }
 
         const prompt = prompts.get(source);
 
         if (prompt.injection_position === INJECTION_POSITION.ABSOLUTE) {
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-            promptManager.log(`Skipping prompt ${source} because it is an absolute prompt`);
+            promptManager!.log(`Skipping prompt ${source} because it is an absolute prompt`);
             return;
         }
 
@@ -1391,8 +1360,7 @@ async function populateChatCompletion(prompts, chatCompletion, { bias, quietProm
         const assistantPrefill = isAssistantRole && supportsAssistantPrefill ? substituteParams(oai_settings.assistant_prefill) : '';
         const messageContent = [assistantPrefill, chatMessage.content].filter(x => x).join('\n\n');
         const continueMessage = await Message.createAsync(chatMessage.role, messageContent, 'continuePrefill');
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        if (chatMessage.name && namesInCompletion) await continueMessage.setName(promptManager.sanitizeName(chatMessage.name));
+        if (chatMessage.name && namesInCompletion) await continueMessage.setName(promptManager!.sanitizeName(chatMessage.name));
         controlPrompts.add(continueMessage);
         chatCompletion.reserveBudget(continueMessage);
     }
@@ -1540,57 +1508,48 @@ async function preparePromptsForChatCompletion({ scenario, charPersonality, name
     }
 
     // This is the prompt order defined by the user
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    const prompts = promptManager.getPromptCollection(type);
+    const prompts = promptManager!.getPromptCollection(type);
 
     // Merge system prompts with prompt manager prompts
     systemPrompts.forEach(prompt => {
-        const collectionPrompt = prompts.get(prompt.identifier);
+        const collectionPrompt = prompts.get(prompt.identifier) as Prompt | undefined;
 
         // Apply system prompt role/depth overrides if they set in the prompt manager
         if (collectionPrompt) {
             // In-Chat / Relative
-            // @ts-expect-error TS(2339) FIXME: Property 'injection_position' does not exist on ty... Remove this comment to see the full error message
-            prompt.injection_position = collectionPrompt.injection_position ?? prompt.injection_position;
+            (prompt as unknown as Record<string, unknown>).injection_position = (collectionPrompt as unknown as Record<string, unknown>).injection_position ?? (prompt as unknown as Record<string, unknown>).injection_position;
             // Depth for In-Chat
-            // @ts-expect-error TS(2339) FIXME: Property 'injection_depth' does not exist on type ... Remove this comment to see the full error message
-            prompt.injection_depth = collectionPrompt.injection_depth ?? prompt.injection_depth;
+            (prompt as unknown as Record<string, unknown>).injection_depth = (collectionPrompt as unknown as Record<string, unknown>).injection_depth ?? (prompt as unknown as Record<string, unknown>).injection_depth;
             // Priority for In-Chat
-            // @ts-expect-error TS(2339) FIXME: Property 'injection_order' does not exist on type ... Remove this comment to see the full error message
-            prompt.injection_order = collectionPrompt.injection_order ?? prompt.injection_order;
+            (prompt as unknown as Record<string, unknown>).injection_order = (collectionPrompt as unknown as Record<string, unknown>).injection_order ?? (prompt as unknown as Record<string, unknown>).injection_order;
             // Role (system, user, assistant)
-            prompt.role = collectionPrompt.role ?? prompt.role;
+            prompt.role = (collectionPrompt as unknown as Record<string, unknown>).role as string ?? prompt.role;
         }
 
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        const newPrompt = promptManager.preparePrompt(prompt);
+        const newPrompt = promptManager!.preparePrompt(prompt);
         const markerIndex = prompts.index(prompt.identifier);
 
-        if (-1 !== markerIndex) prompts.collection[markerIndex] = newPrompt;
+        if (-1 !== markerIndex) (prompts.collection as Prompt[])[markerIndex] = newPrompt;
         else prompts.add(newPrompt);
     });
 
     // Apply character-specific main prompt
-    const systemPrompt = prompts.get('main') ?? null;
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    const isSystemPromptDisabled = promptManager.isPromptDisabledForActiveCharacter('main');
+    const systemPrompt = prompts.get('main') as unknown as Prompt | null ?? null;
+    const isSystemPromptDisabled = promptManager!.isPromptDisabledForActiveCharacter('main');
     if (systemPromptOverride && systemPrompt && systemPrompt.forbid_overrides !== true && !isSystemPromptDisabled) {
         const mainOriginalContent = systemPrompt.content;
         systemPrompt.content = systemPromptOverride;
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        const mainReplacement = promptManager.preparePrompt(systemPrompt, mainOriginalContent);
+        const mainReplacement = promptManager!.preparePrompt(systemPrompt, mainOriginalContent);
         prompts.override(mainReplacement, prompts.index('main'));
     }
 
     // Apply character-specific jailbreak
-    const jailbreakPrompt = prompts.get('jailbreak') ?? null;
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    const isJailbreakPromptDisabled = promptManager.isPromptDisabledForActiveCharacter('jailbreak');
+    const jailbreakPrompt = prompts.get('jailbreak') as unknown as Prompt | null ?? null;
+    const isJailbreakPromptDisabled = promptManager!.isPromptDisabledForActiveCharacter('jailbreak');
     if (jailbreakPromptOverride && jailbreakPrompt && jailbreakPrompt.forbid_overrides !== true && !isJailbreakPromptDisabled) {
         const jbOriginalContent = jailbreakPrompt.content;
         jailbreakPrompt.content = jailbreakPromptOverride;
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        const jbReplacement = promptManager.preparePrompt(jailbreakPrompt, jbOriginalContent);
+        const jbReplacement = promptManager!.preparePrompt(jailbreakPrompt, jbOriginalContent);
         prompts.override(jbReplacement, prompts.index('jailbreak'));
     }
 
@@ -1656,15 +1615,13 @@ export async function prepareOpenAIMessages({
 // @ts-expect-error TS(7006) FIXME: Parameter 'dryRun' implicitly has an 'any' type.
 }, dryRun) {
     // Without a character selected, there is no way to accurately calculate tokens
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    if (!promptManager.activeCharacter && dryRun) return [null, false];
+    if (!promptManager!.activeCharacter && dryRun) return [null, false];
 
     const chatCompletion = new ChatCompletion();
     if (power_user.console_log_prompts) chatCompletion.enableLogging();
 
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    const userSettings = promptManager.serviceSettings;
-    chatCompletion.setTokenBudget(userSettings.openai_max_context, userSettings.openai_max_tokens);
+    const userSettings = promptManager!.serviceSettings as Record<string, unknown>;
+    chatCompletion.setTokenBudget(userSettings.openai_max_context as number, userSettings.openai_max_tokens as number);
 
     try {
         // Merge markers and ordered user prompts with system prompts
@@ -1687,38 +1644,30 @@ export async function prepareOpenAIMessages({
         await populateChatCompletion(prompts, chatCompletion, { bias, quietPrompt, quietImage, type, cyclePrompt, messages, messageExamples });
     } catch (error) {
         if (error instanceof TokenBudgetExceededError) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.error(t`Mandatory prompts exceed the context size.`);
             chatCompletion.log('Mandatory prompts exceed the context size.');
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-            promptManager.error = t`Not enough free tokens for mandatory prompts. Raise your token limit or disable custom prompts.`;
+            if (promptManager) promptManager.error = t`Not enough free tokens for mandatory prompts. Raise your token limit or disable custom prompts.`;
         } else if (error instanceof InvalidCharacterNameError) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.warning(t`An error occurred while counting tokens: Invalid character name`);
             chatCompletion.log('Invalid character name');
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-            promptManager.error = t`The name of at least one character contained whitespaces or special characters. Please check your user and character name.`;
+            if (promptManager) promptManager.error = t`The name of at least one character contained whitespaces or special characters. Please check your user and character name.`;
         } else {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.error(t`An unknown error occurred while counting tokens. Further information may be available in console.`);
             chatCompletion.log('----- Unexpected error while preparing prompts -----');
             chatCompletion.log(error);
-            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-            chatCompletion.log(error.stack);
+            if (error instanceof Error) chatCompletion.log(error.stack);
             chatCompletion.log('----------------------------------------------------');
         }
     } finally {
         // Pass chat completion to prompt manager for inspection
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        promptManager.setChatCompletion(chatCompletion);
+        promptManager?.setChatCompletion(chatCompletion);
 
         if (oai_settings.squash_system_messages && dryRun == false) {
             await chatCompletion.squashSystemMessages();
         }
 
         // All information is up-to-date, render.
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        if (false === dryRun) promptManager.render(false);
+        if (false === dryRun) promptManager?.render(false);
     }
 
     const chat = chatCompletion.getChat();
@@ -1728,8 +1677,7 @@ export async function prepareOpenAIMessages({
 
     openai_messages_count = chat.filter(x => !x?.tool_calls && ['user', 'assistant', 'tool'].includes(x?.role)).length || 0;
 
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    return [chat, promptManager.tokenHandler.counts];
+    return [chat, (promptManager!.tokenHandler as Record<string, unknown>).counts];
 }
 
 /**
@@ -1739,10 +1687,9 @@ export async function prepareOpenAIMessages({
  * @param {object} [options]
  * @param {boolean?} [options.quiet] Suppress toast messages
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'response' implicitly has an 'any' type.
-export function tryParseStreamingError(response, decoded, { quiet = false } = {}) {
+export function tryParseStreamingError(response: Response, decoded: string, { quiet = false }: { quiet?: boolean } = {}) {
     try {
-        const data = JSON.parse(decoded);
+        const data: Record<string, unknown> = JSON.parse(decoded);
 
         if (!data) {
             return;
@@ -1755,21 +1702,18 @@ export function tryParseStreamingError(response, decoded, { quiet = false } = {}
         // if trying to fix "[object Object]" displayed to users, start here
 
         if (data.error) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            if (!quiet) notyf.error(data.error.message || response.statusText, 'Chat Completion API');
-            throw new Error(data);
+            if (!quiet) notyf.error((data.error as Record<string, unknown>).message as string || response.statusText, 'Chat Completion API');
+            throw new Error(String(data));
         }
 
         if (data.message) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            if (!quiet) notyf.error(data.message, 'Chat Completion API');
-            throw new Error(data);
+            if (!quiet) notyf.error(data.message as string, 'Chat Completion API');
+            throw new Error(String(data));
         }
 
         if (data.detail) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            if (!quiet) notyf.error(data.detail?.error?.message || response.statusText, 'Chat Completion API');
-            throw new Error(data);
+            if (!quiet) notyf.error(((data.detail as Record<string, unknown>)?.error as Record<string, unknown> | undefined)?.message as string || response.statusText, 'Chat Completion API');
+            throw new Error(String(data));
         }
     } catch {
         // No JSON. Do nothing.
@@ -1784,8 +1728,7 @@ export function tryParseStreamingError(response, decoded, { quiet = false } = {}
  * @returns {void}
  * @throws {object} - response JSON
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
-function checkQuotaError(data, { quiet = false } = {}) {
+function checkQuotaError(data: Record<string, unknown>, { quiet = false }: { quiet?: boolean } = {}) {
     if (!data) {
         return;
     }
@@ -1797,7 +1740,7 @@ function checkQuotaError(data, { quiet = false } = {}) {
 
         // this does not throw correctly (equiv to Error("[object Object]"))
         // if trying to fix "[object Object]" displayed to users, start here
-        throw new Error(data);
+        throw new Error(String(data));
     }
 }
 
@@ -1806,14 +1749,14 @@ function checkQuotaError(data, { quiet = false } = {}) {
  * @param {object} [options]
  * @param {boolean?} [options.quiet] Suppress toast messages
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
-function checkModerationError(data, { quiet = false } = {}) {
-    const moderationError = data?.error?.message?.includes('requires moderation');
+function checkModerationError(data: Record<string, unknown>, { quiet = false }: { quiet?: boolean } = {}) {
+    const error = data?.error as Record<string, unknown> | undefined;
+    const moderationError = (error?.message as string | undefined)?.includes('requires moderation');
     if (moderationError && !quiet) {
-        const moderationReason = `Reasons: ${data?.error?.metadata?.reasons?.join(', ') ?? '(N/A)'}`;
-        const flaggedText = data?.error?.metadata?.flagged_input ?? '(N/A)';
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        notyf.info(flaggedText, moderationReason, { timeOut: 10000 });
+        const metadata = error?.metadata as Record<string, unknown> | undefined;
+        const moderationReason = `Reasons: ${(metadata?.reasons as string[] | undefined)?.join(', ') ?? '(N/A)'}`;
+        const flaggedText = (metadata?.flagged_input as string | undefined) ?? '(N/A)';
+        notyf.info(flaggedText, moderationReason, { timeOut: 10000 } as Record<string, unknown>);
     }
 }
 
@@ -2877,7 +2820,6 @@ export async function createGenerationParameters(settings, model, type, messages
         && logitBiasSources.includes(settings.chat_completion_source)
         && Array.isArray(settings.bias_presets[settings.bias_preset_selected])
         && settings.bias_presets[settings.bias_preset_selected].length) {
-        // @ts-expect-error TS(7005) FIXME: Variable 'biasCache' implicitly has an 'any' type.
         logit_bias = biasCache || (await calculateLogitBias());
         biasCache = logit_bias;
     }
@@ -3360,8 +3302,7 @@ async function sendOpenAIRequest(type, messages, signal, { jsonSchema = null } =
         checkModerationError(data);
 
         if (data.error) {
-            const message = data.error.message || response.statusText || t`Unknown error`;
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
+            const message = (data.error as Record<string, unknown>).message as string || response.statusText || t`Unknown error`;
             notyf.error(message, t`API returned an error`);
             throw new Error(message);
         }
@@ -4544,17 +4485,15 @@ function migrateChatCompletionSettings(settings) {
 function loadOpenAISettings(data, settings) {
     openai_setting_names = data.openai_setting_names;
     openai_settings = data.openai_settings;
-    // @ts-expect-error TS(7006) FIXME: Parameter 'item' implicitly has an 'any' type.
     openai_settings.forEach(function (item, i) {
-        openai_settings[i] = JSON.parse(item);
+        openai_settings[i] = JSON.parse(item as unknown as string);
     });
 
     const settingsPresetOpenai = document.getElementById('settings_preset_openai');
     if (settingsPresetOpenai) settingsPresetOpenai.innerHTML = '';
-    const settingNames = {};
+    const settingNames: Record<string, number> = {};
     // @ts-expect-error TS(7006) FIXME: Parameter 'item' implicitly has an 'any' type.
     openai_setting_names.forEach(function (item, i) {
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         settingNames[item] = i;
         const option = document.createElement('option');
         option.value = i;
@@ -4567,54 +4506,42 @@ function loadOpenAISettings(data, settings) {
     migrateChatCompletionSettings(settings);
 
     for (const key of Object.keys(default_settings)) {
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        oai_settings[key] = settings[key] ?? default_settings[key];
+        (oai_settings as Record<string, unknown>)[key] = (settings as Record<string, unknown>)[key] ?? (default_settings as Record<string, unknown>)[key];
         const settingToUpdate = Object.values(settingsToUpdate).find(([_, k]) => k === key);
         if (settingToUpdate) {
             const [selector] = settingToUpdate;
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             if (!selector) continue;
-            const $element = document.querySelector(selector);
+            const $element = document.querySelector(selector as string);
 
             if (!$element) {
                 continue;
             }
 
             if ($element.matches('input[type="checkbox"]')) {
-                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                $element.checked = oai_settings[key];
+                ($element as HTMLInputElement).checked = (oai_settings as Record<string, unknown>)[key] as boolean;
             } else if ($element.matches('select')) {
-                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                $element.value = oai_settings[key];
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                $element.querySelector(`option[value="${CSS.escape(oai_settings[key])}"]`)?.setAttribute('selected', 'true');
+                ($element as HTMLSelectElement).value = String((oai_settings as Record<string, unknown>)[key] ?? '');
+                $element.querySelector(`option[value="${CSS.escape(String((oai_settings as Record<string, unknown>)[key] ?? ''))}"]`)?.setAttribute('selected', 'true');
             } else {
-                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                $element.value = oai_settings[key];
+                ($element as HTMLInputElement).value = String((oai_settings as Record<string, unknown>)[key] ?? '');
                 if ($element.matches('input[type="range"]')) {
                     const id = $element.getAttribute('id');
-                    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                     const $counter = document.querySelector(`input[type="number"][data-for="${id}"]`);
                     if ($counter) {
-                        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                        $counter.value = Number(oai_settings[key]);
+                        ($counter as HTMLInputElement).value = Number((oai_settings as Record<string, unknown>)[key] ?? 0).toString();
                     }
                 }
             }
         }
     }
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.querySelector('#settings_preset_openai option[value="${openai_setting_names[oai_settings.preset_settings_openai]}"]')?.selected(true);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const bindPresetEl = document.getElementById('bind_preset_to_connection');
     if (bindPresetEl) (bindPresetEl as HTMLInputElement).checked = oai_settings.bind_preset_to_connection;
     ((() => { const el = document.getElementById('openai_external_category'); if (el) { el.style.display = oai_settings.show_external_models ? '' : 'none'; } })());
     const _rpEl1 = document.querySelector('.reverse_proxy_warning') as HTMLElement; if (_rpEl1) _rpEl1.style.display = oai_settings.reverse_proxy !== '' ? '' : 'none';
 
     // Don't display Service Account JSON in textarea - it's stored in backend secrets
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('vertexai_service_account_json').value = '';
+    (document.getElementById('vertexai_service_account_json') as HTMLInputElement | null)!.value = '';
     updateVertexAIServiceAccountStatus();
 
     const logitBiasPreset = document.getElementById('openai_logit_bias_preset');
@@ -4877,14 +4804,14 @@ async function saveOpenAIPreset(name, settings, triggerUi = true) {
 
         if (Object.keys(openai_setting_names).includes(data.name)) {
             oai_settings.preset_settings_openai = data.name;
-            const value = openai_setting_names[data.name];
-            Object.assign(openai_settings[value], presetBody);
+            const value = (openai_setting_names as Record<string, number>)[data.name] as number;
+            Object.assign(openai_settings[value]!, presetBody);
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             document.querySelector('#settings_preset_openai option[value="${value}"]')?.selected(true);
             if (triggerUi) document.getElementById('settings_preset_openai')?.dispatchEvent(new Event('change'));
         } else {
             openai_settings.push(presetBody);
-            openai_setting_names[data.name] = openai_settings.length - 1;
+            (openai_setting_names as Record<string, number>)[data.name] = openai_settings.length - 1;
             const option = document.createElement('option');
             option.selected = true;
             option.value = String(openai_settings.length - 1);
@@ -4896,7 +4823,6 @@ async function saveOpenAIPreset(name, settings, triggerUi = true) {
             }
         }
     } else {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.error(t`Failed to save preset`);
         throw new Error('Failed to save preset');
     }
@@ -5038,14 +4964,12 @@ async function createNewLogitBiasPreset() {
     }
 
     if (name in oai_settings.bias_presets) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.error(t`Preset name should be unique.`);
         return;
     }
 
     oai_settings.bias_preset_selected = name;
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-    oai_settings.bias_presets[name] = [];
+    (oai_settings.bias_presets as Record<string, unknown>)[name] = [];
 
     addLogitBiasPresetOption(name);
     saveSettingsDebounced();
@@ -5099,10 +5023,8 @@ async function onPresetImportFileChange(e) {
     e.target.value = '';
 
     try {
-        // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
-        presetBody = JSON.parse(importedFile);
+        presetBody = JSON.parse(importedFile as string);
     } catch {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.error(t`Invalid file`);
         return;
     }
@@ -5148,7 +5070,6 @@ async function onPresetImportFileChange(e) {
     });
 
     if (!savePresetSettings.ok) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.error(t`Failed to save preset`);
         return;
     }
@@ -5157,20 +5078,17 @@ async function onPresetImportFileChange(e) {
 
     if (Object.keys(openai_setting_names).includes(data.name)) {
         oai_settings.preset_settings_openai = data.name;
-        const value = openai_setting_names[data.name];
-        Object.assign(openai_settings[value], presetBody);
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        document.querySelector('#settings_preset_openai option[value="${value}"]')?.selected(true);
+        const value = (openai_setting_names as Record<string, number>)[data.name] as number;
+        Object.assign(openai_settings[value]!, presetBody);
         document.getElementById('settings_preset_openai')?.dispatchEvent(new Event('change'));
     } else {
-        openai_settings.push(presetBody);
-        openai_setting_names[data.name] = openai_settings.length - 1;
+        (openai_settings as Record<string, unknown>[]).push(presetBody);
+        (openai_setting_names as Record<string, number>)[data.name] = (openai_settings as Record<string, unknown>[]).length - 1;
         const option = document.createElement('option');
         option.selected = true;
-        option.value = String(openai_settings.length - 1);
+        option.value = String((openai_settings as Record<string, unknown>[]).length - 1);
         option.innerText = data.name;
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        document.getElementById('settings_preset_openai').append(option);
+        document.getElementById('settings_preset_openai')?.append(option);
         document.getElementById('settings_preset_openai')?.dispatchEvent(new Event('change'));
     }
 }
@@ -5180,12 +5098,12 @@ async function onPresetImportFileChange(e) {
  */
 async function onExportPresetClick() {
     if (!oai_settings.preset_settings_openai) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.error(t`No preset selected`);
         return;
     }
 
-    const preset = structuredClone(openai_settings[openai_setting_names[oai_settings.preset_settings_openai]]);
+    const presetIndex = (openai_setting_names as Record<string, number>)[oai_settings.preset_settings_openai] as number;
+    const preset = structuredClone((openai_settings as Record<string, unknown>[])[presetIndex]) as Record<string, unknown>;
 
     const fieldValues = sensitiveFields.filter(field => preset[field]).map(field => `<b>${field}</b>: <code>${preset[field]}</code>`);
     if (fieldValues.length > 0) {
@@ -5201,22 +5119,20 @@ async function onExportPresetClick() {
         }
 
         if (popupResult === POPUP_RESULT.AFFIRMATIVE) {
-            sensitiveFields.forEach(field => delete preset[field]);
+            sensitiveFields.forEach(field => delete (preset as Record<string, unknown>)[field]);
         }
     }
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const exportConnectionTemplate = document.createElement('div');
     exportConnectionTemplate.innerHTML = await renderTemplateAsync('exportPreset');
     await (new Popup(exportConnectionTemplate, POPUP_TYPE.TEXT)).show();
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const removeConnectionData = exportConnectionTemplate.querySelector('input[name="export_connection_data"]:checked')?.value === 'false';
+    const removeConnectionData = (exportConnectionTemplate.querySelector('input[name="export_connection_data"]:checked') as HTMLInputElement | null)?.value === 'false';
     if (removeConnectionData) {
-        for (const [, [, settingName, , isConnection]] of Object.entries(settingsToUpdate)) {
+        for (const [, entry] of Object.entries(settingsToUpdate)) {
+            const [, settingName, , isConnection] = entry;
             if (isConnection) {
-                // @ts-expect-error TS(2538) FIXME: Type 'false' cannot be used as an index type.
-                delete preset[settingName];
+                delete (preset as Record<string, unknown>)[settingName as string];
             }
         }
     }
@@ -5231,9 +5147,8 @@ async function onExportPresetClick() {
  *
  * @param e
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
-async function onLogitBiasPresetImportFileChange(e) {
-    const file = e.target.files[0];
+async function onLogitBiasPresetImportFileChange(e: Event) {
+    const file = (e.target as HTMLInputElement).files?.[0];
 
     if (!file || file.type !== 'application/json') {
         return;
@@ -5241,16 +5156,14 @@ async function onLogitBiasPresetImportFileChange(e) {
 
     const name = file.name.replace(/\.[^/.]+$/, '');
     const importedFile = await parseJsonFile(file);
-    e.target.value = '';
+    (e.target as HTMLInputElement).value = '';
 
     if (name in oai_settings.bias_presets) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.error(t`Preset name should be unique.`);
         return;
     }
 
     if (!Array.isArray(importedFile)) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.error(t`Invalid logit bias preset file.`);
         return;
     }
@@ -5302,9 +5215,9 @@ async function onDeletePresetClick() {
     }
 
     const nameToDelete = oai_settings.preset_settings_openai;
-    const value = openai_setting_names[oai_settings.preset_settings_openai];
+    const value = (openai_setting_names as Record<string, number>)[oai_settings.preset_settings_openai];
     document.querySelector(`#settings_preset_openai option[value="${value}"]`)?.remove();
-    delete openai_setting_names[oai_settings.preset_settings_openai];
+    delete (openai_setting_names as Record<string, number>)[oai_settings.preset_settings_openai];
     // @ts-expect-error TS(2322) FIXME: Type 'null' is not assignable to type 'string'.
     oai_settings.preset_settings_openai = null;
 
@@ -5323,10 +5236,8 @@ async function onDeletePresetClick() {
     });
 
     if (!response.ok) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.warning(t`Preset was not deleted from server`);
     } else {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.success(t`Preset deleted`);
         await eventSource.emit(event_types.PRESET_DELETED, { apiId: 'openai', name: nameToDelete });
     }
@@ -5373,7 +5284,7 @@ function onSettingsPresetChange() {
     const presetName = document.getElementById('settings_preset_openai')?.selectedOptions[0]?.textContent || '';
     oai_settings.preset_settings_openai = presetName;
 
-    const preset = structuredClone(openai_settings[openai_setting_names[oai_settings.preset_settings_openai]]);
+    const preset = structuredClone(openai_settings[(openai_setting_names as Record<string, number>)[oai_settings.preset_settings_openai] as number]!);
 
     migrateChatCompletionSettings(preset);
 
@@ -6593,34 +6504,25 @@ async function onConnectButtonClick(e) {
         [chat_completion_sources.POLLINATIONS]: { key: SECRET_KEYS.POLLINATIONS, selector: '#api_key_pollinations', proxy: false },
         [chat_completion_sources.WORKERS_AI]: { key: SECRET_KEYS.WORKERS_AI, selector: '#api_key_workers_ai', proxy: false },
         [chat_completion_sources.MINIMAX]: { key: SECRET_KEYS.MINIMAX, selector: '#api_key_minimax', proxy: false },
+        [chat_completion_sources.VERTEXAI]: { key: SECRET_KEYS.VERTEXAI, selector: '#api_key_vertexai', proxy: true },
     };
-
-    // Vertex AI Express version - use API key
-    if (oai_settings.vertexai_auth_mode === 'express') {
-        apiSourceConfig[chat_completion_sources.VERTEXAI] = { key: SECRET_KEYS.VERTEXAI, selector: '#api_key_vertexai', proxy: true };
-    }
 
     // Vertex AI Full version - use service account
     if (oai_settings.chat_completion_source === chat_completion_sources.VERTEXAI && oai_settings.vertexai_auth_mode === 'full') {
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        if (!secret_state[SECRET_KEYS.VERTEXAI_SERVICE_ACCOUNT]) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
+        if (!(secret_state as Record<string, unknown>)[SECRET_KEYS.VERTEXAI_SERVICE_ACCOUNT]) {
             notyf.error(t`Service Account JSON is required for Vertex AI full version. Please validate and save your Service Account JSON.`);
             return;
         }
     }
 
     // Other generic configs
-    const config = apiSourceConfig[oai_settings.chat_completion_source];
+    const config = apiSourceConfig[oai_settings.chat_completion_source as keyof typeof apiSourceConfig];
     if (config) {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const apiKey = String(document.querySelector(config.selector)?.value ?? '').trim();
+        const apiKey = String((document.querySelector(config.selector) as HTMLInputElement | null)?.value ?? '').trim();
         if (apiKey.length) {
-            // @ts-expect-error TS(2554) FIXME: Expected 3-4 arguments, but got 2.
-            await writeSecret(config.key, apiKey);
+            await writeSecret(config.key, apiKey, '');
         }
 
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         if (!secret_state[config.key] && (!config.proxy || !oai_settings.reverse_proxy) && !config.keyless) {
             console.log(`No secret key saved for ${oai_settings.chat_completion_source}`);
             return;
@@ -6697,12 +6599,12 @@ function toggleChatCompletionForms() {
         document.getElementById('model_workers_ai_select')?.dispatchEvent(new Event('change'));
     }
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     for (const el of document.querySelectorAll('[data-source]')) {
-        const mode = el.dataset.sourceMode;
-        const validSources = el.dataset.source.split(',');
+        const htmlEl = el as HTMLElement;
+        const mode = htmlEl.dataset.sourceMode;
+        const validSources = (htmlEl.dataset.source ?? '').split(',');
         const matchesSource = validSources.includes(oai_settings.chat_completion_source);
-        ((() => { if (el) { el.style.display = mode !== 'except' ? (matchesSource ? '' : 'none') : (!matchesSource ? '' : 'none'); } })());
+        ((() => { htmlEl.style.display = mode !== 'except' ? (matchesSource ? '' : 'none') : (!matchesSource ? '' : 'none'); })());
     }
 
     setToolReasoningControls();
@@ -6714,7 +6616,6 @@ function toggleChatCompletionForms() {
 async function testApiConnection() {
     // Check if the previous request is still in progress
     if (is_send_press) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.info(t`Please wait for the previous request to complete.`);
         return;
     }
@@ -6722,10 +6623,8 @@ async function testApiConnection() {
     try {
         const reply = await sendOpenAIRequest('quiet', [{ 'role': 'user', 'content': 'Hi' }], new AbortController().signal);
         console.log(reply);
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.success(t`API connection successful!`);
     } catch {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.error(t`Could not get a reply from API. Check your connection settings / API key and try again.`);
     }
 }
@@ -6744,12 +6643,12 @@ function reconnectOpenAi() {
 /**
  *
  */
-function onProxyPasswordShowClick() {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+function onProxyPasswordShowClick(this: HTMLElement) {
     const $input = document.getElementById('openai_proxy_password');
-    const type = $input.getAttribute('type') === 'password' ? 'text' : 'password';
-    $input.setAttribute('type', type);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    if ($input) {
+        const type = $input.getAttribute('type') === 'password' ? 'text' : 'password';
+        $input.setAttribute('type', type);
+    }
     this.classList.toggle('fa-eye-slash fa-eye');
 }
 
@@ -6757,24 +6656,26 @@ function onProxyPasswordShowClick() {
  *
  */
 async function onCustomizeParametersClick() {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const template = document.createElement('div');
     template.innerHTML = await renderTemplateAsync('customEndpointAdditionalParameters');
 
-    template.querySelector('#custom_include_body').value = oai_settings.custom_include_body; template.querySelector('#custom_include_body')?.addEventListener('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    const customIncludeBody = template.querySelector('#custom_include_body') as HTMLInputElement | null;
+    if (customIncludeBody) customIncludeBody.value = oai_settings.custom_include_body;
+    customIncludeBody?.addEventListener('input', function (this: HTMLInputElement) {
         oai_settings.custom_include_body = String(this.value);
         saveSettingsDebounced();
     });
 
-    template.querySelector('#custom_exclude_body').value = oai_settings.custom_exclude_body; template.querySelector('#custom_exclude_body')?.addEventListener('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    const customExcludeBody = template.querySelector('#custom_exclude_body') as HTMLInputElement | null;
+    if (customExcludeBody) customExcludeBody.value = oai_settings.custom_exclude_body;
+    customExcludeBody?.addEventListener('input', function (this: HTMLInputElement) {
         oai_settings.custom_exclude_body = String(this.value);
         saveSettingsDebounced();
     });
 
-    template.querySelector('#custom_include_headers').value = oai_settings.custom_include_headers; template.querySelector('#custom_include_headers')?.addEventListener('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    const customIncludeHeaders = template.querySelector('#custom_include_headers') as HTMLInputElement | null;
+    if (customIncludeHeaders) customIncludeHeaders.value = oai_settings.custom_include_headers;
+    customIncludeHeaders?.addEventListener('input', function (this: HTMLInputElement) {
         oai_settings.custom_include_headers = String(this.value);
         saveSettingsDebounced();
     });
@@ -7123,7 +7024,6 @@ document.getElementById('save_proxy')?.addEventListener('click', async function 
 
     setProxyPreset(presetName, reverseProxy, proxyPassword);
     saveSettingsDebounced();
-    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
     notyf.success(t`Proxy Saved`);
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     if (document.getElementById('openai_proxy_preset').value !== presetName) {
@@ -7168,10 +7068,8 @@ document.getElementById('delete_proxy')?.addEventListener('click', async functio
         saveSettingsDebounced();
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         document.getElementById('openai_proxy_preset').value = selected_proxy.name;
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.success(t`Proxy Deleted`);
     } else {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.error(t`Could not find proxy with name '${presetName}'`);
     }
 });
@@ -7181,8 +7079,7 @@ document.getElementById('delete_proxy')?.addEventListener('click', async functio
  * @param _
  * @param value
  */
-// @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
-function runProxyCallback(_, value) {
+function runProxyCallback(_: string, value: string) {
     if (!value) {
         return selected_proxy?.name || '';
     }
@@ -7192,31 +7089,27 @@ function runProxyCallback(_, value) {
     const result = fuse.search(value);
 
     if (result.length === 0) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.warning(t`Proxy preset '${value}' not found`);
         return '';
     }
 
     const foundName = result[0]!.item;
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    ((() => { const el = document.getElementById('openai_proxy_preset'); if (el) { el.value = foundName; el.dispatchEvent(new Event('change')); } })());
+    ((() => { const el = document.getElementById('openai_proxy_preset') as HTMLSelectElement | null; if (el) { el.value = foundName; el.dispatchEvent(new Event('change')); } })());
     return foundName;
 }
 
 /**
  * Handle Vertex AI authentication mode change
  */
-function onVertexAIAuthModeChange() {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+function onVertexAIAuthModeChange(this: HTMLSelectElement) {
     const authMode = String(this.value);
     oai_settings.vertexai_auth_mode = authMode;
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     for (const el of document.querySelectorAll('#vertexai_form [data-mode]')) {
-        const mode = el.dataset.mode;
-        ((() => { if (el) { el.style.display = mode === authMode ? '' : 'none'; } })());
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        for (const opt of el.querySelectorAll('option')) {
+        const htmlEl = el as HTMLElement;
+        const mode = htmlEl.dataset.mode;
+        ((() => { htmlEl.style.display = mode === authMode ? '' : 'none'; })());
+        for (const opt of htmlEl.querySelectorAll('option')) {
             (opt as HTMLElement).style.display = mode === authMode ? '' : 'none';
         }
     }
@@ -7228,11 +7121,9 @@ function onVertexAIAuthModeChange() {
  * Validate Vertex AI service account JSON
  */
 async function onVertexAIValidateServiceAccount() {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const jsonContent = String(document.getElementById('vertexai_service_account_json').value).trim();
+    const jsonContent = String((document.getElementById('vertexai_service_account_json') as HTMLInputElement | null)?.value ?? '').trim();
 
     if (!jsonContent) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.error(t`Please enter Service Account JSON content`);
         return;
     }
@@ -7243,14 +7134,12 @@ async function onVertexAIValidateServiceAccount() {
         const missingFields = requiredFields.filter(field => !serviceAccount[field]);
 
         if (missingFields.length > 0) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.error(t`Missing required fields: ${missingFields.join(', ')}`);
             updateVertexAIServiceAccountStatus(false, t`Missing fields: ${missingFields.join(', ')}`);
             return;
         }
 
         if (serviceAccount.type !== 'service_account') {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.error(t`Invalid service account type. Expected "service_account"`);
             updateVertexAIServiceAccountStatus(false, t`Invalid service account type`);
             return;
@@ -7263,12 +7152,10 @@ async function onVertexAIValidateServiceAccount() {
         // Show success status
         updateVertexAIServiceAccountStatus(true, `Project: ${serviceAccount.project_id}, Email: ${serviceAccount.client_email}`);
 
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        notyf.success(t`Service Account JSON is valid and saved securely`);
+        notyf.success(t`Service Account JSON is valid and saved securely`, '');
         saveSettingsDebounced();
     } catch (error) {
         console.error('JSON validation error:', error);
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.error(t`Invalid JSON format`);
         updateVertexAIServiceAccountStatus(false, t`Invalid JSON format`);
     }
@@ -7278,15 +7165,12 @@ async function onVertexAIValidateServiceAccount() {
  * Clear Vertex AI service account JSON
  */
 async function onVertexAIClearServiceAccount() {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('vertexai_service_account_json').value = '';
+    (document.getElementById('vertexai_service_account_json') as HTMLInputElement | null)!.value = '';
 
     // Clear from backend secret storage
-    // @ts-expect-error TS(2554) FIXME: Expected 3-4 arguments, but got 2.
-    await writeSecret(SECRET_KEYS.VERTEXAI_SERVICE_ACCOUNT, '');
+    await writeSecret(SECRET_KEYS.VERTEXAI_SERVICE_ACCOUNT, '', '');
 
     updateVertexAIServiceAccountStatus(false);
-    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
     notyf.info(t`Service Account JSON cleared`);
     saveSettingsDebounced();
 }
@@ -7336,7 +7220,6 @@ function updateVertexAIServiceAccountStatus(isValid = false, message = '') {
     const infoSpan = document.getElementById('vertexai_service_account_info');
 
     // If no explicit message provided, check if we have a saved service account
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     if (!message && secret_state[SECRET_KEYS.VERTEXAI_SERVICE_ACCOUNT]) {
         isValid = true;
         message = t`Service Account JSON is saved and ready to use`;
@@ -7386,7 +7269,6 @@ export function initOpenAI() {
                 description: 'name',
                 typeList: [ARGUMENT_TYPE.STRING],
                 isRequired: true,
-                // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
                 enumProvider: () => proxies.map(preset => new SlashCommandEnumValue(preset.name, preset.url)),
             }),
         ],
@@ -7554,14 +7436,12 @@ export function initOpenAI() {
     document.getElementById('update_oai_preset')?.addEventListener('click', async function () {
         const name = oai_settings.preset_settings_openai;
         await saveOpenAIPreset(name, oai_settings, false);
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.success(t`Preset updated`);
     });
 
     document.getElementById('impersonation_prompt_restore')?.addEventListener('click', function () {
         oai_settings.impersonation_prompt = default_impersonation_prompt;
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        document.getElementById('impersonation_prompt_textarea').value = oai_settings.impersonation_prompt;
+        (document.getElementById('impersonation_prompt_textarea') as HTMLTextAreaElement | null)!.value = oai_settings.impersonation_prompt;
         saveSettingsDebounced();
     });
 
@@ -7901,9 +7781,7 @@ export function initOpenAI() {
     });
 
     if (!CSS.supports('field-sizing', 'content')) {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        document.addEventListener('input', function () { const target = event.target.closest('#openai_settings .autoSetHeight'); if (!target) return;
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        document.addEventListener('input', function (this: HTMLElement, e: Event) { const target = (e.target as HTMLElement)?.closest('#openai_settings .autoSetHeight'); if (!target) return;
             resetScrollHeight(this);
         });
     }
@@ -7937,8 +7815,7 @@ export function initOpenAI() {
         });
     }
 
-    document.getElementById('openrouter_providers_chat')?.addEventListener('change', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    document.getElementById('openrouter_providers_chat')?.addEventListener('change', function (this: HTMLSelectElement) {
         const selectedProviders = this.value;
 
         // Not a multiple select?
@@ -7946,15 +7823,13 @@ export function initOpenAI() {
             return;
         }
 
-        // @ts-expect-error TS(2322) FIXME: Type 'any[]' is not assignable to type 'never[]'.
-        oai_settings.openrouter_providers = selectedProviders;
+        oai_settings.openrouter_providers = selectedProviders as string[];
 
         updateOpenRouterProvidersWarning('#openrouter_providers_chat');
         saveSettingsDebounced();
     });
 
-    document.getElementById('openrouter_quantizations_chat')?.addEventListener('change', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    document.getElementById('openrouter_quantizations_chat')?.addEventListener('change', function (this: HTMLSelectElement) {
         const selectedQuantizations = this.value;
 
         // Not a multiple select?
@@ -7962,12 +7837,12 @@ export function initOpenAI() {
             return;
         }
 
-        // @ts-expect-error TS(2322) FIXME: Type 'any[]' is not assignable to type 'never[]'.
-        oai_settings.openrouter_quantizations = selectedQuantizations;
-
+        oai_settings.openrouter_quantizations = selectedQuantizations as string[];
+        (oai_settings as Record<string, unknown>).openrouter_quantizations = selectedQuantizations;
+        
         saveSettingsDebounced();
     });
-
+    
     document.getElementById('nanogpt_provider')?.addEventListener('change', function () {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         oai_settings.nanogpt_provider = String(this.value || '');

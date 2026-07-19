@@ -25,8 +25,7 @@ export const GROUP_MEMBERS_FILTER_SELECTOR = '#rm_group_members_header ~ .rm_tag
  * @param {FilterHelper} filterHelper - The filter helper instance
  * @returns {{selector: string, searchInput: string}|null} Context info or null if unknown
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'filterHelper' implicitly has an 'any' t... Remove this comment to see the full error message
-export function getFilterContext(filterHelper) {
+export function getFilterContext(filterHelper: unknown): { selector: string; searchInput: string } | null {
     if (filterHelper === entitiesFilter) {
         return {
             selector: CHARACTER_FILTER_SELECTOR,
@@ -51,9 +50,8 @@ export function getFilterContext(filterHelper) {
  * @param {string|JQuery<HTMLElement>} listSelector - jQuery selector for the list
  * @returns {FilterHelper} The appropriate filter helper instance
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'listSelector' implicitly has an 'any' t... Remove this comment to see the full error message
-export function getFilterHelper(listSelector) {
-        const $element = typeof listSelector === 'string' ? document.querySelector(listSelector) : listSelector;
+export function getFilterHelper(listSelector: string | HTMLElement | null): unknown {
+    const $element = typeof listSelector === 'string' ? document.querySelector(listSelector) : listSelector;
 
     // Check if this filter is in the group members section
     if ($element?.closest('#currentGroupMembers')) {
@@ -74,8 +72,7 @@ export function getFilterHelper(listSelector) {
  * @param {tag_filter_type} type - The filter type to check
  * @returns {boolean} True if this is a group context
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'type' implicitly has an 'any' type.
-export function isGroupContext(type) {
+export function isGroupContext(type: number): boolean {
     return [tag_filter_type.group_candidates_list, tag_filter_type.group_members_list].includes(type);
 }
 
@@ -85,8 +82,7 @@ export function isGroupContext(type) {
  * @param {object} currentGroup - The current group object
  * @returns {string[]} Array of visible character avatars
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'type' implicitly has an 'any' type.
-export function getVisibleAvatarsForGroupContext(type, currentGroup) {
+export function getVisibleAvatarsForGroupContext(type: number, currentGroup: { members: string[] } | null): string[] {
     if (!currentGroup || !Array.isArray(currentGroup.members)) {
         return [];
     }
@@ -109,8 +105,7 @@ export function getVisibleAvatarsForGroupContext(type, currentGroup) {
  * @param {FilterHelper} filterHelper - The filter helper to check
  * @returns {boolean} True if this is the main character list
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'filterHelper' implicitly has an 'any' t... Remove this comment to see the full error message
-export function isMainCharacterList(filterHelper) {
+export function isMainCharacterList(filterHelper: unknown): boolean {
     return filterHelper === entitiesFilter;
 }
 
@@ -119,8 +114,7 @@ export function isMainCharacterList(filterHelper) {
  * @param {FilterHelper} filterHelper - The filter helper to check
  * @returns {string|null} Storage key prefix or null if no persistence
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'filterHelper' implicitly has an 'any' t... Remove this comment to see the full error message
-export function getFilterStorageKey(filterHelper) {
+export function getFilterStorageKey(filterHelper: unknown): string | null {
     if (filterHelper === entitiesFilter) {
         return 'CharacterList';
     } else if (filterHelper === groupCandidatesFilter) {

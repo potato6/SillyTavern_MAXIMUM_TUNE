@@ -49,7 +49,6 @@ export class SlashCommandHandler {
             qrEntries: (executor: any) => QuickReplySet.get(String(executor.namedArgumentList.find((x: any) => x.name == 'set')?.value))?.qrList.map((qr: any) => {
                 const icons = getExecutionIcons(qr);
                 const message = `${qr.automationId ? `[${qr.automationId}]` : ''}${icons ? `[auto: ${icons}]` : ''} ${qr.title || qr.message}`.trim();
-                // @ts-expect-error TS(2345): Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
                 return new SlashCommandEnumValue(qr.label, message, enumTypes.enum, enumIcons.qr);
             }) ?? [],
 
@@ -58,7 +57,6 @@ export class SlashCommandHandler {
             qrIds: (executor: any) => QuickReplySet.get(String(executor.namedArgumentList.find((x: any) => x.name == 'set')?.value))?.qrList.map((qr: any) => {
                 const icons = getExecutionIcons(qr);
                 const message = `${qr.automationId ? `[${qr.automationId}]` : ''}${icons ? `[auto: ${icons}]` : ''} ${qr.title || qr.message}`.trim();
-                // @ts-expect-error TS(2345): Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
                 return new SlashCommandEnumValue(qr.label, message, enumTypes.enum, enumIcons.qr, null, () => qr.id.toString(), true);
             }) ?? [],
 
@@ -84,12 +82,9 @@ export class SlashCommandHandler {
                 }))).flat();
 
                 return [
-                    // @ts-expect-error TS(2345): Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
                     ...globalQrs.map((x: any) => new SlashCommandEnumValue(`${x.set.name}.${x.qr.label}`, `[global] ${x.qr.title || x.qr.message}`, enumTypes.name, enumIcons.qr)),
-                    // @ts-expect-error TS(2345): Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
                     ...chatQrs.map((x: any) => new SlashCommandEnumValue(`${x.set.name}.${x.qr.label}`, `[chat] ${x.qr.title || x.qr.message}`, enumTypes.enum, enumIcons.qr)),
-                    // @ts-expect-error TS(2345): Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
-                    ...otherQrs.map(x => new SlashCommandEnumValue(`${x.set.name}.${x.qr.label}`, `${x.qr.title || x.qr.message}`, enumTypes.qr, enumIcons.qr)),
+                    ...otherQrs.map((x: any) => new SlashCommandEnumValue(`${x.set.name}.${x.qr.label}`, `${x.qr.title || x.qr.message}`, enumTypes.qr, enumIcons.qr)),
                 ];
             },
         };

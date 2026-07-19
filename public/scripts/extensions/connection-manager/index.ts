@@ -197,16 +197,16 @@ const profilesProvider = () => [
  * @returns {ConnectionProfile|null} Best match or null
  */
 function findProfileByName(value: any) {
+    const cm = extension_settings.connectionManager as any;
     // Try to find exact match
-    // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
-    const profile = extension_settings.connectionManager.profiles.find(p => p.name === value);
+    const profile = cm.profiles.find((p: any) => p.name === value);
 
     if (profile) {
         return profile;
     }
 
     // Try to find fuzzy match
-    const fuse = new Fuse(extension_settings.connectionManager.profiles, { keys: ['name'] });
+    const fuse = new Fuse(cm.profiles, { keys: ['name'] });
     const results = fuse.search(value);
 
     if (results.length === 0) {
@@ -339,19 +339,18 @@ async function createConnectionProfile(forceName = null) {
  * @returns {Promise<void>}
  */
 async function deleteConnectionProfile() {
-    const selectedProfile = extension_settings.connectionManager.selectedProfile;
+    const cm = extension_settings.connectionManager as any;
+    const selectedProfile = cm.selectedProfile;
     if (!selectedProfile) {
         return;
     }
 
-    // @ts-expect-error TS(2339): Property 'id' does not exist on type 'never'.
-    const index = extension_settings.connectionManager.profiles.findIndex(p => p.id === selectedProfile);
+    const index = cm.profiles.findIndex((p: any) => p.id === selectedProfile);
     if (index === -1) {
         return;
     }
 
-    const profile = extension_settings.connectionManager.profiles[index];
-    // @ts-expect-error TS(2532): Object is possibly 'undefined'.
+    const profile = cm.profiles[index];
     const name = profile.name;
     const confirm = await Popup.show.confirm(t`Are you sure you want to delete the selected profile?`, name);
 
@@ -359,9 +358,8 @@ async function deleteConnectionProfile() {
         return;
     }
 
-    extension_settings.connectionManager.profiles.splice(index, 1);
-    // @ts-expect-error TS(2322): Type 'null' is not assignable to type 'string'.
-    extension_settings.connectionManager.selectedProfile = null;
+    cm.profiles.splice(index, 1);
+    cm.selectedProfile = null;
     saveSettingsDebounced();
 
     await eventSource.emit(event_types.CONNECTION_PROFILE_DELETED, profile);
@@ -464,23 +462,20 @@ async function updateConnectionProfile(profile: any) {
  * @param {HTMLSelectElement} profiles Select element containing connection profiles
  */
 function renderConnectionProfiles(profiles: any) {
+    const cm = extension_settings.connectionManager as any;
     profiles.innerHTML = '';
     const noneOption = document.createElement('option');
 
     noneOption.value = '';
     noneOption.textContent = NONE;
-    noneOption.selected = !extension_settings.connectionManager.selectedProfile;
+    noneOption.selected = !cm.selectedProfile;
     profiles.appendChild(noneOption);
 
-    // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
-    for (const profile of extension_settings.connectionManager.profiles.sort((a, b) => a.name.localeCompare(b.name))) {
+    for (const profile of cm.profiles.sort((a: any, b: any) => a.name.localeCompare(b.name))) {
         const option = document.createElement('option');
-        // @ts-expect-error TS(2339): Property 'id' does not exist on type 'never'.
         option.value = profile.id;
-        // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
         option.textContent = profile.name;
-        // @ts-expect-error TS(2339): Property 'id' does not exist on type 'never'.
-        option.selected = profile.id === extension_settings.connectionManager.selectedProfile;
+        option.selected = profile.id === cm.selectedProfile;
         profiles.appendChild(option);
     }
 }
@@ -490,17 +485,16 @@ function renderConnectionProfiles(profiles: any) {
  * @param {HTMLElement} detailsContent Content element of the details
  */
 async function renderDetailsContent(detailsContent: any) {
+    const cm = extension_settings.connectionManager as any;
     detailsContent.innerHTML = '';
     if (detailsContent.classList.contains('hidden')) {
         return;
     }
-    const selectedProfile = extension_settings.connectionManager.selectedProfile;
-    // @ts-expect-error TS(2339): Property 'id' does not exist on type 'never'.
-    const profile = extension_settings.connectionManager.profiles.find(p => p.id === selectedProfile);
+    const selectedProfile = cm.selectedProfile;
+    const profile = cm.profiles.find((p: any) => p.id === selectedProfile);
     if (profile) {
         const profileForDisplay = makeFancyProfile(profile);
         const templateParams = { profile: profileForDisplay };
-        // @ts-expect-error TS(2339): Property 'exclude' does not exist on type 'never'.
         if (Array.isArray(profile.exclude) && profile.exclude.length > 0) {
             // @ts-expect-error TS(2339): Property 'omitted' does not exist on type '{ profi... Remove this comment to see the full error message
             templateParams.omitted = profile.exclude.map((e: any) => FANCY_NAMES[e]).join(', ');
@@ -526,8 +520,7 @@ async function generateStreamCallback(args: any, value: any) {
     }
 
     // Check if Connection Manager is available
-    const context = getContext();
-    // @ts-expect-error TS(2345): Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
+    const context = getContext() as any;
     if (context.extensionSettings.disabledExtensions.includes('connection-manager')) {
         notyf.error(t`Connection Manager is required for /profile-genstream. Use /gen or /genraw instead.`);
         return '';
@@ -585,16 +578,15 @@ async function generateStreamCallback(args: any, value: any) {
 
         // Determine which profile to use
         // Use the currently selected profile if no profile specified
-        let effectiveProfileId = context.extensionSettings.connectionManager.selectedProfile;
+        const cm = context.extensionSettings.connectionManager;
+        let effectiveProfileId = cm.selectedProfile;
 
-        const profiles = context.extensionSettings.connectionManager.profiles;
+        const profiles = cm.profiles;
 
         if (profileIdOrName) {
             // Use try to find profile by id first, then fuse search
-            // @ts-expect-error TS(2339): Property 'id' does not exist on type 'never'.
-            const profile = profiles.find(p => p.id === profileIdOrName);
+            const profile = profiles.find((p: any) => p.id === profileIdOrName);
             if (profile) {
-                // @ts-expect-error TS(2339): Property 'id' does not exist on type 'never'.
                 effectiveProfileId = profile.id;
             } else {
                 const keys = [
@@ -735,59 +727,46 @@ async function generateStreamCallback(args: any, value: any) {
 }
 
 export async function init() {
-    extension_settings.connectionManager = extension_settings.connectionManager || structuredClone(DEFAULT_SETTINGS);
+    const cm = extension_settings.connectionManager as any || structuredClone(DEFAULT_SETTINGS) as any;
+    extension_settings.connectionManager = cm;
 
-    for (const key of Object.keys(DEFAULT_SETTINGS)) {
-        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        if (extension_settings.connectionManager[key] === undefined) {
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-            extension_settings.connectionManager[key] = DEFAULT_SETTINGS[key];
-        }
-    }
+    if (cm.profiles === undefined) cm.profiles = DEFAULT_SETTINGS.profiles;
+    if (cm.selectedProfile === undefined) cm.selectedProfile = DEFAULT_SETTINGS.selectedProfile;
 
-    const container = document.getElementById('rm_api_block');
+    const container = document.getElementById('rm_api_block') as HTMLElement;
     const settings = await renderExtensionTemplateAsync(MODULE_NAME, 'settings');
-    // @ts-expect-error TS(2531): Object is possibly 'null'.
     container.insertAdjacentHTML('afterbegin', settings);
 
-    /** @type {HTMLSelectElement} */
-    // @ts-ignore
-    const profiles = document.getElementById('connection_profiles');
+    const profiles = document.getElementById('connection_profiles') as HTMLSelectElement;
     renderConnectionProfiles(profiles);
 
     function toggleProfileSpecificButtons() {
-        const profileId = extension_settings.connectionManager.selectedProfile;
+        const profileId = cm.selectedProfile;
         const profileSpecificButtons = ['update_connection_profile', 'reload_connection_profile', 'delete_connection_profile'];
-        // @ts-expect-error TS(2531): Object is possibly 'null'.
-        profileSpecificButtons.forEach(id => document.getElementById(id).classList.toggle('disabled', !profileId));
+        profileSpecificButtons.forEach(id => document.getElementById(id)?.classList.toggle('disabled', !profileId));
     }
     toggleProfileSpecificButtons();
 
-    // @ts-expect-error TS(2531): Object is possibly 'null'.
     profiles.addEventListener('change', async function () {
-        // @ts-expect-error TS(2531): Object is possibly 'null'.
         const selectedProfile = profiles.selectedOptions[0];
         if (!selectedProfile) {
-            // Safety net for preventing the command getting stuck
             await eventSource.emit(event_types.CONNECTION_PROFILE_LOADED, NONE);
             return;
         }
 
         const profileId = selectedProfile.value;
-        extension_settings.connectionManager.selectedProfile = profileId;
+        cm.selectedProfile = profileId;
         saveSettingsDebounced();
         await renderDetailsContent(detailsContent);
 
         toggleProfileSpecificButtons();
 
-        // None option selected
         if (!profileId) {
             await eventSource.emit(event_types.CONNECTION_PROFILE_LOADED, NONE);
             return;
         }
 
-        // @ts-expect-error TS(2339): Property 'id' does not exist on type 'never'.
-        const profile = extension_settings.connectionManager.profiles.find(p => p.id === profileId);
+        const profile = cm.profiles.find((p: any) => p.id === profileId);
 
         if (!profile) {
             console.log(`Profile not found: ${profileId}`);
@@ -795,51 +774,42 @@ export async function init() {
         }
 
         await applyConnectionProfile(profile);
-        // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
         await eventSource.emit(event_types.CONNECTION_PROFILE_LOADED, profile.name);
     });
 
     const reloadButton = document.getElementById('reload_connection_profile');
-    // @ts-expect-error TS(2531): Object is possibly 'null'.
-    reloadButton.addEventListener('click', async () => {
-        const selectedProfile = extension_settings.connectionManager.selectedProfile;
-        // @ts-expect-error TS(2339): Property 'id' does not exist on type 'never'.
-        const profile = extension_settings.connectionManager.profiles.find(p => p.id === selectedProfile);
+    reloadButton?.addEventListener('click', async () => {
+        const selectedProfile = cm.selectedProfile;
+        const profile = cm.profiles.find((p: any) => p.id === selectedProfile);
         if (!profile) {
             console.log('No profile selected');
             return;
         }
         await applyConnectionProfile(profile);
         await renderDetailsContent(detailsContent);
-        // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
         await eventSource.emit(event_types.CONNECTION_PROFILE_LOADED, profile.name);
         notyf.success('Connection profile reloaded', '', { timeOut: 1500 });
     });
 
     const createButton = document.getElementById('create_connection_profile');
-    // @ts-expect-error TS(2531): Object is possibly 'null'.
-    createButton.addEventListener('click', async () => {
+    createButton?.addEventListener('click', async () => {
         const profile = await createConnectionProfile();
         if (!profile) {
             return;
         }
-        // @ts-expect-error TS(2345): Argument of type '{ id: string; mode: string; excl... Remove this comment to see the full error message
-        extension_settings.connectionManager.profiles.push(profile);
-        extension_settings.connectionManager.selectedProfile = profile.id;
+        cm.profiles.push(profile);
+        cm.selectedProfile = profile.id;
         saveSettingsDebounced();
         renderConnectionProfiles(profiles);
         await renderDetailsContent(detailsContent);
         await eventSource.emit(event_types.CONNECTION_PROFILE_CREATED, profile);
-        // @ts-expect-error TS(2339): Property 'name' does not exist on type '{ id: stri... Remove this comment to see the full error message
-        await eventSource.emit(event_types.CONNECTION_PROFILE_LOADED, profile.name);
+        await eventSource.emit(event_types.CONNECTION_PROFILE_LOADED, (profile as any).name);
     });
 
     const updateButton = document.getElementById('update_connection_profile');
-    // @ts-expect-error TS(2531): Object is possibly 'null'.
-    updateButton.addEventListener('click', async () => {
-        const selectedProfile = extension_settings.connectionManager.selectedProfile;
-        // @ts-expect-error TS(2339): Property 'id' does not exist on type 'never'.
-        const profile = extension_settings.connectionManager.profiles.find(p => p.id === selectedProfile);
+    updateButton?.addEventListener('click', async () => {
+        const selectedProfile = cm.selectedProfile;
+        const profile = cm.profiles.find((p: any) => p.id === selectedProfile);
         if (!profile) {
             console.log('No profile selected');
             return;
@@ -849,14 +819,12 @@ export async function init() {
         await renderDetailsContent(detailsContent);
         saveSettingsDebounced();
         await eventSource.emit(event_types.CONNECTION_PROFILE_UPDATED, oldProfile, profile);
-        // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
         await eventSource.emit(event_types.CONNECTION_PROFILE_LOADED, profile.name);
         notyf.success('Connection profile updated', '', { timeOut: 1500 });
     });
 
     const deleteButton = document.getElementById('delete_connection_profile');
-    // @ts-expect-error TS(2531): Object is possibly 'null'.
-    deleteButton.addEventListener('click', async () => {
+    deleteButton?.addEventListener('click', async () => {
         await deleteConnectionProfile();
         renderConnectionProfiles(profiles);
         await renderDetailsContent(detailsContent);
@@ -864,24 +832,19 @@ export async function init() {
     });
 
     const editButton = document.getElementById('edit_connection_profile');
-    // @ts-expect-error TS(2531): Object is possibly 'null'.
-    editButton.addEventListener('click', async () => {
-        const selectedProfile = extension_settings.connectionManager.selectedProfile;
-        // @ts-expect-error TS(2339): Property 'id' does not exist on type 'never'.
-        const profile = extension_settings.connectionManager.profiles.find(p => p.id === selectedProfile);
+    editButton?.addEventListener('click', async () => {
+        const selectedProfile = cm.selectedProfile;
+        const profile = cm.profiles.find((p: any) => p.id === selectedProfile);
         if (!profile) {
             console.log('No profile selected');
             return;
         }
-        // @ts-expect-error TS(2339): Property 'exclude' does not exist on type 'never'.
         if (!Array.isArray(profile.exclude)) {
-            // @ts-expect-error TS(2339): Property 'exclude' does not exist on type 'never'.
             profile.exclude = [];
         }
 
         let saveChanges = false;
         const sortByViewOrder = (a: any, b: any) => Object.keys(FANCY_NAMES).indexOf(a) - Object.keys(FANCY_NAMES).indexOf(b);
-        // @ts-expect-error TS(2339): Property 'mode' does not exist on type 'never'.
         const commands = profile.mode === 'cc' ? CC_COMMANDS : TC_COMMANDS;
         const settings = commands.slice().sort(sortByViewOrder).reduce((acc, command) => {
             // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
@@ -890,9 +853,7 @@ export async function init() {
             acc[fancyName] = !profile.exclude.includes(command);
             return acc;
         }, {});
-        // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
         const template = $(await renderExtensionTemplateAsync(MODULE_NAME, 'edit', { name: profile.name, settings }));
-        // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
         let newName = await callGenericPopup(template, POPUP_TYPE.INPUT, profile.name, {
             customButtons: [{
                 text: t`Save and Update`,
@@ -914,8 +875,7 @@ export async function init() {
             return;
         }
 
-        // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
-        if (profile.name !== newName && extension_settings.connectionManager.profiles.some(p => p.name === newName)) {
+        if (profile.name !== newName && cm.profiles.some((p: any) => p.name === newName)) {
             notyf.error('A profile with the same name already exists.');
             return;
         }
@@ -925,9 +885,7 @@ export async function init() {
         }).get();
 
         const oldProfile = structuredClone(profile);
-        // @ts-expect-error TS(2339): Property 'exclude' does not exist on type 'never'.
         if (newExcludeList.length !== profile.exclude.length || !newExcludeList.every((e: any) => profile.exclude.includes(e))) {
-            // @ts-expect-error TS(2339): Property 'exclude' does not exist on type 'never'.
             profile.exclude = newExcludeList;
             for (const command of newExcludeList) {
                 delete profile[command];
@@ -939,10 +897,8 @@ export async function init() {
             }
         }
 
-        // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
         if (profile.name !== newName) {
             notyf.success('Connection profile renamed.');
-            // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
             profile.name = newName;
         }
 
@@ -953,15 +909,12 @@ export async function init() {
     });
 
     /** @type {HTMLElement} */
-    const viewDetails = document.getElementById('view_connection_profile');
-    const detailsContent = document.getElementById('connection_profile_details_content');
-    // @ts-expect-error TS(2531): Object is possibly 'null'.
-    viewDetails.addEventListener('click', async () => {
-        // @ts-expect-error TS(2531): Object is possibly 'null'.
-        viewDetails.classList.toggle('active');
-        // @ts-expect-error TS(2531): Object is possibly 'null'.
-        detailsContent.classList.toggle('hidden');
-        await renderDetailsContent(detailsContent);
+    const viewDetails = document.getElementById('view_connection_profile') as HTMLElement | null;
+    const detailsContent = document.getElementById('connection_profile_details_content') as HTMLElement | null;
+    viewDetails?.addEventListener('click', async () => {
+        viewDetails?.classList.toggle('active');
+        detailsContent?.classList.toggle('hidden');
+        if (detailsContent) await renderDetailsContent(detailsContent);
     });
 
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
@@ -994,20 +947,16 @@ export async function init() {
         ],
         callback: async (args: any, value: any) => {
             if (!value || typeof value !== 'string') {
-                const selectedProfile = extension_settings.connectionManager.selectedProfile;
-                // @ts-expect-error TS(2339): Property 'id' does not exist on type 'never'.
-                const profile = extension_settings.connectionManager.profiles.find(p => p.id === selectedProfile);
+                const selectedProfile = cm.selectedProfile;
+                const profile = cm.profiles.find((p: any) => p.id === selectedProfile);
                 if (!profile) {
                     return NONE;
                 }
-                // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
                 return profile.name;
             }
 
             if (value === NONE) {
-                // @ts-expect-error TS(2531): Object is possibly 'null'.
                 profiles.selectedIndex = 0;
-                // @ts-expect-error TS(2531): Object is possibly 'null'.
                 profiles.dispatchEvent(new Event('change'));
                 return NONE;
             }
@@ -1021,9 +970,7 @@ export async function init() {
             const shouldAwait = !isFalseBoolean(String(args?.await));
             const awaitPromise = new Promise((resolve) => eventSource.once(event_types.CONNECTION_PROFILE_LOADED, resolve));
 
-            // @ts-expect-error TS(2531): Object is possibly 'null'.
             profiles.selectedIndex = Array.from(profiles.options).findIndex(o => o.value === profile.id);
-            // @ts-expect-error TS(2531): Object is possibly 'null'.
             profiles.dispatchEvent(new Event('change'));
 
             if (shouldAwait) {
@@ -1045,8 +992,7 @@ export async function init() {
         name: 'profile-list',
         helpString: 'List all connection profile names.',
         returns: 'list of profile names',
-        // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
-        callback: () => JSON.stringify(extension_settings.connectionManager.profiles.map(p => p.name)),
+        callback: () => JSON.stringify(cm.profiles.map((p: any) => p.name)),
     }));
 
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
@@ -1065,20 +1011,17 @@ export async function init() {
                 notyf.warning('Please provide a name for the new connection profile.');
                 return '';
             }
-            // @ts-expect-error TS(2345): Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
-            const profile = await createConnectionProfile(name);
+            const profile = await createConnectionProfile(name as any);
             if (!profile) {
                 return '';
             }
-            // @ts-expect-error TS(2345): Argument of type '{ id: string; mode: string; excl... Remove this comment to see the full error message
-            extension_settings.connectionManager.profiles.push(profile);
-            extension_settings.connectionManager.selectedProfile = profile.id;
+            cm.profiles.push(profile);
+            cm.selectedProfile = profile.id;
             saveSettingsDebounced();
             renderConnectionProfiles(profiles);
             await renderDetailsContent(detailsContent);
             await eventSource.emit(event_types.CONNECTION_PROFILE_CREATED, profile);
-            // @ts-expect-error TS(2339): Property 'name' does not exist on type '{ id: stri... Remove this comment to see the full error message
-            return profile.name;
+            return (profile as any).name;
         },
     }));
 
@@ -1086,9 +1029,8 @@ export async function init() {
         name: 'profile-update',
         helpString: 'Update the selected connection profile.',
         callback: async () => {
-            const selectedProfile = extension_settings.connectionManager.selectedProfile;
-            // @ts-expect-error TS(2339): Property 'id' does not exist on type 'never'.
-            const profile = extension_settings.connectionManager.profiles.find(p => p.id === selectedProfile);
+            const selectedProfile = cm.selectedProfile;
+            const profile = cm.profiles.find((p: any) => p.id === selectedProfile);
             if (!profile) {
                 notyf.warning('No profile selected.');
                 return '';
@@ -1098,7 +1040,6 @@ export async function init() {
             await renderDetailsContent(detailsContent);
             saveSettingsDebounced();
             await eventSource.emit(event_types.CONNECTION_PROFILE_UPDATED, oldProfile, profile);
-            // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
             return profile.name;
         },
     }));
@@ -1116,9 +1057,8 @@ export async function init() {
         ],
         callback: async (_args: any, value: any) => {
             if (!value || typeof value !== 'string') {
-                const selectedProfile = extension_settings.connectionManager.selectedProfile;
-                // @ts-expect-error TS(2339): Property 'id' does not exist on type 'never'.
-                const profile = extension_settings.connectionManager.profiles.find(p => p.id === selectedProfile);
+                const selectedProfile = cm.selectedProfile;
+                const profile = cm.profiles.find((p: any) => p.id === selectedProfile);
                 if (!profile) {
                     return '';
                 }
@@ -1184,9 +1124,7 @@ export async function init() {
                 typeList: [ARGUMENT_TYPE.NUMBER],
                 defaultValue: '3000',
                 enumList: [
-                    // @ts-expect-error TS(2345): Argument of type '"Keep the streaming display open... Remove this comment to see the full error message
                     new SlashCommandEnumValue('infinite', 'Keep the streaming display open until manually closed', 'command', '♾️'),
-                    // @ts-expect-error TS(2345): Argument of type '() => boolean' is not assignable... Remove this comment to see the full error message
                     new SlashCommandEnumValue('any delay in seconds', null, 'number', '⌚', () => true, (input: any) => input),
                 ],
             }),

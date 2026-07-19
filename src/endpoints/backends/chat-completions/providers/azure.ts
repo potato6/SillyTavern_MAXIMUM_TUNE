@@ -17,9 +17,10 @@ const provider: ChatProvider = {
         const { azure_base_url, azure_deployment_name, azure_api_version } = req.body;
         const apiKey = readSecret(req.user.directories, SECRET_KEYS.AZURE_OPENAI, req.body.secret_id);
         if (!azure_base_url || !azure_deployment_name || !azure_api_version || !apiKey) {
-            return res.status(400).send({
+            res.status(400).send({
                 error: { message: 'Azure OpenAI configuration is incomplete.' },
             });
+            return;
         }
 
         const url = new URL(`/openai/deployments/${azure_deployment_name}/chat/completions`, azure_base_url);
@@ -72,24 +73,28 @@ const provider: ChatProvider = {
             const fetchResponse = await globalThis.fetch(endpointUrl, config);
 
             if (req.body.stream) {
-                // @ts-expect-error TS(2345)
-                return await forwardFetchResponse(fetchResponse, res);
+                await forwardFetchResponse(fetchResponse, res);
+                return;
             }
 
             if (fetchResponse.ok) {
                 const json = await fetchResponse.json() as Record<string, unknown>;
                 console.debug('Azure OpenAI response:', json);
-                return res.send(json);
+                res.send(json);
+                return;
             }
 
             const text = await fetchResponse.text();
             const data = tryParse(text) || { error: { message: fetchResponse.statusText || 'Unknown error' } };
-            return res.status(500).send(data);
+            res.status(500).send(data);
+            return;
         } catch (error: unknown) {
-            const message = error.name === 'AbortError'
+            const err = error as Error;
+            const message = err.name === 'AbortError'
                 ? 'Request was aborted by the client.'
-                : (error.message || 'An unknown network error occurred.');
-            return res.status(500).send({ error: { message, ...error } });
+                : (err.message || 'An unknown network error occurred.');
+            res.status(500).send({ error: { message, ...error as Record<string, unknown> } });
+            return;
         }
     },
 

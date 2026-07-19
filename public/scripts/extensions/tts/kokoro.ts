@@ -5,6 +5,13 @@ import { getPreviewString, saveTtsProviderSettings } from './index.js';
 
 export class KokoroTtsProvider {
     settings: Record<string, any>;
+    ready: boolean = false;
+    voices: string[] = [];
+    worker: any = null;
+    separator: string = '. ';
+    pendingRequests: Map<string | number, { resolve: (value: any) => void; reject: (reason?: any) => void }> = new Map();
+    nextRequestId: number = 1;
+    initTtsDebounced: (...args: any[]) => Promise<any> = async () => {};
     constructor() {
 
         this.settings = {
@@ -154,7 +161,7 @@ export class KokoroTtsProvider {
                 // Resolve the outer promise when initialization completes
                 initPromise.then(success => {
 
-                    this.ready = success;
+                    this.ready = !!success;
                     this.updateStatusDisplay();
                     resolve(success);
                 }).catch(error => {
@@ -333,9 +340,9 @@ export class KokoroTtsProvider {
         const previewText = getPreviewString(voice.lang);
         for await (const response of this.generateTts(previewText, voiceId)) {
 
-            const audio = await response.blob();
+            const audio = await (response as Response).blob();
             const url = URL.createObjectURL(audio);
-            await new Promise(resolve => {
+            await new Promise<void>(resolve => {
                 const audioElement = new Audio();
                 audioElement.src = url;
                 audioElement.play();

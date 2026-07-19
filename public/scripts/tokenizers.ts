@@ -80,7 +80,7 @@ export const ENCODE_TOKENIZERS = [
  * Populated in initTokenziers due to circular dependencies.
  * @type {string[]}
  */
-export const TEXTGEN_TOKENIZERS = [];
+export const TEXTGEN_TOKENIZERS: string[] = [];
 
 const TOKENIZER_URLS = {
     [tokenizers.GPT2]: {
@@ -243,11 +243,9 @@ async function resetTokenCache() {
 export function getAvailableTokenizers() {
     const tokenizerOptions = Array.from(document.querySelectorAll('#tokenizer option'));
     return tokenizerOptions.map(tokenizerOption => ({
-        // @ts-expect-error TS(2339) FIXME: Property 'value' does not exist on type 'Element'.
-        tokenizerId: Number(tokenizerOption.value),
-        tokenizerKey: Object.entries(tokenizers).find(([_, value]) => value === Number(tokenizerOption.value))[0].toLocaleLowerCase(),
-        // @ts-expect-error TS(2339) FIXME: Property 'text' does not exist on type 'Element'.
-        tokenizerName: tokenizerOption.text,
+        tokenizerId: Number((tokenizerOption as HTMLOptionElement).value),
+        tokenizerKey: Object.entries(tokenizers).find(([_, value]) => value === Number((tokenizerOption as HTMLOptionElement).value))![0].toLocaleLowerCase(),
+        tokenizerName: (tokenizerOption as HTMLOptionElement).text,
     }));
 }
 
@@ -263,7 +261,6 @@ export function selectTokenizer(tokenizerId) {
             console.warn('Failed to find tokenizer with id', tokenizerId);
             return;
         }
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const tokenizerEl = document.getElementById('tokenizer');
         if (tokenizerEl instanceof HTMLSelectElement) {
             tokenizerEl.value = String(tokenizer.tokenizerId);
@@ -300,7 +297,6 @@ export function getFriendlyTokenizerName(forApi) {
                 tokenizerName = 'API (Text Completion)';
                 break;
             default:
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 tokenizerName = document.querySelector(`#tokenizer option[value="${tokenizerId}"]`)?.textContent ?? '';
                 break;
         }
@@ -314,7 +310,7 @@ export function getFriendlyTokenizerName(forApi) {
         ? tokenizers.OPENAI
         : tokenizerId;
 
-    const tokenizerKey = Object.entries(tokenizers).find(([_, value]) => value === tokenizerId)[0].toLocaleLowerCase();
+    const tokenizerKey = Object.entries(tokenizers).find(([_, value]) => value === tokenizerId)?.[0]?.toLocaleLowerCase() ?? '';
 
     return { tokenizerName, tokenizerKey, tokenizerId };
 }
@@ -664,7 +660,6 @@ export function getTokenizerModel() {
         main_api == 'textgenerationwebui' && textgen_settings.type === textgen_types.OPENROUTER && textgen_settings.openrouter_model) {
         const model = main_api == 'openai'
             ? model_list.find(x => x.id === oai_settings.openrouter_model)
-            // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
             : openRouterModels.find(x => x.id === textgen_settings.openrouter_model);
 
         if (model?.architecture?.tokenizer === 'Llama2') {
@@ -1015,7 +1010,7 @@ async function countTokensFromKoboldAPI(str, resolve) {
     let tokenCount = 0;
 
     const response = await fetch(
-        TOKENIZER_URLS[tokenizers.API_KOBOLD].count, {
+        TOKENIZER_URLS[tokenizers.API_KOBOLD]!.count, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -1064,7 +1059,7 @@ async function countTokensFromTextgenAPI(str, resolve) {
     let tokenCount = 0;
 
     const response = await fetch(
-        TOKENIZER_URLS[tokenizers.API_TEXTGENERATIONWEBUI].count, {
+        TOKENIZER_URLS[tokenizers.API_TEXTGENERATIONWEBUI]!.count, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(getTextgenAPITokenizationParams(str)),
@@ -1118,7 +1113,6 @@ function apiFailureTokenCount(str) {
 // @ts-expect-error TS(7006) FIXME: Parameter 'endpoint' implicitly has an 'any' type.
 async function getTextTokensFromServer(endpoint, str, resolve) {
     const isAsync = typeof resolve === 'function';
-    // @ts-expect-error TS(7034) FIXME: Variable 'ids' implicitly has type 'any[]' in some... Remove this comment to see the full error message
     let ids = [];
     const response = await fetch(endpoint, {
         method: 'POST',
@@ -1135,7 +1129,6 @@ async function getTextTokensFromServer(endpoint, str, resolve) {
 
     if (isAsync) resolve(ids);
 
-    // @ts-expect-error TS(7005) FIXME: Variable 'ids' implicitly has an 'any[]' type.
     return ids;
 }
 
@@ -1148,10 +1141,9 @@ async function getTextTokensFromServer(endpoint, str, resolve) {
 // @ts-expect-error TS(7006) FIXME: Parameter 'str' implicitly has an 'any' type.
 async function getTextTokensFromTextgenAPI(str, resolve) {
     const isAsync = typeof resolve === 'function';
-    // @ts-expect-error TS(7034) FIXME: Variable 'ids' implicitly has type 'any[]' in some... Remove this comment to see the full error message
     let ids = [];
     const response = await fetch(
-        TOKENIZER_URLS[tokenizers.API_TEXTGENERATIONWEBUI].encode, {
+        TOKENIZER_URLS[tokenizers.API_TEXTGENERATIONWEBUI]!.encode, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(getTextgenAPITokenizationParams(str)),
@@ -1161,7 +1153,6 @@ async function getTextTokensFromTextgenAPI(str, resolve) {
     ids = data.ids;
     if (isAsync) resolve(ids);
 
-    // @ts-expect-error TS(7005) FIXME: Variable 'ids' implicitly has an 'any[]' type.
     return ids;
 }
 
@@ -1174,11 +1165,10 @@ async function getTextTokensFromTextgenAPI(str, resolve) {
 // @ts-expect-error TS(7006) FIXME: Parameter 'str' implicitly has an 'any' type.
 async function getTextTokensFromKoboldAPI(str, resolve) {
     const isAsync = typeof resolve === 'function';
-    // @ts-expect-error TS(7034) FIXME: Variable 'ids' implicitly has type 'any[]' in some... Remove this comment to see the full error message
     let ids = [];
 
     const response = await fetch(
-        TOKENIZER_URLS[tokenizers.API_KOBOLD].encode, {
+        TOKENIZER_URLS[tokenizers.API_KOBOLD]!.encode, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -1191,19 +1181,20 @@ async function getTextTokensFromKoboldAPI(str, resolve) {
     ids = data.ids;
     if (isAsync) resolve(ids);
 
-    // @ts-expect-error TS(7005) FIXME: Variable 'ids' implicitly has an 'any[]' type.
     return ids;
 }
 
 /**
  * Calls the underlying tokenizer model to decode token ids to text.
+ * @param endpoint
+ * @param ids
+ * @param resolve
  * @returns {({ text: string, chunks?: string[] })} Decoded token text as a single string and individual chunks (if available).
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'endpoint' implicitly has an 'any' type.
 async function decodeTextTokensFromServer(endpoint, ids, resolve) {
     const isAsync = typeof resolve === 'function';
     let text = '';
-    // @ts-expect-error TS(7034) FIXME: Variable 'chunks' implicitly has type 'any[]' in s... Remove this comment to see the full error message
     let chunks = [];
     const response = await fetch(endpoint, {
         method: 'POST',
@@ -1215,7 +1206,6 @@ async function decodeTextTokensFromServer(endpoint, ids, resolve) {
     chunks = data.chunks;
     if (isAsync) resolve({ text, chunks });
 
-    // @ts-expect-error TS(7005) FIXME: Variable 'chunks' implicitly has an 'any[]' type.
     return { text, chunks };
 }
 
@@ -1292,7 +1282,6 @@ export function decodeTextTokens(tokenizerType, ids) {
  */
 export async function initTokenizers() {
     TEXTGEN_TOKENIZERS.push(
-        // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
         textgen_types.OOBA,
         textgen_types.TABBY,
         textgen_types.KOBOLDCPP,

@@ -44,7 +44,7 @@ class ChatterboxTtsProvider {
     }
 
     ready = false;
-    voices = [];
+    voices: { name: string; voice_id: string; display_name?: string; preview_url?: string | null; lang?: string }[] = [];
     separator = '. ';
     audioElement = document.createElement('audio');
 
@@ -88,8 +88,8 @@ class ChatterboxTtsProvider {
             <label for="chatterbox-language">Language:</label>
             <select id="chatterbox-language">`;
         for (let language in this.languageLabels) {
-
-            html += `<option value="${this.languageLabels[language]}" ${this.languageLabels[language] === this.settings.language ? 'selected' : ''}>${language}</option>`;
+            const langCode = (this.languageLabels as Record<string, string>)[language];
+            html += `<option value="${langCode}" ${langCode === this.settings.language ? 'selected' : ''}>${language}</option>`;
         }
         html += `</select>
         </div>`;
@@ -563,10 +563,10 @@ class ChatterboxTtsProvider {
             // Add voice-specific parameters
             if (isReferenceVoice) {
 
-                requestBody.reference_audio_filename = actualVoiceId;
+                (requestBody as any).reference_audio_filename = actualVoiceId;
             } else {
 
-                requestBody.predefined_voice_id = actualVoiceId;
+                (requestBody as any).predefined_voice_id = actualVoiceId;
             }
 
 
@@ -689,10 +689,10 @@ class ChatterboxTtsProvider {
             // Add voice-specific parameters
             if (isReferenceVoice) {
 
-                requestBody.reference_audio_filename = actualVoiceId;
+                (requestBody as any).reference_audio_filename = actualVoiceId;
             } else {
 
-                requestBody.predefined_voice_id = actualVoiceId || this.settings.predefined_voice;
+                (requestBody as any).predefined_voice_id = actualVoiceId || this.settings.predefined_voice;
             }
 
             console.log('Generating TTS with params:', requestBody);

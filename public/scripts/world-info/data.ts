@@ -230,7 +230,6 @@ export async function deleteWorldInfoEntry(store: WorldInfoStore, uid: number, {
  * The store is the authoritative source for entries.
  * `bookData` is additional book metadata (originalData, etc.) merged into the payload.
  * Updates `worldInfoCache` with the full book object after serializing.
- *
  * @param {string} name - The name of the world info
  * @param {object} [bookData] - Additional book metadata (originalData, etc.)
  * @param {boolean} [immediately] - Whether to save immediately or use debouncing
@@ -652,7 +651,6 @@ export async function deleteWorldInfo(worldInfoName) {
 
     if (power_user.persona_description_lorebook === worldInfoName) {
         power_user.persona_description_lorebook = '';
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         if (power_user.personas[user_avatar]) {
             const object = getOrCreatePersonaDescriptor();
             object.lorebook = '';

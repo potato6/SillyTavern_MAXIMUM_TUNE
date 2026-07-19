@@ -96,7 +96,7 @@ const result = await Bun.build({
   sourcemap: "linked",
   splitting: true,
   format: "esm",
-  minify: true,
+  minify: false, //disable while debugging
 });
 
 if (!result.success) {

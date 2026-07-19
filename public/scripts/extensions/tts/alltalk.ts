@@ -11,6 +11,7 @@ class AllTalkTtsProvider {
     //########//
 
     settings: Record<string, any> = {};
+    dynamicSettings: Record<string, any> = {};
     constructor() {
         // Initialize with default settings if they are not already set
         this.settings = {
@@ -52,14 +53,14 @@ class AllTalkTtsProvider {
             lowvram_enabled: false,
         };
 
-        this.rvcVoices = []; // Initialize rvcVoices as an empty array
     }
     ready = false;
-    voices = [];
+    voices: { voice_id: string; name: string; preview_url?: string }[] = [];
+    rvcVoices: { voice_id: string; name: string }[] = [];
     separator = '. ';
     audioElement = document.createElement('audio');
 
-    languageLabels = {
+    languageLabels: Record<string, string> = {
         'Arabic': 'ar',
         'Brazilian Portuguese': 'pt',
         'Chinese': 'zh-cn',
@@ -326,7 +327,7 @@ class AllTalkTtsProvider {
 
         if (narratorVoiceSelect && this.settings.narrator_voice) {
 
-            narratorVoiceSelect.value = this.settings.narrator_voice; // Remove the parentheses
+            (narratorVoiceSelect as HTMLSelectElement).value = this.settings.narrator_voice; // Remove the parentheses
         }
         // Apply settings to AT Narrator Enabled dropdown
         if (atNarratorSelect) {
@@ -336,30 +337,30 @@ class AllTalkTtsProvider {
 
             if (this.settings.narrator_enabled) {
 
-                ttsPassAsterisksCheckbox.checked = false;
+                (ttsPassAsterisksCheckbox as HTMLInputElement).checked = false;
                 $('#tts_pass_asterisks').trigger('click');
                 $('#tts_pass_asterisks').trigger('change');
             }
 
             if (!this.settings.narrator_enabled) {
 
-                ttsPassAsterisksCheckbox.checked = true;
+                (ttsPassAsterisksCheckbox as HTMLInputElement).checked = true;
                 $('#tts_pass_asterisks').trigger('click');
                 $('#tts_pass_asterisks').trigger('change');
             }
 
             if (this.settings.narrator_enabled) {
 
-                ttsNarrateQuotedCheckbox.checked = true;
+                (ttsNarrateQuotedCheckbox as HTMLInputElement).checked = true;
 
-                ttsNarrateDialoguesCheckbox.checked = true;
+                (ttsNarrateDialoguesCheckbox as HTMLInputElement).checked = true;
                 $('#tts_narrate_quoted').trigger('click');
                 $('#tts_narrate_quoted').trigger('change');
                 $('#tts_narrate_dialogues').trigger('click');
                 $('#tts_narrate_dialogues').trigger('change');
             }
 
-            atNarratorSelect.value = this.settings.narrator_enabled.toString();
+            (atNarratorSelect as HTMLSelectElement).value = this.settings.narrator_enabled.toString();
 
             this.settings.narrator_enabled = this.settings.narrator_enabled.toString();
         }
@@ -367,36 +368,36 @@ class AllTalkTtsProvider {
 
         if (languageSelect && this.settings.language) {
 
-            languageSelect.value = this.settings.language;
+            (languageSelect as HTMLSelectElement).value = this.settings.language;
         }
 
         if (textNotInsideSelect && this.settings.text_not_inside) {
 
-            textNotInsideSelect.value = this.settings.text_not_inside;
+            (textNotInsideSelect as HTMLSelectElement).value = this.settings.text_not_inside;
 
             this.settings.at_narrator_text_not_inside = this.settings.text_not_inside;
         }
 
         if (generationMethodSelect && this.settings.at_generation_method) {
 
-            generationMethodSelect.value = this.settings.at_generation_method;
+            (generationMethodSelect as HTMLSelectElement).value = this.settings.at_generation_method;
         }
 
         const isStreamingEnabled = this.settings.at_generation_method === 'streaming_enabled';
         if (isStreamingEnabled) {
 
-            if (atNarratorSelect) atNarratorSelect.disabled = true;
+            if (atNarratorSelect) (atNarratorSelect as HTMLSelectElement).disabled = true;
 
-            if (textNotInsideSelect) textNotInsideSelect.disabled = true;
+            if (textNotInsideSelect) (textNotInsideSelect as HTMLSelectElement).disabled = true;
 
-            if (narratorVoiceSelect) narratorVoiceSelect.disabled = true;
+            if (narratorVoiceSelect) (narratorVoiceSelect as HTMLSelectElement).disabled = true;
         } else {
 
-            if (atNarratorSelect) atNarratorSelect.disabled = false;
+            if (atNarratorSelect) (atNarratorSelect as HTMLSelectElement).disabled = false;
 
-            if (textNotInsideSelect) textNotInsideSelect.disabled = !this.settings.narrator_enabled;
+            if (textNotInsideSelect) (textNotInsideSelect as HTMLSelectElement).disabled = !this.settings.narrator_enabled;
 
-            if (narratorVoiceSelect) narratorVoiceSelect.disabled = !this.settings.narrator_enabled;
+            if (narratorVoiceSelect) (narratorVoiceSelect as HTMLSelectElement).disabled = !this.settings.narrator_enabled;
         }
     }
 
@@ -549,14 +550,14 @@ class AllTalkTtsProvider {
 
         rvcElements.forEach(element => {
 
-            element.style.display = isV2 ? 'block' : 'none';
+            (element as HTMLElement).style.display = isV2 ? 'block' : 'none';
         });
 
         // Update and disable/enable character voice dropdown
         const rvcCharacterVoiceSelect = document.getElementById('rvc_character_voice');
         if (rvcCharacterVoiceSelect) {
 
-            rvcCharacterVoiceSelect.disabled = !isV2;
+            (rvcCharacterVoiceSelect as HTMLSelectElement).disabled = !isV2;
 
             if (this.rvcVoices) {
                 rvcCharacterVoiceSelect.innerHTML = '';
@@ -578,7 +579,7 @@ class AllTalkTtsProvider {
         const rvcNarratorVoiceSelect = document.getElementById('rvc_narrator_voice');
         if (rvcNarratorVoiceSelect) {
 
-            rvcNarratorVoiceSelect.disabled = !isV2;
+            (rvcNarratorVoiceSelect as HTMLSelectElement).disabled = !isV2;
 
             if (this.rvcVoices) {
                 rvcNarratorVoiceSelect.innerHTML = '';
@@ -600,13 +601,13 @@ class AllTalkTtsProvider {
         const characterPitch = document.getElementById('rvc_character_pitch');
         if (characterPitch) {
 
-            characterPitch.disabled = !isV2;
+            (characterPitch as HTMLInputElement).disabled = !isV2;
         }
 
         const narratorPitch = document.getElementById('rvc_narrator_pitch');
         if (narratorPitch) {
 
-            narratorPitch.disabled = !isV2;
+            (narratorPitch as HTMLInputElement).disabled = !isV2;
         }
     }
 
@@ -644,18 +645,18 @@ class AllTalkTtsProvider {
             if (this.settings.deepspeed_capable) {
                 // If TTS engine is capable of using DeepSpeed
 
-                deepspeedCheckbox.disabled = !this.settings.deepspeed_available;
+                (deepspeedCheckbox as HTMLInputElement).disabled = !this.settings.deepspeed_available;
 
                 this.settings.deepspeed_enabled = this.settings.deepspeed_available && this.settings.deepspeed_enabled;
             } else {
                 // If TTS engine is NOT capable of using DeepSpeed
 
-                deepspeedCheckbox.disabled = true;
+                (deepspeedCheckbox as HTMLInputElement).disabled = true;
 
                 this.settings.deepspeed_enabled = false;
             }
 
-            deepspeedCheckbox.checked = this.settings.deepspeed_enabled;
+            (deepspeedCheckbox as HTMLInputElement).checked = this.settings.deepspeed_enabled;
         }
 
         // Handle Low VRAM checkbox
@@ -664,16 +665,16 @@ class AllTalkTtsProvider {
             if (this.settings.lowvram_capable) {
                 // If TTS engine is capable of low VRAM
 
-                lowVramCheckbox.disabled = false;
+                (lowVramCheckbox as HTMLInputElement).disabled = false;
             } else {
                 // If TTS engine is NOT capable of low VRAM
 
-                lowVramCheckbox.disabled = true;
+                (lowVramCheckbox as HTMLInputElement).disabled = true;
 
                 this.settings.lowvram_enabled = false;
             }
 
-            lowVramCheckbox.checked = this.settings.lowvram_enabled;
+            (lowVramCheckbox as HTMLInputElement).checked = this.settings.lowvram_enabled;
         }
     }
 
@@ -714,7 +715,7 @@ class AllTalkTtsProvider {
             for (let language in this.languageLabels) {
                 const option = document.createElement('option');
 
-                option.value = this.languageLabels[language];
+                option.value = this.languageLabels[language] ?? '';
                 option.textContent = language;
 
                 if (this.languageLabels[language] === this.settings.language) {
@@ -765,10 +766,10 @@ class AllTalkTtsProvider {
         if (serverVersionSelect) {
             serverVersionSelect.addEventListener('change', async (event) => {
 
-                this.settings.server_version = event.target.value;
+                this.settings.server_version = (event.target as HTMLSelectElement).value;
                 this.onSettingsChange();
 
-                if (event.target.value === 'v2') {
+                if ((event.target as HTMLSelectElement).value === 'v2') {
                     await this.fetchRvcVoiceObjects();
                 }
                 this.updateRvcVoiceDropdowns();
@@ -780,7 +781,7 @@ class AllTalkTtsProvider {
         if (rvcCharacterVoiceSelect) {
             rvcCharacterVoiceSelect.addEventListener('change', (event) => {
 
-                this.settings.rvccharacter_voice_gen = event.target.value;
+                this.settings.rvccharacter_voice_gen = (event.target as HTMLSelectElement).value;
                 this.onSettingsChange();
             });
         }
@@ -789,7 +790,7 @@ class AllTalkTtsProvider {
         if (rvcNarratorVoiceSelect) {
             rvcNarratorVoiceSelect.addEventListener('change', (event) => {
 
-                this.settings.rvcnarrator_voice_gen = event.target.value;
+                this.settings.rvcnarrator_voice_gen = (event.target as HTMLSelectElement).value;
                 this.onSettingsChange();
             });
         }
@@ -798,7 +799,7 @@ class AllTalkTtsProvider {
         if (rvcCharacterPitchSelect) {
             rvcCharacterPitchSelect.addEventListener('change', (event) => {
 
-                this.settings.rvc_character_pitch = event.target.value;
+                this.settings.rvc_character_pitch = (event.target as HTMLSelectElement).value;
                 this.onSettingsChange();
             });
         }
@@ -807,7 +808,7 @@ class AllTalkTtsProvider {
         if (rvcNarratorPitchSelect) {
             rvcNarratorPitchSelect.addEventListener('change', (event) => {
 
-                this.settings.rvc_narrator_pitch = event.target.value;
+                this.settings.rvc_narrator_pitch = (event.target as HTMLSelectElement).value;
                 this.onSettingsChange();
             });
         }
@@ -871,7 +872,7 @@ class AllTalkTtsProvider {
         if (narratorVoiceSelect) {
             narratorVoiceSelect.addEventListener('change', (event) => {
 
-                this.settings.narrator_voice_gen = `${event.target.value}`;
+                this.settings.narrator_voice_gen = `${(event.target as HTMLSelectElement).value}`;
                 this.onSettingsChange();
             });
         }
@@ -880,7 +881,7 @@ class AllTalkTtsProvider {
         if (textNotInsideSelect) {
             textNotInsideSelect.addEventListener('change', (event) => {
 
-                this.settings.text_not_inside = event.target.value;
+                this.settings.text_not_inside = (event.target as HTMLSelectElement).value;
                 this.onSettingsChange();
             });
         }
@@ -894,37 +895,37 @@ class AllTalkTtsProvider {
         if (atNarratorSelect && textNotInsideSelect && narratorVoiceSelect) {
             atNarratorSelect.addEventListener('change', (event) => {
 
-                const narratorOption = event.target.value;
+                const narratorOption = (event.target as HTMLSelectElement).value;
 
                 this.settings.narrator_enabled = narratorOption;
 
                 const isNarratorDisabled = narratorOption === 'false';
 
-                textNotInsideSelect.disabled = isNarratorDisabled;
+                (textNotInsideSelect as HTMLSelectElement).disabled = isNarratorDisabled;
 
-                narratorVoiceSelect.disabled = isNarratorDisabled;
+                (narratorVoiceSelect as HTMLSelectElement).disabled = isNarratorDisabled;
 
                 if (narratorOption === 'true') {
 
-                    ttsPassAsterisksCheckbox.checked = false;
+                    (ttsPassAsterisksCheckbox as HTMLInputElement).checked = false;
                     $('#tts_pass_asterisks').trigger('click');
                     $('#tts_pass_asterisks').trigger('change');
 
-                    ttsNarrateQuotedCheckbox.checked = true;
+                    (ttsNarrateQuotedCheckbox as HTMLInputElement).checked = true;
 
-                    ttsNarrateDialoguesCheckbox.checked = true;
+                    (ttsNarrateDialoguesCheckbox as HTMLInputElement).checked = true;
                     $('#tts_narrate_quoted').trigger('click');
                     $('#tts_narrate_quoted').trigger('change');
                     $('#tts_narrate_dialogues').trigger('click');
                     $('#tts_narrate_dialogues').trigger('change');
                 } else if (narratorOption === 'silent') {
 
-                    ttsPassAsterisksCheckbox.checked = false;
+                    (ttsPassAsterisksCheckbox as HTMLInputElement).checked = false;
                     $('#tts_pass_asterisks').trigger('click');
                     $('#tts_pass_asterisks').trigger('change');
                 } else {
 
-                    ttsPassAsterisksCheckbox.checked = true;
+                    (ttsPassAsterisksCheckbox as HTMLInputElement).checked = true;
                     $('#tts_pass_asterisks').trigger('click');
                     $('#tts_pass_asterisks').trigger('change');
                 }
@@ -938,22 +939,22 @@ class AllTalkTtsProvider {
         if (atGenerationMethodSelect) {
             atGenerationMethodSelect.addEventListener('change', (event) => {
 
-                const selectedMethod = event.target.value;
+                const selectedMethod = (event.target as HTMLSelectElement).value;
 
                 if (selectedMethod === 'streaming_enabled') {
                     // Disable and unselect AT Narrator
 
-                    atNarratorSelect.disabled = true;
+                    (atNarratorSelect as HTMLSelectElement).disabled = true;
 
-                    atNarratorSelect.value = 'false';
+                    (atNarratorSelect as HTMLSelectElement).value = 'false';
 
-                    textNotInsideSelect.disabled = true;
+                    (textNotInsideSelect as HTMLSelectElement).disabled = true;
 
-                    narratorVoiceSelect.disabled = true;
+                    (narratorVoiceSelect as HTMLSelectElement).disabled = true;
                 } else if (selectedMethod === 'standard_generation') {
                     // Enable AT Narrator
 
-                    atNarratorSelect.disabled = false;
+                    (atNarratorSelect as HTMLSelectElement).disabled = false;
                 }
 
                 this.settings.at_generation_method = selectedMethod;
@@ -966,7 +967,7 @@ class AllTalkTtsProvider {
         if (languageSelect) {
             languageSelect.addEventListener('change', (event) => {
 
-                this.settings.language = event.target.value;
+                this.settings.language = (event.target as HTMLSelectElement).value;
                 this.onSettingsChange();
             });
         }
@@ -976,7 +977,7 @@ class AllTalkTtsProvider {
         if (atServerInput) {
             atServerInput.addEventListener('input', (event) => {
 
-                this.settings.provider_endpoint = event.target.value;
+                this.settings.provider_endpoint = (event.target as HTMLInputElement).value;
                 this.onSettingsChange();
             });
         }
@@ -1098,7 +1099,7 @@ class AllTalkTtsProvider {
 
         const match = this.voices.find(voice => voice.name === voiceName);
         if (!match) {
-            // Error handling
+            return undefined;
         }
         // Generate preview URL only if requested
 

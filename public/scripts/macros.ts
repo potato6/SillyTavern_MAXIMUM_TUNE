@@ -456,7 +456,6 @@ function getBannedWordsMacro() {
     const banReplace = (match, bannedWord) => {
         if (main_api == 'textgenerationwebui') {
             console.log('Found banned word in macros: ' + bannedWord);
-            // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
             textgenerationwebui_banned_in_macros.push(bannedWord);
         }
         return '';
@@ -492,9 +491,7 @@ function getTimeSinceLastMessage() {
             takeNext = true;
         }
 
-        // @ts-expect-error TS(2339) FIXME: Property 'send_date' does not exist on type 'never... Remove this comment to see the full error message
         if (lastMessage?.send_date) {
-            // @ts-expect-error TS(2339) FIXME: Property 'send_date' does not exist on type 'never... Remove this comment to see the full error message
             const lastMessageDate = timestampToMoment(lastMessage.send_date);
             const duration = moment.duration(now.diff(lastMessageDate));
             return duration.humanize();

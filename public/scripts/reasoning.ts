@@ -29,7 +29,7 @@ import { copyText, escapeRegex, isFalseBoolean, isTrueBoolean, setDatasetPropert
 /**
  * @type {ReasoningTemplate[]} List of reasoning templates
  */
-export const reasoning_templates = [];
+export const reasoning_templates: { name: string; prefix: string; suffix: string; separator: string }[] = [];
 
 export const DEFAULT_REASONING_TEMPLATE = 'Think XML';
 
@@ -282,7 +282,7 @@ export class ReasoningHandler {
     reasoning: string;
     reasoningDisplayText: string | null;
     startTime: Date | null;
-    state: number;
+    state: string;
     type: string | null;
     /** @type {boolean} True if the model supports reasoning, but hides the reasoning output */
     #isHiddenReasoningModel;
@@ -296,7 +296,6 @@ export class ReasoningHandler {
      */
     constructor(timeStarted = null) {
         /** @type {ReasoningState} The current state of the reasoning process */
-        // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'number'.
         this.state = ReasoningState.None;
         /** @type {ReasoningType?} The type of the reasoning (where it came from) */
         this.type = null;
@@ -332,7 +331,6 @@ export class ReasoningHandler {
     // @ts-expect-error TS(7006) FIXME: Parameter 'promptReasoning' implicitly has an 'any... Remove this comment to see the full error message
     initContinue(promptReasoning) {
         this.reasoning = promptReasoning.prefixReasoning;
-        // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'number'.
         this.state = promptReasoning.prefixIncomplete ? ReasoningState.None : ReasoningState.Done;
         this.startTime = this.initialTime;
         this.endTime = promptReasoning.prefixDuration ? new Date(this.initialTime.getTime() + promptReasoning.prefixDuration) : null;
@@ -360,19 +358,14 @@ export class ReasoningHandler {
 
         if (isNaN(messageId) || !chat[messageId]) return;
 
-        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         if (!chat[messageId].extra) {
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             chat[messageId].extra = {};
         }
-        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         const extra = chat[messageId].extra;
 
         if (extra.reasoning) {
-            // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'number'.
             this.state = ReasoningState.Done;
         } else if (extra.reasoning_duration) {
-            // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'number'.
             this.state = ReasoningState.Hidden;
         }
 
@@ -380,7 +373,6 @@ export class ReasoningHandler {
         this.reasoning = extra?.reasoning ?? '';
         this.reasoningDisplayText = extra?.reasoning_display_text ?? null;
 
-        // @ts-expect-error TS(2367) FIXME: This condition will always return 'true' since the... Remove this comment to see the full error message
         if (this.state !== ReasoningState.None) {
             // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             this.initialTime = new Date(chat[messageId].gen_started);
@@ -393,7 +385,6 @@ export class ReasoningHandler {
 
         // Make sure reset correctly clears all relevant states
         if (reset) {
-            // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'number'.
             this.state = this.#isHiddenReasoningModel ? ReasoningState.Thinking : ReasoningState.None;
             this.type = null;
             this.reasoning = '';
@@ -405,7 +396,6 @@ export class ReasoningHandler {
 
         this.updateDom(messageId);
 
-        // @ts-expect-error TS(2367) FIXME: This condition will always return 'true' since the... Remove this comment to see the full error message
         if (power_user.reasoning.auto_expand && this.state !== ReasoningState.Hidden) {
             this.messageReasoningDetailsDom.open = true;
         }
@@ -442,12 +432,9 @@ export class ReasoningHandler {
         reasoning = trimSpaces(reasoning);
 
         // Ensure the chat extra exists
-        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         if (!chat[messageId].extra) {
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             chat[messageId].extra = {};
         }
-        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         const extra = chat[messageId].extra;
 
         const reasoningChanged = extra.reasoning !== reasoning;
@@ -485,13 +472,10 @@ export class ReasoningHandler {
         // Ensure reasoning string is updated and regexes are applied correctly
         const reasoningChanged = this.updateReasoning(messageId, null, { persist: true });
 
-        // @ts-expect-error TS(2367) FIXME: This condition will always return 'false' since th... Remove this comment to see the full error message
         if ((this.#isHiddenReasoningModel || reasoningChanged) && this.state === ReasoningState.None) {
-            // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'number'.
             this.state = ReasoningState.Thinking;
             this.startTime = this.initialTime;
         }
-        // @ts-expect-error TS(2367) FIXME: This condition will always return 'false' since th... Remove this comment to see the full error message
         if ((this.#isHiddenReasoningModel || !reasoningChanged) && mesChanged && this.state === ReasoningState.Thinking) {
             this.endTime = new Date();
             await this.finish(messageId);
@@ -516,24 +500,20 @@ export class ReasoningHandler {
         const message = chat[messageId];
         if (!message) return mesChanged;
 
-        // @ts-expect-error TS(2339) FIXME: Property 'mes' does not exist on type 'never'.
         const parseTarget = promptReasoning?.prefixIncomplete ? (promptReasoning.prefixReasoningFormatted + message.mes) : message.mes;
 
         // If we are done with reasoning parse, we just split the message correctly so the reasoning doesn't show up inside of it.
         if (this.#parsingReasoningMesStartIndex) {
-            // @ts-expect-error TS(2339) FIXME: Property 'mes' does not exist on type 'never'.
             message.mes = trimSpaces(parseTarget.slice(this.#parsingReasoningMesStartIndex));
             return mesChanged;
         }
 
-        // @ts-expect-error TS(2367) FIXME: This condition will always return 'false' since th... Remove this comment to see the full error message
         if (this.state === ReasoningState.None || this.#isHiddenReasoningModel) {
             // If streamed message starts with the opening, cut it out and put all inside reasoning
             if (parseTarget.startsWith(power_user.reasoning.prefix) && parseTarget.length > power_user.reasoning.prefix.length) {
                 this.#isParsingReasoning = true;
 
                 // Manually set starting state here, as we might already have received the ending suffix
-                // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'number'.
                 this.state = ReasoningState.Thinking;
                 this.startTime = this.startTime ?? this.initialTime;
                 this.endTime = null;
@@ -545,14 +525,12 @@ export class ReasoningHandler {
 
         // If we are in manual parsing mode, all currently streaming mes tokens will go to the reasoning block
         this.reasoning = parseTarget.slice(power_user.reasoning.prefix.length);
-        // @ts-expect-error TS(2339) FIXME: Property 'mes' does not exist on type 'never'.
         message.mes = '';
 
         // If the reasoning contains the ending suffix, we cut that off and continue as message streaming
         if (this.reasoning.includes(power_user.reasoning.suffix)) {
             this.reasoning = this.reasoning.slice(0, this.reasoning.indexOf(power_user.reasoning.suffix));
             this.#parsingReasoningMesStartIndex = parseTarget.indexOf(power_user.reasoning.suffix) + power_user.reasoning.suffix.length;
-            // @ts-expect-error TS(2339) FIXME: Property 'mes' does not exist on type 'never'.
             message.mes = trimSpaces(parseTarget.slice(this.#parsingReasoningMesStartIndex));
             this.#isParsingReasoning = false;
         }
@@ -572,7 +550,6 @@ export class ReasoningHandler {
      */
     // @ts-expect-error TS(7006) FIXME: Parameter 'messageId' implicitly has an 'any' type... Remove this comment to see the full error message
     async finish(messageId) {
-        // @ts-expect-error TS(2367) FIXME: This condition will always return 'false' since th... Remove this comment to see the full error message
         if (this.state === ReasoningState.None) return;
 
         // Make sure the finish time is recorded if a reasoning was in process and it wasn't ended correctly during streaming
@@ -580,9 +557,7 @@ export class ReasoningHandler {
             this.endTime = new Date();
         }
 
-        // @ts-expect-error TS(2367) FIXME: This condition will always return 'false' since th... Remove this comment to see the full error message
         if (this.state === ReasoningState.Thinking) {
-            // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'number'.
             this.state = this.#isHiddenReasoningModel ? ReasoningState.Hidden : ReasoningState.Done;
             this.updateReasoning(messageId, null, { persist: true });
             await eventSource.emit(event_types.STREAM_REASONING_DONE, this.reasoning, this.getDuration(), messageId, this.state);
@@ -602,11 +577,9 @@ export class ReasoningHandler {
         this.#checkDomElements(messageId);
 
         // Main CSS class to show this message includes reasoning
-        // @ts-expect-error TS(2367) FIXME: This condition will always return 'true' since the... Remove this comment to see the full error message
         this.messageDom.classList.toggle('reasoning', this.state !== ReasoningState.None);
 
         // Update states to the relevant DOM elements
-        // @ts-expect-error TS(2367) FIXME: This condition will always return 'true' since the... Remove this comment to see the full error message
         setDatasetProperty(this.messageDom, 'reasoningState', this.state !== ReasoningState.None ? this.state : null);
         setDatasetProperty(this.messageReasoningDetailsDom, 'state', this.state);
         setDatasetProperty(this.messageReasoningDetailsDom, 'type', this.type);
@@ -624,11 +597,9 @@ export class ReasoningHandler {
         // Update tooltip for hidden reasoning edit
         /** @type {HTMLElement} */
         const button = this.messageDom.querySelector('.mes_edit_add_reasoning');
-        // @ts-expect-error TS(2367) FIXME: This condition will always return 'false' since th... Remove this comment to see the full error message
         button.title = this.state === ReasoningState.Hidden ? t`Hidden reasoning - Add reasoning block` : t`Add reasoning block`;
 
         // Make sure that hidden reasoning headers are collapsed by default, to not show a useless edit button
-        // @ts-expect-error TS(2367) FIXME: This condition will always return 'false' since th... Remove this comment to see the full error message
         if (this.state === ReasoningState.Hidden) {
             this.messageReasoningDetailsDom.open = false;
         }
@@ -682,7 +653,6 @@ export class ReasoningHandler {
             element.textContent = t`Thought for ${durationStr}`;
             data = String(seconds);
             title = `${seconds} seconds`;
-        // @ts-expect-error TS(2345) FIXME: Argument of type 'number' is not assignable to par... Remove this comment to see the full error message
         } else if ([ReasoningState.Done, ReasoningState.Hidden].includes(this.state)) {
             element.textContent = t`Thought for some time`;
             data = 'unknown';
@@ -852,61 +822,60 @@ export class PromptReasoning {
  *
  */
 function loadReasoningSettings() {
-        UI.$addToPrompts.checked = power_user.reasoning.add_to_prompts;
-        UI.$addToPrompts.addEventListener('change', function (this: HTMLInputElement) {
+        (UI.$addToPrompts! as HTMLInputElement).checked = (power_user.reasoning as Record<string, unknown>).add_to_prompts as boolean;
+        UI.$addToPrompts!.addEventListener('change', function (this: HTMLInputElement) {
         power_user.reasoning.add_to_prompts = this.checked;
         saveSettingsDebounced();
     });
 
-    UI.$prefix.value = power_user.reasoning.prefix;
-    UI.$prefix.addEventListener('input', function (this: HTMLInputElement) {
-        power_user.reasoning.prefix = String(this.value);
+    (UI.$prefix! as HTMLInputElement).value = (power_user.reasoning as Record<string, unknown>).prefix as string;
+    UI.$prefix!.addEventListener('input', function (this: HTMLInputElement) {
+        (power_user.reasoning as Record<string, unknown>).prefix = String(this.value);
         saveSettingsDebounced();
     });
 
-    UI.$suffix.value = power_user.reasoning.suffix;
-    UI.$suffix.addEventListener('input', function (this: HTMLInputElement) {
-        power_user.reasoning.suffix = String(this.value);
+    (UI.$suffix! as HTMLInputElement).value = (power_user.reasoning as Record<string, unknown>).suffix as string;
+    UI.$suffix!.addEventListener('input', function (this: HTMLInputElement) {
+        (power_user.reasoning as Record<string, unknown>).suffix = String(this.value);
         saveSettingsDebounced();
     });
 
-    UI.$separator.value = power_user.reasoning.separator;
-    UI.$separator.addEventListener('input', function (this: HTMLInputElement) {
-        power_user.reasoning.separator = String(this.value);
+    (UI.$separator! as HTMLInputElement).value = (power_user.reasoning as Record<string, unknown>).separator as string;
+    UI.$separator!.addEventListener('input', function (this: HTMLInputElement) {
+        (power_user.reasoning as Record<string, unknown>).separator = String(this.value);
         saveSettingsDebounced();
     });
 
-    UI.$maxAdditions.value = power_user.reasoning.max_additions;
-    UI.$maxAdditions.addEventListener('input', function (this: HTMLInputElement) {
-        power_user.reasoning.max_additions = Number(this.value);
+    (UI.$maxAdditions! as HTMLInputElement).value = (power_user.reasoning as Record<string, unknown>).max_additions as string;
+    UI.$maxAdditions!.addEventListener('input', function (this: HTMLInputElement) {
+        (power_user.reasoning as Record<string, unknown>).max_additions = Number(this.value);
         saveSettingsDebounced();
     });
 
-    UI.$autoParse.checked = power_user.reasoning.auto_parse;
-    UI.$autoParse.addEventListener('change', function (this: HTMLInputElement) {
-        power_user.reasoning.auto_parse = this.checked;
+    (UI.$autoParse! as HTMLInputElement).checked = (power_user.reasoning as Record<string, unknown>).auto_parse as boolean;
+    UI.$autoParse!.addEventListener('change', function (this: HTMLInputElement) {
+        (power_user.reasoning as Record<string, unknown>).auto_parse = this.checked;
         saveSettingsDebounced();
     });
 
-    UI.$autoExpand.checked = power_user.reasoning.auto_expand;
-    UI.$autoExpand.addEventListener('change', function (this: HTMLInputElement) {
-        power_user.reasoning.auto_expand = this.checked;
+    (UI.$autoExpand! as HTMLInputElement).checked = (power_user.reasoning as Record<string, unknown>).auto_expand as boolean;
+    UI.$autoExpand!.addEventListener('change', function (this: HTMLInputElement) {
+        (power_user.reasoning as Record<string, unknown>).auto_expand = this.checked;
         toggleReasoningAutoExpand();
         saveSettingsDebounced();
     });
     toggleReasoningAutoExpand();
 
-    UI.$showHidden.checked = power_user.reasoning.show_hidden;
-    UI.$showHidden.addEventListener('change', function (this: HTMLInputElement) {
+    (UI.$showHidden! as HTMLInputElement).checked = (power_user.reasoning as Record<string, unknown>).show_hidden as boolean;
+    UI.$showHidden!.addEventListener('change', function (this: HTMLInputElement) {
         power_user.reasoning.show_hidden = this.checked;
-        document.getElementById('chat')?.setAttribute('data-show-hidden-reasoning', power_user.reasoning.show_hidden ? 'true' : null);
+        document.getElementById('chat')?.setAttribute('data-show-hidden-reasoning', power_user.reasoning.show_hidden ? 'true' : '');
         saveSettingsDebounced();
     });
-    document.getElementById('chat')?.setAttribute('data-show-hidden-reasoning', power_user.reasoning.show_hidden ? 'true' : null);
+    document.getElementById('chat')?.setAttribute('data-show-hidden-reasoning', power_user.reasoning.show_hidden ? 'true' : '');
 
-    UI.$select.addEventListener('change', async function (this: HTMLSelectElement) {
+    UI.$select!.addEventListener('change', async function (this: HTMLSelectElement) {
         const name = String(this.value);
-        // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
         const template = reasoning_templates.find(p => p.name === name);
         if (!template) {
             return;
@@ -920,11 +889,8 @@ function loadReasoningSettings() {
         UI.$separator.value = template.separator;
 
         power_user.reasoning.name = name;
-        // @ts-expect-error TS(2339) FIXME: Property 'prefix' does not exist on type 'never'.
         power_user.reasoning.prefix = template.prefix;
-        // @ts-expect-error TS(2339) FIXME: Property 'suffix' does not exist on type 'never'.
         power_user.reasoning.suffix = template.suffix;
-        // @ts-expect-error TS(2339) FIXME: Property 'separator' does not exist on type 'never... Remove this comment to see the full error message
         power_user.reasoning.separator = template.separator;
 
         saveSettingsDebounced();
@@ -943,15 +909,13 @@ function selectReasoningTemplateCallback(args, name) {
     }
 
     const quiet = isTrueBoolean(args?.quiet);
-    // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
     const templateNames = reasoning_templates.map(preset => preset.name);
     let foundName = templateNames.find(x => x.toLowerCase() === name.toLowerCase());
 
     if (!foundName) {
-        const result = performFuzzySearch('reasoning-templates', templateNames, [], name);
+        const result = performFuzzySearch('reasoning-templates', templateNames, [], name) as { item: string }[];
 
         if (result.length === 0) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             if (!quiet) notyf.warning(`Reasoning template "${name}" not found`);
             return '';
         }
@@ -961,10 +925,9 @@ function selectReasoningTemplateCallback(args, name) {
 
     const reasoningSelect = document.getElementById('reasoning_select');
     if (reasoningSelect instanceof HTMLSelectElement) {
-        reasoningSelect.value = foundName;
+        reasoningSelect.value = foundName!;
         reasoningSelect.dispatchEvent(new Event('change'));
     }
-    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
     if (!quiet) notyf.success(`Reasoning template "${foundName}" selected`);
     return foundName;
 }
@@ -989,7 +952,6 @@ function registerReasoningSlashCommands() {
         callback: (_args, value) => {
             const messageId = !isNaN(parseInt(value.toString())) ? parseInt(value.toString()) : chat.length - 1;
             const message = chat[messageId];
-            // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
             const reasoning = String(message?.extra?.reasoning ?? '');
             return reasoning;
         },
@@ -1028,15 +990,11 @@ function registerReasoningSlashCommands() {
                 return '';
             }
             // Make sure the message has an extra object
-            // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
             if (!message.extra || typeof message.extra !== 'object') {
-                // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
                 message.extra = {};
             }
 
-            // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
             message.extra.reasoning = String(value ?? '');
-            // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
             message.extra.reasoning_type = ReasoningType.Manual;
             await saveChatConditional();
 
@@ -1045,7 +1003,6 @@ function registerReasoningSlashCommands() {
 
             if (isTrueBoolean(String(args.collapse))) document.querySelector(`#chat [mesid="${messageId}"] .mes_reasoning_details`)?.removeAttribute('open');
             if (isFalseBoolean(String(args.collapse))) document.querySelector(`#chat [mesid="${messageId}"] .mes_reasoning_details`)?.setAttribute('open', '');
-            // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
             return message.extra.reasoning;
         },
     }));
@@ -1097,12 +1054,10 @@ function registerReasoningSlashCommands() {
             }
 
             if (!power_user.reasoning.prefix || !power_user.reasoning.suffix) {
-                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 notyf.warning(t`Both prefix and suffix must be set in the Reasoning Formatting settings.`, t`Reasoning Parse`);
                 return value;
             }
             if (typeof args.return !== 'string' || !['reasoning', 'content'].includes(args.return)) {
-                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 notyf.warning(t`Invalid return type '${args.return}', defaulting to 'reasoning'.`, t`Reasoning Parse`);
             }
 
@@ -1149,13 +1104,11 @@ function registerReasoningSlashCommands() {
             const content = String(value ?? '');
 
             if (!power_user.reasoning.prefix || !power_user.reasoning.suffix) {
-                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 notyf.warning(t`Both prefix and suffix must be set in the Reasoning Formatting settings.`, t`Reasoning Format`);
                 return '';
             }
 
             if (!reasoning) {
-                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 notyf.warning(t`Reasoning argument is required.`, t`Reasoning Format`);
                 return '';
             }
@@ -1182,7 +1135,6 @@ function registerReasoningSlashCommands() {
             SlashCommandArgument.fromProps({
                 description: 'reasoning template name',
                 typeList: [ARGUMENT_TYPE.STRING],
-                // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
                 enumProvider: () => reasoning_templates.map(x => new SlashCommandEnumValue(x.name, null, enumTypes.enum, enumIcons.preset)),
             }),
         ],
@@ -1211,7 +1163,6 @@ function registerReasoningSlashCommands() {
     function getReasoningDetailsElements(value) {
         const range = value ? stringToRange(String(value), 0, chat.length - 1) : { start: chat.length - 1, end: chat.length - 1 };
         if (!range) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.warning(t`Invalid message ID or range: ${value}`);
             return null;
         }
@@ -1220,7 +1171,6 @@ function registerReasoningSlashCommands() {
         ).join(',');
         const details = document.querySelectorAll(selector);
         if (details.length === 0) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.warning(t`No reasoning blocks found for the specified messages.`);
             return null;
         }
@@ -1345,7 +1295,7 @@ function setReasoningEventHandlers() {
         const mes = header.closest('.mes');
         const mesEditArea = mes?.querySelector('#curEditTextarea');
         if (mesEditArea) {
-            const summary = mes.querySelector('.mes_reasoning_summary');
+            const summary = mes!.querySelector('.mes_reasoning_summary');
             if (summary && !summary.hasAttribute('open')) {
                 const editBtn = summary.querySelector('.mes_reasoning_edit');
                 if (editBtn) (editBtn as HTMLElement).click();
@@ -1367,14 +1317,12 @@ function setReasoningEventHandlers() {
         e.stopPropagation();
         e.preventDefault();
         const { message, messageBlock } = getMessageFromJquery(editBtn);
-        // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
         if (!message?.extra) {
             return;
         }
 
-        // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
         const reasoning = String(message?.extra?.reasoning ?? '');
-        const chatElement = document.getElementById('chat');
+        const chatElement = document.getElementById('chat')!;
         const textarea = document.createElement('textarea');
         const reasoningBlock = messageBlock.querySelector('.mes_reasoning');
         textarea.classList.add('reasoning_edit_textarea');
@@ -1383,8 +1331,7 @@ function setReasoningEventHandlers() {
 
         if (!CSS.supports('field-sizing', 'content')) {
                         const resetHeight = function () {
-                const chatEl = chatElement[0];
-                if (!chatEl) return;
+                const chatEl = chatElement;
                 const scrollTop = chatEl.scrollTop;
                 textarea.style.height = '0px';
                 textarea.style.height = `${textarea.scrollHeight}px`;
@@ -1399,14 +1346,12 @@ function setReasoningEventHandlers() {
         textarea.setSelectionRange(textarea.value.length, textarea.value.length);
 
         const textareaRect = textarea.getBoundingClientRect();
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         const chatRect = chatElement.getBoundingClientRect();
 
         // Scroll if textarea bottom is below visible area
         if (textareaRect.bottom > chatRect.bottom) {
             const scrollOffset = textareaRect.bottom - chatRect.bottom;
-                        const chatEl = chatElement[0];
-            if (chatEl) chatEl.scrollTop += scrollOffset;
+            chatElement.scrollTop += scrollOffset;
         }
     });
 
@@ -1426,7 +1371,6 @@ function setReasoningEventHandlers() {
         e.stopPropagation();
         e.preventDefault();
         const { message, messageId, messageBlock } = getMessageFromJquery(editDone);
-        // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
         if (!message?.extra) {
             return;
         }
@@ -1435,7 +1379,6 @@ function setReasoningEventHandlers() {
         let newReasoning = String(textarea.value);
         newReasoning = substituteParams(newReasoning);
         textarea.remove();
-        // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
         if (newReasoning === message.extra.reasoning) {
             return;
         }
@@ -1468,14 +1411,11 @@ function setReasoningEventHandlers() {
         const addReasoning = e.target.closest('.mes_edit_add_reasoning');
         if (!addReasoning) return;
         const { message, messageBlock } = getMessageFromJquery(addReasoning);
-        // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
         if (!message?.extra) {
             return;
         }
 
-        // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
         if (message.extra.reasoning) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.info(t`Reasoning already exists.`, t`Edit Message`);
             return;
         }
@@ -1507,17 +1447,12 @@ function setReasoningEventHandlers() {
             return;
         }
 
-        // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
         const { message, messageId, messageBlock } = getMessageFromJquery(this);
-        // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
         if (!message?.extra) {
             return;
         }
-        // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
         message.extra.reasoning = '';
-        // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
         delete message.extra.reasoning_type;
-        // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
         delete message.extra.reasoning_duration;
         await saveChatConditional();
         updateMessageBlock(messageId, message);
@@ -1530,7 +1465,6 @@ function setReasoningEventHandlers() {
         const copyEl = e.target.closest('.mes_reasoning_copy');
         if (!copyEl) return;
         const { message } = getMessageFromJquery(copyEl);
-        // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
         const reasoning = String(message?.extra?.reasoning ?? '');
 
         if (!reasoning) {
@@ -1538,7 +1472,6 @@ function setReasoningEventHandlers() {
         }
 
         await copyText(reasoning);
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.info(t`Copied!`, '', { timeOut: 2000 });
     });
 
@@ -1551,7 +1484,6 @@ function setReasoningEventHandlers() {
         }
 
         const { message, messageBlock } = getMessageFromJquery(textarea);
-        // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
         if (!message?.extra) {
             return;
         }
@@ -1585,7 +1517,6 @@ export function removeReasoningFromString(str) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
 export function getReasoningTemplateByName(name) {
-    // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
     const template = reasoning_templates.find(p => p.name === name);
     if (!template) throw new Error(`Unknown reasoning template name: "${name}"`);
     return template;
@@ -1725,19 +1656,16 @@ function registerReasoningAppEvents() {
             return null;
         }
 
-        // @ts-expect-error TS(2339) FIXME: Property 'mes' does not exist on type 'never'.
         if (!message.mes || message.mes === '...') {
             console.debug('[Reasoning] Message content is empty or a placeholder', idx);
             return null;
         }
 
-        // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
         if (message.extra?.reasoning && !prefix) {
             console.debug('[Reasoning] Message already has reasoning', idx);
             return null;
         }
 
-        // @ts-expect-error TS(2339) FIXME: Property 'mes' does not exist on type 'never'.
         const parsedReasoning = parseReasoningFromString(prefix + message.mes);
 
         // No reasoning block found
@@ -1746,27 +1674,20 @@ function registerReasoningAppEvents() {
         }
 
         // Make sure the message has an extra object
-        // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
         if (!message.extra || typeof message.extra !== 'object') {
-            // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
             message.extra = {};
         }
 
-        // @ts-expect-error TS(2339) FIXME: Property 'mes' does not exist on type 'never'.
         const contentUpdated = !!parsedReasoning.reasoning || parsedReasoning.content !== message.mes;
 
         // If reasoning was found, add it to the message
         if (parsedReasoning.reasoning) {
-            // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
             message.extra.reasoning = getRegexedString(parsedReasoning.reasoning, regex_placement.REASONING);
-            // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
             message.extra.reasoning_type = ReasoningType.Parsed;
         }
 
         // Update the message text if it was changed
-        // @ts-expect-error TS(2339) FIXME: Property 'mes' does not exist on type 'never'.
         if (parsedReasoning.content !== message.mes) {
-            // @ts-expect-error TS(2339) FIXME: Property 'mes' does not exist on type 'never'.
             message.mes = parsedReasoning.content;
         }
 
@@ -1827,7 +1748,6 @@ function registerReasoningAppEvents() {
 // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
 export async function loadReasoningTemplates(data) {
     if (data.reasoning !== undefined) {
-        // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
         reasoning_templates.splice(0, reasoning_templates.length, ...data.reasoning);
     }
 
@@ -1839,25 +1759,23 @@ export async function loadReasoningTemplates(data) {
     }
 
     // No template name, need to migrate
-    if (power_user.reasoning.name === undefined) {
-        // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
-        const defaultTemplate = reasoning_templates.find(p => p.name === DEFAULT_REASONING_TEMPLATE);
+    const powerReasoning = power_user.reasoning as Record<string, unknown>;
+    if (powerReasoning.name === undefined) {
+        const defaultTemplate = reasoning_templates.find((p: { name: string }) => p.name === DEFAULT_REASONING_TEMPLATE);
         if (defaultTemplate) {
             // If the reasoning settings were modified - migrate them to a custom template
-            // @ts-expect-error TS(2339) FIXME: Property 'prefix' does not exist on type 'never'.
-            if (power_user.reasoning.prefix !== defaultTemplate.prefix || power_user.reasoning.suffix !== defaultTemplate.suffix || power_user.reasoning.separator !== defaultTemplate.separator) {
+            if (powerReasoning.prefix !== defaultTemplate.prefix || powerReasoning.suffix !== defaultTemplate.suffix || powerReasoning.separator !== defaultTemplate.separator) {
                 /** @type {ReasoningTemplate} */
                 const data = {
                     name: '[Migrated] Custom',
-                    prefix: power_user.reasoning.prefix,
-                    suffix: power_user.reasoning.suffix,
-                    separator: power_user.reasoning.separator,
+                    prefix: powerReasoning.prefix,
+                    suffix: powerReasoning.suffix,
+                    separator: powerReasoning.separator,
                 };
                 await getPresetManager('reasoning')?.savePreset(data.name, data);
-                power_user.reasoning.name = data.name;
+                powerReasoning.name = data.name;
             } else {
-                // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
-                power_user.reasoning.name = defaultTemplate.name;
+                powerReasoning.name = defaultTemplate.name;
             }
         } else {
             // Template not found (deleted or content check skipped - leave blank)
@@ -1867,7 +1785,7 @@ export async function loadReasoningTemplates(data) {
         saveSettingsDebounced();
     }
 
-        UI.$select.value = power_user.reasoning.name;
+        (UI.$select as HTMLSelectElement).value = (power_user.reasoning as Record<string, unknown>).name as string;
 }
 
 /**

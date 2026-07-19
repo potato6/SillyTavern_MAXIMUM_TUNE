@@ -137,7 +137,6 @@ class RegexPresetManager {
 
         // @ts-expect-error TS(2339): Property 'id' does not exist on type 'never'.
         const currentPreset = extension_settings.regex_presets.find(p => p.id === this.currentPresetId);
-        // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
         const presetName = currentPreset ? currentPreset.name : t`Unknown Preset`;
 
         const choice = await Popup.show.confirm(
@@ -280,7 +279,6 @@ class RegexPresetManager {
         // @ts-expect-error TS(2339): Property 'isSelected' does not exist on type 'neve... Remove this comment to see the full error message
         const selectedPreset = extension_settings.regex_presets?.find(p => p.isSelected);
         if (selectedPreset) {
-            // @ts-expect-error TS(2339): Property 'id' does not exist on type 'never'.
             this.updateStoredState(selectedPreset.id);
         }
     }
@@ -363,7 +361,6 @@ class RegexPresetManager {
         }
 
         extension_settings.regex_presets.forEach(preset => {
-            // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
             const option = new Option(preset.name, preset.id, preset.isSelected, preset.isSelected);
             // @ts-expect-error TS(2531): Object is possibly 'null'.
             this.presetSelect.appendChild(option);
@@ -421,11 +418,8 @@ class RegexPresetManager {
         for (const scriptType of Object.values(SCRIPT_TYPES)) {
             await this.applyPresetList({
                 presetList: {
-                    // @ts-expect-error TS(2339): Property 'global' does not exist on type 'never'.
                     [SCRIPT_TYPES.GLOBAL]: preset.global,
-                    // @ts-expect-error TS(2339): Property 'scoped' does not exist on type 'never'.
                     [SCRIPT_TYPES.SCOPED]: preset.scoped,
-                    // @ts-expect-error TS(2339): Property 'preset' does not exist on type 'never'.
                     [SCRIPT_TYPES.PRESET]: preset.preset,
                 }[scriptType],
                 targetList: getScriptsByType(scriptType),
@@ -467,9 +461,7 @@ class RegexPresetManager {
             return;
         }
 
-        // @ts-expect-error TS(2533): Object is possibly 'null' or 'undefined'.
         const name = isUpdate ? existingPreset.name : await Popup.show.input(t`Enter a name for the new regex preset:`, '');
-        // @ts-expect-error TS(2533): Object is possibly 'null' or 'undefined'.
         const id = isUpdate ? existingPreset.id : presetId;
 
         if (!name || !name.trim().length) {
@@ -486,7 +478,6 @@ class RegexPresetManager {
         };
 
         if (isUpdate) {
-            // @ts-expect-error TS(2769): No overload matches this call.
             Object.assign(existingPreset, preset);
         } else {
             // @ts-expect-error TS(2345): Argument of type '{ id: any; name: any; isSelected... Remove this comment to see the full error message
@@ -520,7 +511,7 @@ class RegexPresetManager {
             return;
         }
 
-        extension_settings.regex_presets.splice(presetIndex, 1);
+        (extension_settings.regex_presets as any[]).splice(presetIndex, 1);
 
         // Select the first preset if any exist
         // @ts-expect-error TS(2339): Property 'isSelected' does not exist on type 'neve... Remove this comment to see the full error message
@@ -633,7 +624,7 @@ async function saveRegexScript(regexScript: any, existingScriptIndex: any, scrip
 async function deleteRegexScript(id: any, scriptType: any, saveSettings = true) {
     const array = getScriptsByType(scriptType);
 
-    const existingScriptIndex = array.findIndex(script => script.id === id);
+    const existingScriptIndex = array.findIndex((script: any) => script.id === id);
     if (existingScriptIndex !== -1) {
         array.splice(existingScriptIndex, 1);
 
@@ -831,9 +822,9 @@ async function onRegexEditorOpenClick(existingId: any, scriptType: any) {
     // If an ID exists, fill in all the values
     let existingScriptIndex = -1;
     if (existingId) {
-        existingScriptIndex = array.findIndex((script) => script.id === existingId);
+        existingScriptIndex = array.findIndex((script: any) => script.id === existingId);
         if (existingScriptIndex !== -1) {
-            const existingScript = array[existingScriptIndex];
+            const existingScript = array[existingScriptIndex] as any;
             if (existingScript.scriptName) {
                 editorHtml.find('.regex_script_name').val(existingScript.scriptName);
             } else {
@@ -1140,7 +1131,7 @@ function populateDebuggerRuleList(container: any) {
     const scopedScripts: any = [];
     const presetScripts: any = [];
 
-    allScripts.forEach(script => {
+    allScripts.forEach((script: any) => {
         const scriptCopy = structuredClone(script); // Use structuredClone for deep copy
         if (globalScriptIds.has(script.id)) {
             // @ts-ignore
@@ -1193,13 +1184,13 @@ function populateDebuggerRuleList(container: any) {
             if (stepElement.length && container.length) {
                 // Replace scrollIntoView with scrollTop animation
                 const targetTop = stepElement.position().top;
-                const containerScrollTop = container.scrollTop();
+                const containerScrollTop = (container[0] as HTMLElement)?.scrollTop ?? 0;
                 const containerHeight = container.height();
 
                 // Center the element if possible
                 let scrollTo = containerScrollTop + targetTop - (containerHeight / 2) + (stepElement.height() / 2);
 
-                container.animate({ scrollTop: scrollTo }, 300); // 300ms smooth scroll
+                container[0]?.scrollTo({ top: scrollTo, behavior: 'smooth' });
 
                 stepElement.css('transition', 'background-color 0.5s').css('background-color', 'var(--highlight_color)');
                 setTimeout(() => stepElement.css('background-color', ''), 1000);
@@ -1335,9 +1326,9 @@ async function onRegexDebuggerOpenClick() {
 
     debuggerHtml.find('#regex_debugger_save_order')[0].addEventListener('click', async function () {
         const allKnownScripts = getRegexScripts();
-        const newGlobalScripts = $('#regex_debugger_rules_global').children('li').map((_: any, el: any) => allKnownScripts.find(s => s.id === $(el).data('id'))).get().filter(Boolean);
-        const newScopedScripts = $('#regex_debugger_rules_scoped').children('li').map((_: any, el: any) => allKnownScripts.find(s => s.id === $(el).data('id'))).get().filter(Boolean);
-        const newPresetScripts = $('#regex_debugger_rules_preset').children('li').map((_: any, el: any) => allKnownScripts.find(s => s.id === $(el).data('id'))).get().filter(Boolean);
+        const newGlobalScripts = $('#regex_debugger_rules_global').children('li').map((_: any, el: any) => allKnownScripts.find((s: any) => s.id === $(el).data('id'))).get().filter(Boolean);
+        const newScopedScripts = $('#regex_debugger_rules_scoped').children('li').map((_: any, el: any) => allKnownScripts.find((s: any) => s.id === $(el).data('id'))).get().filter(Boolean);
+        const newPresetScripts = $('#regex_debugger_rules_preset').children('li').map((_: any, el: any) => allKnownScripts.find((s: any) => s.id === $(el).data('id'))).get().filter(Boolean);
 
         extension_settings.regex = newGlobalScripts;
         if (this_chid !== undefined) {
@@ -1385,8 +1376,8 @@ async function onRegexDebuggerOpenClick() {
                 const targetElement = contentPanel.find(`#${targetId}`);
 
                 if (targetElement.length) {
-                    const scrollTo = contentPanel.scrollTop() + targetElement.position().top;
-                    contentPanel.animate({ scrollTop: scrollTo }, 300);
+                    const scrollTo = ((contentPanel[0] as HTMLElement)?.scrollTop ?? 0) + targetElement.position().top;
+                    contentPanel[0]?.scrollTo({ top: scrollTo, behavior: 'smooth' });
 
                     targetElement.css('transition', 'background-color 0.5s').css('background-color', 'var(--highlight_color)');
                     setTimeout(() => targetElement.css('background-color', ''), 1000);
@@ -1450,32 +1441,23 @@ function migrateSettings() {
     let performSave = false;
 
     // Current: If MD Display is present in placement, remove it and add new placements/MD option
-    extension_settings.regex.forEach((script) => {
-        // @ts-expect-error TS(2339): Property 'id' does not exist on type 'never'.
+    (extension_settings.regex as any[]).forEach((script: any) => {
         if (!script.id) {
-            // @ts-expect-error TS(2339): Property 'id' does not exist on type 'never'.
             script.id = uuidv4();
             performSave = true;
         }
 
-        // @ts-expect-error TS(2339): Property 'placement' does not exist on type 'never... Remove this comment to see the full error message
         if (!Array.isArray(script.placement)) {
-            // @ts-expect-error TS(2339): Property 'placement' does not exist on type 'never... Remove this comment to see the full error message
             script.placement = [];
             performSave = true;
         }
 
-        // @ts-expect-error TS(2339): Property 'placement' does not exist on type 'never... Remove this comment to see the full error message
         if (script.placement.includes(regex_placement.MD_DISPLAY)) {
-            // @ts-expect-error TS(2339): Property 'placement' does not exist on type 'never... Remove this comment to see the full error message
             script.placement = script.placement.length === 1 ?
                 Object.values(regex_placement).filter((e) => e !== regex_placement.MD_DISPLAY) :
-                // @ts-expect-error TS(2339): Property 'placement' does not exist on type 'never... Remove this comment to see the full error message
                 script.placement = script.placement.filter((e: any) => e !== regex_placement.MD_DISPLAY);
 
-            // @ts-expect-error TS(2339): Property 'markdownOnly' does not exist on type 'ne... Remove this comment to see the full error message
             script.markdownOnly = true;
-            // @ts-expect-error TS(2339): Property 'promptOnly' does not exist on type 'neve... Remove this comment to see the full error message
             script.promptOnly = true;
 
             performSave = true;
@@ -1483,12 +1465,9 @@ function migrateSettings() {
 
         // Old system and sendas placement migration
         // 4 - sendAs
-        // @ts-expect-error TS(2339): Property 'placement' does not exist on type 'never... Remove this comment to see the full error message
         if (script.placement.includes(4)) {
-            // @ts-expect-error TS(2339): Property 'placement' does not exist on type 'never... Remove this comment to see the full error message
             script.placement = script.placement.length === 1 ?
                 [regex_placement.SLASH_COMMAND] :
-                // @ts-expect-error TS(2339): Property 'placement' does not exist on type 'never... Remove this comment to see the full error message
                 script.placement = script.placement.filter((e: any) => e !== 4);
 
             performSave = true;
@@ -1546,7 +1525,7 @@ async function toggleRegexCallback(args: any, scriptName: any) {
             'toggle';
 
     const scripts = getRegexScripts();
-    const script = scripts.find(s => equalsIgnoreCaseAndAccents(s.scriptName, scriptName));
+    const script: any = scripts.find((s: any) => equalsIgnoreCaseAndAccents(s.scriptName, scriptName));
 
     if (!script) {
         notyf.warning(t`Regex script '${scriptName}' not found.`);
@@ -1668,7 +1647,7 @@ function getSelectedScripts() {
     const selectedIds = Array.from(document.querySelectorAll(selector))
         .map(e => e.getAttribute('id'))
         .filter(id => id);
-    return scripts.filter(script => selectedIds.includes(script.id));
+    return scripts.filter((script: any) => selectedIds.includes(script.id));
 }
 
 function purgeEmbeddedRegexScripts({
@@ -2054,7 +2033,7 @@ export async function init() {
                 const newScripts: any = [];
                 $(selector).children().each(function(this: any) {
                     const id = $(this).attr('id');
-                    const existingScript = oldScripts.find((e) => e.id === id);
+                    const existingScript = oldScripts.find((e: any) => e.id === id);
                     if (existingScript) {
                         newScripts.push(existingScript);
                     }
@@ -2163,8 +2142,7 @@ export async function init() {
                 const { typename, color, icon } = getScriptDecorators(type);
                 return new SlashCommandEnumValue(
                     script.scriptName,
-                    // @ts-expect-error TS(2345): Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
-                    `${enumIcons.getStateIcon(!script.disabled)} [${typename}] ${script.findRegex}`,
+                                    `${enumIcons.getStateIcon(!script.disabled)} [${typename}] ${script.findRegex}` as any,
                     color,
                     icon,
                 );
@@ -2201,7 +2179,7 @@ export async function init() {
             }
 
             const scripts = getRegexScripts();
-            const script = scripts.find(s => equalsIgnoreCaseAndAccents(s.scriptName, name));
+            const script: any = scripts.find((s: any) => equalsIgnoreCaseAndAccents(s.scriptName, name));
 
             if (!script) {
                 notyf.warning(`Regex script "${name}" not found.`);
@@ -2278,7 +2256,7 @@ export async function init() {
     // Watch for scripts added by other extensions (e.g. RPG Companion) that push to
     // extension_settings.regex outside of the standard loadRegexScripts cycle.
     // A debounced refresh ensures the UI stays in sync without spamming re-renders.
-    const originalRegexArray = extension_settings.regex;
+    const originalRegexArray = extension_settings.regex as any[];
     const debouncedRefresh = debounce(() => loadRegexScripts(), 100);
     // eslint-disable-next-line @typescript-eslint/unbound-method
     const originalPush = Array.prototype.push;

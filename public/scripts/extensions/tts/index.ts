@@ -177,7 +177,6 @@ async function onNarrateOneMessage(this: any) {
     }
 
     resetTtsPlayback();
-    // @ts-expect-error TS(2345): Argument of type 'number' is not assignable to par... Remove this comment to see the full error message
     processAndQueueTtsMessage(message, Number(id), { manual: true });
     moduleWorker();
 }
@@ -281,7 +280,7 @@ function isTtsProcessing() {
  * @param {boolean} [options.manual=false] - Whether this TTS job was manually triggered (e.g., from the UI) rather than automatically from a new chat message.
  * @returns {void}
  */
-function processAndQueueTtsMessage(message: any, messageId = null, { manual = false } = {}) {
+function processAndQueueTtsMessage(message: any, messageId: any = null, { manual = false } = {}) {
     /** @type {TtsMessage} */
     const clone = structuredClone(message);
     clone.id = messageId ?? null;
@@ -446,7 +445,6 @@ function onAudioControlClicked() {
     } else if (context?.chat?.length > 0) {
         // Default play behavior if not processing or playing is to play the last message.
         const id = context.chat.length - 1;
-        // @ts-expect-error TS(2345): Argument of type 'number' is not assignable to par... Remove this comment to see the full error message
         processAndQueueTtsMessage(context.chat[id], id, { manual: true });
     }
     updateUiAudioPlayState();
@@ -902,10 +900,8 @@ async function playFullConversation() {
 
     const context = getContext();
 
-    context.chat.forEach((msg, i) => {
-        // @ts-expect-error TS(2339): Property 'is_system' does not exist on type 'never... Remove this comment to see the full error message
+    context.chat.forEach((msg: any, i) => {
         if (!msg.is_system && msg.mes !== '...' && msg.mes !== '') {
-            // @ts-expect-error TS(2345): Argument of type 'number' is not assignable to par... Remove this comment to see the full error message
             processAndQueueTtsMessage(msg, i, { manual: false });
         }
     });
@@ -923,13 +919,12 @@ globalThis.playFullConversation = playFullConversation;
 //#############################//
 
 function loadSettings() {
-    if (Object.keys(extension_settings.tts).length === 0) {
-        Object.assign(extension_settings.tts, defaultSettings);
+    if (Object.keys(extension_settings.tts as Record<string, unknown>).length === 0) {
+        Object.assign(extension_settings.tts as Record<string, unknown>, defaultSettings);
     }
     for (const key in defaultSettings) {
-        if (!(key in extension_settings.tts)) {
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-            extension_settings.tts[key] = defaultSettings[key];
+        if (!(key in (extension_settings.tts as Record<string, unknown>))) {
+            (extension_settings.tts as Record<string, any>)[key] = (defaultSettings as Record<string, any>)[key];
         }
     }
     // @ts-expect-error TS(2339): Property 'currentProvider' does not exist on type ... Remove this comment to see the full error message
@@ -1152,8 +1147,7 @@ async function loadTtsProvider(provider: any) {
     }
 
     // Init provider references
-    // @ts-expect-error TS(2339): Property 'currentProvider' does not exist on type ... Remove this comment to see the full error message
-    extension_settings.tts.currentProvider = provider;
+        (extension_settings.tts as Record<string, any>).currentProvider = provider;
     ttsProviderName = provider;
     // Parentheses are CRITICAL: new getTtsProviders()[provider] parses as (new getTtsProviders())[provider]
     // which returns the CLASS, not an instance. We need new (getTtsProviders()[provider])
@@ -1161,13 +1155,11 @@ async function loadTtsProvider(provider: any) {
 
     // Init provider settings
     $('#tts_provider_settings').append(ttsProvider.settingsHtml);
-    if (!(ttsProviderName in extension_settings.tts)) {
+    if (!(ttsProviderName in (extension_settings.tts as Record<string, any>))) {
         console.warn(`Provider ${ttsProviderName} not in Extension Settings, initiatilizing provider in settings`);
-        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        extension_settings.tts[ttsProviderName] = {};
+        (extension_settings.tts as Record<string, any>)[ttsProviderName] = {};
     }
-    // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-    await ttsProvider.loadSettings(extension_settings.tts[ttsProviderName]);
+    await ttsProvider.loadSettings((extension_settings.tts as Record<string, any>)[ttsProviderName]);
     await initVoiceMap();
 }
 
@@ -1228,8 +1220,7 @@ async function onMessageEvent(messageId: any, lastCharIndex: any) {
     // Chat changed
     if (context.chatId !== lastChatId) {
         lastChatId = context.chatId;
-        // @ts-expect-error TS(2339): Property 'mes' does not exist on type 'never'.
-        lastMessageHash = getStringHash(context.chat[messageId]?.mes ?? '');
+        lastMessageHash = getStringHash((context.chat[messageId] as any)?.mes ?? '');
 
         // Force to speak on the first message in the new chat
         if (context.chat.length === 1) {
@@ -1239,13 +1230,11 @@ async function onMessageEvent(messageId: any, lastCharIndex: any) {
 
     // clone message object, as things go haywire if message object is altered below (it's passed by reference)
     /** @type {TtsMessage} */
-    const message = structuredClone(context.chat[messageId]);
-    // @ts-expect-error TS(2339): Property 'mes' does not exist on type 'never'.
+    const message = structuredClone(context.chat[messageId]) as any;
     const hashNew = getStringHash(message?.mes ?? '');
 
     // Ignore prompt-hidden messages
-    // @ts-expect-error TS(2532): Object is possibly 'undefined'.
-    if (message.is_system) {
+    if ((message as any).is_system) {
         return;
     }
 
@@ -1256,26 +1245,20 @@ async function onMessageEvent(messageId: any, lastCharIndex: any) {
 
     // if we only want to process part of the message
     if (lastCharIndex) {
-        // @ts-expect-error TS(2532): Object is possibly 'undefined'.
         message.mes = message.mes.substring(0, lastCharIndex);
     }
 
     const isLastMessageInCurrent = () =>
         lastMessage &&
         typeof lastMessage === 'object' &&
-        // @ts-expect-error TS(2532): Object is possibly 'undefined'.
         message.swipe_id === lastMessage.swipe_id &&
-        // @ts-expect-error TS(2532): Object is possibly 'undefined'.
         message.name === lastMessage.name &&
-        // @ts-expect-error TS(2532): Object is possibly 'undefined'.
         message.is_user === lastMessage.is_user &&
-        // @ts-expect-error TS(2532): Object is possibly 'undefined'.
         message.mes.indexOf(lastMessage.mes) !== -1;
 
     // if last message within current message, message got extended. only send diff to TTS.
     if (isLastMessageInCurrent()) {
         const tmp = structuredClone(message);
-        // @ts-expect-error TS(2532): Object is possibly 'undefined'.
         message.mes = message.mes.replace(lastMessage.mes, '');
         lastMessage = tmp;
     } else {
@@ -1283,8 +1266,7 @@ async function onMessageEvent(messageId: any, lastCharIndex: any) {
     }
 
     // We're currently swiping. Don't generate voice
-    // @ts-expect-error TS(2339): Property 'mes' does not exist on type 'never'.
-    if (!message || message.mes === '...' || message.mes === '') {
+    if (!message || (message as any).mes === '...' || (message as any).mes === '') {
         return;
     }
 
@@ -1295,8 +1277,7 @@ async function onMessageEvent(messageId: any, lastCharIndex: any) {
     }
 
     // Don't generate if message is a user message and user message narration is disabled
-    // @ts-expect-error TS(2339): Property 'is_user' does not exist on type 'never'.
-    if (message.is_user && !extension_settings.tts.narrate_user) {
+    if (message.is_user && !(extension_settings.tts as Record<string, any>).narrate_user) {
         return;
     }
 
@@ -1304,12 +1285,9 @@ async function onMessageEvent(messageId: any, lastCharIndex: any) {
     lastMessageHash = hashNew;
     lastChatId = context.chatId;
 
-    // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
-    console.debug(`Adding message from ${message.name} for TTS processing: "${message.mes}"`);
+    console.debug(`Adding message from ${(message as any).name} for TTS processing: "${(message as any).mes}"`);
 
-    // @ts-expect-error TS(2339): Property 'periodic_auto_generation' does not exist... Remove this comment to see the full error message
-    if (extension_settings.tts.periodic_auto_generation && isStreamingEnabled()) {
-        // @ts-expect-error TS(2339): Property 'id' does not exist on type 'never'.
+    if ((extension_settings.tts as Record<string, any>).periodic_auto_generation && isStreamingEnabled()) {
         message.id = messageId;
         ttsJobQueue.push(message);
     } else {
@@ -1396,8 +1374,7 @@ async function onPeriodicMessageGenerationTick() {
     }
 
     const lastMessage = structuredClone(context.chat[lastMessageId]);
-    // @ts-expect-error TS(2339): Property 'mes' does not exist on type 'never'.
-    const lastMessageText = lastMessage?.mes ?? '';
+    const lastMessageText = (lastMessage as any)?.mes ?? '';
 
     // look for double ending lines which should indicate the end of a paragraph
     let newLastPositionOfParagraphEnd = lastMessageText

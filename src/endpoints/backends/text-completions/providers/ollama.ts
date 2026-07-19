@@ -50,6 +50,10 @@ const provider: BackendProvider = {
 /**
  * Parse Ollama's NDJSON stream into SSE chunks the client expects.
  * Ollama sends one JSON object per line (not `data: ...`-prefixed SSE).
+ * @param jsonStream
+ * @param jsonStream.body
+ * @param request
+ * @param response
  */
 export async function parseOllamaStream(
     jsonStream: { body: import('node:stream').Readable | ReadableStream | null },

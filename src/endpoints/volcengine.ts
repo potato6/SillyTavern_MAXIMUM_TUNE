@@ -72,7 +72,7 @@ router.post('/generate-voice', async (req, res) => {
         const result = await new Promise((resolve, reject) => {
             const audioChunks_: Buffer[] = [];
             let buffer = '';
-            const bodyStream = Readable.fromWeb(response.body as ReadableStream);
+            const bodyStream = Readable.fromWeb(response.body as unknown as import('node:stream/web').ReadableStream<Uint8Array>);
             bodyStream.on('data', (chunk) => {
                 buffer += decoder.decode(chunk, { stream: true });
 

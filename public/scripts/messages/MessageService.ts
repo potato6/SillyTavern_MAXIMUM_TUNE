@@ -58,6 +58,7 @@ class MessageService {
 
     /**
      * Get a message by its index in the current chat array.
+     * @param index
      */
     get(index: number): ChatMessage | undefined {
         return chatSession.getMessage(index);
@@ -65,13 +66,17 @@ class MessageService {
 
     /**
      * Get the last N messages, optionally filtered.
+     * @param count
+     * @param filter
      */
     getRecent(count: number, filter?: (m: ChatMessage) => boolean): ChatMessage[] {
         const msgs = chatSession.messages;
         const result: ChatMessage[] = [];
         for (let i = msgs.length - 1; i >= 0 && result.length < count; i--) {
-            if (!filter || filter(msgs[i])) {
-                result.unshift(msgs[i]);
+            const msg = msgs[i];
+            if (!msg) continue;
+            if (!filter || filter(msg)) {
+                result.unshift(msg);
             }
         }
         return result;
@@ -79,6 +84,7 @@ class MessageService {
 
     /**
      * Find the index of a message matching a predicate.
+     * @param predicate
      */
     findIndex(predicate: (m: ChatMessage) => boolean): number {
         return chatSession.messages.findIndex(predicate);
@@ -86,6 +92,7 @@ class MessageService {
 
     /**
      * Find all messages matching a predicate.
+     * @param predicate
      */
     find(predicate: (m: ChatMessage) => boolean): ChatMessage[] {
         return chatSession.messages.filter(predicate);
@@ -105,6 +112,8 @@ class MessageService {
      *
      * By default appends to the end.  Pass `insertAfter` to place
      * the message after a specific index.
+     * @param message
+     * @param options
      */
     async add(message: ChatMessage, options?: AddMessageOptions): Promise<MessageResult> {
         const msgs = chatSession.messages;
@@ -124,6 +133,8 @@ class MessageService {
 
     /**
      * Delete a message by index.
+     * @param index
+     * @param options
      */
     async delete(index: number, options?: DeleteMessageOptions): Promise<MessageResult> {
         const msgs = chatSession.messages;
@@ -146,6 +157,7 @@ class MessageService {
 
     /**
      * Delete the last N messages.
+     * @param count
      */
     async deleteLast(count = 1): Promise<MessageResult> {
         const msgs = chatSession.messages;
@@ -166,6 +178,8 @@ class MessageService {
 
     /**
      * Edit an existing message.
+     * @param index
+     * @param patch
      */
     async edit(index: number, patch: EditMessageOptions): Promise<MessageResult> {
         const message = chatSession.getMessage(index);
@@ -194,6 +208,8 @@ class MessageService {
 
     /**
      * Move a message from one index to another.
+     * @param fromIndex
+     * @param toIndex
      */
     async move(fromIndex: number, toIndex: number): Promise<MessageResult> {
         const msgs = chatSession.messages;
@@ -201,7 +217,7 @@ class MessageService {
             return { success: false, index: fromIndex };
         }
 
-        const [message] = msgs.splice(fromIndex, 1);
+        const message = msgs.splice(fromIndex, 1)[0]!;
         msgs.splice(toIndex, 0, message);
 
         await this.persist();

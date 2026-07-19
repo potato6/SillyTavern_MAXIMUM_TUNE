@@ -32,17 +32,16 @@ import { accountStorage } from '../../util/AccountStorage.js';
 // Constants
 // ──────────────────────────────────────────────
 
-const TAG_TEMPLATE = document.querySelector('#tag_template .tag');
+const TAG_TEMPLATE = document.querySelector('#tag_template .tag') as HTMLElement | null;
 const FOLDER_TEMPLATE = document.querySelector('#bogus_folder_template .bogus_folder_select');
-const VIEW_TAG_TEMPLATE = document.querySelector('#tag_view_template .tag_view_item');
+const VIEW_TAG_TEMPLATE = document.querySelector('#tag_view_template .tag_view_item') as HTMLElement | null;
 
 /**
  * A cache of all cut-off tag lists that got expanded until the last reload. They will be printed expanded again.
  * It contains the key of the entity.
  * @type {string[]} ids
  */
-// @ts-expect-error TS(7034) FIXME: Variable 'expanded_tags_cache' implicitly has type... Remove this comment to see the full error message
-const expanded_tags_cache = [];
+const expanded_tags_cache: string[] = [];
 
 // ──────────────────────────────────────────────
 // Internal helpers
@@ -52,12 +51,11 @@ const expanded_tags_cache = [];
  * Runs tag filters for a given list element.
  * @param {JQuery<HTMLElement>|string} listElement - The list element or selector
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'listElement' implicitly has an 'any' ty... Remove this comment to see the full error message
-function runTagFilters(listElement) {
+function runTagFilters(listElement: string | HTMLElement | null) {
     const $listEl = resolveElement(listElement);
     const tagIds = getTagIdsFromDOM($listEl, '.tag.selected:not(.actionable)');
     const excludedTagIds = getTagIdsFromDOM($listEl, '.tag.excluded:not(.actionable)');
-    const filterHelper = getFilterHelper(listElement);
+    const filterHelper = getFilterHelper(listElement) as { setFilterData: (type: string, data: Record<string, unknown>) => void; getFilterData: (type: string) => unknown };
     filterHelper.setFilterData(FILTER_TYPES.TAG, { excluded: excludedTagIds, selected: tagIds });
 }
 
@@ -67,11 +65,9 @@ function runTagFilters(listElement) {
  * @this {HTMLElement} The tag element that was clicked
  * @param {JQuery<HTMLElement>|string} listElement - The list element containing this tag
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'listElement' implicitly has an 'any' ty... Remove this comment to see the full error message
-function onTagFilterClick(listElement) {
-    const tagId = this?.getAttribute('id');
+function onTagFilterClick(this: HTMLElement, listElement: string | HTMLElement | null) {
+    const tagId = this.getAttribute('id')!;
     const existingTag = getTagById(tagId);
-    // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
     const parent = this.closest('.tags');
 
     const state = toggleTagThreeState(this);
@@ -95,13 +91,12 @@ function onTagFilterClick(listElement) {
     runTagFilters(listElement);
 
     // Focus the tag again we were at, if possible. To improve keyboard navigation
-    setTimeout(() => parent?.querySelector(`.tag[id="${tagId}"]`)?.focus(), DEFAULT_PRINT_TIMEOUT + 1);
+    setTimeout(() => (parent?.querySelector(`.tag[id="${tagId}"]`) as HTMLElement)?.focus(), DEFAULT_PRINT_TIMEOUT + 1);
 }
 
-// @ts-expect-error TS(7006) FIXME: Parameter 'tagId' implicitly has an 'any' type.
-const debouncedTagColoring = debounce((tagId, cssProperty, newColor) => {
-    document.querySelectorAll(`.tag[id="${tagId}"]`).forEach(el => el.style.setProperty(cssProperty, newColor));
-    document.querySelectorAll(`.bogus_folder_select[tagid="${tagId}"] .avatar`).forEach(el => el.style.setProperty(cssProperty, newColor));
+const debouncedTagColoring = debounce((tagId: string, cssProperty: string, newColor: string) => {
+    document.querySelectorAll(`.tag[id="${tagId}"]`).forEach(el => (el as HTMLElement).style.setProperty(cssProperty, newColor));
+    document.querySelectorAll(`.bogus_folder_select[tagid="${tagId}"] .avatar`).forEach(el => (el as HTMLElement).style.setProperty(cssProperty, newColor));
 }, debounce_timeout.quick);
 
 /**
@@ -110,26 +105,25 @@ const debouncedTagColoring = debounce((tagId, cssProperty, newColor) => {
  * @param {function(Tag, string): void} setColor - Function to set the color on the tag
  * @param {string} cssProperty - The CSS property to update ('background-color' or 'color')
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'evt' implicitly has an 'any' type.
-function onTagColorize(evt, setColor, cssProperty) {
-    const isDefaultColor = evt.target.dataset?.defaultColor === evt.detail.rgba;
-    const colorPickerEl = evt.target.closest('.tag_view_color_picker');
+function onTagColorize(evt: Event, setColor: (tag: Record<string, unknown>, color: string) => void, cssProperty: string) {
+    const isDefaultColor = (evt.target as HTMLElement).dataset?.defaultColor === (evt as CustomEvent).detail.rgba;
+    const colorPickerEl = (evt.target as Element).closest('.tag_view_color_picker');
     const linkIcon = colorPickerEl?.querySelector('.link_icon');
-    if (linkIcon) linkIcon.style.display = isDefaultColor ? 'none' : '';
+    if (linkIcon) (linkIcon as HTMLElement).style.display = isDefaultColor ? 'none' : '';
 
-    const tagViewItem = evt.target.closest('.tag_view_item');
+    const tagViewItem = (evt.target as Element).closest('.tag_view_item');
     const id = tagViewItem?.getAttribute('id');
-    let newColor = evt.detail.rgba;
+    let newColor = (evt as CustomEvent).detail.rgba;
     if (isDefaultColor) newColor = '';
 
     const tagViewName = tagViewItem?.querySelector('.tag_view_name');
-    if (tagViewName) tagViewName.style.setProperty(cssProperty, newColor);
-    const tag = getTagById(id);
-    setColor(tag, newColor);
+    if (tagViewName) (tagViewName as HTMLElement).style.setProperty(cssProperty, newColor);
+    const tag = getTagById(id!);
+    setColor(tag!, newColor);
     markDirty();
 
     // Debounce redrawing color of the tag in other elements
-    debouncedTagColoring(tag.id, cssProperty, newColor);
+    debouncedTagColoring(tag!.id, cssProperty, newColor);
 }
 
 // ──────────────────────────────────────────────
@@ -141,38 +135,40 @@ function onTagColorize(evt, setColor, cssProperty) {
  * @param {JQuery<HTMLElement>|string} element - The container element where the tags are to be printed. (Optionally can also be a string selector for the element, which will then be resolved)
  * @param {PrintTagListOptions} [options] - Optional parameters for printing the tag list.
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'element' implicitly has an 'any' type.
-function printTagList(element, { tags = undefined, addTag = undefined, forEntityOrKey = undefined, empty = true, sort = true, tagActionSelector = undefined, tagOptions = {}, inactiveTags = [] } = {}) {
+function printTagList(element: string | HTMLElement | null, { tags: tagsParam = undefined, addTag = undefined, forEntityOrKey = undefined, empty = true, sort = true, tagActionSelector = undefined, tagOptions = {}, inactiveTags = [] }: {
+    tags?: Record<string, unknown>[] | (() => Record<string, unknown>[]) | undefined;
+    addTag?: Record<string, unknown> | Record<string, unknown>[] | undefined;
+    forEntityOrKey?: unknown;
+    empty?: boolean | string;
+    sort?: boolean;
+    tagActionSelector?: ((tag: Record<string, unknown>) => ((...args: unknown[]) => unknown) | undefined) | undefined;
+    tagOptions?: Record<string, unknown>;
+    inactiveTags?: string[];
+} = {}) {
     const listElement = resolveElement(element);
     const key = forEntityOrKey !== undefined ? getTagKeyForEntity(forEntityOrKey) : getTagKey();
-    // @ts-expect-error TS(2349) FIXME: This expression is not callable.
-    let printableTags = tags ? (typeof tags === 'function' ? tags() : tags) : getTagsList(key, sort);
+    let printableTags: Record<string, unknown>[] = tagsParam ? (typeof tagsParam === 'function' ? tagsParam() : tagsParam) : getTagsList(key, sort);
 
-    // @ts-expect-error TS(2339) FIXME: Property 'isCharacterList' does not exist on type ... Remove this comment to see the full error message
     if (tagOptions.isCharacterList) {
-        // @ts-expect-error TS(7006) FIXME: Parameter 'tag' implicitly has an 'any' type.
-        printableTags = printableTags.filter(tag => !tag.is_hidden_on_character_card);
+        printableTags = printableTags.filter((tag: Record<string, unknown>) => !tag.is_hidden_on_character_card);
     }
 
-    // @ts-expect-error TS(2367) FIXME: This condition will always return 'false' since th... Remove this comment to see the full error message
     if (empty === 'always' || (empty && (printableTags?.length > 0 || key))) {
         if (listElement) listElement.innerHTML = '';
     }
 
     if (addTag) {
-        const addTags = Array.isArray(addTag) ? addTag : [addTag];
-        // @ts-expect-error TS(2339) FIXME: Property 'skipExistsCheck' does not exist on type ... Remove this comment to see the full error message
-        printableTags = printableTags.concat(addTags.filter(tag => tagOptions.skipExistsCheck || !printableTags.some(t => t.id === tag.id)));
+        const addTags: Record<string, unknown>[] = Array.isArray(addTag) ? addTag : [addTag];
+        printableTags = printableTags.concat(addTags.filter((tag: Record<string, unknown>) => tagOptions.skipExistsCheck || !printableTags.some(t => t.id === tag.id)));
     }
 
     // one last sort, because we might have modified the tag list or manually retrieved it from a function
     if (sort) printableTags = printableTags.sort(compareTagsForSort);
 
-    const customAction = typeof tagActionSelector === 'function' ? tagActionSelector : null;
+    const customAction: ((tag: Record<string, unknown>) => ((...args: unknown[]) => unknown) | undefined) | null = typeof tagActionSelector === 'function' ? tagActionSelector : null;
 
     // Well, lets check if the tag list was expanded. Based on either a css class, or when any expand was clicked yet, then we search whether this element id matches
-    // @ts-expect-error TS(7005) FIXME: Variable 'expanded_tags_cache' implicitly has an '... Remove this comment to see the full error message
-    const expanded = listElement?.classList.contains('tags-expanded') || (expanded_tags_cache.length && expanded_tags_cache.indexOf(key ?? getTagKeyForEntityElement(element)) >= 0);
+    const expanded = listElement?.classList.contains('tags-expanded') || (expanded_tags_cache.length && expanded_tags_cache.indexOf(key ?? getTagKeyForEntityElement(element) ?? '') >= 0);
 
     // We prepare some stuff. No matter which list we have, there is a maximum value of tags we are going to display
     // Constants to define tag printing limits
@@ -180,10 +176,8 @@ function printTagList(element, { tags = undefined, addTag = undefined, forEntity
     const tagsDisplayLimit = expanded ? Number.MAX_SAFE_INTEGER : DEFAULT_TAGS_LIMIT;
 
     // Functions to determine tag properties
-    // @ts-expect-error TS(7006) FIXME: Parameter 'tag' implicitly has an 'any' type.
-    const isFilterActive = (/** @type {Tag} */ tag) => tag.filter_state && !isFilterState(tag.filter_state, FILTER_STATES.UNDEFINED);
-    // @ts-expect-error TS(7006) FIXME: Parameter 'tag' implicitly has an 'any' type.
-    const shouldPrintTag = (/** @type {Tag} */ tag) => isBogusFolder(tag) || isFilterActive(tag);
+    const isFilterActive = (tag: Record<string, unknown>) => tag.filter_state && !isFilterState(tag.filter_state as string, FILTER_STATES.UNDEFINED);
+    const shouldPrintTag = (tag: Record<string, unknown>) => isBogusFolder(tag) || isFilterActive(tag);
 
     // Calculating the number of tags to print
     const mandatoryPrintTagsCount = printableTags.filter(shouldPrintTag).length;
@@ -196,12 +190,10 @@ function printTagList(element, { tags = undefined, addTag = undefined, forEntity
     for (const tag of printableTags) {
         // If we have a custom action selector, we override that tag options for each tag
         if (customAction) {
-            // @ts-expect-error TS(2349) FIXME: This expression is not callable.
             const action = customAction(tag);
             if (action && typeof action !== 'function') {
                 console.error('The action parameter must return a function for tag.', tag);
             } else {
-                // @ts-expect-error TS(2339) FIXME: Property 'action' does not exist on type '{}'.
                 tagOptions.action = action;
             }
         }
@@ -209,8 +201,7 @@ function printTagList(element, { tags = undefined, addTag = undefined, forEntity
         // Check if we should print this tag
         if (shouldPrintTag(tag) || additionalTagsPrinted++ < availableSlotsForAdditionalTags) {
             // Check if this tag is in the inactive list
-            // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
-            const isInactive = inactiveTags.includes(tag.id);
+            const isInactive = inactiveTags.includes(tag.id as string);
             appendTagToList(listElement, tag, { ...tagOptions, isInactive });
         } else {
             tagsSkipped++;
@@ -223,9 +214,8 @@ function printTagList(element, { tags = undefined, addTag = undefined, forEntity
         const id = 'placeholder_' + uuidv4();
 
         // Add click event
-        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
-        const showHiddenTags = (_, event) => {
-            const elementKey = key ?? getTagKeyForEntityElement(listElement);
+        const showHiddenTags = (_: unknown, event: Event) => {
+            const elementKey = key ?? getTagKeyForEntityElement(listElement) ?? '';
             console.log(`Hidden tags shown for element ${elementKey}`);
 
             // Mark the current char/group as expanded if we were in any. This will be kept in memory until reload
@@ -234,7 +224,7 @@ function printTagList(element, { tags = undefined, addTag = undefined, forEntity
 
             // Do not bubble further, we are just expanding
             event.stopPropagation();
-            printTagList(listElement, { tags: tags, addTag: addTag, forEntityOrKey: forEntityOrKey, empty: empty, tagActionSelector: tagActionSelector, tagOptions: tagOptions, inactiveTags: inactiveTags });
+            printTagList(listElement, { tags: tags as Record<string, unknown>[], addTag: addTag as Record<string, unknown> | Record<string, unknown>[] | undefined, forEntityOrKey: forEntityOrKey, empty: empty, tagActionSelector: tagActionSelector as ((tag: Record<string, unknown>) => ((...args: unknown[]) => unknown) | undefined) | undefined, tagOptions: tagOptions, inactiveTags: inactiveTags });
         };
 
         // Print the placeholder object with its styling and action to show the remaining tags
@@ -254,47 +244,53 @@ function printTagList(element, { tags = undefined, addTag = undefined, forEntity
  * @param {TagOptions} [options] - Options for tag behavior
  * @returns {void}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'listElement' implicitly has an 'any' ty... Remove this comment to see the full error message
-function appendTagToList(listElement, tag, { removable = false, isFilter = false, action = undefined, removeAction = undefined, isGeneralList = false, skipExistsCheck = false, isInactive = false } = {}) {
+function appendTagToList(listElement: HTMLElement | null, tag: Record<string, unknown>, { removable = false, isFilter = false, action = undefined, removeAction = undefined, isGeneralList = false, skipExistsCheck = false, isInactive = false }: {
+    removable?: boolean;
+    isFilter?: boolean;
+    action?: (...args: unknown[]) => unknown | undefined;
+    removeAction?: ((tag: Record<string, unknown>) => boolean | undefined) | undefined;
+    isGeneralList?: boolean;
+    skipExistsCheck?: boolean;
+    isInactive?: boolean;
+} = {}) {
     if (!listElement) {
         return;
     }
-    if (!skipExistsCheck && listElement.querySelector(`.tag[id="${tag.id}"]`)) {
+    if (!skipExistsCheck && listElement.querySelector(`.tag[id="${tag.id as string}"]`)) {
         return;
     }
 
-    const tagElement = TAG_TEMPLATE.cloneNode(true);
+    const tagElement = TAG_TEMPLATE!.cloneNode(true) as HTMLElement;
     const tagEl = tagElement;
-    tagElement.setAttribute('id', tag.id);
+    tagElement.setAttribute('id', tag.id as string);
 
     //tagElement.style.color ('var(--SmartThemeBodyColor)');
-    tagElement.style.backgroundColor = tag.color;
-    tagElement.style.color = tag.color2;
+    tagElement.style.backgroundColor = tag.color as string;
+    tagElement.style.color = tag.color2 as string;
 
     const tagNameEl = tagEl?.querySelector('.tag_name');
-    if (tagNameEl) tagNameEl.textContent = tag.name;
+    if (tagNameEl) tagNameEl.textContent = tag.name as string;
     const removeButton = tagEl?.querySelector('.tag_remove') as HTMLElement | null;
     if (removable) { if (removeButton) removeButton.style.display = ''; } else { if (removeButton) removeButton.style.display = 'none'; }
     if (removable && removeAction) {
         tagElement.setAttribute('custom-remove-action', String(true));
         removeButton?.addEventListener('click', () => {
-            // @ts-expect-error TS(2349) FIXME: This expression is not callable.
-            const result = removeAction(tag);
+            const result = removeAction!(tag);
             if (result !== false) tagElement.remove();
         });
     }
 
     if (tag.class) {
-        tagElement.classList.add(tag.class);
+        tagElement.classList.add(tag.class as string);
     }
     if (tag.title) {
-        tagElement.setAttribute('title', tag.title);
+        tagElement.setAttribute('title', tag.title as string);
     }
     if (tag.icon) {
         if (tagNameEl) {
             tagNameEl.textContent = '';
-            tagNameEl.setAttribute('title', `${translate(tag.name)} ${tag.title || ''}`.trim());
-            tagNameEl.classList.add(tag.icon);
+            tagNameEl.setAttribute('title', `${translate(tag.name as string)} ${(tag.title as string) || ''}`.trim());
+            tagNameEl.classList.add(tag.icon as string);
         }
         tagElement.classList.add('actionable');
     }
@@ -303,12 +299,12 @@ function appendTagToList(listElement, tag, { removable = false, isFilter = false
     }
 
     // We could have multiple ways of actions passed in. The manual arguments have precendence in front of a specified tag action
-    const clickableAction = action ?? tag.action;
+    const clickableAction = action ?? (tag.action as ((...args: unknown[]) => unknown) | undefined);
 
     // If this is a tag for a general list and its either a filter or actionable, lets mark its current state
     if ((isFilter || clickableAction) && isGeneralList) {
-        const filterHelper = getFilterHelper(listElement);
-        const isFilterActionable = clickableAction && 'filter_state' in tag;
+        const filterHelper = getFilterHelper(listElement) as { getFilterData: (type: string) => string | { excluded: string[]; selected: string[] } };
+        const isFilterActionable = !!(clickableAction && 'filter_state' in tag);
 
         if (isFilter || isFilterActionable) {
             const filterState = determineTagFilterState(filterHelper, tag, isFilterActionable);
@@ -323,8 +319,7 @@ function appendTagToList(listElement, tag, { removable = false, isFilter = false
 
     if (clickableAction) {
         const filter = getFilterHelper(listElement);
-        // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
-        tagElement?.addEventListener('click', (e) => clickableAction.call(tagElement, filter, e));
+        tagElement?.addEventListener('click', (e: Event) => clickableAction.call(tagElement, filter, e));
         tagElement.classList.add('clickable-action', INTERACTABLE_CONTROL_CLASS);
     }
 
@@ -341,19 +336,18 @@ function appendTagToList(listElement, tag, { removable = false, isFilter = false
  * @param {Tag} tag - The tag to append
  * @param {string} count - The count of characters/groups using this tag
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'list' implicitly has an 'any' type.
-function appendViewTagToList(list, tag, count) {
-    const template = VIEW_TAG_TEMPLATE.cloneNode(true);
+function appendViewTagToList(list: HTMLElement | null, tag: Record<string, unknown>, count: number) {
+    const template = VIEW_TAG_TEMPLATE!.cloneNode(true) as HTMLElement;
     const templateEl = template;
-    template.setAttribute('id', tag.id);
+    template.setAttribute('id', tag.id as string);
     const counterValue = templateEl?.querySelector('.tag_view_counter_value');
-    if (counterValue) counterValue.textContent = count;
+    if (counterValue) counterValue.textContent = String(count);
     const tagViewName = templateEl?.querySelector('.tag_view_name');
     if (tagViewName) {
-        tagViewName.textContent = tag.name;
+        tagViewName.textContent = tag.name as string;
         tagViewName.classList.add('tag');
-        tagViewName.style.backgroundColor = tag.color;
-        tagViewName.style.color = tag.color2;
+        (tagViewName as HTMLElement).style.backgroundColor = tag.color as string;
+        (tagViewName as HTMLElement).style.color = tag.color2 as string;
     }
 
     const tagAsFolderId = tag.id + '-tag-folder';
@@ -368,13 +362,13 @@ function appendViewTagToList(list, tag, count) {
     const primaryColorPicker = document.createElement('toolcool-color-picker');
     primaryColorPicker.classList.add('tag-color');
     primaryColorPicker.setAttribute('id', colorPickerId);
-    primaryColorPicker.setAttribute('color', tag.color || 'rgba(0, 0, 0, 0.5)');
+    primaryColorPicker.setAttribute('color', (tag.color as string) || 'rgba(0, 0, 0, 0.5)');
     primaryColorPicker.setAttribute('data-default-color', 'rgba(0, 0, 0, 0.5)');
 
     const secondaryColorPicker = document.createElement('toolcool-color-picker');
     secondaryColorPicker.classList.add('tag-color2');
     secondaryColorPicker.setAttribute('id', colorPicker2Id);
-    secondaryColorPicker.setAttribute('color', tag.color2 || power_user.main_text_color);
+    secondaryColorPicker.setAttribute('color', (tag.color2 as string) || power_user.main_text_color);
     secondaryColorPicker.setAttribute('data-default-color', power_user.main_text_color);
 
     const colorPickerContainer1 = templateEl?.querySelector('.tag_view_color_picker[data-value="color"]');
@@ -397,28 +391,26 @@ function appendViewTagToList(list, tag, count) {
     const tagAsFolderEl = templateEl?.querySelector('.tag_as_folder');
     tagAsFolderEl?.setAttribute('id', tagAsFolderId);
 
-    // @ts-expect-error TS(7006) FIXME: Parameter 'evt' implicitly has an 'any' type.
-    primaryColorPicker.addEventListener('change', (evt) => onTagColorize(evt, (tag, color) => tag.color = color, 'background-color'));
-    // @ts-expect-error TS(7006) FIXME: Parameter 'evt' implicitly has an 'any' type.
-    secondaryColorPicker.addEventListener('change', (evt) => onTagColorize(evt, (tag, color) => tag.color2 = color, 'color'));
+    primaryColorPicker.addEventListener('change', (evt: Event) => onTagColorize(evt, (tag: Record<string, unknown>, color: string) => tag.color = color, 'background-color'));
+    secondaryColorPicker.addEventListener('change', (evt: Event) => onTagColorize(evt, (tag: Record<string, unknown>, color: string) => tag.color2 = color, 'color'));
     templateEl?.querySelector('.tag_view_color_picker .link_icon')?.addEventListener('click', (evt) => {
-        const colorPickerEl = evt.target.closest('.tag_view_color_picker')?.querySelector('toolcool-color-picker');
+        const colorPickerEl = (evt.target as Element).closest('.tag_view_color_picker')?.querySelector('toolcool-color-picker');
         const defaultColor = colorPickerEl?.getAttribute('data-default-color');
-        if (colorPickerEl) colorPickerEl.color = defaultColor;
+        if (colorPickerEl) (colorPickerEl as unknown as Record<string, unknown>).color = defaultColor;
     });
 
-    const getHideTooltip = () => tag.is_hidden_on_character_card ? t`Hide on character card` : t`Show on character card`;
+    const getHideTooltip = () => (tag.is_hidden_on_character_card as boolean) ? t`Hide on character card` : t`Show on character card`;
     const hideToggle = templateEl?.querySelector('.eye-toggle');
     if (hideToggle) {
-        hideToggle.classList.toggle('fa-eye-slash', tag.is_hidden_on_character_card);
-        hideToggle.classList.toggle('fa-eye', !tag.is_hidden_on_character_card);
+        hideToggle.classList.toggle('fa-eye-slash', tag.is_hidden_on_character_card as boolean);
+        hideToggle.classList.toggle('fa-eye', !(tag.is_hidden_on_character_card as boolean));
         hideToggle.setAttribute('title', getHideTooltip());
     }
 
     hideToggle?.addEventListener('click', () => {
-        tag.is_hidden_on_character_card = !tag.is_hidden_on_character_card;
-        hideToggle?.classList.toggle('fa-eye-slash', tag.is_hidden_on_character_card);
-        hideToggle?.classList.toggle('fa-eye', !tag.is_hidden_on_character_card);
+        tag.is_hidden_on_character_card = !(tag.is_hidden_on_character_card as boolean);
+        hideToggle?.classList.toggle('fa-eye-slash', tag.is_hidden_on_character_card as boolean);
+        hideToggle?.classList.toggle('fa-eye', !(tag.is_hidden_on_character_card as boolean));
         hideToggle?.setAttribute('title', getHideTooltip());
         markDirty();
     });
@@ -429,8 +421,7 @@ function appendViewTagToList(list, tag, count) {
     // Not the "cleanest" way, that would be actually using and observer, remembering whether the popup was open just before, but eh
     // Not gonna invest too much time into this small control here
     let lastHit = 0;
-    // @ts-expect-error TS(7006) FIXME: Parameter 'evt' implicitly has an 'any' type.
-    template?.addEventListener('keydown', (evt) => {
+    template?.addEventListener('keydown', (evt: KeyboardEvent) => {
         if (evt.key === 'Escape') {
             if (evt.target === primaryColorPicker || evt.target === secondaryColorPicker) {
                 if (Date.now() - lastHit < 5000) // If user hits it twice in five seconds
@@ -446,18 +437,16 @@ function appendViewTagToList(list, tag, count) {
 /**
  * Prints the tag list in the management view.
  * @param {JQuery<HTMLElement>} tagContainer - Container element
- * @param {boolean} [empty=true] - Whether to empty the container before printing
+ * @param {boolean} [empty] - Whether to empty the container before printing
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'tagContainer' implicitly has an 'any' t... Remove this comment to see the full error message
-function printViewTagList(tagContainer, empty = true) {
+function printViewTagList(tagContainer: HTMLElement | null, empty = true) {
+    if (!tagContainer) return;
     if (empty) tagContainer.innerHTML = '';
     const everything = Object.values(tag_map).flat();
-    // @ts-expect-error TS(7005) FIXME: Variable 'tags' implicitly has an 'any[]' type.
-    const counts = new Map(tags.map(tag => [tag.id, everything.filter(x => x === tag.id).length]));
-    // @ts-expect-error TS(7005) FIXME: Variable 'tags' implicitly has an 'any[]' type.
-    const sortedTags = sortTags(tags, counts);
+    const counts = new Map<string, number>((tags as Record<string, unknown>[]).map((tag: Record<string, unknown>) => [tag.id as string, (everything as string[]).filter((x: string) => x === tag.id).length]));
+    const sortedTags = sortTags(tags as Record<string, unknown>[], counts) as Record<string, unknown>[];
     for (const tag of sortedTags) {
-        const count = counts.get(tag.id) || 0;
+        const count = counts.get(tag.id as string) || 0;
         appendViewTagToList(tagContainer, tag, count);
     }
 }

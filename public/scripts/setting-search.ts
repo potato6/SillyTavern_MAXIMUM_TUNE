@@ -5,10 +5,9 @@ async function searchSettings() {
     removeHighlighting(); // Remove previous highlights
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const searchString = String(document.getElementById('settingsSearch').value);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const searchableText = document.getElementById('user-settings-block-content'); // Get the HTML block
     if (searchString.trim() !== '') {
-        highlightMatchingElements(searchableText[0], searchString); // Highlight matching elements
+        highlightMatchingElements(searchableText!, searchString); // Highlight matching elements
     }
 }
 

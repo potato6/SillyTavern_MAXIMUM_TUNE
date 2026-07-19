@@ -35,7 +35,10 @@ import type { WIGlobalScanData, WIScanEntry, WITimedEffect } from './types.js';
 //  Regex helpers
 // ═══════════════════════════════════════════════════════════════
 
-/** Validates if a string is a valid slash-delimited regex. */
+/**
+ * Validates if a string is a valid slash-delimited regex.
+ * @param input
+ */
 export function isValidRegex(input: string): boolean {
     return parseRegexFromString(input) !== null;
 }
@@ -43,6 +46,7 @@ export function isValidRegex(input: string): boolean {
 /**
  * Parses a slash-delimited regex string into a RegExp object.
  * Format: `/pattern/flags`
+ * @param input
  */
 export function parseRegexFromString(input: string): RegExp | null {
     const match = input.match(/^\/([\w\W]+?)\/([gimsuy]*)$/);
@@ -273,6 +277,15 @@ export class WorldInfoTimedEffects {
 //  Group filtering
 // ═══════════════════════════════════════════════════════════════
 
+/**
+ *
+ * @param newEntries
+ * @param allActivatedEntries
+ * @param buffer
+ * @param scanState_
+ * @param timedEffects
+ * @param useGroupScoring
+ */
 export function filterByInclusionGroups(
     newEntries: WIScanEntry[],
     allActivatedEntries: Map<string, WIScanEntry>,
@@ -431,6 +444,7 @@ export async function loadWorldInfo(name) {
  * Shared helper: loads entries from one or more lorebook files and annotates
  * each with its source world name.  This is the core mapping that all four
  * lore-source functions (global, character, chat, persona) previously duplicated.
+ * @param worldNames
  */
 async function loadLoreEntries(worldNames: string[]): Promise<object[]> {
     const entries: object[] = [];

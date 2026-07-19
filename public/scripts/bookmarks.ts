@@ -181,7 +181,6 @@ export function showBookmarksButtons() {
  */
 async function saveBookmarkMenu() {
     if (!chat.length) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.warning('The chat is empty.', 'Checkpoint creation failed');
         return;
     }
@@ -203,7 +202,7 @@ function getBranchChatSnapshot(mesId, { swipeId = null } = {}) {
         return snapshot;
     }
 
-    if (!syncSwipeToMes(null, swipeId, snapshot[mesId])) {
+    if (!syncSwipeToMes(null, swipeId, snapshot[mesId] as never)) {
         return null;
     }
 
@@ -220,13 +219,11 @@ function getBranchChatSnapshot(mesId, { swipeId = null } = {}) {
 // @ts-expect-error TS(7006) FIXME: Parameter 'mesId' implicitly has an 'any' type.
 export async function createBranch(mesId, { swipeId = null } = {}) {
     if (!chat.length) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.warning('The chat is empty.', 'Branch creation failed');
         return;
     }
 
     if (mesId < 0 || mesId >= chat.length) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.warning('Invalid message ID.', 'Branch creation failed');
         return;
     }
@@ -236,9 +233,7 @@ export async function createBranch(mesId, { swipeId = null } = {}) {
     const newMetadata = { main_chat: mainChatName };
     const selectedSwipeId = swipeId === null ? null : Number(swipeId);
 
-    // @ts-expect-error TS(2339) FIXME: Property 'swipes' does not exist on type 'never'.
     if (selectedSwipeId !== null && (!Number.isInteger(selectedSwipeId) || selectedSwipeId < 0 || selectedSwipeId >= (lastMes?.swipes?.length ?? 0))) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.warning('Invalid swipe ID.', 'Branch creation failed');
         return;
     }
@@ -261,7 +256,6 @@ export async function createBranch(mesId, { swipeId = null } = {}) {
     const name = getUniqueName(mainChatName, (x) => existingChats.includes(x), { nameBuilder: buildBranchName });
     if (!name) {
         console.error('Could not generate a unique branch name.');
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.error('Could not generate a unique branch name.', 'Branch creation failed');
         return;
     }
@@ -269,7 +263,6 @@ export async function createBranch(mesId, { swipeId = null } = {}) {
     // @ts-expect-error TS(2322) FIXME: Type 'number | null' is not assignable to type 'nu... Remove this comment to see the full error message
     const branchChatSnapshot = getBranchChatSnapshot(mesId, { swipeId: selectedSwipeId });
     if (!branchChatSnapshot) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.warning('Could not prepare the selected swipe for branching.', 'Branch creation failed');
         return;
     }
@@ -282,17 +275,13 @@ export async function createBranch(mesId, { swipeId = null } = {}) {
     }
     // append to branches list if it exists
     // otherwise create it
-    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
+    if (!lastMes) return name;
     if (typeof lastMes.extra !== 'object') {
-        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         lastMes.extra = {};
     }
-    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-    if (typeof lastMes.extra.branches !== 'object') {
-        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
+    if (typeof lastMes.extra?.branches !== 'object') {
         lastMes.extra.branches = [];
     }
-    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     lastMes.extra.branches.push(name);
     return name;
 }
@@ -307,31 +296,25 @@ export async function createBranch(mesId, { swipeId = null } = {}) {
 // @ts-expect-error TS(7006) FIXME: Parameter 'mesId' implicitly has an 'any' type.
 export async function createNewBookmark(mesId, { forceName = null } = {}) {
     if (this_chid === undefined && !selected_group) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.info('No character selected.', 'Create Checkpoint');
         return null;
     }
     if (!chat.length) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.warning('The chat is empty.', 'Create Checkpoint');
         return null;
     }
     if (!chat[mesId]) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.warning('Invalid message ID.', 'Create Checkpoint');
         return null;
     }
 
     const lastMes = chat[mesId];
 
-    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     if (typeof lastMes.extra !== 'object') {
-        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         lastMes.extra = {};
     }
 
-    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-    const isReplace = lastMes.extra.bookmark_link;
+    const isReplace = lastMes.extra?.bookmark_link;
 
     const name = await getBookmarkName({ isReplace: isReplace, forceName: forceName });
     if (!name) {
@@ -348,16 +331,12 @@ export async function createNewBookmark(mesId, { forceName = null } = {}) {
         await saveChat({ chatName: name, withMetadata: newMetadata, mesId });
     }
 
-    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     lastMes.extra.bookmark_link = name;
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const mes = document.querySelector(`.mes[mesid="${mesId}"]`);
-    // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to param... Remove this comment to see the full error message
-    if (mes) updateBookmarkDisplay(mes, name);
+    if (mes) updateBookmarkDisplay(mes as HTMLElement, name as unknown as null | undefined);
 
     await saveChatConditional();
-    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
     notyf.success('Click the flag icon next to the message to open the checkpoint chat.', 'Create Checkpoint', { timeOut: 10000 });
     return name;
 }
@@ -509,7 +488,6 @@ export async function convertSoloToGroupChat() {
 
     if (!createChatResponse.ok) {
         console.error('Group chat creation unsuccessful');
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.error('Group chat creation unsuccessful');
         return;
     }
@@ -518,7 +496,6 @@ export async function convertSoloToGroupChat() {
     setActiveGroup(group.id);
     await openGroupById(group.id);
 
-    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
     notyf.success(t`The chat has been successfully converted!`);
 }
 
@@ -531,7 +508,6 @@ export async function convertSoloToGroupChat() {
 // @ts-expect-error TS(7006) FIXME: Parameter 'mesId' implicitly has an 'any' type.
 export async function branchChat(mesId, { swipeId = null } = {}) {
     if (this_chid === undefined && !selected_group) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.info('No character selected.', 'Create Branch');
         return null;
     }
@@ -565,12 +541,10 @@ function registerBookmarksSlashCommands() {
     // @ts-expect-error TS(7006) FIXME: Parameter 'mesId' implicitly has an 'any' type.
     function validateMessageId(mesId, context) {
         if (isNaN(mesId)) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.warning('Invalid message ID was provided', context);
             return false;
         }
         if (!chat[mesId]) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.warning(`Message for id ${mesId} not found`, context);
             return false;
         }
@@ -616,7 +590,6 @@ function registerBookmarksSlashCommands() {
             if (!validateMessageId(mesId, 'Create Checkpoint')) return '';
 
             if (typeof text !== 'string') {
-                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 notyf.warning('Checkpoint name must be a string or empty', 'Create Checkpoint');
                 return '';
             }
@@ -674,7 +647,6 @@ function registerBookmarksSlashCommands() {
             // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             const checkPointName = chat[mesId].extra?.bookmark_link;
             if (!checkPointName) {
-                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 notyf.warning('No checkpoint is linked to the selected message', 'Open Checkpoint');
                 return '';
             }
@@ -755,9 +727,7 @@ function registerBookmarksSlashCommands() {
         // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
         callback: async (args, _) => {
             const result = Object.entries(chat)
-                // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
                 .filter(([_, message]) => message.extra?.bookmark_link)
-                // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
                 .map(([mesId, message]) => isTrueBoolean(args.links) ? message.extra.bookmark_link : Number(mesId));
             return JSON.stringify(result);
         },

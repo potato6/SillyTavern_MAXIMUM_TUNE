@@ -119,14 +119,36 @@ export const paginationDropdownChangeHandler = function (event, size) {
  * @returns {{ getCurrentPage: () => number, go: (page: number) => void }}
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function createPaginator(container: any, options: any) {
+export function createPaginator<T>(container: HTMLElement, options: {
+    dataSource: T[] | (() => T[]);
+    pageSize: number;
+    pageNumber?: number;
+    prevText?: string;
+    nextText?: string;
+    showNavigator?: boolean;
+    showSizeChanger?: boolean;
+    sizeChangerOptions?: number[];
+    callback?: (data: T[]) => void | Promise<void>;
+    onPageSizeChange?: (e: Event, size: number) => void;
+    afterPaging?: (page: number) => void;
+    afterRender?: () => void;
+}) {
     let currentPage = options.pageNumber || 1;
     let pageSize = options.pageSize;
     const prevText = options.prevText || '<';
     const nextText = options.nextText || '>';
 
+    let tomSelectInstance: { destroy: () => void } | null = null;
+
     function getData() {
         return typeof options.dataSource === 'function' ? options.dataSource() : options.dataSource;
+    }
+
+    function destroyTomSelect() {
+        if (tomSelectInstance) {
+            tomSelectInstance.destroy();
+            tomSelectInstance = null;
+        }
     }
 
     function render() {
@@ -145,9 +167,9 @@ export function createPaginator(container: any, options: any) {
             Promise.resolve(options.callback(pageData)).catch(e => console.error('Pagination callback error:', e));
         }
 
+        destroyTomSelect();
         container.innerHTML = '';
 
-        // Navigator text
         if (options.showNavigator !== false) {
             const nav = document.createElement('span');
             nav.className = 'paginationjs-nav';
@@ -155,24 +177,21 @@ export function createPaginator(container: any, options: any) {
             container.appendChild(nav);
         }
 
-        // Previous button
         const prevBtn = document.createElement('button');
         prevBtn.textContent = prevText;
         prevBtn.disabled = currentPage <= 1;
         prevBtn.addEventListener('click', () => { if (currentPage > 1) { currentPage--; render(); } });
         container.appendChild(prevBtn);
 
-        // Next button
         const nextBtn = document.createElement('button');
         nextBtn.textContent = nextText;
         nextBtn.disabled = currentPage >= totalPages;
         nextBtn.addEventListener('click', () => { if (currentPage < totalPages) { currentPage++; render(); } });
         container.appendChild(nextBtn);
 
-        // Size changer
         if (options.showSizeChanger && options.sizeChangerOptions) {
             const sizeSelect = document.createElement('select');
-            sizeSelect.className = 'J-paginationjs-size-select';
+            sizeSelect.className = 'paginator-size-select';
             const optionsList = [...options.sizeChangerOptions];
             if (!optionsList.includes(pageSize)) optionsList.unshift(pageSize);
             optionsList.sort((a, b) => a - b);
@@ -193,6 +212,22 @@ export function createPaginator(container: any, options: any) {
                 render();
             });
             container.appendChild(sizeSelect);
+            try {
+                const TomSelectCtor = (window as { TomSelect?: new (el: HTMLSelectElement, opts: Record<string, unknown>) => { destroy(): void } }).TomSelect;
+                if (TomSelectCtor) {
+                    tomSelectInstance = new TomSelectCtor(sizeSelect, { create: false, sortField: 'text' });
+                }
+            } catch {
+                // TomSelect may not be available
+            }
+        }
+
+        if (typeof options.afterPaging === 'function') {
+            options.afterPaging(currentPage);
+        }
+
+        if (typeof options.afterRender === 'function') {
+            options.afterRender();
         }
     }
 
@@ -200,8 +235,8 @@ export function createPaginator(container: any, options: any) {
 
     return {
         getCurrentPage: () => currentPage,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        go: function (page: any) { currentPage = Math.max(1, Math.min(Number(page), Math.ceil(getData().length / pageSize) || 1)); render(); },
+        go: function (page: number | string) { currentPage = Math.max(1, Math.min(Number(page), Math.ceil(getData().length / pageSize) || 1)); render(); },
+        destroy: () => destroyTomSelect(),
     };
 }
 
@@ -1917,7 +1952,6 @@ export async function getSanitizedFilename(fileName) {
         const responseData = await result.json();
         return responseData.fileName;
     } catch (error) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.error(String(error), 'Could not sanitize fileName');
         console.error('Could not sanitize fileName', error);
         throw error;
@@ -2088,7 +2122,6 @@ export async function resolveAvatarData(input) {
 
     // External URLs are not supported
     if (isExternalUrl(trimmed)) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.warning(t`External URLs are not supported for avatars. Use a local file path or "prompt" to select a file.`);
         return null;
     }
@@ -2128,7 +2161,6 @@ export async function resolveAvatarData(input) {
 
     // Unknown format
     console.warn('Unknown avatar format:', trimmed.substring(0, 50));
-    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
     notyf.warning(t`Unknown avatar format. Use "prompt" to select a file, or provide a local file path.`);
     return null;
 }
@@ -2728,7 +2760,6 @@ export function dynamicSelect2DataViaAjax(dataProvider) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'item' implicitly has an 'any' type.
 export function isSelect2ChoiceElement(element) {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const $element = element;
     return ($element.hasClass('item') && $element.closest('.ts-wrapper').length > 0) || ($element[0]?.closest('.ts-wrapper .item') !== null);
 }
@@ -2754,7 +2785,7 @@ export function select2ChoiceClickSubscribe(control, action, { buttonStyle = fal
     const tsWrapper = el.closest('.ts-wrapper');
     if (!tsWrapper) return;
     const select2Container = tsWrapper;
-    select2Container.addEventListener('click', function (event) {
+    select2Container.addEventListener('click', function (event: Event) {
         const isChoice = isSelect2ChoiceElement(event.target);
         if (isChoice) {
             event.preventDefault();
@@ -2859,12 +2890,10 @@ export async function checkOverwriteExistingData(type, existingNames, name, { in
 
     const overwrite = interactive && (await Popup.show.confirm(`${type} ${actionName}`, `<p>A ${type.toLowerCase()} with the same name already exists:<br />${escapeHtml(existing)}</p>Do you want to overwrite it?`));
     if (!overwrite) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.warning(`${type} ${actionName.toLowerCase()} cancelled. A ${type.toLowerCase()} with the same name already exists:<br />${escapeHtml(existing)}`, `${type} ${actionName}`, { escapeHtml: false });
         return false;
     }
 
-    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
     notyf.info(`Overwriting Existing ${type}:<br />${escapeHtml(existing)}`, `${type} ${actionName}`, { escapeHtml: false });
 
     // If there is an action to delete the existing data, do it, as the name might be slightly different so file name would not be the same
@@ -3054,7 +3083,7 @@ export async function showFontAwesomePicker(customList = null) {
  * @property {string} avatar - The avatar of the persona
  * @property {string} name - The name of the persona
  */
-export function findPersona({ name = null, allowAvatar = true, insensitive = true, preferCurrentPersona = true, quiet = false } = {}) {
+export function findPersona({ name = null as string | null, allowAvatar = true, insensitive = true, preferCurrentPersona = true, quiet = false } = {}) {
     /** @type {PersonaViewModel[]} */
     const personas = Object.entries(power_user.personas).map(([avatar, name]) => ({ avatar, name }));
     // @ts-expect-error TS(7006) FIXME: Parameter 'persona' implicitly has an 'any' type.
@@ -3077,7 +3106,6 @@ export function findPersona({ name = null, allowAvatar = true, insensitive = tru
     // Search for matching personas by name
     const matchingPersonas = personas.filter(a => matches(a));
     if (matchingPersonas.length > 1) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         if (!quiet) notyf.warning(t`Multiple personas found for given conditions.`);
         else console.warn(t`Multiple personas found for given conditions. Returning the first match.`);
     }
@@ -3119,7 +3147,6 @@ export function findChar({ name = null, allowAvatar = true, insensitive = true, 
     if (preferCurrentChar) {
         const preferredCharSearch = (currentChars ?? []).filter(matches);
         if (preferredCharSearch.length > 1) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             if (!quiet) notyf.warning(t`Multiple characters found for given conditions.`);
             else console.warn(t`Multiple characters found for given conditions. Returning the first match.`);
         }
@@ -3140,7 +3167,6 @@ export function findChar({ name = null, allowAvatar = true, insensitive = true, 
     // Search for matching characters by name
     const matchingCharacters = name ? filteredCharacters.filter(matches) : filteredCharacters;
     if (matchingCharacters.length > 1) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         if (!quiet) notyf.warning('Multiple characters found for given conditions.');
         else console.warn('Multiple characters found for given conditions. Returning the first match.');
     }
@@ -3411,7 +3437,6 @@ export async function importFromExternalUrl(url, { preserveFileName = null } = {
     }
 
     if (!request.ok) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.info(request.statusText, 'Custom content import failed');
         console.error('Custom content import failed', request.status, request.statusText);
         return;
@@ -3437,7 +3462,6 @@ export async function importFromExternalUrl(url, { preserveFileName = null } = {
             await importWorldInfo(file);
             break;
         default:
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.warning('Unknown content type');
             console.error('Unknown content type', customContentType);
             break;

@@ -311,15 +311,13 @@ export async function getGroupChat(groupId, reload = false) {
                 continue;
             }
 
-            const mes = await getFirstCharacterMessage(character);
+            const mes = await getFirstCharacterMessage(character) as { mes?: string };
 
             // No first message
-            // @ts-expect-error TS(2339) FIXME: Property 'mes' does not exist on type '{}'.
-            if (!(mes?.mes)) {
+            if (!mes?.mes) {
                 continue;
             }
 
-            // @ts-expect-error TS(2345) FIXME: Argument of type '{}' is not assignable to paramet... Remove this comment to see the full error message
             chat.push(mes);
             await eventSource.emit(event_types.MESSAGE_RECEIVED, (chat.length - 1), 'first_message');
             addOneMessage(mes);
@@ -327,7 +325,6 @@ export async function getGroupChat(groupId, reload = false) {
         }
         await saveGroupChat(groupId, false);
     } else if (Array.isArray(data) && data.length) {
-        // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
         chat.splice(0, chat.length, ...data);
         chat.forEach(ensureMessageMediaIsArray);
         // @ts-expect-error TS(7006) FIXME: Parameter 'el' implicitly has an 'any' type.
@@ -726,7 +723,6 @@ async function saveGroupChat(groupId, shouldSaveGroup, force = false) {
         const errorData = await response.json();
         const isIntegrityError = errorData?.error === 'integrity' && !force;
         if (!isIntegrityError) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.error(t`Check the server connection and reload the page to prevent data loss.`, t`Group Chat could not be saved`);
             console.error('Group chat could not be saved', response);
             return;
@@ -902,7 +898,6 @@ export function getGroupBlock(group) {
         }
     }
 
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     const template = document.querySelector('#group_list_template .group_select')?.cloneNode(true);
     if (!template) return null;
     // @ts-expect-error TS(2339) FIXME: Property 'dataset' does not exist on type 'Node'.
@@ -1129,10 +1124,8 @@ async function generateGroupWrapper(byAutoMode, type = null, params = {}) {
             isUserInput = true;
             activationText = userInput;
         } else {
-            // @ts-expect-error TS(2339) FIXME: Property 'is_system' does not exist on type 'never... Remove this comment to see the full error message
             if (lastMessage && !lastMessage.is_system) {
-                // @ts-expect-error TS(2339) FIXME: Property 'mes' does not exist on type 'never'.
-                activationText = lastMessage.mes;
+                    activationText = lastMessage.mes ?? '';
             }
         }
 
@@ -1292,17 +1285,13 @@ function activateSwipe(members, { allowSystem = false } = {}) {
         return [];
     }
 
-    // @ts-expect-error TS(2339) FIXME: Property 'is_user' does not exist on type 'never'.
     if (lastMessage.is_user || (!allowSystem && lastMessage.is_system) || lastMessage.extra?.type === system_message_types.NARRATOR) {
         for (const message of chat.slice().reverse()) {
-            // @ts-expect-error TS(2339) FIXME: Property 'is_user' does not exist on type 'never'.
             if (message.is_user || (!allowSystem && message.is_system) || message.extra?.type === system_message_types.NARRATOR) {
                 continue;
             }
 
-            // @ts-expect-error TS(2339) FIXME: Property 'original_avatar' does not exist on type ... Remove this comment to see the full error message
             if (message.original_avatar) {
-                // @ts-expect-error TS(2339) FIXME: Property 'original_avatar' does not exist on type ... Remove this comment to see the full error message
                 activatedNames.push(message.original_avatar);
                 break;
             }
@@ -1314,9 +1303,7 @@ function activateSwipe(members, { allowSystem = false } = {}) {
     }
 
     // pre-update group chat swipe
-    // @ts-expect-error TS(2339) FIXME: Property 'original_avatar' does not exist on type ... Remove this comment to see the full error message
     if (!lastMessage.original_avatar) {
-        // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
         const matches = characters.filter(x => x.name == lastMessage.name);
 
         for (const match of matches) {
@@ -1328,7 +1315,6 @@ function activateSwipe(members, { allowSystem = false } = {}) {
             }
         }
     } else {
-        // @ts-expect-error TS(2339) FIXME: Property 'original_avatar' does not exist on type ... Remove this comment to see the full error message
         activatedNames.push(lastMessage.original_avatar);
     }
 
@@ -1374,19 +1360,15 @@ function activatePooledOrder(members, lastMessage, isUserInput) {
     const spokenSinceUser = [];
 
     for (const message of chat.slice().reverse()) {
-        // @ts-expect-error TS(2339) FIXME: Property 'is_user' does not exist on type 'never'.
         if (message.is_user || isUserInput) {
             break;
         }
 
-        // @ts-expect-error TS(2339) FIXME: Property 'is_system' does not exist on type 'never... Remove this comment to see the full error message
         if (message.is_system || message.extra?.type === system_message_types.NARRATOR) {
             continue;
         }
 
-        // @ts-expect-error TS(2339) FIXME: Property 'original_avatar' does not exist on type ... Remove this comment to see the full error message
         if (message.original_avatar) {
-            // @ts-expect-error TS(2339) FIXME: Property 'original_avatar' does not exist on type ... Remove this comment to see the full error message
             spokenSinceUser.push(message.original_avatar);
         }
     }
@@ -1872,7 +1854,6 @@ function getGroupCharacters({ doFilter = false, onlyMembers = false } = {}) {
         // @ts-expect-error TS(2339) FIXME: Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
         const useFilterOrder = doFilter && !!(groupMembersFilterEl && groupMembersFilterEl.value);
         if (useFilterOrder) {
-            // @ts-expect-error TS(2345) FIXME: Argument of type 'FilterHelper' is not assignable ... Remove this comment to see the full error message
             sortEntitiesList(filtered, useFilterOrder, groupMembersFilter);
         }
         groupMembersFilter.clearFuzzySearchCaches();
@@ -1911,25 +1892,23 @@ function printGroupCandidates() {
     const pagContainer = document.getElementById('rm_group_add_members_pagination');
     if (pagContainer) {
         createPaginator(pagContainer, {
-            dataSource: getGroupCharacters({ doFilter: true, onlyMembers: false }),
+            dataSource: getGroupCharacters({ doFilter: true, onlyMembers: false }) as { item: { id: string }; id: string }[],
             pageSize,
             showSizeChanger: true,
             sizeChangerOptions,
             showNavigator: true,
             prevText: '<',
             nextText: '>',
-            // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
             onPageSizeChange: function (e, size) {
-                accountStorage.setItem(storageKey, e.target.value);
+                accountStorage.setItem(storageKey, (e.target as HTMLSelectElement).value);
                 paginationDropdownChangeHandler(e, size);
             },
-            // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
             callback: function (data) {
-                // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-                document.getElementById('rm_group_add_members').innerHTML = '';
+                const membersEl = document.getElementById('rm_group_add_members');
+                if (membersEl) membersEl.innerHTML = '';
                 for (const i of data) {
-                    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-                    document.getElementById('rm_group_add_members').append(getGroupCharacterBlock(i.item));
+                    const block = getGroupCharacterBlock(i.item);
+                    if (membersEl && block) membersEl.append(block);
                 }
             },
         });
@@ -1947,25 +1926,25 @@ function printGroupMembers() {
         const pageSize = Number(accountStorage.getItem(storageKey)) || 5;
         const sizeChangerOptions = [5, 10, 25, 50, 100, 200, 500, 1000];
 
-        const pagContainer = el;
+        const pagContainer = el as HTMLElement;
         createPaginator(pagContainer, {
-            dataSource: getGroupCharacters({ doFilter: true, onlyMembers: true }),
+            dataSource: getGroupCharacters({ doFilter: true, onlyMembers: false }) as { item: { id: string }; id: string }[],
             pageSize,
             showSizeChanger: true,
             sizeChangerOptions,
             showNavigator: true,
             prevText: '<',
             nextText: '>',
-            // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
             onPageSizeChange: function (e, size) {
-                accountStorage.setItem(storageKey, e.target.value);
+                accountStorage.setItem(storageKey, (e.target as HTMLSelectElement).value);
                 paginationDropdownChangeHandler(e, size);
             },
-            // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
             callback: function (data) {
-                document.querySelectorAll('.rm_group_members').forEach(el => el.innerHTML = '');
+                const el = document.getElementById('rm_group_add_members');
+                if (el) el.innerHTML = '';
                 for (const i of data) {
-                    document.querySelectorAll('.rm_group_members').forEach(el => el.append(getGroupCharacterBlock(i.item)));
+                    const block = getGroupCharacterBlock(i.item);
+                    if (el && block) el.append(block);
                 }
             },
         });
@@ -2022,7 +2001,6 @@ function getGroupCharacterBlock(character) {
 
     // @ts-expect-error TS(2339) FIXME: Property 'querySelector' does not exist on type 'Node'. Remove this comment to see the full error message
     const tagsElement = template.querySelector('.tags');
-    // @ts-expect-error TS(2322) FIXME: Type 'number' is not assignable to type 'undefined... Remove this comment to see the full error message
     printTagList(tagsElement, { forEntityOrKey: characters.indexOf(character), tagOptions: { isCharacterList: true } });
 
     // @ts-expect-error TS(7005) FIXME: Variable 'openGroupId' implicitly has an 'any' typ... Remove this comment to see the full error message
@@ -2056,12 +2034,10 @@ function isGroupMemberDisabled(avatarId) {
 async function onDeleteGroupClick() {
     // @ts-expect-error TS(7005) FIXME: Variable 'openGroupId' implicitly has an 'any' typ... Remove this comment to see the full error message
     if (!openGroupId) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.warning(t`Currently no group selected.`);
         return;
     }
     if (is_group_generating) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.warning(t`Not so fast! Wait for the characters to stop typing before deleting the group.`);
         return;
     }
@@ -2203,9 +2179,9 @@ function select_group_chats(groupId, skipAnimation) {
         else submitBtn.removeAttribute('disabled');
     }
     const selfResp = document.getElementById('rm_group_allow_self_responses');
-    if (selfResp) selfResp.checked = !!(group && group.allow_self_responses);
+    if (selfResp) (selfResp as HTMLInputElement).checked = !!(group && group.allow_self_responses);
     const hideMuted = document.getElementById('rm_group_hidemutedsprites');
-    if (hideMuted) hideMuted.checked = !!(group && group.hideMutedSprites);
+    if (hideMuted) (hideMuted as HTMLInputElement).checked = !!(group && group.hideMutedSprites);
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     document.getElementById('rm_group_automode_delay').value = String(group?.auto_mode_delay ?? DEFAULT_AUTO_MODE_DELAY);
 
@@ -2472,7 +2448,6 @@ function updateFavButtonState(state) {
 // @ts-expect-error TS(7006) FIXME: Parameter 'groupId' implicitly has an 'any' type.
 export async function openGroupById(groupId) {
     if (isChatSaving) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.info(t`Please wait until the chat is saved before switching characters.`, t`Your chat is still saving...`);
         return false;
     }
@@ -2512,7 +2487,6 @@ export async function openGroupById(groupId) {
 // @ts-expect-error TS(7006) FIXME: Parameter 'characterSelect' implicitly has an 'any... Remove this comment to see the full error message
 async function openCharacterDefinition(characterSelect) {
     if (is_group_generating) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.warning(t`Can't peek a character while group reply is being generated`);
         console.warn('Can\'t peek a character def while group reply is being generated');
         return;
@@ -2741,7 +2715,6 @@ export async function deleteGroupChatByName(groupId, chatName) {
     });
 
     if (!response.ok) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.error(t`Check the server connection and reload the page to prevent data loss.`, t`Group chat could not be deleted`);
         console.error('Group chat could not be deleted');
         return;
@@ -2884,7 +2857,6 @@ export async function saveGroupBookmarkChat(groupId, name, metadata, mesId, chat
     const response = await fetch('/api/chats/group/save', saveChatRequest);
 
     if (!response.ok) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.error(t`Check the server connection and reload the page to prevent data loss.`, t`Group chat could not be saved`);
         console.error('Group chat could not be saved', response);
     }

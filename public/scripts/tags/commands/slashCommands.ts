@@ -26,7 +26,12 @@ import { tag_import_setting } from '../types.js';
 import { findChar } from '../../utils.js';
 import { t } from '../../i18n.js';
 
-declare const notyf: unknown;
+declare const notyf: Omit<import('notyf').Notyf, 'error' | 'success'> & {
+    error: (message: string, title?: string, opts?: Record<string, unknown>) => import('notyf').NotyfNotification;
+    success: (message: string, title?: string, opts?: Record<string, unknown>) => import('notyf').NotyfNotification;
+    warning: (message: string, title?: string, opts?: Record<string, unknown>) => import('notyf').NotyfNotification;
+    info: (message: string, title?: string, opts?: Record<string, unknown>) => import('notyf').NotyfNotification;
+};
 
 /**
  * Registers all tag-related slash commands.
@@ -40,8 +45,7 @@ export function registerTagsSlashCommands() {
      * @param {boolean} [options.allowCreate] - Whether a new tag should be created if no tag with the name exists
      * @returns {Tag?} The tag, or null if not found
      */
-    // @ts-expect-error TS(7006) FIXME: Parameter 'tagName' implicitly has an 'any' type.
-    function paraGetTag(tagName, { allowCreate = false } = {}) {
+    function paraGetTag(tagName: string, { allowCreate = false }: { allowCreate?: boolean } = {}): Record<string, unknown> | null {
         if (!tagName) {
             notyf.warning('Tag name must be provided.');
             return null;
@@ -66,9 +70,9 @@ export function registerTagsSlashCommands() {
         returns: 'true/false - Whether the tag was added or was assigned already',
         /**
          * @param {{name: string}} namedArgs @param {string} tagName @returns {string}
+         * @param tagName
          */
-        // @ts-expect-error TS(7031) FIXME: Binding element 'name' implicitly has an 'any' typ... Remove this comment to see the full error message
-        callback: ({ name }, tagName) => {
+        callback: ({ name }: { name: string }, tagName: string) => {
             const key = searchCharByName(name);
             if (!key) return 'false';
             const tag = paraGetTag(tagName, { allowCreate: true });
@@ -121,9 +125,9 @@ export function registerTagsSlashCommands() {
         returns: 'true/false - Whether the tag was removed or wasn\'t assigned already',
         /**
          * @param {{name: string}} namedArgs @param {string} tagName @returns {string}
+         * @param tagName
          */
-        // @ts-expect-error TS(7031) FIXME: Binding element 'name' implicitly has an 'any' typ... Remove this comment to see the full error message
-        callback: ({ name }, tagName) => {
+        callback: ({ name }: { name: string }, tagName: string) => {
             const key = searchCharByName(name);
             if (!key) return 'false';
             const tag = paraGetTag(tagName);
@@ -175,15 +179,14 @@ export function registerTagsSlashCommands() {
         returns: 'true/false - Whether the given tag name is assigned to the character',
         /**
          * @param {{name: string}} namedArgs @param {string} tagName @returns {string}
+         * @param tagName
          */
-        // @ts-expect-error TS(7031) FIXME: Binding element 'name' implicitly has an 'any' typ... Remove this comment to see the full error message
-        callback: ({ name }, tagName) => {
+        callback: ({ name }: { name: string }, tagName: string) => {
             const key = searchCharByName(name);
             if (!key) return 'false';
             const tag = paraGetTag(tagName);
             if (!tag) return 'false';
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-            return String(tag_map[key].includes(tag.id));
+            return String((tag_map as Record<string, string[] | undefined>)[key]?.includes(tag.id as string));
         },
         namedArgumentList: [
             SlashCommandNamedArgument.fromProps({
@@ -227,14 +230,12 @@ export function registerTagsSlashCommands() {
         name: 'tag-list',
         returns: 'Comma-separated list of all assigned tags',
         /** @param {{name: string}} namedArgs @returns {string} */
-        // @ts-expect-error TS(7031) FIXME: Binding element 'name' implicitly has an 'any' typ... Remove this comment to see the full error message
-        callback: ({ name }) => {
+        callback: ({ name }: { name: string }) => {
             const key = searchCharByName(name);
             if (!key) return '';
             const tags = getTagsList(key);
 
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined' — getTagsList return type is narrow due to untyped tag_map
-            return tags.map(x => x?.name).filter(Boolean).join(', ');
+            return tags.map((x: Record<string, unknown>) => x?.name).filter(Boolean).join(', ');
         },
         namedArgumentList: [
             SlashCommandNamedArgument.fromProps({
@@ -270,8 +271,7 @@ export function registerTagsSlashCommands() {
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
         name: 'tag-import',
         /** @param {{name: string, mode: 'all'|'existing'|'none'|'ask'}} namedArgs @returns {Promise<string>} */
-        // @ts-expect-error TS(7031) FIXME: Binding element 'name' implicitly has an 'any' typ... Remove this comment to see the full error message
-        callback: async ({ name, mode }) => {
+        callback: async ({ name, mode }: { name: string; mode?: string }) => {
 
             if (selected_group !== null) {
                 notyf.warning(t`Tag import does not support group chats.`);
@@ -281,21 +281,19 @@ export function registerTagsSlashCommands() {
             if (!key) return 'false';
 
             // Map mode argument to tag_import_setting
-            const modeMap = {
+            const modeMap: Record<string, number> = {
                 'all': tag_import_setting.ALL,
                 'existing': tag_import_setting.ONLY_EXISTING,
                 'none': tag_import_setting.NONE,
                 'ask': tag_import_setting.ASK,
             };
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             if (mode && !modeMap[mode]) {
                 notyf.warning(`Invalid tag import mode: ${mode}. Valid modes are: ${Object.keys(modeMap).join(', ')}`);
                 return 'false';
             }
 
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             const importSetting = mode ? modeMap[mode] : null;
-            const character = findChar({ name: key });
+            const character = findChar({ name: key as unknown as null });
 
             const result = await importTags(character, { importSetting });
             return result ? 'true' : 'false';

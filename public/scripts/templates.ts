@@ -92,7 +92,6 @@ export async function renderTemplateAsync(templateId, templateData = {}, sanitiz
         return result;
     } catch (err) {
         console.error('Error rendering template', templateId, templateData, err);
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.error('Check the DevTools console for more information.', 'Error rendering template');
     }
 }
@@ -140,7 +139,6 @@ export function renderTemplate(templateId, templateData = {}, sanitize = true, l
         return result;
     } catch (err) {
         console.error('Error rendering template', templateId, templateData, err);
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.error('Check the DevTools console for more information.', 'Error rendering template');
     }
 }

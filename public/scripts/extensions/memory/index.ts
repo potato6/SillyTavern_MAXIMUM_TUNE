@@ -56,7 +56,7 @@ async function countSourceTokens(text: any, padding = 0) {
 
     // @ts-expect-error TS(2339): Property 'source' does not exist on type '{}'.
     if (extension_settings.memory.source === summary_sources.extras) {
-        const count = getTextTokens(tokenizers.GPT2, text).length;
+        const count = (await getTextTokens(tokenizers.GPT2, text)).length;
         return count + padding;
     }
 
@@ -74,7 +74,6 @@ async function getSourceContextSize() {
         return overrideLength > 0 ? (maxContext - overrideLength) : Math.round(maxContext * 0.75);
     }
 
-    // @ts-expect-error TS(2339): Property 'source' does not exist on type '{ apiUrl... Remove this comment to see the full error message
     if (extension_settings.source === summary_sources.extras) {
         return 1024 - 64;
     }
@@ -149,8 +148,8 @@ const defaultSettings = {
 };
 
 function loadSettings() {
-    if (Object.keys(extension_settings.memory).length === 0) {
-        Object.assign(extension_settings.memory, defaultSettings);
+    if (Object.keys(extension_settings.memory as Record<string, unknown>).length === 0) {
+        Object.assign(extension_settings.memory as Record<string, unknown>, defaultSettings);
     }
 
     for (const key of Object.keys(defaultSettings)) {
@@ -217,8 +216,7 @@ async function onPromptForceWordsAutoClick() {
     const context = getContext();
     const maxPromptLength = await getSourceContextSize();
     const chat = context.chat;
-    // @ts-expect-error TS(2339): Property 'is_system' does not exist on type 'never... Remove this comment to see the full error message
-    const allMessages = chat.filter(m => !m.is_system && m.mes).map(m => m.mes);
+    const allMessages = chat.filter((m: any) => !m.is_system && m.mes).map((m: any) => m.mes);
     const messagesWordCount = allMessages.map(m => extractAllWords(m)).flat().length;
     const averageMessageWordCount = messagesWordCount / allMessages.length;
     const tokensPerWord = (await countSourceTokens(allMessages.join('\n'))) / messagesWordCount;
@@ -227,10 +225,8 @@ async function onPromptForceWordsAutoClick() {
     // How many words should pass so that messages will start be dropped out of context;
     const wordsPerPrompt = Math.floor(maxPromptLength / tokensPerWord);
     // How many words will be needed to fit the allowance buffer
-    // @ts-expect-error TS(2339): Property 'prompt' does not exist on type '{}'.
-    const summaryPromptWords = extractAllWords(extension_settings.memory.prompt).length;
-    // @ts-expect-error TS(2339): Property 'promptWords' does not exist on type '{}'... Remove this comment to see the full error message
-    const promptAllowanceWords = maxPromptLengthWords - extension_settings.memory.promptWords - summaryPromptWords;
+    const summaryPromptWords = extractAllWords((extension_settings.memory as Record<string, any>).prompt).length;
+    const promptAllowanceWords = maxPromptLengthWords - (extension_settings.memory as Record<string, any>).promptWords - summaryPromptWords;
     const averageMessagesPerPrompt = Math.floor(promptAllowanceWords / averageMessageWordCount);
     // @ts-expect-error TS(2339): Property 'maxMessagesPerRequest' does not exist on... Remove this comment to see the full error message
     const maxMessagesPerSummary = extension_settings.memory.maxMessagesPerRequest || 0;
@@ -251,10 +247,8 @@ async function onPromptForceWordsAutoClick() {
     });
 
     const ROUNDING = 100;
-    // @ts-expect-error TS(2339): Property 'promptForceWords' does not exist on type... Remove this comment to see the full error message
-    extension_settings.memory.promptForceWords = Math.max(1, Math.floor(targetSummaryWords / ROUNDING) * ROUNDING);
-    // @ts-expect-error TS(2339): Property 'promptForceWords' does not exist on type... Remove this comment to see the full error message
-    $('#memory_prompt_words_force').val(extension_settings.memory.promptForceWords);
+    (extension_settings.memory as Record<string, any>).promptForceWords = Math.max(1, Math.floor(targetSummaryWords / ROUNDING) * ROUNDING);
+    $('#memory_prompt_words_force').val((extension_settings.memory as Record<string, any>).promptForceWords);
     document.getElementById('memory_prompt_words_force')?.dispatchEvent(new Event('input'));
 }
 
@@ -262,19 +256,15 @@ async function onPromptIntervalAutoClick() {
     const context = getContext();
     const maxPromptLength = await getSourceContextSize();
     const chat = context.chat;
-    // @ts-expect-error TS(2339): Property 'is_system' does not exist on type 'never... Remove this comment to see the full error message
-    const allMessages = chat.filter(m => !m.is_system && m.mes).map(m => m.mes);
+    const allMessages = chat.filter((m: any) => !m.is_system && m.mes).map((m: any) => m.mes);
     const messagesWordCount = allMessages.map(m => extractAllWords(m)).flat().length;
     const messagesTokenCount = await countSourceTokens(allMessages.join('\n'));
     const tokensPerWord = messagesTokenCount / messagesWordCount;
     const averageMessageTokenCount = messagesTokenCount / allMessages.length;
-    // @ts-expect-error TS(2339): Property 'promptWords' does not exist on type '{}'... Remove this comment to see the full error message
-    const targetSummaryTokens = Math.round(extension_settings.memory.promptWords * tokensPerWord);
-    // @ts-expect-error TS(2339): Property 'prompt' does not exist on type '{}'.
-    const promptTokens = await countSourceTokens(extension_settings.memory.prompt);
+    const targetSummaryTokens = Math.round((extension_settings.memory as Record<string, any>).promptWords * tokensPerWord);
+    const promptTokens = await countSourceTokens((extension_settings.memory as Record<string, any>).prompt);
     const promptAllowance = maxPromptLength - promptTokens - targetSummaryTokens;
-    // @ts-expect-error TS(2339): Property 'maxMessagesPerRequest' does not exist on... Remove this comment to see the full error message
-    const maxMessagesPerSummary = extension_settings.memory.maxMessagesPerRequest || 0;
+    const maxMessagesPerSummary = (extension_settings.memory as Record<string, any>).maxMessagesPerRequest || 0;
     const averageMessagesPerPrompt = Math.floor(promptAllowance / averageMessageTokenCount);
     const targetMessagesInPrompt = maxMessagesPerSummary > 0 ? maxMessagesPerSummary : Math.max(0, averageMessagesPerPrompt);
     const adjustedAverageMessagesPerPrompt = targetMessagesInPrompt + (averageMessagesPerPrompt - targetMessagesInPrompt) / 4;
@@ -1011,12 +1001,11 @@ async function summarizeChatExtras(context: any) {
  * @returns {Promise<string>} Summarized text
  */
 async function callExtrasSummarizeAPI(text: any) {
-    // @ts-expect-error TS(2345): Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
     if (!modules.includes('summarize')) {
         throw new Error('Summarize module is not enabled in Extras API');
     }
 
-    const url = new URL(getApiUrl());
+    const url = new URL(getApiUrl() as string);
     url.pathname = '/api/summarize';
 
     const apiResult = await doExtrasFetch(url, {
@@ -1047,10 +1036,8 @@ function onMemoryRestoreClick() {
     reversedChat.shift();
 
     for (let mes of reversedChat) {
-        // @ts-expect-error TS(2339): Property 'extra' does not exist on type 'never'.
-        if (mes.extra && mes.extra.memory == content) {
-            // @ts-expect-error TS(2339): Property 'extra' does not exist on type 'never'.
-            delete mes.extra.memory;
+        if ((mes as any).extra && (mes as any).extra.memory == content) {
+            delete (mes as any).extra.memory;
             break;
         }
     }

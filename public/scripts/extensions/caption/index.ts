@@ -123,7 +123,7 @@ async function wrapCaptionTemplate(caption: any) {
 
     let messageText = substituteParams(template, { dynamicMacros: { caption: caption } });
 
-    if (extension_settings.caption.refine_mode) {
+    if ((extension_settings.caption as Record<string, any>).refine_mode) {
         messageText = await Popup.show.input(
             'Review and edit the generated caption:',
             'Press "Cancel" to abort the caption sending.',
@@ -226,7 +226,6 @@ async function sendCaptionedMessage(caption: any, image: any, mimeType: any) {
         },
     };
     chat_metadata.tainted = true;
-    // @ts-expect-error TS(2345): Argument of type '{ name: string; is_user: boolean... Remove this comment to see the full error message
     context.chat.push(message);
     const messageId = context.chat.length - 1;
     await eventSource.emit(event_types.MESSAGE_SENT, messageId);
@@ -265,12 +264,11 @@ async function doCaptionRequest(base64Img: any, fileData: any, externalPrompt: a
  * @returns {Promise<{caption: string}>} Generated caption
  */
 async function captionExtras(base64Img: any) {
-    // @ts-expect-error TS(2345): Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
     if (!modules.includes('caption')) {
         throw new Error('No captioning module is available.');
     }
 
-    const url = new URL(getApiUrl());
+    const url = new URL(getApiUrl() as string);
     url.pathname = '/api/caption';
 
     const apiResult = await doExtrasFetch(url, {
@@ -435,10 +433,8 @@ async function captionCommandCallback(args: any, prompt: any) {
     if (!isNaN(Number(messageId))) {
         /** @type {ChatMessage} */
         const message = getContext().chat[messageId];
-        // @ts-expect-error TS(2339): Property 'extra' does not exist on type 'never'.
         if (Array.isArray(message?.extra?.media) && message.extra.media.length > 0) {
             try {
-                // @ts-expect-error TS(2532): Object is possibly 'undefined'.
                 const mediaAttachment = message.extra.media[index] || message.extra.media[0];
                 if (!mediaAttachment || !mediaAttachment.url) {
                     notyf.error('The specified message does not contain an image.');
@@ -690,7 +686,7 @@ export async function init() {
     migrateSettings();
     await switchMultimodalBlocks();
 
-    $('#caption_refine_mode').prop('checked', !!(extension_settings.caption.refine_mode));
+    $('#caption_refine_mode').prop('checked', !!((extension_settings.caption as Record<string, any>).refine_mode));
     // @ts-expect-error TS(2339): Property 'allow_reverse_proxy' does not exist on t... Remove this comment to see the full error message
     $('#caption_allow_reverse_proxy').prop('checked', !!(extension_settings.caption.allow_reverse_proxy));
     // @ts-expect-error TS(2339): Property 'prompt_ask' does not exist on type '{ re... Remove this comment to see the full error message
@@ -782,7 +778,7 @@ export async function init() {
         saveSettingsDebounced();
     });
     const captionAltEndpointEnabledEl = document.getElementById('caption_altEndpoint_enabled') as HTMLInputElement | null;
-    if (captionAltEndpointEnabledEl) captionAltEndpointEnabledEl.checked = !!(extension_settings.caption.alt_endpoint_enabled);
+    if (captionAltEndpointEnabledEl) captionAltEndpointEnabledEl.checked = !!((extension_settings.caption as Record<string, any>).alt_endpoint_enabled);
     // @ts-expect-error TS(2531): Object is possibly 'null'.
     document.getElementById('caption_altEndpoint_enabled').addEventListener('input', () => {
         // @ts-expect-error TS(2339): Property 'alt_endpoint_enabled' does not exist on ... Remove this comment to see the full error message
@@ -790,7 +786,7 @@ export async function init() {
         saveSettingsDebounced();
     });
     const captionShowInChatEl = document.getElementById('caption_show_in_chat') as HTMLInputElement | null;
-    if (captionShowInChatEl) captionShowInChatEl.checked = !!(extension_settings.caption.show_in_chat);
+    if (captionShowInChatEl) captionShowInChatEl.checked = !!((extension_settings.caption as Record<string, any>).show_in_chat);
     // @ts-expect-error TS(2531): Object is possibly 'null'.
     document.getElementById('caption_show_in_chat').addEventListener('input', () => {
         // @ts-expect-error TS(2339): Property 'show_in_chat' does not exist on type '{ ... Remove this comment to see the full error message
@@ -828,11 +824,8 @@ export async function init() {
         }
 
         const message = getContext().chat[messageId];
-        // @ts-expect-error TS(2339): Property 'extra' does not exist on type 'never'.
         if (Array.isArray(message?.extra?.media) && message.extra.media.length > 0) {
-            // @ts-expect-error TS(2532): Object is possibly 'undefined'.
             for (let mediaIndex = 0; mediaIndex < message.extra.media.length; mediaIndex++) {
-                // @ts-expect-error TS(2532): Object is possibly 'undefined'.
                 const mediaAttachment = message.extra.media[mediaIndex];
                 if (mediaAttachment.type === MEDIA_TYPE.VIDEO && !isVideoCaptioningAvailable()) {
                     continue;

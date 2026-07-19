@@ -196,7 +196,6 @@ async function getStats() {
     });
 
     if (!response.ok) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.error('Stats could not be loaded. Try reloading the page.');
         throw new Error('Error getting stats');
     }
@@ -219,11 +218,9 @@ async function recreateStats() {
     });
 
     if (!response.ok) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.error('Stats could not be loaded. Try reloading the page.');
         throw new Error('Error getting stats');
     } else {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.success('Stats file recreated successfully!');
     }
 }

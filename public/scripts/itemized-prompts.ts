@@ -140,9 +140,7 @@ export async function itemizedParams(itemizedPrompts, thisPromptSet, incomingMes
         chatInjects: await getTokenCountAsync(itemizedPrompts[thisPromptSet].chatInjects),
         chatVectorsStringTokens: await getTokenCountAsync(itemizedPrompts[thisPromptSet].chatVectorsString),
         dataBankVectorsStringTokens: await getTokenCountAsync(itemizedPrompts[thisPromptSet].dataBankVectorsString),
-        // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
         modelUsed: chat[incomingMesId]?.extra?.model,
-        // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
         apiUsed: chat[incomingMesId]?.extra?.api,
         presetName: itemizedPrompts[thisPromptSet].presetName || t`(Unknown)`,
         messagesCount: String(itemizedPrompts[thisPromptSet].messagesCount ?? ''),
@@ -392,7 +390,6 @@ export async function promptItemize(itemizedPrompts, requestedMesId) {
         }
 
         await copyText(rawPromptValues);
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.info(t`Copied!`);
     });
 
@@ -438,7 +435,6 @@ export async function promptItemize(itemizedPrompts, requestedMesId) {
 export function initItemizedPrompts() {
     registerDebugFunction('clearPrompts', 'Delete itemized prompts', 'Deletes all itemized prompts from the local storage.', async () => {
         await clearItemizedPrompts();
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.info('Itemized prompts deleted.');
         if (getCurrentChatId()) {
             await reloadCurrentChat();

@@ -57,7 +57,6 @@ async function openSwipePicker(messageId) {
     const message = chat[messageId];
 
     if (!canOpenSwipePickerForMessage(messageId)) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.info(t`This message has no alternate swipes yet.`, t`Jump to Swipe`);
         return;
     }
@@ -158,7 +157,6 @@ async function openSwipePicker(messageId) {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const block = template.querySelector('.select_chat_block');
             block.removeClass('select_chat_block').classList.add('swipe_picker_block');
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                         block.querySelector('.select_chat_actions').classList.remove('gap10px');
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const branchButton = template.querySelector('.exportRawChatButton');
@@ -212,13 +210,11 @@ async function openSwipePicker(messageId) {
 
             for (const el of deleteButton) {
                 if (canDeleteSwipe) {
-                    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                     el.attr({
                         title: t`Delete Swipe`,
                         'data-i18n': '[title]Delete Swipe',
                     });
                 } else {
-                    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                     el.removeAttribute('title').removeAttr('data-i18n');
                 }
             }
@@ -289,28 +285,22 @@ async function openSwipePicker(messageId) {
                 event.preventDefault();
                 event.stopPropagation();
                 await copyText(swipeText);
-                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 notyf.info(t`Copied!`, '', { timeOut: 2000 });
             });
 
             // Insert new buttons before the branch button
             branchButton.before(expandLabel, copyButton);
 
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            template.querySelector('.select_chat_block_filename').textContent = `#${index + 1}${index === Number(message.swipe_id ?? 0) ? ` ${t`[Current]`}` : ''}`;
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            template.querySelector('.chat_messages_date').textContent = sendDate;
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            (template as HTMLElement).querySelector('.select_chat_block_filename')!.textContent = `#${index + 1}${index === Number(message.swipe_id ?? 0) ? ` ${t`[Current]`}` : ''}`;
+            (template as HTMLElement).querySelector('.chat_messages_date')!.textContent = sendDate;
             const fileSizeText = swipeDetails.length ? '(' + swipeDetails[0] + (swipeDetails.length > 1 ? ',' : '') + ')' : '';
-            template.querySelector('.chat_file_size').textContent = fileSizeText;
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            (template as HTMLElement).querySelector('.chat_file_size')!.textContent = fileSizeText;
             const messagesNum = swipeDetails.length > 1 ? swipeDetails.slice(1).join(', ') : '';
-            template.querySelector('.chat_messages_num').textContent = messagesNum;
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            template.querySelector('.select_chat_block_mes').textContent = previewText ? swipeText : t`(empty swipe)`;
+            (template as HTMLElement).querySelector('.chat_messages_num')!.textContent = messagesNum;
+            (template as HTMLElement).querySelector('.select_chat_block_mes')!.textContent = previewText ? swipeText : t`(empty swipe)`;
 
-            block?.addEventListener('click', () => setSelectedSwipe(index));
-            block?.addEventListener('dblclick', async () => {
+            (block as HTMLElement)?.addEventListener('click', () => setSelectedSwipe(index));
+            (block as HTMLElement)?.addEventListener('dblclick', async () => {
                 if (!canJumpToSwipe) {
                     return;
                 }
@@ -348,7 +338,6 @@ async function openSwipePicker(messageId) {
         large: true,
         wider: true,
         allowVerticalScrolling: true,
-        // @ts-expect-error TS(2322) FIXME: Type '() => void' is not assignable to type 'null ... Remove this comment to see the full error message
         onOpen: function () {
             scrollToSelectedSwipe();
             if (swipeIdInput instanceof HTMLInputElement) {
@@ -356,7 +345,6 @@ async function openSwipePicker(messageId) {
                 swipeIdInput.select();
             }
         },
-        // @ts-expect-error TS(2322) FIXME: Type '(popup: any) => boolean' is not assignable t... Remove this comment to see the full error message
         onClosing: function (popup) {
             if (popup.result !== POPUP_RESULT.AFFIRMATIVE) {
                 return true;
@@ -366,7 +354,6 @@ async function openSwipePicker(messageId) {
             const targetSwipeNumber = Number.parseInt(String(swipeIdInput instanceof HTMLInputElement ? swipeIdInput.value : '').trim(), 10);
 
             if (!Number.isInteger(targetSwipeNumber) || targetSwipeNumber < 1 || targetSwipeNumber > message.swipes.length) {
-                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 notyf.warning(t`Enter a swipe ID between 1 and ${message.swipes.length}.`, t`Jump to Swipe`);
                 if (swipeIdInput instanceof HTMLInputElement) {
                     swipeIdInput.focus();
@@ -447,7 +434,6 @@ async function openSwipePicker(messageId) {
     const currentSwipeId = clamp(Number(message.swipe_id ?? 0), 0, message.swipes.length - 1);
 
     if (targetSwipeId === currentSwipeId) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.info(t`Already showing swipe #${targetSwipeId + 1}.`, t`Jump to Swipe`);
         return;
     }

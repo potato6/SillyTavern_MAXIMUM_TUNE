@@ -13,7 +13,6 @@ export interface Registry<T> {
 
 /**
  * Create a lazy-loading provider registry.
- *
  * @param loaders  Map of type string → dynamic import returning { default: T }
  */
 export function createRegistry<T>(

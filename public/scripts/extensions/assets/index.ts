@@ -363,7 +363,6 @@ function isAssetInstalled(assetType: any, filename: any) {
 
     if (assetType == 'extension') {
         const thirdPartyMarker = 'third-party/';
-        // @ts-expect-error TS(2339): Property 'startsWith' does not exist on type 'neve... Remove this comment to see the full error message
         assetList = extensionNames.filter(x => x.startsWith(thirdPartyMarker)).map(x => x.replace(thirdPartyMarker, ''));
     }
 

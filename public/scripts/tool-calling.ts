@@ -840,10 +840,8 @@ export class ToolManager {
             const displayName = ToolManager.getDisplayName(name);
             const isStealth = ToolManager.isStealthTool(name);
             const message = await ToolManager.formatToolCallMessage(name, parameters);
-            // @ts-expect-error TS(2552) FIXME: Cannot find name 'toastr'. Did you mean 'toast'?
             const toast = message && notyf.info(message, 'Tool Calling', { timeOut: 0 });
             const toolResult = await ToolManager.invokeFunctionTool(name, parameters);
-            // @ts-expect-error TS(2552) FIXME: Cannot find name 'toastr'. Did you mean 'toast'?
             notyf.dismiss(toast);
             console.log('[ToolManager] Function tool result:', result);
 
@@ -960,7 +958,6 @@ export class ToolManager {
                 model: getGeneratingModel(),
             },
         };
-        // @ts-expect-error TS(2345) FIXME: Argument of type '{ name: string; force_avatar: st... Remove this comment to see the full error message
         chat.push(message);
         await eventSource.emit(event_types.TOOL_CALLS_PERFORMED, invocations);
         addOneMessage(message);
@@ -975,7 +972,6 @@ export class ToolManager {
      */
     // @ts-expect-error TS(7006) FIXME: Parameter 'errors' implicitly has an 'any' type.
     static showToolCallError(errors) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.error('An error occurred while invoking function tools. Click here for more details.', 'Tool Calling', {
             // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
             onclick: () => Popup.show.text('Tool Calling Errors', DOMPurify.sanitize(errors.map(e => `${e.cause}: ${e.message}`).join('<br>'))),

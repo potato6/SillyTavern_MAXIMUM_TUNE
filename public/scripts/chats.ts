@@ -166,7 +166,7 @@ export {
 export { openAttachmentManager } from './chats/attachment-manager.js';
 
 // ── Re-export session & services ────────────────────────────
-export { chatSession, ChatSession } from './chats/ChatSession.js';
-export { messageService, MessageService } from './messages/MessageService.js';
-export { swipeService, SwipeService } from './messages/SwipeService.js';
-export { branchService, BranchService } from './messages/BranchService.js';
+export { chatSession } from './chats/ChatSession.js';
+export { messageService } from './messages/MessageService.js';
+export { swipeService } from './messages/SwipeService.js';
+export { branchService } from './messages/BranchService.js';

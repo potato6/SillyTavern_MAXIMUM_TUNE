@@ -106,6 +106,8 @@ export class EntityStore<T extends { id: string | number }> {
     /**
      * Core execution engine. Reuses active transactions if present to maintain atomicity.
      * OPTIMIZATION: Resolves readonly queries immediately on success rather than waiting for txn completion.
+     * @param mode
+     * @param fn
      */
     protected async execute<R>(
         mode: IDBTransactionMode,
@@ -153,7 +155,10 @@ export class EntityStore<T extends { id: string | number }> {
         return this.execute<T | undefined>('readonly', store => store.get(id));
     }
 
-    /** Uses store.count() which avoids deserializing the object, making it exceptionally fast. */
+    /**
+     * Uses store.count() which avoids deserializing the object, making it exceptionally fast.
+     * @param id
+     */
     public async has(id: string | number): Promise<boolean> {
         const count = await this.execute<number>('readonly', store => store.count(id));
         return count > 0;
@@ -207,6 +212,7 @@ export class EntityStore<T extends { id: string | number }> {
     /**
      * Bypasses individual promises to flood the transaction synchronously.
      * Exponentially faster than looping 'await this.add(item)'.
+     * @param items
      */
     public async bulkAdd(items: T[]): Promise<void> {
         if (!items.length) return;
@@ -223,6 +229,7 @@ export class EntityStore<T extends { id: string | number }> {
 
     /**
      * Replaces the entire store contents. Optimized for importing state.
+     * @param items
      */
     public async replaceAll(items: T[]): Promise<void> {
         await this.transaction(() => {
@@ -247,6 +254,8 @@ export class EntityStore<T extends { id: string | number }> {
 
     /**
      * O(log n) lookup utilizing native IndexedDB B-Tree indices.
+     * @param indexName
+     * @param value
      */
     public async by(indexName: string, value: string | number): Promise<T[]> {
         return this.execute<T[]>('readonly', store => store.index(indexName).getAll(value));
@@ -254,6 +263,7 @@ export class EntityStore<T extends { id: string | number }> {
 
     /**
      * Flexible querying engine with built-in fast paths.
+     * @param opts
      */
     public async query(opts: QueryOptions<T> = {}): Promise<T[]> {
         if (!this.db) throw new Error("Database not initialized");
@@ -293,6 +303,9 @@ export class EntityStore<T extends { id: string | number }> {
 
             request.onerror = () => reject(request.error);
 
+            /**
+             *
+             */
             function completeRequest() {
                 if (requiresSort && opts.sort) {
                     results.sort(opts.sort);
@@ -308,6 +321,7 @@ export class EntityStore<T extends { id: string | number }> {
     /**
      * Enforces atomicity. Batches multiple interactions into one native transaction.
      * Automatically rolls back memory state and aborts IDB on failure.
+     * @param fn
      */
     public async transaction(fn: () => Promise<void> | void): Promise<void> {
         if (!this.db) throw new Error("Database not initialized");

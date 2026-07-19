@@ -33,6 +33,9 @@ export const ANTI_TROLL_MAX_TAGS = 50;
  * Imports tags for a given character
  * @param character - The character
  * @param options - Options
+ * @param character.avatar
+ * @param character.name
+ * @param character.tags
  * @param options.importSetting - Force a tag import setting
  * @returns Promise resolving to boolean indicating whether any tag was imported
  */
@@ -43,9 +46,9 @@ export async function importTags(character: { avatar: string; name: string; tags
         return false;
     }
 
-    const tagsToImport = tagNamesToImport.map((tag: string) => getTag(tag, { createNew: true }));
-    const added = addTagsToEntity(tagsToImport, character.avatar);
-    const tagNames = tagsToImport.map((x: { name: string }) => escapeHtml(x.name)).join(', ');
+    const tagsToImport = tagNamesToImport.map((tag: string) => getTag(tag, { createNew: true })).filter((x): x is Record<string, unknown> => !!x);
+    const added = addTagsToEntity(tagsToImport as { id: string }[], character.avatar);
+    const tagNames = tagsToImport.map((x: Record<string, unknown>) => escapeHtml(x.name as string)).join(', ');
 
     if (added) {
         notyf.success(t`Imported tags:` + `<br />${tagNames}`, t`Importing Tags`, { escapeHtml: false });
@@ -60,6 +63,9 @@ export async function importTags(character: { avatar: string; name: string; tags
  * Handles the import of tags for a given character and returns the resulting list of tags to add
  * @param character - The character
  * @param options - Options
+ * @param character.avatar
+ * @param character.name
+ * @param character.tags
  * @param options.importSetting - Force a tag import setting
  * @returns Promise resolving to an array of strings representing the tags to import
  */
@@ -69,11 +75,11 @@ export async function handleTagImport(character: { avatar: string; name: string;
         .filter((t: string) => !IMPORT_EXLCUDED_TAGS.includes(t))
         .filter((t: string) => {
             const foundTag = getTag(t);
-            return !foundTag || !alreadyAssignedTags.includes(foundTag.id);
+            return !foundTag || !alreadyAssignedTags.includes(foundTag.id as string);
         })
         .slice(0, ANTI_TROLL_MAX_TAGS);
     const existingTags = getExistingTags(importTagsList);
-    const newTags = importTagsList.filter((t: string) => !existingTags.some((existingTag: { name: string }) => existingTag.name.toLowerCase() === t.toLowerCase()))
+    const newTags = importTagsList.filter((t: string) => !existingTags.some((existingTag: Record<string, unknown>) => (existingTag.name as string).toLowerCase() === t.toLowerCase()))
         .map(newTag);
     const folderTags = getOpenBogusFolders();
 
@@ -82,14 +88,14 @@ export async function handleTagImport(character: { avatar: string; name: string;
 
     switch (setting) {
         case tag_import_setting.ALL:
-            return [...existingTags, ...newTags, ...folderTags].map((t: { name: string }) => t.name);
+            return [...existingTags, ...newTags, ...folderTags].map((t: Record<string, unknown>) => t.name as string);
         case tag_import_setting.ONLY_EXISTING:
-            return [...existingTags, ...folderTags].map((t: { name: string }) => t.name);
+            return [...existingTags, ...folderTags].map((t: Record<string, unknown>) => t.name as string);
         case tag_import_setting.ASK: {
             if (!existingTags.length && !newTags.length && !folderTags.length) {
                 return [];
             }
-            return await showTagImportPopup(character, existingTags, newTags, folderTags);
+            return await showTagImportPopup(character, existingTags as { id: string; name: string }[], newTags as { id: string; name: string }[], folderTags as { id: string; name: string }[]);
         }
         case tag_import_setting.NONE:
             return [];
@@ -100,6 +106,7 @@ export async function handleTagImport(character: { avatar: string; name: string;
 /**
  * Shows a popup to import tags for a given character and returns the resulting list of tags to add
  * @param character - The character
+ * @param character.name
  * @param existingTags - List of existing tags
  * @param newTags - List of new tags
  * @param folderTags - List of tags in the current folder
@@ -132,6 +139,12 @@ export async function showTagImportPopup(character: { name: string }, existingTa
         if (folderTagsBlock) folderTagsBlock.style.display = 'none';
     }
 
+    /**
+     *
+     * @param popup
+     * @param popup.result
+     * @param popup.inputResults
+     */
     function onCloseRemember(popup: { result: number; inputResults: Map<string, unknown> }) {
         if (popup.result && popup.inputResults.get('import_remember_option')) {
             const setting = buttonSettingsMap[popup.result];
@@ -217,7 +230,8 @@ export async function onTagRestoreFileSelect(e: Event) {
         return;
     }
 
-    if (!data.tags || !data.tag_map || !Array.isArray(data.tags) || typeof data.tag_map !== 'object') {
+    const importData = data as Record<string, unknown>;
+    if (!importData.tags || !importData.tag_map || !Array.isArray(importData.tags) || typeof importData.tag_map !== 'object') {
         notyf.warning('Invalid file format', 'Tag Restore');
         console.log('Tag restore: Invalid file format.');
         return;
@@ -233,33 +247,34 @@ export async function onTagRestoreFileSelect(e: Event) {
     const warnings: string[] = [];
     const idToActualTagIdMap = new Map<string, string>();
 
-    for (const tag of data.tags) {
+    for (const tag of importData.tags as Array<Record<string, unknown>>) {
         if (!tag.id || !tag.name) {
             warnings.push(`Tag object is invalid: ${JSON.stringify(tag)}.`);
             continue;
         }
 
-        let existingTag = getTagById(tag.id);
+        let existingTag: Record<string, unknown> | undefined = getTagById(tag.id as string);
         if (existingTag && !overwrite) {
-            warnings.push(`Tag '${tag.name}' with id ${tag.id} already exists.`);
+            warnings.push(`Tag '${String(tag.name)}' with id ${String(tag.id)} already exists.`);
             continue;
         }
-        existingTag = getTag(tag.name);
+        existingTag = getTag(tag.name as string);
         if (existingTag && !overwrite) {
-            warnings.push(`Tag with name '${tag.name}' already exists.`);
-            idToActualTagIdMap.set(tag.id, existingTag.id);
+            warnings.push(`Tag with name '${String(tag.name)}' already exists.`);
+            idToActualTagIdMap.set(tag.id as string, existingTag.id as string);
             continue;
         }
 
         if (existingTag) {
             if (existingTag.id !== tag.id) {
-                idToActualTagIdMap.set(existingTag.id, tag.id);
+                idToActualTagIdMap.set(existingTag.id as string, tag.id as string);
             }
         }
     }
 
-    for (const key of Object.keys(data.tag_map)) {
-        const tagIds = data.tag_map[key];
+    const tagMap = importData.tag_map as Record<string, unknown>;
+    for (const key of Object.keys(tagMap)) {
+        const tagIds = tagMap[key];
 
         if (!Array.isArray(tagIds)) {
             warnings.push(`Tag map for key ${key} is invalid: ${JSON.stringify(tagIds)}.`);
@@ -296,7 +311,7 @@ export async function onTagRestoreFileSelect(e: Event) {
     markDirty();
 
     import('../ui/tagList.js').then(({ printViewTagList }) => {
-        printViewTagList(document.querySelector('#tag_view_list .tag_view_list_tags'));
+        printViewTagList(document.querySelector('#tag_view_list .tag_view_list_tags') as HTMLElement | null);
     });
 }
 
@@ -336,7 +351,7 @@ export async function onTagsPruneClick() {
     markDirty();
 
     import('../ui/tagList.js').then(({ printViewTagList }) => {
-        const tagContainer = document.querySelector('#tag_view_list .tag_view_list_tags');
+        const tagContainer = document.querySelector('#tag_view_list .tag_view_list_tags') as HTMLElement | null;
         printViewTagList(tagContainer);
     });
 }

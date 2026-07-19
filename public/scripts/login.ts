@@ -144,6 +144,8 @@ async function performLogin(handle, password) {
 /**
  * Handles the user selection event.
  * @param {object} user User object
+ * @param user.password
+ * @param user.handle
  * @returns {Promise<void>}
  */
 async function onUserSelected(user: { password?: string; handle: string }) {

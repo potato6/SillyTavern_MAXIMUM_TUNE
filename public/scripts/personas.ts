@@ -66,22 +66,19 @@ import { SlashCommandParser } from './slash-commands/SlashCommandParser.js';
 import { isFirefox } from './browser-fixes.js';
 import { slashCommandReturnHelper } from './slash-commands/SlashCommandReturnHelper.js';
 
-/**
- * @typedef {object} PersonaConnection A connection between a character and a character or group entity
- * @property {'character' | 'group'} type - Type of connection
- * @property {string} id - ID of the connection (character key (avatar url), group id)
- */
+interface PersonaConnection {
+    type: 'character' | 'group';
+    id: string;
+}
 
-/** @typedef {'chat' | 'character' | 'default'} PersonaLockType Type of the persona lock */
-
-/**
- * @typedef {object} PersonaState
- * @property {string} avatarId - The avatar id of the persona
- * @property {boolean} default - Whether this persona is the default one for all new chats
- * @property {object} locked - An object containing the lock states
- * @property {boolean} locked.chat - Whether the persona is locked to the currently open chat
- * @property {boolean} locked.character - Whether the persona is locked to the currently open character or group
- */
+interface PersonaState {
+    avatarId: string;
+    default: boolean;
+    locked: {
+        chat: boolean;
+        character: boolean;
+    };
+}
 
 export const persona_description_positions = {
     IN_PROMPT: 0,
@@ -98,8 +95,7 @@ export const persona_description_positions = {
 const USER_AVATAR_PATH = 'User Avatars/';
 
 const savePersonasPage = 0;
-// @ts-expect-error TS(7034) FIXME: Variable 'personaPaginator' implicitly has type 'any'.
-let personaPaginator;
+let personaPaginator: ReturnType<typeof createPaginator> | undefined;
 const GRID_STORAGE_KEY = 'Personas_GridView';
 const DEFAULT_DEPTH = 2;
 const DEFAULT_ROLE = 0;
@@ -111,11 +107,10 @@ export let user_avatar = '';
 export const personasFilter = new FilterHelper(debounce(getUserAvatars, debounce_timeout.quick));
 
 /** @type {string} The last loaded chat id to remember for persona loading */
-// @ts-expect-error TS(7034) FIXME: Variable 'personaLastLoadedChatId' implicitly has ... Remove this comment to see the full error message
-let personaLastLoadedChatId = null;
+let personaLastLoadedChatId: string | null = null;
 
 /** @type {function(string): void} */
-let navigateToAvatar = () => { };
+let navigateToAvatar: (...args: unknown[]) => void = () => { };
 
 /**
  * Checks if the Persona Management panel is currently open
@@ -130,8 +125,7 @@ export function isPersonaPanelOpen() {
  */
 function switchPersonaGridView() {
     const state = accountStorage.getItem(GRID_STORAGE_KEY) === 'true';
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    document.getElementById('user_avatar_block').classList.toggle('gridView', state);
+    document.getElementById('user_avatar_block')!.classList.toggle('gridView', state);
 }
 
 /**
@@ -139,8 +133,7 @@ function switchPersonaGridView() {
  * @param {string} avatarImg User avatar Id
  * @returns {string} User avatar URL
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'avatarImg' implicitly has an 'any' type... Remove this comment to see the full error message
-export function getUserAvatar(avatarImg) {
+export function getUserAvatar(avatarImg: string) {
     return `${USER_AVATAR_PATH}${avatarImg}`;
 }
 
@@ -148,8 +141,7 @@ export function getUserAvatar(avatarImg) {
  *
  * @param avatar
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'avatar' implicitly has an 'any' type.
-export function initUserAvatar(avatar) {
+export function initUserAvatar(avatar: string) {
     user_avatar = avatar;
     reloadUserAvatar();
     updatePersonaUIStates();
@@ -162,11 +154,9 @@ export function initUserAvatar(avatar) {
  * @param {boolean} [options.toastPersonaNameChange] Whether to show a toast when the persona name is changed
  * @param {boolean} [options.navigateToCurrent] Whether to navigate to the current persona after setting the avatar
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'imgfile' implicitly has an 'any' type.
-export async function setUserAvatar(imgfile, { toastPersonaNameChange = true, navigateToCurrent = false } = {}) {
+export async function setUserAvatar(imgfile: string, { toastPersonaNameChange = true, navigateToCurrent = false }: { toastPersonaNameChange?: boolean; navigateToCurrent?: boolean } = {}) {
     const currentUserAvatar = user_avatar;
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    user_avatar = imgfile && typeof imgfile === 'string' ? imgfile : this.attr('data-avatar-id');
+    user_avatar = imgfile && typeof imgfile === 'string' ? imgfile : (document.querySelector('[data-avatar-id]') as HTMLElement)?.dataset.avatarId ?? '';
     if (currentUserAvatar === user_avatar) {
         return;
     }
@@ -175,7 +165,6 @@ export async function setUserAvatar(imgfile, { toastPersonaNameChange = true, na
     selectCurrentPersona({ toastPersonaNameChange: toastPersonaNameChange });
     await retriggerFirstMessageOnEmptyChat();
     saveSettingsDebounced();
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     document.querySelector('.zoomed_avatar[forchar]')?.remove();
     await eventSource.emit(event_types.PERSONA_CHANGED, user_avatar);
 }
@@ -186,10 +175,10 @@ export async function setUserAvatar(imgfile, { toastPersonaNameChange = true, na
  */
 function reloadUserAvatar(force = false) {
     document.querySelectorAll('.mes').forEach(el => {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const avatarImg = el.querySelector('.avatar img');
+        const avatarImg = el.querySelector('.avatar img') as HTMLImageElement | null;
+        if (!avatarImg) return;
         if (force) {
-            avatarImg.setAttribute('src', avatarImg.attr('src'));
+            avatarImg.setAttribute('src', avatarImg.getAttribute('src') ?? '');
         }
 
         if (el.getAttribute('is_user') == 'true' && el.getAttribute('force_avatar') == 'false') {
@@ -203,24 +192,20 @@ function reloadUserAvatar(force = false) {
  * @param {string[]} personas - The persona names to sort
  * @returns {string[]} The sorted persona names array, same reference as passed in
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'personas' implicitly has an 'any' type.
-function sortPersonas(personas) {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const option = document.querySelector('#persona_sort_order option:checked');
+function sortPersonas(personas: string[]) {
+    const option = document.querySelector('#persona_sort_order option:checked') as HTMLOptionElement | null;
+    if (!option) return personas;
     if (option.getAttribute('value') === 'search') {
-        // @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
-        personas.sort((a, b) => {
+        personas.sort((a: string, b: string) => {
             const aScore = personasFilter.getScore(FILTER_TYPES.PERSONA_SEARCH, a);
             const bScore = personasFilter.getScore(FILTER_TYPES.PERSONA_SEARCH, b);
             return (aScore - bScore);
         });
     } else {
-        // @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
-        personas.sort((a, b) => {
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-            const aName = String(power_user.personas[a] || a);
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-            const bName = String(power_user.personas[b] || b);
+        personas.sort((a: string, b: string) => {
+            const personasMap = power_user.personas as Record<string, string | undefined>;
+            const aName = String(personasMap[a] || a);
+            const bName = String(personasMap[b] || b);
             return power_user.persona_sort_order === 'asc' ? aName.localeCompare(bName) : bName.localeCompare(aName);
         });
     }
@@ -231,9 +216,9 @@ function sortPersonas(personas) {
 /** Checks the state of the current search, and adds/removes the search sorting option accordingly */
 function verifyPersonaSearchSortRule() {
     const searchTerm = personasFilter.getFilterData(FILTER_TYPES.PERSONA_SEARCH);
-    const searchOption = document.querySelector('#persona_sort_order option[value="search"]');
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const selector = document.getElementById('persona_sort_order');
+    const searchOption = document.querySelector('#persona_sort_order option[value="search"]') as HTMLOptionElement | null;
+    const selector = document.getElementById('persona_sort_order') as HTMLSelectElement | null;
+    if (!searchOption || !selector) return;
     const isHidden = searchOption.getAttribute('hidden') !== undefined;
 
     // If we have a search term, we are displaying the sorting option for it
@@ -254,41 +239,33 @@ function verifyPersonaSearchSortRule() {
  * @param {string} avatarId Avatar file name
  * @returns {JQuery<HTMLElement>} Avatar block
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'avatarId' implicitly has an 'any' type.
-function getUserAvatarBlock(avatarId) {
-    // @ts-expect-error TS(2531) Object is possibly 'null'
-    const template = document.querySelector('#user_avatar_template .avatar-container').cloneNode(true) as HTMLElement;
+function getUserAvatarBlock(avatarId: string): HTMLElement {
+    const template = document.querySelector('#user_avatar_template .avatar-container')!.cloneNode(true) as HTMLElement;
     const templateEl = template;
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-    const personaName = power_user.personas[avatarId];
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-    const personaDescription = power_user.persona_descriptions[avatarId]?.description;
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-    const personaTitle = power_user.persona_descriptions[avatarId]?.title;
+    const personasMap = power_user.personas as Record<string, string | undefined>;
+    const personaDescsMap = power_user.persona_descriptions as Record<string, Record<string, unknown> | undefined>;
+    const personaName = personasMap[avatarId];
+    const personaDescription = personaDescsMap[avatarId]?.description as string | undefined;
+    const personaTitle = personaDescsMap[avatarId]?.title as string | undefined;
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    templateEl.querySelector('.ch_name').textContent = personaName || '[Unnamed Persona]';
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    templateEl.querySelector('.ch_description').textContent = personaDescription || document.getElementById('user_avatar_block')?.getAttribute('no_desc_text') || 'No description';
-    templateEl.querySelector('.ch_description').classList.toggle('text_muted', !personaDescription);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    templateEl.querySelector('.ch_additional_info').textContent = personaTitle || '';
+    (templateEl.querySelector('.ch_name') as HTMLElement).textContent = personaName || '[Unnamed Persona]';
+    (templateEl.querySelector('.ch_description') as HTMLElement).textContent = personaDescription || document.getElementById('user_avatar_block')?.getAttribute('no_desc_text') || 'No description';
+    (templateEl.querySelector('.ch_description') as HTMLElement).classList.toggle('text_muted', !personaDescription);
+    (templateEl.querySelector('.ch_additional_info') as HTMLElement).textContent = personaTitle || '';
     template.setAttribute('data-avatar-id', avatarId);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    templateEl.querySelector('.avatar')?.setAttribute('data-avatar-id', avatarId)?.setAttribute('title', avatarId);
+    (templateEl.querySelector('.avatar') as HTMLElement)?.setAttribute('data-avatar-id', avatarId);
+    (templateEl.querySelector('.avatar') as HTMLElement)?.setAttribute('title', avatarId);
     template.classList.toggle('default_persona', avatarId === power_user.default_persona);
     const avatarUrl = getThumbnailUrl('persona', avatarId, isFirefox());
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    templateEl.querySelector('img').setAttribute('src', avatarUrl);
+    (templateEl.querySelector('img') as HTMLImageElement).setAttribute('src', avatarUrl);
 
     // Make sure description block has at least three rows. Otherwise height looks inconsistent. I don't have a better idea for this.
-    const currentText = templateEl.querySelector('.ch_description').textContent;
+    const currentText = (templateEl.querySelector('.ch_description') as HTMLElement).textContent ?? '';
     if (currentText.split('\n').length < 3) {
-        templateEl.querySelector('.ch_description').textContent = currentText + '\n\xa0\n\xa0';
+        (templateEl.querySelector('.ch_description') as HTMLElement).textContent = currentText + '\n\xa0\n\xa0';
     }
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('user_avatar_block').append(template);
+    document.getElementById('user_avatar_block')!.append(template);
     return template;
 }
 
@@ -297,11 +274,10 @@ function getUserAvatarBlock(avatarId) {
  * @param {string[]} avatarsList List of avatar file names
  * @returns {Promise<void>}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'avatarsList' implicitly has an 'any' ty... Remove this comment to see the full error message
-async function addMissingPersonas(avatarsList) {
+async function addMissingPersonas(avatarsList: string[]) {
+    const personasMap = power_user.personas as Record<string, string | undefined>;
     for (const persona of avatarsList) {
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        if (!power_user.personas[persona]) {
+        if (!personasMap[persona]) {
             await initPersona(persona, '[Unnamed Persona]', '', '', { silent: true });
         }
     }
@@ -353,8 +329,7 @@ export async function getUserAvatars(doRender = true, openPageAt = '') {
                 showNavigator: true,
                 prevText: '<',
                 nextText: '>',
-                // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
-                callback: function (data) {
+                callback: function (data: string[]) {
                     if (listId) {
                         listId.innerHTML = '';
                         for (const item of data) {
@@ -363,26 +338,22 @@ export async function getUserAvatars(doRender = true, openPageAt = '') {
                     }
                     updatePersonaUIStates();
                 },
-                // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
-                onPageSizeChange: function (e, size) {
-                    accountStorage.setItem(storageKey, e.target.value);
+                onPageSizeChange: function (e: Event, size: number) {
+                    accountStorage.setItem(storageKey, (e.target as HTMLSelectElement).value);
                     paginationDropdownChangeHandler(e, size);
                 },
             });
         }
 
-        // @ts-expect-error TS(2322) FIXME: Type '(avatarId: any) => void' is not assignable t... Remove this comment to see the full error message
-        navigateToAvatar = (avatarId) => {
+        navigateToAvatar = ((avatarId: string): void => {
             const avatarIndex = entities.indexOf(avatarId);
             const page = Math.floor(avatarIndex / perPage) + 1;
 
-            // @ts-expect-error TS(7005) FIXME: Variable 'personaPaginator' implicitly has an 'any' type.
             if (avatarIndex !== -1 && personaPaginator) {
                 personaPaginator.go(page);
             }
-        };
+        }) as (...args: unknown[]) => void;
 
-        // @ts-expect-error TS(2554) FIXME: Expected 0 arguments, but got 1.
         if (openPageAt) navigateToAvatar(openPageAt);
 
         return allEntities;
@@ -395,8 +366,7 @@ export async function getUserAvatars(doRender = true, openPageAt = '') {
  * @param {string} [name] Optional name for the avatar file
  * @returns {Promise} Promise that resolves when the avatar is uploaded
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'url' implicitly has an 'any' type.
-async function uploadUserAvatar(url, name) {
+async function uploadUserAvatar(url: string, name?: string) {
     const fetchResult = await fetch(url);
     const blob = await fetchResult.blob();
     const file = new File([blob], 'avatar.png', { type: 'image/png' });
@@ -427,8 +397,7 @@ async function uploadUserAvatar(url, name) {
  *
  * @param e
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
-async function changeUserAvatar(e) {
+async function changeUserAvatar(e: Event) {
     const form = document.getElementById('form_upload_avatar');
 
     if (!(form instanceof HTMLFormElement)) {
@@ -436,7 +405,8 @@ async function changeUserAvatar(e) {
         return;
     }
 
-    const file = e.target.files[0];
+    const input = e.target as HTMLInputElement;
+    const file = input.files?.[0];
 
     if (!file) {
         form.reset();
@@ -448,8 +418,7 @@ async function changeUserAvatar(e) {
     let url = '/api/avatars/upload';
 
     if (!power_user.never_resize_avatars) {
-        // @ts-expect-error TS(2322) FIXME: Type 'unknown' is not assignable to type 'null | u... Remove this comment to see the full error message
-        const dlg = new Popup(t`Set the crop position of the avatar image`, POPUP_TYPE.CROP, '', { cropImage: dataUrl });
+        const dlg = new Popup(t`Set the crop position of the avatar image`, POPUP_TYPE.CROP, '', { cropImage: dataUrl } as Record<string, unknown>);
         const result = await dlg.show();
 
         if (!result) {
@@ -493,7 +462,7 @@ async function changeUserAvatar(e) {
             await createPersona(dataPath);
         }
 
-        await getUserAvatars(true, dataPath || overwriteName);
+        await getUserAvatars(true, dataPath || String(overwriteName));
     }
 
     // Will allow to select the same file twice in a row
@@ -505,8 +474,7 @@ async function changeUserAvatar(e) {
  * @param {string} avatarId User avatar id
  * @returns {Promise} Promise that resolves when the persona is set
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'avatarId' implicitly has an 'any' type.
-export async function createPersona(avatarId) {
+export async function createPersona(avatarId: string) {
     const personaName = await Popup.show.input(t`Enter a name for this persona:`, t`Cancel if you're just uploading an avatar.`, '');
 
     if (!personaName) {
@@ -516,9 +484,8 @@ export async function createPersona(avatarId) {
 
     const personaDescription = await Popup.show.input(t`Enter a description for this persona:`, t`You can always add or change it later.`, '', { rows: 4 });
 
-    await initPersona(avatarId, personaName, personaDescription, '');
+    await initPersona(avatarId, personaName, personaDescription ?? '', '');
     if (power_user.persona_show_notifications) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.success(t`You can now pick ${personaName} as a persona in the Persona Management menu.`, t`Persona Created`);
     }
 }
@@ -528,15 +495,14 @@ export async function createPersona(avatarId) {
  */
 async function createDummyPersona() {
     const popup = new Popup(t`Enter a name for this persona:`, POPUP_TYPE.INPUT, '', {
-        // @ts-expect-error TS(2322) FIXME: Type '{ id: string; type: string; label: any; }[]'... Remove this comment to see the full error message
         customInputs: [{
             id: 'persona_title',
-            type: 'text',
+            type: 'text' as const,
             label: t`Persona Title (optional, display only)`,
         }],
-    });
+    } as Record<string, unknown>);
 
-    const personaName = await popup.show();
+    const personaName: unknown = await popup.show();
     const personaTitle = String(popup.inputResults.get('persona_title') || '').trim();
 
     if (!personaName || typeof personaName !== 'string') {
@@ -564,18 +530,21 @@ async function createDummyPersona() {
  * @param {string} [options.lorebook] Attached lorebook name
  * @returns {Promise<void>}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'avatarId' implicitly has an 'any' type.
-export async function initPersona(avatarId, personaName, personaDescription, personaTitle, {
+export async function initPersona(avatarId: string, personaName: string, personaDescription: string, personaTitle: string, {
     silent = false,
     position = persona_description_positions.IN_PROMPT,
     depth = DEFAULT_DEPTH,
     role = DEFAULT_ROLE,
     lorebook = '',
+}: {
+    silent?: boolean;
+    position?: number;
+    depth?: number;
+    role?: number;
+    lorebook?: string;
 } = {}) {
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-    power_user.personas[avatarId] = personaName;
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-    power_user.persona_descriptions[avatarId] = {
+    (power_user.personas as Record<string, string>)[avatarId] = personaName;
+    (power_user.persona_descriptions as Record<string, Record<string, unknown>>)[avatarId] = {
         description: personaDescription || '',
         position: position,
         depth: depth,
@@ -602,21 +571,17 @@ export async function initPersona(avatarId, personaName, personaDescription, per
  * @param {number} [characterId] - The ID of the character to convert to a persona. Defaults to the current character ID.
  * @returns {Promise<boolean>} A promise that resolves to true if the character was converted, false otherwise.
  */
-export async function convertCharacterToPersona(characterId = null) {
-    // @ts-expect-error TS(2322) FIXME: Type 'number' is not assignable to type 'null'.
+export async function convertCharacterToPersona(characterId: number | null = null) {
     if (null === characterId) characterId = Number(this_chid);
 
-    // @ts-expect-error TS(2538) FIXME: Type 'null' cannot be used as an index type.
-    const avatarUrl = characters[characterId]?.avatar;
+    const avatarUrl = characters[characterId!]?.avatar;
     if (!avatarUrl) {
         console.log('No avatar found for this character');
         return false;
     }
 
-    // @ts-expect-error TS(2538) FIXME: Type 'null' cannot be used as an index type.
-    const name = characters[characterId]?.name;
-    // @ts-expect-error TS(2538) FIXME: Type 'null' cannot be used as an index type.
-    let description = characters[characterId]?.description;
+    const name = characters[characterId!]?.name;
+    let description = characters[characterId!]?.description ?? '';
     const overwriteName = `${name} (Persona).png`;
 
     if (overwriteName in power_user.personas) {
@@ -638,10 +603,8 @@ export async function convertCharacterToPersona(characterId = null) {
     const thumbnailAvatar = getThumbnailUrl('avatar', avatarUrl);
     await uploadUserAvatar(thumbnailAvatar, overwriteName);
 
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-    power_user.personas[overwriteName] = name;
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-    power_user.persona_descriptions[overwriteName] = {
+    (power_user.personas as Record<string, string>)[overwriteName] = name!;
+    (power_user.persona_descriptions as Record<string, Record<string, unknown>>)[overwriteName] = {
         description: description,
         position: persona_description_positions.IN_PROMPT,
         depth: DEFAULT_DEPTH,
@@ -659,7 +622,6 @@ export async function convertCharacterToPersona(characterId = null) {
     await eventSource.emit(event_types.PERSONA_CREATED, { avatarId: overwriteName, name, description, title: '' });
 
     console.log('Persona for character created');
-    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
     notyf.success(t`You can now pick ${name} as a persona in the Persona Management menu.`, t`Persona Created`);
 
     // Refresh the persona selector
@@ -673,19 +635,16 @@ export async function convertCharacterToPersona(characterId = null) {
  * Counts the number of tokens in a persona description.
  */
 const countPersonaDescriptionTokens = debounce(async () => {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const description = String(document.getElementById('persona_description').value);
+    const description = String((document.getElementById('persona_description') as HTMLInputElement).value);
     const count = await getTokenCountAsync(description);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('persona_description_token_count').textContent = String(count);
+    document.getElementById('persona_description_token_count')!.textContent = String(count);
 }, debounce_timeout.relaxed);
 
 /**
  * Updates the UI for the Persona Management page with the current persona values
  */
 export function setPersonaDescription() {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('your_name').textContent = name1;
+    document.getElementById('your_name')!.textContent = name1;
 
     if (power_user.persona_description_position === persona_description_positions.AFTER_CHAR) {
         power_user.persona_description_position = persona_description_positions.IN_PROMPT;
@@ -693,20 +652,21 @@ export function setPersonaDescription() {
 
     const _el695 = document.getElementById('persona_depth_position_settings') as HTMLElement;
     if (_el695) _el695.style.display = power_user.persona_description_position === persona_description_positions.AT_DEPTH ? '' : 'none';
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('persona_description').value = power_user.persona_description;
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('persona_depth_value').value = power_user.persona_description_depth ?? DEFAULT_DEPTH;
-    const personaDescPosEl = document.querySelector('#persona_description_position');
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    personaDescPosEl.value = power_user.persona_description_position;
-    personaDescPosEl.querySelector(`option[value="${power_user.persona_description_position}"]`).setAttribute('selected', String(true));
-    const personaDepthRoleEl = document.querySelector('#persona_depth_role');
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    personaDepthRoleEl.value = power_user.persona_description_role;
-    personaDepthRoleEl.querySelector(`option[value="${power_user.persona_description_role}"]`).selected = true;
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    document.getElementById('persona_lore_button').classList.toggle('world_set', !!power_user.persona_description_lorebook);
+    (document.getElementById('persona_description') as HTMLInputElement).value = power_user.persona_description;
+    (document.getElementById('persona_depth_value') as HTMLInputElement).value = String(power_user.persona_description_depth ?? DEFAULT_DEPTH);
+    const personaDescPosEl = document.querySelector('#persona_description_position') as HTMLSelectElement | null;
+    if (personaDescPosEl) {
+        personaDescPosEl.value = String(power_user.persona_description_position);
+        const option = personaDescPosEl.querySelector(`option[value="${power_user.persona_description_position}"]`) as HTMLOptionElement | null;
+        if (option) option.selected = true;
+    }
+    const personaDepthRoleEl = document.querySelector('#persona_depth_role') as HTMLSelectElement | null;
+    if (personaDepthRoleEl) {
+        personaDepthRoleEl.value = String(power_user.persona_description_role);
+        const option = personaDepthRoleEl.querySelector(`option[value="${power_user.persona_description_role}"]`) as HTMLOptionElement | null;
+        if (option) option.selected = true;
+    }
+    document.getElementById('persona_lore_button')!.classList.toggle('world_set', !!power_user.persona_description_lorebook);
     countPersonaDescriptionTokens();
 
     updatePersonaUIStates();
@@ -718,10 +678,8 @@ export function setPersonaDescription() {
  * @returns {string[]} An array of persona identifiers
  */
 function getPersonasOfCurrentChat() {
-    // @ts-expect-error TS(2339) FIXME: Property 'force_avatar' does not exist on type 'ne... Remove this comment to see the full error message
-    const personas = chat.filter(message => String(message.force_avatar).startsWith(USER_AVATAR_PATH))
-        // @ts-expect-error TS(2339) FIXME: Property 'force_avatar' does not exist on type 'ne... Remove this comment to see the full error message
-        .map(message => message.force_avatar.replace(USER_AVATAR_PATH, ''))
+    const personas = chat.filter((message: ChatMessage) => String(message.force_avatar).startsWith(USER_AVATAR_PATH))
+        .map((message: ChatMessage) => message.force_avatar!.replace(USER_AVATAR_PATH, ''))
         .filter(onlyUnique);
     return personas;
 }
@@ -735,23 +693,20 @@ function getPersonasOfCurrentChat() {
  * @param {boolean} [options.interactable] - Whether the avatars should be interactable
  * @param {boolean} [options.highlightFavs] - Whether to highlight favorite avatars
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'block' implicitly has an 'any' type.
-export function buildPersonaAvatarList(block, personas, { empty = true, interactable = false, highlightFavs = true } = {}) {
-    // @ts-expect-error TS(7006) FIXME: Parameter 'avatar' implicitly has an 'any' type.
+export function buildPersonaAvatarList(block: HTMLElement, personas: string[], { empty = true, interactable = false, highlightFavs = true }: { empty?: boolean; interactable?: boolean; highlightFavs?: boolean } = {}) {
+    const personasMap = power_user.personas as Record<string, string | undefined>;
+    const personaDescsMap = power_user.persona_descriptions as Record<string, Record<string, unknown> | undefined>;
     const personaEntities = personas.map(avatar => ({
         type: 'persona',
         id: avatar,
         item: {
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-            name: power_user.personas[avatar],
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-            description: power_user.persona_descriptions[avatar]?.description || '',
+            name: personasMap[avatar],
+            description: (personaDescsMap[avatar]?.description as string) || '',
             avatar: avatar,
             fav: power_user.default_persona === avatar,
         },
     }));
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     buildAvatarList(block, personaEntities, { empty: empty, interactable: interactable, highlightFavs: highlightFavs });
 }
 
@@ -760,11 +715,9 @@ export function buildPersonaAvatarList(block, personas, { empty = true, interact
  * Converts connections to entities and populates the avatar list. Shows a message if no connections are found.
  */
 export function updatePersonaConnectionsAvatarList() {
-    /** @type {PersonaConnection[]} */
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-    const connections = power_user.persona_descriptions[user_avatar]?.connections ?? [];
-    // @ts-expect-error TS(7006) FIXME: Parameter 'connection' implicitly has an 'any' typ... Remove this comment to see the full error message
-    const entities = connections.map(connection => {
+    const personaDescsMap = power_user.persona_descriptions as Record<string, Record<string, unknown> | undefined>;
+    const connections = (personaDescsMap[user_avatar]?.connections ?? []) as PersonaConnection[];
+    const entities = connections.map((connection: PersonaConnection) => {
         if (connection.type === 'character') {
             const character = characters.find(c => c.avatar === connection.id);
             if (character) return characterToEntity(character, getCharIndex(character));
@@ -774,15 +727,12 @@ export function updatePersonaConnectionsAvatarList() {
             if (group) return groupToEntity(group);
         }
         return undefined;
-    // @ts-expect-error TS(7006) FIXME: Parameter 'entity' implicitly has an 'any' type.
-    }).filter(entity => entity?.item !== undefined);
+    }).filter((entity): entity is NonNullable<typeof entity> => entity?.item !== undefined);
 
     if (entities.length)
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        buildAvatarList(document.getElementById('persona_connections_list'), entities, { interactable: true });
+        buildAvatarList(document.getElementById('persona_connections_list')!, entities, { interactable: true });
     else
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        document.getElementById('persona_connections_list').textContent = t`[No character connections. Click one of the buttons above to connect this persona.]`;
+        document.getElementById('persona_connections_list')!.textContent = t`[No character connections. Click one of the buttons above to connect this persona.]`;
 }
 
 
@@ -798,8 +748,12 @@ export function updatePersonaConnectionsAvatarList() {
  * @param {PersonaConnection} [options.targetedChar] - The targeted character or gorup for this persona selection
  * @returns {Promise<string?>} - A promise that resolves to the selected persona id or null if no selection was made
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'title' implicitly has an 'any' type.
-export async function askForPersonaSelection(title, text, personas, { okButton = 'None', shiftClickHandler = undefined, highlightPersonas = false, targetedChar = undefined } = {}) {
+export async function askForPersonaSelection(title: string, text: string, personas: string[], { okButton = 'None', shiftClickHandler = undefined, highlightPersonas = false, targetedChar = undefined }: {
+    okButton?: string;
+    shiftClickHandler?: ((element: HTMLElement, ev: MouseEvent) => void) | undefined;
+    highlightPersonas?: boolean | string[];
+    targetedChar?: PersonaConnection | null | undefined;
+} = {}) {
     const content = document.createElement('div');
     const titleElement = document.createElement('h3');
     titleElement.textContent = title;
@@ -819,46 +773,40 @@ export async function askForPersonaSelection(title, text, personas, { okButton =
     else
         personaListBlock.textContent = t`[Currently no personas connected]`;
 
-    // @ts-expect-error TS(2358) FIXME: The left-hand side of an 'instanceof' expression m... Remove this comment to see the full error message
-    const personasToHighlight = highlightPersonas instanceof Array ? highlightPersonas : (highlightPersonas ? getPersonasOfCurrentChat() : []);
+    const personasToHighlight = Array.isArray(highlightPersonas) ? highlightPersonas as string[] : (highlightPersonas ? getPersonasOfCurrentChat() : []);
 
     // Make the persona blocks clickable and close the popup
     personaListBlock.querySelectorAll('.avatar[data-type="persona"]').forEach(block => {
         if (!(block instanceof HTMLElement)) return;
-        block.dataset.result = String(100 + personas.indexOf(block.dataset.pid));
+        block.dataset.result = String(100 + personas.indexOf(block.dataset.pid ?? ''));
 
         if (shiftClickHandler) {
-            block.addEventListener('click', function (ev) {
+            block.addEventListener('click', function (this: HTMLElement, ev: MouseEvent) {
                 if (ev.shiftKey) {
-                    // @ts-expect-error TS(2349) FIXME: This expression is not callable.
                     shiftClickHandler(this, ev);
                 }
             });
         }
 
-        if (personasToHighlight && personasToHighlight.includes(block.dataset.pid)) {
+        if (personasToHighlight && personasToHighlight.includes(block.dataset.pid ?? '')) {
             block.classList.add('is_active');
             block.title = block.title + '\n\n' + t`Was used in current chat.`;
             if (block.classList.contains('is_fav')) block.title = block.title + '\n' + t`Is your default persona.`;
         }
     });
 
-    /** @type {import('./popup.js').CustomPopupButton[]} */
-    const customButtons = [];
+    const personaDescsMap = power_user.persona_descriptions as Record<string, Record<string, unknown> | undefined>;
+    const customButtons: Record<string, unknown>[] = [];
     if (targetedChar) {
         customButtons.push({
             text: t`Remove All Connections`,
             result: 2,
             action: () => {
-                for (const [personaId, description] of Object.entries(power_user.persona_descriptions)) {
-                    /** @type {PersonaConnection[]} */
-                    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-                    const connections = description.connections;
+                for (const [personaId, description] of Object.entries(personaDescsMap)) {
+                    const connections = (description?.connections ?? []) as PersonaConnection[];
                     if (connections) {
-                        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                        power_user.persona_descriptions[personaId].connections = connections.filter(c => {
-                            // @ts-expect-error TS(2339) FIXME: Property 'type' does not exist on type 'never'.
-                            if (targetedChar.type == c.type && targetedChar.id == c.id) return false;
+                        (personaDescsMap[personaId]!).connections = connections.filter((c: PersonaConnection) => {
+                            if (targetedChar!.type == c.type && targetedChar!.id == c.id) return false;
                             return true;
                         });
                     }
@@ -867,19 +815,16 @@ export async function askForPersonaSelection(title, text, personas, { okButton =
                 saveSettingsDebounced();
                 updatePersonaConnectionsAvatarList();
                 if (power_user.persona_show_notifications) {
-                    // @ts-expect-error TS(2339) FIXME: Property 'type' does not exist on type 'never'.
-                    const name = targetedChar.type == 'character' ? characters[targetedChar.id]?.name : groups[targetedChar.id]?.name;
-                    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
+                    const name = targetedChar!.type == 'character' ? characters.find(c => c.avatar === targetedChar!.id)?.name : groups.find(g => g.id === targetedChar!.id)?.name;
                     notyf.info(t`All connections to ${name} have been removed.`, t`Personas Unlocked`);
                 }
             },
         });
     }
 
-    // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'null | un... Remove this comment to see the full error message
-    const popup = new Popup(content, POPUP_TYPE.TEXT, '', { okButton: okButton, customButtons: customButtons });
+    const popup = new Popup(content, POPUP_TYPE.TEXT, '', { okButton: okButton, customButtons: customButtons } as Record<string, unknown>);
     const result = await popup.show();
-    return Number(result) >= 100 ? personas[Number(result) - 100] : null;
+    return Number(result) >= 100 ? personas[Number(result) - 100] ?? null : null;
 }
 
 /**
@@ -889,8 +834,7 @@ export async function askForPersonaSelection(title, text, personas, { okButton =
  * @param {string} [options.personaKey] - Optionally a persona avatar key to target (if multiple persona have the same name); must match the name
  * @returns {Promise<boolean>} True if a matching persona was found and selected, false otherwise
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
-export async function autoSelectPersona(name, { personaKey = null } = {}) {
+export async function autoSelectPersona(name: string, { personaKey = null }: { personaKey?: string | null } = {}) {
     const persona = findPersona({ name: personaKey ?? name, allowAvatar: !!personaKey });
     if (persona) {
         console.log(`Auto-selecting persona ${persona.avatar} for name ${name}`);
@@ -906,14 +850,13 @@ export async function autoSelectPersona(name, { personaKey = null } = {}) {
  * @param {string} avatarId Avatar ID of the persona to edit
  * @param {string} currentTitle Current title of the persona
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'popup' implicitly has an 'any' type.
-async function editPersonaTitle(popup, avatarId, currentTitle) {
+async function editPersonaTitle(popup: Popup, avatarId: string, currentTitle: string) {
     if (popup.result !== POPUP_RESULT.AFFIRMATIVE) {
         return;
     }
 
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-    if (!power_user.persona_descriptions[avatarId]) {
+    const personaDescsMap = power_user.persona_descriptions as Record<string, Record<string, unknown> | undefined>;
+    if (!personaDescsMap[avatarId]) {
         console.warn('Uninitialized persona descriptor for avatar:', avatarId);
         return;
     }
@@ -922,8 +865,7 @@ async function editPersonaTitle(popup, avatarId, currentTitle) {
 
     if (!newTitle && currentTitle) {
         console.log(`Removed persona title for ${avatarId}`);
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        delete power_user.persona_descriptions[avatarId].title;
+        delete personaDescsMap[avatarId]!.title;
         await getUserAvatars(true, avatarId);
         saveSettingsDebounced();
         await eventSource.emit(event_types.PERSONA_UPDATED, avatarId);
@@ -931,8 +873,7 @@ async function editPersonaTitle(popup, avatarId, currentTitle) {
     }
 
     if (newTitle !== currentTitle) {
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        power_user.persona_descriptions[avatarId].title = newTitle;
+        personaDescsMap[avatarId]!.title = newTitle;
         console.log(`Updated persona title for ${avatarId} to ${newTitle}`);
         await getUserAvatars(true, avatarId);
         saveSettingsDebounced();
@@ -946,12 +887,11 @@ async function editPersonaTitle(popup, avatarId, currentTitle) {
  * @param {string} avatarId - ID of the avatar to rename
  * @returns {Promise<boolean>} A promise that resolves to true if the persona was renamed, false otherwise
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'avatarId' implicitly has an 'any' type.
-async function renamePersona(avatarId) {
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-    const currentName = power_user.personas[avatarId];
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-    const currentTitle = power_user.persona_descriptions[avatarId]?.title || '';
+async function renamePersona(avatarId: string) {
+    const personasMap = power_user.personas as Record<string, string | undefined>;
+    const personaDescsMap = power_user.persona_descriptions as Record<string, Record<string, unknown> | undefined>;
+    const currentName = personasMap[avatarId];
+    const currentTitle = (personaDescsMap[avatarId]?.title as string) || '';
     const newName = await Popup.show.input(t`Rename Persona`, t`Enter a new name for this persona:`, currentName, {
         customInputs: [{
             id: 'persona_title',
@@ -959,8 +899,7 @@ async function renamePersona(avatarId) {
             label: t`Persona Title (optional, display only)`,
             defaultState: currentTitle,
         }],
-        // @ts-expect-error TS(7006) FIXME: Parameter 'popup' implicitly has an 'any' type.
-        onClose: (popup) => editPersonaTitle(popup, avatarId, currentTitle),
+        onClose: (popup: Popup) => editPersonaTitle(popup, avatarId, currentTitle),
     });
 
     if (!newName || newName === currentName) {
@@ -968,8 +907,7 @@ async function renamePersona(avatarId) {
         return false;
     }
 
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-    power_user.personas[avatarId] = newName;
+    (power_user.personas as Record<string, string>)[avatarId] = newName;
     console.log(`Renamed persona ${avatarId} to ${newName}`);
 
     if (avatarId === user_avatar) {
@@ -990,35 +928,33 @@ async function renamePersona(avatarId) {
  * @param {boolean} [options.toastPersonaNameChange] - Whether to show a toast when the persona name is changed
  * @returns {Promise<void>}
  */
-async function selectCurrentPersona({ toastPersonaNameChange = true } = {}) {
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-    const personaName = power_user.personas[user_avatar];
+async function selectCurrentPersona({ toastPersonaNameChange = true }: { toastPersonaNameChange?: boolean } = {}) {
+    const personasMap = power_user.personas as Record<string, string | undefined>;
+    const personaDescsMap = power_user.persona_descriptions as Record<string, Record<string, unknown> | undefined>;
+    const personaName = personasMap[user_avatar];
     if (personaName) {
-        // @ts-expect-error TS(2339) FIXME: Property 'persona_auto_lock' does not exist on typ... Remove this comment to see the full error message
-        const shouldAutoLock = power_user.persona_auto_lock && user_avatar !== chat_metadata.persona;
+        const shouldAutoLock = !!(power_user as Record<string, unknown>).persona_auto_lock && user_avatar !== chat_metadata.persona;
 
         if (personaName !== name1) {
             console.log(`Auto-updating user name to ${personaName}`);
             setUserName(personaName, { toastPersonaNameChange: !shouldAutoLock && toastPersonaNameChange });
         }
 
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        const descriptor = power_user.persona_descriptions[user_avatar];
+        const descriptor = personaDescsMap[user_avatar];
 
         if (descriptor) {
-            power_user.persona_description = descriptor.description ?? '';
-            power_user.persona_description_position = descriptor.position ?? persona_description_positions.IN_PROMPT;
-            power_user.persona_description_depth = descriptor.depth ?? DEFAULT_DEPTH;
-            power_user.persona_description_role = descriptor.role ?? DEFAULT_ROLE;
-            power_user.persona_description_lorebook = descriptor.lorebook ?? '';
+            power_user.persona_description = (descriptor.description as string) ?? '';
+            power_user.persona_description_position = (descriptor.position as number) ?? persona_description_positions.IN_PROMPT;
+            power_user.persona_description_depth = (descriptor.depth as number) ?? DEFAULT_DEPTH;
+            power_user.persona_description_role = (descriptor.role as number) ?? DEFAULT_ROLE;
+            power_user.persona_description_lorebook = (descriptor.lorebook as string) ?? '';
         } else {
             power_user.persona_description = '';
             power_user.persona_description_position = persona_description_positions.IN_PROMPT;
             power_user.persona_description_depth = DEFAULT_DEPTH;
             power_user.persona_description_role = DEFAULT_ROLE;
             power_user.persona_description_lorebook = '';
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-            power_user.persona_descriptions[user_avatar] = {
+            personaDescsMap[user_avatar] = {
                 description: '',
                 position: persona_description_positions.IN_PROMPT,
                 depth: DEFAULT_DEPTH,
@@ -1036,7 +972,6 @@ async function selectCurrentPersona({ toastPersonaNameChange = true } = {}) {
             chat_metadata.persona = user_avatar;
             console.log(`Auto locked persona to ${user_avatar}`);
             if (toastPersonaNameChange && power_user.persona_show_notifications) {
-                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 notyf.success(t`Persona ${personaName} selected and auto-locked to current chat`, t`Persona Selected`);
             }
             saveMetadataDebounced();
@@ -1047,11 +982,9 @@ async function selectCurrentPersona({ toastPersonaNameChange = true } = {}) {
         if (power_user.persona_show_notifications && !isPersonaPanelOpen()) {
             const temporary = getPersonaTemporaryLockInfo();
             if (temporary.isTemporary) {
-                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 notyf.info(t`This persona is only temporarily chosen. Click for more info.`, t`Temporary Persona`, {
                     preventDuplicates: true,
                     onclick: () => {
-                        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                         notyf.info(escapeHtml(temporary.info).replaceAll('\n', '<br />'), t`Temporary Persona`, { escapeHtml: false });
                     },
                 });
@@ -1065,26 +998,25 @@ async function selectCurrentPersona({ toastPersonaNameChange = true } = {}) {
  * @param {PersonaConnection} connection - Connection to check
  * @returns {boolean} Whether the connection is locked
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'connection' implicitly has an 'any' typ... Remove this comment to see the full error message
-export function isPersonaConnectionLocked(connection) {
-    return (!selected_group && connection.type === 'character' && connection.id === characters[this_chid]?.avatar)
+export function isPersonaConnectionLocked(connection: PersonaConnection) {
+    return (!selected_group && connection.type === 'character' && connection.id === characters[Number(this_chid)]?.avatar)
         || (selected_group && connection.type === 'group' && connection.id === selected_group);
 }
 
 /**
  * Checks if the persona is locked
- * @param {PersonaLockType} type - Lock type
+ * @param {'chat' | 'character' | 'default'} type - Lock type
  * @returns {boolean} Whether the persona is locked
  */
-export function isPersonaLocked(type = 'chat') {
+export function isPersonaLocked(type: string = 'chat') {
     switch (type) {
         case 'default':
             return power_user.default_persona === user_avatar;
         case 'chat':
             return chat_metadata.persona == user_avatar;
         case 'character': {
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-            return !!power_user.persona_descriptions[user_avatar]?.connections?.some(isPersonaConnectionLocked);
+            const descs = power_user.persona_descriptions as Record<string, Record<string, unknown> | undefined>;
+            return !!(descs[user_avatar]?.connections as PersonaConnection[] | undefined)?.some(isPersonaConnectionLocked);
         }
         default: throw new Error(`Unknown persona lock type: ${type}`);
     }
@@ -1093,17 +1025,16 @@ export function isPersonaLocked(type = 'chat') {
 /**
  * Locks or unlocks the persona
  * @param {boolean} state Desired lock state
- * @param {PersonaLockType} type - Lock type
+ * @param {'chat' | 'character' | 'default'} type - Lock type
  * @returns {Promise<void>}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'state' implicitly has an 'any' type.
-export async function setPersonaLockState(state, type = 'chat') {
+export async function setPersonaLockState(state: boolean, type: string = 'chat') {
     return state ? await lockPersona(type) : await unlockPersona(type);
 }
 
 /**
  * Toggle the persona lock state
- * @param {PersonaLockType} type - Lock type
+ * @param {'chat' | 'character' | 'default'} type - Lock type
  * @returns {Promise<boolean>} - Whether the persona was locked
  */
 export async function togglePersonaLock(type = 'chat') {
@@ -1118,13 +1049,12 @@ export async function togglePersonaLock(type = 'chat') {
 
 /**
  * Unlock the persona
- * @param {PersonaLockType} type - Lock type
+ * @param {'chat' | 'character' | 'default'} type - Lock type
  * @returns {Promise<void>}
  */
-async function unlockPersona(type = 'chat') {
+async function unlockPersona(type: string = 'chat') {
     switch (type) {
         case 'default': {
-            // TODO: Make this toggle-able
             await toggleDefaultPersona(user_avatar, { quiet: true });
             break;
         }
@@ -1134,24 +1064,20 @@ async function unlockPersona(type = 'chat') {
                 delete chat_metadata.persona;
                 await saveMetadata();
                 if (power_user.persona_show_notifications && !isPersonaPanelOpen()) {
-                    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                     notyf.info(t`Persona ${name1} is now unlocked from this chat.`, t`Persona Unlocked`);
                 }
             }
             break;
         }
         case 'character': {
-            /** @type {PersonaConnection[]} */
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-            const connections = power_user.persona_descriptions[user_avatar]?.connections;
+            const personaDescsMap = power_user.persona_descriptions as Record<string, Record<string, unknown> | undefined>;
+            const connections = personaDescsMap[user_avatar]?.connections as PersonaConnection[] | undefined;
             if (connections) {
                 console.log(`Unlocking persona ${user_avatar} from this character ${name2}`);
-                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                power_user.persona_descriptions[user_avatar].connections = connections.filter(c => !isPersonaConnectionLocked(c));
+                personaDescsMap[user_avatar]!.connections = connections.filter((c: PersonaConnection) => !isPersonaConnectionLocked(c));
                 saveSettingsDebounced();
                 updatePersonaConnectionsAvatarList();
                 if (power_user.persona_show_notifications && !isPersonaPanelOpen()) {
-                    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                     notyf.info(t`Persona ${name1} is now unlocked from character ${name2}.`, t`Persona Unlocked`);
                 }
             }
@@ -1166,20 +1092,19 @@ async function unlockPersona(type = 'chat') {
 
 /**
  * Lock the persona
- * @param {PersonaLockType} type - Lock type
+ * @param {'chat' | 'character' | 'default'} type - Lock type
  */
-async function lockPersona(type = 'chat') {
+async function lockPersona(type: string = 'chat') {
+    const personasMap = power_user.personas as Record<string, string | undefined>;
+    const personaDescsMap = power_user.persona_descriptions as Record<string, Record<string, unknown> | undefined>;
     // First make sure that user_avatar is actually a persona
-    if (!(user_avatar in power_user.personas)) {
+    if (!(user_avatar in personasMap)) {
         console.log(`Creating a new persona ${user_avatar}`);
         if (power_user.persona_show_notifications) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.info(t`Creating a new persona for currently selected user name and avatar...`, t`Persona Not Found`);
         }
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        power_user.personas[user_avatar] = name1;
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        power_user.persona_descriptions[user_avatar] = {
+        (power_user.personas as Record<string, string>)[user_avatar] = name1;
+        personaDescsMap[user_avatar] = {
             description: '',
             position: persona_description_positions.IN_PROMPT,
             depth: DEFAULT_DEPTH,
@@ -1201,35 +1126,29 @@ async function lockPersona(type = 'chat') {
             chat_metadata.persona = user_avatar;
             saveMetadataDebounced();
             if (power_user.persona_show_notifications && !isPersonaPanelOpen()) {
-                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 notyf.success(t`User persona ${name1} is locked to ${name2} in this chat`, t`Persona Locked`);
             }
             break;
         }
         case 'character': {
             const newConnection = getCurrentConnectionObj();
-            /** @type {PersonaConnection[]} */
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-            const connections = power_user.persona_descriptions[user_avatar].connections?.filter(c => !isPersonaConnectionLocked(c)) ?? [];
+            const existingConnections = personaDescsMap[user_avatar]!.connections as PersonaConnection[] | undefined;
+            const connections = existingConnections?.filter((c: PersonaConnection) => !isPersonaConnectionLocked(c)) ?? [];
             if (newConnection && newConnection.id) {
                 console.log(`Locking persona ${user_avatar} to this character ${name2}`);
-                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                power_user.persona_descriptions[user_avatar].connections = [...connections, newConnection];
+                personaDescsMap[user_avatar]!.connections = [...connections, newConnection];
 
-                const unlinkedCharacters = [];
-                // @ts-expect-error TS(2339) FIXME: Property 'persona_allow_multi_connections' does no... Remove this comment to see the full error message
-                if (!power_user.persona_allow_multi_connections) {
-                    for (const [avatarId, description] of Object.entries(power_user.persona_descriptions)) {
+                const unlinkedCharacters: string[] = [];
+                if (!(power_user as Record<string, unknown>).persona_allow_multi_connections) {
+                    const allDescs = power_user.persona_descriptions as Record<string, Record<string, unknown> | undefined>;
+                    for (const [avatarId, description] of Object.entries(allDescs)) {
                         if (avatarId === user_avatar) continue;
 
-                        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-                        const filteredConnections = description.connections?.filter(c => !(c.type === newConnection.type && c.id === newConnection.id)) ?? [];
-                        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-                        if (filteredConnections.length !== description.connections?.length) {
-                            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-                            description.connections = filteredConnections;
-                            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                            unlinkedCharacters.push(power_user.personas[avatarId]);
+                        const descConns = description?.connections as PersonaConnection[] | undefined;
+                        const filteredConnections = descConns?.filter((c: PersonaConnection) => !(c.type === newConnection!.type && c.id === newConnection!.id)) ?? [];
+                        if (filteredConnections.length !== descConns?.length) {
+                            if (description) description.connections = filteredConnections;
+                            unlinkedCharacters.push(personasMap[avatarId] ?? '');
                         }
                     }
                 }
@@ -1241,7 +1160,6 @@ async function lockPersona(type = 'chat') {
                     if (unlinkedCharacters.length)
                         additional += `<br /><br />${t`Unlinked existing persona${unlinkedCharacters.length > 1 ? 's' : ''}: ${unlinkedCharacters.map(escapeHtml).join(', ')}`}`;
                     if (additional || !isPersonaPanelOpen()) {
-                        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                         notyf.success(t`User persona ${escapeHtml(name1)} is locked to character ${escapeHtml(name2)}${additional}`, t`Persona Locked`, { escapeHtml: false });
                     }
                 }
@@ -1270,15 +1188,15 @@ async function deleteUserAvatar() {
  * @param {boolean} [options.silent] If true, skips the confirmation popup and suppresses toast notifications
  * @returns {Promise<boolean>} True if the persona was deleted
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'avatarId' implicitly has an 'any' type.
-async function deletePersona(avatarId, { silent = false } = {}) {
+async function deletePersona(avatarId: string, { silent = false }: { silent?: boolean } = {}) {
     if (!avatarId) {
         console.warn('No avatar id found');
         return false;
     }
 
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-    const name = power_user.personas[avatarId] || '';
+    const personasMap = power_user.personas as Record<string, string | undefined>;
+    const personaDescsMap = power_user.persona_descriptions as Record<string, Record<string, unknown> | undefined>;
+    const name = personasMap[avatarId] || '';
 
     if (!silent) {
         const confirm = await Popup.show.confirm(
@@ -1301,19 +1219,15 @@ async function deletePersona(avatarId, { silent = false } = {}) {
 
     if (request.ok) {
         console.log(`Deleted avatar ${avatarId}`);
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        delete power_user.personas[avatarId];
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        delete power_user.persona_descriptions[avatarId];
+        delete personasMap[avatarId];
+        delete personaDescsMap[avatarId];
 
         if (avatarId === power_user.default_persona) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             if (!silent) notyf.warning(t`The default persona was deleted. You will need to set a new default persona.`, t`Default Persona Deleted`);
             power_user.default_persona = null;
         }
 
         if (avatarId === chat_metadata.persona) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             if (!silent) notyf.warning(t`The locked persona was deleted. You will need to set a new persona for this chat.`, t`Persona Deleted`);
             delete chat_metadata.persona;
             await saveMetadata();
@@ -1335,40 +1249,38 @@ async function deletePersona(avatarId, { silent = false } = {}) {
  *
  */
 async function onPersonaDescriptionInput() {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    power_user.persona_description = String(document.getElementById('persona_description').value);
+    power_user.persona_description = String((document.getElementById('persona_description') as HTMLInputElement).value);
     countPersonaDescriptionTokens();
 
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-    if (power_user.personas[user_avatar]) {
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        let object = power_user.persona_descriptions[user_avatar];
+    const personasMap = power_user.personas as Record<string, string | undefined>;
+    const personaDescsMap = power_user.persona_descriptions as Record<string, Record<string, unknown> | undefined>;
+
+    if (personasMap[user_avatar]) {
+        let object = personaDescsMap[user_avatar];
 
         if (!object) {
             object = {
                 description: power_user.persona_description,
-                position: Number(document.querySelector('#persona_description_position option:checked').value),
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                depth: Number(document.getElementById('persona_depth_value').value),
-                role: Number(document.querySelector('#persona_depth_role option:checked').value),
+                position: Number((document.querySelector('#persona_description_position option:checked') as HTMLOptionElement)?.value),
+                depth: Number((document.getElementById('persona_depth_value') as HTMLInputElement).value),
+                role: Number((document.querySelector('#persona_depth_role option:checked') as HTMLOptionElement)?.value),
                 lorebook: '',
                 title: '',
             };
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-            power_user.persona_descriptions[user_avatar] = object;
+            personaDescsMap[user_avatar] = object;
         }
 
         object.description = power_user.persona_description;
     }
 
-    const chDescEl = document.querySelector(`.avatar-container[data-avatar-id="${user_avatar}"] .ch_description`);
-    chDescEl.textContent = power_user.persona_description || document.getElementById('user_avatar_block')?.getAttribute('no_desc_text') || '';
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    chDescEl.classList.toggle('text_muted', !power_user.persona_description);
+    const chDescEl = document.querySelector(`.avatar-container[data-avatar-id="${user_avatar}"] .ch_description`) as HTMLElement | null;
+    if (chDescEl) {
+        chDescEl.textContent = power_user.persona_description || document.getElementById('user_avatar_block')?.getAttribute('no_desc_text') || '';
+        chDescEl.classList.toggle('text_muted', !power_user.persona_description);
+    }
     saveSettingsDebounced();
 
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-    if (power_user.personas[user_avatar]) {
+    if (personasMap[user_avatar]) {
         await eventSource.emit(event_types.PERSONA_UPDATED, user_avatar);
     }
 }
@@ -1377,11 +1289,10 @@ async function onPersonaDescriptionInput() {
  *
  */
 async function onPersonaDescriptionDepthValueInput() {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    power_user.persona_description_depth = Number(document.getElementById('persona_depth_value').value);
+    power_user.persona_description_depth = Number((document.getElementById('persona_depth_value') as HTMLInputElement).value);
 
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-    if (power_user.personas[user_avatar]) {
+    const personasMap = power_user.personas as Record<string, string | undefined>;
+    if (personasMap[user_avatar]) {
         const object = getOrCreatePersonaDescriptor();
         object.depth = power_user.persona_description_depth;
         saveSettingsDebounced();
@@ -1396,10 +1307,10 @@ async function onPersonaDescriptionDepthValueInput() {
  *
  */
 async function onPersonaDescriptionDepthRoleInput() {
-    power_user.persona_description_role = Number(document.querySelector('#persona_depth_role option:checked').value);
+    power_user.persona_description_role = Number((document.querySelector('#persona_depth_role option:checked') as HTMLOptionElement)?.value);
 
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-    if (power_user.personas[user_avatar]) {
+    const personasMap = power_user.personas as Record<string, string | undefined>;
+    if (personasMap[user_avatar]) {
         const object = getOrCreatePersonaDescriptor();
         object.role = power_user.persona_description_role;
         saveSettingsDebounced();
@@ -1414,14 +1325,12 @@ async function onPersonaDescriptionDepthRoleInput() {
  * Opens a popup to set the lorebook for the current persona.
  * @param {Pick<JQuery.ClickEvent, 'shiftKey' | 'altKey'>} event Click event
  */
-// @ts-expect-error TS(7031) FIXME: Binding element 'shiftKey' implicitly has an 'any'... Remove this comment to see the full error message
-async function onPersonaLoreButtonClick({ shiftKey, altKey }) {
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-    const personaName = power_user.personas[user_avatar];
+async function onPersonaLoreButtonClick({ shiftKey, altKey }: { shiftKey: boolean; altKey: boolean }) {
+    const personasMap = power_user.personas as Record<string, string | undefined>;
+    const personaName = personasMap[user_avatar];
     const selectedLorebook = power_user.persona_description_lorebook;
 
     if (!personaName) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.warning(t`You must bind a name to this persona before you can set a lorebook.`, t`Persona Name Not Set`);
         return;
     }
@@ -1432,36 +1341,31 @@ async function onPersonaLoreButtonClick({ shiftKey, altKey }) {
     }
 
     const templateEl = await renderTemplateAsync('personaLorebook');
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const template = templateEl;
 
-    const worldSelect = templateEl.querySelector('select');
-    templateEl.querySelector('.persona_name').textContent = personaName;
+    const worldSelect = templateEl.querySelector('select') as HTMLSelectElement | null;
+    (templateEl.querySelector('.persona_name') as HTMLElement).textContent = personaName;
 
-    for (const worldName of world_names) {
+    for (const worldName of (world_names as string[])) {
         const option = document.createElement('option');
         option.value = worldName;
         option.innerText = worldName;
         option.selected = selectedLorebook === worldName;
-        worldSelect.append(option);
+        worldSelect!.append(option);
     }
 
-    worldSelect.addEventListener('change', async function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    worldSelect!.addEventListener('change', async function (this: HTMLSelectElement) {
         power_user.persona_description_lorebook = String(this.value);
 
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        if (power_user.personas[user_avatar]) {
+        if (personasMap[user_avatar]) {
             const object = getOrCreatePersonaDescriptor();
             object.lorebook = power_user.persona_description_lorebook;
         }
 
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        document.getElementById('persona_lore_button').classList.toggle('world_set', !!power_user.persona_description_lorebook);
+        document.getElementById('persona_lore_button')!.classList.toggle('world_set', !!power_user.persona_description_lorebook);
         saveSettingsDebounced();
 
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        if (power_user.personas[user_avatar]) {
+        if (personasMap[user_avatar]) {
             await eventSource.emit(event_types.PERSONA_UPDATED, user_avatar);
         }
     });
@@ -1474,11 +1378,11 @@ async function onPersonaLoreButtonClick({ shiftKey, altKey }) {
  */
 async function onPersonaDescriptionPositionInput() {
     power_user.persona_description_position = Number(
-        document.querySelector('#persona_description_position option:checked').value,
+        (document.querySelector('#persona_description_position option:checked') as HTMLOptionElement)?.value,
     );
 
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-    if (power_user.personas[user_avatar]) {
+    const personasMap = power_user.personas as Record<string, string | undefined>;
+    if (personasMap[user_avatar]) {
         const object = getOrCreatePersonaDescriptor();
         object.position = power_user.persona_description_position;
         saveSettingsDebounced();
@@ -1496,9 +1400,9 @@ async function onPersonaDescriptionPositionInput() {
 /**
  *
  */
-export function getOrCreatePersonaDescriptor() {
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-    let object = power_user.persona_descriptions[user_avatar];
+export function getOrCreatePersonaDescriptor(): Record<string, unknown> {
+    const personaDescsMap = power_user.persona_descriptions as Record<string, Record<string, unknown> | undefined>;
+    let object = personaDescsMap[user_avatar];
 
     if (!object) {
         object = {
@@ -1510,8 +1414,7 @@ export function getOrCreatePersonaDescriptor() {
             connections: [],
             title: '',
         };
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        power_user.persona_descriptions[user_avatar] = object;
+        personaDescsMap[user_avatar] = object;
     }
     return object;
 }
@@ -1523,19 +1426,17 @@ export function getOrCreatePersonaDescriptor() {
  * @param {boolean} [options.quiet] If true, no confirmation popups will be shown
  * @returns {Promise<void>}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'avatarId' implicitly has an 'any' type.
-async function toggleDefaultPersona(avatarId, { quiet = false } = {}) {
+async function toggleDefaultPersona(avatarId: string, { quiet = false }: { quiet?: boolean } = {}) {
     if (!avatarId) {
         console.warn('No avatar id found');
         return;
     }
 
     const currentDefault = power_user.default_persona;
+    const personasMap = power_user.personas as Record<string, string | undefined>;
 
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-    if (power_user.personas[avatarId] === undefined) {
+    if (personasMap[avatarId] === undefined) {
         console.warn(`No persona name found for avatar ${avatarId}`);
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.warning(t`You must bind a name to this persona before you can set it as the default.`, t`Persona Name Not Set`);
         return;
     }
@@ -1543,8 +1444,7 @@ async function toggleDefaultPersona(avatarId, { quiet = false } = {}) {
 
     if (avatarId === currentDefault) {
         if (!quiet) {
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-            const confirm = await Popup.show.confirm(t`Are you sure you want to remove the default persona?`, power_user.personas[avatarId]);
+            const confirm = await Popup.show.confirm(t`Are you sure you want to remove the default persona?`, personasMap[avatarId]);
             if (!confirm) {
                 console.debug('User cancelled removing default persona');
                 return;
@@ -1553,16 +1453,13 @@ async function toggleDefaultPersona(avatarId, { quiet = false } = {}) {
 
         console.log(`Removing default persona ${avatarId}`);
         if (power_user.persona_show_notifications && !isPersonaPanelOpen()) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.info(t`This persona will no longer be used by default when you open a new chat.`, t`Default Persona Removed`);
         }
-        // @ts-expect-error TS(2790) FIXME: The operand of a 'delete' operator must be optiona... Remove this comment to see the full error message
-        delete power_user.default_persona;
+        (power_user as Record<string, unknown>).default_persona = null;
     } else {
         if (!quiet) {
             const confirm = await Popup.show.confirm(t`Set Default Persona`,
-                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                t`Are you sure you want to set \"${power_user.personas[avatarId]}\" as the default persona?`
+                t`Are you sure you want to set "${personasMap[avatarId]}" as the default persona?`
                 + '<br /><br />'
                 + t`This name and avatar will be used for all new chats, as well as existing chats where the user persona is not locked.`);
             if (!confirm) {
@@ -1571,10 +1468,9 @@ async function toggleDefaultPersona(avatarId, { quiet = false } = {}) {
             }
         }
 
-        power_user.default_persona = avatarId;
+        (power_user as Record<string, unknown>).default_persona = avatarId;
         if (power_user.persona_show_notifications && !isPersonaPanelOpen()) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            notyf.success(t`Set to ${power_user.personas[avatarId]}.This persona will be used by default when you open a new chat.`, t`Default Persona`);
+            notyf.success(t`Set to ${personasMap[avatarId]}.This persona will be used by default when you open a new chat.`, t`Default Persona`);
         }
     }
 
@@ -1593,16 +1489,13 @@ async function toggleDefaultPersona(avatarId, { quiet = false } = {}) {
  * @param {string} avatarId - The avatar id of the persona to get the state for
  * @returns {PersonaState} An object describing the state of the given persona
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'avatarId' implicitly has an 'any' type.
-function getPersonaStates(avatarId) {
+function getPersonaStates(avatarId: string): PersonaState {
     const isDefaultPersona = power_user.default_persona === avatarId;
     const hasChatLock = chat_metadata.persona == avatarId;
 
-    /** @type {PersonaConnection[]} */
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-    const connections = power_user.persona_descriptions[avatarId]?.connections;
-    // @ts-expect-error TS(7006) FIXME: Parameter 'c' implicitly has an 'any' type.
-    const hasCharLock = !!connections?.some(c =>
+    const personaDescsMap = power_user.persona_descriptions as Record<string, Record<string, unknown> | undefined>;
+    const connections = personaDescsMap[avatarId]?.connections as PersonaConnection[] | undefined;
+    const hasCharLock = !!connections?.some((c: PersonaConnection) =>
         (!selected_group && c.type === 'character' && c.id === characters[Number(this_chid)]?.avatar)
         || (selected_group && c.type === 'group' && c.id === selected_group));
 
@@ -1631,16 +1524,15 @@ function getPersonaStates(avatarId) {
  * @param root0
  * @param root0.navigateToCurrent
  */
-function updatePersonaUIStates({ navigateToCurrent = false } = {}) {
+function updatePersonaUIStates({ navigateToCurrent = false }: { navigateToCurrent?: boolean } = {}) {
     if (navigateToCurrent) {
-        // @ts-expect-error TS(2554) FIXME: Expected 0 arguments, but got 1.
         navigateToAvatar(user_avatar);
     }
 
     // Update the persona list
     document.querySelectorAll('#user_avatar_block .avatar-container').forEach(el => {
         const avatarId = el.getAttribute('data-avatar-id');
-        const states = getPersonaStates(avatarId);
+        const states = getPersonaStates(avatarId!);
         el.classList.toggle('default_persona', states.default);
         el.classList.toggle('locked_to_chat', states.locked.chat);
         el.classList.toggle('locked_to_character', states.locked.character);
@@ -1650,22 +1542,15 @@ function updatePersonaUIStates({ navigateToCurrent = false } = {}) {
     // Buttons for the persona panel on the right
     const personaStates = getPersonaStates(user_avatar);
 
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    document.getElementById('lock_persona_default').classList.toggle('locked', personaStates.default);
+    document.getElementById('lock_persona_default')!.classList.toggle('locked', personaStates.default);
 
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    document.getElementById('lock_user_name').classList.toggle('locked', personaStates.locked.chat);
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    document.querySelector('#lock_user_name i.icon').classList.toggle('fa-lock', personaStates.locked.chat);
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    document.querySelector('#lock_user_name i.icon').classList.toggle('fa-unlock', !personaStates.locked.chat);
+    document.getElementById('lock_user_name')!.classList.toggle('locked', personaStates.locked.chat);
+    (document.querySelector('#lock_user_name i.icon') as HTMLElement)!.classList.toggle('fa-lock', personaStates.locked.chat);
+    (document.querySelector('#lock_user_name i.icon') as HTMLElement)!.classList.toggle('fa-unlock', !personaStates.locked.chat);
 
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    document.getElementById('lock_persona_to_char').classList.toggle('locked', personaStates.locked.character);
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    document.querySelector('#lock_persona_to_char i.icon').classList.toggle('fa-lock', personaStates.locked.character);
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    document.querySelector('#lock_persona_to_char i.icon').classList.toggle('fa-unlock', !personaStates.locked.character);
+    document.getElementById('lock_persona_to_char')!.classList.toggle('locked', personaStates.locked.character);
+    (document.querySelector('#lock_persona_to_char i.icon') as HTMLElement)!.classList.toggle('fa-lock', personaStates.locked.character);
+    (document.querySelector('#lock_persona_to_char i.icon') as HTMLElement)!.classList.toggle('fa-unlock', !personaStates.locked.character);
 
     // Persona panel info block
     const { isTemporary, info } = getPersonaTemporaryLockInfo();
@@ -1709,14 +1594,12 @@ function getPersonaTemporaryLockInfo() {
     const hasDifferentChatLock = !!chat_metadata.persona && chat_metadata.persona !== user_avatar;
     const hasDifferentDefaultLock = power_user.default_persona && power_user.default_persona !== user_avatar;
     const isTemporary = hasDifferentChatLock || (!chat_metadata.persona && hasDifferentDefaultLock);
+    const personasMap = power_user.personas as Record<string, string | undefined>;
     const info = isTemporary ? t`A different persona is locked to this chat, or you have a different default persona set. The currently selected persona will only be temporary, and resets on reload. Consider locking this persona to the chat if you want to permanently use it.`
         + '\n\n'
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        + t`Current Persona: ${power_user.personas[user_avatar]}`
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        + (hasDifferentChatLock ? '\n' + t`Chat persona: ${power_user.personas[chat_metadata.persona]}` : '')
-        // @ts-expect-error TS(2538) FIXME: Type 'null' cannot be used as an index type.
-        + (hasDifferentDefaultLock ? '\n' + t`Default persona: ${power_user.personas[power_user.default_persona]}` : '') : '';
+        + t`Current Persona: ${personasMap[user_avatar]}`
+        + (hasDifferentChatLock ? '\n' + t`Chat persona: ${personasMap[chat_metadata.persona!]}` : '')
+        + (hasDifferentDefaultLock ? '\n' + t`Default persona: ${personasMap[power_user.default_persona!]}` : '') : '';
 
     return {
         isTemporary: isTemporary,
@@ -1732,9 +1615,8 @@ function getPersonaTemporaryLockInfo() {
  * @param {boolean} [options.doRender] - Whether to render the persona immediately
  * @returns {Promise<boolean>} - A promise that resolves to a boolean indicating whether a persona was selected
  */
-async function loadPersonaForCurrentChat({ doRender = false } = {}) {
+async function loadPersonaForCurrentChat({ doRender = false }: { doRender?: boolean } = {}) {
     const currentChatId = getCurrentChatId();
-    // @ts-expect-error TS(7005) FIXME: Variable 'personaLastLoadedChatId' implicitly has ... Remove this comment to see the full error message
     if (currentChatId === personaLastLoadedChatId) return;
     personaLastLoadedChatId = currentChatId;
 
@@ -1742,18 +1624,16 @@ async function loadPersonaForCurrentChat({ doRender = false } = {}) {
     const userAvatars = await getUserAvatars(doRender);
 
     // Check if the user avatar is set and exists in the list of user avatars
-    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-    if (userAvatars.length && !userAvatars.includes(user_avatar)) {
+    if (userAvatars && userAvatars.length && !userAvatars.includes(user_avatar)) {
         console.log(`User avatar ${user_avatar} not found in user avatars list, pick the first available one`);
-        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-        await setUserAvatar(userAvatars[0], { toastPersonaNameChange: false, navigateToCurrent: true });
+        await setUserAvatar(userAvatars[0]!, { toastPersonaNameChange: false, navigateToCurrent: true });
     }
 
     // Define a persona for this chat
     let chatPersona = '';
 
     /** @type {'chat' | 'character' | 'default' | null} */
-    let connectType = null;
+    let connectType: 'chat' | 'character' | 'default' | null = null;
 
     // If persona is locked in chat metadata, select it
     if (chat_metadata.persona) {
@@ -1761,8 +1641,7 @@ async function loadPersonaForCurrentChat({ doRender = false } = {}) {
         chatPersona = chat_metadata.persona;
 
         // Verify it exists
-        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-        if (!userAvatars.includes(chatPersona)) {
+        if (userAvatars && !userAvatars.includes(chatPersona)) {
             console.warn('Chat-locked persona avatar not found, unlocking persona');
             delete chat_metadata.persona;
             saveSettingsDebounced();
@@ -1804,18 +1683,14 @@ async function loadPersonaForCurrentChat({ doRender = false } = {}) {
 
         if (connectedPersonas.length > 0) {
             if (connectedPersonas.length === 1) {
-                // @ts-expect-error TS(2322) FIXME: Type 'string | undefined' is not assignable to typ... Remove this comment to see the full error message
-                chatPersona = connectedPersonas[0];
-            // @ts-expect-error TS(2339) FIXME: Property 'persona_allow_multi_connections' does no... Remove this comment to see the full error message
-            } else if (!power_user.persona_allow_multi_connections) {
+                chatPersona = connectedPersonas[0]!;
+            } else if (!(power_user as Record<string, unknown>).persona_allow_multi_connections) {
                 console.warn('More than one persona is connected to this character.Using the first available persona for this chat.');
-                // @ts-expect-error TS(2322) FIXME: Type 'string | undefined' is not assignable to typ... Remove this comment to see the full error message
-                chatPersona = connectedPersonas[0];
+                chatPersona = connectedPersonas[0]!;
             } else {
                 chatPersona = await askForPersonaSelection(t`Select Persona`,
                     t`Multiple personas are connected to this character.\nSelect a persona to use for this chat.`,
-                    // @ts-expect-error TS(2322) FIXME: Type '{ type: string; id: any; } | null' is not as... Remove this comment to see the full error message
-                    connectedPersonas, { highlightPersonas: true, targetedChar: getCurrentConnectionObj() });
+                    connectedPersonas, { highlightPersonas: true, targetedChar: getCurrentConnectionObj() ?? undefined }) ?? '';
             }
         }
 
@@ -1831,37 +1706,32 @@ async function loadPersonaForCurrentChat({ doRender = false } = {}) {
     }
 
     // Whatever way we selected a persona, if it doesn't exist, unlock this chat
-    // @ts-expect-error TS(2339) FIXME: Property 'persona' does not exist on type '{}'.
-    if (chat_metadata.persona && !userAvatars.includes(chat_metadata.persona)) {
+    if (chat_metadata.persona && userAvatars && !userAvatars.includes(chat_metadata.persona)) {
         console.warn('Persona avatar not found, unlocking persona');
         delete chat_metadata.persona;
     }
 
     // Default persona missing
-    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-    if (power_user.default_persona && !userAvatars.includes(power_user.default_persona)) {
+    if (power_user.default_persona && userAvatars && !userAvatars.includes(power_user.default_persona)) {
         console.warn('Default persona avatar not found, clearing default persona');
         power_user.default_persona = null;
         saveSettingsDebounced();
     }
 
     // Persona avatar found, select it
+    const personasMap = power_user.personas as Record<string, string | undefined>;
     if (chatPersona && user_avatar !== chatPersona) {
-        // @ts-expect-error TS(2339) FIXME: Property 'persona_auto_lock' does not exist on typ... Remove this comment to see the full error message
-        const willAutoLock = power_user.persona_auto_lock && user_avatar !== chat_metadata.persona;
+        const willAutoLock = !!(power_user as Record<string, unknown>).persona_auto_lock && user_avatar !== chat_metadata.persona;
         await setUserAvatar(chatPersona, { toastPersonaNameChange: false, navigateToCurrent: true });
 
         if (power_user.persona_show_notifications) {
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-            let message = t`Auto-selected persona based on ${connectType} connection.<br />Your messages will now be sent as ${power_user.personas[chatPersona]}.`;
+            let message = t`Auto-selected persona based on ${connectType} connection.<br />Your messages will now be sent as ${personasMap[chatPersona]}.`;
             if (willAutoLock) {
                 message += '<br /><br />' + t`Auto-locked this persona to current chat.`;
             }
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.success(message, t`Persona Auto Selected`, { escapeHtml: false });
         }
-    // @ts-expect-error TS(2339) FIXME: Property 'persona_auto_lock' does not exist on typ... Remove this comment to see the full error message
-    } else if (chatPersona && power_user.persona_auto_lock && !chat_metadata.persona) {
+    } else if (chatPersona && (power_user as Record<string, unknown>).persona_auto_lock && !chat_metadata.persona) {
         // Even if it's the same persona, we still might need to auto-lock to chat if that's enabled
         await lockPersona('chat');
     }
@@ -1877,11 +1747,14 @@ async function loadPersonaForCurrentChat({ doRender = false } = {}) {
  * @param {string} [characterKey] - The character key to query
  * @returns {string[]} - An array of persona keys that are connected to the given character key
  */
-export function getConnectedPersonas(characterKey = undefined) {
+export function getConnectedPersonas(characterKey?: string) {
     characterKey ??= selected_group || characters[Number(this_chid)]?.avatar;
-    const connectedPersonas = Object.entries(power_user.persona_descriptions)
-        // @ts-expect-error TS(2339) FIXME: Property 'connections' does not exist on type 'unk... Remove this comment to see the full error message
-        .filter(([_, { connections }]) => connections?.some(conn => conn.id === characterKey))
+    const descsMap = power_user.persona_descriptions as Record<string, Record<string, unknown> | undefined>;
+    const connectedPersonas = Object.entries(descsMap)
+        .filter(([_, desc]) => {
+            const conns = desc?.connections as PersonaConnection[] | undefined;
+            return conns?.some((conn: PersonaConnection) => conn.id === characterKey);
+        })
         .map(([key, _]) => key);
     return connectedPersonas;
 }
@@ -1900,20 +1773,16 @@ export async function showCharConnections() {
     const selectedPersona = await askForPersonaSelection(t`Persona Connections`, message, connections, {
         okButton: t`Ok`,
         highlightPersonas: true,
-        // @ts-expect-error TS(2322) FIXME: Type '{ type: string; id: any; } | null' is not as... Remove this comment to see the full error message
-        targetedChar: getCurrentConnectionObj(),
-        // @ts-expect-error TS(2322) FIXME: Type '(element: any, ev: any) => void' is not assi... Remove this comment to see the full error message
-        shiftClickHandler: (element, ev) => {
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const personaId = element.attr('data-pid');
-
-            /** @type {PersonaConnection[]} */
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-            const connections = power_user.persona_descriptions[personaId]?.connections;
+        targetedChar: getCurrentConnectionObj() ?? undefined,
+        shiftClickHandler: (element: HTMLElement, ev: MouseEvent) => {
+            const personaId = element.dataset.pid;
+            if (!personaId) return;
+            const personaDescsMap = power_user.persona_descriptions as Record<string, Record<string, unknown> | undefined>;
+            const personasMap = power_user.personas as Record<string, string | undefined>;
+            const connections = personaDescsMap[personaId]?.connections as PersonaConnection[] | undefined;
             if (connections) {
                 console.log(`Unlocking persona ${personaId} from current character ${name2}`);
-                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                power_user.persona_descriptions[personaId].connections = connections.filter(c => {
+                personaDescsMap[personaId]!.connections = connections.filter((c: PersonaConnection) => {
                     if (menu_type == 'group_edit' && c.type == 'group' && c.id == selected_group) return false;
                     else if (c.type == 'character' && c.id == characters[Number(this_chid)]?.avatar) return false;
                     return true;
@@ -1921,8 +1790,7 @@ export async function showCharConnections() {
                 saveSettingsDebounced();
                 updatePersonaConnectionsAvatarList();
                 if (power_user.persona_show_notifications) {
-                    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                    notyf.info(t`User persona ${power_user.personas[personaId]} is now unlocked from the current character ${name2}.`, t`Persona unlocked`);
+                    notyf.info(t`User persona ${personasMap[personaId]} is now unlocked from the current character ${name2}.`, t`Persona unlocked`);
                 }
 
                 isRemoving = true;
@@ -1935,8 +1803,8 @@ export async function showCharConnections() {
     if (!isRemoving && selectedPersona) {
         await setUserAvatar(selectedPersona, { toastPersonaNameChange: false });
         if (power_user.persona_show_notifications) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            notyf.success(t`Selected persona ${power_user.personas[selectedPersona]} for current chat.`, t`Connected Persona Selected`);
+            const personasMap = power_user.personas as Record<string, string | undefined>;
+            notyf.success(t`Selected persona ${personasMap[selectedPersona]} for current chat.`, t`Connected Persona Selected`);
         }
     }
 }
@@ -1945,11 +1813,11 @@ export async function showCharConnections() {
  * Retrieves the current connection object based on whether the current chat is with a char or a group.
  * @returns {PersonaConnection} An object representing the current connection
  */
-export function getCurrentConnectionObj() {
+export function getCurrentConnectionObj(): PersonaConnection | null {
     if (selected_group)
         return { type: 'group', id: selected_group };
     if (characters[Number(this_chid)]?.avatar)
-        return { type: 'character', id: characters[Number(this_chid)]?.avatar };
+        return { type: 'character', id: characters[Number(this_chid)]!.avatar };
     return null;
 }
 
@@ -1957,8 +1825,7 @@ export function getCurrentConnectionObj() {
  *
  */
 function onBackupPersonas() {
-    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-    const timestamp = new Date().toISOString().split('T')[0].replace(/-/g, '');
+    const timestamp = new Date().toISOString().split('T')[0]!.replace(/-/g, '');
     const filename = `personas_${timestamp}.json`;
     const data = JSON.stringify({
         'personas': power_user.personas,
@@ -1974,99 +1841,84 @@ function onBackupPersonas() {
  *
  * @param e
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
-async function onPersonasRestoreInput(e) {
-    const file = e.target.files[0];
+async function onPersonasRestoreInput(e: Event) {
+    const input = e.target as HTMLInputElement;
+    const file = input.files?.[0];
 
     if (!file) {
         console.debug('No file selected');
         return;
     }
 
-    const data = await parseJsonFile(file);
+    const data: Record<string, unknown> | null = await parseJsonFile(file) as Record<string, unknown> | null;
 
     if (!data) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.warning(t`Invalid file selected`, t`Persona Management`);
         console.debug('Invalid file selected');
         return;
     }
 
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
     if (!data.personas || !data.persona_descriptions || typeof data.personas !== 'object' || typeof data.persona_descriptions !== 'object') {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.warning(t`Invalid file format`, t`Persona Management`);
         console.debug('Invalid file selected');
         return;
     }
 
     const avatarsList = await getUserAvatars(false);
-    const warnings = [];
+    const warnings: string[] = [];
+    const personasMap = power_user.personas as Record<string, string | undefined>;
+    const personaDescsMap = power_user.persona_descriptions as Record<string, Record<string, unknown> | undefined>;
 
     // Merge personas with existing ones
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-    for (const [key, value] of Object.entries(data.personas)) {
-        if (key in power_user.personas) {
+    for (const [key, value] of Object.entries(data.personas as Record<string, unknown>)) {
+        if (key in personasMap) {
             warnings.push(`Persona "${key}" (${value}) already exists, skipping`);
             continue;
         }
 
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        power_user.personas[key] = value;
+        (power_user.personas as Record<string, string>)[key] = String(value);
 
         // If the avatar is missing, upload it
-        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-        if (!avatarsList.includes(key)) {
+        if (avatarsList && !avatarsList.includes(key)) {
             warnings.push(`Persona image "${key}" (${value}) is missing, uploading default avatar`);
             await uploadUserAvatar(default_user_avatar, key);
         }
     }
 
     // Merge persona descriptions with existing ones
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-    for (const [key, value] of Object.entries(data.persona_descriptions)) {
-        if (key in power_user.persona_descriptions) {
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-            warnings.push(`Persona description for "${key}" (${power_user.personas[key]}) already exists, skipping`);
+    for (const [key, value] of Object.entries(data.persona_descriptions as Record<string, unknown>)) {
+        if (key in personaDescsMap) {
+            warnings.push(`Persona description for "${key}" (${personasMap[key]}) already exists, skipping`);
             continue;
         }
 
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        if (!power_user.personas[key]) {
+        if (!personasMap[key]) {
             warnings.push(`Persona for "${key}" does not exist, skipping`);
             continue;
         }
 
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        power_user.persona_descriptions[key] = value;
+        personaDescsMap[key] = value as Record<string, unknown>;
     }
 
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
     if (data.default_persona) {
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-        if (data.default_persona in power_user.personas) {
-            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-            power_user.default_persona = data.default_persona;
+        if (String(data.default_persona) in personasMap) {
+            (power_user as Record<string, unknown>).default_persona = String(data.default_persona);
         } else {
-            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             warnings.push(`Default persona "${data.default_persona}" does not exist, skipping`);
         }
     }
 
     if (warnings.length) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.success(t`Personas restored with warnings. Check console for details.`, t`Persona Management`);
         console.warn(`PERSONA RESTORE REPORT\n====================\n${warnings.join('\n')}`);
     } else {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.success(t`Personas restored successfully.`, t`Persona Management`);
     }
 
     await getUserAvatars();
     setPersonaDescription();
     saveSettingsDebounced();
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('personas_restore_input').value = '';
+    (document.getElementById('personas_restore_input') as HTMLInputElement).value = '';
 }
 
 /**
@@ -2098,11 +1950,8 @@ async function syncUserNameToPersona({ start = 0, end = chat.length - 1, quiet =
 
     for (let i = start; i <= end; i++) {
         const mes = chat[i];
-        // @ts-expect-error TS(2339) FIXME: Property 'is_user' does not exist on type 'never'.
         if (mes?.is_user && (!hasNameFilter || equalsIgnoreCaseAndAccents(mes.name, nameFilter))) {
-            // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
             mes.name = name1;
-            // @ts-expect-error TS(2339) FIXME: Property 'force_avatar' does not exist on type 'ne... Remove this comment to see the full error message
             mes.force_avatar = getThumbnailUrl('persona', user_avatar);
         }
     }
@@ -2122,8 +1971,7 @@ export async function retriggerFirstMessageOnEmptyChat() {
         await reloadCurrentChat();
     }
     if (!selected_group && Number(this_chid) >= 0 && chat.length === 1) {
-        // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
-        await createOrEditCharacter();
+        await createOrEditCharacter(undefined as unknown as number);
     }
 }
 
@@ -2135,13 +1983,12 @@ export async function retriggerFirstMessageOnEmptyChat() {
  * @param {boolean} [options.select] If true, selects/activates the duplicated persona
  * @returns {Promise<string>} The avatar id of the new persona, or empty string on failure/cancellation
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'avatarId' implicitly has an 'any' type.
-async function duplicatePersona(avatarId, { silent = false, select = false } = {}) {
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-    const personaName = power_user.personas[avatarId];
+async function duplicatePersona(avatarId: string, { silent = false, select = false }: { silent?: boolean; select?: boolean } = {}) {
+    const personasMap = power_user.personas as Record<string, string | undefined>;
+    const personaDescsMap = power_user.persona_descriptions as Record<string, Record<string, unknown> | undefined>;
+    const personaName = personasMap[avatarId];
 
     if (!personaName) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.warning(t`Chosen avatar is not a persona`, t`Persona Management`);
         return '';
     }
@@ -2156,13 +2003,10 @@ async function duplicatePersona(avatarId, { silent = false, select = false } = {
     }
 
     const newAvatarId = `${Date.now()}-${personaName.replace(/[^a-zA-Z0-9]/g, '')}.png`;
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-    const descriptor = power_user.persona_descriptions[avatarId];
+    const descriptor = personaDescsMap[avatarId];
 
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-    power_user.personas[newAvatarId] = personaName;
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-    power_user.persona_descriptions[newAvatarId] = {
+    (power_user.personas as Record<string, string>)[newAvatarId] = personaName;
+    personaDescsMap[newAvatarId] = {
         description: descriptor?.description ?? '',
         position: descriptor?.position ?? persona_description_positions.IN_PROMPT,
         depth: descriptor?.depth ?? DEFAULT_DEPTH,
@@ -2176,8 +2020,8 @@ async function duplicatePersona(avatarId, { silent = false, select = false } = {
     const eventData = {
         avatarId: newAvatarId,
         name: personaName,
-        description: descriptor?.description ?? '',
-        title: descriptor?.title ?? '',
+        description: (descriptor?.description as string) ?? '',
+        title: (descriptor?.title as string) ?? '',
         duplicatedFromAvatarId: avatarId,
     };
     await eventSource.emit(event_types.PERSONA_CREATED, eventData);
@@ -2196,7 +2040,8 @@ async function duplicatePersona(avatarId, { silent = false, select = false } = {
  * If a current user avatar is not bound to persona, bind it.
  */
 async function migrateNonPersonaUser() {
-    if (user_avatar in power_user.personas) {
+    const personasMap = power_user.personas as Record<string, string | undefined>;
+    if (user_avatar in personasMap) {
         return;
     }
 
@@ -2235,14 +2080,13 @@ const ROLE_NAME_MAP = Object.freeze({
  * @param {string|number|undefined} value Position value (name or number)
  * @returns {number|null} Parsed position value, or null if invalid/undefined
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
-function parsePersonaPosition(value) {
+function parsePersonaPosition(value: string | number | undefined | null): number | null {
     if (value === undefined || value === null) return null;
     const strValue = String(value).toLowerCase();
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-    if (strValue in POSITION_NAME_MAP) return POSITION_NAME_MAP[strValue];
+    const nameMap = POSITION_NAME_MAP as Record<string, number | undefined>;
+    if (strValue in nameMap) return nameMap[strValue] ?? null;
     const numValue = Number(value);
-    if (!isNaN(numValue) && Object.values(persona_description_positions).includes(numValue)) return numValue;
+    if (!isNaN(numValue) && (Object.values(persona_description_positions) as number[]).includes(numValue)) return numValue;
     return null;
 }
 
@@ -2251,12 +2095,11 @@ function parsePersonaPosition(value) {
  * @param {string|number|undefined} value Role value (name or number)
  * @returns {number|null} Parsed role value, or null if invalid/undefined
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
-function parsePersonaRole(value) {
+function parsePersonaRole(value: string | number | undefined | null): number | null {
     if (value === undefined || value === null) return null;
     const strValue = String(value).toLowerCase();
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-    if (strValue in ROLE_NAME_MAP) return ROLE_NAME_MAP[strValue];
+    const nameMap = ROLE_NAME_MAP as Record<string, number | undefined>;
+    if (strValue in nameMap) return nameMap[strValue] ?? null;
     const numValue = Number(value);
     if (!isNaN(numValue) && numValue >= 0 && numValue <= 2) return numValue;
     return null;
@@ -2270,14 +2113,13 @@ function parsePersonaRole(value) {
  * @param {boolean} [options.resizePrompt] Whether to show the crop dialog
  * @returns {Promise<boolean>} True if upload was successful
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'avatarId' implicitly has an 'any' type.
-async function uploadPersonaAvatar(avatarId, base64Data, { resizePrompt = false } = {}) {
+async function uploadPersonaAvatar(avatarId: string, base64Data: string, { resizePrompt = false }: { resizePrompt?: boolean } = {}) {
     if (!base64Data || !avatarId) return false;
 
     let finalImageData = base64Data;
 
     if (resizePrompt && !power_user.never_resize_avatars) {
-        const dlg = new Popup(t`Set the crop position of the avatar image`, POPUP_TYPE.CROP, '', { cropImage: base64Data });
+        const dlg = new Popup(t`Set the crop position of the avatar image`, POPUP_TYPE.CROP, '', { cropImage: base64Data } as Record<string, unknown>);
         const croppedImage = await dlg.show();
         if (!croppedImage) return false;
         finalImageData = String(croppedImage);
@@ -2309,8 +2151,7 @@ async function uploadPersonaAvatar(avatarId, base64Data, { resizePrompt = false 
         return true;
     } catch (error) {
         console.error('Error uploading persona avatar:', error);
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        notyf.warning(t`Failed to upload avatar: ${error.message}`);
+        notyf.warning(t`Failed to upload avatar: ${(error as Error).message}`);
         return false;
     }
 }
@@ -2320,12 +2161,10 @@ async function uploadPersonaAvatar(avatarId, base64Data, { resizePrompt = false 
  * @param {string} [personaArg] Persona name or avatar key argument
  * @returns {import('./utils.js').PersonaViewModel|null} The resolved persona, or null if not found
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'personaArg' implicitly has an 'any' typ... Remove this comment to see the full error message
-function getTargetPersona(personaArg) {
+function getTargetPersona(personaArg?: string) {
     if (personaArg) {
         const persona = findPersona({ name: personaArg });
         if (!persona) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.warning(t`Persona "${personaArg}" not found`);
             return null;
         }
@@ -2335,7 +2174,6 @@ function getTargetPersona(personaArg) {
     // Fall back to currently active persona
     const persona = findPersona({ preferCurrentPersona: true });
     if (!persona) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.warning(t`No persona selected and no persona argument provided`);
         return null;
     }
@@ -2351,11 +2189,9 @@ function getTargetPersona(personaArg) {
  * @param {object} args Named arguments from the slash command
  * @returns {Promise<string>} Avatar key of the created persona, or empty string on failure
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
-async function createPersonaCallback(args) {
+async function createPersonaCallback(args: Record<string, unknown>) {
     const name = args.name;
     if (!name || typeof name !== 'string' || !name.trim()) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.warning(t`Persona name is required`);
         return '';
     }
@@ -2363,16 +2199,15 @@ async function createPersonaCallback(args) {
     const trimmedName = name.trim();
     const avatarId = `${Date.now()}-${trimmedName.replace(/[^a-zA-Z0-9]/g, '')}.png`;
 
-    const description = args.description ?? '';
-    const title = args.title ?? '';
-    const position = parsePersonaPosition(args.descriptionPosition) ?? persona_description_positions.IN_PROMPT;
-    const role = parsePersonaRole(args.descriptionRole) ?? DEFAULT_ROLE;
-    const lorebook = args.lorebook ?? '';
+    const description = (args.description ?? '') as string;
+    const title = (args.title ?? '') as string;
+    const position = parsePersonaPosition(args.descriptionPosition as string) ?? persona_description_positions.IN_PROMPT;
+    const role = parsePersonaRole(args.descriptionRole as string) ?? DEFAULT_ROLE;
+    const lorebook = (args.lorebook ?? '') as string;
 
-    let depth = args.descriptionDepth !== undefined ? Number(args.descriptionDepth) : DEFAULT_DEPTH;
+    let depth = args.descriptionDepth !== undefined ? Number(args.descriptionDepth as string) : DEFAULT_DEPTH;
     if (isNaN(depth)) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        notyf.warning(t`Invalid description depth "${args.descriptionDepth}", defaulting to ${DEFAULT_DEPTH}`);
+        notyf.warning(t`Invalid description depth "${args.descriptionDepth as string}", defaulting to ${DEFAULT_DEPTH}`);
         depth = DEFAULT_DEPTH;
     }
 
@@ -2385,7 +2220,7 @@ async function createPersonaCallback(args) {
     const avatarData = args.avatar ? await resolveAvatarData(args.avatar) : null;
     if (avatarData) {
         const resizePrompt = !isFalseBoolean(args.avatarPromptResize ?? 'true');
-        const uploaded = await uploadPersonaAvatar(avatarId, avatarData, { resizePrompt });
+        const uploaded = await uploadPersonaAvatar(avatarId, avatarData as string, { resizePrompt });
         if (!uploaded) {
             // Crop was cancelled or upload failed — use default avatar
             await uploadUserAvatar(default_user_avatar, avatarId);
@@ -2402,7 +2237,6 @@ async function createPersonaCallback(args) {
         await setUserAvatar(avatarId);
     }
 
-    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
     notyf.success(t`Persona "${trimmedName}" created successfully`);
     return avatarId;
 }
@@ -2412,17 +2246,15 @@ async function createPersonaCallback(args) {
  * @param {object} args Named arguments from the slash command
  * @returns {Promise<string>} Avatar key of the updated persona, or empty string on failure
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
-async function updatePersonaCallback(args) {
-    const persona = getTargetPersona(args.persona);
+async function updatePersonaCallback(args: Record<string, unknown>) {
+    const persona = getTargetPersona(args.persona as string | undefined);
     if (!persona) return '';
 
-    const avatarId = persona.avatar;
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-    const descriptor = power_user.persona_descriptions[avatarId];
+    const avatarId = persona.avatar ?? '';
+    const personaDescsMap = power_user.persona_descriptions as Record<string, Record<string, unknown> | undefined>;
+    const descriptor = personaDescsMap[avatarId];
 
     if (!descriptor) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.warning(t`Persona data not found for "${persona.name}"`);
         return '';
     }
@@ -2433,10 +2265,9 @@ async function updatePersonaCallback(args) {
     if (args.name !== undefined) {
         const newName = String(args.name).trim();
         if (newName) {
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-            const oldName = power_user.personas[avatarId];
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-            power_user.personas[avatarId] = newName;
+            const personasMap = power_user.personas as Record<string, string | undefined>;
+            const oldName = personasMap[avatarId];
+            (power_user.personas as Record<string, string>)[avatarId] = newName;
             if (avatarId === user_avatar) {
                 setUserName(newName);
             }
@@ -2447,22 +2278,22 @@ async function updatePersonaCallback(args) {
 
     // Update description
     if (args.description !== undefined) {
-        descriptor.description = args.description;
+        descriptor.description = args.description as string;
         if (avatarId === user_avatar) {
-            power_user.persona_description = args.description;
+            power_user.persona_description = args.description as string;
         }
         hasUpdates = true;
     }
 
     // Update title
     if (args.title !== undefined) {
-        descriptor.title = args.title;
+        descriptor.title = args.title as string;
         hasUpdates = true;
     }
 
     // Update description position
     if (args.descriptionPosition !== undefined) {
-        const position = parsePersonaPosition(args.descriptionPosition);
+        const position = parsePersonaPosition(args.descriptionPosition as string);
         if (position !== null) {
             descriptor.position = position;
             if (avatarId === user_avatar) {
@@ -2486,7 +2317,7 @@ async function updatePersonaCallback(args) {
 
     // Update description role
     if (args.descriptionRole !== undefined) {
-        const role = parsePersonaRole(args.descriptionRole);
+        const role = parsePersonaRole(args.descriptionRole as string | number | null | undefined);
         if (role !== null) {
             descriptor.role = role;
             if (avatarId === user_avatar) {
@@ -2498,9 +2329,9 @@ async function updatePersonaCallback(args) {
 
     // Update lorebook
     if (args.lorebook !== undefined) {
-        descriptor.lorebook = args.lorebook;
+        descriptor.lorebook = args.lorebook as string;
         if (avatarId === user_avatar) {
-            power_user.persona_description_lorebook = args.lorebook;
+            power_user.persona_description_lorebook = args.lorebook as string;
         }
         hasUpdates = true;
     }
@@ -2509,14 +2340,13 @@ async function updatePersonaCallback(args) {
     const avatarData = args.avatar ? await resolveAvatarData(args.avatar) : null;
     if (avatarData) {
         const resizePrompt = !isFalseBoolean(args.avatarPromptResize ?? 'true');
-        const uploaded = await uploadPersonaAvatar(avatarId, avatarData, { resizePrompt });
+        const uploaded = await uploadPersonaAvatar(avatarId, avatarData as string, { resizePrompt });
         if (uploaded) {
             hasUpdates = true;
         }
     }
 
     if (!hasUpdates) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.info(t`No fields provided to update`);
         return avatarId;
     }
@@ -2531,8 +2361,8 @@ async function updatePersonaCallback(args) {
     await getUserAvatars(true, avatarId);
     updatePersonaUIStates();
 
-    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-    notyf.success(t`Persona "${power_user.personas[avatarId]}" updated successfully`);
+    const upPersonasMap = power_user.personas as Record<string, string | undefined>;
+    notyf.success(t`Persona "${upPersonasMap[avatarId]}" updated successfully`);
     return avatarId;
 }
 
@@ -2541,20 +2371,18 @@ async function updatePersonaCallback(args) {
  * @param {object} args Named arguments from the slash command
  * @returns {Promise<string>} The persona data or field value
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
-async function getPersonaDataCallback(args) {
-    const persona = getTargetPersona(args.persona);
+async function getPersonaDataCallback(args: Record<string, unknown>) {
+    const persona = getTargetPersona(args.persona as string | undefined);
     if (!persona) return '';
 
     const avatarId = persona.avatar;
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-    const descriptor = power_user.persona_descriptions[avatarId] ?? {};
+    const personaDescsMap = power_user.persona_descriptions as Record<string, Record<string, unknown> | undefined>;
+    const descriptor = personaDescsMap[avatarId] ?? {};
 
     if (args.field) {
-        /** @type {Record<string, unknown>} */
-        const fieldMap = {
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-            name: power_user.personas[avatarId] ?? '',
+        const personasMap = power_user.personas as Record<string, string | undefined>;
+        const fieldMap: Record<string, unknown> = {
+            name: personasMap[avatarId] ?? '',
             description: descriptor.description ?? '',
             title: descriptor.title ?? '',
             position: descriptor.position ?? persona_description_positions.IN_PROMPT,
@@ -2566,25 +2394,23 @@ async function getPersonaDataCallback(args) {
             connections: descriptor.connections ?? [],
         };
 
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        const value = fieldMap[args.field];
+        const value = fieldMap[args.field as string];
         if (value === undefined) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            notyf.warning(t`Unknown persona field "${args.field}"`);
+            notyf.warning(t`Unknown persona field "${args.field as string}"`);
             return '';
         }
 
         return await slashCommandReturnHelper.doReturn(
-            args.return ?? 'pipe', value,
-            { objectToStringFunc: x => typeof x === 'object' ? JSON.stringify(x) : String(x) },
+            (args.return as string) ?? 'pipe', value,
+            { objectToStringFunc: (x: unknown) => typeof x === 'object' ? JSON.stringify(x) : String(x) },
         );
     }
 
     // Return full persona data
+    const personasMap2 = power_user.personas as Record<string, string | undefined>;
     const personaData = {
         avatar: avatarId,
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        name: power_user.personas[avatarId] ?? '',
+        name: personasMap2[avatarId] ?? '',
         description: descriptor.description ?? '',
         title: descriptor.title ?? '',
         position: descriptor.position ?? persona_description_positions.IN_PROMPT,
@@ -2596,8 +2422,8 @@ async function getPersonaDataCallback(args) {
     };
 
     return await slashCommandReturnHelper.doReturn(
-        args.return ?? 'pipe', personaData,
-        { objectToStringFunc: x => JSON.stringify(x, null, 2) },
+        (args.return as string) ?? 'pipe', personaData,
+        { objectToStringFunc: (x: unknown) => JSON.stringify(x, null, 2) },
     );
 }
 
@@ -2606,9 +2432,8 @@ async function getPersonaDataCallback(args) {
  * @param {object} args Named arguments from the slash command
  * @returns {Promise<string>} 'true' if deleted, 'false' otherwise
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
-async function deletePersonaCallback(args) {
-    const persona = getTargetPersona(args.persona);
+async function deletePersonaCallback(args: Record<string, unknown>) {
+    const persona = getTargetPersona(args.persona as string | undefined);
     if (!persona) return 'false';
 
     const silent = isTrueBoolean(args.silent);
@@ -2621,22 +2446,20 @@ async function deletePersonaCallback(args) {
  * @param {object} args Named arguments from the slash command
  * @returns {Promise<string>} Avatar key of the duplicated persona, or empty string on failure
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
-async function duplicatePersonaCallback(args) {
-    const persona = getTargetPersona(args.persona);
+async function duplicatePersonaCallback(args: Record<string, unknown>) {
+    const persona = getTargetPersona(args.persona as string | undefined);
     if (!persona) return '';
 
     const shouldSelect = isTrueBoolean(args.select);
     const newAvatarId = await duplicatePersona(persona.avatar, { silent: true, select: shouldSelect });
 
     if (!newAvatarId) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.error(t`Failed to duplicate persona`);
         return '';
     }
 
-    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-    notyf.success(t`Persona "${power_user.personas[newAvatarId]}" duplicated successfully`);
+    const dupPersonasMap = power_user.personas as Record<string, string | undefined>;
+    notyf.success(t`Persona "${dupPersonasMap[newAvatarId]}" duplicated successfully`);
     return newAvatarId;
 }
 
@@ -2648,12 +2471,10 @@ async function duplicatePersonaCallback(args) {
  * @param {string} value The value to set the lock to
  * @returns {Promise<string>} The value of the lock after setting
  */
-// @ts-expect-error TS(7006) FIXME: Parameter '_args' implicitly has an 'any' type.
-async function lockPersonaCallback(_args, value) {
-    const type = /** @type {PersonaLockType} */ (_args.type ?? 'chat');
+async function lockPersonaCallback(_args: Record<string, string>, value: string) {
+    const type = /** @type {'chat' | 'character' | 'default'} */ (_args.type ?? 'chat');
 
     if (!['chat', 'character', 'default'].includes(type)) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.warning(t`Unknown lock type "${type}"`, t`Persona Management`);
         return '';
     }
@@ -2686,16 +2507,13 @@ async function lockPersonaCallback(_args, value) {
  * @param {string} name Name to set
  * @returns {Promise<string>}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
-async function setNameCallback({ mode = 'all' }, name) {
+async function setNameCallback({ mode = 'all' }: { mode?: string }, name: string) {
     if (!name) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.warning('You must specify a name to change to');
         return '';
     }
 
     if (!['lookup', 'temp', 'all'].includes(mode)) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.warning('Mode must be one of "lookup", "temp" or "all"');
         return '';
     }
@@ -2706,11 +2524,9 @@ async function setNameCallback({ mode = 'all' }, name) {
     if (['lookup', 'all'].includes(mode)) {
         const persona = findPersona({ name });
         if (persona) {
-            // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'null | un... Remove this comment to see the full error message
             await autoSelectPersona(persona.name, { personaKey: persona.avatar });
             return '';
         } else if (mode === 'lookup') {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.warning(`Persona ${name} not found`);
             return '';
         }
@@ -2729,8 +2545,7 @@ async function setNameCallback({ mode = 'all' }, name) {
  * @param args
  * @param value
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
-async function syncCallback(args, value) {
+async function syncCallback(args: Record<string, unknown> | undefined, value: string) {
     const range = value ? stringToRange(value, 0, chat.length - 1) : null;
 
     if (value && !range) {
@@ -2752,15 +2567,14 @@ async function syncCallback(args, value) {
  * Returns all unique user message names in the current chat for enum autocomplete.
  * @returns {SlashCommandEnumValue[]}
  */
-function userMessageNamesEnumProvider() {
+function userMessageNamesEnumProvider(): SlashCommandEnumValue[] {
     return chat
-        // @ts-expect-error TS(2339) FIXME: Property 'is_user' does not exist on type 'never'.
-        .filter(mes => mes.is_user)
-        // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
-        .map(mes => mes.name)
+        .filter((mes: ChatMessage) => mes.is_user)
+        .map((mes: ChatMessage) => mes.name)
+        .filter((name): name is string => !!name)
         .filter(onlyUnique)
         .sort(sortIgnoreCaseAndAccents)
-        .map(name => new SlashCommandEnumValue(name, null, enumTypes.name, enumIcons.persona));
+        .map((name: string) => new SlashCommandEnumValue(name, null, enumTypes.name, enumIcons.persona));
 }
 
 /**
@@ -2768,49 +2582,39 @@ function userMessageNamesEnumProvider() {
  */
 function registerPersonaSlashCommands() {
     // Shared persona field definitions for persona CRUD commands
-    const getPersonaFieldArgs = ({ requiredFields = [] } = {}) => [
+    const getPersonaFieldArgs = ({ requiredFields = [] as string[] } = {}) => [
         SlashCommandNamedArgument.fromProps({
             name: 'name',
             description: t`The name of the persona`,
             typeList: [ARGUMENT_TYPE.STRING],
-            // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
             isRequired: requiredFields.includes('name'),
-        }),
-        SlashCommandNamedArgument.fromProps({
-            name: 'description',
-            description: t`The persona description (sent with messages for AI context)`,
-            typeList: [ARGUMENT_TYPE.STRING],
-            // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
-            isRequired: requiredFields.includes('description'),
-        }),
-        SlashCommandNamedArgument.fromProps({
-            name: 'title',
-            description: t`A display title for the persona (not sent to the AI, display only)`,
-            typeList: [ARGUMENT_TYPE.STRING],
-            // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
-            isRequired: requiredFields.includes('title'),
-        }),
-        SlashCommandNamedArgument.fromProps({
-            name: 'avatar',
-            description: t`Avatar image. Use "prompt" to open file picker, or provide a local ST file path or base64 data URL. Can also be the return value of /imagine.`,
-            typeList: [ARGUMENT_TYPE.STRING],
-            // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
-            isRequired: requiredFields.includes('avatar'),
-            enumList: [
-                // @ts-expect-error TS(2345) FIXME: Argument of type '"Open file picker to select an i... Remove this comment to see the full error message
-                new SlashCommandEnumValue('prompt', 'Open file picker to select an image', enumTypes.enum, '📁'),
-                // @ts-expect-error TS(2345) FIXME: Argument of type '"Character avatars path (e.g., c... Remove this comment to see the full error message
-                new SlashCommandEnumValue('characters/...', 'Character avatars path (e.g., characters/Name.png)', enumTypes.enum, '📄', (input) => commonEnumMatchProviders.folderEnum(input, 'characters/'), () => 'characters/'),
-                // @ts-expect-error TS(2345) FIXME: Argument of type '"Background image path"' is not ... Remove this comment to see the full error message
-                new SlashCommandEnumValue('backgrounds/...', 'Background image path', enumTypes.enum, '📄', (input) => commonEnumMatchProviders.folderEnum(input, 'backgrounds/'), () => 'backgrounds/'),
-                // @ts-expect-error TS(2345) FIXME: Argument of type '"User avatar path"' is not assig... Remove this comment to see the full error message
-                new SlashCommandEnumValue('User Avatars/...', 'User avatar path', enumTypes.enum, '📄', (input) => commonEnumMatchProviders.folderEnum(input, 'User Avatars/'), () => 'User Avatars/'),
-                // @ts-expect-error TS(2345) FIXME: Argument of type '"Asset file path"' is not assign... Remove this comment to see the full error message
-                new SlashCommandEnumValue('assets/...', 'Asset file path', enumTypes.enum, '📄', (input) => commonEnumMatchProviders.folderEnum(input, 'assets/'), () => 'assets/'),
-                // @ts-expect-error TS(2345) FIXME: Argument of type '"User image path"' is not assign... Remove this comment to see the full error message
-                new SlashCommandEnumValue('user/images/...', 'User image path', enumTypes.enum, '📄', (input) => commonEnumMatchProviders.folderEnum(input, 'user/images/'), () => 'user/images/'),
-            ],
-        }),
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'description',
+                    description: t`The persona description (sent with messages for AI context)`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    isRequired: requiredFields.includes('description'),
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'title',
+                    description: t`A display title for the persona (not sent to the AI, display only)`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    isRequired: requiredFields.includes('title'),
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'avatar',
+                    description: t`Avatar image. Use "prompt" to open file picker, or provide a local ST file path or base64 data URL. Can also be the return value of /imagine.`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    isRequired: requiredFields.includes('avatar'),
+                    enumList: [
+                        new SlashCommandEnumValue('prompt', 'Open file picker to select an image', enumTypes.enum, '📁'),
+                        new SlashCommandEnumValue('characters/...', 'Character avatars path (e.g., characters/Name.png)', enumTypes.enum, '📄', (input: string) => commonEnumMatchProviders.folderEnum(input, 'characters/') as SlashCommandEnumValue[], () => 'characters/'),
+                        new SlashCommandEnumValue('backgrounds/...', 'Background image path', enumTypes.enum, '📄', (input: string) => commonEnumMatchProviders.folderEnum(input, 'backgrounds/') as SlashCommandEnumValue[], () => 'backgrounds/'),
+                        new SlashCommandEnumValue('User Avatars/...', 'User avatar path', enumTypes.enum, '📄', (input: string) => commonEnumMatchProviders.folderEnum(input, 'User Avatars/') as SlashCommandEnumValue[], () => 'User Avatars/'),
+                        new SlashCommandEnumValue('assets/...', 'Asset file path', enumTypes.enum, '📄', (input: string) => commonEnumMatchProviders.folderEnum(input, 'assets/') as SlashCommandEnumValue[], () => 'assets/'),
+                        new SlashCommandEnumValue('user/images/...', 'User image path', enumTypes.enum, '📄', (input: string) => commonEnumMatchProviders.folderEnum(input, 'user/images/') as SlashCommandEnumValue[], () => 'user/images/'),
+                    ],
+                }),
         SlashCommandNamedArgument.fromProps({
             name: 'avatarPromptResize',
             description: t`Whether to show the avatar resize/crop dialog when uploading. Ignored if "Never resize avatars" is enabled in settings.`,
@@ -2866,8 +2670,7 @@ function registerPersonaSlashCommands() {
         callback: createPersonaCallback,
         returns: t`the avatar key (unique identifier) of the created persona`,
         namedArgumentList: [
-            // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'never'.
-            ...getPersonaFieldArgs({ requiredFields: ['name'] }),
+                    ...(getPersonaFieldArgs({ requiredFields: ['name'] }) as SlashCommandNamedArgument[]),
             SlashCommandNamedArgument.fromProps({
                 name: 'select',
                 description: t`Whether to select/activate the persona after creation`,
@@ -3286,7 +3089,7 @@ export async function initPersonas() {
         const el = e.target.closest('#user_avatar_block .avatar-container');
         if (!el) return;
         const imgfile = el.getAttribute('data-avatar-id');
-        await setUserAvatar(imgfile);
+        if (imgfile) await setUserAvatar(imgfile);
     });
 
     document.getElementById('persona_rename_button')?.addEventListener('click', () => renamePersona(user_avatar));
@@ -3307,15 +3110,13 @@ export async function initPersonas() {
             return;
         }
 
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        document.getElementById('avatar_upload_overwrite').value = user_avatar;
+            (document.getElementById('avatar_upload_overwrite') as HTMLInputElement).value = user_avatar;
         document.getElementById('avatar_upload_file')?.click();
     });
 
     document.getElementById('char_connections_button')?.addEventListener('click', showCharConnections);
 
-    // @ts-expect-error TS(7006) FIXME: Parameter 'target' implicitly has an 'any' type.
-    eventSource.on(event_types.CHARACTER_MANAGEMENT_DROPDOWN, (target) => {
+    eventSource.on(event_types.CHARACTER_MANAGEMENT_DROPDOWN, (target: unknown) => {
         if (target === 'convert_to_persona') {
             convertCharacterToPersona();
         }

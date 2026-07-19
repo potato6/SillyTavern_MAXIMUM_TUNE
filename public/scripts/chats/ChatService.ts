@@ -1,5 +1,5 @@
 import { chatStore } from './ChatStore.js';
-import { ChatEntity, CreateChatOptions, DuplicateChatOptions } from './types.js';
+import type { ChatEntity, CreateChatOptions, DuplicateChatOptions } from './types.js';
 
 /**
  * High-level chat operations.
@@ -24,6 +24,7 @@ export class ChatService {
 
     /**
      * Get a single chat by id.
+     * @param id
      */
     async get(id: string): Promise<ChatEntity | undefined> {
         return chatStore.get(id);
@@ -31,6 +32,7 @@ export class ChatService {
 
     /**
      * List all chats for a character.
+     * @param characterId
      */
     async findByCharacter(characterId: string): Promise<ChatEntity[]> {
         return chatStore.findByCharacter(characterId);
@@ -38,6 +40,7 @@ export class ChatService {
 
     /**
      * List the most recently modified chats.
+     * @param limit
      */
     async findRecent(limit = 50): Promise<ChatEntity[]> {
         return chatStore.findRecent(limit);
@@ -45,6 +48,7 @@ export class ChatService {
 
     /**
      * Check whether a chat exists.
+     * @param id
      */
     async exists(id: string): Promise<boolean> {
         return chatStore.has(id);
@@ -61,6 +65,7 @@ export class ChatService {
 
     /**
      * Create a new chat and return its id.
+     * @param opts
      */
     async create(opts: CreateChatOptions): Promise<string> {
         const now = Date.now();
@@ -82,6 +87,7 @@ export class ChatService {
 
     /**
      * Delete a chat (permanent).
+     * @param id
      */
     async delete(id: string): Promise<boolean> {
         return chatStore.remove(id);
@@ -89,6 +95,8 @@ export class ChatService {
 
     /**
      * Rename a chat.
+     * @param id
+     * @param title
      */
     async rename(id: string, title: string): Promise<boolean> {
         return chatStore.rename(id, title);
@@ -96,6 +104,7 @@ export class ChatService {
 
     /**
      * Archive a chat (soft-delete).
+     * @param id
      */
     async archive(id: string): Promise<boolean> {
         return chatStore.archive(id);
@@ -103,6 +112,8 @@ export class ChatService {
 
     /**
      * Duplicate a chat.
+     * @param id
+     * @param opts
      */
     async duplicate(id: string, opts: DuplicateChatOptions = {}): Promise<ChatEntity | undefined> {
         const newId = crypto.randomUUID();
@@ -114,6 +125,8 @@ export class ChatService {
 
     /**
      * Update a chat's title and/or metadata atomically.
+     * @param id
+     * @param patch
      */
     async update(id: string, patch: Partial<Pick<ChatEntity, 'title' | 'metadata'>>): Promise<boolean> {
         return chatStore.update(id, { ...patch, modified: Date.now() });
@@ -121,6 +134,8 @@ export class ChatService {
 
     /**
      * Replace the messages array of a chat.
+     * @param id
+     * @param messages
      */
     async setMessages(id: string, messages: ChatMessage[]): Promise<boolean> {
         return chatStore.setMessages(id, messages);
@@ -130,6 +145,7 @@ export class ChatService {
 
     /**
      * Serialise a chat to a plain object.
+     * @param id
      */
     async export(id: string): Promise<ChatEntity | undefined> {
         return chatStore.export(id);
@@ -137,6 +153,7 @@ export class ChatService {
 
     /**
      * Deserialise and persist a previously exported chat.
+     * @param data
      */
     async import(data: ChatEntity): Promise<void> {
         return chatStore.import(data);
@@ -149,6 +166,7 @@ export class ChatService {
      *
      * Returns chats whose title contains the query string.
      * A proper search index can replace this when needed.
+     * @param query
      */
     async search(query: string): Promise<ChatEntity[]> {
         if (!query.trim()) return [];
@@ -164,6 +182,7 @@ export class ChatService {
      * Run a batch of operations inside a single IndexedDB
      * transaction so the entire group succeeds or fails
      * atomically and produces a single undo entry.
+     * @param fn
      */
     async transaction(fn: () => Promise<void>): Promise<void> {
         await chatStore.transaction(fn);
@@ -173,6 +192,8 @@ export class ChatService {
 
     /**
      * Subscribe to store-level events.
+     * @param event
+     * @param callback
      */
     on<K extends keyof ChatServiceEventMap>(
         event: K,
@@ -183,6 +204,8 @@ export class ChatService {
 
     /**
      * Unsubscribe.
+     * @param event
+     * @param callback
      */
     off<K extends keyof ChatServiceEventMap>(
         event: K,

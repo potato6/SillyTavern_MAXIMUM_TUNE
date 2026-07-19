@@ -15,6 +15,7 @@ import compression from 'compression';
 import multer from 'multer';
 import responseTime from 'response-time';
 import helmet from 'helmet';
+import type { App } from 'open';
 
 import { addMissingConfigValues } from './config-init.js';
 import { serverDirectory } from './server-directory.js';
@@ -89,21 +90,25 @@ try {
 }
 
 // ── Server startup ────────────────────────────────────────────────────────────
-/**
- * @typedef {object} ServerStartupResult
- * @property {boolean} v6Failed If the server failed to start on IPv6
- * @property {boolean} v4Failed If the server failed to start on IPv4
- * @property {unknown} [v6Error] The IPv6 server startup error
- * @property {unknown} [v4Error] The IPv4 server startup error
- * @property {boolean} useIPv6 If use IPv6
- * @property {boolean} useIPv4 If use IPv4
- */
+export interface ServerStartupResult {
+    v6Failed: boolean;
+    v4Failed: boolean;
+    v6Error?: unknown;
+    v4Error?: unknown;
+    useIPv6: boolean;
+    useIPv4: boolean;
+}
 
 /**
  * Redirect deprecated API endpoints to their replacements.
  * @param {import('express').Express} app The Express app to use
  */
 export function redirectDeprecatedEndpoints(app: import('express').Express) {
+    /**
+     *
+     * @param src
+     * @param destination
+     */
     function redirect(src: string, destination: string) {
         app.use(src, (req: import('express').Request, res: import('express').Response) => {
             console.warn(`API endpoint ${src} is deprecated; use ${destination} instead`);
@@ -223,7 +228,6 @@ export function setupPrivateEndpoints(app: import('express').Express) {
  */
 export class ServerStartup {
     app: import('express').Express;
-    // @ts-expect-error TS(2694) FIXME: Namespace '\"/mnt/DISCO/downloads/some_git_projects... Remove this comment to see the full error message
     cliArgs: import('./command-line.js').CommandLineArguments;
 
     constructor(app: import('express').Express, cliArgs: import('./command-line.js').CommandLineArguments) {
@@ -333,8 +337,8 @@ export class ServerStartup {
     }
 
     async start() {
-        let useIPv6 = (this.cliArgs.enableIPv6 === true);
-        let useIPv4 = (this.cliArgs.enableIPv4 === true);
+        let useIPv6: boolean = (this.cliArgs.enableIPv6 === true);
+        let useIPv4: boolean = (this.cliArgs.enableIPv4 === true);
 
         if (this.cliArgs.enableIPv6 === 'auto' || this.cliArgs.enableIPv4 === 'auto') {
             const ipQuery = await getHasIP();
@@ -364,7 +368,7 @@ export class ServerStartup {
             process.exit(1);
         }
 
-        const [v6Failed, v4Failed, v6Error, v4Error] = await this.#startHTTPorHTTPS(useIPv6, useIPv4);
+        const [v6Failed, v4Failed, v6Error, v4Error] = await this.#startHTTPorHTTPS(useIPv6, useIPv4) as [boolean, boolean, unknown, unknown];
         const result: ServerStartupResult = { v6Failed, v4Failed, v6Error, v4Error, useIPv6, useIPv4 };
         this.#handleServerListenFail(result);
         return result;
@@ -451,15 +455,14 @@ app.use(express.json({ limit: '500mb' }));
 app.use(express.urlencoded({ extended: true, limit: '500mb' }));
 
 // CORS Settings
-// @ts-expect-error TS(2345) FIXME: Argument of type 'true' is not assignable to param...
-const corsEnabled = getConfigValue('cors.enabled', true, 'boolean');
+const corsEnabled = getConfigValue('cors.enabled', true as unknown as null, 'boolean' as unknown as null);
 if (corsEnabled) {
-    const corsOrigin = getConfigValue('cors.origin', 'null');
-    const corsMethods = getConfigValue('cors.methods', ['OPTIONS']);
-    const corsAllowedHeaders = getConfigValue('cors.allowedHeaders', []);
-    const corsExposedHeaders = getConfigValue('cors.exposedHeaders', []);
-    const corsCredentials = getConfigValue('cors.credentials', false, 'boolean');
-    const corsMaxAge = getConfigValue('cors.maxAge', null, 'number');
+    const corsOrigin = getConfigValue('cors.origin', 'null' as unknown as null) as string;
+    const corsMethods = getConfigValue('cors.methods', ['OPTIONS'] as unknown as null) as string[];
+    const corsAllowedHeaders = getConfigValue('cors.allowedHeaders', [] as unknown as null) as string[];
+    const corsExposedHeaders = getConfigValue('cors.exposedHeaders', [] as unknown as null) as string[];
+    const corsCredentials = getConfigValue('cors.credentials', false as unknown as null, 'boolean' as unknown as null) as boolean;
+    const corsMaxAge = getConfigValue('cors.maxAge', null, 'number' as unknown as null) as number | null;
     const corsOptions: cors.CorsOptions = { origin: corsOrigin, methods: corsMethods, credentials: corsCredentials };
     if (Array.isArray(corsAllowedHeaders) && corsAllowedHeaders.length > 0) (corsOptions as Record<string, unknown>).allowedHeaders = corsAllowedHeaders;
     if (Array.isArray(corsExposedHeaders) && corsExposedHeaders.length > 0) (corsOptions as Record<string, unknown>).exposedHeaders = corsExposedHeaders;
@@ -489,7 +492,7 @@ if (!cliArgs.disableCsrf) {
     const CSRF_SECRET = process.env['CSRF_SECRET'] || crypto.randomBytes(64).toString('hex');
     app.get('/csrf-token', (req, res) => {
         const sessionId = req.ip || 'anonymous';
-        const token = Bun.CSRF.generate(CSRF_SECRET, { sessionId, expiresIn: 24 * 60 * 60 * 1000 });
+        const token = Bun.CSRF.generate(CSRF_SECRET, { sessionId, expiresIn: 24 * 60 * 60 * 1000 } as Record<string, unknown>);
         res.json({ token });
     });
     app.use((req, res, next) => {
@@ -497,7 +500,7 @@ if (!cliArgs.disableCsrf) {
         if (cliArgs.enableCorsProxy && /^\/proxy\//.test(req.path)) return next();
         const token = req.headers['x-csrf-token']?.toString();
         const sessionId = req.ip || 'anonymous';
-        if (!token || !Bun.CSRF.verify(token, { secret: CSRF_SECRET, sessionId })) {
+        if (!token || !Bun.CSRF.verify(token, { secret: CSRF_SECRET, sessionId } as Record<string, unknown>)) {
             console.error(color.red('Invalid CSRF token. Please refresh the page and try again.'));
             res.status(403).json({ error: 'Invalid CSRF token. Please refresh the page and try again.' });
             return;
@@ -566,6 +569,9 @@ app.get('/version', async function (_, response) {
 redirectDeprecatedEndpoints(app);
 setupPrivateEndpoints(app);
 
+/**
+ *
+ */
 async function preSetupTasks() {
     if (whitelistPromise) {
         const whitelistMiddleware = await whitelistPromise;
@@ -617,22 +623,26 @@ async function preSetupTasks() {
 
     const requestFilterOptions = {
         listen: cliArgs.listen,
-        enabled: !!getConfigValue('privateAddressWhitelist.enabled', false, 'boolean'),
-        privateAddressWhitelist: getConfigValue('privateAddressWhitelist.allowedRanges', ['127.0.0.0/8', '::1/128']),
-        logBlocked: !!getConfigValue('privateAddressWhitelist.log.blockedRequests', true, 'boolean'),
-        logAllowed: !!getConfigValue('privateAddressWhitelist.log.allowedRequests', false, 'boolean'),
-        allowUnresolvedHosts: !!getConfigValue('privateAddressWhitelist.allowUnresolvedHosts', false, 'boolean'),
+        enabled: !!getConfigValue('privateAddressWhitelist.enabled', false as unknown as null, 'boolean' as unknown as null) as boolean,
+        privateAddressWhitelist: getConfigValue('privateAddressWhitelist.allowedRanges', ['127.0.0.0/8', '::1/128'] as unknown as null) as string[],
+        logBlocked: !!getConfigValue('privateAddressWhitelist.log.blockedRequests', true as unknown as null, 'boolean' as unknown as null) as boolean,
+        logAllowed: !!getConfigValue('privateAddressWhitelist.log.allowedRequests', false as unknown as null, 'boolean' as unknown as null) as boolean,
+        allowUnresolvedHosts: !!getConfigValue('privateAddressWhitelist.allowUnresolvedHosts', false as unknown as null, 'boolean' as unknown as null) as boolean,
         enableKeepAlive: cliArgs.enableKeepAlive,
     };
     initPrivateRequestFilter(requestFilterOptions);
     initRequestProxy({ enabled: cliArgs.requestProxyEnabled, url: cliArgs.requestProxyUrl, bypass: cliArgs.requestProxyBypass, enableKeepAlive: cliArgs.enableKeepAlive, privateRequestFilterEnabled: requestFilterOptions.enabled });
-    await libMiddleware.runBunBuild({ pruneCache: true });
+    await libMiddleware.runBunBuild({ pruneCache: true } as Record<string, unknown>);
 }
 
+/**
+ *
+ * @param result
+ */
 async function postSetupTasks(result: ServerStartupResult) {
     const browserLaunchHostname = await cliArgs.getBrowserLaunchHostname(result);
     const browserLaunchUrl = cliArgs.getBrowserLaunchUrl(browserLaunchHostname);
-    const browserLaunchApp = String(getConfigValue('browserLaunch.browser', 'default') ?? '');
+    const browserLaunchApp = String(getConfigValue('browserLaunch.browser', 'default' as unknown as null) ?? '');
 
     if (cliArgs.browserLaunchEnabled) {
         try {
@@ -641,10 +651,10 @@ async function postSetupTasks(result: ServerStartupResult) {
             const validBrowsers: Record<string, unknown> = process.platform === 'android' ? {} : {
                 firefox: apps.firefox, chrome: apps.chrome, edge: apps.edge, brave: apps.brave,
             };
-            const appName = validBrowsers[browserLaunchApp.trim().toLowerCase()];
-            const openOptions = appName ? { app: { name: appName } } : {};
+            const appName = validBrowsers[browserLaunchApp.trim().toLowerCase()] as App | undefined;
+            const openOptions: Record<string, unknown> = appName ? { app: { name: appName } } : {};
             console.log(`Launching in a browser: ${browserLaunchApp}...`);
-            await open(browserLaunchUrl.toString(), openOptions);
+            await open(browserLaunchUrl.toString(), openOptions as unknown as Parameters<typeof open>[1]);
         } catch (error) {
             console.error('Failed to launch the browser. Open the URL manually.', error);
         }
@@ -681,11 +691,17 @@ async function postSetupTasks(result: ServerStartupResult) {
     serverEvents.emit(EVENT_NAMES.SERVER_STARTED, { url: browserLaunchUrl });
 }
 
+/**
+ *
+ */
 function apply404Middleware() {
     const notFoundWebpage = safeReadFileSync(path.join(globalThis.DATA_ROOT, '_errors', 'url-not-found.html')) ?? '';
     app.use((req, res) => { res.status(404).send(notFoundWebpage); });
 }
 
+/**
+ *
+ */
 function setDnsResolutionOrder() {
     try {
         if (cliArgs.dnsPreferIPv6) { dns.setDefaultResultOrder('ipv6first'); console.log('Preferring IPv6 for DNS resolution'); }

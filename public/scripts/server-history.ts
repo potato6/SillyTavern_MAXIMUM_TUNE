@@ -59,7 +59,7 @@ function selectServer(event, ui, serverLabel) {
  */
 function createServerAutocomplete() {
     // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
+     
     const serverLabel = this.dataset.serverHistory;
     // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
     // eslint-disable-next-line @typescript-eslint/no-this-alias

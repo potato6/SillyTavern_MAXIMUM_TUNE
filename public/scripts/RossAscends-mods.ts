@@ -37,25 +37,25 @@ import { debounce, getStringHash, isValidUrl } from './utils.js';
 import { chat_completion_sources, oai_settings } from './openai.js';
 import { getTokenCountAsync } from './tokenizers.js';
 import { textgen_types, textgenerationwebui_settings as textgen_settings, getTextGenServer } from './textgen-settings.js';
-import { debounce_timeout, SWIPE_SOURCE } from './constants.js';
+import { debounce_timeout } from './constants.js';
 
 import { Popup } from './popup.js';
 import { accountStorage } from './util/AccountStorage.js';
 import { getCurrentUserHandle } from './user.js';
 import { kai_settings } from './kai-settings.js';
 
-const RPanelPin = document.getElementById('rm_button_panel_pin');
-const LPanelPin = document.getElementById('lm_button_panel_pin');
-const WIPanelPin = document.getElementById('WI_panel_pin');
+const RPanelPin = document.getElementById('rm_button_panel_pin')! as HTMLInputElement;
+const LPanelPin = document.getElementById('lm_button_panel_pin')! as HTMLInputElement;
+const WIPanelPin = document.getElementById('WI_panel_pin')! as HTMLInputElement;
 
-const RightNavPanel = document.getElementById('right-nav-panel');
-const RightNavDrawerIcon = document.getElementById('rightNavDrawerIcon');
-const LeftNavPanel = document.getElementById('left-nav-panel');
-const LeftNavDrawerIcon = document.getElementById('leftNavDrawerIcon');
-const WorldInfo = document.getElementById('WorldInfo');
-const WIDrawerIcon = document.getElementById('WIDrawerIcon');
+const RightNavPanel = document.getElementById('right-nav-panel')!;
+const RightNavDrawerIcon = document.getElementById('rightNavDrawerIcon')!;
+const LeftNavPanel = document.getElementById('left-nav-panel')!;
+const LeftNavDrawerIcon = document.getElementById('leftNavDrawerIcon')!;
+const WorldInfo = document.getElementById('WorldInfo')!;
+const WIDrawerIcon = document.getElementById('WIDrawerIcon')!;
 
-const SelectedCharacterTab = document.getElementById('rm_button_selected_ch');
+const SelectedCharacterTab = document.getElementById('rm_button_selected_ch')!;
 
 let connection_made = false;
 let retry_delay = 500;
@@ -99,8 +99,7 @@ observer.observe(document.documentElement, observerConfig);
  * @param {number} total_gen_time - The total generation time in milliseconds.
  * @returns {string} - A human-readable string that represents the time spent generating characters.
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'total_gen_time' implicitly has an 'any'... Remove this comment to see the full error message
-export function humanizeGenTime(total_gen_time) {
+export function humanizeGenTime(total_gen_time: number): string {
     //convert time_spent to humanized format of "_ Hours, _ Minutes, _ Seconds" from milliseconds
     let time_spent = total_gen_time || 0;
     time_spent = Math.floor(time_spent / 1000);
@@ -122,23 +121,20 @@ export function humanizeGenTime(total_gen_time) {
 /**
  * DON'T OPTIMIZE, don't change this to a const or let, it needs to be a var.
  */
-// @ts-expect-error TS(7034) FIXME: Variable 'parsedUA' implicitly has type 'any' in s... Remove this comment to see the full error message
-let parsedUA = null;
+let parsedUA: Record<string, unknown> | null = null;
 
 /**
  * @returns {object|null} Parsed user agent object, or null if not yet parsed
  */
 export function getParsedUA() {
-    // @ts-expect-error TS(7005) FIXME: Variable 'parsedUA' implicitly has an 'any' type.
     if (!parsedUA) {
         try {
-            parsedUA = Bowser.parse(navigator.userAgent);
+            parsedUA = Bowser.parse(navigator.userAgent) as unknown as Record<string, unknown>;
         } catch {
             // In case the user agent is an empty string or Bowser can't parse it for some other reason
         }
     }
 
-    // @ts-expect-error TS(7005) FIXME: Variable 'parsedUA' implicitly has an 'any' type.
     return parsedUA;
 }
 
@@ -149,7 +145,9 @@ export function getParsedUA() {
 export function isMobile() {
     const mobileTypes = ['mobile', 'tablet'];
 
-    return mobileTypes.includes(getParsedUA()?.platform?.type);
+    const ua = getParsedUA();
+    const platform = (ua as Record<string, unknown>)?.platform as Record<string, unknown>;
+    return mobileTypes.includes(platform?.type as string);
 }
 
 /**
@@ -186,10 +184,9 @@ export function humanizedDateTime(timestamp = Date.now()) {
         second: date.getSeconds(),
         millisecond: date.getMilliseconds(),
     };
-    for (const key in dt) {
+    for (const key of Object.keys(dt) as (keyof typeof dt)[]) {
         const padLength = key === 'millisecond' ? 3 : 2;
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        dt[key] = dt[key].toString().padStart(padLength, '0');
+        dt[key] = dt[key].toString().padStart(padLength, '0') as never;
     }
     return `${dt.year}-${dt.month}-${dt.day}@${dt.hour}h${dt.minute}m${dt.second}s${dt.millisecond}ms`;
 }
@@ -207,8 +204,7 @@ export function getMessageTimeStamp(timestamp = Date.now()) {
 
 // triggers:
 document.getElementById('rm_button_create')?.addEventListener('click', function () {                 //when "+New Character" is clicked
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    const selectedCharH2 = SelectedCharacterTab.querySelector(':scope > h2');
+        const selectedCharH2 = SelectedCharacterTab?.querySelector(':scope > h2');
     if (selectedCharH2) selectedCharH2.innerHTML = '';
 });
 //when any input is made to the create/edit character form textareas
@@ -231,27 +227,25 @@ export async function RA_CountCharTokens() {
             return;
         }
 
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const counter = tokenCounter;
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        const counter = tokenCounter as HTMLElement;
         const input = document.getElementById(counter.getAttribute('data-token-counter') ?? '');
         const isPermanent = counter.getAttribute('data-token-permanent') === 'true';
         const value = String(input instanceof HTMLInputElement || input instanceof HTMLTextAreaElement ? input.value : '');
 
-        if (input.length === 0) {
+        if (!input) {
             counter.textContent = 'Invalid input reference';
             continue;
         }
 
         if (!value) {
             input.dataset.lastValueHash = '';
-            counter.textContent = 0;
+            counter.textContent = '0';
             continue;
         }
 
         const valueHash = getStringHash(value);
 
-        if (input.dataset.lastValueHash === valueHash) {
+        if (input.dataset.lastValueHash === String(valueHash)) {
             total_tokens += Number(counter.textContent);
             permanent_tokens += isPermanent ? Number(counter.textContent) : 0;
         } else {
@@ -266,19 +260,16 @@ export async function RA_CountCharTokens() {
             counter.textContent = tokens;
             total_tokens += tokens;
             permanent_tokens += isPermanent ? tokens : 0;
-            input.dataset.lastValueHash = valueHash;
+            input.dataset.lastValueHash = String(valueHash);
         }
     }
 
     // Warn if total tokens exceeds the limit of half the max context
     const tokenLimit = Math.max(((main_api !== 'openai' ? max_context : oai_settings.openai_max_context) / 2), 1024);
     const showWarning = (total_tokens > tokenLimit);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('result_info_total_tokens').textContent = total_tokens;
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('result_info_permanent_tokens').textContent = permanent_tokens;
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    document.getElementById('result_info_text').classList.toggle('neutral_warning', showWarning);
+    document.getElementById('result_info_total_tokens')!.textContent = String(total_tokens);
+    document.getElementById('result_info_permanent_tokens')!.textContent = String(permanent_tokens);
+    document.getElementById('result_info_text')?.classList.toggle('neutral_warning', showWarning);
     const _ctEl = document.getElementById('chartokenwarning') as HTMLElement; if (_ctEl) _ctEl.style.display = showWarning ? '' : 'none';
 }
 /**
@@ -327,8 +318,7 @@ async function RA_autoloadchat() {
  */
 export async function favsToHotswap() {
     const entities = getEntitiesList({ doFilter: false });
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const container = document.querySelector('#right-nav-panel .hotswap');
+    const container = document.querySelector('#right-nav-panel .hotswap')!;
 
     // Hard limit is required because even if all hotswaps don't fit the screen, their images would still be loaded
     // 25 is roughly calculated as the maximum number of favs that can fit an ultrawide monitor with the default theme
@@ -337,7 +327,7 @@ export async function favsToHotswap() {
 
     //helpful instruction message if no characters are favorited
     if (favs.length == 0) {
-        container.innerHTML = DOMPurify.sanitize(`<small><span><i class="fa-solid fa-star"></i>&nbsp;${container.getAttribute('no_favs') ?? ''}</span></small>`);
+        container.innerHTML = DOMPurify.sanitize(`<small><span><i class="fa-solid fa-star"></i>&nbsp;${(container as HTMLElement).getAttribute('no_favs') ?? ''}</span></small>`);
         return;
     }
 
@@ -350,43 +340,29 @@ export async function favsToHotswap() {
  */
 function RA_checkOnlineStatus() {
     if (online_status == 'no_connection') {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const send_textarea = document.getElementById('send_textarea');
         send_textarea?.setAttribute('placeholder', send_textarea.getAttribute('no_connection_text') ?? ''); //Input bar placeholder tells users they are not connected
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        document.getElementById('send_form').classList.add('no-connection');
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        document.getElementById('send_but').classList.add('displayNone'); //send button is hidden when not connected;
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        document.getElementById('mes_continue').classList.add('displayNone'); //continue button is hidden when not connected;
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        document.getElementById('mes_impersonate').classList.add('displayNone'); //continue button is hidden when not connected;
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        document.getElementById('API-status-top').classList.remove('fa-plug');
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        document.getElementById('API-status-top').classList.add('fa-plug-circle-exclamation', 'redOverlayGlow');
+        document.getElementById('send_form')?.classList.add('no-connection');
+        document.getElementById('send_but')?.classList.add('displayNone'); //send button is hidden when not connected;
+        document.getElementById('mes_continue')?.classList.add('displayNone'); //continue button is hidden when not connected;
+        document.getElementById('mes_impersonate')?.classList.add('displayNone'); //continue button is hidden when not connected;
+        document.getElementById('API-status-top')?.classList.remove('fa-plug');
+        document.getElementById('API-status-top')?.classList.add('fa-plug-circle-exclamation', 'redOverlayGlow');
         connection_made = false;
     } else {
         if (online_status !== undefined && online_status !== 'no_connection') {
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const send_textarea = document.getElementById('send_textarea');
             send_textarea?.setAttribute('placeholder', send_textarea.getAttribute('connected_text') ?? ''); //on connect, placeholder tells user to type message
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-            document.getElementById('send_form').classList.remove('no-connection');
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-            document.getElementById('API-status-top').classList.remove('fa-plug-circle-exclamation', 'redOverlayGlow');
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-            document.getElementById('API-status-top').classList.add('fa-plug');
+            document.getElementById('send_form')?.classList.remove('no-connection');
+            document.getElementById('API-status-top')?.classList.remove('fa-plug-circle-exclamation', 'redOverlayGlow');
+            document.getElementById('API-status-top')?.classList.add('fa-plug');
             connection_made = true;
             retry_delay = 100;
 
             if (!is_send_press && !(selected_group && is_group_generating)) {
-                // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-                document.getElementById('send_but').classList.remove('displayNone'); //on connect, send button shows
-                // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-                document.getElementById('mes_continue').classList.remove('displayNone'); //continue button is shown when connected
-                // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-                document.getElementById('mes_impersonate').classList.remove('displayNone'); //continue button is shown when connected
+                document.getElementById('send_but')?.classList.remove('displayNone'); //on connect, send button shows
+                document.getElementById('mes_continue')?.classList.remove('displayNone'); //continue button is shown when connected
+                document.getElementById('mes_impersonate')?.classList.remove('displayNone'); //continue button is shown when connected
             }
         }
     }
@@ -396,8 +372,7 @@ function RA_checkOnlineStatus() {
 /**
  * @param {string} PrevApi The previous API name
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'PrevApi' implicitly has an 'any' type.
-function RA_autoconnect(PrevApi) {
+function RA_autoconnect(PrevApi?: string) {
     // secrets.js or script.js not loaded
     if (SECRET_KEYS === undefined || online_status === undefined) {
         setTimeout(RA_autoconnect, 100);
@@ -407,95 +382,57 @@ function RA_autoconnect(PrevApi) {
         switch (main_api) {
             case 'kobold':
                 if (kai_settings.api_server && isValidUrl(kai_settings.api_server)) {
-                    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                    document.getElementById('api_button').dispatchEvent(new Event('click', { bubbles: true }));
+                    document.getElementById('api_button')?.dispatchEvent(new Event('click', { bubbles: true }));
                 }
                 break;
             case 'novel':
-                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                if (secret_state[SECRET_KEYS.NOVEL]) {
-                    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                    document.getElementById('api_button_novel').dispatchEvent(new Event('click', { bubbles: true }));
+                            if ((secret_state as Record<string, unknown>)[SECRET_KEYS.NOVEL]) {
+                    document.getElementById('api_button_novel')?.dispatchEvent(new Event('click', { bubbles: true }));
                 }
                 break;
             case 'textgenerationwebui':
-                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                if ((textgen_settings.type === textgen_types.MANCER && secret_state[SECRET_KEYS.MANCER])
-                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                    || (textgen_settings.type === textgen_types.TOGETHERAI && secret_state[SECRET_KEYS.TOGETHERAI])
-                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                    || (textgen_settings.type === textgen_types.INFERMATICAI && secret_state[SECRET_KEYS.INFERMATICAI])
-                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                    || (textgen_settings.type === textgen_types.DREAMGEN && secret_state[SECRET_KEYS.DREAMGEN])
-                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                    || (textgen_settings.type === textgen_types.OPENROUTER && secret_state[SECRET_KEYS.OPENROUTER])
-                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                    || (textgen_settings.type === textgen_types.FEATHERLESS && secret_state[SECRET_KEYS.FEATHERLESS])
+                if ((textgen_settings.type === textgen_types.MANCER && (secret_state as Record<string, unknown>)[SECRET_KEYS.MANCER])
+                    || (textgen_settings.type === textgen_types.TOGETHERAI && (secret_state as Record<string, unknown>)[SECRET_KEYS.TOGETHERAI])
+                    || (textgen_settings.type === textgen_types.INFERMATICAI && (secret_state as Record<string, unknown>)[SECRET_KEYS.INFERMATICAI])
+                    || (textgen_settings.type === textgen_types.DREAMGEN && (secret_state as Record<string, unknown>)[SECRET_KEYS.DREAMGEN])
+                    || (textgen_settings.type === textgen_types.OPENROUTER && (secret_state as Record<string, unknown>)[SECRET_KEYS.OPENROUTER])
+                    || (textgen_settings.type === textgen_types.FEATHERLESS && (secret_state as Record<string, unknown>)[SECRET_KEYS.FEATHERLESS])
                 ) {
-                    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                    document.getElementById('api_button_textgenerationwebui').dispatchEvent(new Event('click', { bubbles: true }));
+                    document.getElementById('api_button_textgenerationwebui')?.dispatchEvent(new Event('click', { bubbles: true }));
                 } else if (isValidUrl(getTextGenServer())) {
-                    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                    document.getElementById('api_button_textgenerationwebui').dispatchEvent(new Event('click', { bubbles: true }));
+                    document.getElementById('api_button_textgenerationwebui')?.dispatchEvent(new Event('click', { bubbles: true }));
                 }
                 break;
             case 'openai':
-                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                if (((secret_state[SECRET_KEYS.OPENAI] || oai_settings.reverse_proxy) && oai_settings.chat_completion_source == chat_completion_sources.OPENAI)
-                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                    || ((secret_state[SECRET_KEYS.CLAUDE] || oai_settings.reverse_proxy) && oai_settings.chat_completion_source == chat_completion_sources.CLAUDE)
-                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                    || (secret_state[SECRET_KEYS.OPENROUTER] && oai_settings.chat_completion_source == chat_completion_sources.OPENROUTER)
-                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                    || (secret_state[SECRET_KEYS.AI21] && oai_settings.chat_completion_source == chat_completion_sources.AI21)
-                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                    || (secret_state[SECRET_KEYS.MAKERSUITE] && oai_settings.chat_completion_source == chat_completion_sources.MAKERSUITE)
-                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                    || (secret_state[SECRET_KEYS.VERTEXAI] && oai_settings.chat_completion_source == chat_completion_sources.VERTEXAI && oai_settings.vertexai_auth_mode === 'express')
-                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                    || (secret_state[SECRET_KEYS.VERTEXAI_SERVICE_ACCOUNT] && oai_settings.chat_completion_source == chat_completion_sources.VERTEXAI && oai_settings.vertexai_auth_mode === 'full')
-                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                    || (secret_state[SECRET_KEYS.MISTRALAI] && oai_settings.chat_completion_source == chat_completion_sources.MISTRALAI)
-                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                    || (secret_state[SECRET_KEYS.COHERE] && oai_settings.chat_completion_source == chat_completion_sources.COHERE)
-                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                    || (secret_state[SECRET_KEYS.PERPLEXITY] && oai_settings.chat_completion_source == chat_completion_sources.PERPLEXITY)
-                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                    || (secret_state[SECRET_KEYS.GROQ] && oai_settings.chat_completion_source == chat_completion_sources.GROQ)
-                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                    || (secret_state[SECRET_KEYS.CHUTES] && oai_settings.chat_completion_source == chat_completion_sources.CHUTES)
-                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                    || (secret_state[SECRET_KEYS.SILICONFLOW] && oai_settings.chat_completion_source == chat_completion_sources.SILICONFLOW)
-                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                    || (secret_state[SECRET_KEYS.ELECTRONHUB] && oai_settings.chat_completion_source == chat_completion_sources.ELECTRONHUB)
-                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                    || (secret_state[SECRET_KEYS.NANOGPT] && oai_settings.chat_completion_source == chat_completion_sources.NANOGPT)
-                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                    || (secret_state[SECRET_KEYS.DEEPSEEK] && oai_settings.chat_completion_source == chat_completion_sources.DEEPSEEK)
-                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                    || (secret_state[SECRET_KEYS.XAI] && oai_settings.chat_completion_source == chat_completion_sources.XAI)
-                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                    || (secret_state[SECRET_KEYS.AIMLAPI] && oai_settings.chat_completion_source == chat_completion_sources.AIMLAPI)
-                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                    || (secret_state[SECRET_KEYS.MOONSHOT] && oai_settings.chat_completion_source == chat_completion_sources.MOONSHOT)
-                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                    || (secret_state[SECRET_KEYS.FIREWORKS] && oai_settings.chat_completion_source == chat_completion_sources.FIREWORKS)
-                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                    || (secret_state[SECRET_KEYS.COMETAPI] && oai_settings.chat_completion_source == chat_completion_sources.COMETAPI)
-                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                    || (secret_state[SECRET_KEYS.ZAI] && oai_settings.chat_completion_source == chat_completion_sources.ZAI)
-                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                    || (secret_state[SECRET_KEYS.POLLINATIONS] && oai_settings.chat_completion_source === chat_completion_sources.POLLINATIONS)
-                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                    || (secret_state[SECRET_KEYS.WORKERS_AI] && oai_settings.chat_completion_source == chat_completion_sources.WORKERS_AI)
-                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                    || (secret_state[SECRET_KEYS.MINIMAX] && oai_settings.chat_completion_source == chat_completion_sources.MINIMAX)
+                if ((((secret_state as Record<string, unknown>)[SECRET_KEYS.OPENAI] || oai_settings.reverse_proxy) && oai_settings.chat_completion_source == chat_completion_sources.OPENAI)
+                    || (((secret_state as Record<string, unknown>)[SECRET_KEYS.CLAUDE] || oai_settings.reverse_proxy) && oai_settings.chat_completion_source == chat_completion_sources.CLAUDE)
+                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.OPENROUTER] && oai_settings.chat_completion_source == chat_completion_sources.OPENROUTER)
+                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.AI21] && oai_settings.chat_completion_source == chat_completion_sources.AI21)
+                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.MAKERSUITE] && oai_settings.chat_completion_source == chat_completion_sources.MAKERSUITE)
+                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.VERTEXAI] && oai_settings.chat_completion_source == chat_completion_sources.VERTEXAI && oai_settings.vertexai_auth_mode === 'express')
+                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.VERTEXAI_SERVICE_ACCOUNT] && oai_settings.chat_completion_source == chat_completion_sources.VERTEXAI && oai_settings.vertexai_auth_mode === 'full')
+                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.MISTRALAI] && oai_settings.chat_completion_source == chat_completion_sources.MISTRALAI)
+                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.COHERE] && oai_settings.chat_completion_source == chat_completion_sources.COHERE)
+                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.PERPLEXITY] && oai_settings.chat_completion_source == chat_completion_sources.PERPLEXITY)
+                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.GROQ] && oai_settings.chat_completion_source == chat_completion_sources.GROQ)
+                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.CHUTES] && oai_settings.chat_completion_source == chat_completion_sources.CHUTES)
+                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.SILICONFLOW] && oai_settings.chat_completion_source == chat_completion_sources.SILICONFLOW)
+                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.ELECTRONHUB] && oai_settings.chat_completion_source == chat_completion_sources.ELECTRONHUB)
+                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.NANOGPT] && oai_settings.chat_completion_source == chat_completion_sources.NANOGPT)
+                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.DEEPSEEK] && oai_settings.chat_completion_source == chat_completion_sources.DEEPSEEK)
+                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.XAI] && oai_settings.chat_completion_source == chat_completion_sources.XAI)
+                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.AIMLAPI] && oai_settings.chat_completion_source == chat_completion_sources.AIMLAPI)
+                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.MOONSHOT] && oai_settings.chat_completion_source == chat_completion_sources.MOONSHOT)
+                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.FIREWORKS] && oai_settings.chat_completion_source == chat_completion_sources.FIREWORKS)
+                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.COMETAPI] && oai_settings.chat_completion_source == chat_completion_sources.COMETAPI)
+                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.ZAI] && oai_settings.chat_completion_source == chat_completion_sources.ZAI)
+                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.POLLINATIONS] && oai_settings.chat_completion_source === chat_completion_sources.POLLINATIONS)
+                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.WORKERS_AI] && oai_settings.chat_completion_source == chat_completion_sources.WORKERS_AI)
+                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.MINIMAX] && oai_settings.chat_completion_source == chat_completion_sources.MINIMAX)
                     || (isValidUrl(oai_settings.custom_url) && oai_settings.chat_completion_source == chat_completion_sources.CUSTOM)
-                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                    || (secret_state[SECRET_KEYS.AZURE_OPENAI] && oai_settings.chat_completion_source == chat_completion_sources.AZURE_OPENAI)
+                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.AZURE_OPENAI] && oai_settings.chat_completion_source == chat_completion_sources.AZURE_OPENAI)
                 ) {
-                    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                    document.getElementById('api_button_openai').dispatchEvent(new Event('click', { bubbles: true }));
+                    document.getElementById('api_button_openai')?.dispatchEvent(new Event('click', { bubbles: true }));
                 }
                 break;
         }
@@ -516,22 +453,19 @@ function OpenNavPanels() {
         //auto-open R nav if locked and previously open
         if (accountStorage.getItem('NavLockOn') == 'true' && accountStorage.getItem('NavOpened') == 'true') {
             //console.log("RA -- clicking right nav to open");
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            document.getElementById('rightNavDrawerIcon').dispatchEvent(new Event('click', { bubbles: true }));
+            document.getElementById('rightNavDrawerIcon')?.dispatchEvent(new Event('click', { bubbles: true }));
         }
 
         //auto-open L nav if locked and previously open
         if (accountStorage.getItem('LNavLockOn') == 'true' && accountStorage.getItem('LNavOpened') == 'true') {
             console.debug('RA -- clicking left nav to open');
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            document.getElementById('leftNavDrawerIcon').dispatchEvent(new Event('click', { bubbles: true }));
+            document.getElementById('leftNavDrawerIcon')?.dispatchEvent(new Event('click', { bubbles: true }));
         }
 
         //auto-open WI if locked and previously open
         if (accountStorage.getItem('WINavLockOn') == 'true' && accountStorage.getItem('WINavOpened') == 'true') {
             console.debug('RA -- clicking WI to open');
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            document.getElementById('WIDrawerIcon').dispatchEvent(new Event('click', { bubbles: true }));
+            document.getElementById('WIDrawerIcon')?.dispatchEvent(new Event('click', { bubbles: true }));
         }
     }
 }
@@ -549,8 +483,11 @@ function restoreUserInput() {
 
     const userInput = localStorage.getItem(getUserInputKey());
     if (userInput) {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        document.getElementById('send_textarea').value = userInput[0].dispatchEvent(new Event('input', { bubbles: true }));
+        const el = document.getElementById('send_textarea') as HTMLTextAreaElement | null;
+        if (el) {
+            el.value = userInput;
+            el.dispatchEvent(new Event('input', { bubbles: true }));
+        }
     }
 }
 
@@ -558,8 +495,8 @@ function restoreUserInput() {
  *
  */
 function saveUserInput() {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const userInput = String(document.getElementById('send_textarea').value);
+    const el = document.getElementById('send_textarea') as HTMLTextAreaElement | null;
+    const userInput = String(el?.value ?? '');
     localStorage.setItem(getUserInputKey(), userInput);
     console.debug('User Input -- ', userInput);
 }
@@ -569,17 +506,13 @@ const saveUserInputDebounced = debounce(saveUserInput);
  * Make the given element draggable. This is used for Moving UI.
  * @param {HTMLElement} elmnt - The element to make draggable.
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'elmnt' implicitly has an 'any' type.
-export function dragElement(elmnt) {
-    // @ts-expect-error TS(7034) FIXME: Variable 'actionType' implicitly has type 'any' in... Remove this comment to see the full error message
-    let actionType = null; // "drag" or "resize"
+export function dragElement(elmnt: HTMLElement) {
+    let actionType: string | null = null; // "drag" or "resize"
     let isMouseDown = false;
 
     let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-    // @ts-expect-error TS(7034) FIXME: Variable 'height' implicitly has type 'any' in som... Remove this comment to see the full error message
-    let height, width, top, left, right, bottom,
-        // @ts-expect-error TS(7034) FIXME: Variable 'maxX' implicitly has type 'any' in some ... Remove this comment to see the full error message
-        maxX, maxY, winHeight, winWidth;
+    let height = 0, width = 0, top = 0, left = 0, right = 0, bottom = 0,
+        maxX = 0, maxY = 0, winHeight = 0, winWidth = 0;
 
     if (!elmnt) return;
     const elmntName = elmnt.id;
@@ -588,24 +521,16 @@ export function dragElement(elmnt) {
      *
      */
     function savePositionAndSize() {
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        if (!power_user.movingUIState[elmntName]) power_user.movingUIState[elmntName] = {};
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        power_user.movingUIState[elmntName].top = top;
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        power_user.movingUIState[elmntName].left = left;
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        power_user.movingUIState[elmntName].right = right;
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        power_user.movingUIState[elmntName].bottom = bottom;
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        power_user.movingUIState[elmntName].margin = 'unset';
-        // @ts-expect-error TS(7005) FIXME: Variable 'actionType' implicitly has an 'any' type... Remove this comment to see the full error message
+        const state = (power_user.movingUIState as Record<string, Record<string, unknown>>);
+        if (!state[elmntName]) state[elmntName] = {};
+        state[elmntName]!.top = top;
+        state[elmntName]!.left = left;
+        state[elmntName]!.right = right;
+        state[elmntName]!.bottom = bottom;
+        state[elmntName]!.margin = 'unset';
         if (actionType === 'resize') {
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-            power_user.movingUIState[elmntName].width = width;
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-            power_user.movingUIState[elmntName].height = height;
+            state[elmntName]!.width = width;
+            state[elmntName]!.height = height;
             eventSource.emit('resizeUI', elmntName);
         }
         saveSettingsDebounced();
@@ -615,19 +540,14 @@ export function dragElement(elmnt) {
      *
      */
     function clampToViewport() {
-        // @ts-expect-error TS(7005) FIXME: Variable 'top' implicitly has an 'any' type.
         if (top <= 0) elmnt.style.setProperty('top', '0px', 'important');
-        // @ts-expect-error TS(7005) FIXME: Variable 'maxY' implicitly has an 'any' type.
         else if (maxY >= winHeight) elmnt.style.setProperty('top', (winHeight - maxY + top - 1) + 'px', 'important');
-        // @ts-expect-error TS(7005) FIXME: Variable 'left' implicitly has an 'any' type.
         if (left <= 0) elmnt.style.setProperty('left', '0px', 'important');
-        // @ts-expect-error TS(7005) FIXME: Variable 'maxX' implicitly has an 'any' type.
         else if (maxX >= winWidth) elmnt.style.setProperty('left', (winWidth - maxX + left - 1) + 'px', 'important');
     }
 
-    const observer = new MutationObserver((mutations) => {
-        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-        const target = mutations[0].target;
+    const observer = new MutationObserver((mutations: MutationRecord[]) => {
+        const target = mutations[0]!.target;
         if (!(target instanceof HTMLElement)) {
             observer.disconnect();
             return;
@@ -656,10 +576,9 @@ export function dragElement(elmnt) {
         winWidth = window.innerWidth;
         winHeight = window.innerHeight;
 
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        if (!power_user.movingUIState[elmntName]) power_user.movingUIState[elmntName] = {};
+        const state = (power_user.movingUIState as Record<string, Record<string, unknown>>);
+        if (!state[elmntName]) state[elmntName] = {};
 
-        // @ts-expect-error TS(7005) FIXME: Variable 'actionType' implicitly has an 'any' type... Remove this comment to see the full error message
         if (actionType === 'resize') {
             const containerAspectRatio = height / width;
             if (elmnt.id.startsWith('zoomFor_')) {
@@ -689,7 +608,6 @@ export function dragElement(elmnt) {
             }
             elmnt.style.setProperty('left', left + 'px', 'important');
             elmnt.style.setProperty('top', top + 'px', 'important');
-        // @ts-expect-error TS(7005) FIXME: Variable 'actionType' implicitly has an 'any' type... Remove this comment to see the full error message
         } else if (actionType === 'drag') {
             clampToViewport();
         }
@@ -700,8 +618,7 @@ export function dragElement(elmnt) {
     /**
      * @param {MouseEvent} e Mouse event
      */
-    // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
-    function dragMouseDown(e) {
+    function dragMouseDown(e: MouseEvent) {
         if (e) {
             actionType = 'drag';
             isMouseDown = true;
@@ -716,10 +633,9 @@ export function dragElement(elmnt) {
     /**
      * @param {MouseEvent} e Mouse event
      */
-    // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
-    function elementDrag(e) {
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        if (!power_user.movingUIState[elmntName]) power_user.movingUIState[elmntName] = {};
+    function elementDrag(e: MouseEvent) {
+        const state = (power_user.movingUIState as Record<string, Record<string, unknown>>);
+        if (!state[elmntName]) state[elmntName] = {};
         e.preventDefault();
         pos1 = pos3 - e.clientX;
         pos2 = pos4 - e.clientY;
@@ -730,9 +646,7 @@ export function dragElement(elmnt) {
         elmnt.style.setProperty('left', (rect.left - pos1) + 'px', 'important');
         elmnt.style.setProperty('top', (rect.top - pos2) + 'px', 'important');
         elmnt.style.setProperty('margin', 'unset', 'important');
-        // @ts-expect-error TS(7005) FIXME: Variable 'height' implicitly has an 'any' type.
         elmnt.style.setProperty('height', height + 'px', 'important');
-        // @ts-expect-error TS(7005) FIXME: Variable 'width' implicitly has an 'any' type.
         elmnt.style.setProperty('width', width + 'px', 'important');
     }
 
@@ -760,9 +674,8 @@ export function dragElement(elmnt) {
 
     const elmntHeader = document.getElementById(elmntName + 'header');
     if (elmntHeader) {
-        elmntHeader.addEventListener('mousedown', (e) => {
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-            if (e.target.classList.contains('drag-grabber')) {
+        elmntHeader.addEventListener('mousedown', (e: MouseEvent) => {
+            if (e.target && (e.target as HTMLElement).classList.contains('drag-grabber')) {
                 actionType = 'drag';
                 isMouseDown = true;
                 observer.observe(elmnt, { attributes: true, attributeFilter: ['style'] });
@@ -771,8 +684,7 @@ export function dragElement(elmnt) {
         });
     }
 
-    // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
-    elmnt.addEventListener('mousedown', (e) => {
+    elmnt.addEventListener('mousedown', (e: MouseEvent) => {
         const rect = elmnt.getBoundingClientRect();
         const resizeMargin = 16;
         const isNearRight = e.clientX > rect.right - resizeMargin;
@@ -793,37 +705,32 @@ export function dragElement(elmnt) {
 export async function initMovingUI() {
     if (!isMobile() && power_user.movingUI === true) {
         console.debug('START MOVING UI');
-        dragElement(document.getElementById('sheld'));
-        dragElement(document.getElementById('left-nav-panel'));
-        dragElement(document.getElementById('right-nav-panel'));
-        dragElement(document.getElementById('WorldInfo'));
-        dragElement(document.getElementById('floatingPrompt'));
-        dragElement(document.getElementById('logprobsViewer'));
-        dragElement(document.getElementById('cfgConfig'));
+        dragElement(document.getElementById('sheld')!);
+        dragElement(document.getElementById('left-nav-panel')!);
+        dragElement(document.getElementById('right-nav-panel')!);
+        dragElement(document.getElementById('WorldInfo')!);
+        dragElement(document.getElementById('floatingPrompt')!);
+        dragElement(document.getElementById('logprobsViewer')!);
+        dragElement(document.getElementById('cfgConfig')!);
     }
 }
 
-/**@type {HTMLTextAreaElement} */
-const sendTextArea = document.querySelector('#send_textarea');
-const chatBlock = document.getElementById('chat');
+const sendTextArea = document.querySelector('#send_textarea') as HTMLTextAreaElement | null;
+const chatBlock = document.getElementById('chat') as HTMLElement | null;
 const isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
 
 /**
  * this makes the chat input text area resize vertically to match the text size (limited by CSS at 50% window height)
  */
 function autoFitSendTextArea() {
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
+    if (!chatBlock || !sendTextArea) return;
     const originalScrollBottom = chatBlock.scrollHeight - (chatBlock.scrollTop + chatBlock.offsetHeight);
 
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     sendTextArea.style.height = '1px'; // Reset height to 1px to force recalculation of scrollHeight
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     const newHeight = sendTextArea.scrollHeight;
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     sendTextArea.style.height = `${newHeight}px`;
 
     if (!isFirefox) {
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         chatBlock.scrollTop = chatBlock.scrollHeight - (chatBlock.offsetHeight + originalScrollBottom);
     }
 }
@@ -843,7 +750,6 @@ export function initRossMods() {
     }
 
     if (power_user.auto_connect) {
-        // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
         RA_autoconnect();
     }
 
@@ -855,137 +761,97 @@ export function initRossMods() {
     document.getElementById('api_button')?.addEventListener('click', () => checkStatusDebounced());
 
     //toggle pin class when lock toggle clicked
-    RPanelPin?.addEventListener('click', function () {
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
+    RPanelPin.addEventListener('click', function () {
         accountStorage.setItem('NavLockOn', RPanelPin.checked);
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         if (RPanelPin.checked) {
             //console.log('adding pin class to right nav');
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             RightNavPanel.classList.add('pinnedOpen');
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             RightNavDrawerIcon.classList.add('drawerPinnedOpen');
         } else {
             //console.log('removing pin class from right nav');
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             RightNavPanel.classList.remove('pinnedOpen');
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             RightNavDrawerIcon.classList.remove('drawerPinnedOpen');
 
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-            if (RightNavPanel.classList.contains('openDrawer') && document.querySelector('.openDrawer').length > 1) {
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            if (RightNavPanel.classList.contains('openDrawer') && document.querySelectorAll('.openDrawer').length > 1) {
                 const toggle = document.getElementById('unimportantYes');
-                doNavbarIconClick.call(toggle);
+                if (toggle) doNavbarIconClick.call(toggle);
             }
         }
     });
-    LPanelPin?.addEventListener('click', function () {
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
+    LPanelPin.addEventListener('click', function () {
         accountStorage.setItem('LNavLockOn', LPanelPin.checked);
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         if (LPanelPin.checked) {
             //console.log('adding pin class to Left nav');
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             LeftNavPanel.classList.add('pinnedOpen');
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             LeftNavDrawerIcon.classList.add('drawerPinnedOpen');
         } else {
             //console.log('removing pin class from Left nav');
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             LeftNavPanel.classList.remove('pinnedOpen');
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             LeftNavDrawerIcon.classList.remove('drawerPinnedOpen');
 
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-            if (LeftNavPanel.classList.contains('openDrawer') && document.querySelector('.openDrawer').length > 1) {
+            if (LeftNavPanel.classList.contains('openDrawer') && document.querySelectorAll('.openDrawer').length > 1) {
                 const toggle = document.querySelector('#ai-config-button>.drawer-toggle');
-                if (toggle) doNavbarIconClick.call(toggle);
+                if (toggle) doNavbarIconClick.call(toggle as HTMLElement);
             }
         }
     });
 
-    WIPanelPin?.addEventListener('click', async function () {
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
+    WIPanelPin.addEventListener('click', async function () {
         accountStorage.setItem('WINavLockOn', WIPanelPin.checked);
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         if (WIPanelPin.checked) {
             console.debug('adding pin class to WI');
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             WorldInfo.classList.add('pinnedOpen');
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             WIDrawerIcon.classList.add('drawerPinnedOpen');
         } else {
             console.debug('removing pin class from WI');
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             WorldInfo.classList.remove('pinnedOpen');
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             WIDrawerIcon.classList.remove('drawerPinnedOpen');
 
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-            if (WorldInfo.classList.contains('openDrawer') && document.querySelector('.openDrawer').length > 1) {
+            if (WorldInfo.classList.contains('openDrawer') && document.querySelectorAll('.openDrawer').length > 1) {
                 console.debug('closing WI after lock removal');
                 const toggle = document.querySelector('#WI-SP-button>.drawer-toggle');
-                if (toggle) doNavbarIconClick.call(toggle);
+                if (toggle) doNavbarIconClick.call(toggle as HTMLElement);
             }
         }
     });
 
     if (!isMobile()) { //only read/set pin states on non-mobile devices
         // read the state of right Nav Lock and apply to rightnav classlist
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         RPanelPin.checked = accountStorage.getItem('NavLockOn') == 'true';
         if (accountStorage.getItem('NavLockOn') == 'true') {
             //console.log('setting pin class via local var');
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             RightNavPanel.classList.add('pinnedOpen');
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             RightNavDrawerIcon.classList.add('drawerPinnedOpen');
         }
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         if (RPanelPin.checked) {
             console.debug('setting pin class via checkbox state');
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             RightNavPanel.classList.add('pinnedOpen');
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             RightNavDrawerIcon.classList.add('drawerPinnedOpen');
         }
         // read the state of left Nav Lock and apply to leftnav classlist
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         LPanelPin.checked = accountStorage.getItem('LNavLockOn') === 'true';
         if (accountStorage.getItem('LNavLockOn') == 'true') {
             //console.log('setting pin class via local var');
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             LeftNavPanel.classList.add('pinnedOpen');
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             LeftNavDrawerIcon.classList.add('drawerPinnedOpen');
         }
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         if (LPanelPin.checked) {
             console.debug('setting pin class via checkbox state');
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             LeftNavPanel.classList.add('pinnedOpen');
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             LeftNavDrawerIcon.classList.add('drawerPinnedOpen');
         }
 
-        // read the state of left Nav Lock and apply to leftnav classlist
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
+        // read the state of WI Lock and apply to WI classlist
         WIPanelPin.checked = accountStorage.getItem('WINavLockOn') === 'true';
         if (accountStorage.getItem('WINavLockOn') == 'true') {
             //console.log('setting pin class via local var');
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             WorldInfo.classList.add('pinnedOpen');
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             WIDrawerIcon.classList.add('drawerPinnedOpen');
         }
 
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         if (WIPanelPin.checked) {
             console.debug('setting pin class via checkbox state');
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             WorldInfo.classList.add('pinnedOpen');
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             WIDrawerIcon.classList.add('drawerPinnedOpen');
         }
     }
@@ -993,24 +859,21 @@ export function initRossMods() {
 
     //save state of Right nav being open or closed
     document.getElementById('rightNavDrawerIcon')?.addEventListener('click', function () {
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        if (!document.getElementById('rightNavDrawerIcon').classList.contains('openIcon')) {
+        if (!document.getElementById('rightNavDrawerIcon')!.classList.contains('openIcon')) {
             accountStorage.setItem('NavOpened', 'true');
         } else { accountStorage.setItem('NavOpened', 'false'); }
     });
 
     //save state of Left nav being open or closed
     document.getElementById('leftNavDrawerIcon')?.addEventListener('click', function () {
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        if (!document.getElementById('leftNavDrawerIcon').classList.contains('openIcon')) {
+        if (!document.getElementById('leftNavDrawerIcon')!.classList.contains('openIcon')) {
             accountStorage.setItem('LNavOpened', 'true');
         } else { accountStorage.setItem('LNavOpened', 'false'); }
     });
 
     //save state of WI nav being open or closed
     document.getElementById('WorldInfo')?.addEventListener('click', function () {
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        if (!document.getElementById('WorldInfo').classList.contains('openIcon')) {
+        if (!document.getElementById('WorldInfo')!.classList.contains('openIcon')) {
             accountStorage.setItem('WINavOpened', 'true');
         } else { accountStorage.setItem('WINavOpened', 'false'); }
     });
@@ -1058,10 +921,9 @@ export function initRossMods() {
 
     const cssAutofit = CSS.supports('field-sizing', 'content');
 
-    if (cssAutofit) {
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
+    if (cssAutofit && chatBlock) {
         let lastHeight = chatBlock.offsetHeight;
-        const chatBlockResizeObserver = new ResizeObserver((entries) => {
+        const chatBlockResizeObserver = new ResizeObserver((entries: ResizeObserverEntry[]) => {
             for (const entry of entries) {
                 if (entry.target !== chatBlock) {
                     continue;
@@ -1079,28 +941,22 @@ export function initRossMods() {
             }
         });
 
-        // @ts-expect-error TS(2345) FIXME: Argument of type 'HTMLElement | null' is not assig... Remove this comment to see the full error message
         chatBlockResizeObserver.observe(chatBlock);
     }
 
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    sendTextArea.addEventListener('input', () => {
+    sendTextArea?.addEventListener('input', () => {
         saveUserInputDebounced();
+        if (!sendTextArea) return;
 
         if (cssAutofit) {
             // Unset modifications made with a manual resize
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             sendTextArea.style.height = 'auto';
             return;
         }
 
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         const hasContent = sendTextArea.value !== '';
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         const fitsCurrentSize = sendTextArea.scrollHeight <= sendTextArea.offsetHeight;
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         const isScrollbarShown = sendTextArea.clientWidth < sendTextArea.offsetWidth;
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         const isHalfScreenHeight = sendTextArea.offsetHeight >= window.innerHeight / 2;
         const needsDebounce = hasContent && (fitsCurrentSize || (isScrollbarShown && isHalfScreenHeight));
         if (needsDebounce) autoFitSendTextAreaDebounced();
@@ -1110,50 +966,44 @@ export function initRossMods() {
     restoreUserInput();
 
     // Swipe gestures (see: https://www.npmjs.com/package/swiped-events)
-    document.addEventListener('swiped-left', function (e) {
+    document.addEventListener('swiped-left', function (e: Event) {
         if (power_user.gestures === false) {
             return;
         }
         if (Popup.util.isPopupOpen()) {
             return;
         }
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        if (!e.target.closest('#sheld')) {
+        if (!(e.target instanceof Element) || !e.target.closest('#sheld')) {
             return;
         }
         if (document.getElementById('curEditTextarea')) {
             return;
         }
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const SwipeButR = [...document.querySelectorAll('.swipe_right')].pop();
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        const SwipeTargetMesClassParent = e.target.closest('.last_mes');
-        if (SwipeTargetMesClassParent !== null) {
-            if (SwipeButR.offsetParent !== null) {
+        const SwipeTargetMesClassParent = e.target instanceof Element ? e.target.closest('.last_mes') : null;
+        if (SwipeTargetMesClassParent !== null && SwipeButR) {
+            if ((SwipeButR as HTMLElement).offsetParent !== null) {
                 SwipeButR.dispatchEvent(new Event('click', { bubbles: true }));
             }
         }
     });
-    document.addEventListener('swiped-right', function (e) {
+    document.addEventListener('swiped-right', function (e: Event) {
         if (power_user.gestures === false) {
             return;
         }
         if (Popup.util.isPopupOpen()) {
             return;
         }
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        if (!e.target.closest('#sheld')) {
+        if (!(e.target instanceof Element) || !e.target.closest('#sheld')) {
             return;
         }
         if (document.getElementById('curEditTextarea')) {
             return;
         }
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const SwipeButL = [...document.querySelectorAll('.swipe_left')].pop();
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        const SwipeTargetMesClassParent = e.target.closest('.last_mes');
-        if (SwipeTargetMesClassParent !== null) {
-            if (SwipeButL.offsetParent !== null) {
+        const SwipeTargetMesClassParent = e.target instanceof Element ? e.target.closest('.last_mes') : null;
+        if (SwipeTargetMesClassParent !== null && SwipeButL) {
+            if ((SwipeButL as HTMLElement).offsetParent !== null) {
                 SwipeButL.dispatchEvent(new Event('click', { bubbles: true }));
             }
         }
@@ -1179,8 +1029,7 @@ export function initRossMods() {
      * @param {KeyboardEvent} event Keyboard event to check
      * @returns {boolean} Whether the event has modifier keys pressed
      */
-    // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
-    function isModifiedKeyboardEvent(event) {
+    function isModifiedKeyboardEvent(event: KeyboardEvent) {
         return (event instanceof KeyboardEvent &&
             (event.shiftKey ||
             event.ctrlKey ||
@@ -1201,8 +1050,7 @@ export function initRossMods() {
     /**
      * @param {KeyboardEvent} event Keyboard event to process
      */
-    // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
-    async function processHotkeys(event) {
+    async function processHotkeys(event: KeyboardEvent) {
         // Default hotkeys and shortcuts shouldn't work if any popup is currently open
         if (Popup.util.isPopupOpen()) {
             return;
@@ -1220,8 +1068,7 @@ export function initRossMods() {
         if (document.activeElement == hotkeyTargets.dialogue_popup_input && !isMobile()) {
             if (!event.shiftKey && !event.ctrlKey && event.key == 'Enter') {
                 event.preventDefault();
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                document.getElementById('dialogue_popup_ok').dispatchEvent(new Event('click', { bubbles: true }));
+                document.getElementById('dialogue_popup_ok')?.dispatchEvent(new Event('click', { bubbles: true }));
                 return;
             }
         }
@@ -1254,28 +1101,23 @@ export function initRossMods() {
         if ((event.altKey || (event.altKey && event.ctrlKey)) && event.key == 'Enter') {
             if (is_send_press == false) {
                 console.debug('Continuing with Alt+Enter');
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                document.getElementById('option_continue').dispatchEvent(new Event('click', { bubbles: true }));
+                document.getElementById('option_continue')?.dispatchEvent(new Event('click', { bubbles: true }));
                 return;
             }
         }
 
         // Ctrl+Enter for Regeneration Last Response. If editing, accept the edits instead
         if (event.ctrlKey && event.key == 'Enter') {
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const editMesDone = [...document.querySelectorAll('.mes_edit_done')].find(e=>e.offsetParent!==null);
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const reasoningMesDone = [...document.querySelectorAll('.mes_reasoning_edit_done')].find(e=>e.offsetParent!==null);
+            const editMesDone = [...document.querySelectorAll('.mes_edit_done')].find(e => (e as HTMLElement).offsetParent !== null);
+            const reasoningMesDone = [...document.querySelectorAll('.mes_reasoning_edit_done')].find(e => (e as HTMLElement).offsetParent !== null);
             if (editMesDone) {
                 console.debug('Accepting edits with Ctrl+Enter');
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                document.getElementById('send_textarea').dispatchEvent(new Event('focus', { bubbles: true }));
+                document.getElementById('send_textarea')?.dispatchEvent(new Event('focus', { bubbles: true }));
                 editMesDone.dispatchEvent(new Event('click', { bubbles: true }));
                 return;
             } else if (reasoningMesDone) {
                 console.debug('Accepting edits with Ctrl+Enter');
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                document.getElementById('send_textarea').dispatchEvent(new Event('focus', { bubbles: true }));
+                document.getElementById('send_textarea')?.dispatchEvent(new Event('focus', { bubbles: true }));
                 reasoningMesDone.dispatchEvent(new Event('click', { bubbles: true }));
                 return;
             } else if (is_send_press == false) {
@@ -1286,14 +1128,13 @@ export function initRossMods() {
                  */
                 function doRegenerate() {
                     console.debug('Regenerating with Ctrl+Enter');
-                    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                    document.getElementById('option_regenerate').dispatchEvent(new Event('click', { bubbles: true }));
+                    document.getElementById('option_regenerate')?.dispatchEvent(new Event('click', { bubbles: true }));
                     const optionsEl = document.getElementById('options'); if (optionsEl) optionsEl.style.display = 'none';
                 }
 
                 // If there is input text, we do not trigger a regenerate - we just send it
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                if (document.getElementById('send_textarea').value !== '') {
+                const sendTextareaEl = document.getElementById('send_textarea') as HTMLTextAreaElement | null;
+                if (sendTextareaEl && sendTextareaEl.value !== '') {
                     if (shouldSendOnEnter()) {
                         console.debug('Sending with Ctrl+Enter');
                         event.preventDefault();
@@ -1310,8 +1151,7 @@ export function initRossMods() {
                     let regenerateWithCtrlEnter = false;
                     const result = await Popup.show.confirm('Regenerate Message', 'Are you sure you want to regenerate the latest message?', {
                         customInputs: [{ id: 'regenerateWithCtrlEnter', label: 'Don\'t ask again' }],
-                        // @ts-expect-error TS(7006) FIXME: Parameter 'popup' implicitly has an 'any' type.
-                        onClose: (popup) => {
+                        onClose: (popup: { inputResults: Map<string, unknown> }) => {
                             regenerateWithCtrlEnter = Boolean(popup.inputResults.get('regenerateWithCtrlEnter') ?? false);
                         },
                     });
@@ -1341,18 +1181,13 @@ export function initRossMods() {
             if (
                 isSwipingAllowed() &&
                 !isNanogallery2LightboxActive() &&  // Check if lightbox is NOT active
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                document.getElementById('send_textarea').value === '' &&
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                document.getElementById('character_popup').getComputedStyle?.(el).display === 'none' &&
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                document.getElementById('shadow_select_chat_popup').getComputedStyle?.(el).display === 'none' &&
+                (document.getElementById('send_textarea') as HTMLTextAreaElement | null)?.value === '' &&
                 !isInputElementInFocus() &&
                 !isModifiedKeyboardEvent(event) &&
                 !(document.activeElement instanceof HTMLVideoElement)
             ) {
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                [...document.querySelectorAll('.swipe_left')].pop().trigger('click', { source: SWIPE_SOURCE.KEYBOARD, repeated: event.repeat });
+                const swipeBtn = [...document.querySelectorAll('.swipe_left')].pop();
+                if (swipeBtn) swipeBtn.dispatchEvent(new Event('click'));
                 return;
             }
         }
@@ -1360,18 +1195,13 @@ export function initRossMods() {
             if (
                 isSwipingAllowed() &&
                 !isNanogallery2LightboxActive() &&  // Check if lightbox is NOT active
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                document.getElementById('send_textarea').value === '' &&
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                document.getElementById('character_popup').getComputedStyle?.(el).display === 'none' &&
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                document.getElementById('shadow_select_chat_popup').getComputedStyle?.(el).display === 'none' &&
+                (document.getElementById('send_textarea') as HTMLTextAreaElement | null)?.value === '' &&
                 !isInputElementInFocus() &&
                 !isModifiedKeyboardEvent(event) &&
                 !(document.activeElement instanceof HTMLVideoElement)
             ) {
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                [...document.querySelectorAll('.swipe_right')].pop().trigger('click', { source: SWIPE_SOURCE.KEYBOARD, repeated: event.repeat });
+                const swipeBtn = [...document.querySelectorAll('.swipe_right')].pop();
+                if (swipeBtn) swipeBtn.dispatchEvent(new Event('click'));
                 return;
             }
         }
@@ -1379,22 +1209,14 @@ export function initRossMods() {
 
         if (event.ctrlKey && event.key == 'ArrowUp') { //edits last USER message if chatbar is empty and focused
             if (
-                // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-                hotkeyTargets.send_textarea.value === '' &&
+                hotkeyTargets.send_textarea && hotkeyTargets.send_textarea.value === '' &&
                 chatbarInFocus === true &&
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                ([...document.querySelectorAll('.swipe_right')].pop().css('display') === 'flex' || document.querySelector('.last_mes').getAttribute('is_system') === 'true') &&
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                document.getElementById('character_popup').getComputedStyle?.(el).display === 'none' &&
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                document.getElementById('shadow_select_chat_popup').getComputedStyle?.(el).display === 'none'
+                isSwipingAllowed()
             ) {
                 const isUserMesList = document.querySelectorAll('div[is_user="true"]');
                 const lastIsUserMes = isUserMesList[isUserMesList.length - 1];
-                // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-                const editMes = lastIsUserMes.querySelector('.mes_block .mes_edit');
-                if (editMes !== null) {
-                    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                const editMes = lastIsUserMes?.querySelector('.mes_block .mes_edit');
+                if (editMes) {
                     editMes.dispatchEvent(new Event('click', { bubbles: true }));
                     return;
                 }
@@ -1404,22 +1226,14 @@ export function initRossMods() {
         if (event.key == 'ArrowUp') { //edits last message if chatbar is empty and focused
             console.log('got uparrow input');
             if (
-                // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-                hotkeyTargets.send_textarea.value === '' &&
+                hotkeyTargets.send_textarea && hotkeyTargets.send_textarea.value === '' &&
                 chatbarInFocus === true &&
-                //[...document.querySelectorAll('.swipe_right')].pop().getComputedStyle?.(el).display === 'flex' &&
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                document.querySelector('.last_mes .mes_buttons').offsetParent !== null &&
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                document.getElementById('character_popup').getComputedStyle?.(el).display === 'none' &&
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                document.getElementById('shadow_select_chat_popup').getComputedStyle?.(el).display === 'none'
+                document.querySelector('.last_mes .mes_buttons') &&
+                (document.querySelector('.last_mes .mes_buttons') as HTMLElement).offsetParent !== null
             ) {
                 const lastMes = document.querySelector('.last_mes');
-                // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-                const editMes = lastMes.querySelector('.mes_block .mes_edit');
-                if (editMes !== null) {
-                    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                const editMes = lastMes?.querySelector('.mes_block .mes_edit');
+                if (editMes) {
                     editMes.dispatchEvent(new Event('click', { bubbles: true }));
                     return;
                 }
@@ -1429,120 +1243,104 @@ export function initRossMods() {
         if (event.key == 'Escape') { //closes various panels
             //dont override Escape hotkey functions from script.js
             //"close edit box" and "cancel stream generation".
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            if (document.getElementById('curEditTextarea').offsetParent !== null || document.getElementById('mes_stop').offsetParent !== null) {
+            const curEditTextarea = document.getElementById('curEditTextarea');
+            const mesStop = document.getElementById('mes_stop');
+            if ((curEditTextarea && (curEditTextarea as HTMLElement).offsetParent !== null) || (mesStop && (mesStop as HTMLElement).offsetParent !== null)) {
                 console.debug('escape key, but deferring to script.js routines');
                 return;
             }
 
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            if (document.getElementById('dialogue_popup').offsetParent !== null) {
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                if (document.getElementById('dialogue_popup_cancel').offsetParent !== null) {
-                    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                    document.getElementById('dialogue_popup_cancel').dispatchEvent(new Event('click', { bubbles: true }));
+            const dialoguePopup = document.getElementById('dialogue_popup');
+            if (dialoguePopup && (dialoguePopup as HTMLElement).offsetParent !== null) {
+                const cancelBtn = document.getElementById('dialogue_popup_cancel');
+                if (cancelBtn && (cancelBtn as HTMLElement).offsetParent !== null) {
+                    cancelBtn.dispatchEvent(new Event('click', { bubbles: true }));
                     return;
                 } else {
-                    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                    document.getElementById('dialogue_popup_ok').dispatchEvent(new Event('click', { bubbles: true }));
+                    document.getElementById('dialogue_popup_ok')?.dispatchEvent(new Event('click', { bubbles: true }));
                     return;
                 }
             }
 
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            if (document.getElementById('select_chat_popup').offsetParent !== null) {
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                document.getElementById('select_chat_cross').dispatchEvent(new Event('click', { bubbles: true }));
+            const selectChatPopup = document.getElementById('select_chat_popup');
+            if (selectChatPopup && (selectChatPopup as HTMLElement).offsetParent !== null) {
+                document.getElementById('select_chat_cross')?.dispatchEvent(new Event('click', { bubbles: true }));
                 return;
             }
 
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            if (document.getElementById('character_popup').offsetParent !== null) {
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                document.getElementById('character_cross').dispatchEvent(new Event('click', { bubbles: true }));
+            const characterPopup = document.getElementById('character_popup');
+            if (characterPopup && (characterPopup as HTMLElement).offsetParent !== null) {
+                document.getElementById('character_cross')?.dispatchEvent(new Event('click', { bubbles: true }));
                 return;
             }
 
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            if (document.getElementById('dialogue_del_mes_cancel').offsetParent !== null) {
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                document.getElementById('dialogue_del_mes_cancel').dispatchEvent(new Event('click', { bubbles: true }));
+            const delMesCancel = document.getElementById('dialogue_del_mes_cancel');
+            if (delMesCancel && (delMesCancel as HTMLElement).offsetParent !== null) {
+                delMesCancel.dispatchEvent(new Event('click', { bubbles: true }));
                 return;
             }
 
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const drawerContents = [...document.querySelectorAll('.drawer-content')].filter(el =>
                 !['WorldInfo','left-nav-panel','right-nav-panel','floatingPrompt','cfgConfig','logprobsViewer'].includes(el.id) &&
                 !el.matches('#movingDivs > div')
             );
-            if (drawerContents.some(el => el.offsetParent !== null)) {
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                const visibleDrawerContent = drawerContents.filter(el => el.offsetParent !== null);
-                const drawerIcon = visibleDrawerContent[0]?.parentElement.querySelector('.drawer-icon');
+            if (drawerContents.some(el => (el as HTMLElement).offsetParent !== null)) {
+                const visibleDrawerContent = drawerContents.filter(el => (el as HTMLElement).offsetParent !== null);
+                const drawerIcon = visibleDrawerContent[0]?.parentElement?.querySelector('.drawer-icon');
                 drawerIcon?.dispatchEvent(new Event('click', { bubbles: true }));
                 return;
             }
 
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            if (document.getElementById('logprobsViewer').offsetParent !== null) {
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                document.getElementById('logprobsViewerClose').dispatchEvent(new Event('click', { bubbles: true }));
+            const logprobsViewer = document.getElementById('logprobsViewer');
+            if (logprobsViewer && (logprobsViewer as HTMLElement).offsetParent !== null) {
+                document.getElementById('logprobsViewerClose')?.dispatchEvent(new Event('click', { bubbles: true }));
                 return;
             }
 
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            if (document.getElementById('cfgConfig').offsetParent !== null) {
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                document.getElementById('CFGClose').dispatchEvent(new Event('click', { bubbles: true }));
+            const cfgConfig = document.getElementById('cfgConfig');
+            if (cfgConfig && (cfgConfig as HTMLElement).offsetParent !== null) {
+                document.getElementById('CFGClose')?.dispatchEvent(new Event('click', { bubbles: true }));
                 return;
             }
 
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            if (document.getElementById('floatingPrompt').offsetParent !== null) {
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                document.getElementById('ANClose').dispatchEvent(new Event('click', { bubbles: true }));
+            const floatingPrompt = document.getElementById('floatingPrompt');
+            if (floatingPrompt && (floatingPrompt as HTMLElement).offsetParent !== null) {
+                document.getElementById('ANClose')?.dispatchEvent(new Event('click', { bubbles: true }));
                 return;
             }
 
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            if (document.getElementById('WorldInfo').offsetParent !== null) {
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                document.getElementById('WIDrawerIcon').dispatchEvent(new Event('click', { bubbles: true }));
+            const worldInfoEl = document.getElementById('WorldInfo');
+            if (worldInfoEl && (worldInfoEl as HTMLElement).offsetParent !== null) {
+                document.getElementById('WIDrawerIcon')?.dispatchEvent(new Event('click', { bubbles: true }));
                 return;
             }
 
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                        const movingDivs = [...document.querySelectorAll('#movingDivs > div')].reverse();
+            const movingDivs = [...document.querySelectorAll('#movingDivs > div')].reverse();
             for (const div of movingDivs) {
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                if (div.offsetParent !== null) {
+                if ((div as HTMLElement).offsetParent !== null) {
                     div.querySelector('.floating_panel_close, .dragClose')?.dispatchEvent(new Event('click', { bubbles: true }));
                     return;
                 }
             }
 
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            if (document.getElementById('left-nav-panel').offsetParent !== null &&
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            const leftNavPanel = document.getElementById('left-nav-panel');
+            if (leftNavPanel && (leftNavPanel as HTMLElement).offsetParent !== null &&
                 LPanelPin.checked === false) {
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                document.getElementById('leftNavDrawerIcon').dispatchEvent(new Event('click', { bubbles: true }));
+                document.getElementById('leftNavDrawerIcon')?.dispatchEvent(new Event('click', { bubbles: true }));
                 return;
             }
 
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            if (document.getElementById('right-nav-panel').offsetParent !== null &&
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            const rightNavPanel = document.getElementById('right-nav-panel');
+            if (rightNavPanel && (rightNavPanel as HTMLElement).offsetParent !== null &&
                 RPanelPin.checked === false) {
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                document.getElementById('rightNavDrawerIcon').dispatchEvent(new Event('click', { bubbles: true }));
+                document.getElementById('rightNavDrawerIcon')?.dispatchEvent(new Event('click', { bubbles: true }));
                 return;
             }
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            if (document.querySelector('.draggable').offsetParent !== null) {
+
+            const draggable = document.querySelector('.draggable');
+            if (draggable && (draggable as HTMLElement).offsetParent !== null) {
                 // Remove the first matched element
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                                document.querySelector('.draggable')?.remove();
+                draggable.remove();
                 return;
             }
         }

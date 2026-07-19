@@ -366,10 +366,10 @@ export class TextCompletionService {
             }
 
             if (instructPreset) {
-                [
+                ([
                     instructPreset.stop_sequence,
                     instructPreset.input_sequence,
-                ].forEach(sequence => {
+                ] as string[]).forEach((sequence: string) => {
                     if (sequence?.trim()) {
                         const index = message.indexOf(sequence);
                         if (index !== -1) {
@@ -378,15 +378,13 @@ export class TextCompletionService {
                     }
                 });
 
-                [
+                ([
                     instructPreset.output_sequence,
                     instructPreset.last_output_sequence,
-                ].forEach(sequences => {
+                ] as string[]).forEach((sequences: string) => {
                     if (sequences) {
                         sequences.split('\n')
-                            // @ts-expect-error TS(7006) FIXME: Parameter 'line' implicitly has an 'any' type.
                             .filter(line => line.trim() !== '')
-                            // @ts-expect-error TS(7006) FIXME: Parameter 'line' implicitly has an 'any' type.
                             .forEach(line => {
                                 message = message.replaceAll(line, '');
                             });
@@ -421,7 +419,6 @@ export class TextCompletionService {
         const settings = structuredClone(textgenerationwebui_settings);
         for (const [key, value] of Object.entries(preset)) {
             if (!setting_names.includes(key)) continue;
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             settings[key] = value;
         }
 
@@ -430,7 +427,8 @@ export class TextCompletionService {
         const payload = createTextGenGenerationData(settings, overridePayload.model, overridePayload.prompt, preset.genamt);
 
         // apply overrides
-        return this.createRequestData({ ...payload, ...overridePayload });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return this.createRequestData({ ...payload, ...overridePayload } as any);
     }
 }
 
@@ -546,8 +544,7 @@ export class ChatCompletionService {
 
                 const reply = getStreamingReply(parsed, state, {
                     chatCompletionSource: data.chat_completion_source,
-                    // @ts-expect-error TS(2322) FIXME: Type 'true' is not assignable to type 'null | unde... Remove this comment to see the full error message
-                    overrideShowThoughts: true,
+                    overrideShowThoughts: true as unknown as null | undefined,
                 });
                 if (Array.isArray(parsed?.choices) && parsed?.choices?.[0]?.index > 0) {
                     const swipeIndex = parsed.choices[0].index - 1;
@@ -639,7 +636,7 @@ export class ChatCompletionService {
         const payload = data.generate_data;
 
         // apply overrides
-        // @ts-expect-error TS(2345) FIXME: Argument of type '{ type: any; messages: any; mode... Remove this comment to see the full error message
-        return this.createRequestData({ ...payload, ...overridePayload });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return this.createRequestData({ ...payload, ...overridePayload } as any);
     }
 }

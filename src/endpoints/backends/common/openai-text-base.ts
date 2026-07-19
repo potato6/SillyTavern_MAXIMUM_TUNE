@@ -29,6 +29,7 @@ export interface OAITextProviderConfig {
 
 /**
  * Create a minimal BackendProvider for an OpenAI-compatible text endpoint.
+ * @param cfg
  */
 export function createOAITextProvider(cfg: OAITextProviderConfig): BackendProvider {
     const {

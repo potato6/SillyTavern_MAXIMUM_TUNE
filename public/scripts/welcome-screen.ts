@@ -318,7 +318,6 @@ function sendAssistantMessage() {
         },
     };
 
-    // @ts-expect-error TS(2345) FIXME: Argument of type '{ name: any; force_avatar: strin... Remove this comment to see the full error message
     chat.push(message);
     addOneMessage(message, { scroll: false });
 }
@@ -327,9 +326,7 @@ function sendAssistantMessage() {
  *
  */
 function sendWelcomePrompt() {
-    // @ts-expect-error TS(2554) FIXME: Expected 2-3 arguments, but got 1.
-    const message = getSystemMessageByType(system_message_types.WELCOME_PROMPT);
-    // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
+    const message = getSystemMessageByType(system_message_types.WELCOME_PROMPT, '');
     chat.push(message);
     addOneMessage(message, { scroll: false });
 }
@@ -526,7 +523,6 @@ async function openRecentCharacterChat(avatarId, fileName) {
         await openCharacterChat(fileName);
     } catch (error) {
         console.error('Error opening recent chat:', error);
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.error(t`Failed to open recent chat. See console for details.`);
     }
 }
@@ -556,7 +552,6 @@ async function openRecentGroupChat(groupId, fileName) {
         await openGroupChat(groupId, fileName);
     } catch (error) {
         console.error('Error opening recent group chat:', error);
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.error(t`Failed to open recent group chat. See console for details.`);
     }
 }
@@ -589,11 +584,9 @@ async function renameRecentCharacterChat(avatarId, fileName) {
         });
         await updateRemoteChatName(characterId, newName);
         await refreshWelcomeScreen();
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.success(t`Chat renamed.`);
     } catch (error) {
         console.error('Error renaming recent character chat:', error);
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.error(t`Failed to rename recent chat. See console for details.`);
     }
 }
@@ -625,11 +618,9 @@ async function renameRecentGroupChat(groupId, fileName) {
             loader: false,
         });
         await refreshWelcomeScreen();
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.success(t`Group chat renamed.`);
     } catch (error) {
         console.error('Error renaming recent group chat:', error);
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.error(t`Failed to rename recent group chat. See console for details.`);
     }
 }
@@ -654,11 +645,9 @@ async function deleteRecentCharacterChat(avatarId, fileName) {
         }
         await deleteCharacterChatByName(String(characterId), fileName);
         await refreshWelcomeScreen();
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.success(t`Chat deleted.`);
     } catch (error) {
         console.error('Error deleting recent character chat:', error);
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.error(t`Failed to delete recent chat. See console for details.`);
     }
 }
@@ -683,11 +672,9 @@ async function deleteRecentGroupChat(groupId, fileName) {
         }
         await deleteGroupChatByName(groupId, fileName);
         await refreshWelcomeScreen();
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.success(t`Group chat deleted.`);
     } catch (error) {
         console.error('Error deleting recent group chat:', error);
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.error(t`Failed to delete recent group chat. See console for details.`);
     }
 }
@@ -891,7 +878,6 @@ export async function openPermanentAssistantChat({ tryCreate = true, created = f
             return openPermanentAssistantChat({ tryCreate: false, created: true });
         } catch (error) {
             console.error('Error creating permanent assistant:', error);
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.error(t`Failed to create ${neutralCharacterName}. See console for details.`);
             return;
         }
@@ -905,7 +891,6 @@ export async function openPermanentAssistantChat({ tryCreate = true, created = f
         console.log(`Opened permanent assistant chat for ${neutralCharacterName}.`, getCurrentChatId());
     } catch (error) {
         console.error('Error opening permanent assistant chat:', error);
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.error(t`Failed to open permanent assistant chat. See console for details.`);
     }
 }
@@ -952,7 +937,6 @@ export async function openPermanentAssistantCard() {
     const avatar = getPermanentAssistantAvatar();
     const characterId = characters.findIndex(x => x.avatar === avatar);
     if (characterId === -1) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.info(t`Assistant not found. Try sending a chat message.`);
         return;
     }
@@ -978,12 +962,10 @@ export function assignCharacterAsAssistant(characterId) {
     const currentAssistantAvatar = getPermanentAssistantAvatar();
     if (currentAssistantAvatar === character.avatar) {
         if (character.avatar === defaultAssistantAvatar) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.info(t`${character.name} is a system assistant. Choose another character.`);
             return;
         }
 
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.info(t`${character.name} is no longer your assistant.`);
         accountStorage.removeItem(assistantAvatarKey);
         return;
@@ -991,7 +973,6 @@ export function assignCharacterAsAssistant(characterId) {
 
     accountStorage.setItem(assistantAvatarKey, character.avatar);
     printCharactersDebounced();
-    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
     notyf.success(t`Set ${character.name} as your assistant.`);
 }
 

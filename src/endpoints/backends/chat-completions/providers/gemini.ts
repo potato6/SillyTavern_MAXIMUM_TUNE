@@ -175,7 +175,7 @@ const provider: ChatProvider = {
         try {
             const { signal } = createSocketAbortController(req.socket);
 
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             const apiVersion: any = getConfigValue('gemini.apiVersion', 'v1beta' as any, 'string' as any);
             const responseType = stream ? 'streamGenerateContent' : 'generateContent';
 
@@ -228,7 +228,6 @@ const provider: ChatProvider = {
             });
 
             if (stream) {
-                // @ts-expect-error TS(2345)
                 await forwardFetchResponse(generateResponse, res);
             } else {
                 if (!generateResponse.ok) {
@@ -290,7 +289,7 @@ const provider: ChatProvider = {
         if (!apiKey && !req.body.reverse_proxy) return [];
 
         const apiUrl = req.body.reverse_proxy || API_MAKERSUITE;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const apiVersion: any = getConfigValue('gemini.apiVersion', 'v1beta' as any, 'string' as any);
         const modelsUrl = !apiKey && req.body.reverse_proxy
             ? `${apiUrl}/${apiVersion}/models`

@@ -206,7 +206,7 @@ function loadSettings() {
     document.getElementById('chat_cfg_negative_prompt')?.setAttribute('value', chat_metadata[metadataKeys.negative_prompt] ?? '');
     document.getElementById('chat_cfg_positive_prompt')?.setAttribute('value', chat_metadata[metadataKeys.positive_prompt] ?? '');
     const groupChatEl = document.getElementById('groupchat_cfg_use_chara');
-    if (groupChatEl) groupChatEl.checked = chat_metadata[metadataKeys.groupchat_individual_chars] ?? false;
+    if (groupChatEl) (groupChatEl as HTMLInputElement).checked = chat_metadata[metadataKeys.groupchat_individual_chars] ?? false;
     if (chat_metadata[metadataKeys.prompt_combine]?.length > 0) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         chat_metadata[metadataKeys.prompt_combine].forEach((element: any) => {

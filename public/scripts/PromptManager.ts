@@ -2155,7 +2155,6 @@ class PromptManager {
         };
 
         if (false === this.validateObject(controlObj, importData)) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.warning(t`Could not import prompts. Export failed validation.`);
             return;
         }
@@ -2184,7 +2183,6 @@ class PromptManager {
             throw new Error('Prompt order strategy not supported.');
         }
 
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.success(t`Prompt import complete.`);
         this.saveServiceSettings().then(() => this.render());
     }

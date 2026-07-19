@@ -7,6 +7,7 @@ export { OpenAICompatibleTtsProvider };
 
 class OpenAICompatibleTtsProvider {
     settings: any;
+    handler: any;
     voices = [];
     separator = ' . ';
 
@@ -42,18 +43,15 @@ class OpenAICompatibleTtsProvider {
     }
 
     constructor() {
-        // @ts-expect-error TS(2339): Property 'handler' does not exist on type 'OpenAIC... Remove this comment to see the full error message
         this.handler = async function(this: any, /** @type {string} */ key: any) {
             if (key !== SECRET_KEYS.CUSTOM_OPENAI_TTS) return;
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-            $('#openai_compatible_tts_key').toggleClass('success', !!secret_state[SECRET_KEYS.CUSTOM_OPENAI_TTS]);
+            $('#openai_compatible_tts_key').toggleClass('success', !!(secret_state as Record<string, unknown>)[SECRET_KEYS.CUSTOM_OPENAI_TTS]);
             await this.onRefreshClick();
         }.bind(this);
     }
 
     dispose() {
         [event_types.SECRET_WRITTEN, event_types.SECRET_DELETED, event_types.SECRET_ROTATED].forEach(event => {
-            // @ts-expect-error TS(2339): Property 'handler' does not exist on type 'OpenAIC... Remove this comment to see the full error message
             eventSource.removeListener(event, this.handler);
         });
     }
@@ -91,10 +89,8 @@ class OpenAICompatibleTtsProvider {
 
         $('#openai_compatible_tts_speed_output').text(this.settings.speed);
 
-        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        $('#openai_compatible_tts_key').toggleClass('success', !!secret_state[SECRET_KEYS.CUSTOM_OPENAI_TTS]);
+        $('#openai_compatible_tts_key').toggleClass('success', !!(secret_state as Record<string, unknown>)[SECRET_KEYS.CUSTOM_OPENAI_TTS]);
         [event_types.SECRET_WRITTEN, event_types.SECRET_DELETED, event_types.SECRET_ROTATED].forEach(event => {
-            // @ts-expect-error TS(2339): Property 'handler' does not exist on type 'OpenAIC... Remove this comment to see the full error message
             eventSource.on(event, this.handler);
         });
 

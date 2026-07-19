@@ -77,8 +77,8 @@ function appendViewTagToList(list: Element | null, tag: Tag, count: number): voi
     if (tagViewName) {
         tagViewName.textContent = tag.name;
         tagViewName.classList.add('tag');
-        tagViewName.style.backgroundColor = tag.color;
-        tagViewName.style.color = tag.color2;
+        tagViewName.style.backgroundColor = tag.color ?? 'rgba(0, 0, 0, 0.5)';
+        tagViewName.style.color = tag.color2 ?? '';
     }
 
     const tagAsFolderId = tag.id + '-tag-folder';
@@ -128,7 +128,7 @@ function appendViewTagToList(list: Element | null, tag: Tag, count: number): voi
     template.querySelector('.tag_view_color_picker .link_icon')?.addEventListener('click', (evt: Event) => {
         const target = evt.target as HTMLElement;
         const colorPickerEl = target.closest('.tag_view_color_picker')?.querySelector('toolcool-color-picker') as (HTMLElement & { color: string }) | null;
-        const defaultColor = colorPickerEl?.getAttribute('data-default-color');
+        const defaultColor = colorPickerEl?.getAttribute('data-default-color') ?? '';
         if (colorPickerEl) colorPickerEl.color = defaultColor;
     });
 
@@ -175,12 +175,12 @@ function printViewTagList(tagContainer: Element | null, empty = true): void {
     if (!tagContainer) return;
     if (empty) tagContainer.innerHTML = '';
 
-    const everything = Object.values(tag_map).flat();
-    const counts = new Map(tags.map((tag: Tag) => [tag.id, everything.filter((x: string) => x === tag.id).length]));
-    const sortedTags = sortTags(tags, counts);
+    const everything = Object.values(tag_map).flat() as string[];
+    const counts = new Map<string, number>(tags.map((tag: Tag) => [tag.id, everything.filter((x: string) => x === tag.id).length]));
+    const sortedTags = sortTags(tags as Record<string, unknown>[], counts);
     for (const tag of sortedTags) {
-        const count = counts.get(tag.id) || 0;
-        appendViewTagToList(tagContainer, tag, count);
+        const count = counts.get(tag.id as string) || 0;
+        appendViewTagToList(tagContainer, tag as Tag, count);
     }
 }
 
@@ -228,7 +228,7 @@ export function makeTagListDraggable(tagContainer: Element): void {
     const onTagsSort = () => {
         tagContainer?.querySelectorAll('.tag_view_item').forEach(function (tagElement: Element, i: number) {
             const id = tagElement.getAttribute('id');
-            const tag = getTagById(id) as Tag;
+            const tag = getTagById(id!) as Tag;
             if (tag) tag.sort_order = i;
         });
 
@@ -263,14 +263,14 @@ export async function onTagDeleteClick(this: HTMLElement): Promise<void> {
     const tagResult = getTagFromEvent(this);
     const tag = tagResult?.tag;
     const id = tagResult?.id;
-    const otherTags = sortTags(tags.filter((x: Tag) => x.id !== id).map((x: Tag) => ({ id: x.id, name: x.name })));
+    const otherTags = sortTags(tags.filter((x: Tag) => x.id !== id).map((x: Tag) => ({ id: x.id, name: x.name })) as Record<string, unknown>[]);
 
     const popupContent = document.createElement('div');
     popupContent.innerHTML = await renderTemplateAsync('deleteTag', { otherTags });
 
-    const tagToDeleteEl = popupContent.querySelector('#tag_to_delete');
+    const tagToDeleteEl = popupContent.querySelector('#tag_to_delete') as HTMLElement | null;
     if (tagToDeleteEl) {
-        appendTagToList(tagToDeleteEl, tag);
+        appendTagToList(tagToDeleteEl, tag as Tag);
     }
 
     // Make the select control more fancy on non-mobile
@@ -293,17 +293,15 @@ export async function onTagDeleteClick(this: HTMLElement): Promise<void> {
 
     // Remove the tag from all entities that use it.
     // If we have a replacement tag, add that one instead.
+    const typedTagMap = tag_map as Record<string, string[] | undefined>;
     for (const key of Object.keys(tag_map)) {
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expression...
-        if (tag_map[key].includes(id)) {
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expression...
-            tag_map[key] = tag_map[key].filter((x: string) => x !== id);
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expression...
-            if (mergeTagId) tag_map[key].push(mergeTagId);
+        if (typedTagMap[key]?.includes(id as string)) {
+            typedTagMap[key] = typedTagMap[key]!.filter((x: string) => x !== id);
+            if (mergeTagId) typedTagMap[key]!.push(mergeTagId);
         }
     }
 
-    const index = tags.indexOf(getTagById(id) as Tag);
+    const index = tags.indexOf(getTagById(id!) as Tag);
     tags.splice(index, 1);
     document.querySelectorAll(`.tag[id="${id}"]`).forEach(el => el.remove());
     document.querySelectorAll(`.tag_view_item[id="${id}"]`).forEach(el => el.remove());
@@ -345,10 +343,10 @@ export function onTagAsFolderClick(this: HTMLElement): void {
 
     // Cycle through folder types
     const types = Object.keys(TAG_FOLDER_TYPES);
-    const currentTypeIndex = types.indexOf(tag?.folder_type ?? '');
+    const currentTypeIndex = types.indexOf(String(tag?.folder_type ?? ''));
     if (tag) tag.folder_type = types[(currentTypeIndex + 1) % types.length];
 
-    if (tag) updateDrawTagFolder(element, tag);
+    if (tag) updateDrawTagFolder(element, tag as Tag);
 
     // If folder display has changed, redraw the character list
     markDirty();
@@ -361,22 +359,22 @@ export function onTagAsFolderClick(this: HTMLElement): void {
  * @param {object} tag - The tag object with folder_type
  */
 export function updateDrawTagFolder(element: Element | null, tag: Tag): void {
-    const tagFolder = getFolderType(tag);
+    const tagFolder = getFolderType(tag)!;
     const folderElement = element?.querySelector('.tag_as_folder');
 
     // Update css class and remove all others
     Object.keys(TAG_FOLDER_TYPES).forEach(x => {
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expression...
-        folderElement?.classList.toggle(TAG_FOLDER_TYPES[x].class, TAG_FOLDER_TYPES[x] === tagFolder);
+        const folderTypes = TAG_FOLDER_TYPES as Record<string, { class: string; icon: string; tooltip?: string; color?: string; size?: string }>;
+        folderElement?.classList.toggle(folderTypes[x]?.class ?? '', folderTypes[x] === tagFolder);
     });
 
     // Draw/update css attributes for this class
-    folderElement?.setAttribute('title', tagFolder.tooltip);
-    folderElement?.setAttribute('data-i18n', '[title]' + tagFolder.tooltip);
+    folderElement?.setAttribute('title', tagFolder.tooltip ?? '');
+    folderElement?.setAttribute('data-i18n', '[title]' + (tagFolder.tooltip ?? ''));
     const indicator = folderElement?.querySelector('.tag_folder_indicator') as HTMLElement | null;
     if (indicator) indicator.textContent = tagFolder.icon;
-    if (indicator) indicator.style.color = tagFolder.color;
-    if (indicator) indicator.style.fontSize = `calc(var(--mainFontSize) * ${tagFolder.size})`;
+    if (indicator) indicator.style.color = tagFolder.color ?? '';
+    if (indicator) indicator.style.fontSize = `calc(var(--mainFontSize) * ${tagFolder.size ?? '1'})`;
 }
 
 /**
@@ -419,12 +417,12 @@ export function onTagColorize(evt: Event, setColor: (tag: Tag, color: string) =>
     if (isDefaultColor) newColor = '';
 
     const tagViewName = tagViewItem?.querySelector('.tag_view_name') as HTMLElement | null;
-    if (tagViewName) tagViewName.style.setProperty(cssProperty, newColor);
-    if (tag) setColor(tag, newColor);
+    if (tagViewName) tagViewName.style.setProperty(cssProperty, newColor ?? null);
+    if (tag) setColor(tag as Tag, newColor ?? '');
     markDirty();
 
     // Debounce redrawing color of the tag in other elements
-    if (tag) debouncedTagColoring(tag.id, cssProperty, newColor);
+    if (tag) debouncedTagColoring(tag.id as string, cssProperty, newColor);
 }
 
 /**

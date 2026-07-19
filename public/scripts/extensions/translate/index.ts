@@ -169,7 +169,7 @@ function showKeysButton() {
 
 function loadSettings() {
     for (const key in defaultSettings) {
-        if (!Object.hasOwn(extension_settings.translate, key)) {
+        if (!Object.hasOwn(extension_settings.translate as object, key)) {
             // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             extension_settings.translate[key] = defaultSettings[key];
         }
@@ -211,14 +211,13 @@ async function translateImpersonate() {
 async function translateIncomingMessage(messageId: any) {
     const context = getContext();
     const message = context.chat[messageId];
+    const ts = extension_settings.translate as any;
 
     if (!message) {
         return;
     }
 
-    // @ts-expect-error TS(2339): Property 'extra' does not exist on type 'never'.
     if (typeof message.extra !== 'object') {
-        // @ts-expect-error TS(2339): Property 'extra' does not exist on type 'never'.
         message.extra = {};
     }
 
@@ -226,11 +225,8 @@ async function translateIncomingMessage(messageId: any) {
         return;
     }
 
-    // @ts-expect-error TS(2339): Property 'mes' does not exist on type 'never'.
     const textToTranslate = substituteParams(message.mes, { name2Override: message.name });
-    // @ts-expect-error TS(2339): Property 'target_language' does not exist on type ... Remove this comment to see the full error message
-    const translation = await translate(textToTranslate, extension_settings.translate.target_language);
-    // @ts-expect-error TS(2339): Property 'extra' does not exist on type 'never'.
+    const translation = await translate(textToTranslate, ts.target_language);
     message.extra.display_text = translation;
 
     updateMessageBlock(Number(messageId), message);
@@ -244,27 +240,22 @@ async function translateIncomingMessage(messageId: any) {
 async function translateIncomingMessageReasoning(messageId: any) {
     const context = getContext();
     const message = context.chat[messageId];
+    const ts = extension_settings.translate as any;
 
     if (!message) {
         return false;
     }
 
-    // @ts-expect-error TS(2339): Property 'extra' does not exist on type 'never'.
     if (typeof message.extra !== 'object') {
-        // @ts-expect-error TS(2339): Property 'extra' does not exist on type 'never'.
         message.extra = {};
     }
 
-    // @ts-expect-error TS(2339): Property 'extra' does not exist on type 'never'.
     if (!message.extra.reasoning || isGeneratingSwipe(messageId)) {
         return false;
     }
 
-    // @ts-expect-error TS(2339): Property 'extra' does not exist on type 'never'.
     const textToTranslate = substituteParams(message.extra.reasoning, { name2Override: message.name });
-    // @ts-expect-error TS(2339): Property 'target_language' does not exist on type ... Remove this comment to see the full error message
-    const translation = await translate(textToTranslate, extension_settings.translate.target_language);
-    // @ts-expect-error TS(2339): Property 'extra' does not exist on type 'never'.
+    const translation = await translate(textToTranslate, ts.target_language);
     message.extra.reasoning_display_text = translation;
 
     updateReasoningUI(Number(messageId));
@@ -363,7 +354,6 @@ async function translateProviderLingva(text: any, lang: any) {
  * @returns {Promise<string>} Translated text
  */
 async function translateProviderDeepl(text: any, lang: any) {
-    // @ts-expect-error TS(2339): Property 'deepl' does not exist on type '{}'.
     if (!secret_state.deepl) {
         throw new Error('No DeepL API key');
     }
@@ -650,11 +640,8 @@ async function onTranslationsClearClick() {
     const chat = context.chat;
 
     for (const mes of chat) {
-        // @ts-expect-error TS(2339): Property 'extra' does not exist on type 'never'.
         if (mes.extra) {
-            // @ts-expect-error TS(2339): Property 'extra' does not exist on type 'never'.
             delete mes.extra.display_text;
-            // @ts-expect-error TS(2339): Property 'extra' does not exist on type 'never'.
             delete mes.extra.reasoning_display_text;
         }
     }
@@ -727,16 +714,12 @@ async function onMessageTranslateClick(this: any) {
 
     // If the message is already translated, revert it back to the original text
     let alreadyTranslated = false;
-    // @ts-expect-error TS(2339): Property 'extra' does not exist on type 'never'.
     if (message?.extra?.display_text) {
-        // @ts-expect-error TS(2339): Property 'extra' does not exist on type 'never'.
         delete message.extra.display_text;
         updateMessageBlock(Number(messageId), message);
         alreadyTranslated = true;
     }
-    // @ts-expect-error TS(2339): Property 'extra' does not exist on type 'never'.
     if (message?.extra?.reasoning_display_text) {
-        // @ts-expect-error TS(2339): Property 'extra' does not exist on type 'never'.
         delete message.extra.reasoning_display_text;
         updateReasoningUI(Number(messageId));
         alreadyTranslated = true;

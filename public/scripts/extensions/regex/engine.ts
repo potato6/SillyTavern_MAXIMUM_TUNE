@@ -94,7 +94,7 @@ export class RegexProvider {
  * @param {GetRegexScriptsOptions} options Options for retrieving the regex scripts
  * @returns {RegexScript[]} An array of regex scripts, where each script is an object containing the necessary information.
  */
-export function getRegexScripts(options = DEFAULT_GET_REGEX_SCRIPTS_OPTIONS) {
+export function getRegexScripts(options = DEFAULT_GET_REGEX_SCRIPTS_OPTIONS): any[] {
     return [...Object.values(SCRIPT_TYPES).flatMap(type => getScriptsByType(type, options))];
 }
 
@@ -104,12 +104,12 @@ export function getRegexScripts(options = DEFAULT_GET_REGEX_SCRIPTS_OPTIONS) {
  * @param {GetRegexScriptsOptions} options Options for retrieving the regex scripts
  * @returns {RegexScript[]} An array of regex scripts for the specified type.
  */
-export function getScriptsByType(scriptType: any, { allowedOnly } = DEFAULT_GET_REGEX_SCRIPTS_OPTIONS) {
+export function getScriptsByType(scriptType: any, { allowedOnly } = DEFAULT_GET_REGEX_SCRIPTS_OPTIONS): any[] {
     switch (scriptType) {
         case SCRIPT_TYPE_UNKNOWN:
             return [];
         case SCRIPT_TYPES.GLOBAL:
-            return extension_settings.regex ?? [];
+            return (extension_settings.regex as any[]) ?? [];
         case SCRIPT_TYPES.SCOPED: {
             // @ts-expect-error TS(2345): Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
             if (allowedOnly && !extension_settings?.character_allowed_regex?.includes(characters?.[this_chid]?.avatar)) {
@@ -123,8 +123,8 @@ export function getScriptsByType(scriptType: any, { allowedOnly } = DEFAULT_GET_
             if (allowedOnly && !extension_settings?.preset_allowed_regex?.[getCurrentPresetAPI()]?.includes(getCurrentPresetName())) {
                 return [];
             }
-            const presetManager = getPresetManager();
-            const presetScripts = presetManager?.readPresetExtensionField({ path: 'regex_scripts' });
+            const presetManager = getPresetManager()!;
+            const presetScripts = presetManager.readPresetExtensionField({ path: 'regex_scripts' });
             return Array.isArray(presetScripts) ? presetScripts : [];
         }
         default:
@@ -149,8 +149,8 @@ export async function saveScriptsByType(scripts: any, scriptType: any) {
             await writeExtensionField(this_chid, 'regex_scripts', scripts);
             break;
         case SCRIPT_TYPES.PRESET: {
-            const presetManager = getPresetManager();
-            await presetManager.writePresetExtensionField({ path: 'regex_scripts', value: scripts });
+            const presetManager = getPresetManager()!;
+            await (presetManager!).writePresetExtensionField({ path: 'regex_scripts', value: scripts });
             break;
         }
         default:
@@ -203,7 +203,6 @@ export function disallowScopedScripts(character: any) {
     if (!Array.isArray(extension_settings?.character_allowed_regex)) {
         return;
     }
-    // @ts-expect-error TS(2345): Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
     const index = extension_settings.character_allowed_regex.indexOf(avatar);
     if (index !== -1) {
         extension_settings.character_allowed_regex.splice(index, 1);
@@ -370,7 +369,7 @@ export function getRegexedString(rawString: any, placement: any, {
 
     // @ts-expect-error TS(2322): Type 'true' is not assignable to type 'false'.
     const allRegex = getRegexScripts({ allowedOnly: true });
-    allRegex.forEach((script) => {
+    allRegex.forEach((script: any) => {
         if (
             // Script applies to Markdown and input is Markdown
             (script.markdownOnly && isMarkdown) ||

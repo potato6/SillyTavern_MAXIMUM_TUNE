@@ -66,7 +66,6 @@ const provider: ChatProvider = {
         const generateResponse = await globalThis.fetch(apiUrl + '/chat/completions', config);
 
         if (req.body.stream) {
-            // @ts-expect-error TS(2345)
             await forwardFetchResponse(generateResponse, res);
         } else {
             if (!generateResponse.ok) {

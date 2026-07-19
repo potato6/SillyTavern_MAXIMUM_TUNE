@@ -1,5 +1,3 @@
-
-
 import { eventSource, event_types, saveSettings, saveSettingsDebounced, getRequestHeaders, CLIENT_VERSION } from '../script.js';
 import { POPUP_RESULT, POPUP_TYPE, Popup } from './popup.js';
 import { renderTemplate, renderTemplateAsync } from './templates.js';
@@ -18,45 +16,43 @@ export {
 };
 
 /** @type {string[]} */
-export let extensionNames = [];
+export let extensionNames: string[] = [];
 
 /**
  * Holds the type of each extension.
  * Don't use this directly, use getExtensionType instead!
  * @type {Record<string, string>}
  */
-export let extensionTypes = {};
+export let extensionTypes: Record<string, string> = {};
 
 /**
  * A list of active modules provided by the Extras API.
  * @type {string[]}
  */
-export let modules = [];
+export let modules: string[] = [];
 
 /**
  * A set of active extensions.
  * @type {Set<string>}
  */
-const activeExtensions = new Set();
+const activeExtensions = new Set<string>();
 
 /**
  * Errors that occurred while loading extensions.
  * @type {Set<string>}
  */
-const extensionLoadErrors = new Set();
+const extensionLoadErrors = new Set<string>();
 
 const getApiUrl = () => extension_settings.apiUrl;
-// @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
-const sortManifestsByOrder = (a, b) => parseInt(a.loading_order) - parseInt(b.loading_order) || String(a.display_name).localeCompare(String(b.display_name));
-// @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
-const sortManifestsByName = (a, b) => String(a.display_name).localeCompare(String(b.display_name)) || parseInt(a.loading_order) - parseInt(b.loading_order);
+const sortManifestsByOrder = (a: Record<string, unknown>, b: Record<string, unknown>) => parseInt(a.loading_order as string) - parseInt(b.loading_order as string) || String(a.display_name).localeCompare(String(b.display_name));
+const sortManifestsByName = (a: Record<string, unknown>, b: Record<string, unknown>) => String(a.display_name).localeCompare(String(b.display_name)) || parseInt(a.loading_order as string) - parseInt(b.loading_order as string);
 let connectedToApi = false;
 
 /**
  * Holds manifest data for each extension.
  * @type {Record<string, object>}
  */
-let manifests = {};
+let manifests: Record<string, Record<string, unknown>> = {};
 
 /**
  * Default URL for the Extras API.
@@ -68,8 +64,7 @@ const defaultUrl = 'http://localhost:5100';
  * @param {string} url URL to check
  * @returns {boolean} True if the URL matches the pattern, false otherwise (or not a valid URL)
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'url' implicitly has an 'any' type.
-export const isOfficialExtension = (url) => {
+export const isOfficialExtension = (url: string): boolean => {
     try {
         return /^https:\/\/github\.com\/SillyTavern\/(.+)$/i.test(new URL(url).href);
     } catch {
@@ -79,14 +74,12 @@ export const isOfficialExtension = (url) => {
 
 let requiresReload = false;
 let stateChanged = false;
-// @ts-expect-error TS(7034) FIXME: Variable 'saveMetadataTimeout' implicitly has type... Remove this comment to see the full error message
-let saveMetadataTimeout = null;
+let saveMetadataTimeout: ReturnType<typeof setTimeout> | null = null;
 
 /**
  *
  */
-export function cancelDebouncedMetadataSave() {
-    // @ts-expect-error TS(7005) FIXME: Variable 'saveMetadataTimeout' implicitly has an '... Remove this comment to see the full error message
+export function cancelDebouncedMetadataSave(): void {
     if (saveMetadataTimeout) {
         console.debug('Debounced metadata save cancelled');
         clearTimeout(saveMetadataTimeout);
@@ -97,7 +90,7 @@ export function cancelDebouncedMetadataSave() {
 /**
  *
  */
-export function saveMetadataDebounced() {
+export function saveMetadataDebounced(): void {
     const context = getContext();
     const groupId = context.groupId;
     const characterId = context.characterId;
@@ -134,8 +127,7 @@ export function saveMetadataDebounced() {
  * @returns {string} Rendered HTML
  * @deprecated Use renderExtensionTemplateAsync instead.
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'extensionName' implicitly has an 'any' ... Remove this comment to see the full error message
-export function renderExtensionTemplate(extensionName, templateId, templateData = {}, sanitize = true, localize = true) {
+export function renderExtensionTemplate(extensionName: string, templateId: string, templateData: Record<string, unknown> = {}, sanitize = true, localize = true): string {
     return renderTemplate(`scripts/extensions/${extensionName}/${templateId}.html`, templateData, sanitize, localize, true);
 }
 
@@ -149,12 +141,11 @@ export function renderExtensionTemplate(extensionName, templateId, templateData 
  * @param localize
  * @returns {Promise<string>} Rendered HTML
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'extensionName' implicitly has an 'any' ... Remove this comment to see the full error message
-export function renderExtensionTemplateAsync(extensionName, templateId, templateData = {}, sanitize = true, localize = true) {
+export function renderExtensionTemplateAsync(extensionName: string, templateId: string, templateData: Record<string, unknown> = {}, sanitize = true, localize = true): Promise<string> {
     return renderTemplateAsync(`scripts/extensions/${extensionName}/${templateId}.html`, templateData, sanitize, localize, true);
 }
 
-export const extension_settings = {
+export const extension_settings: Record<string, unknown> = {
     apiUrl: defaultUrl,
     apiKey: '',
     autoConnect: false,
@@ -244,7 +235,7 @@ export const extension_settings = {
 /**
  *
  */
-function showHideExtensionsMenu() {
+function showHideExtensionsMenu(): void {
     // Get the number of menu items that are not hidden
     const menu = document.getElementById('extensionsMenu');
     if (!menu) return;
@@ -268,11 +259,9 @@ const menuInterval = setInterval(showHideExtensionsMenu, 1000);
  * @param {string} externalId External ID of the extension (excluding or including the leading 'third-party/')
  * @returns {string} Type of the extension (global, local, system, or empty string if not found)
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'externalId' implicitly has an 'any' typ... Remove this comment to see the full error message
-function getExtensionType(externalId) {
+function getExtensionType(externalId: string): string {
     const id = Object.keys(extensionTypes).find(id => id === externalId || (id.startsWith('third-party') && id.endsWith(externalId)));
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-    return id ? extensionTypes[id] : '';
+    return id ? extensionTypes[id]! : '';
 }
 
 /**
@@ -281,31 +270,26 @@ function getExtensionType(externalId) {
  * @param {RequestInit} args Request arguments
  * @returns {Promise<Response>} Response from the fetch
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'endpoint' implicitly has an 'any' type.
-export async function doExtrasFetch(endpoint, args = {}) {
+export async function doExtrasFetch(endpoint: string | URL, args: Record<string, unknown> = {}): Promise<Response> {
     if (!args) {
         args = {};
     }
 
-    // @ts-expect-error TS(2339) FIXME: Property 'method' does not exist on type '{}'.
     if (!args.method) {
         Object.assign(args, { method: 'GET' });
     }
 
-    // @ts-expect-error TS(2339) FIXME: Property 'headers' does not exist on type '{}'.
     if (!args.headers) {
-        // @ts-expect-error TS(2339) FIXME: Property 'headers' does not exist on type '{}'.
         args.headers = {};
     }
 
     if (extension_settings.apiKey) {
-        // @ts-expect-error TS(2339) FIXME: Property 'headers' does not exist on type '{}'.
-        Object.assign(args.headers, {
+        Object.assign(args.headers as Record<string, string>, {
             'Authorization': `Bearer ${extension_settings.apiKey}`,
         });
     }
 
-    return await fetch(endpoint, args);
+    return await fetch(endpoint, args as RequestInit);
 }
 
 /**
@@ -315,8 +299,7 @@ export async function doExtrasFetch(endpoint, args = {}) {
  * @param {string} [options.prefix] Optional prefix to ignore when generating the selector (e.g. "third-party")
  * @returns {string} CSS selector for the extension, with the prefix removed if it was present and specified in options
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
-function getNameSelector(name, { prefix = 'third-party' } = {}) {
+function getNameSelector(name: string, { prefix = 'third-party' }: { prefix?: string } = {}): string {
     const nameWithoutPrefix = prefix && name.startsWith(prefix) ? name.slice(prefix.length) : name;
     return CSS.escape(nameWithoutPrefix);
 }
@@ -325,7 +308,7 @@ function getNameSelector(name, { prefix = 'third-party' } = {}) {
  * Discovers extensions from the API.
  * @returns {Promise<{name: string, type: string}[]>}
  */
-async function discoverExtensions() {
+async function discoverExtensions(): Promise<Array<{ name: string; type: string }>> {
     try {
         const response = await fetch('/api/extensions/discover');
 
@@ -344,17 +327,17 @@ async function discoverExtensions() {
 /**
  *
  */
-function onDisableExtensionClick() {
+function onDisableExtensionClick(this: HTMLElement): void {
     const name = this.dataset.name;
-    disableExtension(name, false);
+    if (name) disableExtension(name, false);
 }
 
 /**
  *
  */
-function onEnableExtensionClick() {
+function onEnableExtensionClick(this: HTMLElement): void {
     const name = this.dataset.name;
-    enableExtension(name, false);
+    if (name) enableExtension(name, false);
 }
 
 /**
@@ -363,19 +346,15 @@ function onEnableExtensionClick() {
  * @param {JQuery<HTMLElement>} toggleContainer
  * @returns {object[]} Updated extensionsToToggle array
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'extensionsToToggle' implicitly has an '... Remove this comment to see the full error message
-function onToggleAllExtensions(extensionsToToggle, toggleContainer) {
+function onToggleAllExtensions(extensionsToToggle: Array<{ name: string; toggleHandler?: (...args: unknown[]) => unknown; enable?: boolean }>, toggleContainer: HTMLElement): Array<{ name: string; toggleHandler?: (...args: unknown[]) => unknown; enable?: boolean }> {
     const extensionNames = Object.keys(manifests);
     const thirdPartyExtensions = extensionNames.filter(name => ['local', 'global'].includes(getExtensionType(name)));
 
-    // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
-    const checkIfDisabled = (name) => {
-        // @ts-expect-error TS(7006) FIXME: Parameter 'ext' implicitly has an 'any' type.
+    const checkIfDisabled = (name: string): boolean => {
         const toggle = extensionsToToggle.find(ext => ext.name === name);
         return toggle
             ? !toggle.enable
-            // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
-            : extension_settings.disabledExtensions.includes(name);
+            : (extension_settings.disabledExtensions as string[]).includes(name);
     };
 
     if (thirdPartyExtensions.length === 0) return [];
@@ -398,17 +377,16 @@ function onToggleAllExtensions(extensionsToToggle, toggleContainer) {
         const doToggleExtension = enable ? isDisabled : !isDisabled;
 
         if (doToggleExtension) {
-            // @ts-expect-error TS(7006) FIXME: Parameter 'ext' implicitly has an 'any' type.
             const toggle = extensionsToToggle.find(ext => ext.name === name);
 
             if (toggle) {
-                toggle.toggleHandler = toggleHandler;
+                toggle.toggleHandler = toggleHandler as (...args: unknown[]) => unknown;
                 toggle.enable = enable;
             } else {
-                extensionsToToggle.push({ name, toggleHandler, enable });
+                extensionsToToggle.push({ name, toggleHandler: toggleHandler as (...args: unknown[]) => unknown, enable });
             }
 
-            const toggleEl = toggleContainer.querySelector(`.extension_block[data-name="${getNameSelector(name)}"] .extension_toggle input`);
+            const toggleEl = toggleContainer.querySelector(`.extension_block[data-name="${getNameSelector(name)}"] .extension_toggle input`) as HTMLInputElement | null;
             if (toggleEl) {
                 toggleEl.checked = enable;
                 toggleEl.classList.toggle('toggle_enable', !enable);
@@ -427,15 +405,13 @@ function onToggleAllExtensions(extensionsToToggle, toggleContainer) {
  * @param {'install' | 'update' | 'delete' | 'clean' | 'enable' | 'disable' | 'activate'} hookName The hook to check
  * @returns {boolean}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
-function hasExtensionHook(name, hookName) {
+function hasExtensionHook(name: string, hookName: string): boolean {
     const fullName = name.startsWith('third-party') ? name : `third-party${name}`;
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     const manifest = manifests[fullName];
     if (!manifest || !manifest.hooks || typeof manifest.hooks !== 'object') {
         return false;
     }
-    const hookFunctionName = manifest.hooks[hookName];
+    const hookFunctionName = (manifest.hooks as Record<string, string>)[hookName];
     return typeof hookFunctionName === 'string' && hookFunctionName.length > 0;
 }
 
@@ -447,9 +423,7 @@ function hasExtensionHook(name, hookName) {
  * @param {'install' | 'update' | 'delete' | 'clean' | 'enable' | 'disable' | 'activate'} hookName The hook to call
  * @returns {Promise<void>}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
-async function callExtensionHook(name, hookName) {
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
+async function callExtensionHook(name: string, hookName: string): Promise<void> {
     const manifest = manifests[name];
 
     if (!manifest) {
@@ -465,7 +439,7 @@ async function callExtensionHook(name, hookName) {
         return;
     }
 
-    const hookFunctionName = manifest.hooks[hookName];
+    const hookFunctionName = (manifest.hooks as Record<string, string>)[hookName];
 
     if (typeof hookFunctionName !== 'string' || !hookFunctionName) {
         console.warn(`callExtensionHook: Extension "${name}" hook "${hookName}" is not a valid string`);
@@ -477,11 +451,11 @@ async function callExtensionHook(name, hookName) {
         return;
     }
 
-    const url = `/scripts/extensions/${name}/${manifest.js}`;
+    const url = `/scripts/extensions/${name}/${manifest.js as string}`;
     console.debug(`callExtensionHook: Calling hook "${hookName}" (function "${hookFunctionName}") for extension "${name}"`);
 
     try {
-        const module = await import(url);
+        const module = await import(url) as Record<string, (...args: unknown[]) => unknown>;
 
         if (typeof module[hookFunctionName] !== 'function') {
             console.warn(`callExtensionHook: Extension "${name}" hook "${hookName}" references "${hookFunctionName}" which is not an exported function`);
@@ -492,8 +466,8 @@ async function callExtensionHook(name, hookName) {
 
         const HOOK_TIMEOUT = 5000;
         const HOOK_RESULT = {
-            OK: 'ok',
-            TIMEOUT: 'timeout',
+            OK: 'ok' as const,
+            TIMEOUT: 'timeout' as const,
         };
 
         const result = await Promise.race([
@@ -516,10 +490,9 @@ async function callExtensionHook(name, hookName) {
  * @param {string} name Extension name
  * @param {boolean} [reload] If true, reload the page after enabling the extension
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
-export async function enableExtension(name, reload = true) {
+export async function enableExtension(name: string, reload = true): Promise<void> {
     await callExtensionHook(name, 'enable');
-    extension_settings.disabledExtensions = extension_settings.disabledExtensions.filter(x => x !== name);
+    extension_settings.disabledExtensions = (extension_settings.disabledExtensions as string[]).filter(x => x !== name);
     stateChanged = true;
     await saveSettings();
     if (reload) {
@@ -534,11 +507,9 @@ export async function enableExtension(name, reload = true) {
  * @param {string} name Extension name
  * @param {boolean} [reload] If true, reload the page after disabling the extension
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
-export async function disableExtension(name, reload = true) {
+export async function disableExtension(name: string, reload = true): Promise<void> {
     await callExtensionHook(name, 'disable');
-    // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
-    extension_settings.disabledExtensions.push(name);
+    (extension_settings.disabledExtensions as string[]).push(name);
     stateChanged = true;
     await saveSettings();
     if (reload) {
@@ -553,13 +524,12 @@ export async function disableExtension(name, reload = true) {
  * @param {string} name - The name of the extension to find
  * @returns {{name: string, enabled: boolean}|null} Object with name and enabled properties, or null if not found
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
-export function findExtension(name) {
+export function findExtension(name: string): { name: string; enabled: boolean } | null {
     const internalExtensionName = extensionNames.find(extName => {
         return equalsIgnoreCaseAndAccents(extName, name) || equalsIgnoreCaseAndAccents(extName, `third-party/${name}`);
     });
     if (!internalExtensionName) return null;
-    const isEnabled = !extension_settings.disabledExtensions.includes(internalExtensionName);
+    const isEnabled = !(extension_settings.disabledExtensions as string[]).includes(internalExtensionName);
     return { name: internalExtensionName, enabled: isEnabled };
 }
 
@@ -570,8 +540,7 @@ export function findExtension(name) {
  * @param {string} name - Extension name or internal key
  * @returns {object|null} Cloned manifest object, or null if not found
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
-export function getExtensionManifest(name) {
+export function getExtensionManifest(name: string): Record<string, unknown> | null {
     const found = extensionNames.find(extName =>
         equalsIgnoreCaseAndAccents(extName, name) || equalsIgnoreCaseAndAccents(extName, `third-party/${name}`),
     );
@@ -584,19 +553,16 @@ export function getExtensionManifest(name) {
  * @param {string[]} names Array of extension names
  * @returns {Promise<Record<string, object>>} Object with extension names as keys and their manifests as values
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'names' implicitly has an 'any' type.
-async function getManifests(names) {
-    const obj = {};
-    const promises = [];
+async function getManifests(names: string[]): Promise<Record<string, Record<string, unknown>>> {
+    const obj: Record<string, Record<string, unknown>> = {};
+    const promises: Promise<void>[] = [];
 
     for (const name of names) {
-        const promise = new Promise((resolve, reject) => {
+        const promise = new Promise<void>((resolve, reject) => {
             fetch(`/scripts/extensions/${name}/manifest.json`).then(async response => {
                 if (response.ok) {
                     const json = await response.json();
-                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                     obj[name] = json;
-                    // @ts-expect-error TS(2794) FIXME: Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
                     resolve();
                 } else {
                     reject();
@@ -618,24 +584,20 @@ async function getManifests(names) {
  * Tries to activate all available extensions that are not already active.
  * @returns {Promise<void>}
  */
-async function activateExtensions() {
+async function activateExtensions(): Promise<void> {
     extensionLoadErrors.clear();
-    const clientVersion = CLIENT_VERSION.split(':')[1];
+    const clientVersion = CLIENT_VERSION.split(':')[1]!;
     const extensions = Object.entries(manifests).sort((a, b) => sortManifestsByOrder(a[1], b[1]));
-    const extensionNames = extensions.map(x => x[0]);
-    const promises = [];
+    const extensionNames = extensions.map(x => x[0]!);
+    const promises: Promise<unknown>[] = [];
 
     for (const entry of extensions) {
-        const name = entry[0];
-        const manifest = entry[1];
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+        const name = entry[0]!;
+        const manifest = entry[1]!;
         const extrasRequirements = manifest.requires;
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         const extensionDependencies = manifest.dependencies;
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-        const minClientVersion = manifest.minimum_client_version;
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-        const displayName = manifest.display_name || name;
+        const minClientVersion = manifest.minimum_client_version as string | undefined;
+        const displayName = (manifest.display_name as string) || name;
 
         if (activeExtensions.has(name)) {
             continue;
@@ -648,12 +610,11 @@ async function activateExtensions() {
 
         // Module requirements: pass if 'requires' is undefined, null, or not an array; check subset if it's an array
         let meetsModuleRequirements = true;
-        let missingModules = [];
+        let missingModules: string[] = [];
         if (extrasRequirements !== undefined) {
             if (Array.isArray(extrasRequirements)) {
-                meetsModuleRequirements = isSubsetOf(modules, extrasRequirements);
-                // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
-                missingModules = extrasRequirements.filter(req => !modules.includes(req));
+                meetsModuleRequirements = isSubsetOf(modules, extrasRequirements as string[]);
+                missingModules = (extrasRequirements as string[]).filter(req => !modules.includes(req));
             } else {
                 console.warn(`Extension ${name}: manifest.json 'requires' field is not an array. Loading allowed, but any intended requirements were not verified to exist.`);
             }
@@ -661,17 +622,16 @@ async function activateExtensions() {
 
         // Extension dependencies: pass if 'dependencies' is undefined or not an array; check subset and disabled status if it's an array
         let meetsExtensionDeps = true;
-        let missingDependencies = [];
-        let disabledDependencies = [];
+        let missingDependencies: string[] = [];
+        let disabledDependencies: string[] = [];
         if (extensionDependencies !== undefined) {
             if (Array.isArray(extensionDependencies)) {
                 // Check if all dependencies exist
-                meetsExtensionDeps = isSubsetOf(extensionNames, extensionDependencies);
-                missingDependencies = extensionDependencies.filter(dep => !extensionNames.includes(dep));
+                meetsExtensionDeps = isSubsetOf(extensionNames, extensionDependencies as string[]);
+                missingDependencies = (extensionDependencies as string[]).filter(dep => !extensionNames.includes(dep));
                 // Check for disabled dependencies
                 if (meetsExtensionDeps) {
-                    // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
-                    disabledDependencies = extensionDependencies.filter(dep => extension_settings.disabledExtensions.includes(dep));
+                    disabledDependencies = (extensionDependencies as string[]).filter(dep => (extension_settings.disabledExtensions as string[]).includes(dep));
                     if (disabledDependencies.length > 0) {
                         // Fail if any dependencies are disabled
                         meetsExtensionDeps = false;
@@ -682,8 +642,7 @@ async function activateExtensions() {
             }
         }
 
-        // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
-        const isDisabled = extension_settings.disabledExtensions.includes(name);
+        const isDisabled = (extension_settings.disabledExtensions as string[]).includes(name);
 
         if (meetsModuleRequirements && meetsExtensionDeps && meetsClientMinimumVersion && !isDisabled) {
             try {
@@ -728,10 +687,10 @@ async function activateExtensions() {
 /**
  *
  */
-async function connectClickHandler() {
-    const baseUrl = String(document.getElementById('extensions_url')?.value ?? '');
+async function connectClickHandler(): Promise<void> {
+    const baseUrl = String((document.getElementById('extensions_url') as HTMLInputElement)?.value ?? '');
     extension_settings.apiUrl = baseUrl;
-    const testApiKey = document.getElementById('extensions_api_key')?.value ?? '';
+    const testApiKey = (document.getElementById('extensions_api_key') as HTMLInputElement)?.value ?? '';
     extension_settings.apiKey = String(testApiKey);
     saveSettingsDebounced();
     await connectToApi(baseUrl);
@@ -740,7 +699,7 @@ async function connectClickHandler() {
 /**
  *
  */
-function autoConnectInputHandler() {
+function autoConnectInputHandler(this: HTMLInputElement): void {
     const value = this.checked;
     extension_settings.autoConnect = !!value;
 
@@ -754,7 +713,7 @@ function autoConnectInputHandler() {
 /**
  *
  */
-async function addExtensionsButtonAndMenu() {
+async function addExtensionsButtonAndMenu(): Promise<void> {
     const buttonHTML = await renderTemplateAsync('wandButton');
     const extensionsMenuHTML = await renderTemplateAsync('wandMenu');
 
@@ -797,8 +756,8 @@ async function addExtensionsButtonAndMenu() {
 /**
  *
  */
-function notifyUpdatesInputHandler() {
-    extension_settings.notifyUpdates = !!(document.getElementById('extensions_notify_updates')?.checked ?? false);
+function notifyUpdatesInputHandler(): void {
+    extension_settings.notifyUpdates = !!((document.getElementById('extensions_notify_updates') as HTMLInputElement)?.checked ?? false);
     saveSettingsDebounced();
 
     if (extension_settings.notifyUpdates) {
@@ -811,8 +770,7 @@ function notifyUpdatesInputHandler() {
  * @param {string} baseUrl Extras API base URL
  * @returns {Promise<void>}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'baseUrl' implicitly has an 'any' type.
-async function connectToApi(baseUrl) {
+async function connectToApi(baseUrl: string): Promise<void> {
     if (!baseUrl) {
         return;
     }
@@ -824,8 +782,8 @@ async function connectToApi(baseUrl) {
         const getExtensionsResult = await doExtrasFetch(url);
 
         if (getExtensionsResult.ok) {
-            const data = await getExtensionsResult.json();
-            modules = data.modules;
+            const data = await getExtensionsResult.json() as Record<string, unknown>;
+            modules = data.modules as string[];
             await activateExtensions();
             await eventSource.emit(event_types.EXTRAS_CONNECTED, modules);
         }
@@ -840,8 +798,7 @@ async function connectToApi(baseUrl) {
  * Updates the status of Extras API connection.
  * @param {boolean} success Whether the connection was successful
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'success' implicitly has an 'any' type.
-function updateStatus(success) {
+function updateStatus(success: boolean): void {
     connectedToApi = success;
     const _text = success ? t`Connected to API` : t`Could not connect to API`;
     const _class = success ? 'success' : 'failure';
@@ -858,14 +815,13 @@ function updateStatus(success) {
  * @param {object} manifest Extension manifest
  * @returns {Promise<void>} When the CSS is loaded
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
-function addExtensionStyle(name, manifest) {
+function addExtensionStyle(name: string, manifest: Record<string, unknown>): Promise<void> {
     if (!manifest.css) {
         return Promise.resolve();
     }
 
     return new Promise((resolve, reject) => {
-        const url = `/scripts/extensions/${name}/${manifest.css}`;
+        const url = `/scripts/extensions/${name}/${manifest.css as string}`;
         const id = sanitizeSelector(`${name}-css`);
 
         if (!document.querySelector(`link[id="${id}"]`)) {
@@ -875,7 +831,6 @@ function addExtensionStyle(name, manifest) {
             link.type = 'text/css';
             link.href = url;
             link.onload = function () {
-                // @ts-expect-error TS(2794) FIXME: Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
                 resolve();
             };
             link.onerror = function (e) {
@@ -892,14 +847,13 @@ function addExtensionStyle(name, manifest) {
  * @param {object} manifest Extension manifest
  * @returns {Promise<void>} When the script is loaded
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
-function addExtensionScript(name, manifest) {
+function addExtensionScript(name: string, manifest: Record<string, unknown>): Promise<void> {
     if (!manifest.js) {
         return Promise.resolve();
     }
 
     return new Promise((resolve, reject) => {
-        const url = `/scripts/extensions/${name}/${manifest.js}`;
+        const url = `/scripts/extensions/${name}/${manifest.js as string}`;
         const id = sanitizeSelector(`${name}-js`);
         let ready = false;
 
@@ -915,7 +869,6 @@ function addExtensionScript(name, manifest) {
             script.onload = function () {
                 if (!ready) {
                     ready = true;
-                    // @ts-expect-error TS(2794) FIXME: Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
                     resolve();
                 }
             };
@@ -929,15 +882,14 @@ function addExtensionScript(name, manifest) {
  * @param {string} name Extension name
  * @param {object} manifest Manifest object
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
-function addExtensionLocale(name, manifest) {
+function addExtensionLocale(name: string, manifest: Record<string, unknown>): Promise<void> {
     // No i18n data in the manifest
     if (!manifest.i18n || typeof manifest.i18n !== 'object') {
         return Promise.resolve();
     }
 
     const currentLocale = getCurrentLocale();
-    const localeFile = manifest.i18n[currentLocale];
+    const localeFile = (manifest.i18n as Record<string, string>)[currentLocale];
 
     // Manifest doesn't provide a locale file for the current locale
     if (!localeFile) {
@@ -950,7 +902,7 @@ function addExtensionLocale(name, manifest) {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
 
-            const data = await response.json();
+            const data = await response.json() as Record<string, unknown>;
 
             if (data && typeof data === 'object') {
                 addLocaleData(currentLocale, data);
@@ -971,12 +923,11 @@ function addExtensionLocale(name, manifest) {
  * @param {string} checkboxClass - The class for the checkbox HTML element.
  * @returns {HTMLElement} - The element that represents the extension.
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
-function generateExtensionElement(name, manifest, isActive, isDisabled, isExternal, checkboxClass) {
+function generateExtensionElement(name: string, manifest: Record<string, unknown>, isActive: boolean, isDisabled: boolean, isExternal: boolean, checkboxClass: string): HTMLElement {
     /**
      *
      */
-    function getExtensionIcon() {
+    function getExtensionIcon(): HTMLElement {
         const type = getExtensionType(name);
         const icon = document.createElement('i');
         icon.classList.add('fa-sm', 'fa-fw', 'fa-solid');
@@ -1002,8 +953,8 @@ function generateExtensionElement(name, manifest, isActive, isDisabled, isExtern
     }
 
     const isUserAdmin = isAdmin();
-    const displayName = manifest.display_name;
-    const displayVersion = manifest.version || '';
+    const displayName = manifest.display_name as string;
+    const displayVersion = (manifest.version as string) || '';
     const externalId = name.replace('third-party', '');
 
     // Root block
@@ -1058,7 +1009,7 @@ function generateExtensionElement(name, manifest, isActive, isDisabled, isExtern
     statusSpan.append(nameSpan, authorSpan, versionSpan);
 
     if (isActive && Array.isArray(manifest.optional)) {
-        const optional = new Set(manifest.optional);
+        const optional = new Set(manifest.optional as string[]);
         modules.forEach(x => optional.delete(x));
         if (optional.size > 0) {
             const modulesDiv = document.createElement('div');
@@ -1071,7 +1022,7 @@ function generateExtensionElement(name, manifest, isActive, isDisabled, isExtern
         }
     } else if (!isDisabled) {
         // Neither active nor disabled
-        const requirements = new Set(manifest.requires);
+        const requirements = new Set(manifest.requires as string[]);
         modules.forEach(x => requirements.delete(x));
         if (requirements.size > 0) {
             const modulesDiv = document.createElement('div');
@@ -1107,8 +1058,7 @@ function generateExtensionElement(name, manifest, isActive, isDisabled, isExtern
      * @param {string} iconClasses Classes for the icon
      * @returns {HTMLButtonElement} The created button element
      */
-    // @ts-expect-error TS(7006) FIXME: Parameter 'cls' implicitly has an 'any' type.
-    function makeActionButton(cls, dataName, title, iconClasses) {
+    function makeActionButton(cls: string, dataName: string, title: string, iconClasses: string): HTMLButtonElement {
         const btn = document.createElement('button');
         btn.classList.add(cls, 'menu_button');
         btn.dataset.name = dataName;
@@ -1126,7 +1076,7 @@ function generateExtensionElement(name, manifest, isActive, isDisabled, isExtern
     }
 
     if (isExternal && hasExtensionHook(externalId, 'clean')) {
-        actionsDiv.appendChild(makeActionButton('btn_clean', externalId,  t`Clean extension data`, 'fa-fw fa-solid fa-broom'));
+        actionsDiv.appendChild(makeActionButton('btn_clean', externalId, t`Clean extension data`, 'fa-fw fa-solid fa-broom'));
     }
 
     if (isExternal && isUserAdmin) {
@@ -1148,13 +1098,11 @@ function generateExtensionElement(name, manifest, isActive, isDisabled, isExtern
  * @param {Array} extension - An array where the first element is the extension name and the second element is the extension manifest.
  * @returns {{isExternal: boolean, extensionElement: HTMLElement}} - An object with 'isExternal' indicating whether the extension is external, and 'extensionElement' for the extension's HTML element.
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'extension' implicitly has an 'any' type... Remove this comment to see the full error message
-function getExtensionData(extension) {
-    const name = extension[0];
-    const manifest = extension[1];
+function getExtensionData(extension: [string, Record<string, unknown>]): { isExternal: boolean; extensionElement: HTMLElement } {
+    const name = extension[0]!;
+    const manifest = extension[1]!;
     const isActive = activeExtensions.has(name);
-    // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
-    const isDisabled = extension_settings.disabledExtensions.includes(name);
+    const isDisabled = (extension_settings.disabledExtensions as string[]).includes(name);
     const isExternal = name.startsWith('third-party');
 
     const checkboxClass = isDisabled ? 'checkbox_disabled' : '';
@@ -1168,7 +1116,7 @@ function getExtensionData(extension) {
  * Gets the module information to be displayed.
  * @returns {HTMLElement} - The element containing the module information.
  */
-function getModuleInformation() {
+function getModuleInformation(): HTMLElement {
     const container = document.createElement('div');
 
     const heading = document.createElement('h3');
@@ -1191,7 +1139,7 @@ function getModuleInformation() {
  * Generates HTMLElement for the extension load errors.
  * @returns {HTMLElement} - The element containing the extension load errors.
  */
-function getExtensionLoadErrors() {
+function getExtensionLoadErrors(): HTMLElement {
     if (extensionLoadErrors.size === 0) {
         return document.createElement('div');
     }
@@ -1201,7 +1149,6 @@ function getExtensionLoadErrors() {
 
     for (const error of extensionLoadErrors) {
         const errorElement = document.createElement('div');
-        // @ts-expect-error TS(2322) FIXME: Type 'unknown' is not assignable to type 'string |... Remove this comment to see the full error message
         errorElement.textContent = error;
         container.appendChild(errorElement);
     }
@@ -1212,19 +1159,16 @@ function getExtensionLoadErrors() {
 /**
  * Generates the HTML strings for all extensions and displays them in a popup.
  */
-async function showExtensionsDetails() {
+async function showExtensionsDetails(): Promise<void> {
     const abortController = new AbortController();
-    let popupPromise;
+    let popupPromise: Promise<unknown> | undefined;
     try {
         // If we are updating an extension, the "old" popup is still active. We should close that.
         let initialScrollTop = 0;
-        // @ts-expect-error TS(2339) FIXME: Property 'content' does not exist on type 'never'.
-        const oldPopup = Popup.util.popups.find(popup => popup.content.querySelector('.extensions_info'));
+        const oldPopup = (Popup.util.popups as Array<Record<string, unknown>>).find(popup => (popup.content as HTMLElement).querySelector('.extensions_info'));
         if (oldPopup) {
-            // @ts-expect-error TS(2339) FIXME: Property 'content' does not exist on type 'never'.
-            initialScrollTop = oldPopup.content.scrollTop;
-            // @ts-expect-error TS(2339) FIXME: Property 'completeCancelled' does not exist on typ... Remove this comment to see the full error message
-            await oldPopup.completeCancelled();
+            initialScrollTop = (oldPopup.content as HTMLElement).scrollTop;
+            await (oldPopup.completeCancelled as () => void)();
         }
         const errors = getExtensionLoadErrors();
 
@@ -1260,8 +1204,7 @@ async function showExtensionsDetails() {
         const sortByName = accountStorage.getItem(sortOrderKey) === 'true';
         const sortFn = sortByName ? sortManifestsByName : sortManifestsByOrder;
         const extensions = Object.entries(manifests).sort((a, b) => sortFn(a[1], b[1])).map(getExtensionData);
-        // @ts-expect-error TS(7034) FIXME: Variable 'extensionsToToggle' implicitly has type ... Remove this comment to see the full error message
-        let extensionsToToggle = [];
+        let extensionsToToggle: Array<{ name: string; toggleHandler?: (...args: unknown[]) => unknown; enable?: boolean }> = [];
 
         extensions.forEach(value => {
             const { isExternal, extensionElement } = value;
@@ -1274,8 +1217,7 @@ async function showExtensionsDetails() {
         extensionsMenu.append(errors, defaultContainer, externalContainer, getModuleInformation());
 
         {
-            // @ts-expect-error TS(7006) FIXME: Parameter 'force' implicitly has an 'any' type.
-            const updateAction = async (force) => {
+            const updateAction = async (force: boolean): Promise<void> => {
                 requiresReload = true;
                 await autoUpdateExtensions(force);
                 await popup.complete(POPUP_RESULT.AFFIRMATIVE);
@@ -1308,7 +1250,6 @@ async function showExtensionsDetails() {
             restoreBulkToggledExtensionsButton.title = t`Restore toggled extensions.\n\nIt does not restore extensions toggled individually.`;
 
             toggleAllExtensionsButton.addEventListener('click', () => {
-                // @ts-expect-error TS(7005) FIXME: Variable 'extensionsToToggle' implicitly has an 'a... Remove this comment to see the full error message
                 extensionsToToggle = onToggleAllExtensions(extensionsToToggle, externalContainer);
 
                 for (const extension of extensionsToToggle) {
@@ -1316,7 +1257,6 @@ async function showExtensionsDetails() {
 
                     const toggleInput = externalContainer.querySelector(`.extension_block[data-name="${getNameSelector(name)}"] .extension_toggle input`);
                     toggleInput?.addEventListener('click', () => {
-                        // @ts-expect-error TS(7005) FIXME: Variable 'extensionsToToggle' implicitly has an 'a... Remove this comment to see the full error message
                         extensionsToToggle = extensionsToToggle.filter(ext => ext.name !== name);
                     }, { once: true });
                 }
@@ -1327,13 +1267,11 @@ async function showExtensionsDetails() {
             });
 
             restoreBulkToggledExtensionsButton.addEventListener('click', () => {
-                // @ts-expect-error TS(7005) FIXME: Variable 'extensionsToToggle' implicitly has an 'a... Remove this comment to see the full error message
                 for (const extension of extensionsToToggle) {
                     const { name } = extension;
-                    // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
-                    const isDisabled = extension_settings.disabledExtensions.includes(name);
+                    const isDisabled = (extension_settings.disabledExtensions as string[]).includes(name);
 
-                    const toggleInput = externalContainer.querySelector(`.extension_block[data-name="${getNameSelector(name)}"] .extension_toggle input`);
+                    const toggleInput = externalContainer.querySelector(`.extension_block[data-name="${getNameSelector(name)}"] .extension_toggle input`) as HTMLInputElement | null;
                     if (toggleInput) {
                         toggleInput.checked = !isDisabled;
                         toggleInput.classList.toggle('toggle_enable', isDisabled);
@@ -1369,20 +1307,16 @@ async function showExtensionsDetails() {
             okButton: t`Close`,
             wide: true,
             large: true,
-            // @ts-expect-error TS(2322) FIXME: Type 'never[]' is not assignable to type 'null | u... Remove this comment to see the full error message
-            customButtons: [],
+            customButtons: undefined,
             allowVerticalScrolling: true,
-            // @ts-expect-error TS(2322) FIXME: Type '() => Promise<boolean>' is not assignable to... Remove this comment to see the full error message
-            onClosing: async () => {
+            onClosing: (async () => {
                 if (waitingForSave) {
                     return false;
                 }
 
-                // @ts-expect-error TS(7005) FIXME: Variable 'extensionsToToggle' implicitly has an 'a... Remove this comment to see the full error message
                 for (const extension of extensionsToToggle) {
                     const { name, toggleHandler, enable } = extension;
-                    // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
-                    const isDisabled = extension_settings.disabledExtensions.includes(name);
+                    const isDisabled = (extension_settings.disabledExtensions as string[]).includes(name);
 
                     try {
                         if (isDisabled && !enable) continue;
@@ -1390,33 +1324,29 @@ async function showExtensionsDetails() {
 
                         requiresReload = true;
 
-                        await toggleHandler(name, false);
+                        if (toggleHandler) await toggleHandler(name, false);
                     } catch (error) {
                         console.error(`Could not toggle extension ${name}:`, error);
-                        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                         notyf.error(t`Could not toggle extension ${name}. See console for details.`);
                     }
                 }
 
                 if (stateChanged) {
                     waitingForSave = true;
-                    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                     const toast = notyf.info(t`The page will be reloaded shortly...`, t`Extensions state changed`);
                     await saveSettings();
-                    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                    notyf.dismiss(toast);
+                    notyf.dismiss(toast!);
                     waitingForSave = false;
                     requiresReload = true;
                 }
 
                 return true;
-            },
+            }) as unknown as () => Promise<boolean>,
         });
         popupPromise = popup.show();
         popup.content.scrollTop = initialScrollTop;
         checkForUpdatesManual(sortFn, abortController.signal).finally(() => loadingEl.remove());
     } catch (error) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.error(t`Error loading extensions. See browser console for details.`);
         console.error(error);
     }
@@ -1435,12 +1365,12 @@ async function showExtensionsDetails() {
  * If the extension is already up to date, it displays a success message.
  * If the extension is not up to date, it updates the extension and displays a success message with the new commit hash.
  */
-async function onUpdateClick() {
+async function onUpdateClick(this: HTMLElement): Promise<void> {
     const isCurrentUserAdmin = isAdmin();
     const extensionName = this.dataset.name;
+    if (!extensionName) return;
     const isGlobal = getExtensionType(extensionName) === 'global';
     if (isGlobal && !isCurrentUserAdmin) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.error(t`You don't have permission to update global extensions.`);
         return;
     }
@@ -1458,8 +1388,7 @@ async function onUpdateClick() {
  * @param {boolean} quiet If true, don't show a success message
  * @param {number?} timeout Timeout in milliseconds to wait for the update to complete. If null, no timeout is set.
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'extensionName' implicitly has an 'any' ... Remove this comment to see the full error message
-async function updateExtension(extensionName, quiet, timeout = null) {
+async function updateExtension(extensionName: string, quiet: boolean, timeout: number | null = null): Promise<void> {
     try {
         const signal = timeout ? AbortSignal.timeout(timeout) : undefined;
         const response = await fetch('/api/extensions/update', {
@@ -1474,13 +1403,12 @@ async function updateExtension(extensionName, quiet, timeout = null) {
 
         if (!response.ok) {
             const text = await response.text();
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.error(text || response.statusText, t`Extension update failed`, { timeOut: 5000 });
             console.error('Extension update failed', response.status, response.statusText, text);
             return;
         }
 
-        const data = await response.json();
+        const data = await response.json() as Record<string, unknown>;
 
         if (!quiet) {
             void showExtensionsDetails();
@@ -1488,14 +1416,12 @@ async function updateExtension(extensionName, quiet, timeout = null) {
 
         if (data.isUpToDate) {
             if (!quiet) {
-                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 notyf.success('Extension is already up to date');
             }
         } else {
             const fullExtensionName = extensionName.startsWith('third-party') ? extensionName : `third-party${extensionName}`;
             await callExtensionHook(fullExtensionName, 'update');
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            notyf.success(t`Extension ${extensionName} updated to ${data.shortCommitHash}`, t`Reload the page to apply updates`);
+            notyf.success(t`Extension ${extensionName} updated to ${data.shortCommitHash as string}`, t`Reload the page to apply updates`);
         }
     } catch (error) {
         console.error('Extension update error:', error);
@@ -1509,12 +1435,12 @@ async function updateExtension(extensionName, quiet, timeout = null) {
  * Creates a popup for the user to confirm before delete.
  * If the extension has a 'clean' hook, an optional checkbox to also run the cleanup is shown.
  */
-async function onDeleteClick() {
+async function onDeleteClick(this: HTMLElement): Promise<void> {
     const extensionName = this.dataset.name;
+    if (!extensionName) return;
     const isCurrentUserAdmin = isAdmin();
     const isGlobal = getExtensionType(extensionName) === 'global';
     if (isGlobal && !isCurrentUserAdmin) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.error(t`You don't have permission to delete global extensions.`);
         return;
     }
@@ -1524,8 +1450,8 @@ async function onDeleteClick() {
     /** @type {import('./popup.js').CustomPopupInput[]} */
     const customInputs = hasCleanHook ? [{ id: 'extension_delete_cleanup', label: t`Also clean up extension data`, defaultState: false }] : null;
 
-    // @ts-expect-error TS(2322) FIXME: Type '{ id: string; label: any; defaultState: bool... Remove this comment to see the full error message
-    const popup = new Popup(t`Are you sure you want to delete ${escapeHtml(extensionName)}?`, POPUP_TYPE.CONFIRM, '', { customInputs });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const popup = new Popup(t`Are you sure you want to delete ${escapeHtml(extensionName)}?`, POPUP_TYPE.CONFIRM, '', { customInputs: customInputs as null | undefined });
     const confirmation = await popup.show();
     if (confirmation === POPUP_RESULT.AFFIRMATIVE) {
         const shouldClean = hasCleanHook && Boolean(popup.inputResults?.get('extension_delete_cleanup'));
@@ -1537,8 +1463,9 @@ async function onDeleteClick() {
  * Handles the click event for the clean button of an extension.
  * Runs the extension's 'clean' hook after user confirmation, then reloads the page.
  */
-async function onCleanClick() {
+async function onCleanClick(this: HTMLElement): Promise<void> {
     const extensionName = this.dataset.name;
+    if (!extensionName) return;
 
     const confirmation = await Popup.show.confirm(t`Clean extension data`, t`Are you sure you want to clean up data for ${escapeHtml(extensionName)}? This action cannot be undone.`);
     if (!confirmation) {
@@ -1553,15 +1480,13 @@ async function onCleanClick() {
  * @param {string} extensionName Extension name (without 'third-party' prefix)
  * @returns {Promise<void>}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'extensionName' implicitly has an 'any' ... Remove this comment to see the full error message
-async function cleanExtension(extensionName) {
+async function cleanExtension(extensionName: string): Promise<void> {
     const fullExtensionName = extensionName.startsWith('third-party') ? extensionName : `third-party${extensionName}`;
     await callExtensionHook(fullExtensionName, 'clean');
 
     // Clean might have updated settings, which could race with the page reload, so we'll force save here
     await saveSettings();
 
-    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
     notyf.success(t`Extension ${extensionName} data cleaned`);
     delay(1000).then(() => location.reload());
 }
@@ -1569,22 +1494,22 @@ async function cleanExtension(extensionName) {
 /**
  *
  */
-async function onBranchClick() {
+async function onBranchClick(this: HTMLElement): Promise<void> {
     const extensionName = this.dataset.name;
+    if (!extensionName) return;
     const isCurrentUserAdmin = isAdmin();
     const isGlobal = getExtensionType(extensionName) === 'global';
     if (isGlobal && !isCurrentUserAdmin) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.error(t`You don't have permission to switch branch.`);
         return;
     }
 
     let newBranch = '';
 
-    const branches = await getExtensionBranches(extensionName, isGlobal);
+    const branches = await getExtensionBranches(extensionName, isGlobal) as Array<{ name: string; commit: string; current: boolean; label: string }>;
     const selectElement = document.createElement('select');
     selectElement.classList.add('text_pole', 'wide100p');
-    selectElement.addEventListener('change', function () {
+    selectElement.addEventListener('change', function (this: HTMLSelectElement) {
         newBranch = this.value;
     });
     for (const branch of branches) {
@@ -1611,12 +1536,12 @@ async function onBranchClick() {
 /**
  *
  */
-async function onMoveClick() {
+async function onMoveClick(this: HTMLElement): Promise<void> {
     const extensionName = this.dataset.name;
+    if (!extensionName) return;
     const isCurrentUserAdmin = isAdmin();
     const isGlobal = getExtensionType(extensionName) === 'global';
     if (isGlobal && !isCurrentUserAdmin) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.error(t`You don't have permission to move extensions.`);
         return;
     }
@@ -1646,8 +1571,7 @@ async function onMoveClick() {
  * @param {string} destination Destination type
  * @returns {Promise<void>}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'extensionName' implicitly has an 'any' ... Remove this comment to see the full error message
-async function moveExtension(extensionName, source, destination) {
+async function moveExtension(extensionName: string, source: string, destination: string): Promise<void> {
     try {
         const result = await fetch('/api/extensions/move', {
             method: 'POST',
@@ -1661,13 +1585,11 @@ async function moveExtension(extensionName, source, destination) {
 
         if (!result.ok) {
             const text = await result.text();
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.error(text || result.statusText, t`Extension move failed`, { timeOut: 5000 });
             console.error('Extension move failed', result.status, result.statusText, text);
             return;
         }
 
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.success(t`Extension ${extensionName} moved.`);
         await loadExtensionSettings({}, false, false);
         void showExtensionsDetails();
@@ -1681,8 +1603,7 @@ async function moveExtension(extensionName, source, destination) {
  * @param {string} extensionName Extension name to delete
  * @param {boolean} [shouldClean] Whether to also run the 'clean' hook before deleting
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'extensionName' implicitly has an 'any' ... Remove this comment to see the full error message
-export async function deleteExtension(extensionName, shouldClean = false) {
+export async function deleteExtension(extensionName: string, shouldClean = false): Promise<void> {
     const fullExtensionName = extensionName.startsWith('third-party') ? extensionName : `third-party${extensionName}`;
 
     if (shouldClean) {
@@ -1707,7 +1628,6 @@ export async function deleteExtension(extensionName, shouldClean = false) {
     // Delete or clean might have updated settings, which could race with the page reload, so we'll force save here
     await saveSettings();
 
-    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
     notyf.success(t`Extension ${extensionName} deleted`);
     delay(1000).then(() => location.reload());
 }
@@ -1720,8 +1640,7 @@ export async function deleteExtension(extensionName, shouldClean = false) {
  * This object includes the currentBranchName, currentCommitHash, isUpToDate, and remoteUrl.
  * @throws {error} - If there is an error during the fetch operation, it logs the error to the console.
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'extensionName' implicitly has an 'any' ... Remove this comment to see the full error message
-async function getExtensionVersion(extensionName, abortSignal) {
+async function getExtensionVersion(extensionName: string, abortSignal?: AbortSignal): Promise<Record<string, unknown> | undefined> {
     try {
         const response = await fetch('/api/extensions/version', {
             method: 'POST',
@@ -1733,7 +1652,7 @@ async function getExtensionVersion(extensionName, abortSignal) {
             signal: abortSignal,
         });
 
-        const data = await response.json();
+        const data = await response.json() as Record<string, unknown>;
         return data;
     } catch (error) {
         if (error instanceof Error && error.name === 'AbortError') {
@@ -1754,8 +1673,7 @@ async function getExtensionVersion(extensionName, abortSignal) {
  * @property {boolean} current Whether this branch is the current one
  * @property {string} label The commit label of the branch
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'extensionName' implicitly has an 'any' ... Remove this comment to see the full error message
-async function getExtensionBranches(extensionName, isGlobal) {
+async function getExtensionBranches(extensionName: string, isGlobal: boolean): Promise<Array<{ name: string; commit: string; current: boolean; label: string }>> {
     try {
         const response = await fetch('/api/extensions/branches', {
             method: 'POST',
@@ -1768,13 +1686,12 @@ async function getExtensionBranches(extensionName, isGlobal) {
 
         if (!response.ok) {
             const text = await response.text();
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.error(text || response.statusText, t`Extension branches fetch failed`);
             console.error('Extension branches fetch failed', response.status, response.statusText, text);
             return [];
         }
 
-        return await response.json();
+        return await response.json() as Array<{ name: string; commit: string; current: boolean; label: string }>;
     } catch (error) {
         console.error('Error:', error);
         return [];
@@ -1788,8 +1705,7 @@ async function getExtensionBranches(extensionName, isGlobal) {
  * @param {string} branch Branch name to switch to
  * @returns {Promise<void>}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'extensionName' implicitly has an 'any' ... Remove this comment to see the full error message
-async function switchExtensionBranch(extensionName, isGlobal, branch) {
+async function switchExtensionBranch(extensionName: string, isGlobal: boolean, branch: string): Promise<void> {
     try {
         const response = await fetch('/api/extensions/switch', {
             method: 'POST',
@@ -1803,13 +1719,11 @@ async function switchExtensionBranch(extensionName, isGlobal, branch) {
 
         if (!response.ok) {
             const text = await response.text();
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.error(text || response.statusText, t`Extension branch switch failed`);
             console.error('Extension branch switch failed', response.status, response.statusText, text);
             return;
         }
 
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.success(t`Extension ${extensionName} switched to ${branch}`, t`Reload the page to apply updates`);
         await loadExtensionSettings({}, false, false);
         void showExtensionsDetails();
@@ -1825,8 +1739,7 @@ async function switchExtensionBranch(extensionName, isGlobal, branch) {
  * @param {string} [branch] Optional branch to install, if not provided the default branch will be used
  * @returns {Promise<boolean>} True if the extension was installed successfully, false otherwise
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'url' implicitly has an 'any' type.
-export async function installExtension(url, global, branch = '') {
+export async function installExtension(url: string, global: boolean, branch = ''): Promise<boolean> {
     try {
         const parsedUrl = new URL(url);
         if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
@@ -1837,7 +1750,6 @@ export async function installExtension(url, global, branch = '') {
         url = parsedUrl.href;
     } catch (error) {
         console.error('Invalid URL:', error);
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.error(t`Only valid HTTP and HTTPS URLs are allowed.`, t`Invalid URL`);
         return false;
     }
@@ -1853,12 +1765,11 @@ export async function installExtension(url, global, branch = '') {
                 await renderTemplateAsync('thirdPartyExtensionWarning'),
                 {
                     customInputs: [{ id: 'dontAskAgain', type: 'checkbox', label: t`Don't show this warning again`, defaultState: false }],
-                    // @ts-expect-error TS(7006) FIXME: Parameter 'popup' implicitly has an 'any' type.
-                    onClose: (popup) => {
+                    onClose: (popup: Record<string, unknown>) => {
                         if (!popup.result) {
                             return;
                         }
-                        dismissWarning = Boolean(popup.inputResults?.get('dontAskAgain') ?? false);
+                        dismissWarning = Boolean((popup.inputResults as Map<string, unknown>)?.get('dontAskAgain') ?? false);
                     },
                     okButton: t`Yes, install it`,
                     cancelButton: t`No, cancel`,
@@ -1874,7 +1785,6 @@ export async function installExtension(url, global, branch = '') {
 
     console.debug('Extension installation started', url);
 
-    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
     notyf.info(t`Please wait...`, t`Installing extension`);
 
     const request = await fetch('/api/extensions/install', {
@@ -1889,21 +1799,19 @@ export async function installExtension(url, global, branch = '') {
 
     if (!request.ok) {
         const text = await request.text();
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.warning(text || request.statusText, t`Extension installation failed`, { timeOut: 5000 });
         console.error('Extension installation failed', request.status, request.statusText, text);
         return false;
     }
 
-    const response = await request.json();
-    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-    notyf.success(t`Extension '${response.display_name}' has been installed successfully!`, t`Extension installation successful`);
+    const response = await request.json() as Record<string, unknown>;
+    notyf.success(t`Extension '${response.display_name as string}' has been installed successfully!`, t`Extension installation successful`);
     console.debug(`Extension "${response.display_name}" has been installed successfully at ${response.extensionPath}`);
     await loadExtensionSettings({}, false, false);
     await eventSource.emit(event_types.EXTENSION_SETTINGS_LOADED, response);
 
     if (response.folderName) {
-        const extensionName = `third-party/${response.folderName}`;
+        const extensionName = `third-party/${response.folderName as string}`;
         await callExtensionHook(extensionName, 'install');
     }
 
@@ -1916,29 +1824,26 @@ export async function installExtension(url, global, branch = '') {
  * @param {boolean} versionChanged Is this a version change?
  * @param {boolean} enableAutoUpdate Enable auto-update
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'settings' implicitly has an 'any' type.
-export async function loadExtensionSettings(settings, versionChanged, enableAutoUpdate) {
+export async function loadExtensionSettings(settings: Record<string, unknown>, versionChanged: boolean, enableAutoUpdate: boolean): Promise<void> {
     if (settings.extension_settings) {
         Object.assign(extension_settings, settings.extension_settings);
     }
 
-    const elUrl = document.getElementById('extensions_url');
-    if (elUrl) elUrl.value = extension_settings.apiUrl;
-    const elKey = document.getElementById('extensions_api_key');
-    if (elKey) elKey.value = extension_settings.apiKey;
-    const elAuto = document.getElementById('extensions_autoconnect');
-    if (elAuto) elAuto.checked = extension_settings.autoConnect;
-    const elNotify = document.getElementById('extensions_notify_updates');
-    if (elNotify) elNotify.checked = extension_settings.notifyUpdates;
+    const elUrl = document.getElementById('extensions_url') as HTMLInputElement | null;
+    if (elUrl) elUrl.value = extension_settings.apiUrl as string;
+    const elKey = document.getElementById('extensions_api_key') as HTMLInputElement | null;
+    if (elKey) elKey.value = extension_settings.apiKey as string;
+    const elAuto = document.getElementById('extensions_autoconnect') as HTMLInputElement | null;
+    if (elAuto) elAuto.checked = extension_settings.autoConnect as boolean;
+    const elNotify = document.getElementById('extensions_notify_updates') as HTMLInputElement | null;
+    if (elNotify) elNotify.checked = extension_settings.notifyUpdates as boolean;
 
     // Activate offline extensions
     await eventSource.emit(event_types.EXTENSIONS_FIRST_LOAD);
     const extensions = await discoverExtensions();
-    // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
-    extensionNames = extensions.map(x => x.name);
-    // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
-    extensionTypes = Object.fromEntries(extensions.map(x => [x.name, x.type]));
-    manifests = await getManifests(extensionNames);
+    extensionNames = extensions.map((x: { name: string }) => x.name);
+    extensionTypes = Object.fromEntries(extensions.map((x: { name: string; type: string }) => [x.name, x.type]));
+    manifests = await getManifests(extensionNames) as Record<string, Record<string, unknown>>;
 
     if (versionChanged && enableAutoUpdate) {
         await autoUpdateExtensions(false);
@@ -1946,14 +1851,14 @@ export async function loadExtensionSettings(settings, versionChanged, enableAuto
 
     await activateExtensions();
     if (extension_settings.autoConnect && extension_settings.apiUrl) {
-        connectToApi(extension_settings.apiUrl);
+        connectToApi(extension_settings.apiUrl as string);
     }
 }
 
 /**
  *
  */
-export function doDailyExtensionUpdatesCheck() {
+export function doDailyExtensionUpdatesCheck(): void {
     setTimeout(() => {
         if (extension_settings.notifyUpdates) {
             checkForExtensionUpdates(false);
@@ -1963,15 +1868,13 @@ export function doDailyExtensionUpdatesCheck() {
 
 const concurrencyLimit = 5;
 let activeRequestsCount = 0;
-// @ts-expect-error TS(7034) FIXME: Variable 'versionCheckQueue' implicitly has type '... Remove this comment to see the full error message
-const versionCheckQueue = [];
+const versionCheckQueue: Array<() => Promise<unknown>> = [];
 
 /**
  *
  * @param fn
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'fn' implicitly has an 'any' type.
-function enqueueVersionCheck(fn) {
+function enqueueVersionCheck(fn: () => Promise<unknown>): Promise<unknown> {
     return new Promise((resolve, reject) => {
         versionCheckQueue.push(() => fn().then(resolve).catch(reject));
         processVersionCheckQueue();
@@ -1981,13 +1884,12 @@ function enqueueVersionCheck(fn) {
 /**
  *
  */
-function processVersionCheckQueue() {
+function processVersionCheckQueue(): void {
     if (activeRequestsCount >= concurrencyLimit || versionCheckQueue.length === 0) {
         return;
     }
     activeRequestsCount++;
-    // @ts-expect-error TS(7005) FIXME: Variable 'versionCheckQueue' implicitly has an 'an... Remove this comment to see the full error message
-    const fn = versionCheckQueue.shift();
+    const fn = versionCheckQueue.shift()!;
     fn().finally(() => {
         activeRequestsCount--;
         processVersionCheckQueue();
@@ -2000,11 +1902,9 @@ function processVersionCheckQueue() {
  * @param {AbortSignal} abortSignal Signal to abort the operation
  * @returns {Promise<any[]>}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'sortFn' implicitly has an 'any' type.
-async function checkForUpdatesManual(sortFn, abortSignal) {
-    const promises = [];
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-    for (const id of Object.keys(manifests).filter(x => x.startsWith('third-party')).sort((a, b) => sortFn(manifests[a], manifests[b]))) {
+async function checkForUpdatesManual(sortFn: (a: Record<string, unknown>, b: Record<string, unknown>) => number, abortSignal: AbortSignal): Promise<PromiseSettledResult<unknown>[]> {
+    const promises: Promise<unknown>[] = [];
+    for (const id of Object.keys(manifests).filter(x => x.startsWith('third-party')).sort((a, b) => sortFn(manifests[a]!, manifests[b]!))) {
         const externalId = id.replace('third-party', '');
         const promise = enqueueVersionCheck(async () => {
             try {
@@ -2025,11 +1925,11 @@ async function checkForUpdatesManual(sortFn, abortSignal) {
                             nameElement.classList.add('update_available');
                         }
                     }
-                    const branch = data.currentBranchName;
-                    const commitHash = data.currentCommitHash;
-                    const origin = data.remoteUrl;
+                    const branch = data.currentBranchName as string;
+                    const commitHash = data.currentCommitHash as string;
+                    const origin = data.remoteUrl as string;
 
-                    const originLink = extensionBlock.querySelector('a');
+                    const originLink = extensionBlock.querySelector('a') as HTMLAnchorElement | null;
                     if (originLink) {
                         try {
                             const url = new URL(origin);
@@ -2075,8 +1975,7 @@ async function checkForUpdatesManual(sortFn, abortSignal) {
  * @param {boolean} force Skip nag check
  * @returns {Promise<any>}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'force' implicitly has an 'any' type.
-async function checkForExtensionUpdates(force) {
+async function checkForExtensionUpdates(force: boolean): Promise<void> {
     if (!force) {
         const STORAGE_NAG_KEY = 'extension_update_nag';
         const currentDate = new Date().toDateString();
@@ -2090,37 +1989,30 @@ async function checkForExtensionUpdates(force) {
     }
 
     const isCurrentUserAdmin = isAdmin();
-    // @ts-expect-error TS(7034) FIXME: Variable 'updatesAvailable' implicitly has type 'a... Remove this comment to see the full error message
-    const updatesAvailable = [];
-    const promises = [];
+    const updatesAvailable: string[] = [];
+    const promises: Promise<unknown>[] = [];
 
     for (const [id, manifest] of Object.entries(manifests)) {
-        // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
-        const isDisabled = extension_settings.disabledExtensions.includes(id);
+        const isDisabled = (extension_settings.disabledExtensions as string[]).includes(id);
         if (isDisabled) {
-            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-            console.debug(`Skipping extension: ${manifest.display_name} (${id}) for non-admin user`);
+            console.debug(`Skipping extension: ${manifest.display_name as string} (${id}) for non-admin user`);
             continue;
         }
         const isGlobal = getExtensionType(id) === 'global';
         if (isGlobal && !isCurrentUserAdmin) {
-            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-            console.debug(`Skipping global extension: ${manifest.display_name} (${id}) for non-admin user`);
+            console.debug(`Skipping global extension: ${manifest.display_name as string} (${id}) for non-admin user`);
             continue;
         }
 
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         if (manifest.auto_update && id.startsWith('third-party')) {
             const promise = enqueueVersionCheck(async () => {
                 try {
-                    // @ts-expect-error TS(2554) FIXME: Expected 2 arguments, but got 1.
                     const data = await getExtensionVersion(id.replace('third-party', ''));
                     if (!data) {
                         return;
                     }
                     if (!data.isUpToDate) {
-                        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-                        updatesAvailable.push(manifest.display_name);
+                        updatesAvailable.push(manifest.display_name as string);
                     }
                 } catch (error) {
                     console.error('Error checking for extension updates', error);
@@ -2133,7 +2025,6 @@ async function checkForExtensionUpdates(force) {
     await Promise.allSettled(promises);
 
     if (updatesAvailable.length > 0) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.info(`${updatesAvailable.map(x => `• ${x}`).join('\n')}`, t`Extension updates available`);
     }
 }
@@ -2143,43 +2034,33 @@ async function checkForExtensionUpdates(force) {
  * @param {boolean} forceAll Include disabled and not auto-updating
  * @returns {Promise<void>}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'forceAll' implicitly has an 'any' type.
-async function autoUpdateExtensions(forceAll) {
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+async function autoUpdateExtensions(forceAll: boolean): Promise<void> {
     if (!Object.values(manifests).some(x => x.auto_update)) {
         return;
     }
 
-    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
     const banner = notyf.info(t`Auto-updating extensions. This may take several minutes.`, t`Please wait...`, { timeOut: 10000, extendedTimeOut: 10000 });
     const isCurrentUserAdmin = isAdmin();
-    const promises = [];
+    const promises: Promise<void>[] = [];
     const autoUpdateTimeout = 60 * 1000;
     for (const [id, manifest] of Object.entries(manifests)) {
-        // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
-        const isDisabled = extension_settings.disabledExtensions.includes(id);
+        const isDisabled = (extension_settings.disabledExtensions as string[]).includes(id);
         if (!forceAll && isDisabled) {
-            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-            console.debug(`Skipping extension: ${manifest.display_name} (${id}) for non-admin user`);
+            console.debug(`Skipping extension: ${manifest.display_name as string} (${id}) for non-admin user`);
             continue;
         }
         const isGlobal = getExtensionType(id) === 'global';
         if (isGlobal && !isCurrentUserAdmin) {
-            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-            console.debug(`Skipping global extension: ${manifest.display_name} (${id}) for non-admin user`);
+            console.debug(`Skipping global extension: ${manifest.display_name as string} (${id}) for non-admin user`);
             continue;
         }
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         if ((forceAll || manifest.auto_update) && id.startsWith('third-party')) {
-            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-            console.debug(`Auto-updating 3rd-party extension: ${manifest.display_name} (${id})`);
-            // @ts-expect-error TS(2345) FIXME: Argument of type 'number' is not assignable to par... Remove this comment to see the full error message
+            console.debug(`Auto-updating 3rd-party extension: ${manifest.display_name as string} (${id})`);
             promises.push(updateExtension(id.replace('third-party', ''), true, autoUpdateTimeout));
         }
     }
     await Promise.allSettled(promises);
-    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-    notyf.dismiss(banner);
+    notyf.dismiss(banner!);
 }
 
 /**
@@ -2189,29 +2070,22 @@ async function autoUpdateExtensions(forceAll) {
  * @param {string} type Generation type
  * @returns {Promise<boolean>} True if generation should be aborted
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'chat' implicitly has an 'any' type.
-export async function runGenerationInterceptors(chat, contextSize, type) {
+export async function runGenerationInterceptors(chat: unknown[], contextSize: number, type: string): Promise<boolean> {
     let aborted = false;
     let exitImmediately = false;
 
-    // @ts-expect-error TS(7006) FIXME: Parameter 'immediately' implicitly has an 'any' ty... Remove this comment to see the full error message
-    const abort = (/** @type {boolean} */ immediately) => {
+    const abort = (immediately: boolean): void => {
         aborted = true;
         exitImmediately = immediately;
     };
 
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
     for (const manifest of Object.values(manifests).filter(x => x.generate_interceptor).sort((a, b) => sortManifestsByOrder(a, b))) {
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-        const interceptorKey = manifest.generate_interceptor;
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        if (typeof globalThis[interceptorKey] === 'function') {
+        const interceptorKey = manifest.generate_interceptor as string;
+        if (typeof (globalThis as Record<string, unknown>)[interceptorKey] === 'function') {
             try {
-                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                await globalThis[interceptorKey](chat, contextSize, abort, type);
+                await (globalThis as unknown as Record<string, (...args: unknown[]) => unknown>)[interceptorKey]?.(chat, contextSize, abort, type);
             } catch (e) {
-                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-                console.error(`Failed running interceptor for ${manifest.display_name}`, e);
+                console.error(`Failed running interceptor for ${manifest.display_name as string}`, e);
             }
         }
 
@@ -2242,10 +2116,9 @@ export const UNSET_VALUE = '__@@UNSET@@__';
  * @param {any} value Field value
  * @returns {Promise<void>} When the field is written
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'characterId' implicitly has an 'any' ty... Remove this comment to see the full error message
-export async function writeExtensionField(characterId, key, value) {
+export async function writeExtensionField(characterId: number | string, key: string, value: unknown): Promise<void> {
     const context = getContext();
-    const character = context.characters[characterId];
+    const character = context.characters[characterId as number];
     if (!character) {
         console.warn('Character not found', characterId);
         return;
@@ -2271,13 +2144,13 @@ export async function writeExtensionField(characterId, key, value) {
 
         // Make sure the data doesn't get lost when saving the current character
         if (Number(characterId) === Number(context.characterId)) {
-            const charJsonEl = document.getElementById('character_json_data');
+            const charJsonEl = document.getElementById('character_json_data') as HTMLInputElement | null;
             if (charJsonEl) charJsonEl.value = character.json_data;
         }
     }
 
     // Save data to the server
-    const saveDataRequest = {
+    const saveDataRequest: Record<string, unknown> = {
         avatar: character.avatar,
         data: {
             extensions: {
@@ -2325,16 +2198,15 @@ export async function writeExtensionField(characterId, key, value) {
  *   automatically skip characters where the field is missing/`undefined`.
  * @returns {Promise<BulkExtensionFieldResult>} Summary of the bulk operation
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'avatars' implicitly has an 'any' type.
-export async function writeExtensionFieldBulk(avatars, key, value, {
+export async function writeExtensionFieldBulk(avatars: string[] | null, key: string, value: unknown, {
     filterPath
-}: { filterPath?: string } = {}) {
+}: { filterPath?: string } = {}): Promise<{ updated: string[]; skipped: string[]; failed: string[] }> {
     const context = getContext();
     const extensionPath = `data.extensions.${key}`;
     const isUnset = value === UNSET_VALUE;
 
     // Build the server request
-    const requestBody = {
+    const requestBody: Record<string, unknown> = {
         avatars: Array.isArray(avatars) && avatars.length > 0 ? avatars : [],
         data: {
             data: {
@@ -2348,7 +2220,6 @@ export async function writeExtensionFieldBulk(avatars, key, value, {
     // Default filter: when unsetting, only touch characters that have the field
     const resolvedFilterPath = filterPath ?? (isUnset ? extensionPath : undefined);
     if (resolvedFilterPath) {
-        // @ts-expect-error TS(2339) FIXME: Property 'filter' does not exist on type '{ avatar... Remove this comment to see the full error message
         requestBody.filter = { path: resolvedFilterPath };
     }
 
@@ -2364,7 +2235,7 @@ export async function writeExtensionFieldBulk(avatars, key, value, {
     }
 
     /** @type {BulkExtensionFieldResult} */
-    const result = await mergeResponse.json();
+    const result = await mergeResponse.json() as { updated: string[]; skipped: string[]; failed: string[] };
 
     // Sync in-memory character objects for successfully updated characters
     const updatedSet = new Set(result.updated);
@@ -2391,9 +2262,9 @@ export async function writeExtensionFieldBulk(avatars, key, value, {
 
     // If the currently active character was updated, sync the hidden input
     if (context.characterId !== undefined) {
-        const activeChar = context.characters[context.characterId];
+        const activeChar = context.characters[context.characterId as number];
         if (activeChar && updatedSet.has(activeChar.avatar) && activeChar.json_data) {
-            const charJsonEl = document.getElementById('character_json_data');
+            const charJsonEl = document.getElementById('character_json_data') as HTMLInputElement | null;
             if (charJsonEl) charJsonEl.value = activeChar.json_data;
         }
     }
@@ -2410,13 +2281,13 @@ export async function writeExtensionFieldBulk(avatars, key, value, {
  * @param {string} [suggestUrl] Suggested URL to install
  * @returns {Promise<void>}
  */
-export async function openThirdPartyExtensionMenu(suggestUrl = '') {
+export async function openThirdPartyExtensionMenu(suggestUrl = ''): Promise<void> {
     const isCurrentUserAdmin = isAdmin();
     const html = await renderTemplateAsync('installExtension', { isCurrentUserAdmin });
     const okButton = isCurrentUserAdmin ? t`Install just for me` : t`Install`;
 
     let global = false;
-    const installForAllButton = {
+    const installForAllButton: { text: string; appendAtEnd: boolean; action: () => Promise<void> } = {
         text: t`Install for all users`,
         appendAtEnd: false,
         action: async () => {
@@ -2425,7 +2296,7 @@ export async function openThirdPartyExtensionMenu(suggestUrl = '') {
         },
     };
     /** @type {import('./popup.js').CustomPopupInput} */
-    const branchNameInput = {
+    const branchNameInput: { id: string; label: string; type: string; tooltip: string } = {
         id: 'extension_branch_name',
         label: t`Branch or tag name (optional)`,
         type: 'text',
@@ -2434,8 +2305,8 @@ export async function openThirdPartyExtensionMenu(suggestUrl = '') {
 
     const customButtons = isCurrentUserAdmin ? [installForAllButton] : [];
     const customInputs = [branchNameInput];
-    // @ts-expect-error TS(2322) FIXME: Type '{ text: any; appendAtEnd: boolean; action: (... Remove this comment to see the full error message
-    const popup = new Popup(html, POPUP_TYPE.INPUT, suggestUrl ?? '', { okButton, customButtons, customInputs });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const popup = new Popup(html, POPUP_TYPE.INPUT, suggestUrl ?? '', { okButton, customButtons, customInputs } as Record<string, unknown>);
     const input = await popup.show();
 
     if (!input) {
@@ -2462,9 +2333,8 @@ export const EMPTY_AUTHOR = Object.freeze({
  * @param {string} url - The URL of the repository.
  * @returns {{name: string, url: string}} Object containing the author's name and URL, or empty strings if not found.
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'url' implicitly has an 'any' type.
-export function getAuthorFromUrl(url) {
-    const result = structuredClone(EMPTY_AUTHOR);
+export function getAuthorFromUrl(url: string): { name: string; url: string } {
+    const result: { name: string; url: string } = structuredClone(EMPTY_AUTHOR);
 
     try {
         const parsedUrl = new URL(url);
@@ -2472,9 +2342,7 @@ export function getAuthorFromUrl(url) {
 
         // TODO: Handle non-GitHub URLs if needed
         if (parsedUrl.host === 'github.com' && pathSegments.length >= 2) {
-            // @ts-expect-error TS(2540) FIXME: Cannot assign to 'name' because it is a read-only ... Remove this comment to see the full error message
-            result.name = pathSegments[0];
-            // @ts-expect-error TS(2540) FIXME: Cannot assign to 'url' because it is a read-only p... Remove this comment to see the full error message
+            result.name = pathSegments[0]!;
             result.url = `${parsedUrl.protocol}//${parsedUrl.hostname}/${result.name}`;
         }
     } catch (error) {
@@ -2487,49 +2355,49 @@ export function getAuthorFromUrl(url) {
 /**
  *
  */
-export async function initExtensions() {
+export async function initExtensions(): Promise<void> {
     await addExtensionsButtonAndMenu();
     const menuButton = document.getElementById('extensionsMenuButton');
     if (menuButton) menuButton.style.display = 'flex';
 
     document.getElementById('extensions_connect')?.addEventListener('click', connectClickHandler);
-    document.getElementById('extensions_autoconnect')?.addEventListener('input', autoConnectInputHandler);
+    (document.getElementById('extensions_autoconnect') as HTMLInputElement | null)?.addEventListener('input', autoConnectInputHandler);
     document.getElementById('extensions_details')?.addEventListener('click', showExtensionsDetails);
-    document.getElementById('extensions_notify_updates')?.addEventListener('input', notifyUpdatesInputHandler);
-    document.addEventListener('click', function (event) {
+    (document.getElementById('extensions_notify_updates') as HTMLInputElement | null)?.addEventListener('input', notifyUpdatesInputHandler);
+    document.addEventListener('click', function (this: void, event: Event) {
         if (!(event.target instanceof Element)) return;
         const el = event.target.closest('.extensions_info .extension_block .toggle_disable');
-        if (el) onDisableExtensionClick.call(el);
+        if (el) onDisableExtensionClick.call(el as HTMLElement);
     });
-    document.addEventListener('click', function (event) {
+    document.addEventListener('click', function (this: void, event: Event) {
         if (!(event.target instanceof Element)) return;
         const el = event.target.closest('.extensions_info .extension_block .toggle_enable');
-        if (el) onEnableExtensionClick.call(el);
+        if (el) onEnableExtensionClick.call(el as HTMLElement);
     });
-    document.addEventListener('click', function (event) {
+    document.addEventListener('click', function (this: void, event: Event) {
         if (!(event.target instanceof Element)) return;
         const el = event.target.closest('.extensions_info .extension_block .btn_update');
-        if (el) onUpdateClick.call(el);
+        if (el) onUpdateClick.call(el as HTMLElement);
     });
-    document.addEventListener('click', function (event) {
+    document.addEventListener('click', function (this: void, event: Event) {
         if (!(event.target instanceof Element)) return;
         const el = event.target.closest('.extensions_info .extension_block .btn_delete');
-        if (el) onDeleteClick.call(el);
+        if (el) onDeleteClick.call(el as HTMLElement);
     });
-    document.addEventListener('click', function (event) {
+    document.addEventListener('click', function (this: void, event: Event) {
         if (!(event.target instanceof Element)) return;
         const el = event.target.closest('.extensions_info .extension_block .btn_clean');
-        if (el) onCleanClick.call(el);
+        if (el) onCleanClick.call(el as HTMLElement);
     });
-    document.addEventListener('click', function (event) {
+    document.addEventListener('click', function (this: void, event: Event) {
         if (!(event.target instanceof Element)) return;
         const el = event.target.closest('.extensions_info .extension_block .btn_move');
-        if (el) onMoveClick.call(el);
+        if (el) onMoveClick.call(el as HTMLElement);
     });
-    document.addEventListener('click', function (event) {
+    document.addEventListener('click', function (this: void, event: Event) {
         if (!(event.target instanceof Element)) return;
         const el = event.target.closest('.extensions_info .extension_block .btn_branch');
-        if (el) onBranchClick.call(el);
+        if (el) onBranchClick.call(el as HTMLElement);
     });
 
     /**

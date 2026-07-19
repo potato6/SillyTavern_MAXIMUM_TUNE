@@ -20,6 +20,8 @@ Promise.all(
 
 /**
  * Abort KoboldCpp generation request.
+ * @param request
+ * @param url
  */
 async function abortKoboldCppRequest(request: import('express').Request, url: string) {
     try {

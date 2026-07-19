@@ -41,14 +41,14 @@ import {
 } from './textgen-settings.js';
 import { download, ensurePlainObject, equalsIgnoreCaseAndAccents, getSanitizedFilename, parseJsonFile, waitUntilCondition } from './utils.js';
 
-import { get, set } from 'es-toolkit/compat'
+import { get, set } from 'es-toolkit/compat';
 
-const presetManagers = {};
+const presetManagers: Record<string, PresetManager> = {};
 
 /**
  * Automatically select a preset for current API based on character or group name.
  */
-function autoSelectPreset() {
+function autoSelectPreset(): void {
     const presetManager = getPresetManager();
 
     if (!presetManager) {
@@ -82,7 +82,7 @@ function autoSelectPreset() {
  * @param {string} apiId API id
  * @returns {PresetManager} Preset manager
  */
-export function getPresetManager(apiId = '') {
+export function getPresetManager(apiId = ''): PresetManager | null {
     if (apiId === 'koboldhorde') {
         apiId = 'kobold';
     }
@@ -94,114 +94,100 @@ export function getPresetManager(apiId = '') {
         return null;
     }
 
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-    return presetManagers[apiId];
+    return presetManagers[apiId]!;
 }
 
 /**
  * Registers preset managers for all select elements with data-preset-manager-for attribute.
  */
-function registerPresetManagers() {
+function registerPresetManagers(): void {
     document.querySelectorAll('select[data-preset-manager-for]').forEach(e => {
         const forData = e.getAttribute('data-preset-manager-for');
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        for (const apiId of forData.split(',')) {
+        for (const apiId of forData!.split(',')) {
             console.debug(`Registering preset manager for API: ${apiId}`);
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             presetManagers[apiId] = new PresetManager(e, apiId);
         }
     });
 }
 
 class PresetManager {
-    // @ts-expect-error TS(7006) FIXME: Parameter 'select' implicitly has an 'any' type.
-    constructor(select, apiId) {
+    constructor(select: Element, apiId: string) {
         this.select = select;
         this.apiId = apiId;
     }
 
-    static masterSections = {
+    static masterSections: Record<string, { name: string; getData: () => unknown; setData: (data: Record<string, unknown>) => unknown; isValid: (data: Record<string, unknown>) => boolean }> = {
         'instruct': {
             name: 'Instruct Template',
             getData: () => {
-                const manager = getPresetManager('instruct');
+                const manager = getPresetManager('instruct')!;
                 const name = manager.getSelectedPresetName();
                 return manager.getPresetSettings(name);
             },
-            // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
-            setData: (data) => {
-                const manager = getPresetManager('instruct');
-                const name = data.name;
+            setData: (data: Record<string, unknown>) => {
+                const manager = getPresetManager('instruct')!;
+                const name = data.name as string;
                 return manager.savePreset(name, data);
             },
-            // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
-            isValid: (data) => PresetManager.isPossiblyInstructData(data),
+            isValid: (data: Record<string, unknown>) => PresetManager.isPossiblyInstructData(data),
         },
         'context': {
             name: 'Context Template',
             getData: () => {
-                const manager = getPresetManager('context');
+                const manager = getPresetManager('context')!;
                 const name = manager.getSelectedPresetName();
                 return manager.getPresetSettings(name);
             },
-            // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
-            setData: (data) => {
-                const manager = getPresetManager('context');
-                const name = data.name;
+            setData: (data: Record<string, unknown>) => {
+                const manager = getPresetManager('context')!;
+                const name = data.name as string;
                 return manager.savePreset(name, data);
             },
-            // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
-            isValid: (data) => PresetManager.isPossiblyContextData(data),
+            isValid: (data: Record<string, unknown>) => PresetManager.isPossiblyContextData(data),
         },
         'sysprompt': {
             name: 'System Prompt',
             getData: () => {
-                const manager = getPresetManager('sysprompt');
+                const manager = getPresetManager('sysprompt')!;
                 const name = manager.getSelectedPresetName();
                 return manager.getPresetSettings(name);
             },
-            // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
-            setData: (data) => {
-                const manager = getPresetManager('sysprompt');
-                const name = data.name;
+            setData: (data: Record<string, unknown>) => {
+                const manager = getPresetManager('sysprompt')!;
+                const name = data.name as string;
                 return manager.savePreset(name, data);
             },
-            // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
-            isValid: (data) => PresetManager.isPossiblySystemPromptData(data),
+            isValid: (data: Record<string, unknown>) => PresetManager.isPossiblySystemPromptData(data),
         },
         'preset': {
             name: 'Text Completion Preset',
             getData: () => {
-                const manager = getPresetManager('textgenerationwebui');
+                const manager = getPresetManager('textgenerationwebui')!;
                 const name = manager.getSelectedPresetName();
-                const data = manager.getPresetSettings(name);
+                const data = manager.getPresetSettings(name) as Record<string, unknown>;
                 data.name = name;
                 return data;
             },
-            // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
-            setData: (data) => {
-                const manager = getPresetManager('textgenerationwebui');
-                const name = data.name;
+            setData: (data: Record<string, unknown>) => {
+                const manager = getPresetManager('textgenerationwebui')!;
+                const name = data.name as string;
                 return manager.savePreset(name, data);
             },
-            // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
-            isValid: (data) => PresetManager.isPossiblyTextCompletionData(data),
+            isValid: (data: Record<string, unknown>) => PresetManager.isPossiblyTextCompletionData(data),
         },
         'reasoning': {
             name: 'Reasoning Formatting',
             getData: () => {
-                const manager = getPresetManager('reasoning');
+                const manager = getPresetManager('reasoning')!;
                 const name = manager.getSelectedPresetName();
                 return manager.getPresetSettings(name);
             },
-            // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
-            setData: (data) => {
-                const manager = getPresetManager('reasoning');
-                const name = data.name;
+            setData: (data: Record<string, unknown>) => {
+                const manager = getPresetManager('reasoning')!;
+                const name = data.name as string;
                 return manager.savePreset(name, data);
             },
-            // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
-            isValid: (data) => PresetManager.isPossiblyReasoningData(data),
+            isValid: (data: Record<string, unknown>) => PresetManager.isPossiblyReasoningData(data),
         },
         'srw': {
             name: 'Start Reply With',
@@ -211,56 +197,48 @@ class PresetManager {
                     show: power_user.show_user_prompt_bias ?? false,
                 };
             },
-            // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
-            setData: (data) => {
-                power_user.user_prompt_bias = data.value ?? '';
-                power_user.show_user_prompt_bias = data.show ?? false;
-                document.getElementById('start_reply_with').value = power_user.user_prompt_bias;
-                const el = document.getElementById('chat-show-reply-prefix-checkbox'); if (el) el.checked = power_user.show_user_prompt_bias;
+            setData: (data: Record<string, unknown>) => {
+                power_user.user_prompt_bias = data.value as string ?? '';
+                power_user.show_user_prompt_bias = data.show as boolean ?? false;
+                const startReplyEl = document.getElementById('start_reply_with') as HTMLInputElement | null;
+                if (startReplyEl) startReplyEl.value = power_user.user_prompt_bias;
+                const el = document.getElementById('chat-show-reply-prefix-checkbox') as HTMLInputElement | null; if (el) el.checked = power_user.show_user_prompt_bias;
                 return saveSettingsDebounced();
             },
-            // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
-            isValid: (data) => PresetManager.isPossiblyStartReplyWithData(data),
+            isValid: (data: Record<string, unknown>) => PresetManager.isPossiblyStartReplyWithData(data),
         },
     };
 
-    apiId: string;
-    // @ts-expect-error TS(2315) FIXME: Type 'JQuery' is not generic.
-    select: JQuery<HTMLSelectElement>;
+    apiId!: string;
+    select!: Element;
 
-    // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
-    static isPossiblyInstructData(data) {
+    static isPossiblyInstructData(data: Record<string, unknown>): boolean {
         const instructProps = ['name', 'input_sequence', 'output_sequence'];
-        return data && instructProps.every(prop => Object.keys(data).includes(prop));
+        return !!data && instructProps.every(prop => Object.keys(data).includes(prop));
     }
 
-    // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
-    static isPossiblyContextData(data) {
+    static isPossiblyContextData(data: Record<string, unknown>): boolean {
         const contextProps = ['name', 'story_string'];
-        return data && contextProps.every(prop => Object.keys(data).includes(prop));
+        return !!data && contextProps.every(prop => Object.keys(data).includes(prop));
     }
 
-    // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
-    static isPossiblySystemPromptData(data) {
+    static isPossiblySystemPromptData(data: Record<string, unknown>): boolean {
         const sysPromptProps = ['name', 'content'];
-        return data && sysPromptProps.every(prop => Object.keys(data).includes(prop));
+        return !!data && sysPromptProps.every(prop => Object.keys(data).includes(prop));
     }
 
-    // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
-    static isPossiblyTextCompletionData(data) {
+    static isPossiblyTextCompletionData(data: Record<string, unknown>): boolean {
         const textCompletionProps = ['temp', 'top_k', 'top_p', 'rep_pen'];
-        return data && textCompletionProps.every(prop => Object.keys(data).includes(prop));
+        return !!data && textCompletionProps.every(prop => Object.keys(data).includes(prop));
     }
 
-    // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
-    static isPossiblyReasoningData(data) {
+    static isPossiblyReasoningData(data: Record<string, unknown>): boolean {
         const reasoningProps = ['name', 'prefix', 'suffix', 'separator'];
-        return data && reasoningProps.every(prop => Object.keys(data).includes(prop));
+        return !!data && reasoningProps.every(prop => Object.keys(data).includes(prop));
     }
 
-    // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
-    static isPossiblyStartReplyWithData(data) {
-        return data && 'value' in data && 'show' in data;
+    static isPossiblyStartReplyWithData(data: Record<string, unknown>): boolean {
+        return !!data && 'value' in data && 'show' in data;
     }
 
     /**
@@ -269,10 +247,8 @@ class PresetManager {
      * @param {string} fileName File name
      * @returns {Promise<void>}
      */
-    // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
-    static async performMasterImport(data, fileName) {
+    static async performMasterImport(data: Record<string, unknown>, fileName: string): Promise<void> {
         if (!data || typeof data !== 'object') {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.error(t`Invalid data provided for master import`);
             return;
         }
@@ -280,57 +256,50 @@ class PresetManager {
         // Check for legacy file imports
         // 1. Instruct Template
         if (this.isPossiblyInstructData(data)) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.info(t`Importing instruct template...`, t`Instruct template detected`);
-            return await getPresetManager('instruct').savePreset(data.name, data);
+            return await getPresetManager('instruct')!.savePreset(data.name as string, data);
         }
 
         // 2. Context Template
         if (this.isPossiblyContextData(data)) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.info(t`Importing as context template...`, t`Context template detected`);
-            return await getPresetManager('context').savePreset(data.name, data);
+            return await getPresetManager('context')!.savePreset(data.name as string, data);
         }
 
         // 3. System Prompt
         if (this.isPossiblySystemPromptData(data)) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.info(t`Importing as system prompt...`, t`System prompt detected`);
-            return await getPresetManager('sysprompt').savePreset(data.name, data);
+            return await getPresetManager('sysprompt')!.savePreset(data.name as string, data);
         }
 
         // 4. Text Completion settings
         if (this.isPossiblyTextCompletionData(data)) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.info(t`Importing as settings preset...`, t`Text Completion settings detected`);
-            return await getPresetManager('textgenerationwebui').savePreset(fileName, data);
+            return await getPresetManager('textgenerationwebui')!.savePreset(fileName, data);
         }
 
         // 5. Reasoning Template
         if (this.isPossiblyReasoningData(data)) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.info(t`Importing as reasoning template...`, t`Reasoning template detected`);
-            return await getPresetManager('reasoning').savePreset(data.name, data);
+            return await getPresetManager('reasoning')!.savePreset(data.name as string, data);
         }
 
-        const validSections = [];
+        const validSections: string[] = [];
         for (const [key, section] of Object.entries(this.masterSections)) {
-            if (key in data && section.isValid(data[key])) {
+            if (key in data && section.isValid(data[key] as Record<string, unknown>)) {
                 validSections.push(key);
             }
         }
 
         if (validSections.length === 0) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.error(t`No valid sections found in imported data`);
             return;
         }
 
-        const sectionNames = validSections.reduce((acc, key) => {
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-            acc[key] = { key: key, name: this.masterSections[key].name, preset: data[key]?.name || '' };
+        const sectionNames: Record<string, { key: string; name: string; preset: string }> = validSections.reduce((acc, key) => {
+            acc[key] = { key: key, name: this.masterSections[key]!.name, preset: (data[key] as Record<string, unknown>)?.name as string || '' };
             return acc;
-        }, {});
+        }, {} as Record<string, { key: string; name: string; preset: string }>);
 
         const html = document.createElement('div');
         html.innerHTML = await renderTemplateAsync('masterImport', { sections: sectionNames });
@@ -346,19 +315,17 @@ class PresetManager {
             return;
         }
 
-        const importedSections = [];
-        const confirmedSections = Array.from(html.querySelectorAll('input:checked')).map(el => el instanceof HTMLInputElement && el.value);
+        const importedSections: string[] = [];
+        const confirmedSections = Array.from(html.querySelectorAll('input:checked')).map(el => (el instanceof HTMLInputElement) && el.value);
 
         if (confirmedSections.length === 0) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.info(t`No sections selected for import`);
             return;
         }
 
         for (const section of confirmedSections) {
-            // @ts-expect-error TS(2538) FIXME: Type 'false' cannot be used as an index type.
-            const sectionData = data[section];
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
+            if (!section) continue;
+            const sectionData = data[section] as Record<string, unknown> | undefined;
             const masterSection = this.masterSections[section];
             if (sectionData && masterSection) {
                 await masterSection.setData(sectionData);
@@ -366,7 +333,6 @@ class PresetManager {
             }
         }
 
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.success(t`Imported ${importedSections.length} settings: ${importedSections.join(', ')}`);
     }
 
@@ -374,12 +340,11 @@ class PresetManager {
      * Exports master settings to JSON data.
      * @returns {Promise<string>} JSON data
      */
-    static async performMasterExport() {
-        const sectionNames = Object.entries(this.masterSections).reduce((acc, [key, section]) => {
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
+    static async performMasterExport(): Promise<string | undefined> {
+        const sectionNames: Record<string, { key: string; name: string; checked: boolean }> = Object.entries(this.masterSections).reduce((acc, [key, section]) => {
             acc[key] = { key: key, name: section.name, checked: !['preset', 'srw'].includes(key) };
             return acc;
-        }, {});
+        }, {} as Record<string, { key: string; name: string; checked: boolean }>);
         const html = document.createElement('div');
         html.innerHTML = await renderTemplateAsync('masterExport', { sections: sectionNames });
 
@@ -395,20 +360,18 @@ class PresetManager {
             return;
         }
 
-        const confirmedSections = Array.from(html.querySelectorAll('input:checked')).map(el => el instanceof HTMLInputElement && el.value);
-        const data = {};
+        const confirmedSections = Array.from(html.querySelectorAll('input:checked')).map(el => (el instanceof HTMLInputElement) && el.value);
+        const data: Record<string, unknown> = {};
 
         if (confirmedSections.length === 0) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.info(t`No sections selected for export`);
             return;
         }
 
         for (const section of confirmedSections) {
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
+            if (!section) continue;
             const masterSection = this.masterSections[section];
             if (masterSection) {
-                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 data[section] = masterSection.getData();
             }
         }
@@ -420,9 +383,9 @@ class PresetManager {
      * Gets all preset names.
      * @returns {string[]} List of preset names
      */
-    getAllPresets() {
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-        return Array.from(this.select[0].options).map(el => el.text);
+    getAllPresets(): string[] {
+        const select = this.select as HTMLSelectElement;
+        return Array.from(select.options).map(el => el.text);
     }
 
     /**
@@ -430,9 +393,8 @@ class PresetManager {
      * @param {string} name Preset name
      * @returns {any} Preset value
      */
-    // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
-    findPreset(name) {
-        const el = this.select?.[0] ?? this.select;
+    findPreset(name: string): string | undefined {
+        const el = ((this.select as HTMLSelectElement)?.options ? this.select : (this.select as unknown as HTMLSelectElement[])?.[0]) as HTMLSelectElement;
         const options = el?.options ? Array.from(el.options) : [];
         return options.find(el => el.text === name)?.value;
     }
@@ -441,8 +403,8 @@ class PresetManager {
      * Gets the selected preset value.
      * @returns {any} Selected preset value
      */
-    getSelectedPreset() {
-        const el = this.select?.[0] ?? this.select;
+    getSelectedPreset(): string | undefined {
+        const el = ((this.select as HTMLSelectElement)?.options ? this.select : (this.select as unknown as HTMLSelectElement[])?.[0]) as HTMLSelectElement;
         const options = el?.options ? Array.from(el.options) : [];
         return options[el?.selectedIndex ?? -1]?.value;
     }
@@ -451,8 +413,8 @@ class PresetManager {
      * Gets the selected preset name.
      * @returns {string} Selected preset name
      */
-    getSelectedPresetName() {
-        const el = this.select?.[0] ?? this.select;
+    getSelectedPresetName(): string | undefined {
+        const el = ((this.select as HTMLSelectElement)?.options ? this.select : (this.select as unknown as HTMLSelectElement[])?.[0]) as HTMLSelectElement;
         return el?.options?.[el.selectedIndex]?.text;
     }
 
@@ -460,13 +422,13 @@ class PresetManager {
      * Selects a preset by option value.
      * @param {string} value Preset option value
      */
-    // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
-    selectPreset(value) {
-    if (this.select[0].value === value) {
-        this.select[0].selected = true;
-    }
-    this.select.value = value
-    this.select.dispatchEvent(new Event('change', { bubbles: true }));
+    selectPreset(value: string): void {
+        const select = this.select as HTMLSelectElement;
+        if (select.value === value) {
+            (select as HTMLSelectElement).selectedIndex = select.options.length > 0 ? Array.from(select.options).findIndex(opt => opt.value === value) : -1;
+        }
+        select.value = value;
+        select.dispatchEvent(new Event('change', { bubbles: true }));
     }
 
     /**
@@ -474,29 +436,29 @@ class PresetManager {
      * @param {object} [options] Options for saving the preset
      * @param {boolean} [options.skipUpdate] If true, skips updating the preset list after saving.
      * @param option
+     * @param option.skipUpdate
      */
-    async updatePreset(option = { skipUpdate: false }) {
-        const selected = this.select[0].options[this.select[0].selectedIndex];
+    async updatePreset(option: { skipUpdate?: boolean } = { skipUpdate: false }): Promise<void> {
+        const select = this.select as HTMLSelectElement;
+        const selected = select.options[select.selectedIndex];
         console.log(selected);
 
-        if (selected.value == 'gui') {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
+        if (selected?.value == 'gui') {
             notyf.info(t`Cannot update GUI preset`);
             return;
         }
 
-        const name = selected.text;
+        const name = selected?.text ?? '';
         await this.savePreset(name, null, option);
 
         const successToast = !this.isAdvancedFormatting() ? t`Preset updated` : t`Template updated`;
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.success(successToast);
     }
 
     /**
      * Saves the currently selected preset with a new name.
      */
-    async savePresetAs() {
+    async savePresetAs(): Promise<void> {
         const inputValue = this.getSelectedPresetName();
         const popupText = !this.isAdvancedFormatting() ? '<h4>' + t`Hint: Use a character/group name to bind preset to a specific chat.` + '</h4>' : '';
         const headerText = !this.isAdvancedFormatting() ? t`Preset name:` : t`Template name:`;
@@ -506,11 +468,9 @@ class PresetManager {
             return;
         }
 
-        // @ts-expect-error TS(2554) FIXME: Expected 2-3 arguments, but got 1.
-        await this.savePreset(name);
+        await this.savePreset(name, undefined);
 
         const successToast = !this.isAdvancedFormatting() ? t`Preset saved` : t`Template saved`;
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.success(successToast);
     }
 
@@ -521,8 +481,7 @@ class PresetManager {
      * @param {object} [options] Options for saving the preset
      * @param {boolean} [options.skipUpdate] If true, skips updating the preset list after saving.
      */
-    // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
-    async savePreset(name, settings, { skipUpdate = false } = {}) {
+    async savePreset(name: string, settings?: Record<string, unknown> | null, { skipUpdate = false }: { skipUpdate?: boolean } = {}): Promise<void> {
         if (this.apiId === 'instruct' && settings) {
             await checkForSystemPromptInInstructTemplate(name, settings);
         }
@@ -540,39 +499,35 @@ class PresetManager {
         });
 
         if (!response.ok) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.error(t`Check the server connection and reload the page to prevent data loss.`, t`Preset could not be saved`);
             console.error('Preset could not be saved', response);
             throw new Error('Preset could not be saved');
         }
 
-        const data = await response.json();
-        name = data.name;
+        const data = await response.json() as Record<string, unknown>;
+        name = data.name as string;
 
         if (skipUpdate) {
             console.debug(`Preset ${name} saved, but not updating the list`);
             return;
         }
 
-        this.updateList(name, preset);
+        this.updateList(name, preset as Record<string, unknown>);
     }
 
     /**
      * Renames the currently selected preset.
      * @param {string} newName New name for the preset
      */
-    // @ts-expect-error TS(7006) FIXME: Parameter 'newName' implicitly has an 'any' type.
-    async renamePreset(newName) {
+    async renamePreset(newName: string): Promise<void> {
         const oldName = this.getSelectedPresetName();
         if (equalsIgnoreCaseAndAccents(oldName, newName)) {
             throw new Error('New name must be different from old name');
         }
         try {
-            // @ts-expect-error TS(2554) FIXME: Expected 2-3 arguments, but got 1.
-            await this.savePreset(newName);
+            await this.savePreset(newName, undefined);
             await this.deletePreset(oldName);
         } catch (error) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.error(t`Check the server connection and reload the page to prevent data loss.`, t`Preset could not be renamed`);
             console.error('Preset could not be renamed', error);
             throw new Error('Preset could not be renamed');
@@ -584,11 +539,10 @@ class PresetManager {
      * @param {string} [api] API ID. If not specified, uses the current API ID.
      * @returns {{presets: any[], preset_names: object, settings: object}}
      */
-    // @ts-expect-error TS(7006) FIXME: Parameter 'api' implicitly has an 'any' type.
-    getPresetList(api) {
-        let presets = [];
-        let preset_names = {};
-        let settings = {};
+    getPresetList(api?: string): { presets: unknown[]; preset_names: unknown[] | Record<string, unknown>; settings: Record<string, unknown> } {
+        let presets: unknown[] = [];
+        let preset_names: unknown[] | Record<string, unknown> = {};
+        let settings: Record<string, unknown> = {};
 
         // If no API specified, use the current API
         if (api === undefined) {
@@ -619,26 +573,22 @@ class PresetManager {
                 break;
             case 'context':
                 presets = context_presets;
-                // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
-                preset_names = context_presets.map(x => x.name);
+                preset_names = (context_presets as Record<string, unknown>[]).map((x: Record<string, unknown>) => x.name as string);
                 settings = power_user.context;
                 break;
             case 'instruct':
                 presets = instruct_presets;
-                // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
-                preset_names = instruct_presets.map(x => x.name);
+                preset_names = instruct_presets.map((x: { name: string }) => x.name);
                 settings = power_user.instruct;
                 break;
             case 'sysprompt':
                 presets = system_prompts;
-                // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
-                preset_names = system_prompts.map(x => x.name);
+                preset_names = system_prompts.map((x: { name: string }) => x.name);
                 settings = power_user.sysprompt;
                 break;
             case 'reasoning':
                 presets = reasoning_templates;
-                // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
-                preset_names = reasoning_templates.map(x => x.name);
+                preset_names = reasoning_templates.map((x: { name: string }) => x.name);
                 settings = power_user.reasoning;
                 break;
             default:
@@ -651,14 +601,14 @@ class PresetManager {
     /**
      * Returns true if the API is keyed, meaning it uses a name to identify presets.
      */
-    isKeyedApi() {
+    isKeyedApi(): boolean {
         return this.apiId == 'textgenerationwebui' || this.isAdvancedFormatting();
     }
 
     /**
      * Returns true if the API is from Advanced Formatting group.
      */
-    isAdvancedFormatting() {
+    isAdvancedFormatting(): boolean {
         return ['context', 'instruct', 'sysprompt', 'reasoning'].includes(this.apiId);
     }
 
@@ -667,54 +617,47 @@ class PresetManager {
      * @param {string} name Name of the preset
      * @param {object} preset Preset object
      */
-    // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
-    updateList(name, preset) {
-        // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
+    updateList(name: string, preset: Record<string, unknown>): void {
         const { presets, preset_names } = this.getPresetList();
-        // @ts-expect-error TS(2339) FIXME: Property 'includes' does not exist on type '{}'.
-        const presetExists = this.isKeyedApi() ? preset_names.includes(name) : Object.keys(preset_names).includes(name);
+        const presetExists = this.isKeyedApi() ? (preset_names as string[]).includes(name) : Object.keys(preset_names).includes(name);
 
         if (presetExists) {
             if (this.isKeyedApi()) {
-                // @ts-expect-error TS(2339) FIXME: Property 'indexOf' does not exist on type '{}'.
-                presets[preset_names.indexOf(name)] = preset;
-                const opt = this.select[0].querySelector(`option[value="${CSS.escape(name)}"]`);
+                (presets as unknown[])[(preset_names as string[]).indexOf(name)] = preset;
+                const opt = (this.select as HTMLSelectElement).querySelector(`option[value="${CSS.escape(name)}"]`) as HTMLOptionElement | null;
                 if (opt) opt.selected = true;
-                this.select.value = name
-                this.select.dispatchEvent(new Event('change', { bubbles: true }));
+                (this.select as HTMLSelectElement).value = name;
+                (this.select as HTMLSelectElement).dispatchEvent(new Event('change', { bubbles: true }));
             } else {
-                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                const value = preset_names[name];
-                presets[value] = preset;
-                const opt = this.select[0].querySelector(`option[value="${CSS.escape(String(value))}"]`);
+                const value = (preset_names as Record<string, string>)[name];
+                (presets as unknown[])[Number(value)] = preset;
+                const opt = (this.select as HTMLSelectElement).querySelector(`option[value="${CSS.escape(String(value))}"]`) as HTMLOptionElement | null;
                 if (opt) opt.selected = true;
-                this.select.value = value
-                this.select.dispatchEvent(new Event('change', { bubbles: true }));
+                (this.select as HTMLSelectElement).value = value ?? '';
+                (this.select as HTMLSelectElement).dispatchEvent(new Event('change', { bubbles: true }));
             }
         } else {
-            presets.push(preset);
-            const value = presets.length - 1;
+            (presets as unknown[]).push(preset);
+            const value = (presets as unknown[]).length - 1;
 
             if (this.isKeyedApi()) {
-                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                preset_names[value] = name;
+                (preset_names as Record<string, string>)[String(value)] = name;
                 const option = document.createElement('option');
                 option.value = name;
                 option.text = name;
                 option.selected = true;
-                this.select.appendChild(option);
-                this.select.value = name
-                this.select.dispatchEvent(new Event('change', { bubbles: true }));
+                (this.select as HTMLSelectElement).appendChild(option);
+                (this.select as HTMLSelectElement).value = name;
+                (this.select as HTMLSelectElement).dispatchEvent(new Event('change', { bubbles: true }));
             } else {
-                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                preset_names[name] = value;
+                (preset_names as Record<string, string>)[name] = String(value);
                 const option = document.createElement('option');
                 option.value = String(value);
                 option.text = name;
                 option.selected = true;
-                this.select.appendChild(option);
-                this.select.value = value
-                this.select.dispatchEvent(new Event('change', { bubbles: true }));
+                (this.select as HTMLSelectElement).appendChild(option);
+                (this.select as HTMLSelectElement).value = String(value);
+                (this.select as HTMLSelectElement).dispatchEvent(new Event('change', { bubbles: true }));
             }
         }
     }
@@ -724,14 +667,12 @@ class PresetManager {
      * @param {string} name Name of the preset
      * @returns {object} Preset settings object for the given name
      */
-    // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
-    getPresetSettings(name) {
+    getPresetSettings(name?: string): Record<string, unknown> {
         /**
          *
          * @param apiId
          */
-        // @ts-expect-error TS(7006) FIXME: Parameter 'apiId' implicitly has an 'any' type.
-        function getSettingsByApiId(apiId) {
+        function getSettingsByApiId(apiId: string): Record<string, unknown> {
             switch (apiId) {
                 case 'koboldhorde':
                 case 'kobold':
@@ -741,27 +682,23 @@ class PresetManager {
                 case 'textgenerationwebui':
                     return textgen_settings;
                 case 'context': {
-                    const context_preset = getContextSettings();
-                    // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type '{}'.
+                    const context_preset = getContextSettings() as Record<string, unknown>;
                     context_preset.name = name || power_user.context.preset;
                     return context_preset;
                 }
                 case 'instruct': {
-                    const instruct_preset = structuredClone(power_user.instruct);
-                    // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type '{ enabled:... Remove this comment to see the full error message
+                    const instruct_preset = structuredClone(power_user.instruct) as Record<string, unknown>;
                     instruct_preset.name = name || power_user.instruct.preset;
                     return instruct_preset;
                 }
                 case 'sysprompt': {
-                    const sysprompt_preset = structuredClone(power_user.sysprompt);
-                    // @ts-expect-error TS(2339) FIXME: Property 'preset' does not exist on type '{ enable... Remove this comment to see the full error message
-                    sysprompt_preset.name = name || power_user.sysprompt.preset;
+                    const sysprompt_preset = structuredClone(power_user.sysprompt) as Record<string, unknown>;
+                    sysprompt_preset.name = name || (power_user.sysprompt as Record<string, unknown>).preset as string;
                     return sysprompt_preset;
                 }
                 case 'reasoning': {
-                    const reasoning_preset = structuredClone(power_user.reasoning);
-                    // @ts-expect-error TS(2339) FIXME: Property 'preset' does not exist on type '{ name: ... Remove this comment to see the full error message
-                    reasoning_preset.name = name || power_user.reasoning.preset;
+                    const reasoning_preset = structuredClone(power_user.reasoning) as Record<string, unknown>;
+                    reasoning_preset.name = name || (power_user.reasoning as Record<string, unknown>).preset as string;
                     return reasoning_preset;
                 }
                 default:
@@ -827,15 +764,12 @@ class PresetManager {
 
         for (const key of filteredKeys) {
             if (Object.hasOwn(settings, key)) {
-                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 delete settings[key];
             }
         }
 
         if (!this.isAdvancedFormatting() && this.apiId !== 'openai') {
-            // @ts-expect-error TS(2339) FIXME: Property 'genamt' does not exist on type '{}'.
             settings.genamt = amount_gen;
-            // @ts-expect-error TS(2339) FIXME: Property 'max_length' does not exist on type '{}'.
             settings.max_length = max_context;
         }
 
@@ -847,23 +781,19 @@ class PresetManager {
      * @param {string} name Name of the preset to retrieve
      * @returns {any} Preset object if found, otherwise undefined
      */
-    // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
-    getCompletionPresetByName(name) {
+    getCompletionPresetByName(name: string): Record<string, unknown> | undefined {
         // Retrieve a completion preset by name. Return undefined if not found.
-        // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
         const { presets, preset_names } = this.getPresetList();
-        let preset;
+        let preset: Record<string, unknown> | undefined;
 
         // Some APIs use an array of names, others use an object of {name: index}
         if (Array.isArray(preset_names)) {  // array of names
             if (preset_names.includes(name)) {
-                preset = presets[preset_names.indexOf(name)];
+                preset = (presets as unknown[])[preset_names.indexOf(name)] as Record<string, unknown>;
             }
         } else {  // object of {names: index}
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-            if (preset_names[name] !== undefined) {
-                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                preset = presets[preset_names[name]];
+            if ((preset_names as Record<string, string>)[name] !== undefined) {
+                preset = (presets as unknown[])[Number((preset_names as Record<string, string>)[name])] as Record<string, unknown>;
             }
         }
 
@@ -879,43 +809,35 @@ class PresetManager {
      * Deletes a preset by name. If not provided, deletes the currently selected preset.
      * @param {string} [name] Name of the preset to delete.
      */
-    // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
-    async deletePreset(name) {
-        // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
+    async deletePreset(name?: string): Promise<boolean> {
         const { preset_names, presets } = this.getPresetList();
         const value = name ? (this.isKeyedApi() ? this.findPreset(name) : name) : this.getSelectedPreset();
-        const nameToDelete = name || this.getSelectedPresetName();
+        const nameToDelete = name || this.getSelectedPresetName()!;
 
         if (value == 'gui') {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.info(t`Cannot delete GUI preset`);
-            return;
+            return false;
         }
 
         if (this.isKeyedApi()) {
-            this.select[0].querySelector(`option[value="${CSS.escape(value)}"]`)?.remove();
-            // @ts-expect-error TS(2339) FIXME: Property 'indexOf' does not exist on type '{}'.
-            const index = preset_names.indexOf(nameToDelete);
-            // @ts-expect-error TS(2339) FIXME: Property 'splice' does not exist on type '{}'.
-            preset_names.splice(index, 1);
-            presets.splice(index, 1);
+            (this.select as HTMLSelectElement).querySelector(`option[value="${CSS.escape(value ?? '')}"]`)?.remove();
+            const index = (preset_names as string[]).indexOf(nameToDelete);
+            (preset_names as string[]).splice(index, 1);
+            (presets as unknown[]).splice(index, 1);
         } else {
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-            const index = preset_names[nameToDelete];
-            this.select[0].querySelector(`option[value="${CSS.escape(String(index))}"]`)?.remove();
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-            delete preset_names[nameToDelete];
+            const index = (preset_names as Record<string, string>)[nameToDelete];
+            (this.select as HTMLSelectElement).querySelector(`option[value="${CSS.escape(String(index))}"]`)?.remove();
+            delete (preset_names as Record<string, string>)[nameToDelete];
         }
 
         // switch in UI only when deleting currently selected preset
         const switchPresets = !name || this.getSelectedPresetName() == name;
 
         if (Object.keys(preset_names).length && switchPresets) {
-            const nextPresetName = Object.keys(preset_names)[0];
-            // @ts-expect-error TS(2538) FIXME: Type 'undefined' cannot be used as an index type.
-            const newValue = preset_names[nextPresetName];
-            this.select[0].querySelector(`option[value="${CSS.escape(String(newValue))}"]`)?.setAttribute('selected', 'true');
-            this.select.dispatchEvent(new Event('change', { bubbles: true }));
+            const nextPresetName = Object.keys(preset_names)[0]!;
+            const newValue = (preset_names as Record<string, string>)[nextPresetName];
+            (this.select as HTMLSelectElement).querySelector(`option[value="${CSS.escape(String(newValue))}"]`)?.setAttribute('selected', 'true');
+            (this.select as HTMLSelectElement).dispatchEvent(new Event('change', { bubbles: true }));
         }
 
         const response = await fetch('/api/presets/delete', {
@@ -932,8 +854,7 @@ class PresetManager {
      * @param {string} name Name of the preset to restore
      * @returns {Promise<any>} Default preset object, or undefined if the request fails
      */
-    // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
-    async getDefaultPreset(name) {
+    async getDefaultPreset(name: string): Promise<Record<string, unknown> | undefined> {
         const response = await fetch('/api/presets/restore', {
             method: 'POST',
             headers: getRequestHeaders(),
@@ -942,12 +863,11 @@ class PresetManager {
 
         if (!response.ok) {
             const errorToast = !this.isAdvancedFormatting() ? t`Failed to restore default preset` : t`Failed to restore default template`;
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.error(errorToast);
             return;
         }
 
-        return await response.json();
+        return await response.json() as Record<string, unknown>;
     }
 
     /**
@@ -957,27 +877,24 @@ class PresetManager {
      * @param {string} options.path Path to the preset extension field, e.g. 'myextension.data'. If empty, reads the entire extensions object.
      * @returns {any} The value of the preset extension field, or null if not found.
      */
-    // @ts-expect-error TS(7031) FIXME: Binding element 'name' implicitly has an 'any' typ... Remove this comment to see the full error message
-    readPresetExtensionField({ name, path }) {
-        // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
+    readPresetExtensionField({ name, path }: { name?: string; path: string }): unknown {
         const { settings } = this.getPresetList();
         const selectedName = this.getSelectedPresetName();
         const presetName = name || selectedName;
 
         // Read from settings if the selected preset is the same as the provided name
         if (settings && selectedName === presetName) {
-            // @ts-expect-error TS(2339) FIXME: Property 'extensions' does not exist on type '{}'.
-            const settingsExtensions = ensurePlainObject(settings.extensions || {});
+            const settingsExtensions = ensurePlainObject((settings.extensions as Record<string, unknown>) || {});
             return path ? get(settingsExtensions, path, null) : settingsExtensions;
         }
 
         // Otherwise, read from the preset by name
-        const preset = this.getCompletionPresetByName(presetName);
+        const preset = this.getCompletionPresetByName(presetName ?? '');
         if (!preset) {
             return null;
         }
 
-        const presetExtensions = ensurePlainObject(preset.extensions || {});
+        const presetExtensions = ensurePlainObject((preset.extensions as Record<string, unknown>) || {});
         const value = path ? get(presetExtensions, path, null) : presetExtensions;
         return value;
 
@@ -991,9 +908,7 @@ class PresetManager {
      * @param {any} options.value Value to write to the preset extension field.
      * @returns {Promise<void>} Resolves when the preset is saved.
      */
-    // @ts-expect-error TS(7031) FIXME: Binding element 'name' implicitly has an 'any' typ... Remove this comment to see the full error message
-    async writePresetExtensionField({ name, path, value }) {
-        // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
+    async writePresetExtensionField({ name, path, value }: { name?: string; path: string; value: unknown }): Promise<void> {
         const { settings } = this.getPresetList();
         const selectedName = this.getSelectedPresetName();
         const presetName = name || selectedName;
@@ -1001,34 +916,31 @@ class PresetManager {
         // Write to settings if the selected preset is the same as the provided name
         if (settings && selectedName === presetName) {
             // Set the value at the specified path
-            // @ts-expect-error TS(2339) FIXME: Property 'extensions' does not exist on type '{}'.
-            settings.extensions = ensurePlainObject(settings.extensions || {});
+            settings.extensions = ensurePlainObject((settings.extensions as Record<string, unknown>) || {});
             if (path) {
-                // @ts-expect-error TS(2339) FIXME: Property 'extensions' does not exist on type '{}'.
-                set(settings.extensions, path, value);
+                set(settings.extensions as Record<string, unknown>, path, value);
             } else {
-                // @ts-expect-error TS(2339) FIXME: Property 'extensions' does not exist on type '{}'.
                 settings.extensions = value;
             }
             await saveSettings();
         }
 
         // Also update the preset by name
-        const preset = this.getCompletionPresetByName(presetName);
+        const preset = this.getCompletionPresetByName(presetName ?? '');
         if (!preset) {
             return;
         }
 
         // Set the value at the specified path
-        preset.extensions = ensurePlainObject(preset.extensions || {});
+        preset.extensions = ensurePlainObject((preset.extensions as Record<string, unknown>) || {});
         if (path) {
-            set(preset.extensions, path, value);
+            set(preset.extensions as Record<string, unknown>, path, value);
         } else {
             preset.extensions = value;
         }
 
         // Save the updated preset
-        await this.savePreset(presetName, preset, { skipUpdate: true });
+        await this.savePreset(presetName ?? '', preset, { skipUpdate: true });
     }
 }
 
@@ -1038,10 +950,9 @@ class PresetManager {
  * @param {string} name Unnamed arguments
  * @returns {Promise<string>} Selected or current preset name
  */
-// @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
-async function presetCommandCallback(_, name) {
+async function presetCommandCallback(_: unknown, name: string): Promise<string> {
     const shouldReconnect = online_status !== 'no_connection';
-    const presetManager = getPresetManager();
+    const presetManager = getPresetManager()!;
     const allPresets = presetManager.getAllPresets();
     const currentPreset = presetManager.getSelectedPresetName();
 
@@ -1052,12 +963,12 @@ async function presetCommandCallback(_, name) {
 
     if (!name) {
         console.log('No name provided for /preset command, using current preset');
-        return currentPreset;
+        return currentPreset ?? '';
     }
 
     if (!Array.isArray(allPresets) || allPresets.length === 0) {
         console.log(`No presets found for API: ${main_api}`);
-        return currentPreset;
+        return currentPreset ?? '';
     }
 
     // Find exact match
@@ -1085,7 +996,7 @@ async function presetCommandCallback(_, name) {
 
         if (!fuzzyMatch.length) {
             console.warn(`WARN: Preset found with name ${name}`);
-            return currentPreset;
+            return currentPreset ?? '';
         }
 
         const fuzzyPresetName = fuzzyMatch[0]!.item;
@@ -1109,7 +1020,7 @@ async function presetCommandCallback(_, name) {
 /**
  * Waits for API connection to be established.
  */
-async function waitForConnection() {
+async function waitForConnection(): Promise<void> {
     try {
         await waitUntilCondition(() => online_status !== 'no_connection', 10000, 100);
     } catch {
@@ -1120,7 +1031,7 @@ async function waitForConnection() {
 /**
  *
  */
-export async function initPresetManager() {
+export async function initPresetManager(): Promise<void> {
     eventSource.on(event_types.CHAT_CHANGED, autoSelectPreset);
     registerPresetManagers();
     SlashCommandParser.addCommandObject(SlashCommand.fromProps({
@@ -1131,8 +1042,7 @@ export async function initPresetManager() {
             SlashCommandArgument.fromProps({
                 description: 'name',
                 typeList: [ARGUMENT_TYPE.STRING],
-                // @ts-expect-error TS(7006) FIXME: Parameter 'preset' implicitly has an 'any' type.
-                enumProvider: () => getPresetManager().getAllPresets().map(preset => new SlashCommandEnumValue(preset, null, enumTypes.enum, enumIcons.preset)),
+                enumProvider: () => getPresetManager()?.getAllPresets().map(preset => new SlashCommandEnumValue(preset, null, enumTypes.enum, enumIcons.preset)) ?? [],
             }),
         ],
         helpString: `
@@ -1154,11 +1064,11 @@ export async function initPresetManager() {
     }));
 
 
-    document.addEventListener('click', async function (e) {
+    document.addEventListener('click', async function (this: void, e: Event) {
         if (!(e.target instanceof Element)) return;
         const target = e.target.closest('[data-preset-manager-update]');
         if (!target) return;
-        const apiId = target.dataset.presetManagerUpdate;
+        const apiId = (target as HTMLElement).dataset.presetManagerUpdate;
         const presetManager = getPresetManager(apiId);
 
         if (!presetManager) {
@@ -1169,11 +1079,11 @@ export async function initPresetManager() {
         await presetManager.updatePreset();
     });
 
-    document.addEventListener('click', async function (e) {
+    document.addEventListener('click', async function (this: void, e: Event) {
         if (!(e.target instanceof Element)) return;
         const target = e.target.closest('[data-preset-manager-new]');
         if (!target) return;
-        const apiId = target.dataset.presetManagerNew;
+        const apiId = (target as HTMLElement).dataset.presetManagerNew;
         const presetManager = getPresetManager(apiId);
 
         if (!presetManager) {
@@ -1184,11 +1094,11 @@ export async function initPresetManager() {
         await presetManager.savePresetAs();
     });
 
-    document.addEventListener('click', async function (e) {
+    document.addEventListener('click', async function (this: void, e: Event) {
         if (!(e.target instanceof Element)) return;
         const target = e.target.closest('[data-preset-manager-rename]');
         if (!target) return;
-        const apiId = target.dataset.presetManagerRename;
+        const apiId = (target as HTMLElement).dataset.presetManagerRename;
         const presetManager = getPresetManager(apiId);
 
         if (!presetManager) {
@@ -1224,11 +1134,11 @@ export async function initPresetManager() {
         notyf.success(successToast);
     });
 
-    document.addEventListener('click', async function (e) {
+    document.addEventListener('click', async function (this: void, e: Event) {
         if (!(e.target instanceof Element)) return;
         const target = e.target.closest('[data-preset-manager-export]');
         if (!target) return;
-        const apiId = target.dataset.presetManagerExport;
+        const apiId = (target as HTMLElement).dataset.presetManagerExport;
         const presetManager = getPresetManager(apiId);
 
         if (!presetManager) {
@@ -1236,27 +1146,28 @@ export async function initPresetManager() {
             return;
         }
 
-        const selected = presetManager.select[0].options[presetManager.select[0].selectedIndex];
-        const name = selected.text;
+        const select = presetManager.select as HTMLSelectElement;
+        const selected = select.options[select.selectedIndex];
+        const name = selected?.text ?? '';
         const preset = presetManager.getPresetSettings(name);
         const data = JSON.stringify(preset, null, 4);
         download(data, `${name}.json`, 'application/json');
     });
 
-    document.addEventListener('click', async function (e) {
+    document.addEventListener('click', async function (this: void, e: Event) {
         if (!(e.target instanceof Element)) return;
         const target = e.target.closest('[data-preset-manager-import]');
         if (!target) return;
-        const apiId = target.dataset.presetManagerImport;
-        const fileInput = document.querySelector(`[data-preset-manager-file="${apiId}"]`);
+        const apiId = (target as HTMLElement).dataset.presetManagerImport;
+        const fileInput = document.querySelector(`[data-preset-manager-file="${apiId}"]`) as HTMLInputElement | null;
         if (fileInput) fileInput.click();
     });
 
-    document.addEventListener('change', async function (e) {
+    document.addEventListener('change', async function (this: void, e: Event) {
         if (!(e.target instanceof Element)) return;
         const target = e.target.closest('[data-preset-manager-file]');
         if (!target) return;
-        const apiId = target.dataset.presetManagerFile;
+        const apiId = (target as HTMLElement).dataset.presetManagerFile;
         const presetManager = getPresetManager(apiId);
 
         if (!presetManager) {
@@ -1264,28 +1175,28 @@ export async function initPresetManager() {
             return;
         }
 
-        const file = e.target.files[0];
+        const file = (e.target as HTMLInputElement).files?.[0];
 
         if (!file) {
             return;
         }
 
         const fileName = file.name.replace('.json', '').replace('.settings', '');
-        const data = await parseJsonFile(file);
-        const name = data?.name ?? fileName;
+        const data = await parseJsonFile(file) as Record<string, unknown>;
+        const name = (data?.name as string) ?? fileName;
         data.name = name;
 
         await presetManager.savePreset(name, data);
         const successToast = !presetManager.isAdvancedFormatting() ? t`Preset imported` : t`Template imported`;
         notyf.success(successToast);
-        e.target.value = null;
+        (e.target as HTMLInputElement).value = null!;
     });
 
-    document.addEventListener('click', async function (e) {
+    document.addEventListener('click', async function (this: void, e: Event) {
         if (!(e.target instanceof Element)) return;
         const target = e.target.closest('[data-preset-manager-delete]');
         if (!target) return;
-        const apiId = target.dataset.presetManagerDelete;
+        const apiId = (target as HTMLElement).dataset.presetManagerDelete;
         const presetManager = getPresetManager(apiId);
 
         if (!presetManager) {
@@ -1314,11 +1225,11 @@ export async function initPresetManager() {
         saveSettingsDebounced();
     });
 
-    document.addEventListener('click', async function (e) {
+    document.addEventListener('click', async function (this: void, e: Event) {
         if (!(e.target instanceof Element)) return;
         const target = e.target.closest('[data-preset-manager-restore]');
         if (!target) return;
-        const apiId = target.dataset.presetManagerRestore;
+        const apiId = (target as HTMLElement).dataset.presetManagerRestore;
         const presetManager = getPresetManager(apiId);
 
         if (!presetManager) {
@@ -1327,10 +1238,9 @@ export async function initPresetManager() {
         }
 
         const name = presetManager.getSelectedPresetName();
-        const data = await presetManager.getDefaultPreset(name);
+        const data = await presetManager.getDefaultPreset(name ?? '');
 
         if (name == 'gui') {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.info(t`Cannot restore GUI preset`);
             return;
         }
@@ -1340,9 +1250,8 @@ export async function initPresetManager() {
         }
 
         if (data.isDefault) {
-            if (Object.keys(data.preset).length === 0) {
+            if (Object.keys(data.preset as Record<string, unknown> ?? {}).length === 0) {
                 const errorToast = !presetManager.isAdvancedFormatting() ? t`Default preset cannot be restored` : t`Default template cannot be restored`;
-                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 notyf.error(errorToast);
                 return;
             }
@@ -1356,11 +1265,10 @@ export async function initPresetManager() {
             }
 
             await presetManager.deletePreset();
-            await presetManager.savePreset(name, data.preset);
-            const option = presetManager.findPreset(name);
-            presetManager.selectPreset(option);
+            await presetManager.savePreset(name!, data.preset as Record<string, unknown>);
+            const option = presetManager.findPreset(name!);
+            presetManager.selectPreset(option!);
             const successToast = !presetManager.isAdvancedFormatting() ? t`Default preset restored` : t`Default template restored`;
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.success(successToast);
         } else {
             const confirmText = !presetManager.isAdvancedFormatting()
@@ -1371,10 +1279,9 @@ export async function initPresetManager() {
                 return;
             }
 
-            const option = presetManager.findPreset(name);
-            presetManager.selectPreset(option);
+            const option = presetManager.findPreset(name!);
+            presetManager.selectPreset(option!);
             const successToast = !presetManager.isAdvancedFormatting() ? t`Preset restored` : t`Template restored`;
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.success(successToast);
         }
     });
@@ -1383,20 +1290,20 @@ export async function initPresetManager() {
         document.getElementById('af_master_import_file')?.click();
     });
 
-    document.getElementById('af_master_import_file')?.addEventListener('change', async function (e) {
+    document.getElementById('af_master_import_file')?.addEventListener('change', async function (this: void, e: Event) {
         if (!(e.target instanceof HTMLInputElement)) {
             return;
         }
-        const file = e.target.files[0];
+        const file = e.target.files?.[0];
 
         if (!file) {
             return;
         }
 
-        const data = await parseJsonFile(file);
+        const data = await parseJsonFile(file) as Record<string, unknown>;
         const fileName = file.name.replace('.json', '');
         await PresetManager.performMasterImport(data, fileName);
-        e.target.value = null;
+        e.target.value = null!;
     });
 
     document.getElementById('af_master_export')?.addEventListener('click', async () => {
@@ -1406,7 +1313,7 @@ export async function initPresetManager() {
             return;
         }
 
-        const shortDate = new Date().toISOString().split('T')[0];
+        const shortDate = new Date().toISOString().split('T')[0]!;
         download(data, `ST-formatting-${shortDate}.json`, 'application/json');
     });
 }

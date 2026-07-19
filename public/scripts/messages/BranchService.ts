@@ -52,7 +52,6 @@ class BranchService {
      *
      * Everything *after* `forkIndex` is removed.  The fork point
      * is recorded so it can potentially be revisited.
-     *
      * @param forkIndex  Index of the last message to keep.
      * @param label      Optional human-readable label.
      */
@@ -86,6 +85,8 @@ class BranchService {
      * Fork and immediately append a new message.
      *
      * Convenience for the common "edit and continue" pattern.
+     * @param forkIndex
+     * @param newMessage
      */
     async forkAndAppend(forkIndex: number, newMessage: ChatMessage): Promise<BranchResult> {
         const result = await this.fork(forkIndex);
@@ -99,6 +100,7 @@ class BranchService {
 
     /**
      * Return all recorded branch points for the current chat.
+     * @param chatId
      */
     getBranches(chatId?: string): BranchPoint[] {
         const id = chatId ?? chatSession.currentChatId;
@@ -107,6 +109,7 @@ class BranchService {
 
     /**
      * Whether the current chat has any branch points.
+     * @param chatId
      */
     hasBranches(chatId?: string): boolean {
         return this.getBranches(chatId).length > 0;
@@ -114,6 +117,7 @@ class BranchService {
 
     /**
      * Clear recorded branches for a chat.
+     * @param chatId
      */
     clearBranches(chatId?: string): void {
         const id = chatId ?? chatSession.currentChatId;

@@ -13,6 +13,7 @@ import { OPENROUTER_HEADERS } from '../../../constants.js';
  *
  * The frontend sends `provider` as an array of provider names (strings).
  * OpenRouter expects an object with `order` and `allow_fallbacks`.
+ * @param body
  */
 export function normaliseProviderRouting(body: Record<string, unknown>): Record<string, unknown> | undefined {
     if (Array.isArray(body.provider) && (body.provider as unknown[]).length > 0) {
@@ -29,6 +30,8 @@ export function normaliseProviderRouting(body: Record<string, unknown>): Record<
  *
  * The frontend sends `quantizations` as an array of strings.
  * These need to be attached to the `provider` object when present.
+ * @param providerObj
+ * @param quantizations
  */
 export function attachQuantizations(providerObj: Record<string, unknown> | undefined, quantizations: unknown): void {
     if (!Array.isArray(quantizations) || (quantizations as unknown[]).length === 0) return;
@@ -46,6 +49,7 @@ export function attachQuantizations(providerObj: Record<string, unknown> | undef
  *
  * Handles both provider routing and quantization in one call.
  * Returns undefined when neither is set.
+ * @param body
  */
 export function buildProviderConfig(body: Record<string, unknown>): Record<string, unknown> | undefined {
     const routing = normaliseProviderRouting(body);

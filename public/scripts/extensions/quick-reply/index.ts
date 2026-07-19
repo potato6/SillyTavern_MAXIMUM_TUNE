@@ -122,13 +122,10 @@ const loadSets = async () => {
 };
 
 const loadSettings = async () => {
-    // @ts-expect-error TS(2551): Property 'quickReplyV2' does not exist on type '{ ... Remove this comment to see the full error message
     if (!extension_settings.quickReplyV2) {
         if (!extension_settings.quickReply) {
-            // @ts-expect-error TS(2551): Property 'quickReplyV2' does not exist on type '{ ... Remove this comment to see the full error message
             extension_settings.quickReplyV2 = defaultSettings;
         } else {
-            // @ts-expect-error TS(2551): Property 'quickReplyV2' does not exist on type '{ ... Remove this comment to see the full error message
             extension_settings.quickReplyV2 = {
                 // @ts-expect-error TS(2339): Property 'quickReplyEnabled' does not exist on typ... Remove this comment to see the full error message
                 isEnabled: extension_settings.quickReply.quickReplyEnabled ?? false,
@@ -145,7 +142,6 @@ const loadSettings = async () => {
         }
     }
     try {
-        // @ts-expect-error TS(2551): Property 'quickReplyV2' does not exist on type '{ ... Remove this comment to see the full error message
         settings = QuickReplySettings.from(extension_settings.quickReplyV2);
         settings.config.scope = 'global';
         settings.config.onUpdate = () => settings.save();

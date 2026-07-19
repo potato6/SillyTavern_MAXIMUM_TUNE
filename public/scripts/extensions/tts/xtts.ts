@@ -169,9 +169,8 @@ class XTTSTtsProvider {
 
         const apiCheckInterval = setInterval(() => {
             // Use Extras API if TTS support is enabled
-            // @ts-expect-error TS(2345): Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
             if (modules.includes('tts') || modules.includes('xtts-tts')) {
-                const baseUrl = new URL(getApiUrl());
+                const baseUrl = new URL(getApiUrl() as string);
                 baseUrl.pathname = '/api/tts';
                 this.settings.provider_endpoint = baseUrl.toString();
                 $('#xtts_tts_endpoint').val(this.settings.provider_endpoint);

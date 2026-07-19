@@ -36,6 +36,7 @@ export class WorldInfoStore extends EntityStore<WorldInfoStoreEntry> {
 
     /**
      * Add an entry. Sets `entry.id = entry.uid` automatically.
+     * @param entry
      */
     async addEntry(entry: WorldInfoEntryData): Promise<void> {
         const storeEntry = entry as WorldInfoStoreEntry;
@@ -45,6 +46,7 @@ export class WorldInfoStore extends EntityStore<WorldInfoStoreEntry> {
 
     /**
      * Remove an entry by uid.
+     * @param uid
      */
     async removeEntry(uid: number): Promise<boolean> {
         return this.remove(uid);
@@ -52,6 +54,8 @@ export class WorldInfoStore extends EntityStore<WorldInfoStoreEntry> {
 
     /**
      * Partially update an entry by uid.
+     * @param uid
+     * @param patch
      */
     async updateEntry(uid: number, patch: Partial<WorldInfoEntryData>): Promise<boolean> {
         return this.update(uid, patch as Partial<WorldInfoStoreEntry>);
@@ -59,6 +63,7 @@ export class WorldInfoStore extends EntityStore<WorldInfoStoreEntry> {
 
     /**
      * Get a single entry by uid.
+     * @param uid
      */
     async getEntry(uid: number): Promise<WorldInfoEntryData | undefined> {
         return this.get(uid);
@@ -73,6 +78,7 @@ export class WorldInfoStore extends EntityStore<WorldInfoStoreEntry> {
 
     /**
      * Check if an entry exists.
+     * @param uid
      */
     async hasEntry(uid: number): Promise<boolean> {
         return this.has(uid);
@@ -106,6 +112,7 @@ export class WorldInfoStore extends EntityStore<WorldInfoStoreEntry> {
     /**
      * Replace all entries atomically (used when loading from server).
      * Clears history since it's a fresh load.
+     * @param entries
      */
     async replaceAllEntries(entries: WorldInfoEntryData[]): Promise<void> {
         const storeEntries = entries.map(e => {
@@ -155,6 +162,10 @@ export class WorldInfoStore extends EntityStore<WorldInfoStoreEntry> {
 
     /**
      * Query entries with optional filter, sort, and limit.
+     * @param opts
+     * @param opts.where
+     * @param opts.sort
+     * @param opts.limit
      */
     async queryEntries(opts: {
         where?: (entry: WorldInfoEntryData) => boolean;

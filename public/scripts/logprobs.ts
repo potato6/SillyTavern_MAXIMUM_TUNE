@@ -339,7 +339,6 @@ function onPrefixClicked(offset = undefined) {
  */
 function checkGenerateReady() {
     if (is_send_press) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.warning('Please wait for the current generation to complete.');
         return false;
     }
@@ -627,7 +626,6 @@ function getMessageHash(message) {
     // deleting a swipe will change the ID of all subsequent swipes.
     const hashParams = {
         name: message.name,
-        // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
         mid: chat.indexOf(message),
         text: message.mes,
     };
@@ -655,7 +653,7 @@ function getActiveMessageLogprobData() {
  * @param {TokenLogprobs[]} input - logprobs data with numeric token IDs
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'input' implicitly has an 'any' type.
-function convertTokenIdLogprobsToText(input) {
+async function convertTokenIdLogprobsToText(input) {
     const api = getGeneratingApi();
     if (api !== 'novel') {
         // should have been checked by the caller
@@ -673,7 +671,7 @@ function convertTokenIdLogprobsToText(input) {
 
     // Submit token IDs to tokenizer to get token text, then build ID->text map
     // noinspection JSCheckFunctionSignatures - mutates input in-place
-    const { chunks } = decodeTextTokens(tokenizerId, tokenIds);
+    const { chunks } = await decodeTextTokens(tokenizerId, tokenIds);
     const tokenIdText = new Map(tokenIds.map((id, i) => [id, chunks[i]]));
 
     // Fixup logprobs data with token text

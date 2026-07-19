@@ -453,7 +453,6 @@ export function registerCoreMacros() {
             bannedWord = bannedWord.replace(/^"|"$/g, '');
             if (main_api === 'textgenerationwebui') {
                 console.log('Found banned word in macros: ' + bannedWord);
-                // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
                 textgenerationwebui_banned_in_macros.push(bannedWord);
             }
             return '';

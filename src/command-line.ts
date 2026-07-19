@@ -7,39 +7,38 @@ import envPaths from 'env-paths';
 import { color, getConfigValue, stringToBool } from './util.js';
 import { initConfig } from './config-init.js';
 
-/**
- * @typedef {object} CommandLineArguments Parsed command line arguments
- * @property {string} configPath Path to the config file
- * @property {string} dataRoot Data root directory
- * @property {number} port Port number
- * @property {boolean} listen If SillyTavern is listening on all network interfaces
- * @property {string} listenAddressIPv6 IPv6 address to listen to
- * @property {string} listenAddressIPv4 IPv4 address to listen to
- * @property {boolean|string} enableIPv4 If enable IPv4 protocol ("auto" is also allowed)
- * @property {boolean|string} enableIPv6 If enable IPv6 protocol ("auto" is also allowed)
- * @property {boolean} dnsPreferIPv6 If prefer IPv6 for DNS
- * @property {number} heartbeatInterval Interval in seconds to write a heartbeat file. 0 to disable.
- * @property {boolean} browserLaunchEnabled If automatically launch SillyTavern in the browser
- * @property {string} browserLaunchHostname Browser launch hostname
- * @property {number} browserLaunchPort Browser launch port override (-1 is use server port)
- * @property {boolean} browserLaunchAvoidLocalhost If avoid using 'localhost' for browser launch in auto mode
- * @property {boolean} enableCorsProxy If enable CORS proxy
- * @property {boolean} disableCsrf If disable CSRF protection
- * @property {boolean} ssl If enable SSL
- * @property {string} certPath Path to certificate
- * @property {string} keyPath Path to private key
- * @property {string} keyPassphrase SSL private key passphrase
- * @property {boolean} whitelistMode If enable whitelist mode
- * @property {boolean} basicAuthMode If enable basic authentication
- * @property {boolean} enableKeepAlive Enable HTTP/HTTPS keep-alive globally
- * @property {boolean} requestProxyEnabled If enable outgoing request proxy
- * @property {string} requestProxyUrl Request proxy URL
- * @property {string[]} requestProxyBypass Request proxy bypass list
- * @property {function(): URL} getIPv4ListenUrl Get IPv4 listen URL
- * @property {function(): URL} getIPv6ListenUrl Get IPv6 listen URL
- * @property {function(import('./server-startup.js').ServerStartupResult): Promise<string>} getBrowserLaunchHostname Get browser launch hostname
- * @property {function(string): URL} getBrowserLaunchUrl Get browser launch URL
- */
+export interface CommandLineArguments {
+    configPath: string;
+    dataRoot: string;
+    port: number;
+    listen: boolean;
+    listenAddressIPv6: string;
+    listenAddressIPv4: string;
+    enableIPv4: boolean | string;
+    enableIPv6: boolean | string;
+    dnsPreferIPv6: boolean;
+    heartbeatInterval: number;
+    browserLaunchEnabled: boolean;
+    browserLaunchHostname: string;
+    browserLaunchPort: number;
+    browserLaunchAvoidLocalhost: boolean;
+    enableCorsProxy: boolean;
+    disableCsrf: boolean;
+    ssl: boolean;
+    certPath: string;
+    keyPath: string;
+    keyPassphrase: string;
+    whitelistMode: boolean;
+    basicAuthMode: boolean;
+    enableKeepAlive: boolean;
+    requestProxyEnabled: boolean;
+    requestProxyUrl: string;
+    requestProxyBypass: string[];
+    getIPv4ListenUrl(): URL;
+    getIPv6ListenUrl(): URL;
+    getBrowserLaunchHostname(result: { useIPv6: boolean; useIPv4: boolean }): Promise<string>;
+    getBrowserLaunchUrl(hostname: string): URL;
+}
 
 /**
  * Provides a command line arguments parser.

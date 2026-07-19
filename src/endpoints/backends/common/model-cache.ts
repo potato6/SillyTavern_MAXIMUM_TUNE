@@ -19,12 +19,19 @@ interface CacheEntry {
 const DEFAULT_TTL_MS = 60_000; // 60 seconds
 const store = new Map<string, CacheEntry>();
 
+/**
+ *
+ * @param source
+ * @param baseUrl
+ */
 function cacheKey(source: string, baseUrl: string): string {
     return `${source}:${baseUrl}`;
 }
 
 /**
  * Check freshness without returning data.
+ * @param source
+ * @param baseUrl
  */
 export function isFresh(source: string, baseUrl: string): boolean {
     const entry = store.get(cacheKey(source, baseUrl));
@@ -33,6 +40,8 @@ export function isFresh(source: string, baseUrl: string): boolean {
 
 /**
  * Get cached models (or null if absent / stale).
+ * @param source
+ * @param baseUrl
  */
 export function getCachedModels(source: string, baseUrl: string): ModelEntry[] | null {
     const entry = store.get(cacheKey(source, baseUrl));
@@ -46,6 +55,9 @@ export function getCachedModels(source: string, baseUrl: string): ModelEntry[] |
 
 /**
  * Store models in the cache.
+ * @param source
+ * @param baseUrl
+ * @param models
  */
 export function setCachedModels(source: string, baseUrl: string, models: ModelEntry[]): void {
     store.set(cacheKey(source, baseUrl), {
@@ -56,6 +68,8 @@ export function setCachedModels(source: string, baseUrl: string, models: ModelEn
 
 /**
  * Invalidate cache for a specific provider/baseUrl combo.
+ * @param source
+ * @param baseUrl
  */
 export function invalidateCache(source: string, baseUrl: string): void {
     store.delete(cacheKey(source, baseUrl));

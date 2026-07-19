@@ -23,7 +23,7 @@ import { loadTemplate } from './shared.js';
  * Class to manage style preferences for characters.
  */
 export class StylesPreference {
-    constructor(public avatarId: string | null) {}
+    constructor(public avatarId: string | null | undefined) {}
 
     get key(): string {
         return `AllowGlobalStyles-${this.avatarId}`;
@@ -52,6 +52,7 @@ export class StylesPreference {
 
 /**
  * Encodes <style> tags as <custom-style> elements with URI-encoded content.
+ * @param text
  */
 export function encodeStyleTags(text: string): string {
     const styleRegex = /<style>(.+?)<\/style>/gims;
@@ -62,6 +63,9 @@ export function encodeStyleTags(text: string): string {
 
 /**
  * Decodes <custom-style> elements back to <style> tags and sanitizes CSS.
+ * @param text
+ * @param root0
+ * @param root0.prefix
  */
 export function decodeStyleTags(
     text: string,
@@ -69,16 +73,24 @@ export function decodeStyleTags(
 ): string {
     const styleDecodeRegex = /<custom-style>(.+?)<\/custom-style>/gms;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    function sanitizeRule(rule: any): any {
-        if (Array.isArray(rule.selectors)) {
-            rule.selectors = rule.selectors
-                .map((s: string) => sanitizeSelector(s))
+    /**
+     *
+     * @param rule
+     */
+    function sanitizeRule(rule: Record<string, unknown>): Record<string, unknown> {
+        const selectors = rule.selectors;
+        if (Array.isArray(selectors)) {
+            rule.selectors = selectors
+                .map((s) => sanitizeSelector(String(s)))
                 .filter(Boolean);
         }
         return rule;
     }
 
+    /**
+     *
+     * @param selector
+     */
     function sanitizeSelector(selector: string): string {
         const pseudoClasses = ['hover', 'active', 'focus', 'visited', 'link', 'checked', 'disabled', 'enabled', 'empty', 'target'];
         const pseudoRegex = new RegExp(`:(${pseudoClasses.join('|')})`, 'gi');
@@ -89,6 +101,10 @@ export function decodeStyleTags(
         return sanitizedParts.join(' ');
     }
 
+    /**
+     *
+     * @param selector
+     */
     function sanitizeSimpleSelector(selector: string): string {
         let sanitized = selector.replace(/::before/gi, '').replace(/::after/gi, '').replace(/::selection/gi, '');
         sanitized = sanitized.replace(/\[.*?\]/g, '');
@@ -98,17 +114,27 @@ export function decodeStyleTags(
         return sanitized;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    function sanitizeRuleSet(ruleSet: any): string {
-        if (Array.isArray(ruleSet.rules)) {
-            for (const rule of ruleSet.rules) {
-                if (rule.type === 'rule') {
-                    sanitizeRule(rule);
-                }
-                if (rule.type === 'media' && Array.isArray(rule.rules)) {
-                    for (const mediaRule of rule.rules) {
-                        if (mediaRule.type === 'rule') {
-                            sanitizeRule(mediaRule);
+    /**
+     *
+     * @param ruleSet
+     */
+    function sanitizeRuleSet(ruleSet: Record<string, unknown>): string {
+        const rules = ruleSet.rules;
+        if (Array.isArray(rules)) {
+            for (const rule of rules) {
+                if (rule && typeof rule === 'object' && 'type' in rule) {
+                    const typedRule = rule as Record<string, unknown>;
+                    if (typedRule.type === 'rule') {
+                        sanitizeRule(typedRule);
+                    }
+                    if (typedRule.type === 'media' && Array.isArray(typedRule.rules)) {
+                        for (const mediaRule of typedRule.rules) {
+                            if (mediaRule && typeof mediaRule === 'object' && 'type' in mediaRule) {
+                                const typedMediaRule = mediaRule as Record<string, unknown>;
+                                if (typedMediaRule.type === 'rule') {
+                                    sanitizeRule(typedMediaRule);
+                                }
+                            }
                         }
                     }
                 }
@@ -273,7 +299,7 @@ export function addDOMPurifyHooks(): void {
                 if (srcset) {
                     const srcsetUrls = srcset.split(',');
                     for (const srcsetUrl of srcsetUrls) {
-                        const [url] = srcsetUrl.trim().split(' ');
+                        const [url = ''] = srcsetUrl.trim().split(' ');
                         if (isExternalUrl(url)) {
                             console.warn('External media blocked', url);
                             node.remove();
@@ -314,7 +340,8 @@ export function addDOMPurifyHooks(): void {
                     {
                         timeOut: 0,
                         preventDuplicates: true,
-                        onclick: () => notyf.dismiss(warningToast),
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        onclick: () => notyf.dismiss(warningToast as any),
                     },
                 );
                 accountStorage.setItem(warningShownKey, 'true');

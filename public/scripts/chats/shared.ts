@@ -14,7 +14,9 @@ import { renderExtensionTemplateAsync } from '../extensions.js';
  *
  * Eliminates the 6-line boilerplate of:
  *   templateHTML → createElement('div') → innerHTML → firstElementChild → guard
- *
+ * @param templateName
+ * @param group
+ * @param data
  * @returns The template root element, or `null` on failure.
  */
 export async function loadTemplate(
@@ -41,6 +43,8 @@ export async function loadTemplate(
 
 /**
  * Type-safe querySelector that casts the result.
+ * @param parent
+ * @param selector
  */
 export function qs<K extends keyof HTMLElementTagNameMap>(
     parent: ParentNode,
@@ -56,6 +60,9 @@ export function qs(parent: ParentNode, selector: string): Element | null {
 
 /**
  * Type-safe querySelector with instanceof check.
+ * @param parent
+ * @param selector
+ * @param ctor
  */
 export function qsAs<T extends Element>(
     parent: ParentNode,
@@ -68,6 +75,9 @@ export function qsAs<T extends Element>(
 
 /**
  * Assert an element is of a given type or throw.
+ * @param el
+ * @param ctor
+ * @param name
  */
 export function assertEl<T extends Element>(
     el: Element | null,
@@ -87,6 +97,8 @@ import { getRequestHeaders, eventSource } from '../../script.js';
 /**
  * Perform a JSON POST request to a server endpoint.
  * Throws on non-OK responses.
+ * @param url
+ * @param body
  */
 export async function apiPost<T = unknown>(
     url: string,
@@ -108,6 +120,8 @@ export async function apiPost<T = unknown>(
 
 /**
  * Perform a GET request and return the response text.
+ * @param url
+ * @param cache
  */
 export async function apiGetText(url: string, cache: RequestCache = 'force-cache'): Promise<string> {
     const result = await fetch(url, {
@@ -129,7 +143,6 @@ export async function apiGetText(url: string, cache: RequestCache = 'force-cache
  *
  * Collapses the near-identical `deleteMediaFromServer` /
  * `deleteFileFromServer` pattern into one call.
- *
  * @param endpoint  API path  e.g. `/api/images/delete`
  * @param path      Server-side file path
  * @param eventType Event to emit on success  (or null)
@@ -162,6 +175,7 @@ import { POPUP_RESULT, POPUP_TYPE, callGenericPopup } from '../popup.js';
 
 /**
  * Show a simple confirm dialog and return whether the user accepted.
+ * @param message
  */
 export async function confirmDialog(message: string): Promise<boolean> {
     const result = await callGenericPopup(message, POPUP_TYPE.CONFIRM);
@@ -175,6 +189,8 @@ import { isSameFile } from '../utils.js';
 /**
  * Merge files into a DataTransfer, preserving existing files and
  * skipping duplicates (by name + size + lastModified).
+ * @param existing
+ * @param incoming
  */
 export function mergeFilesIntoDataTransfer(
     existing: FileList | File[],

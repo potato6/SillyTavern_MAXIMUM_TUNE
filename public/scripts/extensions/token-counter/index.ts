@@ -90,8 +90,7 @@ function drawChunks(chunks: any, ids: any) {
 async function doCount() {
     // get all of the messages in the chat
     const context = getContext();
-    // @ts-expect-error TS(2339): Property 'mes' does not exist on type 'never'.
-    const messages = context.chat.filter(x => x.mes && !x.is_system).map(x => x.mes);
+    const messages = context.chat.filter((x: any) => x.mes && !x.is_system).map((x: any) => x.mes);
 
     //concat all the messages into a single string
     const allMessages = messages.join(' ');

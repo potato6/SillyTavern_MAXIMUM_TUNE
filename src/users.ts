@@ -982,7 +982,7 @@ export async function setUserDataMiddleware(request: express.Request, response: 
     // If user accounts are disabled, use the default user
     if (!ENABLE_ACCOUNTS) {
         const handle = DEFAULT_USER.handle;
-        const directories = getUserDirectories(handle);
+    const directories = getUserDirectories(handle as string);
         request.user = {
             profile: DEFAULT_USER,
             directories: directories,
@@ -1004,7 +1004,7 @@ export async function setUserDataMiddleware(request: express.Request, response: 
     }
 
     /** @type {User} */
-    const user = await storage.getItem(toKey(handle));
+    const user = await storage.getItem(toKey(handle as string));
 
     if (!user) {
         console.error('User not found:', handle);
@@ -1030,7 +1030,7 @@ export async function setUserDataMiddleware(request: express.Request, response: 
         request.session.version = getAccountVersion(user);
     }
 
-    const directories = getUserDirectories(handle);
+    const directories = getUserDirectories(handle as string);
     request.user = {
         profile: user,
         directories: directories,

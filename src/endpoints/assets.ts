@@ -237,7 +237,7 @@ router.post('/download', async (request, response) => {
             await fs.promises.unlink(temp_path);
         }
         const fileStream = fs.createWriteStream(destination, { flags: 'wx' });
-        await finished(Readable.fromWeb(res.body as ReadableStream).pipe(fileStream));
+        await finished(Readable.fromWeb(res.body as unknown as import('node:stream/web').ReadableStream<Uint8Array>).pipe(fileStream));
 
         if (category === 'character') {
             const fileContent = fs.readFileSync(temp_path);

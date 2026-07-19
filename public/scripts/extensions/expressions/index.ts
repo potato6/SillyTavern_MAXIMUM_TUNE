@@ -3,7 +3,8 @@ declare const $: any; declare const toastr: any;
 
 import { characters, eventSource, event_types, generateQuietPrompt, generateRaw, getRequestHeaders, online_status, saveSettingsDebounced, substituteParams, substituteParamsExtended, system_message_types, this_chid } from '../../../script.js';
 import { dragElement, isMobile } from '../../RossAscends-mods.js';
-import { getContext, getApiUrl, modules, extension_settings, ModuleWorkerWrapper, doExtrasFetch, renderExtensionTemplateAsync } from '../../extensions.js';
+import { getContext, getApiUrl, modules, extension_settings as _extSettingsUntyped, ModuleWorkerWrapper, doExtrasFetch, renderExtensionTemplateAsync } from '../../extensions.js';
+const extension_settings = _extSettingsUntyped as any;
 import { loadMovingUIState, performFuzzySearch, power_user } from '../../power-user.js';
 import { onlyUnique, debounce, getCharaFilename, trimToEndSentence, trimToStartSentence, waitUntilCondition, findChar, isFalseBoolean, includesIgnoreCaseAndAccents } from '../../utils.js';
 import { hideMutedSprites, selected_group } from '../../group-chats.js';
@@ -280,11 +281,9 @@ async function visualNovelSetCharacterSprites(vnContainer: any, spriteFolderName
  */
 async function getLastMessageSprite(avatar: any) {
     const context = getContext();
-    // @ts-expect-error TS(2339): Property 'original_avatar' does not exist on type ... Remove this comment to see the full error message
     const lastMessage = context.chat.slice().reverse().find(x => x.original_avatar == avatar || (x.force_avatar && x.force_avatar.includes(encodeURIComponent(avatar))));
 
     if (lastMessage) {
-        // @ts-expect-error TS(2339): Property 'mes' does not exist on type 'never'.
         const text = lastMessage.mes || '';
         return await getExpressionLabel(text);
     }
@@ -295,7 +294,6 @@ async function getLastMessageSprite(avatar: any) {
 export async function visualNovelUpdateLayers(container: any) {
     const context = getContext();
     const group = context.groups.find(x => x.id == context.groupId);
-    // @ts-expect-error TS(2339): Property 'original_avatar' does not exist on type ... Remove this comment to see the full error message
     const recentMessages = context.chat.map(x => x.original_avatar).filter(x => x).reverse().filter(onlyUnique);
     const filteredMembers = group?.members.filter((x: any) => !group?.disabled_members.includes(x)) ?? [];
     const layerIndices = filteredMembers.slice().sort((a: any, b: any) => {
@@ -378,16 +376,19 @@ export async function visualNovelUpdateLayers(container: any) {
         element.css('z-index', layerIndex);
         element.show();
 
-        const promise = new Promise(resolve => {
+        const promise = new Promise<void>(resolve => {
             if (power_user.reduced_motion) {
                 element.css('left', currentPosition + 'px');
-                // @ts-expect-error TS(2794): Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
                 requestAnimationFrame(() => resolve());
             } else {
-                element.animate({ left: currentPosition + 'px' }, 500, () => {
-                    // @ts-expect-error TS(2794): Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
+                element[0]?.animate([
+                    { left: currentPosition + 'px' },
+                ], {
+                    duration: 500,
+                    fill: 'forwards',
+                }).addEventListener('finish', () => {
                     resolve();
-                });
+        });
             }
         });
 
@@ -454,32 +455,43 @@ async function setImage(img: any, path: any) {
             //fade the clone in
             expressionClone.css({
                 opacity: 0,
-            }).animate({
-                opacity: 1,
-            }, duration)
-                //when finshed fading in clone, fade out the original
-                .promise().done(function () {
-                    img.animate({
-                        opacity: 0,
-                    }, duration);
-                    //remove old expression
-                    img.remove();
-                    //replace ID so it becomes the new 'original' expression for next change
-                    expressionClone.data('filename', originalId);
-                    expressionClone.removeClass('expression-animating');
+            });
 
-                    // Reset the expression holder min height and width
-                    expressionHolder.css('min-width', 100);
-                    expressionHolder.css('min-height', 100);
+            const cloneAnim = expressionClone[0]?.animate([
+                { opacity: 0 },
+                { opacity: 1 },
+            ], {
+                duration: duration,
+                fill: 'forwards',
+            });
 
-                    if (expressionClone.prop('complete')) {
-                        // @ts-expect-error TS(2794): Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
-                        resolve();
-                    } else {
-                        // @ts-expect-error TS(2794): Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
-                        expressionClone.one('load', () => resolve());
-                    }
+            cloneAnim?.addEventListener('finish', function () {
+                img[0]?.animate([
+                    { opacity: 1 },
+                    { opacity: 0 },
+                ], {
+                    duration: duration,
+                    fill: 'forwards',
                 });
+
+                //remove old expression
+                img.remove();
+                //replace ID so it becomes the new 'original' expression for next change
+                expressionClone.data('filename', originalId);
+                expressionClone.removeClass('expression-animating');
+
+                // Reset the expression holder min height and width
+                expressionHolder.css('min-width', 100);
+                expressionHolder.css('min-height', 100);
+
+                if (expressionClone.prop('complete')) {
+                    // @ts-expect-error TS(2794): Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
+                    resolve();
+                } else {
+                    // @ts-expect-error TS(2794): Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
+                    expressionClone.one('load', () => resolve());
+                }
+            });
 
             expressionClone.removeClass('expression-clone');
 
@@ -510,14 +522,14 @@ async function moduleWorker({ newChat = false } = {}) {
 
         const vnMode = isVisualNovelMode();
     const vnWrapper = document.querySelector('#visual-novel-wrapper');
-    const vnWrapperVisible = vnWrapper && vnWrapper.offsetParent !== null;
+    const vnWrapperVisible = vnWrapper && (vnWrapper as HTMLElement).offsetParent !== null;
 
     if (vnMode) {
-        document.querySelector('#expression-wrapper')?.style.removeProperty('display');
-        document.querySelector('#visual-novel-wrapper')?.style.removeProperty('display');
+        (document.querySelector('#expression-wrapper') as HTMLElement)?.style.removeProperty('display');
+        (document.querySelector('#visual-novel-wrapper') as HTMLElement)?.style.removeProperty('display');
     } else {
-        document.querySelector('#expression-wrapper')?.style.setProperty('display', 'none');
-        document.querySelector('#visual-novel-wrapper')?.style.setProperty('display', 'none');
+        (document.querySelector('#expression-wrapper') as HTMLElement)?.style.setProperty('display', 'none');
+        (document.querySelector('#visual-novel-wrapper') as HTMLElement)?.style.setProperty('display', 'none');
     }
 
     const vnStateChanged = vnMode !== vnWrapperVisible;
@@ -527,7 +539,7 @@ async function moduleWorker({ newChat = false } = {}) {
         const vnWrapperEl = document.querySelector('#visual-novel-wrapper');
         if (vnWrapperEl) vnWrapperEl.innerHTML = '';
         const eh = document.querySelector('#expression-holder');
-        if (eh) { eh.style.top = ''; eh.style.left = ''; eh.style.right = ''; eh.style.bottom = ''; eh.style.height = ''; eh.style.width = ''; eh.style.margin = ''; }
+        if (eh) { (eh as HTMLElement).style.top = ''; (eh as HTMLElement).style.left = ''; (eh as HTMLElement).style.right = ''; (eh as HTMLElement).style.bottom = ''; (eh as HTMLElement).style.height = ''; (eh as HTMLElement).style.width = ''; (eh as HTMLElement).style.margin = ''; }
     }
 
     const currentLastMessage = getLastCharacterMessage();
@@ -541,11 +553,10 @@ async function moduleWorker({ newChat = false } = {}) {
     }
 
     const offlineMode = document.querySelector('.expression_settings .offline_mode');
-    // @ts-expect-error TS(2345): Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
     if (!modules.includes('classify') && extension_settings.expressions.api == EXPRESSION_API.extras) {
-        document.querySelector('#open_chat_expressions')?.style.removeProperty('display');
-        document.querySelector('#no_chat_expressions')?.style.setProperty('display', 'none');
-        if (offlineMode) offlineMode.style.display = 'block';
+        (document.querySelector('#open_chat_expressions') as HTMLElement)?.style.removeProperty('display');
+        (document.querySelector('#no_chat_expressions') as HTMLElement)?.style.setProperty('display', 'none');
+        if (offlineMode) (offlineMode as HTMLElement).style.display = 'block';
         lastCharacter = context.groupId || context.characterId;
 
         if (context.groupId) {
@@ -556,7 +567,7 @@ async function moduleWorker({ newChat = false } = {}) {
         return;
     } else {
         // force reload expressions list on connect to API
-        if (offlineMode && offlineMode.offsetParent !== null) {
+        if (offlineMode && (offlineMode as HTMLElement).offsetParent !== null) {
             expressionsList = null;
             spriteCache = {};
             expressionsList = await getExpressionsList();
@@ -570,7 +581,7 @@ async function moduleWorker({ newChat = false } = {}) {
             await forceUpdateVisualNovelMode();
         }
 
-        if (offlineMode) offlineMode.style.display = 'none';
+        if (offlineMode) (offlineMode as HTMLElement).style.display = 'none';
     }
 
     if (context.groupId && vnMode && newChat) {
@@ -650,9 +661,7 @@ function getSpriteFolderName(characterMessage = null, characterName = null) {
     // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
     const expressionOverride = extension_settings.expressionOverrides.find(e => e.name == avatarFileName);
 
-    // @ts-expect-error TS(2339): Property 'path' does not exist on type 'never'.
     if (expressionOverride && expressionOverride.path) {
-        // @ts-expect-error TS(2339): Property 'path' does not exist on type 'never'.
         spriteFolderName = expressionOverride.path;
     }
 
@@ -753,7 +762,6 @@ async function classifyCallback(/** @type {{api: string?, filter: string?, promp
         return '';
     }
 
-    // @ts-expect-error TS(2345): Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
     if (!modules.includes('classify') && expressionApi == EXPRESSION_API.extras) {
         notyf.warning('Text classification is disabled or not available');
         return '';
@@ -800,7 +808,7 @@ async function setSpriteSlashCommand({
             const existingExpressions = getCachedExpressions().map(x => ({ label: x }));
             const results = performFuzzySearch('expression-expressions', existingExpressions, [
                 { name: 'label', weight: 1 },
-            ], searchTerm);
+            ], searchTerm) as any[];
             const matchedExpression = results[0]?.item;
             if (!matchedExpression) {
                 notyf.warning(t`No expression found for search term ${searchTerm}`, t`Set Sprite`);
@@ -817,7 +825,7 @@ async function setSpriteSlashCommand({
             const results = performFuzzySearch('expression-expressions', sprites, [
                 { name: 'title', weight: 1 },
                 { name: 'fileName', weight: 1 },
-            ], searchTerm);
+            ], searchTerm) as any[];
             const matchedSprite = results[0]?.item;
             if (!matchedSprite) {
                 notyf.warning(t`No sprite file found for search term ${searchTerm}`, t`Set Sprite`);
@@ -842,7 +850,7 @@ async function setSpriteSlashCommand({
 function setFallBackExpressionSlashCommand(args: any, expressionName: any) {
     expressionName = expressionName.trim().toLowerCase();
 
-    if (!expressionName) return extension_settings?.expressions?.fallback_expression || '';
+    if (!expressionName) return (extension_settings?.expressions as Record<string, unknown>)?.fallback_expression as string || '';
 
     const select = /** @type {HTMLSelectElement} */(document.getElementById('expression_fallback'));
     const fallbackExpressions = Array
@@ -875,7 +883,6 @@ function spriteFolderNameFromCharacter(char: any) {
     const avatarFileName = char.avatar.replace(/\.[^/.]+$/, '');
     // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
     const expressionOverride = extension_settings.expressionOverrides.find(e => e.name === avatarFileName);
-    // @ts-expect-error TS(2339): Property 'path' does not exist on type 'never'.
     return expressionOverride?.path ? expressionOverride.path : avatarFileName;
 }
 
@@ -1099,22 +1106,19 @@ function onTextGenSettingsReady(args: any) {
  */
 export async function getExpressionLabel(text: any, expressionsApi = extension_settings.expressions.api, { filterAvailable = null, customPrompt = null } = {}) {
     // Return if text is undefined, saving a costly fetch request
-    // @ts-expect-error TS(2345): Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
     if ((!modules.includes('classify') && expressionsApi == EXPRESSION_API.extras) || !text) {
         return extension_settings.expressions.fallback_expression;
     }
 
 
-    if (extension_settings.expressions.translate && typeof globalThis.translate === 'function') {
+    if (extension_settings.expressions.translate && typeof (globalThis as any).translate === 'function') {
 
-        text = await globalThis.translate(text, 'en');
+        text = await (globalThis as any).translate(text, 'en');
     }
 
     text = sampleClassifyText(text);
 
-    // @ts-expect-error TS(2339): Property 'filterAvailable' does not exist on type ... Remove this comment to see the full error message
     filterAvailable ??= extension_settings.expressions.filterAvailable;
-    // @ts-expect-error TS(2345): Argument of type 'undefined' is not assignable to ... Remove this comment to see the full error message
     if (filterAvailable && ![EXPRESSION_API.llm, EXPRESSION_API.webllm].includes(expressionsApi)) {
         console.debug('Filter available is only supported for LLM and WebLLM expressions');
     }
@@ -1122,7 +1126,6 @@ export async function getExpressionLabel(text: any, expressionsApi = extension_s
     try {
         switch (expressionsApi) {
             // Local BERT pipeline
-            // @ts-expect-error TS(2678): Type 'number' is not comparable to type 'undefined... Remove this comment to see the full error message
             case EXPRESSION_API.local: {
                 const localResult = await fetch('/api/extra/classify', {
                     method: 'POST',
@@ -1136,7 +1139,6 @@ export async function getExpressionLabel(text: any, expressionsApi = extension_s
                 }
             } break;
             // Using LLM
-            // @ts-expect-error TS(2678): Type 'number' is not comparable to type 'undefined... Remove this comment to see the full error message
             case EXPRESSION_API.llm: {
                 try {
                     await waitUntilCondition(() => online_status !== 'no_connection', 3000, 250);
@@ -1167,7 +1169,6 @@ export async function getExpressionLabel(text: any, expressionsApi = extension_s
                 return parseLlmResponse(emotionResponse, expressionsList);
             }
             // Using WebLLM
-            // @ts-expect-error TS(2678): Type 'number' is not comparable to type 'undefined... Remove this comment to see the full error message
             case EXPRESSION_API.webllm: {
                 if (!isWebLlmSupported()) {
                     console.warn('WebLLM is not supported. Using fallback expression');
@@ -1185,9 +1186,8 @@ export async function getExpressionLabel(text: any, expressionsApi = extension_s
                 return parseLlmResponse(emotionResponse, expressionsList);
             }
             // Extras
-            // @ts-expect-error TS(2678): Type 'number' is not comparable to type 'undefined... Remove this comment to see the full error message
             case EXPRESSION_API.extras: {
-                const url = new URL(getApiUrl());
+                const url = new URL(getApiUrl() as string);
                 url.pathname = '/api/classify';
 
                 const extrasResult = await doExtrasFetch(url, {
@@ -1205,7 +1205,6 @@ export async function getExpressionLabel(text: any, expressionsApi = extension_s
                 }
             } break;
             // None
-            // @ts-expect-error TS(2678): Type 'number' is not comparable to type 'undefined... Remove this comment to see the full error message
             case EXPRESSION_API.none: {
                 // Return empty, the fallback expression will be used
                 return '';
@@ -1227,12 +1226,10 @@ function getLastCharacterMessage() {
     const reversedChat = context.chat.slice().reverse();
 
     for (let mes of reversedChat) {
-        // @ts-expect-error TS(2339): Property 'is_user' does not exist on type 'never'.
         if (mes.is_user || mes.is_system || mes.extra?.type === system_message_types.NARRATOR) {
             continue;
         }
 
-        // @ts-expect-error TS(2339): Property 'mes' does not exist on type 'never'.
         return { mes: mes.mes, name: mes.name, original_avatar: mes.original_avatar, force_avatar: mes.force_avatar };
     }
 
@@ -1291,7 +1288,6 @@ function getExpressionImageData(sprite: any) {
         title: fileNameWithoutExtension,
         imageSrc: sprite.path,
         type: 'success',
-        // @ts-expect-error TS(2345): Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
         isCustom: extension_settings.expressions.custom?.includes(sprite.label),
     };
 }
@@ -1318,7 +1314,6 @@ async function drawSpritesList(spriteFolderName: any, labels: any, sprites: any)
     }
 
     for (const expression of labels.sort()) {
-        // @ts-expect-error TS(2345): Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
         const isCustom = extension_settings.expressions.custom?.includes(expression);
         const images = sprites
             .filter((s: any) => s.label === expression)
@@ -1485,7 +1480,6 @@ export async function getExpressionsList({ filterAvailable = false } = {}) {
     const expressions = getCachedExpressions();
 
     // Filtering is only available for llm and webllm APIs
-    // @ts-expect-error TS(2345): Argument of type 'undefined' is not assignable to ... Remove this comment to see the full error message
     if (!filterAvailable || ![EXPRESSION_API.llm, EXPRESSION_API.webllm].includes(extension_settings.expressions.api)) {
         return expressions;
     }
@@ -1509,9 +1503,8 @@ export async function getExpressionsList({ filterAvailable = false } = {}) {
         // See if we can retrieve a specific expression list from the API
         try {
             // Check Extras api first, if enabled and that module active
-            // @ts-expect-error TS(2345): Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
             if (extension_settings.expressions.api == EXPRESSION_API.extras && modules.includes('classify')) {
-                const url = new URL(getApiUrl());
+                const url = new URL(getApiUrl() as string);
                 url.pathname = '/api/classify/labels';
 
                 const apiResult = await doExtrasFetch(url, {
@@ -1667,24 +1660,35 @@ async function setExpression(spriteFolderName: any, expression: any, { force = f
             //fade the clone in
             expressionClone.css({
                 opacity: 0,
-            }).animate({
-                opacity: 1,
-            }, duration)
-                //when finshed fading in clone, fade out the original
-                .promise().done(function () {
-                    img.animate({
-                        opacity: 0,
-                    }, duration);
-                    //remove old expression
-                    img.remove();
-                    //replace ID so it becomes the new 'original' expression for next change
-                    expressionClone.attr('id', 'expression-image');
-                    expressionClone.removeClass('expression-animating');
+            });
 
-                    // Reset the expression holder min height and width
-                    expressionHolder.css('min-width', 100);
-                    expressionHolder.css('min-height', 100);
+            const cloneAnim = expressionClone[0]?.animate([
+                { opacity: 0 },
+                { opacity: 1 },
+            ], {
+                duration: duration,
+                fill: 'forwards',
+            });
+
+            cloneAnim?.addEventListener('finish', function () {
+                img[0]?.animate([
+                    { opacity: 1 },
+                    { opacity: 0 },
+                ], {
+                    duration: duration,
+                    fill: 'forwards',
                 });
+
+                //remove old expression
+                img.remove();
+                //replace ID so it becomes the new 'original' expression for next change
+                expressionClone.attr('id', 'expression-image');
+                expressionClone.removeClass('expression-animating');
+
+                // Reset the expression holder min height and width
+                expressionHolder.css('min-width', 100);
+                expressionHolder.css('min-height', 100);
+            });
 
             expressionClone.removeClass('expression-clone');
 
@@ -1724,7 +1728,6 @@ async function setExpression(spriteFolderName: any, expression: any, { force = f
  * @param {string} expression - The expression label to use for the default image
  */
 function setDefaultEmojiForImage(img: any, expression: any) {
-    // @ts-expect-error TS(2345): Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
     if (extension_settings.expressions.custom?.includes(expression)) {
         console.debug(`Can't set default emoji for a custom expression (${expression}). setting to ${DEFAULT_FALLBACK_EXPRESSION} instead.`);
         expression = DEFAULT_FALLBACK_EXPRESSION;
@@ -1784,14 +1787,12 @@ async function onClickExpressionAddCustom() {
         notyf.warning('Expression name already exists', 'Add Custom Expression');
         return;
     }
-    // @ts-expect-error TS(2345): Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
     if (extension_settings.expressions.custom.includes(expressionName)) {
         notyf.warning('Custom expression already exists', 'Add Custom Expression');
         return;
     }
 
     // Add custom expression into settings
-    // @ts-expect-error TS(2345): Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
     extension_settings.expressions.custom.push(expressionName);
     await renderAdditionalExpressionSettings();
     saveSettingsDebounced();
@@ -1820,12 +1821,10 @@ async function onClickExpressionRemoveCustom() {
     }
 
     // Remove custom expression from settings
-    // @ts-expect-error TS(2345): Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
     const index = extension_settings.expressions.custom.indexOf(selectedExpression);
     extension_settings.expressions.custom.splice(index, 1);
     if (selectedExpression == extension_settings.expressions.fallback_expression) {
         notyf.warning(`Deleted custom expression '${selectedExpression}' that was also selected as the fallback expression.\nFallback expression has been reset to '${DEFAULT_FALLBACK_EXPRESSION}'.`, 'Remove Custom Expression');
-        // @ts-expect-error TS(2322): Type '"joy"' is not assignable to type 'undefined'... Remove this comment to see the full error message
         extension_settings.expressions.fallback_expression = DEFAULT_FALLBACK_EXPRESSION;
     }
     await renderAdditionalExpressionSettings();
@@ -1840,9 +1839,7 @@ async function onClickExpressionRemoveCustom() {
 function onExpressionApiChanged(this: any) {
     const tempApi = this.value;
     if (tempApi) {
-        // @ts-expect-error TS(2322): Type 'number' is not assignable to type 'undefined... Remove this comment to see the full error message
         extension_settings.expressions.api = Number(tempApi);
-        // @ts-expect-error TS(2345): Argument of type 'undefined' is not assignable to ... Remove this comment to see the full error message
         $('.expression_llm_prompt_block').toggle([EXPRESSION_API.llm, EXPRESSION_API.webllm].includes(extension_settings.expressions.api));
         $('.expression_prompt_type_block').toggle(extension_settings.expressions.api === EXPRESSION_API.llm);
         expressionsList = null;
@@ -1859,12 +1856,10 @@ async function onExpressionFallbackChanged(this: any) {
 
     switch (selectedValue) {
         case OPTION_NO_FALLBACK:
-            // @ts-expect-error TS(2322): Type 'null' is not assignable to type 'undefined'.
             extension_settings.expressions.fallback_expression = null;
             extension_settings.expressions.showDefault = false;
             break;
         case OPTION_EMOJI_FALLBACK:
-            // @ts-expect-error TS(2322): Type 'null' is not assignable to type 'undefined'.
             extension_settings.expressions.fallback_expression = null;
             extension_settings.expressions.showDefault = true;
             break;
@@ -2045,8 +2040,7 @@ async function onClickExpressionOverrideButton() {
     }
 
     const overridePath = String($('#expression_override').val());
-    const existingOverrideIndex = extension_settings.expressionOverrides.findIndex((e) =>
-        // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
+    const existingOverrideIndex = extension_settings.expressionOverrides.findIndex((e: any) =>
         e.name == avatarFileName,
     );
 
@@ -2067,7 +2061,6 @@ async function onClickExpressionOverrideButton() {
             delete spriteCache[existingOverride.name];
         } else {
             const characterOverride = { name: avatarFileName, path: overridePath };
-            // @ts-expect-error TS(2345): Argument of type '{ name: string; path: string; }'... Remove this comment to see the full error message
             extension_settings.expressionOverrides.push(characterOverride);
             // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             delete spriteCache[currentLastMessage.name];
@@ -2199,17 +2192,13 @@ function setExpressionOverrideHtml(forceClear = false) {
         return;
     }
 
-    const expressionOverride = extension_settings.expressionOverrides.find((e) =>
-        // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
+    const expressionOverride = extension_settings.expressionOverrides.find((e: any) =>
         e.name == avatarFileName,
     );
 
-    // @ts-expect-error TS(2339): Property 'path' does not exist on type 'never'.
     if (expressionOverride && expressionOverride.path) {
-        // @ts-expect-error TS(2339): Property 'path' does not exist on type 'never'.
         $('#expression_override').val(expressionOverride.path);
     } else if (expressionOverride) {
-        // @ts-expect-error TS(2339): Property 'name' does not exist on type 'never'.
         delete extension_settings.expressionOverrides[expressionOverride.name];
     }
 
@@ -2244,25 +2233,20 @@ async function fetchImagesNoCache() {
 
 function migrateSettings() {
     if (extension_settings.expressions.api === undefined) {
-        // @ts-expect-error TS(2322): Type 'number' is not assignable to type 'undefined... Remove this comment to see the full error message
         extension_settings.expressions.api = EXPRESSION_API.none;
         saveSettingsDebounced();
     }
 
     if (Object.keys(extension_settings.expressions).includes('local')) {
-        // @ts-expect-error TS(2339): Property 'local' does not exist on type '{ api: un... Remove this comment to see the full error message
         if (extension_settings.expressions.local) {
-            // @ts-expect-error TS(2322): Type 'number' is not assignable to type 'undefined... Remove this comment to see the full error message
             extension_settings.expressions.api = EXPRESSION_API.local;
         }
 
-        // @ts-expect-error TS(2339): Property 'local' does not exist on type '{ api: un... Remove this comment to see the full error message
         delete extension_settings.expressions.local;
         saveSettingsDebounced();
     }
 
     if (extension_settings.expressions.llmPrompt === undefined) {
-        // @ts-expect-error TS(2322): Type '"Ignore previous instructions. Classify the ... Remove this comment to see the full error message
         extension_settings.expressions.llmPrompt = DEFAULT_LLM_PROMPT;
         saveSettingsDebounced();
     }
@@ -2320,9 +2304,7 @@ export async function init() {
             extension_settings.expressions.rerollIfSame = !!$(this).prop('checked');
             saveSettingsDebounced();
         });
-        // @ts-expect-error TS(2339): Property 'filterAvailable' does not exist on type ... Remove this comment to see the full error message
         $('#expressions_filter_available').prop('checked', extension_settings.expressions.filterAvailable).on('input', function(this: any) {
-            // @ts-expect-error TS(2339): Property 'filterAvailable' does not exist on type ... Remove this comment to see the full error message
             extension_settings.expressions.filterAvailable = !!$(this).prop('checked');
             saveSettingsDebounced();
         });
@@ -2339,17 +2321,14 @@ export async function init() {
 
         await renderAdditionalExpressionSettings();
         $('#expression_api').val(extension_settings.expressions.api ?? EXPRESSION_API.none);
-        // @ts-expect-error TS(2345): Argument of type 'undefined' is not assignable to ... Remove this comment to see the full error message
         $('.expression_llm_prompt_block').toggle([EXPRESSION_API.llm, EXPRESSION_API.webllm].includes(extension_settings.expressions.api));
         $('#expression_llm_prompt').val(extension_settings.expressions.llmPrompt ?? '');
         $('#expression_llm_prompt').on('input', function(this: any) {
-            // @ts-expect-error TS(2322): Type 'string' is not assignable to type 'undefined... Remove this comment to see the full error message
             extension_settings.expressions.llmPrompt = String($(this).val());
             saveSettingsDebounced();
         });
         $('#expression_llm_prompt_restore').on('click', function () {
             $('#expression_llm_prompt').val(DEFAULT_LLM_PROMPT);
-            // @ts-expect-error TS(2322): Type '"Ignore previous instructions. Classify the ... Remove this comment to see the full error message
             extension_settings.expressions.llmPrompt = DEFAULT_LLM_PROMPT;
             saveSettingsDebounced();
         });
@@ -2378,7 +2357,7 @@ export async function init() {
     const updateFunction = wrapper.update.bind(wrapper);
     setInterval(updateFunction, UPDATE_INTERVAL);
     moduleWorker();
-    dragElement(document.getElementById('expression-holder'));
+    dragElement(document.getElementById('expression-holder')!);
     eventSource.on(event_types.CHAT_CHANGED, () => {
         // character changed
         removeExpression();
@@ -2411,12 +2390,10 @@ export async function init() {
             return expressions.map(expression => {
                 // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 const spriteCount = spriteCache[spriteFolderName]?.find((x: any) => x.label === expression)?.files.length ?? 0;
-                // @ts-expect-error TS(2345): Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
                 const isCustom = extension_settings.expressions.custom?.includes(expression);
                 const subtitle = spriteCount == 0 ? '❌ No sprites available for this expression' :
                     spriteCount > 1 ? `${spriteCount} sprites` : null;
                 return new SlashCommandEnumValue(expression,
-                    // @ts-expect-error TS(2345): Argument of type 'string | null' is not assignable... Remove this comment to see the full error message
                     subtitle,
                     isCustom ? enumTypes.name : enumTypes.enum,
                     isCustom ? 'C' : 'D');
@@ -2462,7 +2439,6 @@ export async function init() {
                     if (type == 'sprite') return localEnumProviders.sprites();
                     else return [
                         ...localEnumProviders.expressions(),
-                        // @ts-expect-error TS(2345): Argument of type '"Resets the expression (to eithe... Remove this comment to see the full error message
                         new SlashCommandEnumValue(RESET_SPRITE_LABEL, 'Resets the expression (to either default or no sprite)', enumTypes.enum, '❌'),
                     ];
                 },
@@ -2480,9 +2456,7 @@ export async function init() {
                 typeList: [ARGUMENT_TYPE.STRING],
                 isRequired: false,
                 enumProvider: () => [
-                    // @ts-expect-error TS(2345): Argument of type '"Sets the fallback expression to... Remove this comment to see the full error message
                     new SlashCommandEnumValue('#none', 'Sets the fallback expression to no image'),
-                    // @ts-expect-error TS(2345): Argument of type '"Sets the fallback expression to... Remove this comment to see the full error message
                     new SlashCommandEnumValue('#emoji', 'Sets the fallback expression to emojis'),
                     ...localEnumProviders.expressions(),
                 ],

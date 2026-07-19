@@ -67,8 +67,9 @@ function addSafariPatch() {
     const userAgent = getParsedUA();
     console.debug('User Agent', userAgent);
     const isMobileSafari = /iPad|iPhone|iPod/.test(navigator.platform) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-    const isDesktopSafari = userAgent?.browser?.name === 'Safari' && userAgent?.platform?.type === 'desktop';
-    const isIOS = userAgent?.os?.name === 'iOS';
+    const ua = userAgent as Record<string, unknown>;
+    const isDesktopSafari = (ua?.browser as Record<string, string>)?.name === 'Safari' && (ua?.platform as Record<string, string>)?.type === 'desktop';
+    const isIOS = (ua?.os as Record<string, string>)?.name === 'iOS';
 
     if (isIOS || isMobileSafari || isDesktopSafari) {
         document.body.classList.add('safari');

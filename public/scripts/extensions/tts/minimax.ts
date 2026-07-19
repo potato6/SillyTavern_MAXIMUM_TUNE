@@ -45,8 +45,8 @@ class MiniMaxTtsProvider {
         { id: 'speech-01-240228', name: 'Speech-01-240228 (Legacy)' },
     ];
 
-    availableModels = [];
-    availableVoices = [];
+    availableModels: any[] = [];
+    availableVoices: any[] = [];
 
     get settingsHtml() {
         return `
@@ -176,10 +176,8 @@ class MiniMaxTtsProvider {
         // @ts-expect-error TS(2339): Property 'handler' does not exist on type 'MiniMax... Remove this comment to see the full error message
         this.handler = async function(this: any, /** @type {string} */ key: any) {
             if (![SECRET_KEYS.MINIMAX, SECRET_KEYS.MINIMAX_GROUP_ID].includes(key)) return;
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-            $('#api_key_minimax').toggleClass('success', !!secret_state[SECRET_KEYS.MINIMAX]);
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-            $('#minimax_group_id').toggleClass('success', !!secret_state[SECRET_KEYS.MINIMAX_GROUP_ID]);
+            $('#api_key_minimax').toggleClass('success', !!(secret_state as Record<string, unknown>)[SECRET_KEYS.MINIMAX]);
+            $('#minimax_group_id').toggleClass('success', !!(secret_state as Record<string, unknown>)[SECRET_KEYS.MINIMAX_GROUP_ID]);
             await this.onRefreshClick();
         }.bind(this);
     }
@@ -601,18 +599,15 @@ class MiniMaxTtsProvider {
             console.debug('MiniMax: Voice map initialization failed, but continuing');
         }
 
-        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        $('#api_key_minimax').toggleClass('success', !!secret_state[SECRET_KEYS.MINIMAX]);
-        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        $('#minimax_group_id').toggleClass('success', !!secret_state[SECRET_KEYS.MINIMAX_GROUP_ID]);
+        $('#api_key_minimax').toggleClass('success', !!(secret_state as Record<string, unknown>)[SECRET_KEYS.MINIMAX]);
+        $('#minimax_group_id').toggleClass('success', !!(secret_state as Record<string, unknown>)[SECRET_KEYS.MINIMAX_GROUP_ID]);
         [event_types.SECRET_WRITTEN, event_types.SECRET_DELETED, event_types.SECRET_ROTATED].forEach(event => {
             // @ts-expect-error TS(2339): Property 'handler' does not exist on type 'MiniMax... Remove this comment to see the full error message
             eventSource.on(event, this.handler);
         });
 
         // Only check ready status when API credentials are available
-        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        if (secret_state[SECRET_KEYS.MINIMAX] && secret_state[SECRET_KEYS.MINIMAX_GROUP_ID]) {
+        if ((secret_state as Record<string, unknown>)[SECRET_KEYS.MINIMAX] && (secret_state as Record<string, unknown>)[SECRET_KEYS.MINIMAX_GROUP_ID]) {
             try {
                 await this.checkReady();
                 console.debug('MiniMax TTS: Settings loaded and ready');
@@ -626,8 +621,7 @@ class MiniMaxTtsProvider {
 
     // Perform a simple readiness check
     async checkReady() {
-        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        if (!secret_state[SECRET_KEYS.MINIMAX] || !secret_state[SECRET_KEYS.MINIMAX_GROUP_ID]) {
+        if (!(secret_state as Record<string, unknown>)[SECRET_KEYS.MINIMAX] || !(secret_state as Record<string, unknown>)[SECRET_KEYS.MINIMAX_GROUP_ID]) {
             const error = new Error('API Key and Group ID are required');
             console.error('MiniMax TTS checkReady error:', error.message);
             throw error;
@@ -638,15 +632,12 @@ class MiniMaxTtsProvider {
         } catch (error) {
             console.warn('MiniMax TTS: Failed to fetch models/voices during ready check, will use all available:', error);
             // Even if API call fails, set all available values to ensure basic functionality
-            // @ts-expect-error TS(2322): Type 'any[]' is not assignable to type 'never[]'.
             this.availableModels = this.getAllModels();
-            // @ts-expect-error TS(2322): Type 'any[]' is not assignable to type 'never[]'.
             this.availableVoices = this.getAllVoices();
         }
 
         // Ensure at least voices are available
         if (!this.availableVoices || this.availableVoices.length === 0) {
-            // @ts-expect-error TS(2322): Type 'any[]' is not assignable to type 'never[]'.
             this.availableVoices = this.getAllVoices();
         }
     }
@@ -683,18 +674,15 @@ class MiniMaxTtsProvider {
 
         // If no available voices, try to fetch them
         if (!this.availableVoices || this.availableVoices.length === 0) {
-            // @ts-expect-error TS(2322): Type 'any[]' is not assignable to type 'never[]'.
             this.availableVoices = await this.fetchTtsVoiceObjects();
         }
 
         // Ensure at least voices are available
         if (!this.availableVoices || this.availableVoices.length === 0) {
-            // @ts-expect-error TS(2322): Type 'any[]' is not assignable to type 'never[]'.
             this.availableVoices = this.getAllVoices();
         }
 
-        const voice = this.availableVoices.find(voice =>
-            // @ts-expect-error TS(2339): Property 'voice_id' does not exist on type 'never'... Remove this comment to see the full error message
+        const voice = this.availableVoices.find((voice: Record<string, unknown>) =>
             voice.voice_id === voiceName || voice.name === voiceName,
         );
 
@@ -723,12 +711,9 @@ class MiniMaxTtsProvider {
         let language = null;
         try {
             const voice = await this.getVoice(voiceId);
-            // @ts-expect-error TS(2339): Property 'lang' does not exist on type 'never'.
-            if (voice && voice.lang) {
-                // @ts-expect-error TS(2339): Property 'lang' does not exist on type 'never'.
-                language = this.mapLanguageToMiniMaxFormat(voice.lang);
-                // @ts-expect-error TS(2339): Property 'lang' does not exist on type 'never'.
-                console.debug(`MiniMax TTS: Using voice language ${voice.lang}, API language: ${language}`);
+            if (voice && (voice as Record<string, unknown>).lang) {
+                language = this.mapLanguageToMiniMaxFormat((voice as Record<string, unknown>).lang as string);
+                console.debug(`MiniMax TTS: Using voice language ${(voice as Record<string, unknown>).lang}, API language: ${language}`);
             }
         } catch (error) {
             console.debug('MiniMax TTS: Could not determine voice language, using default');
@@ -739,8 +724,7 @@ class MiniMaxTtsProvider {
 
     async fetchTtsVoiceObjects() {
         try {
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-            if (!secret_state[SECRET_KEYS.MINIMAX] || !secret_state[SECRET_KEYS.MINIMAX_GROUP_ID]) {
+        if (!(secret_state as Record<string, unknown>)[SECRET_KEYS.MINIMAX] || !(secret_state as Record<string, unknown>)[SECRET_KEYS.MINIMAX_GROUP_ID]) {
                 console.warn('MiniMax TTS: API Key and Group ID required for fetching voices');
                 console.warn('Using all available voices (default + custom). Please check your API credentials');
                 return this.getAllVoices();
@@ -761,7 +745,6 @@ class MiniMaxTtsProvider {
         // MiniMax API doesn't provide a models listing endpoint
         // Using all available models (default + custom)
         console.info('MiniMax TTS: Using all available models (default + custom)');
-        // @ts-expect-error TS(2322): Type 'any[]' is not assignable to type 'never[]'.
         this.availableModels = this.getAllModels();
         return this.getAllModels();
     }
@@ -769,12 +752,10 @@ class MiniMaxTtsProvider {
     async updateModelsAndVoices() {
         try {
             // Get models list
-            // @ts-expect-error TS(2322): Type 'any[]' is not assignable to type 'never[]'.
             this.availableModels = await this.fetchTtsModels();
             console.info(`MiniMax TTS: Loaded ${this.availableModels.length} models`);
 
             // Get voices list (now fetched from API)
-            // @ts-expect-error TS(2322): Type 'any[]' is not assignable to type 'never[]'.
             this.availableVoices = await this.fetchTtsVoiceObjects();
             console.info(`MiniMax TTS: Loaded ${this.availableVoices.length} voices`);
 
@@ -788,9 +769,7 @@ class MiniMaxTtsProvider {
         } catch (error) {
             console.error('MiniMax TTS: Failed to update models and voices:', error);
             // Set all available values to ensure basic functionality
-            // @ts-expect-error TS(2322): Type 'any[]' is not assignable to type 'never[]'.
             this.availableModels = this.getAllModels();
-            // @ts-expect-error TS(2322): Type 'any[]' is not assignable to type 'never[]'.
             this.availableVoices = this.getAllVoices();
             throw error;
         }
@@ -805,15 +784,13 @@ class MiniMaxTtsProvider {
             'flac': 'audio/flac',
             'aac': 'audio/aac',
         };
-        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        return mimeTypes[format] || 'audio/mpeg';
+        return (mimeTypes as Record<string, string>)[format as string] || 'audio/mpeg';
     }
 
     async fetchTtsGeneration(inputText: any, voiceId: any, language = null) {
         console.info(`Generating new MiniMax TTS for voice_id ${voiceId}`);
 
-        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        if (!secret_state[SECRET_KEYS.MINIMAX] || !secret_state[SECRET_KEYS.MINIMAX_GROUP_ID]) {
+        if (!(secret_state as Record<string, unknown>)[SECRET_KEYS.MINIMAX] || !(secret_state as Record<string, unknown>)[SECRET_KEYS.MINIMAX_GROUP_ID]) {
             const error = new Error('API Key and Group ID are required');
             console.error('MiniMax TTS fetchTtsGeneration error:', error.message);
             throw error;
@@ -937,8 +914,7 @@ class MiniMaxTtsProvider {
         try {
             const voice = await this.getVoice(voiceId);
             // Get preview text based on voice language, defaulting to en-US
-            // @ts-expect-error TS(2339): Property 'lang' does not exist on type 'never'.
-            const previewLang = voice.lang || 'en-US';
+            const previewLang = (voice as Record<string, unknown>).lang || 'en-US';
             const text = getPreviewString(previewLang);
 
             // Map the language to MiniMax API format for the request

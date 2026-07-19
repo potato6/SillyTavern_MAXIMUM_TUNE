@@ -26,10 +26,16 @@ export function expandMessageMedia(messageId: number, mediaIndex: number): HTMLE
         return null;
     }
 
-    const mediaAttachment = message.extra.media[mediaIndex];
+    const mediaAttachment = message.extra.media[mediaIndex]!;
     const title = mediaAttachment.title || '';
 
+    /**
+     *
+     */
     function getMediaElement(): HTMLElement | null {
+        /**
+         *
+         */
         function getImageElement(): HTMLImageElement {
             const img = document.createElement('img');
             img.src = mediaAttachment.url;
@@ -39,6 +45,9 @@ export function expandMessageMedia(messageId: number, mediaIndex: number): HTMLE
             return img;
         }
 
+        /**
+         *
+         */
         function getVideoElement(): HTMLVideoElement {
             const video = document.createElement('video');
             video.src = mediaAttachment.url;
@@ -117,13 +126,13 @@ export async function deleteMessageMedia(messageId: number, mediaIndex: number, 
             { type: 'checkbox', label: t`Also delete files from server`, id: deleteFromServerId, defaultState: true },
         ],
         onClose: (popup: Record<string, unknown>) => {
-            deleteFromServer = Boolean(popup.inputResults.get(deleteFromServerId) ?? false);
+            deleteFromServer = Boolean((popup.inputResults as Map<string, unknown>)?.get(deleteFromServerId) ?? false);
         },
     });
 
     if (!value) return;
 
-    const message = chat[messageId];
+    const message = chat[messageId]!;
     if (!Array.isArray(message?.extra?.media)) {
         console.debug('Message has no media');
         return;
@@ -208,7 +217,7 @@ export async function onImageSwiped(messageId: number, element: Element, directi
     const animationClass = 'fa-fade';
     const messageMedia = element.querySelectorAll('.mes_img, .mes_video');
 
-    if (messageMedia.length > 0 && messageMedia[0].classList.contains(animationClass)) {
+    if (messageMedia.length > 0 && messageMedia[0]!.classList.contains(animationClass)) {
         return;
     }
 
@@ -237,12 +246,12 @@ export async function onImageSwiped(messageId: number, element: Element, directi
 
     if (direction === SWIPE_DIRECTION.LEFT) {
         const newIndex = currentIndex === 0 ? media.length - 1 : currentIndex - 1;
-        message.extra.media_index = newIndex;
+        message.extra!.media_index = newIndex;
     }
 
     if (direction === SWIPE_DIRECTION.RIGHT) {
         const newIndex = currentIndex === media.length - 1 ? 0 : currentIndex + 1;
-        message.extra.media_index = newIndex >= media.length ? 0 : newIndex;
+        message.extra!.media_index = newIndex >= media.length ? 0 : newIndex;
     }
 
     await saveChatConditional();

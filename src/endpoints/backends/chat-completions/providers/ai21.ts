@@ -68,7 +68,6 @@ const provider: ChatProvider = {
         try {
             const generateResponse = await globalThis.fetch(API_AI21 + '/chat/completions', options);
             if (req.body.stream) {
-                // @ts-expect-error TS(2345)
                 await forwardFetchResponse(generateResponse, res);
             } else {
                 if (!generateResponse.ok) {

@@ -12,7 +12,7 @@ import { tags, tag_map } from './store/tagStore.js';
  * @returns {void}
  * @description This function iterates through the chat messages and applies character tags
  */
-export function applyCharacterTagsToMessageDivs({ mesIds = [] as number[] } = {}) {
+export function applyCharacterTagsToMessageDivs({ mesIds = [] as number[] }: { mesIds?: number | number[] } = {}): void {
     try {
         const messagesFilter = buildMessagesFilter(mesIds);
         const chatEl = document.querySelector('#chat');
@@ -33,10 +33,10 @@ export function applyCharacterTagsToMessageDivs({ mesIds = [] as number[] } = {}
             return;
         }
 
-        const tagNamesById = tagsList.reduce((acc, tag) => {
+        const tagNamesById = tagsList.reduce((acc: Record<string, string>, tag) => {
             acc[tag.id] = tag.name;
             return acc;
-        }, {});
+        }, {} as Record<string, string>);
 
         const characterTagsCache = new Map();
 
@@ -53,20 +53,17 @@ export function applyCharacterTagsToMessageDivs({ mesIds = [] as number[] } = {}
 
             // If tags are NOT in the cache, compute and store them
             if (!tagsForCharacter) {
-                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                const tagIds = characterTagData[avatarFileName];
+                const tagIds = (characterTagData as Record<string, string[] | undefined>)[avatarFileName];
                 if (tagIds?.length) {
                     const tagNames = tagIds
-                        // @ts-expect-error TS(7006) FIXME: Parameter 'id' implicitly has an 'any' type.
-                        .map(id => tagNamesById[id])
+                        .map((id: string) => (tagNamesById as Record<string, string>)[id])
                         .filter(Boolean);
 
                     if (tagNames.length) {
                         tagsForCharacter = {
                             tagNames,
                             joinedTagNames: tagNames
-                                // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
-                                .map(name => name?.replace(/,/g, ' ')) // replace commas with spaces to avoid issues with tag names containing commas
+                                .map((name: string | undefined) => name?.replace(/,/g, ' ')) // replace commas with spaces to avoid issues with tag names containing commas
                                 .join(','),
                         };
                         // Add the newly computed tags to the cache
@@ -94,8 +91,7 @@ export function applyCharacterTagsToMessageDivs({ mesIds = [] as number[] } = {}
  * buildMessagesFilter([1, 5]); // Returns '.mes[mesid="1"],.mes[mesid="5"]'
  * buildMessagesFilter([]); // Returns '.mes'
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'mesIds' implicitly has an 'any' type.
-function buildMessagesFilter(mesIds) {
+function buildMessagesFilter(mesIds: number | number[]): string {
     const allMessages = '.mes';
 
     if (!mesIds) {
@@ -121,11 +117,9 @@ function buildMessagesFilter(mesIds) {
  * @param {string[]} tagData.tagNames - An array of tag names.
  * @param {string} tagData.joinedTagNames - A comma-separated string of tag names.
  */
-// @ts-expect-error TS(7006) FIXME: Parameter '$element' implicitly has an 'any' type.
-function applyTags($element, tagData) {
+function applyTags($element: Element, tagData: { tagNames: string[]; joinedTagNames: string }): void {
     $element.setAttribute('data-char-tags', tagData.joinedTagNames);
-    // @ts-expect-error TS(7006) FIXME: Parameter 'tagName' implicitly has an 'any' type.
-    tagData.tagNames.forEach(tagName => {
+    tagData.tagNames.forEach((tagName: string) => {
         const normalizedTagName = normalizeTagName(tagName);
 
         if (!normalizedTagName) {
@@ -142,8 +136,7 @@ function applyTags($element, tagData) {
  * @param {string} name The tag name to normalize.
  * @returns {string} The normalized tag name.
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
-function normalizeTagName(name) {
+function normalizeTagName(name: string): string {
     if (!name?.trim()) {
         return '';
     }
@@ -162,8 +155,7 @@ function normalizeTagName(name) {
  * @param {string} avatarSrc The source URL of the character avatar.
  * @returns {string|null} The normalized avatar file name, or null if the input is falsy or doesn't contain a valid file name.
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'avatarSrc' implicitly has an 'any' type... Remove this comment to see the full error message
-function extractCharacterAvatar(avatarSrc) {
+function extractCharacterAvatar(avatarSrc: string | null | undefined): string | null {
     if (!avatarSrc) {
         return null;
     }

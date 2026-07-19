@@ -24,12 +24,12 @@ export async function hideChatMessageRange(
     for (let messageId = start; messageId <= end; messageId++) {
         const message = chat[messageId];
         if (!message) continue;
-        if (nameFilter && message.name !== nameFilter) continue;
+        if (nameFilter && (message as Record<string, unknown>).name !== nameFilter) continue;
 
         if (hide) {
-            message.is_system = true;
+            (message as Record<string, unknown>).is_system = true;
         } else {
-            delete message.is_system;
+            delete (message as Record<string, unknown>).is_system;
         }
     }
 }
@@ -37,6 +37,7 @@ export async function hideChatMessageRange(
 /**
  * Hides a single message.
  * @param messageId Message ID
+ * @param _messageBlock
  */
 export async function hideChatMessage(messageId: number, _messageBlock?: unknown): Promise<void> {
     return hideChatMessageRange(messageId, messageId, false);
@@ -45,6 +46,7 @@ export async function hideChatMessage(messageId: number, _messageBlock?: unknown
 /**
  * Unhides a single message.
  * @param messageId Message ID
+ * @param _messageBlock
  */
 export async function unhideChatMessage(messageId: number, _messageBlock?: unknown): Promise<void> {
     return hideChatMessageRange(messageId, messageId, true);

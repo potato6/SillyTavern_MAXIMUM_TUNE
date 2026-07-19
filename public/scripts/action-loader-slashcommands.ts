@@ -45,18 +45,13 @@ export function registerActionLoaderSlashCommands() {
     // Shared loader enum providers
     const loaderEnumProviders = {
         toastModeEnumProvider: () => [
-            // @ts-expect-error TS(2345) FIXME: Argument of type '"No toast displayed"' is not ass... Remove this comment to see the full error message
             new SlashCommandEnumValue(ActionLoaderToastMode.NONE, 'No toast displayed', enumTypes.enum, enumIcons.disabled),
-            // @ts-expect-error TS(2345) FIXME: Argument of type '"Static toast without stop butto... Remove this comment to see the full error message
             new SlashCommandEnumValue(ActionLoaderToastMode.STATIC, 'Static toast without stop button', enumTypes.enum, enumIcons.spinner),
-            // @ts-expect-error TS(2345) FIXME: Argument of type '"Toast with stop button (default... Remove this comment to see the full error message
             new SlashCommandEnumValue(ActionLoaderToastMode.STOPPABLE, 'Toast with stop button (default)', enumTypes.enum, enumIcons.stop),
         ],
         loaderHandleProvider: () => getActiveLoaderHandles().map(
-            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-            handle => new SlashCommandEnumValue(handle.id, `Active loader: ${handle.id}`, enumTypes.enum, enumIcons.spinner),
+            handle => new SlashCommandEnumValue(handle.id ?? '', `Active loader: ${handle.id ?? ''}`, enumTypes.enum, enumIcons.spinner),
         ).concat(
-            // @ts-expect-error TS(2345) FIXME: Argument of type '"Any loader handle saved in vari... Remove this comment to see the full error message
             new SlashCommandEnumValue('Temporary loader handle', 'Any loader handle saved in variables or similar', 'enum', '📄', () => true, () => ''),
         ),
     };
@@ -323,9 +318,7 @@ export function registerActionLoaderSlashCommands() {
 
             if (handleId) {
                 const handle = getLoaderHandleById(handleId);
-                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 if (handle && handle.isActive) {
-                    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                     await handle.hide();
                     return 'true';
                 }
@@ -371,9 +364,7 @@ export function registerActionLoaderSlashCommands() {
             }
 
             const handle = getLoaderHandleById(handleId);
-            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             if (handle && handle.isActive) {
-                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 await handle.stop();
                 return 'true';
             }

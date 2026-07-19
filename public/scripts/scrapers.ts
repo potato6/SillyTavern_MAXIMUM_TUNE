@@ -213,12 +213,10 @@ class WebScraper {
         const links = String(linksString).split('\n').map(l => l.trim()).filter(l => l).filter(l => isValidUrl(l));
 
         if (links.length === 0) {
-            // @ts-expect-error TS(2552) FIXME: Cannot find name 'toastr'. Did you mean 'toast'?
             notyf.error('Invalid URL');
             return;
         }
 
-        // @ts-expect-error TS(2552) FIXME: Cannot find name 'toastr'. Did you mean 'toast'?
         const toast = notyf.info('Working, please wait...');
 
         const files = [];
@@ -238,7 +236,6 @@ class WebScraper {
             files.push(file);
         }
 
-        // @ts-expect-error TS(2552) FIXME: Cannot find name 'toastr'. Did you mean 'toast'?
         notyf.dismiss(toast);
         return files;
     }
@@ -349,12 +346,10 @@ class MediaWikiScraper {
         }
 
         if (!url) {
-            // @ts-expect-error TS(2552) FIXME: Cannot find name 'toastr'. Did you mean 'toast'?
             notyf.error('URL name is required');
             return;
         }
 
-        // @ts-expect-error TS(2552) FIXME: Cannot find name 'toastr'. Did you mean 'toast'?
         const toast = notyf.info('Working, please wait...');
 
         const result = await fetch('/api/plugins/fandom/scrape-mediawiki', {
@@ -369,7 +364,6 @@ class MediaWikiScraper {
         }
 
         const data = await result.json();
-        // @ts-expect-error TS(2552) FIXME: Cannot find name 'toastr'. Did you mean 'toast'?
         notyf.dismiss(toast);
 
         if (output === 'multi') {
@@ -477,12 +471,10 @@ class FandomScraper {
         }
 
         if (!fandom) {
-            // @ts-expect-error TS(2552) FIXME: Cannot find name 'toastr'. Did you mean 'toast'?
             notyf.error('Fandom name is required');
             return;
         }
 
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         const toast = notyf.info('Working, please wait...');
 
         const result = await fetch('/api/plugins/fandom/scrape', {
@@ -497,7 +489,6 @@ class FandomScraper {
         }
 
         const data = await result.json();
-        // @ts-expect-error TS(2552) FIXME: Cannot find name 'toastr'. Did you mean 'toast'?
         notyf.dismiss(toast);
 
         if (output === 'multi') {
@@ -634,10 +625,8 @@ class YouTubeScraper {
             return;
         }
 
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         const toast = notyf.info('Working, please wait...');
         const { transcript, id } = await this.getScript(String(videoUrl), lang);
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.dismiss(toast);
 
         const file = new File([transcript], `YouTube - ${id} - ${Date.now()}.txt`, { type: 'text/plain' });

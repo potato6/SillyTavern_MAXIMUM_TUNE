@@ -72,9 +72,8 @@ export function registerWorldInfoSlashCommands() {
      * Don't use for anything critical!
      * @returns {string[]} Array of chat messages
      */
-    function getScanningChat() {
-        // @ts-expect-error TS(2339) FIXME: Property 'is_system' does not exist on type 'never... Remove this comment to see the full error message
-        return getContext().chat.filter(x => !x.is_system).map(x => x.mes);
+    function getScanningChat(): string[] {
+        return (getContext().chat as ChatMessage[]).filter((x: ChatMessage) => !x.is_system).map((x: ChatMessage) => x.mes).filter((x: string | undefined): x is string => !!x);
     }
 
     /**
@@ -348,7 +347,6 @@ export function registerWorldInfoSlashCommands() {
                     }
                     //Find the tag objects corresponding to each ID in the array, then return the names
                     const filterTags = entry.characterFilter.tags;
-                    // @ts-expect-error tags is typed as any[] from the context
                     fieldValue = tags.filter((tag) => filterTags.includes(tag.id)).map((tag) => tag.name);
                 }
                 break;
@@ -540,15 +538,19 @@ export function registerWorldInfoSlashCommands() {
         reloadEditor(file);
         return '';
     }
-    // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
-    async function getTimedEffectCallback(args, value) {
+    /**
+     *
+     * @param args
+     * @param value
+     */
+    async function getTimedEffectCallback(args: Record<string, unknown>, value: unknown) {
         if (!getCurrentChatId()) {
             throw new Error('This command can only be used in chat');
         }
 
-        const file = args.file;
+        const file = args.file as string;
         const uid = value;
-        const effect = args.effect;
+        const effect = args.effect as string;
 
         // @ts-expect-error TS(2322) FIXME: Type '{ uid: any; }' is not assignable to type 'nu... Remove this comment to see the full error message
         const entries = await getEntriesFromFile(file, { args, unnamed: { uid }, callbackName: 'getTimedEffectCallback' });
@@ -561,8 +563,7 @@ export function registerWorldInfoSlashCommands() {
 
         if (!entry) {
             notyf.warning('Valid UID is required');
-            // @ts-expect-error TS(2345) FIXME: Argument of type '{ uid: any; }' is not assignable... Remove this comment to see the full error message
-            logSlashCommandWarn('getTimedEffectCallback: Valid UID is required', args, { uid });
+            logSlashCommandWarn('getTimedEffectCallback: Valid UID is required', args, { uid } as unknown as null | undefined);
             return '';
         }
 
@@ -572,8 +573,7 @@ export function registerWorldInfoSlashCommands() {
 
         if (!timedEffects.isValidType(effect)) {
             notyf.warning('Valid effect type is required');
-            // @ts-expect-error TS(2345) FIXME: Argument of type '{ uid: any; }' is not assignable... Remove this comment to see the full error message
-            logSlashCommandWarn('getTimedEffectCallback: Valid effect type is required', args, { uid });
+            logSlashCommandWarn('getTimedEffectCallback: Valid effect type is required', args, { uid } as unknown as null | undefined);
             return '';
         }
 
@@ -630,15 +630,13 @@ export function registerWorldInfoSlashCommands() {
 
         if (!timedEffects.isValidType(effect)) {
             notyf.warning('Valid effect type is required');
-            // @ts-expect-error TS(2345) FIXME: Argument of type '{ value: any; }' is not assignab... Remove this comment to see the full error message
-            logSlashCommandWarn('setTimedEffectCallback: Valid effect type is required', args, { value });
+            logSlashCommandWarn('setTimedEffectCallback: Valid effect type is required', args, { value } as unknown as null | undefined);
             return '';
         }
 
         if (!entry[effect]) {
             notyf.warning('This entry does not have the selected effect. Configure it in the editor first.');
-            // @ts-expect-error TS(2345) FIXME: Argument of type '{ value: any; }' is not assignab... Remove this comment to see the full error message
-            logSlashCommandWarn('setTimedEffectCallback: This entry does not have the selected effect', args, { value });
+            logSlashCommandWarn('setTimedEffectCallback: This entry does not have the selected effect', args, { value } as unknown as null | undefined);
             return '';
         }
 
@@ -676,7 +674,6 @@ export function registerWorldInfoSlashCommands() {
          * @returns {SlashCommandEnumValue[]} Array of enum values for WI entry fields
          */
         wiEntryFields: () => Object.entries(newWorldInfoEntryDefinition).map(([key, value]) =>
-            // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
             new SlashCommandEnumValue(key, `[${value.type}] default: ${(typeof value.default === 'string' ? `'${value.default}'` : JSON.stringify(value.default))}`,
                 enumTypes.enum, enumIcons.getDataTypeIcon(value.type))),
 
@@ -694,19 +691,18 @@ export function registerWorldInfoSlashCommands() {
             if (!worldInfoCache.has(file)) return [];
             const world = worldInfoCache.get(file);
             if (!world) return [];
-            return Object.entries(world.entries).map(([uid, data]) =>
-                // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
-                new SlashCommandEnumValue(uid, `${data.comment ? `${data.comment}: ` : ''}${data.key.join(', ')}${data.keysecondary?.length ? ` [${Object.entries(world_info_logic).find(([_, value]) => value == data.selectiveLogic)[0]}] ${data.keysecondary.join(', ')}` : ''} [${getWiPositionString(data)}]`,
-                    enumTypes.enum, enumIcons.getWiStatusIcon(data)));
+            return Object.entries(world.entries).map(([uid, data]) => {
+                const d = data as Record<string, unknown>;
+                return new SlashCommandEnumValue(uid, `${d.comment ? `${d.comment as string}: ` : ''}${(d.key as string[]).join(', ')}${(d.keysecondary as string[])?.length ? ` [${Object.entries(world_info_logic).find(([_, value]) => value == d.selectiveLogic)?.[0] ?? ''}] ${(d.keysecondary as string[]).join(', ')}` : ''} [${getWiPositionString(d)}]`,
+                    enumTypes.enum, enumIcons.getWiStatusIcon(d));
+            });
         },
 
         /**
          * @returns {SlashCommandEnumValue[]} Array of enum values for timed effects
          */
         timedEffects: () => [
-            // @ts-expect-error TS(2345) FIXME: Argument of type '"Stays active for N messages"' i... Remove this comment to see the full error message
             new SlashCommandEnumValue('sticky', 'Stays active for N messages', enumTypes.enum, '📌'),
-            // @ts-expect-error TS(2345) FIXME: Argument of type '"Cooldown for N messages"' is no... Remove this comment to see the full error message
             new SlashCommandEnumValue('cooldown', 'Cooldown for N messages', enumTypes.enum, '⌛'),
         ],
     };

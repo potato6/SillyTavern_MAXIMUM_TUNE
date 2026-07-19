@@ -82,7 +82,6 @@ const provider: ChatProvider = {
 
         if (req.body.stream) {
             const stream = await globalThis.fetch(apiUrl, config);
-            // @ts-expect-error TS(2345)
             await forwardFetchResponse(stream, res);
         } else {
             const generateResponse = await globalThis.fetch(apiUrl, config);

@@ -12,23 +12,36 @@ import { createPaginator } from './utils.js';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare const TomSelect: any;
 
-// @ts-expect-error TS(7034) FIXME: Variable 'mancerModels' implicitly has type 'any[]... Remove this comment to see the full error message
-let mancerModels = [];
-// @ts-expect-error TS(7034) FIXME: Variable 'togetherModels' implicitly has type 'any... Remove this comment to see the full error message
-let togetherModels = [];
-// @ts-expect-error TS(7034) FIXME: Variable 'infermaticAIModels' implicitly has type ... Remove this comment to see the full error message
-let infermaticAIModels = [];
-// @ts-expect-error TS(7034) FIXME: Variable 'dreamGenModels' implicitly has type 'any... Remove this comment to see the full error message
-let dreamGenModels = [];
-// @ts-expect-error TS(7034) FIXME: Variable 'vllmModels' implicitly has type 'any[]' ... Remove this comment to see the full error message
-let vllmModels = [];
-// @ts-expect-error TS(7034) FIXME: Variable 'aphroditeModels' implicitly has type 'an... Remove this comment to see the full error message
-let aphroditeModels = [];
-// @ts-expect-error TS(7034) FIXME: Variable 'featherlessModels' implicitly has type '... Remove this comment to see the full error message
-let featherlessModels = [];
-let tabbyModels = [];
-let llamacppModels = [];
-export let openRouterModels = [];
+export interface ApiModel {
+    id: string;
+    name?: string;
+    display_name?: string;
+    type?: string;
+    display_type?: string;
+    context_length?: number;
+    description?: string;
+    model_class?: string;
+    created?: number;
+    pricing?: {
+        prompt?: number;
+        completion?: number;
+    };
+    limits?: {
+        context?: number;
+        completion?: number;
+    };
+}
+
+let mancerModels: ApiModel[] = [];
+let togetherModels: ApiModel[] = [];
+let infermaticAIModels: ApiModel[] = [];
+let dreamGenModels: ApiModel[] = [];
+let vllmModels: ApiModel[] = [];
+let aphroditeModels: ApiModel[] = [];
+let featherlessModels: ApiModel[] = [];
+let tabbyModels: ApiModel[] = [];
+let llamacppModels: ApiModel[] = [];
+export let openRouterModels: ApiModel[] = [];
 
 /**
  * List of OpenRouter providers.
@@ -341,12 +354,10 @@ const OPENROUTER_PROVIDER_WARNING_SELECTORS = {
  *
  * @param providersSelector
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'providersSelector' implicitly has an 'a... Remove this comment to see the full error message
-export function updateOpenRouterProvidersWarning(providersSelector) {
+export function updateOpenRouterProvidersWarning(providersSelector: string) {
     const providersEl = document.querySelector(providersSelector);
 
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre...
-    const warningSelectors = OPENROUTER_PROVIDER_WARNING_SELECTORS[providersSelector];
+    const warningSelectors = OPENROUTER_PROVIDER_WARNING_SELECTORS[providersSelector as keyof typeof OPENROUTER_PROVIDER_WARNING_SELECTORS];
 
     if (!providersEl || !warningSelectors) {
         return;
@@ -368,8 +379,7 @@ export function updateOpenRouterProvidersWarning(providersSelector) {
  * @param modelId
  * @param providersSelector
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'modelId' implicitly has an 'any' type.
-export async function syncOpenRouterProvidersForModel(modelId, providersSelector) {
+export async function syncOpenRouterProvidersForModel(modelId: string, providersSelector: string) {
     const providersEl = document.querySelector(providersSelector);
 
     const refreshWarningState = () => {
@@ -377,8 +387,7 @@ export async function syncOpenRouterProvidersForModel(modelId, providersSelector
     };
 
     if (!modelId || !modelId.includes('/')) {
-        // @ts-expect-error TS(7006) FIXME: Parameter 'el' implicitly has an 'any' type.
-        providersEl?.querySelectorAll('option').forEach(el => el.disabled = false);
+        providersEl?.querySelectorAll('option').forEach((el: HTMLOptionElement) => el.disabled = false);
         refreshWarningState();
         return;
     }
@@ -398,14 +407,12 @@ export async function syncOpenRouterProvidersForModel(modelId, providersSelector
         const providerNames = await response.json();
 
         if (!Array.isArray(providerNames) || providerNames.length === 0) {
-            // @ts-expect-error TS(7006) FIXME: Parameter 'el' implicitly has an 'any' type.
-            providersEl?.querySelectorAll('option').forEach(el => el.disabled = false);
+            providersEl?.querySelectorAll('option').forEach((el: HTMLOptionElement) => el.disabled = false);
             refreshWarningState();
             return;
         }
 
-        // @ts-expect-error TS(7006) FIXME: Parameter 'el' implicitly has an 'any' type.
-        providersEl?.querySelectorAll('option').forEach(el => {
+        providersEl?.querySelectorAll('option').forEach((el: HTMLOptionElement) => {
             const isAvailable = providerNames.includes(el.value);
             el.disabled = !isAvailable;
         });
@@ -422,8 +429,7 @@ export async function syncOpenRouterProvidersForModel(modelId, providersSelector
  * @param modelId
  * @param providersSelector
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'modelId' implicitly has an 'any' type.
-export async function syncNanoGptProvidersForModel(modelId, providersSelector) {
+export async function syncNanoGptProvidersForModel(modelId: string, providersSelector: string) {
     const providersEl = document.querySelector(providersSelector);
 
     const refreshWarningState = () => {
@@ -431,8 +437,7 @@ export async function syncNanoGptProvidersForModel(modelId, providersSelector) {
     };
 
     if (!modelId) {
-        // @ts-expect-error TS(7006) FIXME: Parameter 'el' implicitly has an 'any' type.
-        providersEl?.querySelectorAll('option').forEach(el => el.disabled = false);
+        providersEl?.querySelectorAll('option').forEach((el: HTMLOptionElement) => el.disabled = false);
         refreshWarningState();
         return;
     }
@@ -453,8 +458,7 @@ export async function syncNanoGptProvidersForModel(modelId, providersSelector) {
         const providerIds = Array.isArray(data?.providers) ? data.providers : [];
 
         if (!data?.supportsProviderSelection || providerIds.length === 0) {
-            // @ts-expect-error TS(7006) FIXME: Parameter 'el' implicitly has an 'any' type.
-            providersEl?.querySelectorAll('option').forEach(el => {
+            providersEl?.querySelectorAll('option').forEach((el: HTMLOptionElement) => {
                 el.disabled = Boolean(el.value);
             });
             providersEl?.dispatchEvent(new Event('change'));
@@ -462,8 +466,7 @@ export async function syncNanoGptProvidersForModel(modelId, providersSelector) {
             return;
         }
 
-        // @ts-expect-error TS(7006) FIXME: Parameter 'el' implicitly has an 'any' type.
-        providersEl?.querySelectorAll('option').forEach(el => {
+        providersEl?.querySelectorAll('option').forEach((el: HTMLOptionElement) => {
             const value = el.value;
             const isAvailable = !value || providerIds.includes(value);
             el.disabled = !isAvailable;
@@ -480,8 +483,7 @@ export async function syncNanoGptProvidersForModel(modelId, providersSelector) {
  *
  * @param providersSelector
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'providersSelector' implicitly has an 'a... Remove this comment to see the full error message
-export function updateNanoGptProvidersWarning(providersSelector) {
+export function updateNanoGptProvidersWarning(providersSelector: string) {
     const providersEl = document.querySelector(providersSelector);
 
     if (!providersEl) {
@@ -497,10 +499,9 @@ export function updateNanoGptProvidersWarning(providersSelector) {
 
 /**
  /**
-  * @param data
-  */
- // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
- export async function loadOllamaModels(data) {
+ * @param data
+ */
+export async function loadOllamaModels(data: ApiModel[]) {
      if (!Array.isArray(data)) {
          console.error('Invalid Ollama models data', data);
          return;
@@ -518,17 +519,16 @@ export function updateNanoGptProvidersWarning(providersSelector) {
      for (const model of data) {
          const option = document.createElement('option');
          option.value = model.id;
-         option.text = model.name;
+         option.text = model.name ?? model.id;
          option.selected = model.id === textgen_settings.ollama_model;
          ollamaSelect.appendChild(option);
      }
 
-     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-     const ollamaSelectAny = ollamaSelect as any;
-     console.debug('[Ollama] Populated', ollamaSelectAny.options?.length, 'options, tomSelect:', !!ollamaSelectAny.tomSelect, 'tomselect:', !!ollamaSelectAny.tomselect);
+     const ollamaSelectAny = ollamaSelect as unknown as Record<string, unknown>;
+     console.debug('[Ollama] Populated', ((ollamaSelectAny as Record<string, unknown>).options as Record<string, unknown>[])?.length ?? 'unknown', 'options, tomSelect:', !!(ollamaSelectAny as Record<string, unknown>).tomSelect, 'tomselect:', !!(ollamaSelectAny as Record<string, unknown>).tomselect);
      const existingTs = ollamaSelectAny.tomSelect || ollamaSelectAny.tomselect;
      if (existingTs) {
-         existingTs.sync();
+         (existingTs as { sync: () => void }).sync();
          console.debug('[Ollama] sync() called');
      } else {
          // TomSelect not initialized — create it now
@@ -543,38 +543,36 @@ export function updateNanoGptProvidersWarning(providersSelector) {
  /**
   * @param data
   */
- // @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
-// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
-export async function loadTabbyModels(data) {
-    if (!Array.isArray(data)) {
-        console.error('Invalid Tabby models data', data);
-        return;
-    }
+ export async function loadTabbyModels(data: ApiModel[]) {
+     if (!Array.isArray(data)) {
+         console.error('Invalid Tabby models data', data);
+         return;
+     }
 
-    tabbyModels = data;
-    tabbyModels.sort((a, b) => a.id.localeCompare(b.id));
-    tabbyModels.unshift({ id: '' });
+     tabbyModels = data;
+     tabbyModels.sort((a, b) => a.id.localeCompare(b.id));
+     tabbyModels.unshift({ id: '' });
 
-    if (!tabbyModels.find(x => x.id === textgen_settings.tabby_model)) {
-        textgen_settings.tabby_model = tabbyModels[0]?.id || '';
-    }
+     if (!tabbyModels.find(x => x.id === textgen_settings.tabby_model)) {
+         textgen_settings.tabby_model = tabbyModels[0]?.id || '';
+     }
 
-    document.getElementById('tabby_model').innerHTML = '';
-    for (const model of tabbyModels) {
-        const option = document.createElement('option');
-        option.value = model.id;
-        option.text = model.id;
-        option.selected = model.id === textgen_settings.tabby_model;
-        document.getElementById('tabby_model').appendChild(option);
-    }
+     const tabbyModelEl = document.getElementById('tabby_model');
+     if (tabbyModelEl) tabbyModelEl.innerHTML = '';
+     for (const model of tabbyModels) {
+         const option = document.createElement('option');
+         option.value = model.id;
+         option.text = model.id;
+         option.selected = model.id === textgen_settings.tabby_model;
+         document.getElementById('tabby_model')?.appendChild(option);
+     }
 }
 
 /**
  *
  * @param data
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
-export async function loadLlamaCppModels(data) {
+export async function loadLlamaCppModels(data: ApiModel[]) {
     if (!Array.isArray(data)) {
         console.error('Invalid llama.cpp models data', data);
         return;
@@ -588,13 +586,14 @@ export async function loadLlamaCppModels(data) {
         textgen_settings.llamacpp_model = llamacppModels[0]?.id || '';
     }
 
-    document.getElementById('llamacpp_model').innerHTML = '';
+    const llamacppModelEl = document.getElementById('llamacpp_model');
+    if (llamacppModelEl) llamacppModelEl.innerHTML = '';
     for (const model of llamacppModels) {
         const option = document.createElement('option');
         option.value = model.id;
         option.text = model.id;
         option.selected = model.id === textgen_settings.llamacpp_model;
-        document.getElementById('llamacpp_model').appendChild(option);
+        document.getElementById('llamacpp_model')?.appendChild(option);
     }
 }
 
@@ -602,8 +601,7 @@ export async function loadLlamaCppModels(data) {
  *
  * @param data
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
-export async function loadTogetherAIModels(data) {
+export async function loadTogetherAIModels(data: ApiModel[]) {
     if (!Array.isArray(data)) {
         console.error('Invalid Together AI models data', data);
         return;
@@ -616,7 +614,8 @@ export async function loadTogetherAIModels(data) {
         textgen_settings.togetherai_model = data[0]?.id || '';
     }
 
-    document.getElementById('model_togetherai_select').innerHTML = '';
+    const togetheraiSelectEl = document.getElementById('model_togetherai_select');
+    if (togetheraiSelectEl) togetheraiSelectEl.innerHTML = '';
     for (const model of data) {
         // Hey buddy, I think you've got the wrong door.
         if (model.type === 'image') {
@@ -625,9 +624,9 @@ export async function loadTogetherAIModels(data) {
 
         const option = document.createElement('option');
         option.value = model.id;
-        option.text = model.display_name;
+        option.text = model.display_name ?? model.id;
         option.selected = model.id === textgen_settings.togetherai_model;
-        document.getElementById('model_togetherai_select').appendChild(option);
+        document.getElementById('model_togetherai_select')?.appendChild(option);
     }
 }
 
@@ -635,8 +634,7 @@ export async function loadTogetherAIModels(data) {
  *
  * @param data
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
-export async function loadInfermaticAIModels(data) {
+export async function loadInfermaticAIModels(data: ApiModel[]) {
     if (!Array.isArray(data)) {
         console.error('Invalid Infermatic AI models data', data);
         return;
@@ -649,7 +647,8 @@ export async function loadInfermaticAIModels(data) {
         textgen_settings.infermaticai_model = data[0]?.id || '';
     }
 
-    document.getElementById('model_infermaticai_select').innerHTML = '';
+    const infermaticaiSelectEl = document.getElementById('model_infermaticai_select');
+    if (infermaticaiSelectEl) infermaticaiSelectEl.innerHTML = '';
     for (const model of data) {
         if (model.display_type === 'image') {
             continue;
@@ -659,7 +658,7 @@ export async function loadInfermaticAIModels(data) {
         option.value = model.id;
         option.text = model.id;
         option.selected = model.id === textgen_settings.infermaticai_model;
-        document.getElementById('model_infermaticai_select').appendChild(option);
+        document.getElementById('model_infermaticai_select')?.appendChild(option);
     }
 }
 
@@ -667,8 +666,7 @@ export async function loadInfermaticAIModels(data) {
  *
  * @param data
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
-export function loadGenericModels(data) {
+export function loadGenericModels(data: ApiModel[]) {
     if (!Array.isArray(data)) {
         console.error('Invalid Generic models data', data);
         return;
@@ -690,8 +688,7 @@ export function loadGenericModels(data) {
  *
  * @param data
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
-export async function loadDreamGenModels(data) {
+export async function loadDreamGenModels(data: ApiModel[]) {
     if (!Array.isArray(data)) {
         console.error('Invalid DreamGen models data', data);
         return;
@@ -703,7 +700,8 @@ export async function loadDreamGenModels(data) {
         textgen_settings.dreamgen_model = data[0]?.id || '';
     }
 
-    document.getElementById('model_dreamgen_select').innerHTML = '';
+    const dreamgenSelectEl = document.getElementById('model_dreamgen_select');
+    if (dreamgenSelectEl) dreamgenSelectEl.innerHTML = '';
     for (const model of data) {
         if (model.display_type === 'image') {
             continue;
@@ -713,7 +711,7 @@ export async function loadDreamGenModels(data) {
         option.value = model.id;
         option.text = model.id;
         option.selected = model.id === textgen_settings.dreamgen_model;
-        document.getElementById('model_dreamgen_select').appendChild(option);
+        document.getElementById('model_dreamgen_select')?.appendChild(option);
     }
 }
 
@@ -721,27 +719,27 @@ export async function loadDreamGenModels(data) {
  *
  * @param data
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
-export async function loadMancerModels(data) {
+export async function loadMancerModels(data: ApiModel[]) {
     if (!Array.isArray(data)) {
         console.error('Invalid Mancer models data', data);
         return;
     }
 
-    data.sort((a, b) => a.name.localeCompare(b.name));
+    data.sort((a, b) => (a.name ?? a.id).localeCompare(b.name ?? b.id));
     mancerModels = data;
 
     if (!data.find(x => x.id === textgen_settings.mancer_model)) {
         textgen_settings.mancer_model = data[0]?.id || '';
     }
 
-    document.getElementById('mancer_model').innerHTML = '';
+    const mancerModelEl = document.getElementById('mancer_model');
+    if (mancerModelEl) mancerModelEl.innerHTML = '';
     for (const model of data) {
         const option = document.createElement('option');
         option.value = model.id;
-        option.text = model.name;
+        option.text = model.name ?? model.id;
         option.selected = model.id === textgen_settings.mancer_model;
-        document.getElementById('mancer_model').appendChild(option);
+        document.getElementById('mancer_model')?.appendChild(option);
     }
 }
 
@@ -749,41 +747,39 @@ export async function loadMancerModels(data) {
  *
  * @param data
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
-export async function loadOpenRouterModels(data) {
+export async function loadOpenRouterModels(data: ApiModel[]) {
     if (!Array.isArray(data)) {
         console.error('Invalid OpenRouter models data', data);
         return;
     }
 
-    data.sort((a, b) => a.name.localeCompare(b.name));
-    // @ts-expect-error TS(2322) FIXME: Type 'any[]' is not assignable to type 'never[]'.
+    data.sort((a, b) => (a.name ?? a.id).localeCompare(b.name ?? b.id));
     openRouterModels = data;
 
     if (!data.find(x => x.id === textgen_settings.openrouter_model)) {
         textgen_settings.openrouter_model = data[0]?.id || '';
     }
 
-    document.getElementById('openrouter_model').innerHTML = '';
+    const openrouterModelEl = document.getElementById('openrouter_model');
+    if (openrouterModelEl) openrouterModelEl.innerHTML = '';
     for (const model of data) {
         const option = document.createElement('option');
         option.value = model.id;
-        option.text = model.name;
+        option.text = model.name ?? model.id;
         option.selected = model.id === textgen_settings.openrouter_model;
-        document.getElementById('openrouter_model').appendChild(option);
+        document.getElementById('openrouter_model')?.appendChild(option);
     }
 
     // Calculate the cost of the selected model + update on settings change
     calculateOpenRouterCost();
-    syncOpenRouterProvidersForModel(textgen_settings.openrouter_model, '#openrouter_providers_text');
+    syncOpenRouterProvidersForModel(textgen_settings.openrouter_model as string, '#openrouter_providers_text');
 }
 
 /**
  *
  * @param data
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
-export async function loadVllmModels(data) {
+export async function loadVllmModels(data: ApiModel[]) {
     if (!Array.isArray(data)) {
         console.error('Invalid vLLM models data', data);
         return;
@@ -795,13 +791,14 @@ export async function loadVllmModels(data) {
         textgen_settings.vllm_model = data[0]?.id || '';
     }
 
-    document.getElementById('vllm_model').innerHTML = '';
+    const vllmModelEl = document.getElementById('vllm_model');
+    if (vllmModelEl) vllmModelEl.innerHTML = '';
     for (const model of data) {
         const option = document.createElement('option');
         option.value = model.id;
         option.text = model.id;
         option.selected = model.id === textgen_settings.vllm_model;
-        document.getElementById('vllm_model').appendChild(option);
+        document.getElementById('vllm_model')?.appendChild(option);
     }
 }
 
@@ -809,8 +806,7 @@ export async function loadVllmModels(data) {
  *
  * @param data
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
-export async function loadAphroditeModels(data) {
+export async function loadAphroditeModels(data: ApiModel[]) {
     if (!Array.isArray(data)) {
         console.error('Invalid Aphrodite models data', data);
         return;
@@ -822,13 +818,14 @@ export async function loadAphroditeModels(data) {
         textgen_settings.aphrodite_model = data[0]?.id || '';
     }
 
-    document.getElementById('aphrodite_model').innerHTML = '';
+    const aphroditeModelEl = document.getElementById('aphrodite_model');
+    if (aphroditeModelEl) aphroditeModelEl.innerHTML = '';
     for (const model of data) {
         const option = document.createElement('option');
         option.value = model.id;
         option.text = model.id;
         option.selected = model.id === textgen_settings.aphrodite_model;
-        document.getElementById('aphrodite_model').appendChild(option);
+        document.getElementById('aphrodite_model')?.appendChild(option);
     }
 }
 let featherlessCurrentPage = 1;
@@ -837,8 +834,7 @@ let featherlessCurrentPage = 1;
  *
  * @param data
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
-export async function loadFeatherlessModels(data) {
+export async function loadFeatherlessModels(data: ApiModel[]) {
     const searchBar = document.getElementById('featherless_model_search_bar');
     const modelCardBlock = document.getElementById('featherless_model_card_block');
     const paginationContainer = document.getElementById('featherless_model_pagination_container');
@@ -848,8 +844,7 @@ export async function loadFeatherlessModels(data) {
     const storageKey = 'FeatherlessModels_PerPage';
 
     // Store the original models data for search and filtering
-    // @ts-expect-error TS(7034) FIXME: Variable 'originalModels' implicitly has type 'any... Remove this comment to see the full error message
-    let originalModels = [];
+    let originalModels: ApiModel[] = [];
 
     if (!Array.isArray(data)) {
         console.error('Invalid Featherless models data', data);
@@ -879,8 +874,7 @@ export async function loadFeatherlessModels(data) {
      * @param perPage
      * @param pageNumber
      */
-    // @ts-expect-error TS(7006) FIXME: Parameter 'models' implicitly has an 'any' type.
-    function setupPagination(models, perPage, pageNumber = featherlessCurrentPage) {
+    function setupPagination(models: ApiModel[], perPage: number, pageNumber: number = featherlessCurrentPage) {
         if (!paginationContainer) return;
         createPaginator(paginationContainer, {
             dataSource: models,
@@ -891,13 +885,10 @@ export async function loadFeatherlessModels(data) {
             showNavigator: true,
             prevText: '<',
             nextText: '>',
-            // @ts-expect-error TS(7006) FIXME: Parameter 'modelsOnPage' implicitly has an 'any' type.
-            callback: function (modelsOnPage) {
-                // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-                modelCardBlock.innerHTML = '';
+            callback: function (modelsOnPage: ApiModel[]) {
+                if (modelCardBlock) modelCardBlock.innerHTML = '';
 
-                // @ts-expect-error TS(7006) FIXME: Parameter 'model' implicitly has an 'any' type.
-                modelsOnPage.forEach(model => {
+                modelsOnPage.forEach((model: ApiModel) => {
                     const card = document.createElement('div');
                     card.classList.add('model-card');
 
@@ -922,7 +913,7 @@ export async function loadFeatherlessModels(data) {
 
                     const dateAddedDiv = document.createElement('div');
                     dateAddedDiv.classList.add('model-date-added');
-                    dateAddedDiv.textContent = t`Added On` + `: ${new Date(model.created * 1000).toLocaleDateString()}`;
+                    dateAddedDiv.textContent = t`Added On` + `: ${new Date((model.created ?? 0) * 1000).toLocaleDateString()}`;
 
                     detailsContainer.appendChild(modelClassDiv);
                     detailsContainer.appendChild(contextLengthDiv);
@@ -931,8 +922,7 @@ export async function loadFeatherlessModels(data) {
                     card.appendChild(modelNameContainer);
                     card.appendChild(detailsContainer);
 
-                    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-                    modelCardBlock.appendChild(card);
+                    modelCardBlock?.appendChild(card);
 
                     if (model.id === textgen_settings.featherless_model) {
                         card.classList.add('selected');
@@ -955,39 +945,29 @@ export async function loadFeatherlessModels(data) {
     categoriesSelect?.removeEventListener('change', applyFiltersAndSort);
 
     // Add event listener for input on the search bar
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    searchBar.addEventListener('input', applyFiltersAndSort);
+    searchBar?.addEventListener('input', applyFiltersAndSort);
 
     // Add event listener for the sort order select
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    sortOrderSelect.addEventListener('change', applyFiltersAndSort);
+    sortOrderSelect?.addEventListener('change', applyFiltersAndSort);
 
     // Add event listener for the class select
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    classSelect.addEventListener('change', applyFiltersAndSort);
+    classSelect?.addEventListener('change', applyFiltersAndSort);
 
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    categoriesSelect.addEventListener('change', applyFiltersAndSort);
+    categoriesSelect?.addEventListener('change', applyFiltersAndSort);
 
     // Function to populate class selection dropdown
     /**
      *
      * @param models
      */
-    // @ts-expect-error TS(7006) FIXME: Parameter 'models' implicitly has an 'any' type.
-    function populateClassSelection(models) {
-        // @ts-expect-error TS(7006) FIXME: Parameter 'model' implicitly has an 'any' type.
-        const uniqueClasses = [...new Set(models.map(model => model.model_class).filter(Boolean))];  // Get unique class names
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+    function populateClassSelection(models: ApiModel[]) {
+        const uniqueClasses = [...new Set(models.map(model => model.model_class).filter(Boolean))] as string[];  // Get unique class names
         uniqueClasses.sort((a, b) => a.localeCompare(b));
         uniqueClasses.forEach(className => {
             const option = document.createElement('option');
-            // @ts-expect-error TS(2322) FIXME: Type 'unknown' is not assignable to type 'string'.
             option.value = className;
-            // @ts-expect-error TS(2322) FIXME: Type 'unknown' is not assignable to type 'string |... Remove this comment to see the full error message
             option.textContent = className;
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-            classSelect.appendChild(option);
+            classSelect?.appendChild(option);
         });
     }
 
@@ -1006,22 +986,19 @@ export async function loadFeatherlessModels(data) {
         const selectedSortOrder = sortOrderSelect.value;
         const selectedClass = classSelect.value;
         const selectedCategory = categoriesSelect.value;
-        let featherlessTop = [];
-        let featherlessNew = [];
+        let featherlessTop: { id: string }[] = [];
+        let featherlessNew: { id: string }[] = [];
 
         if (selectedCategory === 'Top') {
             featherlessTop = await fetchFeatherlessStats();
         }
-        // @ts-expect-error TS(7006) FIXME: Parameter 'stat' implicitly has an 'any' type.
-        const featherlessIds = featherlessTop.map(stat => stat.id);
+        const featherlessIds = featherlessTop.map((stat: { id: string }) => stat.id);
 
         if (selectedCategory === 'New') {
             featherlessNew = await fetchFeatherlessNew();
         }
-        // @ts-expect-error TS(7006) FIXME: Parameter 'stat' implicitly has an 'any' type.
-        const featherlessNewIds = featherlessNew.map(stat => stat.id);
+        const featherlessNewIds = featherlessNew.map((stat: { id: string }) => stat.id);
 
-        // @ts-expect-error TS(7005) FIXME: Variable 'originalModels' implicitly has an 'any[]... Remove this comment to see the full error message
         const filteredModels = originalModels.filter(model => {
             const matchesSearch = model.id.toLowerCase().includes(searchQuery);
             const matchesClass = selectedClass ? model.model_class === selectedClass : true;
@@ -1044,9 +1021,9 @@ export async function loadFeatherlessModels(data) {
         } else if (selectedSortOrder === 'desc') {
             filteredModels.sort((a, b) => b.id.localeCompare(a.id));
         } else if (selectedSortOrder === 'date_asc') {
-            filteredModels.sort((a, b) => a.created - b.created);
+            filteredModels.sort((a, b) => (a.created ?? 0) - (b.created ?? 0));
         } else if (selectedSortOrder === 'date_desc') {
-            filteredModels.sort((a, b) => b.created - a.created);
+            filteredModels.sort((a, b) => (b.created ?? 0) - (a.created ?? 0));
         }
 
         const currentModelIndex = filteredModels.findIndex(x => x.id === textgen_settings.featherless_model);
@@ -1056,13 +1033,14 @@ export async function loadFeatherlessModels(data) {
     }
 
     // Required to keep the /model command function
-    document.getElementById('featherless_model').innerHTML = '';
+    const featherlessModelEl = document.getElementById('featherless_model');
+    if (featherlessModelEl) featherlessModelEl.innerHTML = '';
     for (const model of data) {
         const option = document.createElement('option');
         option.value = model.id;
         option.text = model.id;
         option.selected = model.id === textgen_settings.featherless_model;
-        document.getElementById('featherless_model').appendChild(option);
+        document.getElementById('featherless_model')?.appendChild(option);
     }
 }
 
@@ -1088,39 +1066,30 @@ async function fetchFeatherlessNew() {
  *
  * @param modelId
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'modelId' implicitly has an 'any' type.
-function onFeatherlessModelSelect(modelId) {
-    // @ts-expect-error TS(7005) FIXME: Variable 'featherlessModels' implicitly has an 'an... Remove this comment to see the full error message
+function onFeatherlessModelSelect(modelId: string) {
     const model = featherlessModels.find(x => x.id === modelId);
     textgen_settings.featherless_model = modelId;
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('featherless_model').value = modelId;
+    (document.getElementById('featherless_model') as HTMLSelectElement | null)!.value = modelId;
     document.getElementById('api_button_textgenerationwebui')?.click();
-    setGenerationParamsFromPreset({ max_length: model.context_length });
+    if (model) setGenerationParamsFromPreset({ max_length: model.context_length });
 }
 let featherlessIsGridView = false;  // Default state set to grid view
 
 // Ensure the correct initial view is applied when the page loads
 document.addEventListener('DOMContentLoaded', function () {
     const modelCardBlock = document.getElementById('featherless_model_card_block');
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    modelCardBlock.classList.add('list-view');
+    modelCardBlock?.classList.add('list-view');
 
     const toggleButton = document.getElementById('featherless_model_grid_toggle');
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    toggleButton.addEventListener('click', function () {
+    toggleButton?.addEventListener('click', function (this: HTMLElement) {
         // Toggle between grid and list view
         if (featherlessIsGridView) {
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-            modelCardBlock.classList.remove('grid-view');
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-            modelCardBlock.classList.add('list-view');
+            modelCardBlock?.classList.remove('grid-view');
+            modelCardBlock?.classList.add('list-view');
             this.title = 'Toggle to grid view';
         } else {
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-            modelCardBlock.classList.remove('list-view');
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-            modelCardBlock.classList.add('grid-view');
+            modelCardBlock?.classList.remove('list-view');
+            modelCardBlock?.classList.add('grid-view');
             this.title = 'Toggle to list view';
         }
 
@@ -1131,48 +1100,41 @@ document.addEventListener('DOMContentLoaded', function () {
  *
  */
 function onMancerModelSelect() {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const modelId = String(document.getElementById('mancer_model').value);
+    const modelId = String((document.getElementById('mancer_model') as HTMLSelectElement | null)?.value ?? '');
     textgen_settings.mancer_model = modelId;
     document.getElementById('api_button_textgenerationwebui')?.click();
 
-    // @ts-expect-error TS(7005) FIXME: Variable 'mancerModels' implicitly has an 'any[]' ... Remove this comment to see the full error message
     const limits = mancerModels.find(x => x.id === modelId)?.limits;
-    setGenerationParamsFromPreset({ max_length: limits.context });
+    setGenerationParamsFromPreset({ max_length: limits?.context ?? 0 });
 }
 
 /**
  *
  */
 function onTogetherModelSelect() {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const modelName = String(document.getElementById('model_togetherai_select').value);
+    const modelName = String((document.getElementById('model_togetherai_select') as HTMLSelectElement | null)?.value ?? '');
     textgen_settings.togetherai_model = modelName;
     document.getElementById('api_button_textgenerationwebui')?.click();
-    // @ts-expect-error TS(7005) FIXME: Variable 'togetherModels' implicitly has an 'any[]... Remove this comment to see the full error message
     const model = togetherModels.find(x => x.id === modelName);
-    setGenerationParamsFromPreset({ max_length: model.context_length });
+    setGenerationParamsFromPreset({ max_length: model?.context_length ?? 0 });
 }
 
 /**
  *
  */
 function onInfermaticAIModelSelect() {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const modelName = String(document.getElementById('model_infermaticai_select').value);
+    const modelName = String((document.getElementById('model_infermaticai_select') as HTMLSelectElement | null)?.value ?? '');
     textgen_settings.infermaticai_model = modelName;
     document.getElementById('api_button_textgenerationwebui')?.click();
-    // @ts-expect-error TS(7005) FIXME: Variable 'infermaticAIModels' implicitly has an 'a... Remove this comment to see the full error message
     const model = infermaticAIModels.find(x => x.id === modelName);
-    setGenerationParamsFromPreset({ max_length: model.context_length });
+    setGenerationParamsFromPreset({ max_length: model?.context_length ?? 0 });
 }
 
 /**
  *
  */
 function onDreamGenModelSelect() {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const modelName = String(document.getElementById('model_dreamgen_select').value);
+    const modelName = String((document.getElementById('model_dreamgen_select') as HTMLSelectElement | null)?.value ?? '');
     textgen_settings.dreamgen_model = modelName;
     document.getElementById('api_button_textgenerationwebui')?.click();
     // TODO(DreamGen): Consider retuning max_tokens from API and setting it here.
@@ -1182,8 +1144,7 @@ function onDreamGenModelSelect() {
  *
  */
 function onOllamaModelSelect() {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const modelId = String(document.getElementById('ollama_model').value);
+    const modelId = String((document.getElementById('ollama_model') as HTMLSelectElement | null)?.value ?? '');
     textgen_settings.ollama_model = modelId;
     document.getElementById('api_button_textgenerationwebui')?.click();
 }
@@ -1192,8 +1153,7 @@ function onOllamaModelSelect() {
  *
  */
 function onTabbyModelSelect() {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const modelId = String(document.getElementById('tabby_model').value);
+    const modelId = String((document.getElementById('tabby_model') as HTMLSelectElement | null)?.value ?? '');
     textgen_settings.tabby_model = modelId;
     document.getElementById('api_button_textgenerationwebui')?.click();
 }
@@ -1202,8 +1162,7 @@ function onTabbyModelSelect() {
  *
  */
 function onLlamaCppModelSelect() {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const modelId = String(document.getElementById('llamacpp_model').value);
+    const modelId = String((document.getElementById('llamacpp_model') as HTMLSelectElement | null)?.value ?? '');
     textgen_settings.llamacpp_model = modelId;
     document.getElementById('api_button_textgenerationwebui')?.click();
 }
@@ -1212,23 +1171,19 @@ function onLlamaCppModelSelect() {
  *
  */
 function onOpenRouterModelSelect() {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const modelId = String(document.getElementById('openrouter_model').value);
+    const modelId = String((document.getElementById('openrouter_model') as HTMLSelectElement | null)?.value ?? '');
     textgen_settings.openrouter_model = modelId;
     document.getElementById('api_button_textgenerationwebui')?.click();
-    // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
     const model = openRouterModels.find(x => x.id === modelId);
     syncOpenRouterProvidersForModel(modelId, '#openrouter_providers_text');
-    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-    setGenerationParamsFromPreset({ max_length: model.context_length });
+    setGenerationParamsFromPreset({ max_length: model?.context_length ?? 0 });
 }
 
 /**
  *
  */
 function onVllmModelSelect() {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const modelId = String(document.getElementById('vllm_model').value);
+    const modelId = String((document.getElementById('vllm_model') as HTMLSelectElement | null)?.value ?? '');
     textgen_settings.vllm_model = modelId;
     document.getElementById('api_button_textgenerationwebui')?.click();
 }
@@ -1237,8 +1192,7 @@ function onVllmModelSelect() {
  *
  */
 function onAphroditeModelSelect() {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const modelId = String(document.getElementById('aphrodite_model').value);
+    const modelId = String((document.getElementById('aphrodite_model') as HTMLSelectElement | null)?.value ?? '');
     textgen_settings.aphrodite_model = modelId;
     document.getElementById('api_button_textgenerationwebui')?.click();
 }
@@ -1247,22 +1201,20 @@ function onAphroditeModelSelect() {
  *
  * @param option
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'option' implicitly has an 'any' type.
-function getMancerModelTemplate(option) {
-    // @ts-expect-error TS(7005) FIXME: Variable 'mancerModels' implicitly has an 'any[]' ... Remove this comment to see the full error message
-    const model = mancerModels.find(x => x.id === option?.element?.value);
+function getMancerModelTemplate(option: Record<string, unknown>) {
+    const model = mancerModels.find(x => x.id === (option?.element as Record<string, unknown> | undefined)?.value as string | undefined);
 
     if (!option.id || !model) {
-        return option.text;
+        return option.text as string;
     }
 
-    const creditsPerPrompt = (model.limits?.context - model.limits?.completion) * model.pricing?.prompt;
-    const creditsPerCompletion = model.limits?.completion * model.pricing?.completion;
+    const creditsPerPrompt = ((model.limits?.context ?? 0) - (model.limits?.completion ?? 0)) * (model.pricing?.prompt ?? 0);
+    const creditsPerCompletion = (model.limits?.completion ?? 0) * (model.pricing?.completion ?? 0);
     const creditsTotal = Math.round(creditsPerPrompt + creditsPerCompletion).toFixed(0);
 
     return (`
         <div class="flex-container flexFlowColumn">
-            <div><strong>${DOMPurify.sanitize(model.name)}</strong> | <span>${model.limits?.context} ctx</span> / <span>${model.limits?.completion} res</span> | <small>Credits per request (max): ${creditsTotal}</small></div>
+            <div><strong>${DOMPurify.sanitize(model.name ?? '')}</strong> | <span>${model.limits?.context ?? '?'} ctx</span> / <span>${model.limits?.completion ?? '?'} res</span> | <small>Credits per request (max): ${creditsTotal}</small></div>
         </div>
     `);
 }
@@ -1271,19 +1223,17 @@ function getMancerModelTemplate(option) {
  *
  * @param option
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'option' implicitly has an 'any' type.
-function getTogetherModelTemplate(option) {
-    // @ts-expect-error TS(7005) FIXME: Variable 'togetherModels' implicitly has an 'any[]... Remove this comment to see the full error message
-    const model = togetherModels.find(x => x.id === option?.element?.value);
+function getTogetherModelTemplate(option: Record<string, unknown>) {
+    const model = togetherModels.find(x => x.id === (option?.element as Record<string, unknown> | undefined)?.value as string | undefined);
 
     if (!option.id || !model) {
-        return option.text;
+        return option.text as string;
     }
 
     return (`
         <div class="flex-container flexFlowColumn">
-            <div><strong>${DOMPurify.sanitize(model.id)}</strong> | <span>${model.context_length || '???'} tokens</span></div>
-            <div><small>${DOMPurify.sanitize(model.description)}</small></div>
+            <div><strong>${DOMPurify.sanitize(model.id)}</strong> | <span>${model.context_length ?? '???'} tokens</span></div>
+            <div><small>${DOMPurify.sanitize(model.description ?? '')}</small></div>
         </div>
     `);
 }
@@ -1292,13 +1242,11 @@ function getTogetherModelTemplate(option) {
  *
  * @param option
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'option' implicitly has an 'any' type.
-function getInfermaticAIModelTemplate(option) {
-    // @ts-expect-error TS(7005) FIXME: Variable 'infermaticAIModels' implicitly has an 'a... Remove this comment to see the full error message
-    const model = infermaticAIModels.find(x => x.id === option?.element?.value);
+function getInfermaticAIModelTemplate(option: Record<string, unknown>) {
+    const model = infermaticAIModels.find(x => x.id === (option?.element as Record<string, unknown> | undefined)?.value as string | undefined);
 
     if (!option.id || !model) {
-        return option.text;
+        return option.text as string;
     }
 
     return (`
@@ -1312,13 +1260,11 @@ function getInfermaticAIModelTemplate(option) {
  *
  * @param option
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'option' implicitly has an 'any' type.
-function getDreamGenModelTemplate(option) {
-    // @ts-expect-error TS(7005) FIXME: Variable 'dreamGenModels' implicitly has an 'any[]... Remove this comment to see the full error message
-    const model = dreamGenModels.find(x => x.id === option?.element?.value);
+function getDreamGenModelTemplate(option: Record<string, unknown>) {
+    const model = dreamGenModels.find(x => x.id === (option?.element as Record<string, unknown> | undefined)?.value as string | undefined);
 
     if (!option.id || !model) {
-        return option.text;
+        return option.text as string;
     }
 
     return (`
@@ -1332,26 +1278,21 @@ function getDreamGenModelTemplate(option) {
  *
  * @param option
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'option' implicitly has an 'any' type.
-function getOpenRouterModelTemplate(option) {
-    // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
-    const model = openRouterModels.find(x => x.id === option?.element?.value);
+function getOpenRouterModelTemplate(option: Record<string, unknown>) {
+    const model = openRouterModels.find(x => x.id === (option?.element as Record<string, unknown> | undefined)?.value as string | undefined);
 
     if (!option.id || !model) {
-        return option.text;
+        return option.text as string;
     }
 
-    // @ts-expect-error TS(2339) FIXME: Property 'pricing' does not exist on type 'never'.
-    const tokens_dollar = Number(1 / (1000 * model.pricing?.prompt));
+    const tokens_dollar = Number(1 / (1000 * (model.pricing?.prompt ?? 1)));
     const tokens_rounded = (Math.round(tokens_dollar * 1000) / 1000).toFixed(0);
 
-    // @ts-expect-error TS(2339) FIXME: Property 'pricing' does not exist on type 'never'.
     const price = 0 === Number(model.pricing?.prompt) ? 'Free' : `${tokens_rounded}k t/$ `;
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     return (`
-        <div class="flex-container flexFlowColumn" title="${DOMPurify.sanitize((model as Record<string, unknown>).id as string)}">
-            <div><strong>${DOMPurify.sanitize((model as Record<string, unknown>).name as string)}</strong> | ${String((model as Record<string, unknown>).context_length ?? '')} ctx | <small>${price}</small></div>
+        <div class="flex-container flexFlowColumn" title="${DOMPurify.sanitize(model.id)}">
+            <div><strong>${DOMPurify.sanitize(model.name ?? model.id)}</strong> | ${String(model.context_length ?? '')} ctx | <small>${price}</small></div>
         </div>
     `);
 }
@@ -1360,13 +1301,11 @@ function getOpenRouterModelTemplate(option) {
  *
  * @param option
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'option' implicitly has an 'any' type.
-function getVllmModelTemplate(option) {
-    // @ts-expect-error TS(7005) FIXME: Variable 'vllmModels' implicitly has an 'any[]' ty... Remove this comment to see the full error message
-    const model = vllmModels.find(x => x.id === option?.element?.value);
+function getVllmModelTemplate(option: Record<string, unknown>) {
+    const model = vllmModels.find(x => x.id === (option?.element as Record<string, unknown> | undefined)?.value as string | undefined);
 
     if (!option.id || !model) {
-        return option.text;
+        return option.text as string;
     }
 
     return (`
@@ -1380,13 +1319,11 @@ function getVllmModelTemplate(option) {
  *
  * @param option
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'option' implicitly has an 'any' type.
-function getAphroditeModelTemplate(option) {
-    // @ts-expect-error TS(7005) FIXME: Variable 'aphroditeModels' implicitly has an 'any[... Remove this comment to see the full error message
-    const model = aphroditeModels.find(x => x.id === option?.element?.value);
+function getAphroditeModelTemplate(option: Record<string, unknown>) {
+    const model = aphroditeModels.find(x => x.id === (option?.element as Record<string, unknown> | undefined)?.value as string | undefined);
 
     if (!option.id || !model) {
-        return option.text;
+        return option.text as string;
     }
 
     return (`
@@ -1401,11 +1338,9 @@ function getAphroditeModelTemplate(option) {
  */
 async function downloadOllamaModel() {
     try {
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        const serverUrl = textgen_settings.server_urls[textgen_types.OLLAMA];
+        const serverUrl = (textgen_settings.server_urls as Record<string, string> | undefined)?.[textgen_types.OLLAMA as string];
 
         if (!serverUrl) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.info('Please connect to an Ollama server first.');
             return;
         }
@@ -1418,7 +1353,6 @@ async function downloadOllamaModel() {
             return;
         }
 
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.info('Download may take a while, please wait...', 'Working on it');
 
         const response = await fetch('/api/backends/text-completions/ollama/download', {
@@ -1435,12 +1369,10 @@ async function downloadOllamaModel() {
         }
 
         // Force refresh the model list
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.success('Download complete. Please select the model from the dropdown.');
         document.getElementById('api_button_textgenerationwebui')?.click();
     } catch (err) {
         console.error(err);
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.error('Failed to download Ollama model. Please try again.');
     }
 }
@@ -1450,16 +1382,13 @@ async function downloadOllamaModel() {
  */
 async function downloadTabbyModel() {
     try {
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        const serverUrl = textgen_settings.server_urls[textgen_types.TABBY];
+        const serverUrl = (textgen_settings.server_urls as Record<string, string> | undefined)?.[textgen_types.TABBY as string];
 
         if (online_status === 'no_connection' || !serverUrl) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.info('Please connect to a TabbyAPI server first.');
             return;
         }
 
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const downloadWrapper = document.createElement('div');
         downloadWrapper.innerHTML = await renderTemplateAsync('tabbyDownloader');
         const downloadHtml = downloadWrapper;
@@ -1470,41 +1399,35 @@ async function downloadTabbyModel() {
             return;
         }
 
-        const repoId = String(downloadHtml.querySelector('input[name="hf_repo_id"]')?.value ?? '');
+        const repoId = String((downloadHtml.querySelector('input[name="hf_repo_id"]') as HTMLInputElement | null)?.value ?? '');
         if (!repoId) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.error('A HuggingFace repo ID must be provided. Skipping Download.');
             return;
         }
 
         if (repoId.split('/').length !== 2) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.error('A HuggingFace repo ID must be formatted as Author/Name. Please try again.');
             return;
         }
 
-        const params = {
+        const params: Record<string, unknown> = {
             repo_id: repoId,
-            folder_name: downloadHtml[0].querySelector('input[name="folder_name"]')?.value || undefined,
-            revision: downloadHtml[0].querySelector('input[name="revision"]')?.value || undefined,
-            token: downloadHtml[0].querySelector('input[name="hf_token"]')?.value || undefined,
+            folder_name: (downloadHtml.querySelector('input[name="folder_name"]') as HTMLInputElement | null)?.value || undefined,
+            revision: (downloadHtml.querySelector('input[name="revision"]') as HTMLInputElement | null)?.value || undefined,
+            token: (downloadHtml.querySelector('input[name="hf_token"]') as HTMLInputElement | null)?.value || undefined,
         };
 
         for (const suffix of ['include', 'exclude']) {
-            const patterns = String(downloadHtml[0].querySelector(`textarea[name="tabby_download_${suffix}"]`)?.value ?? '');
+            const patterns = String((downloadHtml.querySelector(`textarea[name="tabby_download_${suffix}"]`) as HTMLTextAreaElement | null)?.value ?? '');
             if (patterns) {
-                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 params[suffix] = patterns.split('\n');
             }
         }
 
         // Params for the server side of ST
-        // @ts-expect-error TS(2339) FIXME: Property 'api_server' does not exist on type '{ re... Remove this comment to see the full error message
         params.api_server = serverUrl;
-        // @ts-expect-error TS(2339) FIXME: Property 'api_type' does not exist on type '{ repo... Remove this comment to see the full error message
         params.api_type = textgen_settings.type;
 
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.info('Downloading. Check the Tabby console for progress reports.');
 
         const response = await fetch('/api/backends/text-completions/tabby/download', {
@@ -1514,18 +1437,15 @@ async function downloadTabbyModel() {
         });
 
         if (response.status === 403) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.error('The provided key has invalid permissions. Please use an admin key for downloading.');
             return;
         } else if (!response.ok) {
             throw new Error(response.statusText);
         }
 
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.success('Download complete.');
     } catch (err) {
         console.error(err);
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.error('Failed to download HuggingFace model in TabbyAPI. Please try again.');
     }
 }
@@ -1539,14 +1459,10 @@ function calculateOpenRouterCost() {
     }
 
     let cost = 'Unknown';
-    // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
     const model = openRouterModels.find(x => x.id === textgen_settings.openrouter_model);
 
-    // @ts-expect-error TS(2339) FIXME: Property 'pricing' does not exist on type 'never'.
     if (model?.pricing) {
-        // @ts-expect-error TS(2339) FIXME: Property 'pricing' does not exist on type 'never'.
         const completionCost = Number(model.pricing.completion);
-        // @ts-expect-error TS(2339) FIXME: Property 'pricing' does not exist on type 'never'.
         const promptCost = Number(model.pricing.prompt);
         const completionTokens = amount_gen;
         const promptTokens = (max_context - completionTokens);
@@ -1556,8 +1472,8 @@ function calculateOpenRouterCost() {
         }
     }
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('or_prompt_cost').textContent = cost;
+    const orPromptCost = document.getElementById('or_prompt_cost');
+    if (orPromptCost) orPromptCost.textContent = cost;
 
     // Schedule an update when settings change
     eventSource.removeListener(event_types.SETTINGS_UPDATED, calculateOpenRouterCost);
@@ -1568,14 +1484,13 @@ function calculateOpenRouterCost() {
  *
  */
 export function getCurrentOpenRouterModelTokenizer() {
-    const modelId = textgen_settings.openrouter_model;
-    // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
+    const modelId = (textgen_settings as Record<string, unknown>).openrouter_model as string | undefined;
     const model = openRouterModels.find(x => x.id === modelId);
     if (modelId?.includes('jamba')) {
         return tokenizers.JAMBA;
     }
-    // @ts-expect-error TS(2339) FIXME: Property 'architecture' does not exist on type 'ne... Remove this comment to see the full error message
-    switch (model?.architecture?.tokenizer) {
+    const modelArchitecture = model ? ((model as unknown as Record<string, unknown>).architecture as Record<string, unknown>) : undefined;
+    switch (modelArchitecture?.tokenizer as string | undefined) {
         case 'Llama2':
             return tokenizers.LLAMA;
         case 'Llama3':
@@ -1602,8 +1517,8 @@ export function getCurrentOpenRouterModelTokenizer() {
  */
 export function getCurrentDreamGenModelTokenizer() {
     const modelId = textgen_settings.dreamgen_model;
-    // @ts-expect-error TS(7005) FIXME: Variable 'dreamGenModels' implicitly has an 'any[]... Remove this comment to see the full error message
     const model = dreamGenModels.find(x => x.id === modelId);
+    if (!model) return tokenizers.MISTRAL;
     if (model.id.startsWith('lucid-v1-medium') || model.id.startsWith('lucid-v1-base')) {
         return tokenizers.MISTRAL;
     } else if (model.id.startsWith('lucid-v1-extra-large') || model.id.startsWith('lucid-v1-max')) {
@@ -1631,20 +1546,16 @@ export function initTextGenModels() {
     document.getElementById('llamacpp_model')?.addEventListener('change', onLlamaCppModelSelect);
     document.getElementById('featherless_model')?.addEventListener('change', () => onFeatherlessModelSelect(String((document.getElementById('featherless_model') as HTMLSelectElement)?.value ?? '')));
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const providersSelect = document.querySelector('.openrouter_providers');
     for (const provider of OPENROUTER_PROVIDERS) {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const option = document.createElement('option');
         option.value = provider;
         option.textContent = provider;
         providersSelect?.appendChild(option);
     }
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const nanoGptProvidersSelect = document.getElementById('nanogpt_provider');
     for (const provider of NANOGPT_PROVIDERS) {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const option = document.createElement('option');
         option.value = provider.id;
         option.textContent = provider.label;
@@ -1656,14 +1567,14 @@ export function initTextGenModels() {
             maxItems: 1,
             placeholder: t`Select a model`,
             render: {
-                option: function (data, escape) { return getMancerModelTemplate(data); },
+                option: function (data: Record<string, unknown>, _escape: (t: string) => string) { return getMancerModelTemplate(data); },
             },
         });
         new TomSelect(document.getElementById('model_togetherai_select'), {
             maxItems: 1,
             placeholder: t`Select a model`,
             render: {
-                option: function (data, escape) { return getTogetherModelTemplate(data); },
+                option: function (data: Record<string, unknown>, _escape: (t: string) => string) { return getTogetherModelTemplate(data); },
             },
         });
         new TomSelect(document.getElementById('ollama_model'), {
@@ -1682,35 +1593,35 @@ export function initTextGenModels() {
             maxItems: 1,
             placeholder: t`Select a model`,
             render: {
-                option: function (data, escape) { return getInfermaticAIModelTemplate(data); },
+                option: function (data: Record<string, unknown>, _escape: (t: string) => string) { return getInfermaticAIModelTemplate(data); },
             },
         });
         new TomSelect(document.getElementById('model_dreamgen_select'), {
             maxItems: 1,
             placeholder: t`Select a model`,
             render: {
-                option: function (data, escape) { return getDreamGenModelTemplate(data); },
+                option: function (data: Record<string, unknown>, _escape: (t: string) => string) { return getDreamGenModelTemplate(data); },
             },
         });
         new TomSelect(document.getElementById('openrouter_model'), {
             maxItems: 1,
             placeholder: t`Select a model`,
             render: {
-                option: function (data, escape) { return getOpenRouterModelTemplate(data); },
+                option: function (data: Record<string, unknown>, _escape: (t: string) => string) { return getOpenRouterModelTemplate(data); },
             },
         });
         new TomSelect(document.getElementById('vllm_model'), {
             maxItems: 1,
             placeholder: t`Select a model`,
             render: {
-                option: function (data, escape) { return getVllmModelTemplate(data); },
+                option: function (data: Record<string, unknown>, _escape: (t: string) => string) { return getVllmModelTemplate(data); },
             },
         });
         new TomSelect(document.getElementById('aphrodite_model'), {
             maxItems: 1,
             placeholder: t`Select a model`,
             render: {
-                option: function (data, escape) { return getAphroditeModelTemplate(data); },
+                option: function (data: Record<string, unknown>, _escape: (t: string) => string) { return getAphroditeModelTemplate(data); },
             },
         });
         new TomSelect(document.querySelector('.openrouter_quantizations'), {
@@ -1718,21 +1629,25 @@ export function initTextGenModels() {
             plugins: ['remove_button'],
             placeholder: t`Select quantizations. No selection = all quantizations.`,
         });
-        new TomSelect(providersSelect[0], {
-            maxItems: null,
-            plugins: ['remove_button'],
-            placeholder: t`Select providers. No selection = all providers.`,
-        });
-        providersSelect[0].addEventListener('change', function (this: HTMLSelectElement) {
-            const selectedOptions = Array.from(this.selectedOptions);
-            for (const option of selectedOptions) {
-                this.appendChild(option);
-            }
-        });
-        new TomSelect(nanoGptProvidersSelect[0], {
-            maxItems: null,
-            plugins: ['remove_button'],
-            placeholder: t`Select providers. No selection = all providers.`,
-        });
+        if (providersSelect) {
+            new TomSelect(providersSelect, {
+                maxItems: null,
+                plugins: ['remove_button'],
+                placeholder: t`Select providers. No selection = all providers.`,
+            });
+            providersSelect.addEventListener('change', function (this: HTMLSelectElement) {
+                const selectedOptions = Array.from(this.selectedOptions);
+                for (const option of selectedOptions) {
+                    this.appendChild(option);
+                }
+            });
+        }
+        if (nanoGptProvidersSelect) {
+            new TomSelect(nanoGptProvidersSelect, {
+                maxItems: null,
+                plugins: ['remove_button'],
+                placeholder: t`Select providers. No selection = all providers.`,
+            });
+        }
     }
 }

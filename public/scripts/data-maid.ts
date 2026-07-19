@@ -139,7 +139,6 @@ class DataMaidDialog {
             this.token = report.token;
         } catch (error) {
             this.hideSpinner();
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.error(t`An error has occurred. Check the console for details.`);
             console.error('Error generating Data Maid report:', error);
         } finally {

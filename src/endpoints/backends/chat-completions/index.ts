@@ -202,21 +202,23 @@ router.post('/status', async function (request, response) {
                 data = { data: data.map((m: { name?: string; [key: string]: unknown }) => ({ id: m.name, ...m })) };
             }
 
+            const dataRecord = data as Record<string, unknown>;
             // Chutes needs pricing transform.
-            if (source === CHAT_COMPLETION_SOURCES.CHUTES && Array.isArray(data?.data)) {
-                data.data = data.data
+            if (source === CHAT_COMPLETION_SOURCES.CHUTES && Array.isArray(dataRecord?.data)) {
+                dataRecord.data = dataRecord.data
                     .filter((m: { id?: string }) => m?.id)
                     .map((m: Record<string, unknown>) => {
-                        if (m.pricing?.prompt !== undefined && m.pricing?.completion !== undefined) {
-                            return { ...m, pricing: { ...m.pricing, input: m.pricing.prompt, output: m.pricing.completion } };
+                        const pricing = m.pricing as Record<string, unknown>;
+                        if (pricing?.prompt !== undefined && pricing?.completion !== undefined) {
+                            return { ...m, pricing: { ...pricing, input: pricing.prompt, output: pricing.completion } };
                         }
                         return m;
                     });
             }
 
-            if (!data?.data && data?.models) {
-                data.data = data.models.map((m: { name?: string; [key: string]: unknown }) => ({ id: m.name, ...m }));
-                delete data.models;
+            if (!dataRecord?.data && (dataRecord as unknown as Record<string, unknown>)?.models) {
+                dataRecord.data = ((dataRecord as unknown as Record<string, unknown>).models as { name?: string; [key: string]: unknown }[]).map((m: { name?: string; [key: string]: unknown }) => ({ id: m.name, ...m }));
+                delete (dataRecord as unknown as Record<string, unknown>).models;
             }
 
             // Cohere returns { models: [...] } instead of { data: [...] }.
@@ -361,6 +363,11 @@ router.post('/bias', async function (request, response) {
         return response.send({});
     }
 
+    /**
+     *
+     * @param text
+     * @param encode
+     */
     function getEntryTokens(text: string, encode: (text: string) => Uint32Array): Uint32Array {
         if (text.trim().startsWith('[') && text.trim().endsWith(']')) {
             try {
@@ -400,6 +407,11 @@ router.post('/process', async function (request, response) {
 
 const multimodalModels = express.Router();
 
+/**
+ *
+ * @param url
+ * @param headers
+ */
 async function fetchModels(url: string, headers?: Record<string, string>): Promise<unknown> {
     const response = await globalThis.fetch(url, { headers });
     if (!response.ok) return [];
@@ -422,7 +434,7 @@ multimodalModels.post('/pollinations', async (_req, res) => {
 
 multimodalModels.post('/aimlapi', async (_req, res) => {
     try {
-        const data = await fetchModels('https://api.aimlapi.com/v1/models');
+        const data = await fetchModels('https://api.aimlapi.com/v1/models') as Record<string, unknown>;
         if (!Array.isArray(data?.data)) return res.json([]);
         const models = data.data
             .filter((m: { features?: string[] }) => m.features?.includes('openai/chat-completion.vision'))
@@ -436,7 +448,7 @@ multimodalModels.post('/aimlapi', async (_req, res) => {
 
 multimodalModels.post('/nanogpt', async (_req, res) => {
     try {
-        const data = await fetchModels('https://nano-gpt.com/api/v1/models?detailed=true');
+        const data = await fetchModels('https://nano-gpt.com/api/v1/models?detailed=true') as Record<string, unknown>;
         if (!Array.isArray(data?.data)) return res.json([]);
         const models = data.data.filter((m: { capabilities?: Record<string, unknown> }) => m.capabilities?.vision).map((m: { id?: string }) => m.id);
         return res.json(models);
@@ -448,7 +460,7 @@ multimodalModels.post('/nanogpt', async (_req, res) => {
 
 multimodalModels.post('/electronhub', async (_req, res) => {
     try {
-        const data = await fetchModels('https://api.electronhub.ai/v1/models');
+        const data = await fetchModels('https://api.electronhub.ai/v1/models') as Record<string, unknown>;
         const models = (data.data as Array<Record<string, unknown>> || []).filter((m: { metadata?: Record<string, unknown> }) => m.metadata?.vision).map((m: { id?: string }) => m.id);
         return res.json(models);
     } catch (error) {
@@ -461,7 +473,7 @@ multimodalModels.post('/chutes', async (req, res) => {
     try {
         const key = readSecret(req.user.directories, SECRET_KEYS.CHUTES);
         if (!key) return res.json([]);
-        const data = await fetchModels('https://llm.chutes.ai/v1/models', { Authorization: `Bearer ${key}` });
+        const data = await fetchModels('https://llm.chutes.ai/v1/models', { Authorization: `Bearer ${key}` }) as Record<string, unknown>;
         const models = (data.data as Array<Record<string, unknown>> || [])
             .filter((m: { input_modalities?: string[] }) => m.input_modalities?.includes('image'))
             .map((m: { id?: string }) => m.id);
@@ -476,7 +488,7 @@ multimodalModels.post('/mistral', async (req, res) => {
     try {
         const key = readSecret(req.user.directories, SECRET_KEYS.MISTRALAI);
         if (!key) return res.json([]);
-        const data = await fetchModels('https://api.mistral.ai/v1/models', { Authorization: `Bearer ${key}` });
+        const data = await fetchModels('https://api.mistral.ai/v1/models', { Authorization: `Bearer ${key}` }) as Record<string, unknown>;
         const models = (data.data as Array<Record<string, unknown>> || []).filter((m: { capabilities?: Record<string, unknown> }) => m.capabilities?.vision).map((m: { id?: string }) => m.id);
         return res.json(models);
     } catch (error) {
@@ -489,7 +501,7 @@ multimodalModels.post('/xai', async (req, res) => {
     try {
         const key = readSecret(req.user.directories, SECRET_KEYS.XAI);
         if (!key) return res.json([]);
-        const data = await fetchModels('https://api.x.ai/v1/language-models', { Authorization: `Bearer ${key}` });
+        const data = await fetchModels('https://api.x.ai/v1/language-models', { Authorization: `Bearer ${key}` }) as Record<string, unknown>;
         const models = (data.models as Array<Record<string, unknown>> || [])
             .filter((m: { input_modalities?: string[] }) => m.input_modalities?.includes('image'))
             .map((m: { id?: string }) => m.id);
@@ -505,7 +517,7 @@ multimodalModels.post('/moonshot', async (req, res) => {
     try {
         const key = readSecret(req.user.directories, SECRET_KEYS.MOONSHOT);
         if (!key) return res.json([]);
-        const data = await fetchModels('https://api.moonshot.ai/v1/models', { Authorization: `Bearer ${key}` });
+        const data = await fetchModels('https://api.moonshot.ai/v1/models', { Authorization: `Bearer ${key}` }) as Record<string, unknown>;
         const models = (data.data as Array<Record<string, unknown>> || []).filter((m: { supports_image_in?: boolean }) => m.supports_image_in).map((m: { id?: string }) => m.id);
         return res.json(models);
     } catch (error) {
@@ -522,7 +534,7 @@ multimodalModels.post('/workers_ai', async (req, res) => {
         const data = await fetchModels(
             `https://api.cloudflare.com/client/v4/accounts/${encodeURIComponent(accountId)}/ai/models/search?task=Text+Generation&per_page=1000`,
             { Authorization: 'Bearer ' + key },
-        );
+        ) as Record<string, unknown>;
         const models = Array.isArray(data?.result)
             ? (data.result as Array<Record<string, unknown>>)
                 .filter((m: { properties?: Array<{ property_id?: string; value?: string }> }) => Array.isArray(m.properties) && m.properties.some((p) => p.property_id === 'vision' && p.value === 'true'))

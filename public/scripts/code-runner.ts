@@ -20,8 +20,8 @@ export function addExecuteButtonToCodeBlocks() {
         if (!match || !supportedLanguages.has(match[1] ?? '')) {
             continue;
         }
-        const lang = match[1];
-        addButton(block, lang);
+        const lang = match[1] ?? '';
+        addButton(block as HTMLElement, lang);
         block.classList.add('code-runner');
     }
     // Auto-run when toggle is enabled
@@ -45,14 +45,19 @@ export function removeExecuteButtons() {
     document.querySelectorAll('#chat .mes_text pre code.code-runner').forEach(el => el.classList.remove('code-runner'));
 }
 
-function addButton(block, lang) {
+/**
+ *
+ * @param block
+ * @param lang
+ */
+function addButton(block: HTMLElement, lang: string) {
     if (lang === 'html') {
         // HTML blocks: button toggles preview, no auto-render
         const btn = document.createElement('i');
         btn.title = 'Show preview';
         btn.className = 'code-runner-button fa-solid fa-play';
         btn.addEventListener('click', () => {
-            const existing = block.parentElement.querySelector('.code-output');
+            const existing = block.parentElement!.querySelector('.code-output');
             if (existing) {
                 existing.remove();
                 btn.className = 'code-runner-button fa-solid fa-play';
@@ -64,7 +69,7 @@ function addButton(block, lang) {
             }
         });
         // Insert after the <pre> so the button stays visible if a regex hides the <pre>/<code>
-        block.parentElement.after(btn);
+        block.parentElement!.after(btn);
         return;
     }
 
@@ -76,16 +81,20 @@ function addButton(block, lang) {
         else if (lang === 'stscript') runST(block);
     });
     // Insert after the <pre> so the button stays visible if a regex hides the <pre>/<code>
-    block.parentElement.after(btn);
+    block.parentElement!.after(btn);
 }
 
 // ── Output helpers ────────────────────────────────────────────────────────
 
-function getOutput(block) {
-    const pre = block.parentElement;
+/**
+ *
+ * @param block
+ */
+function getOutput(block: HTMLElement) {
+    const pre = block.parentElement!;
     // Walk siblings after <pre> to find existing output (button may be between them)
-    let el = pre.nextElementSibling;
-    while (el && !el.classList.contains('code-output')) el = el.nextElementSibling;
+    let el: HTMLElement | null = pre.nextElementSibling as HTMLElement | null;
+    while (el && !el.classList.contains('code-output')) el = el.nextElementSibling as HTMLElement | null;
     if (!el) {
         el = document.createElement('blockquote');
         el.className = 'code-output';
@@ -96,7 +105,7 @@ function getOutput(block) {
     const clear = document.createElement('i');
     clear.className = 'code-output-clear fa-solid fa-xmark fa-fw';
     clear.title = 'Clear';
-    clear.onclick = () => el.remove();
+    clear.onclick = () => el!.remove();
 
     const loader = document.createElement('i');
     loader.className = 'code-output-hourglass fa-solid fa-hourglass fa-2x';
@@ -104,34 +113,43 @@ function getOutput(block) {
 
     el.append(clear, loader);
 
-    const cleared = new Promise(resolve => {
+    const cleared = new Promise<symbol>(resolve => {
         clear.addEventListener('click', () => resolve(clearedSymbol), { once: true });
     });
 
     return { el, loader, cleared };
 }
 
-function show(el) { el.style.display = 'block'; }
-function hide(el) { el.style.display = 'none'; }
+/**
+ *
+ * @param el
+ */
+function show(el: HTMLElement) { el.style.display = 'block'; }
+/**
+ *
+ * @param el
+ */
+function hide(el: HTMLElement) { el.style.display = 'none'; }
 
 // ── JS execution ──────────────────────────────────────────────────────────
 
 class SandboxConsole {
-    constructor(out) { this.out = out; }
-    _write(args) {
+    out: HTMLElement;
+    constructor(out: HTMLElement) { this.out = out; }
+    _write(args: unknown[]) {
         const d = document.createElement('div');
         d.textContent = args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' ');
         this.out.appendChild(d);
     }
-    log(...a) { this._write(a); }
-    info(...a) { this._write(a); }
-    warn(...a) { this._write(a); }
-    error(...a) { this._write(a); }
-    debug(...a) { this._write(a); }
-    table(...a) { this._write(a); }
-    trace(...a) { this._write(a); }
-    alert(...a) { this._write(a); }
-    result(v, ms) {
+    log(...a: unknown[]) { this._write(a); }
+    info(...a: unknown[]) { this._write(a); }
+    warn(...a: unknown[]) { this._write(a); }
+    error(...a: unknown[]) { this._write(a); }
+    debug(...a: unknown[]) { this._write(a); }
+    table(...a: unknown[]) { this._write(a); }
+    trace(...a: unknown[]) { this._write(a); }
+    alert(...a: unknown[]) { this._write(a); }
+    result(v: unknown, ms: number) {
         const d = document.createElement('div');
         const s = document.createElement('small');
         s.textContent = `Finished in ${(ms / 1000).toFixed(2)}s. Result: ${JSON.stringify(v)}`;
@@ -140,7 +158,11 @@ class SandboxConsole {
     }
 }
 
-async function runJS(block) {
+/**
+ *
+ * @param block
+ */
+async function runJS(block: HTMLElement) {
     try {
         const { el, loader, cleared } = getOutput(block);
         show(loader);
@@ -167,14 +189,18 @@ async function runJS(block) {
         cc.result(result, performance.now() - t0);
     } catch (e) {
         console.error('Code runner error:', e);
-        notyf.error('Error running code', e.message);
+        notyf.error('Error running code', e instanceof Error ? e.message : String(e));
     }
 }
 
 // ── STScript execution ────────────────────────────────────────────────────
 
-async function runST(block) {
-    const { executeSlashCommands } = SillyTavern.getContext();
+/**
+ *
+ * @param block
+ */
+async function runST(block: HTMLElement) {
+    const { executeSlashCommands } = SillyTavern.getContext() as unknown as { executeSlashCommands: (code: string, handleParserErrors?: boolean, scope?: unknown, handleExecutionErrors?: boolean, parserFlags?: unknown, abortController?: AbortController, onProgress?: () => void) => Promise<string> };
     try {
         const { el, loader, cleared } = getOutput(block);
         show(loader);
@@ -188,16 +214,21 @@ async function runST(block) {
         hide(loader);
         if (result === clearedSymbol) { ac.abort(); return; }
         const cc = new SandboxConsole(el);
-        cc.result(result?.pipe, performance.now() - t0);
+        cc.result((result as unknown as Record<string, unknown>)?.pipe, performance.now() - t0);
     } catch (e) {
         console.error('STScript error:', e);
-        notyf.error('Error running STScript', e.message);
+        notyf.error('Error running STScript', e instanceof Error ? e.message : String(e));
     }
 }
 
 // ── HTML rendering ────────────────────────────────────────────────────────
 
-function renderHTML(block, fullSize = false) {
+/**
+ *
+ * @param block
+ * @param fullSize
+ */
+function renderHTML(block: HTMLElement, fullSize = false) {
     // Only one HTML preview at a time — remove all existing code-outputs
     document.querySelectorAll('#chat .code-output').forEach(el => el.remove());
 
@@ -224,5 +255,5 @@ function renderHTML(block, fullSize = false) {
 
     container.append(clear, expand, iframe);
     // Place after the <pre> so it stays visible even if a regex hides the code block
-    block.parentElement.after(container);
+    block.parentElement!.after(container);
 }

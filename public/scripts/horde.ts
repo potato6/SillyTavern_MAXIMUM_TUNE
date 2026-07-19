@@ -22,11 +22,25 @@ export {
     MIN_LENGTH,
 };
 
-// @ts-expect-error TS(7034) FIXME: Variable 'models' implicitly has type 'any[]' in s... Remove this comment to see the full error message
-let models = [];
+interface HordeModel {
+    name: string;
+    cluster?: string;
+    performance: number;
+    is_whitelisted: boolean;
+    tags?: string[];
+    eta?: number;
+    queued?: number;
+    count?: number;
+    display_name?: string;
+    description?: string;
+    url?: string;
+    style?: string;
+}
+
+let models: HordeModel[] = [];
 
 export const horde_settings = {
-    models: [],
+    models: [] as string[],
     auto_adjust_response_length: true,
     auto_adjust_context_length: false,
     trusted_workers_only: false,
@@ -36,13 +50,13 @@ const MAX_RETRIES = 480;
 const CHECK_INTERVAL = 2500;
 const MIN_LENGTH = 16;
 
+
+
 /**
- * Gets the available workers from Horde.
- * @param {boolean} force Do a force refresh of the workers
- * @returns {Promise<Array>} Array of workers
+ *
+ * @param force
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'force' implicitly has an 'any' type.
-async function getWorkers(force) {
+async function getWorkers(force: boolean) {
     const response = await fetch('/api/horde/text-workers', {
         method: 'POST',
         headers: getRequestHeaders(),
@@ -56,8 +70,7 @@ async function getWorkers(force) {
  * @param {boolean} force Do a force refresh of the models
  * @returns {Promise<Array>} Array of models
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'force' implicitly has an 'any' type.
-async function getModels(force) {
+async function getModels(force: boolean) {
     const response = await fetch('/api/horde/text-models', {
         method: 'POST',
         headers: getRequestHeaders(),
@@ -74,8 +87,7 @@ async function getModels(force) {
  * @param {string} taskId Task ID
  * @returns {Promise<object>} Task status
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'taskId' implicitly has an 'any' type.
-async function getTaskStatus(taskId) {
+async function getTaskStatus(taskId: string) {
     const response = await fetch('/api/horde/task-status', {
         method: 'POST',
         headers: getRequestHeaders(),
@@ -93,8 +105,7 @@ async function getTaskStatus(taskId) {
  * Cancels a Horde task.
  * @param {string} taskId Task ID
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'taskId' implicitly has an 'any' type.
-async function cancelTask(taskId) {
+async function cancelTask(taskId: string) {
     const response = await fetch('/api/horde/cancel-task', {
         method: 'POST',
         headers: getRequestHeaders(),
@@ -146,12 +157,10 @@ export async function getStatusHorde() {
 /**
  *
  */
-function validateHordeModel() {
-    // @ts-expect-error TS(7005) FIXME: Variable 'models' implicitly has an 'any[]' type.
+function validateHordeModel(): HordeModel[] {
     const selectedModels = models.filter(m => horde_settings.models.includes(m.name));
 
     if (selectedModels.length === 0) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.warning('No Horde model selected or the selected models are no longer available. Please choose another model');
         throw new Error('No Horde model available');
     }
@@ -164,8 +173,7 @@ function validateHordeModel() {
  * @param max_context_length
  * @param max_length
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'max_context_length' implicitly has an '... Remove this comment to see the full error message
-export async function adjustHordeGenerationParams(max_context_length, max_length) {
+export async function adjustHordeGenerationParams(max_context_length: number, max_length: number) {
     console.log(max_context_length, max_length);
     const workers = await getWorkers(false);
     let maxContextLength = max_context_length;
@@ -200,8 +208,7 @@ export async function adjustHordeGenerationParams(max_context_length, max_length
         }
     }
     console.log(maxContextLength, maxLength);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('adjustedHordeParams').textContent = t`Context` + `: ${maxContextLength}, ` + t`Response` + `: ${maxLength}`;
+    document.getElementById('adjustedHordeParams')!.textContent = t`Context` + `: ${maxContextLength}, ` + t`Response` + `: ${maxLength}`;
     return { maxContextLength, maxLength };
 }
 
@@ -212,8 +219,7 @@ function setContextSizePreview() {
     if (horde_settings.models.length) {
         adjustHordeGenerationParams(max_context, amount_gen);
     } else {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        document.getElementById('adjustedHordeParams').textContent = t`Context` + ': --, ' + t`Response` + ': --';
+        document.getElementById('adjustedHordeParams')!.textContent = t`Context` + ': --, ' + t`Response` + ': --';
     }
 }
 
@@ -226,8 +232,7 @@ function setContextSizePreview() {
  * @returns {Promise<{text: *, workerName: string}>}
  * @throws {Error}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'prompt' implicitly has an 'any' type.
-export async function generateHorde(prompt, params, signal, reportProgress) {
+export async function generateHorde(prompt: string, params: Record<string, unknown>, signal: AbortSignal, reportProgress?: (progress: number) => void) {
     validateHordeModel();
     delete params.prompt;
 
@@ -253,7 +258,6 @@ export async function generateHorde(prompt, params, signal, reportProgress) {
     });
 
     if (!response.ok) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.error(response.statusText, 'Horde generation failed');
         throw new Error(`Horde generation failed: ${response.statusText}`);
     }
@@ -262,7 +266,6 @@ export async function generateHorde(prompt, params, signal, reportProgress) {
 
     if (responseJson.error) {
         const reason = responseJson.error?.message || 'Unknown error';
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.error(reason, 'Horde generation failed');
         throw new Error(`Horde generation failed: ${reason}`);
     }
@@ -281,13 +284,11 @@ export async function generateHorde(prompt, params, signal, reportProgress) {
         console.log(statusCheckJson);
 
         if (statusCheckJson.faulted === true) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            notyf.error('Horde request faulted. Please try again.');
+                notyf.error('Horde request faulted. Please try again.');
             throw new Error('Horde generation failed: Faulted');
         }
 
         if (statusCheckJson.is_possible === false) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.error('There are no Horde workers that are able to generate text with your request. Please change the parameters or try again later.');
             throw new Error('Horde generation failed: Unsatisfiable request');
         }
@@ -321,34 +322,27 @@ export async function generateHorde(prompt, params, signal, reportProgress) {
  * Displays the available models in the Horde model selection dropdown.
  * @param {boolean} force Force refresh of the models
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'force' implicitly has an 'any' type.
-export async function getHordeModels(force) {
-    // @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
-    const sortByPerformance = (a, b) => b.performance - a.performance;
-    // @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
-    const sortByWhitelisted = (a, b) => b.is_whitelisted - a.is_whitelisted;
-    // @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
-    const sortByPopular = (a, b) => b.tags?.includes('popular') - a.tags?.includes('popular');
+export async function getHordeModels(force: boolean) {
+    const sortByPerformance = (a: HordeModel, b: HordeModel) => b.performance - a.performance;
+    const sortByWhitelisted = (a: HordeModel, b: HordeModel) => Number(b.is_whitelisted) - Number(a.is_whitelisted);
+    const sortByPopular = (a: HordeModel, b: HordeModel) => Number(b.tags?.includes('popular')) - Number(a.tags?.includes('popular'));
 
     const hordeModelSelect = document.getElementById('horde_model');
     if (hordeModelSelect) hordeModelSelect.innerHTML = '';
-    // @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
-    models = (await getModels(force)).sort((a, b) => {
+    models = ((await getModels(force)) as HordeModel[]).sort((a, b) => {
         return sortByWhitelisted(a, b) || sortByPopular(a, b) || sortByPerformance(a, b);
     });
     for (const model of models) {
         const option = document.createElement('option');
         option.value = model.name;
         option.innerText = hordeModelTextString(model);
-        // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
         option.selected = horde_settings.models.includes(model.name);
         hordeModelSelect?.appendChild(option);
     }
 
     // if previously selected is no longer available
-    // @ts-expect-error TS(7006) FIXME: Parameter 'm' implicitly has an 'any' type.
     if (horde_settings.models.length && models.filter(m => horde_settings.models.includes(m.name)).length === 0) {
-        horde_settings.models = [];
+        horde_settings.models = [] as string[];
     }
 
     setContextSizePreview();
@@ -358,18 +352,14 @@ export async function getHordeModels(force) {
  *
  * @param settings
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'settings' implicitly has an 'any' type.
-export function loadHordeSettings(settings) {
+export function loadHordeSettings(settings: Record<string, unknown>) {
     if (settings.horde_settings) {
         Object.assign(horde_settings, settings.horde_settings);
     }
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const el1 = document.getElementById('horde_auto_adjust_response_length'); if (el1) el1.checked = horde_settings.auto_adjust_response_length;
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const el2 = document.getElementById('horde_auto_adjust_context_length'); if (el2) el2.checked = horde_settings.auto_adjust_context_length;
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const el3 = document.getElementById('horde_trusted_workers_only'); if (el3) el3.checked = horde_settings.trusted_workers_only;
+    const el1 = document.getElementById('horde_auto_adjust_response_length') as HTMLInputElement | null; if (el1) el1.checked = horde_settings.auto_adjust_response_length;
+    const el2 = document.getElementById('horde_auto_adjust_context_length') as HTMLInputElement | null; if (el2) el2.checked = horde_settings.auto_adjust_context_length;
+    const el3 = document.getElementById('horde_trusted_workers_only') as HTMLInputElement | null; if (el3) el3.checked = horde_settings.trusted_workers_only;
 }
 
 /**
@@ -382,7 +372,6 @@ async function showKudos() {
     });
 
     if (!response.ok) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.warning('Could not load user info from Horde. Please try again later.');
         return;
     }
@@ -390,14 +379,12 @@ async function showKudos() {
     const data = await response.json();
 
     if (data.anonymous) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         notyf.info('You are in anonymous mode. Set your personal Horde API key to see kudos.');
         return;
     }
 
     console.log('Horde user data', data.user, 'shared key data', data.sharedKey);
     const kudos = data.sharedKey?.kudos ?? data.user?.kudos ?? 0;
-    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
     notyf.info(`Kudos: ${kudos}`, data.user.username);
 }
 
@@ -405,8 +392,7 @@ async function showKudos() {
  *
  * @param model
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'model' implicitly has an 'any' type.
-function hordeModelTextString(model) {
+function hordeModelTextString(model: HordeModel) {
     const q = hordeModelQueueStateString(model);
     return `${model.name} (${q})`;
 }
@@ -415,8 +401,7 @@ function hordeModelTextString(model) {
  *
  * @param model
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'model' implicitly has an 'any' type.
-function hordeModelQueueStateString(model) {
+function hordeModelQueueStateString(model: HordeModel) {
     return `ETA: ${model.eta}s, Speed: ${model.performance}, Queue: ${model.queued}, Workers: ${model.count}`;
 }
 
@@ -425,8 +410,7 @@ function hordeModelQueueStateString(model) {
  */
 export function isHordeGenerationNotAllowed() {
     if (main_api == 'koboldhorde' && kai_settings.preset_settings == 'gui') {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-        notyf.error(t`GUI Settings preset is not supported for Horde. Please select another preset.`);
+            notyf.error(t`GUI Settings preset is not supported for Horde. Please select another preset.`);
         return true;
     }
 
@@ -437,42 +421,36 @@ export function isHordeGenerationNotAllowed() {
  *
  * @param option
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'option' implicitly has an 'any' type.
-function getHordeModelTemplate(option) {
-    // @ts-expect-error TS(7005) FIXME: Variable 'models' implicitly has an 'any[]' type.
+function getHordeModelTemplate(option: Record<string, unknown>) {
     const model = models.find(x => x.name === option?.value);
 
     if (!option.id || !model) {
         console.debug('No model found for option', option, option?.value);
-        // @ts-expect-error TS(7005) FIXME: Variable 'models' implicitly has an 'any[]' type.
         console.debug('Models', models);
-        return `<div>${option.text}</div>`;
+        return `<div>${String(option.text)}</div>`;
     }
 
-    // @ts-expect-error TS(7006) FIXME: Parameter 'html' implicitly has an 'any' type.
-    const strip = html => {
+    const strip = (html: string) => {
         const tmp = document.createElement('DIV');
         tmp.innerHTML = html || '';
         return tmp.textContent || tmp.innerText || '';
     };
 
     // how much do we trust the metadata from the models repo? about this much
-    const displayName = strip(model.display_name || model.name).replace(/.*\//g, '');
-    const description = strip(model.description);
+    const displayName = strip((model.display_name || model.name) ?? '').replace(/.*\//g, '');
+    const description = strip(model.description ?? '');
     const tags = model.tags ? model.tags.map(strip) : [];
-    const url = strip(model.url);
-    const style = strip(model.style);
+    const url = strip(model.url ?? '');
+    const style = strip(model.style ?? '');
 
     const workerInfo = hordeModelQueueStateString(model);
     const isPopular = model.tags?.includes('popular');
     const descriptionDiv = description ? `<div class="horde-model-description">${description}</div>` : '';
     const tagSpans = tags.length > 0 &&
-        // @ts-expect-error TS(7006) FIXME: Parameter 'tag' implicitly has an 'any' type.
-        `${tags.map(tag => `<span class="tag tag_name">${tag}</span>`).join('')}</span>` || '';
+            `${tags.map((tag: string) => `<span class="tag tag_name">${tag}</span>`).join('')}</span>` || '';
 
-    const modelDetailsLink = url && `<a href="${url}" target="_blank" rel="noopener noreferrer" class="model-details-link fa-solid fa-circle-question"> </a>`;
-    // @ts-expect-error TS(7006) FIXME: Parameter 's' implicitly has an 'any' type.
-    const capitalize = s => s ? s[0].toUpperCase() + s.slice(1) : '';
+    const modelDetailsLink = url ? `<a href="${url}" target="_blank" rel="noopener noreferrer" class="model-details-link fa-solid fa-circle-question"> </a>` : '';
+    const capitalize = (s: string | undefined) => s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
     const innerContent = [
         `<strong>${displayName}</strong> ${modelDetailsLink}`,
         style ? `${capitalize(style)}` : '',
@@ -504,8 +482,7 @@ export function initHorde() {
         hordeModelSelect.addEventListener('change', async function (this: HTMLSelectElement) {
             console.log('Horde model change');
             const modelValue = Array.from(this.selectedOptions).map(option => option.value);
-            // @ts-expect-error TS(2322) FIXME: Type 'string[]' is not assignable to type 'never[]'.
-            horde_settings.models = modelValue;
+            (horde_settings.models as string[]) = modelValue;
             console.log('Updated Horde models', horde_settings.models);
 
             // Try select instruct preset
@@ -513,8 +490,7 @@ export function initHorde() {
             if (horde_settings.models.length) {
                 adjustHordeGenerationParams(max_context, amount_gen);
             } else {
-                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                document.getElementById('adjustedHordeParams').textContent = t`Context` + ': --, ' + t`Response` + ': --';
+                            document.getElementById('adjustedHordeParams')!.textContent = t`Context` + ': --, ' + t`Response` + ': --';
             }
 
             saveSettingsDebounced();
@@ -543,12 +519,10 @@ export function initHorde() {
     document.getElementById('horde_api_key_button')?.addEventListener('click', async function () {
         const key = String((document.getElementById('horde_api_key') as HTMLInputElement | null)?.value ?? '').trim();
         if (!key) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            notyf.warning(t`Please enter your Horde API key`);
+                notyf.warning(t`Please enter your Horde API key`);
             return;
         }
-        // @ts-expect-error TS(2554) FIXME: Expected 3-4 arguments, but got 2.
-        await writeSecret(SECRET_KEYS.HORDE, key);
+        await writeSecret(SECRET_KEYS.HORDE, key, undefined, undefined);
     });
 
     document.getElementById('horde_refresh')?.addEventListener('click', () => getHordeModels(true));
@@ -556,14 +530,16 @@ export function initHorde() {
 
     // Not needed on mobile
     if (!isMobile()) {
-        new TomSelect(document.getElementById('horde_model'), {
+         
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        new (TomSelect as any)(document.getElementById('horde_model'), {
             maxItems: null,
             placeholder: t`Select Horde models`,
             allowEmptyOption: true,
             plugins: ['remove_button'],
             render: {
-                option: function (data, escape) {
-                    return getHordeModelTemplate(data);
+                option: function (data: unknown, escape: unknown) {
+                    return getHordeModelTemplate(data as Record<string, unknown>);
                 },
             },
         });

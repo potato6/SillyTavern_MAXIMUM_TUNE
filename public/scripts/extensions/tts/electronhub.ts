@@ -7,6 +7,7 @@ export { ElectronHubTtsProvider };
 
 class ElectronHubTtsProvider {
     settings: any;
+    handler: any;
     voices = [];
     models = [];
     separator = ' . ';
@@ -97,18 +98,15 @@ class ElectronHubTtsProvider {
     }
 
     constructor() {
-        // @ts-expect-error TS(2339): Property 'handler' does not exist on type 'Electro... Remove this comment to see the full error message
         this.handler = async function(this: any, /** @type {string} */ key: any) {
             if (key !== SECRET_KEYS.ELECTRONHUB) return;
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-            $('#electronhub_tts_key').toggleClass('success', !!secret_state[SECRET_KEYS.ELECTRONHUB]);
+            $('#electronhub_tts_key').toggleClass('success', !!(secret_state as Record<string, unknown>)[SECRET_KEYS.ELECTRONHUB]);
             await this.onRefreshClick();
         }.bind(this);
     }
 
     dispose() {
         [event_types.SECRET_WRITTEN, event_types.SECRET_DELETED, event_types.SECRET_ROTATED].forEach(event => {
-            // @ts-expect-error TS(2339): Property 'handler' does not exist on type 'Electro... Remove this comment to see the full error message
             eventSource.removeListener(event, this.handler);
         });
     }
@@ -153,10 +151,8 @@ class ElectronHubTtsProvider {
         $('#electronhub_tts_emotional_style').val(this.settings.emotional_style);
         $('#electronhub_tts_emotional_style').on('input', () => { this.onSettingsChange(); });
 
-        // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        $('#electronhub_tts_key').toggleClass('success', !!secret_state[SECRET_KEYS.ELECTRONHUB]);
+        $('#electronhub_tts_key').toggleClass('success', !!(secret_state as Record<string, unknown>)[SECRET_KEYS.ELECTRONHUB]);
         [event_types.SECRET_WRITTEN, event_types.SECRET_DELETED, event_types.SECRET_ROTATED].forEach(event => {
-            // @ts-expect-error TS(2339): Property 'handler' does not exist on type 'Electro... Remove this comment to see the full error message
             eventSource.on(event, this.handler);
         });
 

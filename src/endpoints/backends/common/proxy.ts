@@ -38,6 +38,7 @@ export interface ProxyRequestOptions {
  *
  * Builds request args, attaches additional headers, dispatches the fetch,
  * and handles streaming / non-streaming / error paths in one place.
+ * @param options
  */
 export async function proxyRequest(options: ProxyRequestOptions): Promise<void> {
     const { request, response, url, body, signal, stream, streamHandler, transformResponse } = options;
@@ -58,7 +59,6 @@ export async function proxyRequest(options: ProxyRequestOptions): Promise<void> 
             await streamHandler(fetchResponse, request, response);
         } else if (stream) {
             const fetchResponse = await globalThis.fetch(url, args as RequestInit);
-            // @ts-expect-error TS(2345) — web Response vs node-fetch Response; works on Bun
             await forwardFetchResponse(fetchResponse, response);
         } else {
             const reply = await globalThis.fetch(url, args as RequestInit);

@@ -34,7 +34,7 @@ const provider: ChatProvider = {
             bodyParams.logprobs = true;
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { embedOpenRouterMedia } = await import('../../../../prompt-converters.js');
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         embedOpenRouterMedia(req.body.messages, { audio: true, video: false } as any);
@@ -57,7 +57,7 @@ const provider: ChatProvider = {
 
         if (req.body.reasoning_effort) {
             if (OPENAI_REASONING_EFFORT_MODELS.includes(req.body.model)) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                 
                 bodyParams.reasoning_effort = (OPENAI_FIXED_REASONING_EFFORT as Record<string, string | undefined>)[req.body.model]
                     ?? (OPENAI_REASONING_EFFORT_MAP as Record<string, string | undefined>)[req.body.reasoning_effort]
                     ?? req.body.reasoning_effort;
@@ -109,7 +109,7 @@ const provider: ChatProvider = {
             ...(apiKey ? { 'Authorization': 'Bearer ' + apiKey } : {}),
         };
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { mergeObjectWithYaml, excludeKeysByYaml } = await import('../../../../util.js');
         mergeObjectWithYaml(bodyParams, req.body.custom_include_body);
         mergeObjectWithYaml(headers, req.body.custom_include_headers);
@@ -135,7 +135,7 @@ const provider: ChatProvider = {
         });
         if (!response.ok) return [];
         const data = await response.json() as Record<string, unknown>;
-        return (data.data as Array<Record<string, unknown>>) || [];
+        return (data.data as ModelEntry[]) || [];
     },
 };
 

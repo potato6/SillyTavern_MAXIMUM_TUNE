@@ -20,14 +20,13 @@ const SELECT_SAMPLER = {
 };
 
 const textGenObjectStore = localspace.createInstance({ name: 'SillyTavern_TextCompletions' });
-let selectedSamplers = {};
+let selectedSamplers: Record<string, Record<string, boolean>> = {};
 
 // Goal 1: show popup with all samplers for active API
 /**
  *
  */
 async function showSamplerSelectPopup() {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const html = document.createElement('div');
     html.setAttribute('id', 'sampler_view_list');
     html.classList.add('flex-container', 'flexFlowColumn');
@@ -42,8 +41,7 @@ async function showSamplerSelectPopup() {
     if (APISamplers) listContainer.innerHTML = APISamplers.toString();
     html.appendChild(listContainer);
 
-    // @ts-expect-error TS(2345) FIXME: Argument of type 'null' is not assignable to param... Remove this comment to see the full error message
-    const showPromise = new Popup(html, POPUP_TYPE.TEXT, null, { wide: true, large: true, allowVerticalScrolling: true }).show();
+    const showPromise = new Popup(html, POPUP_TYPE.TEXT, undefined, { wide: true, large: true, allowVerticalScrolling: true }).show();
 
     setSamplerListListeners();
 
@@ -51,10 +49,8 @@ async function showSamplerSelectPopup() {
         console.log('saw sampler select reset click');
 
         if (main_api === 'textgenerationwebui') {
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            document.getElementById('prioritizeManuallySelectedSamplers').toggleClass('toggleEnabled', false);
-            // @ts-expect-error TS(2345) FIXME: Argument of type 'null' is not assignable to param... Remove this comment to see the full error message
-            await resetApiSelectedSamplers(null, true);
+            document.getElementById('prioritizeManuallySelectedSamplers')?.classList.toggle('toggleEnabled', false);
+                await resetApiSelectedSamplers(undefined, true);
         }
 
         await validateDisabledSamplers(true);
@@ -63,14 +59,11 @@ async function showSamplerSelectPopup() {
     if (main_api === 'textgenerationwebui') {
         const prioritizeEl = document.getElementById('prioritizeManuallySelectedSamplers');
         if (prioritizeEl) prioritizeEl.style.display = '';
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        document.getElementById('prioritizeManuallySelectedSamplers').toggleClass('toggleEnabled', isSamplerManualPriorityEnabled());
-        document.getElementById('prioritizeManuallySelectedSamplers')?.addEventListener('click', function () {
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        document.getElementById('prioritizeManuallySelectedSamplers')?.classList.toggle('toggleEnabled', isSamplerManualPriorityEnabled());
+        document.getElementById('prioritizeManuallySelectedSamplers')?.addEventListener('click', function (this: HTMLElement) {
             this.classList.toggle('toggleEnabled');
 
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const isActive = this.hasClass('toggleEnabled');
+            const isActive = this.classList.contains('toggleEnabled');
 
             toggleSamplerManualPriority(isActive);
         });
@@ -88,109 +81,92 @@ async function showSamplerSelectPopup() {
  *
  * @param samplerName
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'samplerName' implicitly has an 'any' ty... Remove this comment to see the full error message
-function getRelatedDOMElement(samplerName) {
+function getRelatedDOMElement(samplerName: string): { relatedDOMElement: HTMLElement | null; targetDisplayType: string; displayname: string | undefined } {
     const element = document.getElementById(`${samplerName}_${main_api}`);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    let relatedDOMElement = element ? element.parentElement : null;
+    let relatedDOMElement: HTMLElement | null = element?.parentElement ?? null;
     let targetDisplayType = 'flex';
-    let displayname;
+    let displayname: string | undefined;
 
     if (samplerName === 'json_schema') {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         relatedDOMElement = document.getElementById('json_schema_block');
         targetDisplayType = 'block';
         displayname = 'JSON Schema Block';
     }
 
     if (samplerName === 'grammar_string') {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        relatedDOMElement = document.getElementById('grammar_block_ooba');
+    relatedDOMElement = document.getElementById('grammar_block_ooba');
         targetDisplayType = 'block';
         displayname = 'Grammar Block';
     }
 
     if (samplerName === 'guidance_scale') {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        relatedDOMElement = document.getElementById('cfg_block_ooba');
+    relatedDOMElement = document.getElementById('cfg_block_ooba');
         targetDisplayType = 'block';
         displayname = 'CFG Block';
     }
 
     if (samplerName === 'mirostat_mode') {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        relatedDOMElement = document.getElementById('mirostat_block_ooba');
+    relatedDOMElement = document.getElementById('mirostat_block_ooba');
         targetDisplayType = 'block';
         displayname = 'Mirostat Block';
     }
 
     if (samplerName === 'dry_multiplier') {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        relatedDOMElement = document.getElementById('dryBlock');
+    relatedDOMElement = document.getElementById('dryBlock');
         targetDisplayType = 'block';
         displayname = 'DRY Rep Pen Block';
     }
 
     if (samplerName === 'xtc_probability') {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        relatedDOMElement = document.getElementById('xtc_block');
+    relatedDOMElement = document.getElementById('xtc_block');
         targetDisplayType = 'block';
         displayname = 'XTC Block';
     }
 
     if (samplerName === 'dynatemp') {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        relatedDOMElement = document.getElementById('dynatemp_block_ooba');
+    relatedDOMElement = document.getElementById('dynatemp_block_ooba');
         targetDisplayType = 'block';
         displayname = 'DynaTemp Block';
     }
 
     if (samplerName === 'banned_tokens') {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        relatedDOMElement = document.getElementById('banned_tokens_block_ooba');
+    relatedDOMElement = document.getElementById('banned_tokens_block_ooba');
         targetDisplayType = 'block';
     }
 
     if (samplerName === 'sampler_order') { //this is for kcpp sampler order
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        relatedDOMElement = document.getElementById('sampler_order_block_kcpp');
+    relatedDOMElement = document.getElementById('sampler_order_block_kcpp');
         displayname = 'KCPP Sampler Order Block';
     }
 
     if (samplerName === 'samplers') { //this is for lcpp sampler order
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        relatedDOMElement = document.getElementById('sampler_order_block_lcpp');
+    relatedDOMElement = document.getElementById('sampler_order_block_lcpp');
         displayname = 'LCPP Sampler Order Block';
     }
 
     if (samplerName === 'sampler_priority') { //this is for ooba's sampler priority
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        relatedDOMElement = document.getElementById('sampler_priority_block_ooba');
+    relatedDOMElement = document.getElementById('sampler_priority_block_ooba');
         displayname = 'Ooba Sampler Priority Block';
     }
 
     if (samplerName === 'samplers_priorities') { //this is for aphrodite's sampler priority
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        relatedDOMElement = document.getElementById('sampler_priority_block_aphrodite');
+    relatedDOMElement = document.getElementById('sampler_priority_block_aphrodite');
         displayname = 'Aphrodite Sampler Priority Block';
     }
 
     if (samplerName === 'penalty_alpha') { //contrastive search only has one sampler, does it need its own block?
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        relatedDOMElement = document.getElementById('contrastiveSearchBlock');
+    relatedDOMElement = document.getElementById('contrastiveSearchBlock');
         displayname = 'Contrast Search Block';
     }
 
     if (samplerName === 'num_beams') { // num_beams is the killswitch for Beam Search
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        relatedDOMElement = document.getElementById('beamSearchBlock');
+    relatedDOMElement = document.getElementById('beamSearchBlock');
         targetDisplayType = 'block';
         displayname = 'Beam Search Block';
     }
 
     if (samplerName === 'smoothing_factor') { // num_beams is the killswitch for Beam Search
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        relatedDOMElement = document.getElementById('smoothingBlock');
+    relatedDOMElement = document.getElementById('smoothingBlock');
         targetDisplayType = 'block';
         displayname = 'Smoothing Block';
     }
@@ -204,17 +180,14 @@ function getRelatedDOMElement(samplerName) {
 function setSamplerListListeners() {
     // Goal 2: hide unchecked samplers from DOM
     const listContainer = document.getElementById('apiSamplersList');
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    listContainer.querySelectorAll('input').forEach(el => el.addEventListener('change', async function () {
+    listContainer!.querySelectorAll('input').forEach(el => el.addEventListener('change', async function (this: HTMLInputElement) {
         const samplerName = this.name.replace('_checkbox', '');
         const { relatedDOMElement, targetDisplayType } = getRelatedDOMElement(samplerName);
 
         // Get the current state of the custom data attribute
         const previousState = relatedDOMElement?.dataset[SELECT_SAMPLER.DATA] as string | undefined;
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const isChecked = this.checked;
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const popupInputLabel = this.parentElement ? this.parentElement.querySelector('.sampler_name') : null;
+        const popupInputLabel: HTMLElement | null = this.parentElement ? this.parentElement.querySelector('.sampler_name') : null;
 
         if (isChecked === false) {
             if (previousState === SELECT_SAMPLER.SHOWN) {
@@ -253,8 +226,7 @@ function setSamplerListListeners() {
  *
  * @param element
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'element' implicitly has an 'any' type.
-function isElementVisibleInDOM(element) {
+function isElementVisibleInDOM(element: HTMLElement | null) {
     while (element && element !== document.body) {
         if (window.getComputedStyle(element).display === 'none') {
             return false;
@@ -270,9 +242,8 @@ function isElementVisibleInDOM(element) {
  * @param main_api
  * @param arrayOnly
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'main_api' implicitly has an 'any' type.
-async function listSamplers(main_api, arrayOnly = false) {
-    let availableSamplers;
+async function listSamplers(main_api: string, arrayOnly = false): Promise<string | string[] | undefined> {
+    let availableSamplers: string[] = [];
     if (main_api === 'textgenerationwebui') {
         availableSamplers = TGsamplerNames;
         const valuesToRemove = new Set(['streaming', 'bypass_status_check', 'custom_model', 'generic_model', 'openrouter_allow_fallbacks', 'legacy_api', 'extensions']);
@@ -288,8 +259,7 @@ async function listSamplers(main_api, arrayOnly = false) {
     const samplersActivatedManually = (main_api === 'textgenerationwebui') ? getActiveManualApiSamplers() : [];
     const prioritizeManualSamplerSelect = (main_api === 'textgenerationwebui') ? isSamplerManualPriorityEnabled() : false;
 
-    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-    const samplersListHTML = availableSamplers.reduce((html, sampler) => {
+    const samplersListHTML = availableSamplers.reduce((html: string, sampler: string) => {
         let customColor;
         const { relatedDOMElement } = getRelatedDOMElement(sampler);
         let { displayname } = getRelatedDOMElement(sampler);
@@ -363,8 +333,7 @@ export async function validateDisabledSamplers(redraw = false) {
 
     if (redraw) {
         const samplersHTML = await listSamplers(main_api);
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        document.getElementById('apiSamplersList').innerHTML = samplersHTML.toString();
+    document.getElementById('apiSamplersList')!.innerHTML = String(samplersHTML);
         setSamplerListListeners();
     }
 
@@ -378,7 +347,7 @@ export async function validateDisabledSamplers(redraw = false) {
 export async function loadApiSelectedSamplers() {
     try {
         console.debug('Text Completions: loading selected samplers');
-        selectedSamplers = (await textGenObjectStore.getItem('selectedSamplers')) || {};
+        selectedSamplers = (await textGenObjectStore.getItem('selectedSamplers') as Record<string, Record<string, boolean>>) || {};
     } catch (error) {
         console.log('Text Completions: unable to load selected samplers, using default samplers', error);
         selectedSamplers = {};
@@ -407,15 +376,12 @@ export async function saveApiSelectedSamplers() {
 export async function resetApiSelectedSamplers(tcApiType = '', silent = false) {
     try {
         if (!textgenerationwebui_settings?.type && !tcApiType) return;
-        if (!tcApiType) tcApiType = textgenerationwebui_settings.type;
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
+        if (!tcApiType) tcApiType = textgenerationwebui_settings.type as string;
         if (!selectedSamplers[tcApiType]) return;
 
         console.debug('Text Completions: resetting selected samplers');
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         delete selectedSamplers[tcApiType];
         await saveApiSelectedSamplers();
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
         if (!silent) notyf.success('Selected samplers cleared.');
     } catch (error) {
         console.log('Text Completions: unable to reset selected preset samplers', error);
@@ -429,15 +395,12 @@ export async function resetApiSelectedSamplers(tcApiType = '', silent = false) {
  * @param {string?} tcApiType Name of the target API Type - It picks the currently active TC API type name by default
  * @returns void
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'samplerName' implicitly has an 'any' ty... Remove this comment to see the full error message
-export function setApiSamplersState(samplerName, state, tcApiType = '') {
+export function setApiSamplersState(samplerName: string, state: string | boolean, tcApiType = '') {
     if (!textgenerationwebui_settings?.type && !tcApiType) return;
-    if (!tcApiType) tcApiType = textgenerationwebui_settings.type;
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
+    if (!tcApiType) tcApiType = textgenerationwebui_settings.type as string;
     if (!selectedSamplers[tcApiType]) selectedSamplers[tcApiType] = {};
 
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-    const presetSamplers = selectedSamplers[tcApiType];
+    const presetSamplers = selectedSamplers[tcApiType]!;
     presetSamplers[samplerName] = String(state) === 'true';
 }
 
@@ -446,14 +409,12 @@ export function setApiSamplersState(samplerName, state, tcApiType = '') {
  * @param {string?} tcApiType Name of the target API Type - It picks the currently active TC API type name by default
  * @returns {object} Full localspace object with manual selections
  */
-export function getAllManualApiSamplers(tcApiType = '') {
+export function getAllManualApiSamplers(tcApiType = ''): Record<string, boolean> {
     if (!textgenerationwebui_settings?.type && !tcApiType) return {};
-    if (!tcApiType) tcApiType = textgenerationwebui_settings.type;
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
+    if (!tcApiType) tcApiType = textgenerationwebui_settings.type as string;
     if (!selectedSamplers[tcApiType]) selectedSamplers[tcApiType] = {};
 
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-    return selectedSamplers[tcApiType];
+    return selectedSamplers[tcApiType]!;
 }
 
 /**
@@ -461,19 +422,17 @@ export function getAllManualApiSamplers(tcApiType = '') {
  * @param {string?} tcApiType Name of the target API Type - It picks the currently active TC API type name by default
  * @returns {string[]} Array of sampler key names
  */
-export function getActiveManualApiSamplers(tcApiType = '') {
+export function getActiveManualApiSamplers(tcApiType = ''): string[] {
     if (!textgenerationwebui_settings?.type && !tcApiType) return [];
-    if (!tcApiType) tcApiType = textgenerationwebui_settings.type;
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
+    if (!tcApiType) tcApiType = textgenerationwebui_settings.type as string;
     if (!selectedSamplers[tcApiType]) selectedSamplers[tcApiType] = {};
 
     try {
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        const presetSamplers = Object.entries(selectedSamplers[tcApiType]);
+        const presetSamplers = Object.entries(selectedSamplers[tcApiType]!);
 
         return presetSamplers
             .filter(([key, val]) => val === true && key !== 'st_manual_priority')
-            .map(([key, val]) => key);
+            .map(([key]) => key);
     } catch (error) {
         console.log('Text Completions: unable to fetch active preset samplers', error);
         return [];
@@ -487,12 +446,10 @@ export function getActiveManualApiSamplers(tcApiType = '') {
  */
 export function toggleSamplerManualPriority(state = false, tcApiType = '') {
     if (!textgenerationwebui_settings?.type && !tcApiType) return;
-    if (!tcApiType) tcApiType = textgenerationwebui_settings.type;
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
+    if (!tcApiType) tcApiType = textgenerationwebui_settings.type as string;
     if (!selectedSamplers[tcApiType]) selectedSamplers[tcApiType] = {};
 
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-    const presetSamplers = selectedSamplers[tcApiType];
+    const presetSamplers = selectedSamplers[tcApiType]!;
     presetSamplers.st_manual_priority = String(state) === 'true';
 }
 
@@ -500,13 +457,11 @@ export function toggleSamplerManualPriority(state = false, tcApiType = '') {
  * @param {string?} tcApiType Name of the target API Type - It picks the currently active TC API type name by default
  * @returns {boolean}
  */
-export function isSamplerManualPriorityEnabled(tcApiType = '') {
+export function isSamplerManualPriorityEnabled(tcApiType = ''): boolean {
     if (!textgenerationwebui_settings?.type && !tcApiType) return false;
-    if (!tcApiType) tcApiType = textgenerationwebui_settings.type;
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
+    if (!tcApiType) tcApiType = textgenerationwebui_settings.type as string;
     if (!selectedSamplers[tcApiType]) selectedSamplers[tcApiType] = {};
 
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     return selectedSamplers[tcApiType]?.st_manual_priority ?? false;
 }
 

@@ -27,10 +27,8 @@ interface SortableInstance {
 }
 declare const Sortable: new (el: HTMLElement | null, options: Record<string, unknown>) => SortableInstance;
 
-// @ts-expect-error TS(7005) FIXME: Variable 'koboldai_settings' implicitly has an 'an... Remove this comment to see the full error message
-export let koboldai_settings;
-// @ts-expect-error TS(7005) FIXME: Variable 'koboldai_setting_names' implicitly has a... Remove this comment to see the full error message
-export let koboldai_setting_names;
+export let koboldai_settings: unknown[] = [];
+export let koboldai_setting_names: string[] | Record<string, number> = [];
 
 export const kai_settings = {
     temp: 1,
@@ -86,8 +84,7 @@ const KOBOLDCPP_ORDER = [6, 0, 1, 3, 4, 2, 5];
  *
  * @param value
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
-export function formatKoboldUrl(value) {
+export function formatKoboldUrl(value: string): string | null {
     try {
         const url = new URL(value);
         if (!power_user.relaxed_api_urls) {
@@ -115,37 +112,32 @@ function selectKoboldGuiPreset() {
  * @param preset
  * @param settings
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
-export function loadKoboldSettings(data, preset, settings) {
-    koboldai_setting_names = data.koboldai_setting_names;
-    koboldai_settings = data.koboldai_settings;
-    // @ts-expect-error TS(7006) FIXME: Parameter 'item' implicitly has an 'any' type.
-    koboldai_settings.forEach(function (item, i, arr) {
-        koboldai_settings[i] = JSON.parse(item);
+export function loadKoboldSettings(data: Record<string, unknown>, preset: Record<string, unknown>, settings: Record<string, unknown>) {
+    koboldai_setting_names = data.koboldai_setting_names as string[];
+    koboldai_settings = data.koboldai_settings as unknown[];
+    koboldai_settings.forEach(function (item: unknown, i: number) {
+        koboldai_settings[i] = JSON.parse(item as string);
     });
 
     if (document.getElementById('settings_preset')) {
         document.getElementById('settings_preset')!.innerHTML = '';
     }
     document.getElementById('settings_preset')?.insertAdjacentHTML('beforeend', '<option value="gui">GUI KoboldAI Settings</option>');
-    const names = {};
-    // @ts-expect-error TS(7006) FIXME: Parameter 'item' implicitly has an 'any' type.
-    koboldai_setting_names.forEach(function (item, i, arr) {
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
+    const names: Record<string, number> = {};
+    (koboldai_setting_names as string[]).forEach(function (item: string, i: number) {
         names[item] = i;
         document.getElementById('settings_preset')?.insertAdjacentHTML('beforeend', `<option value=${i}>${item}</option>`);
     });
     koboldai_setting_names = names;
 
-    kai_settings.preset_settings = preset.preset_settings ?? settings.preset_settings;
-    kai_settings.api_server = preset.api_server ?? settings.api_server;
+    kai_settings.preset_settings = (preset.preset_settings ?? settings.preset_settings) as string;
+    kai_settings.api_server = (preset.api_server ?? settings.api_server) as string;
 
     if (kai_settings.preset_settings == 'gui') {
         selectKoboldGuiPreset();
     } else {
-        if (typeof koboldai_setting_names[kai_settings.preset_settings] !== 'undefined') {
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                        const presetOption = document.querySelector(`#settings_preset option[value="${koboldai_setting_names[kai_settings.preset_settings]}"]`);
+        if (typeof (koboldai_setting_names as Record<string, number>)[kai_settings.preset_settings] !== 'undefined') {
+                        const presetOption = document.querySelector(`#settings_preset option[value="${(koboldai_setting_names as Record<string, number>)[kai_settings.preset_settings]}"]`);
             if (presetOption) presetOption.setAttribute('selected', 'true');
         } else {
             kai_settings.preset_settings = 'gui';
@@ -156,24 +148,22 @@ export function loadKoboldSettings(data, preset, settings) {
     loadKoboldSettingsFromPreset(preset);
 
     //Load the API server URL from settings
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.getElementById('api_url_text').value = kai_settings.api_server;
+    const apiUrlEl = document.getElementById('api_url_text') as HTMLInputElement | null;
+    if (apiUrlEl) apiUrlEl.value = kai_settings.api_server;
 }
 
 /**
  *
  * @param preset
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'preset' implicitly has an 'any' type.
-function loadKoboldSettingsFromPreset(preset) {
+function loadKoboldSettingsFromPreset(preset: Record<string, unknown>) {
     for (const name of Object.keys(kai_settings)) {
         if (name === 'extensions') {
-            kai_settings.extensions = preset.extensions || {};
+            kai_settings.extensions = (preset.extensions as Record<string, unknown>) || {};
             continue;
         }
 
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        const value = preset[name] ?? defaultValues[name];
+        const value = (preset as Record<string, unknown>)[name] ?? (defaultValues as Record<string, unknown>)[name];
         const slider = sliders.find(x => x.name === name);
 
         if (!slider) {
@@ -182,23 +172,19 @@ function loadKoboldSettingsFromPreset(preset) {
 
         const formattedValue = slider.format(value);
         slider.setValue(value);
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const sliderEl = document.querySelector(slider.sliderId);
+        const sliderEl = document.querySelector(slider.sliderId) as HTMLInputElement | null;
         if (sliderEl instanceof HTMLInputElement) sliderEl.value = String(value);
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const counterEl = document.querySelector(slider.counterId);
-        if (counterEl instanceof HTMLInputElement) counterEl.value = formattedValue;
+        const counterEl = document.querySelector(slider.counterId) as HTMLInputElement | null;
+        if (counterEl instanceof HTMLInputElement) counterEl.value = String(formattedValue);
     }
 
     if (Object.hasOwn(preset, 'streaming_kobold')) {
-        kai_settings.streaming_kobold = preset.streaming_kobold;
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const el = document.getElementById('streaming_kobold'); if (el) el.checked = kai_settings.streaming_kobold;
+        kai_settings.streaming_kobold = preset.streaming_kobold as boolean;
+        const el = document.getElementById('streaming_kobold') as HTMLInputElement | null; if (el) el.checked = kai_settings.streaming_kobold;
     }
     if (Object.hasOwn(preset, 'use_default_badwordsids')) {
-        kai_settings.use_default_badwordsids = preset.use_default_badwordsids;
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const el = document.getElementById('use_default_badwordsids'); if (el) el.checked = kai_settings.use_default_badwordsids;
+        kai_settings.use_default_badwordsids = preset.use_default_badwordsids as boolean;
+        const el = document.getElementById('use_default_badwordsids') as HTMLInputElement | null; if (el) el.checked = kai_settings.use_default_badwordsids;
     }
 }
 
@@ -212,8 +198,7 @@ function loadKoboldSettingsFromPreset(preset) {
  * @param {string} type Generation type.
  * @returns {object} Kobold generation data.
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'finalPrompt' implicitly has an 'any' ty... Remove this comment to see the full error message
-export function getKoboldGenerationData(finalPrompt, settings, maxLength, maxContextLength, isHorde, type) {
+export function getKoboldGenerationData(finalPrompt: string, settings: Record<string, unknown>, maxLength: number, maxContextLength: number, isHorde: boolean, type: string) {
     const isImpersonate = type === 'impersonate';
     const isContinue = type === 'continue';
     const sampler_order = kai_settings.sampler_order || settings.sampler_order;
@@ -256,8 +241,7 @@ export function getKoboldGenerationData(finalPrompt, settings, maxLength, maxCon
  * @param response
  * @param decoded
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'response' implicitly has an 'any' type.
-function tryParseStreamingError(response, decoded) {
+function tryParseStreamingError(response: Response, decoded: string) {
     try {
         const data = JSON.parse(decoded);
 
@@ -266,9 +250,8 @@ function tryParseStreamingError(response, decoded) {
         }
 
         if (data.error) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
             notyf.error(data.error.message || response.statusText, 'KoboldAI API');
-            throw new Error(data);
+            throw new Error(String(data));
         }
     } catch {
         // No JSON. Do nothing.
@@ -280,8 +263,7 @@ function tryParseStreamingError(response, decoded) {
  * @param generate_data
  * @param signal
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'generate_data' implicitly has an 'any' ... Remove this comment to see the full error message
-export async function generateKoboldWithStreaming(generate_data, signal) {
+export async function generateKoboldWithStreaming(generate_data: Record<string, unknown>, signal: AbortSignal) {
     const response = await fetch('/api/backends/kobold/generate', {
         headers: getRequestHeaders(),
         body: JSON.stringify(generate_data),
@@ -293,10 +275,8 @@ export async function generateKoboldWithStreaming(generate_data, signal) {
         throw new Error(`Got response status ${response.status}`);
     }
     const eventStream = getEventSourceStream();
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    response.body.pipeThrough(eventStream);
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    const reader = eventStream.readable.getReader();
+    response.body!.pipeThrough(eventStream as unknown as TransformStream<Uint8Array, Uint8Array>);
+    const reader = eventStream.readable!.getReader();
 
     return async function* streamData() {
         let text = '';
@@ -313,150 +293,126 @@ export async function generateKoboldWithStreaming(generate_data, signal) {
     };
 }
 
-const sliders = [
+interface SliderDef {
+    name: string;
+    sliderId: string;
+    counterId: string;
+    format: (val: unknown) => string | number;
+    setValue: (val: unknown) => void;
+}
+
+const sliders: SliderDef[] = [
     {
         name: 'temp',
         sliderId: '#temp',
         counterId: '#temp_counter',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        format: (val) => Number(val).toFixed(2),
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        setValue: (val) => { kai_settings.temp = Number(val); },
+        format: (val: unknown) => Number(val).toFixed(2),
+        setValue: (val: unknown) => { kai_settings.temp = Number(val); },
     },
     {
         name: 'rep_pen',
         sliderId: '#rep_pen',
         counterId: '#rep_pen_counter',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        format: (val) => Number(val).toFixed(2),
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        setValue: (val) => { kai_settings.rep_pen = Number(val); },
+        format: (val: unknown) => Number(val).toFixed(2),
+        setValue: (val: unknown) => { kai_settings.rep_pen = Number(val); },
     },
     {
         name: 'rep_pen_range',
         sliderId: '#rep_pen_range',
         counterId: '#rep_pen_range_counter',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        format: (val) => val,
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        setValue: (val) => { kai_settings.rep_pen_range = Number(val); },
+        format: (val: unknown) => String(val),
+        setValue: (val: unknown) => { kai_settings.rep_pen_range = Number(val); },
     },
     {
         name: 'top_p',
         sliderId: '#top_p',
         counterId: '#top_p_counter',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        format: (val) => val,
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        setValue: (val) => { kai_settings.top_p = Number(val); },
+        format: (val: unknown) => String(val),
+        setValue: (val: unknown) => { kai_settings.top_p = Number(val); },
     },
     {
         name: 'min_p',
         sliderId: '#min_p',
         counterId: '#min_p_counter',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        format: (val) => val,
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        setValue: (val) => { kai_settings.min_p = Number(val); },
+        format: (val: unknown) => String(val),
+        setValue: (val: unknown) => { kai_settings.min_p = Number(val); },
     },
     {
         name: 'top_a',
         sliderId: '#top_a',
         counterId: '#top_a_counter',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        format: (val) => val,
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        setValue: (val) => { kai_settings.top_a = Number(val); },
+        format: (val: unknown) => String(val),
+        setValue: (val: unknown) => { kai_settings.top_a = Number(val); },
     },
     {
         name: 'top_k',
         sliderId: '#top_k',
         counterId: '#top_k_counter',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        format: (val) => val,
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        setValue: (val) => { kai_settings.top_k = Number(val); },
+        format: (val: unknown) => String(val),
+        setValue: (val: unknown) => { kai_settings.top_k = Number(val); },
     },
     {
         name: 'typical',
         sliderId: '#typical_p',
         counterId: '#typical_p_counter',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        format: (val) => val,
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        setValue: (val) => { kai_settings.typical = Number(val); },
+        format: (val: unknown) => String(val),
+        setValue: (val: unknown) => { kai_settings.typical = Number(val); },
     },
     {
         name: 'tfs',
         sliderId: '#tfs',
         counterId: '#tfs_counter',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        format: (val) => val,
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        setValue: (val) => { kai_settings.tfs = Number(val); },
+        format: (val: unknown) => String(val),
+        setValue: (val: unknown) => { kai_settings.tfs = Number(val); },
     },
     {
         name: 'rep_pen_slope',
         sliderId: '#rep_pen_slope',
         counterId: '#rep_pen_slope_counter',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        format: (val) => val,
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        setValue: (val) => { kai_settings.rep_pen_slope = Number(val); },
+        format: (val: unknown) => String(val),
+        setValue: (val: unknown) => { kai_settings.rep_pen_slope = Number(val); },
     },
     {
         name: 'sampler_order',
         sliderId: '#no_op_selector',
         counterId: '#no_op_selector',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        format: (val) => val,
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        setValue: (val) => { sortItemsByOrder(val); kai_settings.sampler_order = val; },
+        format: (val: unknown) => String(val),
+        setValue: (val: unknown) => { sortItemsByOrder(val as number[]); kai_settings.sampler_order = val as number[]; },
     },
     {
         name: 'mirostat',
         sliderId: '#mirostat_mode_kobold',
         counterId: '#mirostat_mode_counter_kobold',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        format: (val) => val,
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        setValue: (val) => { kai_settings.mirostat = Number(val); },
+        format: (val: unknown) => String(val),
+        setValue: (val: unknown) => { kai_settings.mirostat = Number(val); },
     },
     {
         name: 'mirostat_tau',
         sliderId: '#mirostat_tau_kobold',
         counterId: '#mirostat_tau_counter_kobold',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        format: (val) => val,
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        setValue: (val) => { kai_settings.mirostat_tau = Number(val); },
+        format: (val: unknown) => String(val),
+        setValue: (val: unknown) => { kai_settings.mirostat_tau = Number(val); },
     },
     {
         name: 'mirostat_eta',
         sliderId: '#mirostat_eta_kobold',
         counterId: '#mirostat_eta_counter_kobold',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        format: (val) => val,
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        setValue: (val) => { kai_settings.mirostat_eta = Number(val); },
+        format: (val: unknown) => String(val),
+        setValue: (val: unknown) => { kai_settings.mirostat_eta = Number(val); },
     },
     {
         name: 'grammar',
         sliderId: '#grammar',
         counterId: '#grammar_counter_kobold',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        format: (val) => val,
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        setValue: (val) => { kai_settings.grammar = val; },
+        format: (val: unknown) => String(val),
+        setValue: (val: unknown) => { kai_settings.grammar = String(val); },
     },
     {
         name: 'seed',
         sliderId: '#seed_kobold',
         counterId: '#seed_counter_kobold',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        format: (val) => val,
-        // @ts-expect-error TS(7006) FIXME: Parameter 'val' implicitly has an 'any' type.
-        setValue: (val) => { kai_settings.seed = Number(val); },
+        format: (val: unknown) => String(val),
+        setValue: (val: unknown) => { kai_settings.seed = Number(val); },
     },
 ];
 
@@ -465,8 +421,7 @@ const sliders = [
  * @param {string} koboldUnitedVersion Kobold United version
  * @param {string} koboldCppVersion KoboldCPP version
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'koboldUnitedVersion' implicitly has an ... Remove this comment to see the full error message
-export function setKoboldFlags(koboldUnitedVersion, koboldCppVersion) {
+export function setKoboldFlags(koboldUnitedVersion: string, koboldCppVersion: string) {
     kai_flags.can_use_stop_sequence = versionCompare(koboldUnitedVersion, MIN_STOP_SEQUENCE_VERSION);
     kai_flags.can_use_streaming = versionCompare(koboldCppVersion, MIN_STREAMING_KCPPVERSION);
     kai_flags.can_use_tokenization = versionCompare(koboldCppVersion, MIN_TOKENIZATION_KCPPVERSION);
@@ -482,17 +437,15 @@ export function setKoboldFlags(koboldUnitedVersion, koboldCppVersion) {
  * Sorts the sampler items by the given order.
  * @param {any[]} orderArray Sampler order array.
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'orderArray' implicitly has an 'any' typ... Remove this comment to see the full error message
-function sortItemsByOrder(orderArray) {
+function sortItemsByOrder(orderArray: number[]) {
     console.debug('Preset samplers order: ' + orderArray);
     const draggableItems = document.getElementById('kobold_order');
+    if (!draggableItems) return;
 
     for (let i = 0; i < orderArray.length; i++) {
         const index = orderArray[i];
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         const item = draggableItems.querySelector(`[data-id="${index}"]`);
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        draggableItems.appendChild(item);
+        if (item) draggableItems.appendChild(item);
     }
 }
 
@@ -535,8 +488,7 @@ export async function getStatusKobold() {
 
         // We didn't get a 200 status code, but the endpoint has an explanation. Which means it DID connect, but I digress.
         if (online_status === 'no_connection' && data.response) {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-            notyf.error(data.response, t`API Error`, { timeOut: 5000, preventDuplicates: true });
+                notyf.error(data.response, t`API Error`);
         }
     } catch (err) {
         console.error('Error getting status', err);
@@ -559,7 +511,7 @@ export function initKoboldSettings() {
             const formattedValue = slider.format(value);
             slider.setValue(value);
             const counter = document.querySelector(slider.counterId);
-            if (counter) (counter as HTMLInputElement).value = formattedValue;
+            if (counter) (counter as HTMLInputElement).value = String(formattedValue);
             saveSettingsDebounced();
         });
     });
@@ -570,7 +522,6 @@ export function initKoboldSettings() {
             const value = formatKoboldUrl(String(apiUrlText.value).trim());
 
             if (!value) {
-                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 notyf.error('Please enter a valid URL.');
                 return;
             }
@@ -600,14 +551,10 @@ export function initKoboldSettings() {
         koboldOrderEl.sortableInstance = new Sortable(koboldOrderEl, {
             delay: getSortableDelay(),
             onEnd: function () {
-                // @ts-expect-error TS(7034) FIXME: Variable 'order' implicitly has type 'any[]' in so... Remove this comment to see the full error message
-                const order = [];
-                // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-                Array.from(document.getElementById('kobold_order').children).forEach(function (child) {
-                    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                    order.push(child.dataset.id);
+                const order: number[] = [];
+                Array.from(document.getElementById('kobold_order')!.children).forEach(function (child) {
+                    order.push(Number((child as HTMLElement).dataset.id));
                 });
-                // @ts-expect-error TS(7005) FIXME: Variable 'order' implicitly has an 'any[]' type.
                 kai_settings.sampler_order = order;
                 console.log('Samplers reordered:', kai_settings.sampler_order);
                 saveSettingsDebounced();
@@ -622,31 +569,25 @@ export function initKoboldSettings() {
     });
 
     document.getElementById('settings_preset')?.addEventListener('change', async function () {
-        const settingsPresetEl = document.getElementById('settings_preset');
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        if (settingsPresetEl.options[settingsPresetEl.selectedIndex].value != 'gui') {
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-            kai_settings.preset_settings = settingsPresetEl.options[settingsPresetEl.selectedIndex].text;
-            const preset = koboldai_settings[koboldai_setting_names[kai_settings.preset_settings]];
+        const settingsPresetEl = document.getElementById('settings_preset')!;
+        if ((settingsPresetEl as HTMLSelectElement).options[(settingsPresetEl as HTMLSelectElement).selectedIndex]?.value != 'gui') {
+            kai_settings.preset_settings = (settingsPresetEl as HTMLSelectElement).options[(settingsPresetEl as HTMLSelectElement).selectedIndex]!.text;
+            const preset = (koboldai_settings as unknown[])[(koboldai_setting_names as Record<string, number>)[kai_settings.preset_settings]!] as Record<string, unknown>;
             loadKoboldSettingsFromPreset(preset);
             setGenerationParamsFromPreset(preset);
             document.querySelectorAll('#kobold_api-settings input').forEach(el => (el as HTMLInputElement).disabled = false);
             document.getElementById('kobold_api-settings')?.style.removeProperty('opacity');
             document.getElementById('kobold_api-settings')?.style.setProperty('opacity', '1');
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            document.getElementById('kobold_order')
-                .style.opacity = 1;
-            koboldOrderEl.sortableInstance?.option('disabled', false);
+            (document.getElementById('kobold_order') as HTMLElement | null)!.style.opacity = '1';
+            koboldOrderEl!.sortableInstance?.option('disabled', false);
         } else {
             kai_settings.preset_settings = 'gui';
 
             document.querySelectorAll('#kobold_api-settings input').forEach(el => (el as HTMLInputElement).disabled = true);
             document.getElementById('kobold_api-settings')?.style.setProperty('opacity', '0.5');
 
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            document.getElementById('kobold_order')
-                .style.opacity = 0.5;
-            koboldOrderEl.sortableInstance?.option('disabled', true);
+            (document.getElementById('kobold_order') as HTMLElement | null)!.style.opacity = '0.5';
+            koboldOrderEl!.sortableInstance?.option('disabled', true);
         }
         saveSettingsDebounced();
         await eventSource.emit(event_types.PRESET_CHANGED, { apiId: 'kobold', name: kai_settings.preset_settings });

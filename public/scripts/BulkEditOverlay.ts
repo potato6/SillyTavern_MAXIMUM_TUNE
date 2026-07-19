@@ -260,11 +260,9 @@ class BulkTagPopupHandler {
 
         // @ts-expect-error TS(7006) FIXME: Parameter 'id' implicitly has an 'any' type.
         const entities = this.characterIds.map(id => characterToEntity(characters[id], id)).filter(entity => entity.item !== undefined);
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         buildAvatarList(document.getElementById('bulk_tags_avatars_block'), entities);
 
         // Print the tag list with all mutuable tags, marking them as removable. That is the initial fill
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         printTagList(document.getElementById('bulkTagList'), { tags: () => this.getMutualTags(), tagOptions: { removable: true } });
 
         // Tag input with resolvable list for the mutual tags to get redrawn, so that newly added tags get sorted correctly
@@ -287,7 +285,6 @@ class BulkTagPopupHandler {
      */
     async importExistingTags() {
         for (const characterId of this.characterIds) {
-            // @ts-expect-error TS(2322) FIXME: Type 'number' is not assignable to type 'null | un... Remove this comment to see the full error message
             await importTags(characters[characterId], { importSetting: tag_import_setting.ONLY_EXISTING });
         }
 
@@ -300,7 +297,6 @@ class BulkTagPopupHandler {
      */
     async importAllTags() {
         for (const characterId of this.characterIds) {
-            // @ts-expect-error TS(2322) FIXME: Type 'number' is not assignable to type 'null | un... Remove this comment to see the full error message
             await importTags(characters[characterId], { importSetting: tag_import_setting.ALL });
         }
 
@@ -554,7 +550,7 @@ class BulkEditOverlay {
                 this.clearSelectedCharacters();
                 this.disableContextMenu();
                 this.#disableBulkEditButtonHighlight();
-                CharacterContextMenu.style.display = 'none';
+                (CharacterContextMenu as unknown as HTMLElement).style.display = 'none';
                 break;
             case BulkEditOverlayState.select:
                 // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
@@ -609,7 +605,7 @@ class BulkEditOverlay {
         if (this.#contextMenuOpen) {
             this.#contextMenuOpen = false;
             this.#cancelNextToggle = true;
-            CharacterContextMenu.style.display = 'none';
+            (CharacterContextMenu as unknown as HTMLElement).style.display = 'none';
             return;
         }
 
@@ -800,7 +796,7 @@ class BulkEditOverlay {
 
         for (let i = Math.min(startIndex, endIndex); i <= Math.max(startIndex, endIndex); i++) {
             const character = characters[i];
-            const characterId = Number(character.getAttribute('data-chid'));
+            const characterId = Number(character!.getAttribute('data-chid'));
             // @ts-expect-error TS(2345) FIXME: Argument of type 'number' is not assignable to par... Remove this comment to see the full error message
             const isCharacterSelected = this.selectedCharacters.includes(characterId);
 
@@ -824,8 +820,8 @@ class BulkEditOverlay {
     handleContextMenuHide = (event) => {
         const contextMenu = document.getElementById(BulkEditOverlay.contextMenuId);
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        if (false === contextMenu.contains(event.target)) {
-            CharacterContextMenu.style.display = 'none';
+            if (false === contextMenu.contains(event.target)) {
+            (CharacterContextMenu as unknown as HTMLElement).style.display = 'none';
             this.#contextMenuOpen = false;
         }
     };
@@ -905,7 +901,7 @@ class BulkEditOverlay {
             .then((accept) => {
                 if (!accept) return;
 
-                const deleteChats = checkbox.checked ?? false;
+                const deleteChats = (checkbox as unknown as HTMLInputElement).checked ?? false;
 
                 const loaderHandle = loader.show({
                     slug: 'bulk-delete',
@@ -921,7 +917,6 @@ class BulkEditOverlay {
 
         // At this moment the popup is already changed in the dom, but not yet closed/resolved. We build the avatar list here
         const entities = characterIds.map(id => characterToEntity(characters[id], id)).filter(entity => entity.item !== undefined);
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         buildAvatarList(document.getElementById('bulk_delete_avatars_block'), entities);
 
         return promise;

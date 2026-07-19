@@ -29,6 +29,10 @@ const cachingAtDepth = (() => {
 
 const openRouterCacheableModels: string[] = [];
 
+/**
+ *
+ * @param modelId
+ */
 async function isOpenRouterModelCacheable(modelId: string): Promise<boolean> {
     if (openRouterCacheableModels.includes(modelId)) return true;
     try {
@@ -116,7 +120,7 @@ const provider: ChatProvider = {
             }
 
             const isCacheableGemini = isGemini && (await isOpenRouterModelCacheable(req.body.model));
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             const enableGeminiSystemPromptCache: any = getConfigValue('gemini.enableSystemPromptCache', false as any, 'boolean' as any);
             if (isCacheableGemini && enableGeminiSystemPromptCache) {
                 cachingSystemPromptForOpenRouter(req.body.messages);

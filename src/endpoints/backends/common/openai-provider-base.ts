@@ -41,6 +41,7 @@ export interface OAIConfig {
 
 /**
  * Create an OAI-compatible ChatProvider from the given config.
+ * @param cfg
  */
 export function createOAIChatProvider(cfg: OAIConfig): ChatProvider {
     const {

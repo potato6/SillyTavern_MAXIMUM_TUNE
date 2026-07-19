@@ -95,6 +95,7 @@ class ChatSession {
 
     /**
      * Retrieve a message by its array index.
+     * @param index
      */
     getMessage(index: number): ChatMessage | undefined {
         return chat[index];
@@ -122,7 +123,11 @@ class ChatSession {
         this.listeners.get(event)?.delete(cb);
     }
 
-    /** @internal Called by MessageService etc. after mutations. */
+    /**
+     * @param event
+     * @param data
+     * @internal
+     */
     emit(event: SessionEvent, data: unknown): void {
         this.listeners.get(event)?.forEach((cb) => {
             try {

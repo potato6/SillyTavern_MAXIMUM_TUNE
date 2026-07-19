@@ -135,7 +135,7 @@ const provider: ChatProvider = {
         });
         if (!response.ok) return [];
         const data = await response.json() as Record<string, unknown>;
-        return (data.data as Array<Record<string, unknown>>) || [];
+        return (data.data as ModelEntry[]) || [];
     },
 };
 

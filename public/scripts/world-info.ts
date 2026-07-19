@@ -1,6 +1,6 @@
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 declare const TomSelect: unknown;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 declare const Sortable: unknown;
 
 import { saveSettings, getRequestHeaders, chat_metadata, this_chid, characters, saveCharacterDebounced, menu_type, eventSource, event_types, saveMetadata, getCurrentChatId, extension_prompt_roles, create_save, createOrEditCharacter, getOneCharacter, select_selected_character } from '../script.js';
@@ -73,7 +73,6 @@ import { registerWorldInfoSlashCommands } from './world-info/commands.js';
 import {
     saveWorldInfo,
     saveSettingsNow,
-    getFreeWorldName,
     newWorldInfoEntryTemplate,
     createWorldInfoEntry,
     duplicateWorldInfoEntry,
@@ -91,7 +90,6 @@ export {
     saveWorldInfo,
     saveSettingsNow,
     getFreeWorldEntryUid,
-    getFreeWorldName,
     newWorldInfoEntryDefinition,
     newWorldInfoEntryTemplate,
     createWorldInfoEntry,
@@ -355,7 +353,11 @@ export function setWorldInfoSettings(settings: Record<string, unknown>, data: Re
 
     wiManager.info = (settings.world_info ?? {}) as Record<string, unknown>;
 
-    /** Syncs an input or checkbox from the manager — collapses 11 nearly-identical blocks */
+    /**
+     * Syncs an input or checkbox from the manager — collapses 11 nearly-identical blocks
+     * @param id
+     * @param value
+     */
     function sync(id: string, value: string | boolean) {
         const el = document.getElementById(id) as HTMLInputElement | null;
         if (!el) return;
@@ -785,12 +787,12 @@ async function displayWorldEntries(name: unknown, data: WorldInfoBook, navigatio
     const storageKey = 'WI_PerPage';
     const perPageDefault = 25;
     let startPage = 1;
-    let wiPaginator: { getCurrentPage: () => number; go: (page: number) => void } | null = null;
+    let wiPaginator: null | { getCurrentPage(): number; go(page: number | string): void; destroy(): void } = null;
 
     const pagEl = document.getElementById('world_info_pagination');
 
-    if (navigation === navigation_option.previous && wiPaginator) {
-        startPage = (wiPaginator as { getCurrentPage: () => number; go: (page: number) => void }).getCurrentPage();
+    if (navigation === navigation_option.previous) {
+        startPage = (wiPaginator as unknown as { getCurrentPage: () => number }).getCurrentPage();
     }
 
     if (typeof navigation === 'number' && Number(navigation) >= 0) {
@@ -804,7 +806,7 @@ async function displayWorldEntries(name: unknown, data: WorldInfoBook, navigatio
         const storageKey = 'WI_PerPage';
         const perPage = Number(accountStorage.getItem(storageKey)) || perPageDefault;
         wiPaginator = createPaginator(pagEl, {
-            dataSource: getDataArray,
+            dataSource: () => getDataArray(),
             pageSize: perPage,
             pageNumber: startPage,
             showSizeChanger: true,
@@ -812,21 +814,21 @@ async function displayWorldEntries(name: unknown, data: WorldInfoBook, navigatio
             showNavigator: true,
             prevText: '<',
             nextText: '>',
-            callback: async function (page: Record<string, unknown>[]) {
+            callback: async function (entries: WorldInfoEntryData[]) {
                 try {
                     if (worldEntriesList) clearEntryList(worldEntriesList);
 
                     const keywordHeaders = await renderTemplateAsync('worldInfoKeywordHeaders');
                     const blocks: HTMLElement[] = [];
 
-                    for (const entry of page) {
+                    for (const entry of entries) {
                         try {
-                            const block = await getWorldEntry(name, data, entry);
+                            const block = await getWorldEntry(name, data, entry as unknown as Record<string, unknown>);
                             if (block) {
                                 blocks.push(block);
                             }
                         } catch (error) {
-                            console.error(`Error while processing entry ${entry.uid as string}:`, error);
+                            console.error(`Error while processing entry ${String(entry.uid)}:`, error);
                         }
                     }
 
@@ -966,12 +968,7 @@ async function displayWorldEntries(name: unknown, data: WorldInfoBook, navigatio
     });
 
     document.getElementById('world_duplicate')!.addEventListener('click', async () => {
-        // Find current name for the world selected
-        const selectedIndex = String((document.getElementById('world_editor_select') as HTMLSelectElement).options[(document.getElementById('world_editor_select') as HTMLSelectElement).selectedIndex]?.value ?? '');
-        const worldName = wiManager.worldNames[Number(selectedIndex)] ?? null;
-
         // Use the current name as default input, then ask user for the name
-        const tempName = getFreeWorldName(worldName as unknown as null | undefined) ?? '';
         const finalName = await Popup.show.input('Create a new World Info?', 'Enter a name for the new file:', undefined);
 
         if (finalName) {
@@ -1330,7 +1327,6 @@ const selEl = (template as HTMLElement | null)?.querySelector(`select[name="${en
  *
  * Wires an input/select element so changes flow:
  *   element → data.entries[uid] → originalData → saveWorldInfo
- *
  * @param el         - The DOM element (input, select, checkbox).
  * @param entry      - The WI entry object.
  * @param fieldName  - Property name on the entry (e.g. 'constant', 'depth').
@@ -1383,6 +1379,12 @@ function bindEntryField(
 
 /**
  * Helper to handle match checkboxes for WI entries.
+ * @param root0
+ * @param root0.template
+ * @param root0.entry
+ * @param root0.fieldName
+ * @param root0.data
+ * @param root0.name
  */
 function handleMatchCheckboxHelper({ template, entry, fieldName, data, name }: { template: HTMLElement | null; entry: Record<string, unknown>; fieldName: string; data: WorldInfoBook; name: string; }) {
     const el = template!.querySelector(`input[type="checkbox"][name="${fieldName}"]`) as HTMLElement | null;
@@ -1469,6 +1471,11 @@ function handleCharacterFilterChangeHelper({ characterFilter, data, entry, name 
     if (!characterFilter) return;
     const entries = data.entries;
 
+    /**
+     *
+     * @param uid
+     * @param selectedOptions
+     */
     async function saveFilterSelection(uid: string, selectedOptions: HTMLOptionsCollection | undefined) {
     const entryRec = entries[uid];
     if (!entryRec) return;
@@ -2637,7 +2644,7 @@ export async function updateWorldInfoLinks(oldName: unknown, newName: unknown) {
 
 /**
  * @param {number} [chid] - Character ID
-
+ 
 /**
  * @param {number} [chid] - Character ID
  * @param {boolean} [forceValue] - Force a specific state

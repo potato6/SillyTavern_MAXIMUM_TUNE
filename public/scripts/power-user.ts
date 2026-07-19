@@ -6,6 +6,15 @@ declare let toastr: any;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare const noUiSlider: any;
 /* eslint-enable @typescript-eslint/no-unused-vars */
+ 
+interface Notyf {
+    success(msg: string, title?: string): void;
+    error(msg: string, title?: string): void;
+    warning(msg: string, title?: string, options?: Record<string, unknown>): void;
+    info(msg: string, title?: string, options?: Record<string, unknown>): void;
+    options: Record<string, unknown>;
+}
+declare let notyf: Notyf;
 
 import {
     saveSettingsDebounced,
@@ -50,8 +59,8 @@ import { tokenizers } from './tokenizers.js';
 import { BIAS_CACHE } from './logit-bias.js';
 import { renderTemplateAsync } from './templates.js';
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
-declare const TomSelect: any;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+declare const TomSelect: unknown;
 
 import { countOccurrences, debounce, delay, download, getFileText, getSanitizedFilename, getStringHash, isOdd, onlyUnique, resetScrollHeight, shuffle, sortMoments, timestampToMoment } from './utils.js';
 import { FILTER_TYPES } from './filters.js';
@@ -68,6 +77,19 @@ import { IMAGE_OVERSWIPE, MEDIA_DISPLAY } from './constants.js';
 import { t } from './i18n.js';
 
 import { persona_description_positions as _persona_description_positions } from './personas.js';
+
+ 
+interface noUiSliderInstance {
+    get(): string | string[];
+    set(value: number | string | (number | string)[]): void;
+    on(event: string, handler: (...args: unknown[]) => void): void;
+    destroy(): void;
+}
+
+ 
+interface noUiSliderElement {
+    noUiSlider?: noUiSliderInstance;
+}
 
 export const toastPositionClasses = [
     'toast-top-left',
@@ -284,9 +306,9 @@ export const power_user = {
         max_additions: 1,
     },
 
-    personas: {},
-    default_persona: null,
-    persona_descriptions: {},
+    personas: {} as Record<string, string>,
+    default_persona: null as string | null,
+    persona_descriptions: {} as Record<string, Record<string, unknown>>,
 
     persona_description: '',
     persona_description_position: persona_description_positions.IN_PROMPT,
@@ -335,18 +357,87 @@ export const power_user = {
     auto_connect: false,
     auto_load_chat: false,
     forbid_external_media: true,
-    external_media_allowed_overrides: [],
-    external_media_forbidden_overrides: [],
+    external_media_allowed_overrides: [] as string[],
+    external_media_forbidden_overrides: [] as string[],
     pin_styles: true,
     click_to_edit: false,
     media_display: MEDIA_DISPLAY.LIST,
     image_overswipe: IMAGE_OVERSWIPE.GENERATE,
+
+    // Legacy/optional properties that may come from saved settings
+    spoiler_free_mode: false,
+    import_card_tags: undefined as boolean | undefined,
+    persona_allow_multi_connections: false,
+    persona_auto_lock: false,
+    /** @deprecated Use stscript.autocomplete.style instead */
+    autocomplete_style: undefined as string | undefined,
 };
 
-let themes = [];
-let movingUIPresets = [];
+interface Theme {
+    name: string;
+    blur_strength?: number;
+    main_text_color?: string;
+    italics_text_color?: string;
+    underline_text_color?: string;
+    quote_text_color?: string;
+    blur_tint_color?: string;
+    chat_tint_color?: string;
+    user_mes_blur_tint_color?: string;
+    bot_mes_blur_tint_color?: string;
+    shadow_color?: string;
+    shadow_width?: number;
+    border_color?: string;
+    font_scale?: number;
+    fast_ui_mode?: boolean;
+    waifuMode?: boolean;
+    avatar_style?: number;
+    chat_display?: number;
+    toastr_position?: string;
+    noShadows?: boolean;
+    chat_width?: number;
+    timer_enabled?: boolean;
+    timestamps_enabled?: boolean;
+    timestamp_model_icon?: boolean;
+    mesIDDisplay_enabled?: boolean;
+    hideChatAvatars_enabled?: boolean;
+    message_token_count_enabled?: boolean;
+    expand_message_actions?: boolean;
+    enableZenSliders?: boolean;
+    enableLabMode?: boolean;
+    hotswap_enabled?: boolean;
+    custom_css?: string;
+    bogus_folders?: boolean;
+    zoomed_avatar_magnification?: boolean;
+    reduced_motion?: boolean;
+    compact_input_area?: boolean;
+    show_swipe_num_all_messages?: boolean;
+    click_to_edit?: boolean;
+    media_display?: string;
+    [key: string]: unknown;
+}
+
+interface ContextSettings extends Record<string, unknown> {
+    name?: string;
+    preset: string;
+    story_string: string;
+    chat_start: string;
+    example_separator: string;
+    use_stop_strings: boolean;
+    names_as_stop_strings: boolean;
+    story_string_position: number;
+    story_string_role: number;
+    story_string_depth: number;
+}
+
+interface MovingUIPreset {
+    name: string;
+    movingUIState: Record<string, Record<string, string>>;
+}
+
+let themes: Theme[] = [];
+let movingUIPresets: MovingUIPreset[] = [];
 /** @type {ContextSettings[]} */
-export let context_presets = [];
+export let context_presets: ContextSettings[] = [];
 
 const storage_keys = {
     storyStringValidationCache: 'StoryStringValidationCache',
@@ -370,8 +461,7 @@ const contextControls = [
 ];
 
 const browser_has_focus = true;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const debug_functions: any[] = [];
+const debug_functions: unknown[] = [];
 
 const setHotswapsDebounced = debounce(favsToHotswap);
 
@@ -409,7 +499,7 @@ export function playMessageSound({
  * @example
  * collapseNewlines("\n\n\n"); // "\n"
  */
-export function collapseNewlines(x) {
+export function collapseNewlines(x: string) {
     return x.replaceAll(/\n+/g, '\n');
 }
 
@@ -430,7 +520,7 @@ export function collapseNewlines(x) {
  * // and you HAVE to handle the cases where multiple pairs of asterisks exist in the same line
  * "^example * text* * harder problem *\n" // "^example *text* *harder problem*\n"
  */
-export function fixMarkdown(text, forDisplay) {
+export function fixMarkdown(text: string, forDisplay: boolean) {
     // Find pairs of formatting characters and capture the text in between them
     const format = /([*_]{1,2})([\s\S]*?)\1/gm;
     const matches = [];
@@ -442,9 +532,10 @@ export function fixMarkdown(text, forDisplay) {
     // Iterate through the matches and replace adjacent spaces immediately beside formatting characters
     let newText = text;
     for (let i = matches.length - 1; i >= 0; i--) {
-        const matchText = matches[i][0];
+        const match = matches[i]!;
+        const matchText = match[0]!;
         const replacementText = matchText.replace(/(\*|_)([\t \u00a0\u1680\u2000-\u200a\u202f\u205f\u3000\ufeff]+)|([\t \u00a0\u1680\u2000-\u200a\u202f\u205f\u3000\ufeff]+)(\*|_)/g, '$1$4');
-        newText = newText.slice(0, matches[i].index) + replacementText + newText.slice(matches[i].index + matchText.length);
+        newText = newText.slice(0, match.index) + replacementText + newText.slice(match.index + matchText.length);
     }
 
     // Don't auto-fix asterisks if this is a message clean-up procedure.
@@ -457,7 +548,7 @@ export function fixMarkdown(text, forDisplay) {
 
     // Fix asterisks, and quotes that are not paired
     for (let index = 0; index < splitText.length; index++) {
-        const line = splitText[index];
+        const line = splitText[index]!;
         const charsToCheck = ['*', '"'];
         for (const char of charsToCheck) {
             if (line.includes(char) && isOdd(countOccurrences(line, char))) {
@@ -554,7 +645,7 @@ function switchReducedMotion() {
     }
     document.documentElement.classList.toggle('reduce-motion', power_user.reduced_motion);
     const overrideDuration = power_user.reduced_motion ? 0 : ANIMATION_DURATION_DEFAULT;
-    setAnimationDuration(overrideDuration);
+    setAnimationDuration(overrideDuration as unknown as null);
     const rmEl = document.getElementById('reduced_motion') as HTMLInputElement | null;
     if (rmEl) rmEl.checked = power_user.reduced_motion;
     if (rmEl) rmEl.disabled = osReduced;
@@ -570,7 +661,7 @@ function switchReducedMotion() {
  *
  */
 function switchCompactInputArea() {
-    document.getElementById('send_form').classList.toggle('compact', power_user.compact_input_area);
+    document.getElementById('send_form')?.classList.toggle('compact', power_user.compact_input_area);
     const el = document.getElementById('compact_input_area') as HTMLInputElement | null;
     if (el) el.checked = power_user.compact_input_area;
 }
@@ -584,14 +675,14 @@ function switchSwipeNumAllMessages() {
     document.body.classList.toggle('swipeAllMessages', !!power_user.show_swipe_num_all_messages);
 }
 
-const originalSliderValues = [];
+const originalSliderValues: { id: string; min: string | null; max: string | null; step: string | null }[] = [];
 
 /**
  *
  * @param root0
  * @param root0.noReset
  */
-async function switchLabMode({ noReset = false } = {}) {
+async function switchLabMode({ noReset = false }: { noReset?: boolean } = {}) {
     /*     if (power_user.enableZenSliders && power_user.enableLabMode) {
             notyf.warning("Can't start Lab Mode while Zen Sliders are active")
             return
@@ -605,7 +696,7 @@ async function switchLabMode({ noReset = false } = {}) {
 
     if (power_user.enableLabMode) {
         //save all original slider values into an array
-        document.querySelectorAll('#advanced-ai-config-block input').forEach(el => {
+        document.querySelectorAll('#advanced-ai-config-block input').forEach((el: Element) => {
             const id = el.id;
             const min = el.getAttribute('min');
             const max = el.getAttribute('max');
@@ -614,12 +705,12 @@ async function switchLabMode({ noReset = false } = {}) {
         });
         //console.log(originalSliderValues)
         //remove limits on all inputs and hide sliders
-        document.querySelectorAll('#advanced-ai-config-block input').forEach(el => {
+        document.querySelectorAll('#advanced-ai-config-block input').forEach((el: Element) => {
             el.setAttribute('min', '-99999');
             el.setAttribute('max', '99999');
             el.setAttribute('step', '0.001');
         });
-        document.getElementById('labModeWarning').classList.remove('displayNone');
+        document.getElementById('labModeWarning')?.classList.remove('displayNone');
         //$("#advanced-ai-config-block input[type='range']").style.display = 'none'
 
         const agcEl = document.getElementById('amount_gen_counter');
@@ -631,14 +722,14 @@ async function switchLabMode({ noReset = false } = {}) {
         originalSliderValues.forEach(function (slider) {
             const el = document.getElementById(slider.id);
             if (el) {
-                el.setAttribute('min', slider.min);
-                el.setAttribute('max', slider.max);
-                el.setAttribute('step', slider.step);
+                el.setAttribute('min', slider.min ?? '');
+                el.setAttribute('max', slider.max ?? '');
+                el.setAttribute('step', slider.step ?? '');
                 el.dispatchEvent(new Event('input', { bubbles: true }));
             }
         });
-        document.querySelectorAll("#advanced-ai-config-block input[type='range']").forEach(el => el.style.display = '');
-        document.getElementById('labModeWarning').classList.add('displayNone');
+        document.querySelectorAll("#advanced-ai-config-block input[type='range']").forEach((el: Element) => (el as HTMLElement).style.display = '');
+        document.getElementById('labModeWarning')?.classList.add('displayNone');
 
         // To set the correct amount_gen back, we just call the function calculating it correctly
         switchMaxContextSize();
@@ -657,15 +748,15 @@ async function switchZenSliders() {
     if (power_user.enableZenSliders) {
         const clickSlidersTips = document.getElementById('clickSlidersTips');
         if (clickSlidersTips) clickSlidersTips.style.display = 'none';
-        document.querySelectorAll("#pro-settings-block input[type=number]").forEach(el => el.style.display = 'none');
+        document.querySelectorAll("#pro-settings-block input[type=number]").forEach((el: Element) => (el as HTMLElement).style.display = 'none');
         //hide number inputs that are not 'seed' inputs
         document.querySelectorAll(`#textgenerationwebui_api-settings input[type=number]:not([id^='seed']):not([id^='n_']),
-            #kobold_api-settings input[type=number]:not([id^='seed'])`).forEach(el => el.style.display = 'none');
+            #kobold_api-settings input[type=number]:not([id^='seed'])`).forEach((el: Element) => (el as HTMLElement).style.display = 'none');
         //hide original sliders
         document.querySelectorAll(`#textgenerationwebui_api-settings input[type='range'],
             #kobold_api-settings input[type='range'],
-            #pro-settings-block input[type='range']:not(#max_context)`).forEach(el => {
-            el.style.display = 'none';
+            #pro-settings-block input[type='range']:not(#max_context)`).forEach((el: Element) => {
+            (el as HTMLElement).style.display = 'none';
             CreateZenSliders(el);
         });
         //this is for when zensliders is toggled after pageload
@@ -679,16 +770,16 @@ async function switchZenSliders() {
      *
      */
     function revertOriginalSliders() {
-        document.querySelectorAll("#pro-settings-block input[type=number]").forEach(el => el.style.display = '');
+        document.querySelectorAll("#pro-settings-block input[type=number]").forEach((el: Element) => (el as HTMLElement).style.display = '');
         document.querySelectorAll(`#textgenerationwebui_api-settings input[type='number'],
-            #kobold_api-settings input[type='number']`).forEach(el => el.style.display = '');
+            #kobold_api-settings input[type='number']`).forEach((el: Element) => (el as HTMLElement).style.display = '');
         document.querySelectorAll(`#textgenerationwebui_api-settings input[type='range'],
             #kobold_api-settings input[type='range'],
-            #pro-settings-block input[type='range']`).forEach(el => {
-            el.style.display = '';
+            #pro-settings-block input[type='range']`).forEach((el: Element) => {
+            (el as HTMLElement).style.display = '';
         });
-        document.querySelectorAll('div[id$="_zenslider"]').forEach(el => {
-            if (el.noUiSlider) el.noUiSlider.destroy();
+        document.querySelectorAll('div[id$="_zenslider"]').forEach((el: Element) => {
+            if ((el as HTMLElement & { noUiSlider?: { destroy: () => void } }).noUiSlider) (el as HTMLElement & { noUiSlider?: { destroy: () => void } }).noUiSlider!.destroy();
             el.remove();
         });
     }
@@ -697,8 +788,8 @@ async function switchZenSliders() {
  *
  * @param elmnt
  */
-async function CreateZenSliders(elmnt) {
-    const originalSlider = elmnt;
+async function CreateZenSliders(elmnt: Element) {
+    const originalSlider = elmnt as HTMLInputElement;
     const sliderID = originalSlider.id;
     let sliderMin = Number(originalSlider.min);
     let sliderMax = Number(originalSlider.max);
@@ -706,9 +797,10 @@ async function CreateZenSliders(elmnt) {
     const sliderRange = sliderMax - sliderMin;
     let numSteps = 20;
     let decimals = 2;
-    let offVal, allVal;
-    let stepScale;
-    let steps;
+    let offVal: number | undefined;
+    let allVal: number | undefined;
+    let stepScale: number;
+    let steps: number[] | undefined;
     if (sliderID == 'amount_gen') {
         decimals = 0;
         steps = [16, 50, 100, 150, 200, 256, 300, 400, 512, 1024];
@@ -858,14 +950,17 @@ async function CreateZenSliders(elmnt) {
     //customize amt gen steps
     if (sliderID !== 'amount_gen' && sliderID !== 'rep_pen_range_textgenerationwebui') {
         stepScale = sliderRange / numSteps;
+    } else {
+        stepScale = 1;
     }
 
     const newSlider = document.createElement('div');
     newSlider.id = `${sliderID}_zenslider`;
     newSlider.style.width = '100%';
-    originalSlider.parentNode.insertBefore(newSlider, originalSlider);
+    originalSlider.parentNode!.insertBefore(newSlider, originalSlider);
 
-    noUiSlider.create(newSlider, {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (noUiSlider as any).create(newSlider, {
         start: [sliderValue],
         step: stepScale,
         range: {
@@ -873,13 +968,13 @@ async function CreateZenSliders(elmnt) {
             'max': sliderMax,
         },
         tooltips: {
-            to: function (value) {
+            to: function (value: number) {
                 const stepNumber = Math.round((value - sliderMin) / stepScale);
                 if (sliderID === 'amount_gen') {
                     return steps ? String(steps[stepNumber] ?? steps[steps.length - 1]) : String(Math.round(value));
                 } else if (sliderID === 'rep_pen_range_textgenerationwebui') {
-                    if (value === offVal) return 'Off';
-                    if (value === allVal) return 'All';
+                    if (offVal !== undefined && value === offVal) return 'Off';
+                    if (allVal !== undefined && value === allVal) return 'All';
                     return steps ? String(steps[stepNumber] ?? steps[steps.length - 1]) : String(Math.round(value));
                 } else {
                     const numStr = Number(value).toFixed(decimals);
@@ -889,20 +984,20 @@ async function CreateZenSliders(elmnt) {
                     return numStr;
                 }
             },
-            from: function (value) {
+            from: function (value: string) {
                 if (typeof value === 'string') {
                     if (value === 'Off') return offVal;
                     if (value === 'All') return allVal;
                     return Number(value);
                 }
-                return value;
+                return Number(value);
             },
         },
     });
 
     await delay(100);
 
-    const tooltip = newSlider.querySelector('.noUi-tooltip');
+    const tooltip = newSlider.querySelector('.noUi-tooltip') as HTMLElement | null;
 
     if (sliderID !== 'amount_gen' && sliderID !== 'rep_pen_range_textgenerationwebui') {
         // Make tooltip contenteditable for manual input
@@ -912,9 +1007,9 @@ async function CreateZenSliders(elmnt) {
             let isManualInput = false;
             let valueBeforeManualInput = sliderValue;
 
-            tooltip.addEventListener('mousedown', function (e) {
+            tooltip.addEventListener('mousedown', function (this: HTMLElement, e: MouseEvent) {
                 e.stopPropagation();
-                valueBeforeManualInput = parseFloat(newSlider.noUiSlider.get());
+                valueBeforeManualInput = parseFloat((newSlider as unknown as noUiSliderElement).noUiSlider!.get() as string);
                 const range = document.createRange();
                 range.selectNodeContents(this);
                 const selection = window.getSelection();
@@ -924,7 +1019,7 @@ async function CreateZenSliders(elmnt) {
                 }
             });
 
-            tooltip.addEventListener('keyup', function (e) {
+            tooltip.addEventListener('keyup', function (this: HTMLElement, e: KeyboardEvent) {
                 isManualInput = true;
                 if (e.key === 'Enter') {
                     e.preventDefault();
@@ -932,15 +1027,15 @@ async function CreateZenSliders(elmnt) {
                 }
             });
 
-            tooltip.addEventListener('blur', function () {
-                const manualInput = parseFloat(parseFloat(this.textContent).toFixed(decimals));
+            tooltip.addEventListener('blur', function (this: HTMLElement) {
+                const manualInput = parseFloat(parseFloat(this.textContent ?? '0').toFixed(decimals));
                 if (isManualInput) {
                     if (manualInput >= sliderMin && manualInput <= sliderMax) {
-                        newSlider.noUiSlider.set(manualInput);
+                        (newSlider as unknown as noUiSliderElement).noUiSlider!.set(manualInput);
                         valueBeforeManualInput = manualInput;
                     } else {
                         notyf.warning(`Invalid value. Must be between ${sliderMin} and ${sliderMax}`);
-                        newSlider.noUiSlider.set(valueBeforeManualInput);
+                        (newSlider as unknown as noUiSliderElement).noUiSlider!.set(valueBeforeManualInput);
                     }
                 }
                 isManualInput = false;
@@ -952,22 +1047,22 @@ async function CreateZenSliders(elmnt) {
     originalSlider.style.display = 'none';
 
     // Sync hidden input on slider changes
-    newSlider.noUiSlider.on('update', function (values, handle) {
-        const rawValue = parseFloat(values[handle]);
+    (newSlider as unknown as noUiSliderElement).noUiSlider!.on('update', function (values: unknown, handle: unknown) {
+        const rawValue = parseFloat((values as string[])[handle as number]!);
         const stepNumber = Math.round((rawValue - sliderMin) / stepScale);
-        let numVal;
+        let numVal: number;
 
         if (sliderID === 'amount_gen') {
-            const idx = Math.min(stepNumber, steps.length - 1);
-            numVal = steps[idx];
+            const idx = Math.min(stepNumber, (steps ?? []).length - 1);
+            numVal = (steps ?? [])[idx]!;
         } else if (sliderID === 'rep_pen_range_textgenerationwebui') {
-            const idx = Math.min(stepNumber, steps.length - 1);
-            numVal = steps[idx];
+            const idx = Math.min(stepNumber, (steps ?? []).length - 1);
+            numVal = (steps ?? [])[idx]!;
         } else {
             numVal = rawValue;
         }
 
-        originalSlider.value = numVal;
+        originalSlider.value = String(numVal);
         originalSlider.dispatchEvent(new Event('input', { bubbles: true }));
         originalSlider.dispatchEvent(new Event('change', { bubbles: true }));
     });
@@ -1009,12 +1104,12 @@ function switchSpoilerMode() {
     if (power_user.spoiler_free_mode) {
         { const el = document.getElementById('descriptionWrapper'); if (el) el.style.display = 'none'; }
         { const el = document.getElementById('firstMessageWrapper'); if (el) el.style.display = 'none'; }
-        document.getElementById('spoiler_free_desc').classList.add('flex1');
+        document.getElementById('spoiler_free_desc')?.classList.add('flex1');
         { const el = document.getElementById('creators_note_desc_hidden'); if (el) el.style.display = ''; }
     } else {
         { const el = document.getElementById('descriptionWrapper'); if (el) el.style.display = ''; }
         { const el = document.getElementById('firstMessageWrapper'); if (el) el.style.display = ''; }
-        document.getElementById('spoiler_free_desc').classList.remove('flex1');
+        document.getElementById('spoiler_free_desc')?.classList.remove('flex1');
         { const el = document.getElementById('creators_note_desc_hidden'); if (el) el.style.display = 'none'; }
     }
 }
@@ -1023,19 +1118,19 @@ function switchSpoilerMode() {
  *
  */
 function peekSpoilerMode() {
-    const toggleEl = (id) => { const el = document.getElementById(id); if (el) el.style.display = el.style.display === 'none' ? '' : 'none'; };
+    const toggleEl = (id: string) => { const el = document.getElementById(id); if (el) el.style.display = el.style.display === 'none' ? '' : 'none'; };
     toggleEl('descriptionWrapper');
     toggleEl('firstMessageWrapper');
     toggleEl('creators_note_desc_hidden');
-    document.getElementById('spoiler_free_desc').classList.toggle('flex1');
+    document.getElementById('spoiler_free_desc')?.classList.toggle('flex1');
 }
 
 /**
  *
  */
 function switchMovingUI() {
-    document.querySelectorAll('.drawer-content.maximized').forEach(function (el) {
-        el.querySelector('.inline-drawer-maximize')?.click();
+    document.querySelectorAll('.drawer-content.maximized').forEach(function (el: Element) {
+        el.querySelector('.inline-drawer-maximize')?.dispatchEvent(new Event('click'));
     });
     document.body.classList.toggle('movingUI', power_user.movingUI);
     if (power_user.movingUI === true) {
@@ -1046,7 +1141,7 @@ function switchMovingUI() {
     } else {
         if (Object.keys(power_user.movingUIState).length !== 0) {
             power_user.movingUIState = {};
-            resetMovablePanels();
+            resetMovablePanels('');
             saveSettingsDebounced();
         }
     }
@@ -1087,7 +1182,7 @@ function applyAvatarStyle() {
  *
  */
 function applyChatDisplay() {
-    if ([null, undefined].includes(power_user.chat_display)) {
+    if (power_user.chat_display === null || power_user.chat_display === undefined) {
         console.debug('applyChatDisplay: saw no chat display type defined');
         power_user.chat_display = chat_styles.DEFAULT;
     }
@@ -1135,9 +1230,7 @@ function applyToastrPosition() {
         'toast-bottom-left': { x: 'left', y: 'bottom' },
         'toast-bottom-right': { x: 'right', y: 'bottom' },
     };
-    // @ts-expect-error TS(2304) FIXME: Cannot find name 'notyf'.
     if (notyf && _posMap[power_user.toastr_position]) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'notyf'.
         notyf.options.position = _posMap[power_user.toastr_position];
     }
     const tpEl = document.getElementById('toastr_position') as HTMLSelectElement | null;
@@ -1150,7 +1243,7 @@ function applyToastrPosition() {
  *
  * @param type
  */
-function applyChatWidth(type) {
+function applyChatWidth(type: string) {
     if (type === 'forced') {
         const r = document.documentElement;
         r.style.setProperty('--sheldWidth', `${power_user.chat_width}vw`);
@@ -1184,14 +1277,14 @@ function applyChatWidth(type) {
  *
  * @param type
  */
-function applyThemeColor(type) {
+function applyThemeColor(type: string) {
     if (type === 'main') {
         document.documentElement.style.setProperty('--SmartThemeBodyColor', power_user.main_text_color);
-        const color = power_user.main_text_color.split('(')[1].split(')')[0].split(',');
-        document.documentElement.style.setProperty('--SmartThemeCheckboxBgColorR', color[0]);
-        document.documentElement.style.setProperty('--SmartThemeCheckboxBgColorG', color[1]);
-        document.documentElement.style.setProperty('--SmartThemeCheckboxBgColorB', color[2]);
-        document.documentElement.style.setProperty('--SmartThemeCheckboxBgColorA', color[3]);
+        const color = power_user.main_text_color.split('(')[1]!.split(')')[0]!.split(',');
+        document.documentElement.style.setProperty('--SmartThemeCheckboxBgColorR', color[0] ?? '');
+        document.documentElement.style.setProperty('--SmartThemeCheckboxBgColorG', color[1] ?? '');
+        document.documentElement.style.setProperty('--SmartThemeCheckboxBgColorB', color[2] ?? '');
+        document.documentElement.style.setProperty('--SmartThemeCheckboxBgColorA', color[3] ?? '');
     }
     if (type === 'italics') {
         document.documentElement.style.setProperty('--SmartThemeEmColor', power_user.italics_text_color);
@@ -1207,8 +1300,8 @@ function applyThemeColor(type) {
         } */
     if (type === 'blurTint') {
         const metaThemeColor = document.querySelector('meta[name=theme-color]');
-        document.documentElement.style.setProperty('--SmartThemeBlurTintColor', power_user.blur_tint_color);
-        metaThemeColor.setAttribute('content', power_user.blur_tint_color);
+            document.documentElement.style.setProperty('--SmartThemeBlurTintColor', power_user.blur_tint_color);
+            if (metaThemeColor) metaThemeColor.setAttribute('content', power_user.blur_tint_color);
     }
     if (type === 'chatTint') {
         document.documentElement.style.setProperty('--SmartThemeChatTintColor', power_user.chat_tint_color);
@@ -1270,7 +1363,7 @@ function applyShadowWidth() {
  *
  * @param type
  */
-function applyFontScale(type) {
+function applyFontScale(type: string) {
     //this is to allow forced setting on page load, theme swap, etc
     if (type === 'forced') {
         document.documentElement.style.setProperty('--fontScale', String(power_user.font_scale));
@@ -1305,7 +1398,7 @@ function isMediaDisplayReloadNeeded() {
     }
 
     const firstDisplayedIndex = getFirstDisplayedMessageId();
-    const hasUnprocessedMediaMessages = chat.some((message, index) => {
+    const hasUnprocessedMediaMessages = (chat as { extra?: { media?: unknown[]; media_display?: unknown } }[]).some((message, index) => {
         // Skip messages that are not currently displayed
         if (index < firstDisplayedIndex) {
             return false;
@@ -1337,7 +1430,7 @@ function showMediaDisplayReloadPrompt() {
  *
  * @param name
  */
-function applyTheme(name) {
+function applyTheme(name: string) {
     const theme = themes.find(x => x.name == name);
 
     if (!theme) {
@@ -1534,7 +1627,7 @@ function applyTheme(name) {
             },
             {
             key: 'media_display',
-            action: (oldValue, newValue) => {
+            action: (oldValue: unknown, newValue: unknown) => {
                 const el = document.getElementById('media_display') as HTMLSelectElement | null;
                 if (el) el.value = power_user.media_display;
                 if (oldValue !== newValue) {
@@ -1545,13 +1638,13 @@ function applyTheme(name) {
     ];
 
     for (const { key, selector, type, action } of themeProperties) {
-        if (theme[key] !== undefined) {
-            const oldValue = power_user[key];
-            const newValue = theme[key];
-            power_user[key] = newValue;
+        if ((theme as Record<string, unknown>)[key] !== undefined) {
+            const oldValue = (power_user as Record<string, unknown>)[key];
+            const newValue = (theme as Record<string, unknown>)[key];
+            (power_user as Record<string, unknown>)[key] = newValue;
             if (selector) {
                 const colorEl = document.querySelector(selector);
-                if (colorEl) colorEl.setAttribute('color', newValue);
+                if (colorEl) colorEl.setAttribute('color', String(newValue));
             }
             try {
                 if (type) applyThemeColor(type);
@@ -1592,7 +1685,7 @@ function registerThemeChangeHandler() {
  *
  * @param name
  */
-async function applyMovingUIPreset(name) {
+async function applyMovingUIPreset(name: string) {
     await resetMovablePanels('quiet');
     const movingUIPreset = movingUIPresets.find(x => x.name == name);
 
@@ -1615,7 +1708,7 @@ async function applyMovingUIPreset(name) {
  * @param {string} description Description of the function.
  * @param {function} func Function to be executed.
  */
-export function registerDebugFunction(functionId, name, description, func) {
+export function registerDebugFunction(functionId: string, name: string, description: string, func: () => void) {
     debug_functions.push({ functionId, name, description, func });
 }
 
@@ -1633,7 +1726,7 @@ async function showDebugMenu() {
 export function applyPowerUserSettings() {
     switchUiMode();
     applyFontScale('forced');
-    applyThemeColor();
+    applyThemeColor('');
     // Apply the saved theme CSS on initial load — applyThemeColor() with no args does nothing
     if (power_user.theme && themes.length > 0) {
         applyTheme(power_user.theme);
@@ -1685,7 +1778,7 @@ export function applyStylePins() {
             return;
         }
 
-        const formattedMessage = messageFormatting(firstMessage.mes, firstMessage.name, firstMessage.is_system, firstMessage.is_user, 0, {}, false);
+        const formattedMessage = messageFormatting((firstMessage as Record<string, unknown>).mes as string, (firstMessage as Record<string, unknown>).name as string, (firstMessage as Record<string, unknown>).is_system as boolean, (firstMessage as Record<string, unknown>).is_user as boolean, 0, {}, false);
         const htmlElement = document.createElement('div');
         htmlElement.innerHTML = formattedMessage;
 
@@ -1724,19 +1817,20 @@ function getExampleMessagesBehavior() {
  * @param settings
  * @param data
  */
-export async function loadPowerUserSettings(settings, data) {
+export async function loadPowerUserSettings(settings: Record<string, unknown>, data: Record<string, unknown>) {
     const defaultStscript = JSON.parse(JSON.stringify(power_user.stscript));
     // Load from settings.json
-    if (settings.power_user !== undefined) {
+    const pu = settings.power_user as Record<string, unknown> | undefined;
+    if (pu !== undefined) {
         // Migrate old preference to a new setting
-        if (settings.power_user.click_to_edit === undefined && settings.power_user.chat_display === chat_styles.DOCUMENT) {
-            settings.power_user.click_to_edit = true;
+        if (pu.click_to_edit === undefined && pu.chat_display === chat_styles.DOCUMENT) {
+            pu.click_to_edit = true;
         }
-        if (Object.hasOwn(settings.power_user, 'auto_sort_tags') && !Object.hasOwn(settings.power_user, 'tag_sort_mode')) {
-            settings.power_user.tag_sort_mode = settings.power_user.auto_sort_tags ? tag_sort_mode.ALPHABETICAL : tag_sort_mode.MANUAL;
-            delete settings.power_user.auto_sort_tags;
+        if (Object.hasOwn(pu, 'auto_sort_tags') && !Object.hasOwn(pu, 'tag_sort_mode')) {
+            pu.tag_sort_mode = pu.auto_sort_tags ? tag_sort_mode.ALPHABETICAL : tag_sort_mode.MANUAL;
+            delete pu.auto_sort_tags;
         }
-        Object.assign(power_user, settings.power_user);
+        Object.assign(power_user, pu);
     }
 
     if (power_user.stscript === undefined) {
@@ -1755,7 +1849,7 @@ export async function loadPowerUserSettings(settings, data) {
                 power_user.stscript.autocomplete.font = defaultStscript.autocomplete.font;
             }
             if (power_user.stscript.autocomplete.style === undefined) {
-                power_user.stscript.autocomplete.style = power_user.stscript.autocomplete_style || defaultStscript.autocomplete.style;
+                power_user.stscript.autocomplete.style = (power_user.stscript as Record<string, unknown>).autocomplete_style as string || defaultStscript.autocomplete.style;
             }
             if (power_user.stscript.autocomplete.select === undefined) {
                 power_user.stscript.autocomplete.select = defaultStscript.autocomplete.select;
@@ -1771,20 +1865,20 @@ export async function loadPowerUserSettings(settings, data) {
         }
 
         // Cleanup old flags
-        delete power_user.stscript.autocomplete_style;
+        delete (power_user.stscript as Record<string, unknown>).autocomplete_style;
     }
 
     if (data.themes !== undefined) {
-        themes = data.themes;
+        themes = data.themes as Theme[];
     }
 
     if (data.movingUIPresets !== undefined) {
-        movingUIPresets = data.movingUIPresets;
+        movingUIPresets = data.movingUIPresets as MovingUIPreset[];
     }
 
 
     if (data.context !== undefined) {
-        context_presets = data.context;
+        context_presets = data.context as ContextSettings[];
     }
 
     if (typeof power_user.chat_display !== 'number') {
@@ -1799,7 +1893,7 @@ export async function loadPowerUserSettings(settings, data) {
         power_user.chat_width = 50;
     }
 
-    if (power_user.tokenizer === tokenizers.LEGACY) {
+    if ((power_user as Record<string, unknown>).tokenizer === 0) {
         power_user.tokenizer = tokenizers.GPT2;
     }
 
@@ -1809,9 +1903,9 @@ export async function loadPowerUserSettings(settings, data) {
         delete power_user.import_card_tags;
     }
 
-    if (power_user?.instruct?.derived === true) {
+    if ((power_user.instruct as Record<string, unknown>).derived === true) {
         power_user.instruct_derived = true;
-        delete power_user.instruct.derived;
+        delete (power_user.instruct as Record<string, unknown>).derived;
     }
 
     // Reset the saved chat template hash
@@ -1951,7 +2045,7 @@ export async function loadPowerUserSettings(settings, data) {
     (document.getElementById('enableZenSliders') as HTMLInputElement | null)?.dispatchEvent(new Event('input', { bubbles: true }));
     const enableLabModeEl = document.getElementById('enableLabMode') as HTMLInputElement | null;
     if (enableLabModeEl) enableLabModeEl.checked = power_user.enableLabMode;
-    (document.getElementById('enableLabMode') as HTMLInputElement | null)?.dispatchEvent(new Event('input', { bubbles: true, ...{ fromInit: true } }));
+    (document.getElementById('enableLabMode') as HTMLInputElement | null)?.dispatchEvent(new Event('input', { bubbles: true }));
     const avStyle = document.querySelector(`input[name="avatar_style"][value="${power_user.avatar_style}"]`) as HTMLInputElement | null;
     if (avStyle) avStyle.checked = true;
     const cdOpt = document.querySelector(`#chat_display option[value="${power_user.chat_display}"]`) as HTMLOptionElement | null;
@@ -1978,9 +2072,10 @@ export async function loadPowerUserSettings(settings, data) {
     if (stscriptParserFlagStrictEscapingEl) stscriptParserFlagStrictEscapingEl.checked = power_user.stscript.parser.flags[PARSER_FLAG.STRICT_ESCAPING] ?? false;
     const stscriptParserFlagReplaceGetvarEl = document.getElementById('stscript_parser_flag_replace_getvar') as HTMLInputElement | null;
     if (stscriptParserFlagReplaceGetvarEl) stscriptParserFlagReplaceGetvarEl.checked = power_user.stscript.parser.flags[PARSER_FLAG.REPLACE_GETVAR] ?? false;
-    (document.getElementById('stscript_autocomplete_font_scale') as HTMLInputElement).value = String(power_user.stscript.autocomplete.font.scale ?? defaultStscript.autocomplete.font.scale);
-    (document.getElementById('stscript_autocomplete_font_scale_counter') as HTMLInputElement).value = String(power_user.stscript.autocomplete.font.scale ?? defaultStscript.autocomplete.font.scale);
-    document.body.style.setProperty('--ac-font-scale', power_user.stscript.autocomplete.font.scale ?? defaultStscript.autocomplete.font.scale.toString());
+    const fontScale = power_user.stscript.autocomplete.font.scale ?? defaultStscript.autocomplete.font.scale;
+    (document.getElementById('stscript_autocomplete_font_scale') as HTMLInputElement).value = String(fontScale);
+    (document.getElementById('stscript_autocomplete_font_scale_counter') as HTMLInputElement).value = String(fontScale);
+    document.body.style.setProperty('--ac-font-scale', String(fontScale));
     (document.getElementById('stscript_autocomplete_width_left') as HTMLInputElement).value = String(power_user.stscript.autocomplete.width.left ?? AUTOCOMPLETE_WIDTH.CHAT);
     document.querySelector('#stscript_autocomplete_width_left')?.dispatchEvent(new Event('input', { bubbles: true }));
     (document.getElementById('stscript_autocomplete_width_right') as HTMLInputElement).value = String(power_user.stscript.autocomplete.width.right ?? AUTOCOMPLETE_WIDTH.CHAT);
@@ -2018,7 +2113,7 @@ export async function loadPowerUserSettings(settings, data) {
         power_user.border_color];
     pickerIds.forEach((id, i) => {
         const el = document.getElementById(id);
-        if (el) el.setAttribute('color', pickerValues[i]);
+        if (el && pickerValues[i] !== undefined) el.setAttribute('color', pickerValues[i]!);
     });
     const reducedMotionEl = document.getElementById('reduced_motion') as HTMLInputElement | null;
     if (reducedMotionEl) reducedMotionEl.checked = power_user.reduced_motion;
@@ -2079,8 +2174,8 @@ export async function loadPowerUserSettings(settings, data) {
  */
 function toggleMDHotkeyIconDisplay() {
     if (power_user.enable_md_hotkeys) {
-        document.querySelectorAll('.mdhotkey_location').forEach(function (el) {
-            el.parentElement.insertAdjacentHTML('beforeend', '<i class="fa-brands fa-markdown mdhotkey_icon"></i>');
+        document.querySelectorAll('.mdhotkey_location').forEach(function (el: Element) {
+            (el.parentElement ?? el).insertAdjacentHTML('beforeend', '<i class="fa-brands fa-markdown mdhotkey_icon"></i>');
         });
     } else {
         document.querySelectorAll('.mdhotkey_icon').forEach(el => el.remove());
@@ -2103,14 +2198,14 @@ export function loadMovingUIState() {
         && power_user.movingUI === true) {
         console.debug('loading movingUI state');
         for (const elmntName of Object.keys(power_user.movingUIState)) {
-            const elmntState = power_user.movingUIState[elmntName];
-            try {
-                const elmnt = document.getElementById(elmntName);
-                if (elmnt) {
-                    console.debug(`loading state for ${elmntName}`);
-                    for (const [prop, value] of Object.entries(elmntState)) {
-                        elmnt.style.setProperty(prop, value, 'important');
-                    }
+                const elmntState = (power_user.movingUIState as Record<string, Record<string, string>>)[elmntName]!;
+                try {
+                    const elmnt = document.getElementById(elmntName);
+                    if (elmnt) {
+                        console.debug(`loading state for ${elmntName}`);
+                        for (const [prop, value] of Object.entries(elmntState)) {
+                            (elmnt as HTMLElement).style.setProperty(prop, value, 'important');
+                        }
                 } else {
                     console.debug(`skipping ${elmntName} because it doesn't exist in the DOM`);
                 }
@@ -2164,18 +2259,19 @@ function switchMaxContextSize() {
     document.getElementById('rep_pen_decay_textgenerationwebui_zenslider')?.remove();
     for (const element of elements) {
         if (!element) continue;
-        const id = element.id;
-        element.setAttribute('max', String(maxValue));
+        const el = element as HTMLInputElement;
+        const id = el.id;
+        el.setAttribute('max', String(maxValue));
 
         if (typeof id === 'string' && id?.indexOf('max_context') !== -1) {
-            element.setAttribute('min', String(minValue));
-            element.setAttribute('step', String(steps));
+            el.setAttribute('min', String(minValue));
+            el.setAttribute('step', String(steps));
         }
-        const value = Number(element.value);
+        const value = Number(el.value);
 
         if (value >= maxValue) {
-            element.value = maxValue;
-            element.dispatchEvent(new Event('input', { bubbles: true }));
+            el.value = String(maxValue);
+            el.dispatchEvent(new Event('input', { bubbles: true }));
         }
     }
 
@@ -2183,9 +2279,9 @@ function switchMaxContextSize() {
     document.getElementById('amount_gen')?.setAttribute('max', String(maxAmountGen));
     document.getElementById('amount_gen_counter')?.setAttribute('max', String(maxAmountGen));
 
-    const amountGenEl = document.getElementById('amount_gen');
+    const amountGenEl = document.getElementById('amount_gen') as HTMLInputElement | null;
     if (amountGenEl && Number(amountGenEl.value) >= maxAmountGen) {
-        amountGenEl.value = maxAmountGen;
+        amountGenEl.value = String(maxAmountGen);
         amountGenEl.dispatchEvent(new Event('input', { bubbles: true }));
     }
 
@@ -2197,8 +2293,8 @@ function switchMaxContextSize() {
             'rep_pen_decay_textgenerationwebui',
         ];
         for (const id of zensToRecreate) {
-            const z = document.getElementById(`${id}_zenslider`);
-            if (z) { if (z.noUiSlider) z.noUiSlider.destroy(); z.remove(); }
+            const z = document.getElementById(`${id}_zenslider`) as HTMLElement | null;
+            if (z) { if ((z as unknown as noUiSliderElement).noUiSlider) (z as unknown as noUiSliderElement).noUiSlider!.destroy(); z.remove(); }
             const orig = document.getElementById(id);
             if (orig) CreateZenSliders(orig);
         }
@@ -2210,10 +2306,12 @@ function switchMaxContextSize() {
  *
  */
 export function getContextSettings() {
-    const compiledSettings = {};
+    const compiledSettings: Record<string, unknown> = {};
 
     contextControls.forEach((control) => {
-        let value = control.isGlobalSetting ? power_user[control.property] : power_user.context[control.property];
+        let value: unknown = control.isGlobalSetting
+            ? (power_user as Record<string, unknown>)[control.property]
+            : (power_user.context as Record<string, unknown>)[control.property];
 
         // Force to a boolean if the setting is a checkbox
         if (control.isCheckbox) {
@@ -2236,19 +2334,19 @@ async function loadContextSettings() {
      * Auto-fix missing fields in the story string
      * @param {ContextSettings} contextSettings Context settings instance
      */
-    function autoFixStoryString(contextSettings) {
+    function autoFixStoryString(contextSettings: Record<string, unknown>) {
         // Already migrated, no need to fix
         if (!contextSettings || Object.hasOwn(contextSettings, 'story_string_position')) {
             return;
         }
 
-        let storyString = contextSettings.story_string || '';
+        let storyString = (contextSettings.story_string as string) || '';
 
         /**
          * @param {string} field Missing field name
          * @param {'start'|'end'} position Position of auto-fix
          */
-        function autoFixMissingField(field, position) {
+        function autoFixMissingField(field: string, position: 'start' | 'end') {
             if (storyString.includes(`{{${field}}}`)) {
                 return;
             }
@@ -2267,11 +2365,11 @@ async function loadContextSettings() {
         autoFixMissingField('anchorBefore', 'start');
         autoFixMissingField('anchorAfter', 'end');
 
-        contextSettings.story_string = storyString;
+        contextSettings.story_string = storyString as unknown as string;
     }
 
     // Migrate story string to add missing fields
-    autoFixStoryString(power_user.context);
+    autoFixStoryString(power_user.context as unknown as Record<string, unknown>);
 
     contextControls.forEach(control => {
         const element = document.getElementById(control.id) as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement | null;
@@ -2280,16 +2378,17 @@ async function loadContextSettings() {
             return;
         }
 
-        if (control.defaultValue !== undefined && power_user.context[control.property] === undefined) {
-            power_user.context[control.property] = control.defaultValue;
+        const ctx = power_user.context as Record<string, unknown>;
+        if (control.defaultValue !== undefined && ctx[control.property] === undefined) {
+            ctx[control.property] = control.defaultValue;
         }
 
         if (control.isCheckbox) {
-            if (element) (element as HTMLInputElement).checked = power_user.context[control.property];
+            if (element) (element as HTMLInputElement).checked = ctx[control.property] as boolean;
         } else if (element) {
-            (element as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement).value = power_user.context[control.property];
+            (element as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement).value = String(ctx[control.property] ?? '');
         }
-        console.debug(`Setting ${element?.id} to ${power_user.context[control.property]}`);
+        console.debug(`Setting ${element?.id} to ${ctx[control.property]}`);
 
         if (element) {
             element.addEventListener('input', async function (this: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement) {
@@ -2298,9 +2397,9 @@ async function loadContextSettings() {
                     value = Number(value);
                 }
                 if (control.isGlobalSetting) {
-                    power_user[control.property] = value;
+                    (power_user as Record<string, unknown>)[control.property] = value;
                 } else {
-                    power_user.context[control.property] = value;
+                    (power_user.context as Record<string, unknown>)[control.property] = value;
                 }
                 console.debug(`Setting ${this.id} to ${value}`);
                 if (!CSS.supports('field-sizing', 'content') && this.matches('textarea')) {
@@ -2315,8 +2414,8 @@ async function loadContextSettings() {
         }
     });
 
-    context_presets.forEach((preset) => {
-        const name = preset.name;
+    context_presets.forEach((preset: Record<string, unknown>) => {
+        const name = preset.name as string;
         const option = document.createElement('option');
         option.value = name;
         option.innerText = name;
@@ -2326,7 +2425,7 @@ async function loadContextSettings() {
 
     document.getElementById('context_presets')?.addEventListener('change', function (this: HTMLSelectElement) {
         const name = String((this as HTMLSelectElement).options[(this as HTMLSelectElement).selectedIndex]?.textContent || '');
-        const preset = context_presets.find(x => x.name === name);
+        const preset = context_presets.find((x: Record<string, unknown>) => x.name === name) as Record<string, unknown> | undefined;
 
         if (!preset) {
             return;
@@ -2338,22 +2437,26 @@ async function loadContextSettings() {
         power_user.context.preset = name;
 
         contextControls.forEach(control => {
-            const presetValue = preset[control.property] ?? control.defaultValue;
+            const presetValue = (preset as Record<string, unknown>)[control.property] ?? control.defaultValue;
 
             if (presetValue !== undefined) {
                 if (control.isGlobalSetting) {
-                    power_user[control.property] = presetValue;
+                    (power_user as Record<string, unknown>)[control.property] = presetValue;
                 } else {
-                    power_user.context[control.property] = presetValue;
+                    (power_user.context as Record<string, unknown>)[control.property] = presetValue;
                 }
 
                 const element = document.getElementById(control.id) as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement | null;
 
                 if (control.isCheckbox) {
-                    if (element) (element as HTMLInputElement).checked = control.isGlobalSetting ? power_user[control.property] : power_user.context[control.property];
+                    if (element) (element as HTMLInputElement).checked = control.isGlobalSetting
+                        ? (power_user as Record<string, unknown>)[control.property] as boolean
+                        : (power_user.context as Record<string, unknown>)[control.property] as boolean;
                     element?.dispatchEvent(new Event('input', { bubbles: true }));
                 } else {
-                    if (element) (element as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement).value = control.isGlobalSetting ? power_user[control.property] : power_user.context[control.property];
+                    if (element) (element as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement).value = String(control.isGlobalSetting
+                        ? (power_user as Record<string, unknown>)[control.property]
+                        : (power_user.context as Record<string, unknown>)[control.property] ?? '');
                     element?.dispatchEvent(new Event('input', { bubbles: true }));
                 }
             }
@@ -2363,8 +2466,8 @@ async function loadContextSettings() {
             // Select matching instruct preset
             for (const instruct_preset of instruct_presets) {
                 // If instruct preset matches the context template
-                if (instruct_preset.name === name) {
-                    selectInstructPreset(instruct_preset.name, { isAuto: true });
+                if ((instruct_preset as Record<string, unknown>).name === name) {
+                    selectInstructPreset((instruct_preset as Record<string, unknown>).name as string, { isAuto: true });
                     break;
                 }
             }
@@ -2387,10 +2490,10 @@ async function loadContextSettings() {
  * @param {Object.<string, { resultMap: Map<string, any> }>} [fuzzySearchCaches] - Optional fuzzy search caches
  * @returns {import('fuse.js').FuseResult<T>[]} Results as items with their score
  */
-export function performFuzzySearch(type, data, keys, searchValue, fuzzySearchCaches = null) {
+export function performFuzzySearch(type: string, data: unknown[], keys: { name: string; weight: number; getFn?: (...args: unknown[]) => string }[], searchValue: string, fuzzySearchCaches: Record<string, { resultMap: Map<string, unknown> }> | null = null) {
     // Check cache if provided
     if (fuzzySearchCaches) {
-        const cache = fuzzySearchCaches[type];
+        const cache = fuzzySearchCaches[type]!;
         if (cache?.resultMap.has(searchValue)) {
             return cache.resultMap.get(searchValue);
         }
@@ -2408,7 +2511,7 @@ export function performFuzzySearch(type, data, keys, searchValue, fuzzySearchCac
 
     // Store in cache if provided
     if (fuzzySearchCaches) {
-        fuzzySearchCaches[type].resultMap.set(searchValue, results);
+        fuzzySearchCaches[type]!.resultMap.set(searchValue, results);
     }
     return results;
 }
@@ -2419,10 +2522,10 @@ export function performFuzzySearch(type, data, keys, searchValue, fuzzySearchCac
  * @param {Object.<string, { resultMap: Map<string, any> }>} [fuzzySearchCaches] - Optional fuzzy search caches
  * @returns {import('fuse.js').FuseResult<any>[]} Results as items with their score
  */
-export function fuzzySearchCharacters(searchValue, fuzzySearchCaches = null) {
+export function fuzzySearchCharacters(searchValue: string, fuzzySearchCaches: Record<string, { resultMap: Map<string, unknown> }> | null = null) {
     const keys = [
         { name: 'data.name', weight: 20 },
-        { name: '#tags', weight: 10, getFn: (character) => getTagsList(character.avatar).map(x => x.name).join('||') },
+        { name: '#tags', weight: 10, getFn: (character: Record<string, unknown>) => (getTagsList(String((character as Record<string, unknown>).avatar ?? '')) as unknown as { name: string }[]).map((x: { name: string }) => x.name).join('||') },
         { name: 'data.description', weight: 3 },
         { name: 'data.mes_example', weight: 3 },
         { name: 'data.scenario', weight: 2 },
@@ -2434,7 +2537,7 @@ export function fuzzySearchCharacters(searchValue, fuzzySearchCaches = null) {
         { name: 'data.alternate_greetings', weight: 1 },
     ];
 
-    return performFuzzySearch(fuzzySearchCategories.characters, characters, keys, searchValue, fuzzySearchCaches);
+    return performFuzzySearch(fuzzySearchCategories.characters, characters, keys as { name: string; weight: number; getFn?: (...args: unknown[]) => string }[], searchValue, fuzzySearchCaches);
 }
 
 /**
@@ -2444,7 +2547,7 @@ export function fuzzySearchCharacters(searchValue, fuzzySearchCaches = null) {
  * @param {Object.<string, { resultMap: Map<string, any> }>} [fuzzySearchCaches] - Optional fuzzy search caches
  * @returns {import('fuse.js').FuseResult<any>[]} Results as items with their score
  */
-export function fuzzySearchWorldInfo(data, searchValue, fuzzySearchCaches = null) {
+export function fuzzySearchWorldInfo(data: unknown[], searchValue: string, fuzzySearchCaches: Record<string, { resultMap: Map<string, unknown> }> | null = null) {
     const keys = [
         { name: 'key', weight: 20 },
         { name: 'group', weight: 15 },
@@ -2455,7 +2558,7 @@ export function fuzzySearchWorldInfo(data, searchValue, fuzzySearchCaches = null
         { name: 'automationId', weight: 1 },
     ];
 
-    return performFuzzySearch(fuzzySearchCategories.worldInfo, data, keys, searchValue, fuzzySearchCaches);
+    return performFuzzySearch(fuzzySearchCategories.worldInfo, data, keys as { name: string; weight: number; getFn?: (...args: unknown[]) => string }[], searchValue, fuzzySearchCaches);
 }
 
 /**
@@ -2465,11 +2568,11 @@ export function fuzzySearchWorldInfo(data, searchValue, fuzzySearchCaches = null
  * @param {Object.<string, { resultMap: Map<string, any> }>} [fuzzySearchCaches] - Optional fuzzy search caches
  * @returns {import('fuse.js').FuseResult<any>[]} Results as items with their score
  */
-export function fuzzySearchPersonas(data, searchValue, fuzzySearchCaches = null) {
-    const mappedData = data.map(x => ({
+export function fuzzySearchPersonas(data: string[], searchValue: string, fuzzySearchCaches: Record<string, { resultMap: Map<string, unknown> }> | null = null) {
+    const mappedData = data.map((x: string) => ({
         key: x,
-        name: power_user.personas[x] ?? '',
-        description: power_user.persona_descriptions[x]?.description ?? '',
+        name: (power_user.personas as Record<string, string>)[x] ?? '',
+        description: ((power_user.persona_descriptions as Record<string, Record<string, unknown>>)[x]?.description as string) ?? '',
     }));
 
     const keys = [
@@ -2477,7 +2580,7 @@ export function fuzzySearchPersonas(data, searchValue, fuzzySearchCaches = null)
         { name: 'description', weight: 3 },
     ];
 
-    return performFuzzySearch(fuzzySearchCategories.personas, mappedData, keys, searchValue, fuzzySearchCaches);
+    return performFuzzySearch(fuzzySearchCategories.personas, mappedData, keys as { name: string; weight: number; getFn?: (...args: unknown[]) => string }[], searchValue, fuzzySearchCaches);
 }
 
 /**
@@ -2486,12 +2589,12 @@ export function fuzzySearchPersonas(data, searchValue, fuzzySearchCaches = null)
  * @param {Object.<string, { resultMap: Map<string, any> }>} [fuzzySearchCaches] - Optional fuzzy search caches
  * @returns {import('fuse.js').FuseResult<any>[]} Results as items with their score
  */
-export function fuzzySearchTags(searchValue, fuzzySearchCaches = null) {
+export function fuzzySearchTags(searchValue: string, fuzzySearchCaches: Record<string, { resultMap: Map<string, unknown> }> | null = null) {
     const keys = [
         { name: 'name', weight: 1 },
     ];
 
-    return performFuzzySearch(fuzzySearchCategories.tags, tags, keys, searchValue, fuzzySearchCaches);
+    return performFuzzySearch(fuzzySearchCategories.tags, tags, keys as { name: string; weight: number; getFn?: (...args: unknown[]) => string }[], searchValue, fuzzySearchCaches);
 }
 
 /**
@@ -2500,15 +2603,15 @@ export function fuzzySearchTags(searchValue, fuzzySearchCaches = null) {
  * @param {Object.<string, { resultMap: Map<string, any> }>} [fuzzySearchCaches] - Optional fuzzy search caches
  * @returns {import('fuse.js').FuseResult<any>[]} Results as items with their score
  */
-export function fuzzySearchGroups(searchValue, fuzzySearchCaches = null) {
+export function fuzzySearchGroups(searchValue: string, fuzzySearchCaches: Record<string, { resultMap: Map<string, unknown> }> | null = null) {
     const keys = [
         { name: 'name', weight: 20 },
         { name: 'members', weight: 15 },
-        { name: '#tags', weight: 10, getFn: (group) => getTagsList(group.id).map(x => x.name).join('||') },
+        { name: '#tags', weight: 10, getFn: (group: Record<string, unknown>) => (getTagsList(String(group.id ?? '')) as unknown as { name: string }[]).map((x: { name: string }) => x.name).join('||') },
         { name: 'id', weight: 1 },
     ];
 
-    return performFuzzySearch(fuzzySearchCategories.groups, groups, keys, searchValue, fuzzySearchCaches);
+    return performFuzzySearch(fuzzySearchCategories.groups, groups, keys as { name: string; weight: number; getFn?: (...args: unknown[]) => string }[], searchValue, fuzzySearchCaches);
 }
 
 /**
@@ -2520,12 +2623,12 @@ export function fuzzySearchGroups(searchValue, fuzzySearchCaches = null) {
  * @param {ContextSettings} [options.customContextSettings] Custom context settings.
  * @returns {string} The rendered story string.
  */
-export function renderStoryString(params, { customStoryString = null, customInstructSettings = null, customContextSettings = null } = {}) {
+export function renderStoryString(params: Record<string, unknown>, { customStoryString = null, customInstructSettings = null, customContextSettings = null }: { customStoryString?: string | null; customInstructSettings?: Record<string, unknown> | null; customContextSettings?: Record<string, unknown> | null } = {}) {
     try {
         const instructSettings = structuredClone(customInstructSettings ?? power_user.instruct);
         const contextSettings = structuredClone(customContextSettings ?? power_user.context);
-        const storyString = customStoryString ?? contextSettings.story_string;
-        const storyStringPosition = contextSettings.story_string_position ?? extension_prompt_types.IN_PROMPT;
+        const storyString = customStoryString ?? (contextSettings.story_string as string);
+        const storyStringPosition = (contextSettings.story_string_position as number) ?? extension_prompt_types.IN_PROMPT;
 
         // Validate and log possible warnings/errors
         validateStoryString(storyString, params);
@@ -2537,7 +2640,7 @@ export function renderStoryString(params, { customStoryString = null, customInst
         let output = compiledTemplate(params);
 
         // substitute {{macro}} params that are not defined in the story string
-        output = substituteParams(output, params.user, params.char);
+        output = substituteParams(output, { user: params.user as string, char: params.char as string } as unknown as string);
 
         // remove leading newlines
         output = output.replace(/^\n+/, '');
@@ -2562,9 +2665,8 @@ export function renderStoryString(params, { customStoryString = null, customInst
  * @param {string} storyString - The story string
  * @param {object} params - The story string parameters
  */
-function validateStoryString(storyString, params) {
-    /** @type {{hashCache: {[hash: string]: {fieldsWarned: {[key: string]: boolean}}}}} */
-    const cache = JSON.parse(accountStorage.getItem(storage_keys.storyStringValidationCache)) ?? { hashCache: {} };
+function validateStoryString(storyString: string, params: Record<string, unknown>) {
+    const cache: { hashCache: Record<string, { fieldsWarned: Record<string, boolean> }> } = JSON.parse(accountStorage.getItem(storage_keys.storyStringValidationCache) ?? 'null') ?? { hashCache: {} };
 
     const hash = getStringHash(storyString);
 
@@ -2573,15 +2675,15 @@ function validateStoryString(storyString, params) {
         cache.hashCache[hash] = { fieldsWarned: {} };
     }
 
-    const currentCache = cache.hashCache[hash];
-    const fieldsToWarn = [];
+    const currentCache = cache.hashCache[hash]!;
+    const fieldsToWarn: string[] = [];
 
     /**
      *
      * @param field
      * @param fallbackLegacyField
      */
-    function validateMissingField(field, fallbackLegacyField = null) {
+    function validateMissingField(field: string, fallbackLegacyField: string | null = null) {
         const contains = storyString.includes(`{{${field}}}`) || (!!fallbackLegacyField && storyString.includes(`{{${fallbackLegacyField}}}`));
         if (!contains && params[field]) {
             const wasLogged = currentCache.fieldsWarned[field];
@@ -2610,13 +2712,13 @@ function validateStoryString(storyString, params) {
 }
 
 
-const sortFunc = (a, b) => power_user.sort_order == 'asc' ? compareFunc(a, b) : compareFunc(b, a);
-const compareFunc = (first, second) => {
+const sortFunc = (a: Record<string, unknown>, b: Record<string, unknown>) => power_user.sort_order == 'asc' ? compareFunc(a, b) : compareFunc(b, a);
+const compareFunc = (first: Record<string, unknown>, second: Record<string, unknown>) => {
     const a = first[power_user.sort_field];
     const b = second[power_user.sort_field];
 
     if (power_user.sort_field === 'create_date') {
-        return sortMoments(timestampToMoment(b), timestampToMoment(a));
+        return sortMoments(timestampToMoment(b as string), timestampToMoment(a as string));
     }
 
     switch (power_user.sort_rule) {
@@ -2626,11 +2728,11 @@ const compareFunc = (first, second) => {
             if (a && !b) return -1;        // Move truthy values to the end
             if (!a && b) return 1;         // Move falsy values to the beginning
             if (a === b) return 0;         // Sort equal values normally
-            return a < b ? -1 : 1;         // Sort non-boolean values normally
+            return (a as number) < (b as number) ? -1 : 1;         // Sort non-boolean values normally
         default:
             return typeof a == 'string'
-                ? a.localeCompare(b)
-                : a - b;
+                ? (a as string).localeCompare(b as string)
+                : (a as number) - (b as number);
     }
 };
 
@@ -2640,7 +2742,7 @@ const compareFunc = (first, second) => {
  * @param {boolean} forceSearch Whether to force search sorting
  * @param {import('./filters.js').FilterHelper} [filterHelper] Filter helper to use
  */
-export function sortEntitiesList(entities, forceSearch, filterHelper = null) {
+export function sortEntitiesList(entities: { type?: string; id?: string; item?: Record<string, unknown> }[], forceSearch: boolean, filterHelper: { getScore: (type: string, id: string) => number } | null = null) {
     filterHelper = filterHelper ?? entitiesFilter;
     if (power_user.sort_field == undefined || entities.length === 0) {
         return;
@@ -2667,7 +2769,7 @@ export function sortEntitiesList(entities, forceSearch, filterHelper = null) {
             return (aScore - bScore);
         }
 
-        return sortFunc(a.item, b.item);
+        return sortFunc(a.item ?? {}, b.item ?? {});
     });
 }
 
@@ -2714,7 +2816,7 @@ async function deleteTheme() {
     if (themeIndex !== -1) {
         themes.splice(themeIndex, 1);
         document.querySelector(`#themes option[value="${themeName}"]`)?.remove();
-        power_user.theme = themes[0]?.name;
+        power_user.theme = themes[0]?.name ?? '';
         saveSettingsDebounced();
         if (power_user.theme) {
             applyTheme(power_user.theme);
@@ -2728,7 +2830,8 @@ async function deleteTheme() {
  */
 async function exportTheme() {
     const themeFile = await saveTheme(power_user.theme);
-    const fileName = `${themeFile.name}.json`;
+    if (!themeFile) return;
+    const fileName = `${(themeFile as Record<string, unknown>).name as string}.json`;
     download(JSON.stringify(themeFile, null, 4), fileName, 'application/json');
 }
 
@@ -2737,23 +2840,23 @@ async function exportTheme() {
  * @param {File} file File to import.
  * @returns {Promise<void>} A promise that resolves when the theme is imported.
  */
-async function importTheme(file) {
+async function importTheme(file: File | undefined) {
     if (!file) {
         return;
     }
 
-    const fileText = await getFileText(file);
+    const fileText = await (getFileText as (file: string | Blob) => Promise<string>)(file!);
     const parsed = JSON.parse(fileText);
 
     if (!parsed.name) {
         throw new Error('Missing name');
     }
 
-    if (themes.some(t => t.name === parsed.name)) {
+    if (themes.some((t: Theme) => t.name === parsed.name)) {
         throw new Error('Theme with that name already exists');
     }
 
-    if (typeof parsed.custom_css === 'string' && parsed.custom_css.includes('@import')) {
+    if (typeof (parsed as Record<string, unknown>).custom_css === 'string' && ((parsed as Record<string, unknown>).custom_css as string).includes('@import')) {
         const template = document.createElement('div');
         template.innerHTML = await renderTemplateAsync('themeImportWarning');
         const confirm = await callGenericPopup(template, POPUP_TYPE.CONFIRM);
@@ -2762,36 +2865,43 @@ async function importTheme(file) {
         }
     }
 
-    themes.push(parsed);
-    await saveTheme(parsed.name, getNewTheme(parsed));
+    const parsedName = (parsed as Record<string, string>).name ?? '';
+    themes.push(parsed as Theme);
+    await saveTheme(parsedName, getNewTheme(parsed));
     const option = document.createElement('option');
-    option.selected = false;
-    option.value = parsed.name;
-    option.innerText = parsed.name;
+    option.value = parsedName;
+    option.innerText = parsedName;
     document.getElementById('themes')?.appendChild(option);
     saveSettingsDebounced();
-    notyf.success(parsed.name, 'Theme imported');
+    notyf.success(parsedName, 'Theme imported');
 }
 
 /**
  * Saves the current theme to the server.
  * @param {string|undefined} name Theme name. If undefined, a popup will be shown to enter a name.
  * @param {object|undefined} theme Theme object. If undefined, the current theme will be saved.
+ * @param themeArg
  * @returns {Promise<object>} A promise that resolves when the theme is saved.
  */
-async function saveTheme(name = undefined, theme = undefined) {
+async function saveTheme(name: string | undefined = undefined, themeArg?: Theme): Promise<Theme | undefined> {
+    let theme = themeArg;
+    let themeName: string;
     if (typeof name !== 'string') {
         const newName = await callGenericPopup('Enter a theme preset name:', POPUP_TYPE.INPUT, power_user.theme);
 
         if (!newName) {
-            return;
+            return undefined;
         }
 
-        name = await getSanitizedFilename(String(newName));
+        const sanitized = await getSanitizedFilename(String(newName));
+        if (!sanitized) return undefined;
+        themeName = sanitized;
+    } else {
+        themeName = name;
     }
 
-    if (typeof theme !== 'object') {
-        theme = getThemeObject(name);
+    if (theme === undefined) {
+        theme = getThemeObject(themeName);
     }
 
     const response = await fetch('/api/themes/save', {
@@ -2806,22 +2916,22 @@ async function saveTheme(name = undefined, theme = undefined) {
         throw new Error('Theme could not be saved');
     }
 
-    const themeIndex = themes.findIndex(x => x.name == name);
+    const themeIndex = themes.findIndex(x => x.name == themeName);
 
     if (themeIndex == -1) {
-        themes.push(theme);
+        themes.push(theme!);
         const option = document.createElement('option');
         option.selected = true;
-        option.value = name;
-        option.innerText = name;
+        option.value = themeName;
+        option.innerText = themeName;
         document.getElementById('themes')?.appendChild(option);
     } else {
-        themes[themeIndex] = theme;
-        const themeOpt = document.querySelector(`#themes option[value="${name}"]`) as HTMLOptionElement | null;
+        themes[themeIndex] = theme!;
+        const themeOpt = document.querySelector(`#themes option[value="${themeName}"]`) as HTMLOptionElement | null;
         if (themeOpt) themeOpt.selected = true;
     }
 
-    power_user.theme = name;
+    power_user.theme = themeName;
     saveSettingsDebounced();
 
     return theme;
@@ -2831,7 +2941,7 @@ async function saveTheme(name = undefined, theme = undefined) {
  * Gets a snapshot of the current theme settings.
  * @param {string} name Name of the theme
  */
-export function getThemeObject(name) {
+export function getThemeObject(name: string): Theme {
     return {
         name,
         blur_strength: power_user.blur_strength,
@@ -2881,14 +2991,14 @@ export function getThemeObject(name) {
  * @param {object} parsed Parsed object to get the theme from.
  * @returns {Theme} Theme assigned to the parsed object.
  */
-function getNewTheme(parsed) {
-    const theme = getThemeObject(parsed.name);
+function getNewTheme(parsed: Record<string, unknown>) {
+    const theme = getThemeObject(parsed.name as string) as Record<string, unknown>;
     for (const key in parsed) {
         if (Object.hasOwn(theme, key)) {
             theme[key] = parsed[key];
         }
     }
-    return theme;
+    return theme as Theme;
 }
 
 /**
@@ -2916,7 +3026,7 @@ async function saveMovingUI() {
     });
 
     if (response.ok) {
-        const movingUIPresetIndex = movingUIPresets.findIndex(x => x.name == name);
+        const movingUIPresetIndex = movingUIPresets.findIndex((x: MovingUIPreset) => x.name == name);
 
         if (movingUIPresetIndex == -1) {
             movingUIPresets.push(movingUIPreset);
@@ -2943,14 +3053,15 @@ async function saveMovingUI() {
  * Resets the movable styles of the given element to their unset values.
  * @param {string} id Element ID
  */
-export function resetMovableStyles(id) {
-    const panelStyles = ['top', 'left', 'right', 'bottom', 'height', 'width', 'margin'];
+export function resetMovableStyles(id: string) {
+    const panelStyles: string[] = ['top', 'left', 'right', 'bottom', 'height', 'width', 'margin'];
 
     const panel = document.getElementById(id);
 
     if (panel) {
+        const panelEl = panel as HTMLElement;
         panelStyles.forEach((style) => {
-            panel.style[style] = '';
+            (panelEl.style as unknown as Record<string, string>)[style] = '';
         });
     }
 }
@@ -2959,7 +3070,7 @@ export function resetMovableStyles(id) {
  *
  * @param type
  */
-async function resetMovablePanels(type) {
+async function resetMovablePanels(type: string) {
     const panelIds = [
         'sheld',
         'left-nav-panel',
@@ -2977,15 +3088,15 @@ async function resetMovablePanels(type) {
     /**
      * @type {HTMLElement[]} Generic panels that don't have a known ID
      */
-    const draggedElements = Array.from(document.querySelectorAll('[data-dragged]'));
-    const allDraggable = panelIds.map(id => document.getElementById(id)).concat(draggedElements).filter(onlyUnique);
+    const draggedElements = Array.from(document.querySelectorAll('[data-dragged]')) as HTMLElement[];
+    const allDraggable = (panelIds.map(id => document.getElementById(id)).concat(draggedElements)).filter(onlyUnique) as HTMLElement[];
 
-    const panelStyles = ['top', 'left', 'right', 'bottom', 'height', 'width', 'margin'];
+    const panelStyles: string[] = ['top', 'left', 'right', 'bottom', 'height', 'width', 'margin'];
     allDraggable.forEach((panel) => {
         if (panel) {
             panel.classList.add('resizing');
             panelStyles.forEach((style) => {
-                panel.style[style] = '';
+                (panel.style as unknown as Record<string, string>)[style] = '';
             });
         }
     });
@@ -2993,12 +3104,12 @@ async function resetMovablePanels(type) {
     /**
      * @type {HTMLElement[]} Zoomed avatars that are currently being resized
      */
-    const zoomedAvatars = Array.from(document.querySelectorAll('.zoomed_avatar'));
+    const zoomedAvatars = Array.from(document.querySelectorAll('.zoomed_avatar')) as HTMLElement[];
     if (zoomedAvatars.length > 0) {
         zoomedAvatars.forEach((avatar) => {
             avatar.classList.add('resizing');
             panelStyles.forEach((style) => {
-                avatar.style[style] = '';
+                (avatar.style as unknown as Record<string, string>)[style] = '';
             });
         });
     }
@@ -3043,13 +3154,13 @@ async function resetMovablePanels(type) {
  * @param {number} mesId
  * @returns JQuery<HTMLElement>
  */
-const EPHEMERAL_STOPPING_STRINGS = [];
+const EPHEMERAL_STOPPING_STRINGS: string[] = [];
 
 /**
  * Adds a stopping string to the list of stopping strings that are only used for the next generation.
  * @param {string} value The stopping string to add
  */
-export function addEphemeralStoppingString(value) {
+export function addEphemeralStoppingString(value: string) {
     if (!EPHEMERAL_STOPPING_STRINGS.includes(value)) {
         console.debug('Adding ephemeral stopping string:', value);
         EPHEMERAL_STOPPING_STRINGS.push(value);
@@ -3073,7 +3184,7 @@ export function flushEphemeralStoppingStrings() {
  * @param {string} text The text to check
  * @returns {boolean} If the generated text should be filtered
  */
-export function generatedTextFiltered(text) {
+export function generatedTextFiltered(text: string) {
     /**
      * Checks if the given text contains any of the blacklisted words.
      * @param {string} text The text to check
@@ -3081,7 +3192,7 @@ export function generatedTextFiltered(text) {
      * @param {number} threshold The number of blacklisted words that need to be present to trigger the check
      * @returns {boolean} Whether the text contains blacklisted words
      */
-    function containsBlacklistedWords(text, blacklist, threshold) {
+    function containsBlacklistedWords(text: string, blacklist: string[], threshold: number) {
         const regex = new RegExp(`\\b(${blacklist.join('|')})\\b`, 'gi');
         const matches = text.match(regex) || [];
         return matches.length >= threshold;
@@ -3125,19 +3236,19 @@ export function getCustomStoppingStrings(limit = undefined) {
             }
 
             // Parse the JSON string
-            let strings = JSON.parse(power_user.custom_stopping_strings);
+            const parsed = JSON.parse(power_user.custom_stopping_strings);
 
             // Make sure it's an array
-            if (!Array.isArray(strings)) {
+            if (!Array.isArray(parsed)) {
                 return [];
             }
 
             // Make sure all the elements are strings and non-empty.
-            strings = strings.filter(s => typeof s === 'string' && s.length > 0);
+            let strings: string[] = parsed.filter((s: unknown) => typeof s === 'string' && (s as string).length > 0);
 
             // Substitute params if necessary
             if (power_user.custom_stopping_strings_macro) {
-                strings = strings.map(x => substituteParams(x));
+                strings = strings.map((x: string) => substituteParams(x));
             }
 
             return strings;
@@ -3153,7 +3264,7 @@ export function getCustomStoppingStrings(limit = undefined) {
     const strings = [...permanent, ...ephemeral];
 
     // Apply the limit. If limit is 0, return all strings.
-    if (limit > 0) {
+    if (limit !== undefined && limit > 0) {
         return strings.slice(0, limit);
     }
 
@@ -3164,8 +3275,8 @@ export function getCustomStoppingStrings(limit = undefined) {
  *
  */
 export function forceCharacterEditorTokenize() {
-    document.querySelectorAll('[data-token-counter]').forEach(el => {
-        const targetEl = document.getElementById(el.dataset.tokenCounter);
+    document.querySelectorAll('[data-token-counter]').forEach((el: Element) => {
+        const targetEl = document.getElementById((el as HTMLElement).dataset.tokenCounter ?? '');
         if (targetEl) targetEl.dataset.lastValueHash = '';
     });
 }
@@ -3176,14 +3287,14 @@ export function forceCharacterEditorTokenize() {
  * may have been replaced (e.g. from loadPowerUserSettings).
  */
 function registerSettingsPanelHandlers() {
-    const guard = (el) => {
+    const guard = (el: HTMLElement | null | undefined): el is HTMLElement => {
         if (!el || el.dataset.stRegistered) return false;
         el.dataset.stRegistered = '1';
         return true;
     };
 
-    const h = (id) => document.getElementById(id);
-    const guardEl = (id) => { const el = h(id); return el && guard(el) ? el : null; };
+    const h = (id: string) => document.getElementById(id);
+    const guardEl = (id: string): HTMLElement | null => { const el = h(id); return el && guard(el) ? el : null; };
 
     // Collapse newlines
     const collapseEl = guardEl('collapse-newlines-checkbox');
@@ -3238,7 +3349,7 @@ function registerSettingsPanelHandlers() {
             saveSettingsDebounced();
         });
         ctxSizeDerivedEl.addEventListener('change', function () {
-            const el = document.getElementById('context_size_derived') instanceof HTMLInputElement ? document.getElementById('context_size_derived') : null;
+            const el = document.getElementById('context_size_derived') as HTMLInputElement | null;
             if (el) el.checked = !!power_user.context_size_derived;
         });
     }
@@ -3253,8 +3364,9 @@ function registerSettingsPanelHandlers() {
     // Bind model templates
     const bindEl = guardEl('bind_model_templates');
     if (bindEl) {
-        bindEl.addEventListener('input', function () {
-            if (bindModelTemplates(power_user, online_status)) saveSettingsDebounced();
+        bindEl.addEventListener('input', async function () {
+            const result = await bindModelTemplates(power_user, online_status);
+            if (result) saveSettingsDebounced();
         });
         bindEl.addEventListener('change', updateBindModelTemplatesState);
     }
@@ -3329,13 +3441,14 @@ function registerSettingsPanelHandlers() {
     // Waifu mode
     const waifuEl = guardEl('waifuMode');
     if (waifuEl) waifuEl.addEventListener('change', () => {
-        power_user.waifuMode = !!(h('waifuMode') instanceof HTMLInputElement && h('waifuMode').checked);
+        const wfEl = h('waifuMode') as HTMLInputElement | null;
+        power_user.waifuMode = !!(wfEl?.checked);
         switchWaifuMode();
         saveSettingsDebounced();
     });
 
     // Custom CSS
-    const cssEl = guardEl('customCSS');
+    const cssEl = guardEl('customCSS') as HTMLTextAreaElement | null;
     if (cssEl) cssEl.addEventListener('input', () => {
         power_user.custom_css = cssEl.value;
         saveSettingsDebounced();
@@ -3360,7 +3473,7 @@ function registerSettingsPanelHandlers() {
 
     // Moving UI reset
     const muiResetEl = guardEl('movingUIreset');
-    if (muiResetEl) muiResetEl.addEventListener('click', resetMovablePanels);
+    if (muiResetEl) muiResetEl.addEventListener('click', () => resetMovablePanels(''));
 
     // Avatar style
     const avatarStyleEl = guardEl('avatar_style');
@@ -3388,8 +3501,8 @@ function registerSettingsPanelHandlers() {
 
     // Chat width slider
     const chatWidthEl = guardEl('chat_width_slider');
-    if (chatWidthEl) chatWidthEl.addEventListener('input', function (e) {
-        const applyMode = (e && e.forced) ? 'forced' : 'normal';
+    if (chatWidthEl) chatWidthEl.addEventListener('input', function (e: Event) {
+        const applyMode = (e as unknown as Record<string, boolean>).forced ? 'forced' : 'normal';
         power_user.chat_width = Number((this instanceof HTMLInputElement && this.value) || 0);
         applyChatWidth(applyMode);
         saveSettingsDebounced();
@@ -3399,18 +3512,20 @@ function registerSettingsPanelHandlers() {
     // Chat truncation
     const chatTruncEl = guardEl('chat_truncation');
     if (chatTruncEl) chatTruncEl.addEventListener('input', function () {
-        power_user.chat_truncation = Number((h('chat_truncation') instanceof HTMLInputElement && h('chat_truncation').value) || 0);
-        const counter = h('chat_truncation_counter');
-        if (counter instanceof HTMLInputElement) counter.value = String(power_user.chat_truncation);
+        const ctEl = h('chat_truncation') as HTMLInputElement | null;
+        power_user.chat_truncation = Number(ctEl?.value || 0);
+        const counter = h('chat_truncation_counter') as HTMLInputElement | null;
+        if (counter) counter.value = String(power_user.chat_truncation);
         saveSettingsDebounced();
     });
 
     // Streaming FPS
     const fpsEl = guardEl('streaming_fps');
     if (fpsEl) fpsEl.addEventListener('input', function () {
-        power_user.streaming_fps = Number((h('streaming_fps') instanceof HTMLInputElement && h('streaming_fps').value) || 0);
-        const counter = h('streaming_fps_counter');
-        if (counter instanceof HTMLInputElement) counter.value = String(power_user.streaming_fps);
+        const sfEl = h('streaming_fps') as HTMLInputElement | null;
+        power_user.streaming_fps = Number(sfEl?.value || 0);
+        const counter = h('streaming_fps_counter') as HTMLInputElement | null;
+        if (counter) counter.value = String(power_user.streaming_fps);
         saveSettingsDebounced();
     });
 
@@ -3431,7 +3546,8 @@ function registerSettingsPanelHandlers() {
     // Smooth streaming speed
     const smoothSpeedEl = guardEl('smooth_streaming_speed');
     if (smoothSpeedEl) smoothSpeedEl.addEventListener('input', function () {
-        power_user.smooth_streaming_speed = Number((h('smooth_streaming_speed') instanceof HTMLInputElement && h('smooth_streaming_speed').value) || 0);
+        const sssEl = h('smooth_streaming_speed') as HTMLInputElement | null;
+        power_user.smooth_streaming_speed = Number(sssEl?.value || 0);
         saveSettingsDebounced();
     });
 
@@ -3459,11 +3575,11 @@ function registerSettingsPanelHandlers() {
     });
 
     // Font scale
-    const fontScaleEl = document.querySelector('input[name="font_scale"]');
+    const fontScaleEl = document.querySelector('input[name="font_scale"]') as HTMLElement | null;
     if (fontScaleEl && guard(fontScaleEl)) {
-        fontScaleEl.addEventListener('input', async function (e) {
-            const applyMode = (e && e.forced) ? 'forced' : 'normal';
-            power_user.font_scale = Number((this instanceof HTMLInputElement && this.value) || 0);
+        fontScaleEl.addEventListener('input', async function (this: HTMLInputElement, e: Event) {
+            const applyMode = (e as unknown as Record<string, boolean>).forced ? 'forced' : 'normal';
+            power_user.font_scale = Number(this.value || 0);
             const counter = h('font_scale_counter');
             if (counter instanceof HTMLInputElement) counter.value = String(power_user.font_scale);
             applyFontScale(applyMode);
@@ -3472,10 +3588,10 @@ function registerSettingsPanelHandlers() {
     }
 
     // Blur strength
-    const blurEl = document.querySelector('input[name="blur_strength"]');
+    const blurEl = document.querySelector('input[name="blur_strength"]') as HTMLElement | null;
     if (blurEl && guard(blurEl)) {
-        blurEl.addEventListener('input', async function () {
-            power_user.blur_strength = Number((this instanceof HTMLInputElement && this.value) || 0);
+        blurEl.addEventListener('input', async function (this: HTMLInputElement) {
+            power_user.blur_strength = Number(this.value || 0);
             const counter = h('blur_strength_counter');
             if (counter instanceof HTMLInputElement) counter.value = String(power_user.blur_strength);
             applyBlurStrength();
@@ -3484,10 +3600,10 @@ function registerSettingsPanelHandlers() {
     }
 
     // Shadow width
-    const shadowEl = document.querySelector('input[name="shadow_width"]');
+    const shadowEl = document.querySelector('input[name="shadow_width"]') as HTMLElement | null;
     if (shadowEl && guard(shadowEl)) {
-        shadowEl.addEventListener('input', async function () {
-            power_user.shadow_width = Number((this instanceof HTMLInputElement && this.value) || 0);
+        shadowEl.addEventListener('input', async function (this: HTMLInputElement) {
+            power_user.shadow_width = Number(this.value || 0);
             const counter = h('shadow_width_counter');
             if (counter instanceof HTMLInputElement) counter.value = String(power_user.shadow_width);
             applyShadowWidth();
@@ -3496,10 +3612,10 @@ function registerSettingsPanelHandlers() {
     }
 
     // Color pickers
-    const cp = (id, key, themeType) => {
+    const cp = (id: string, key: string, themeType: string) => {
         const el = guardEl(id);
-        if (el) el.addEventListener('change', (evt) => {
-            power_user[key] = evt.detail.rgba;
+        if (el) el.addEventListener('change', (evt: Event) => {
+            (power_user as Record<string, unknown>)[key] = (evt as unknown as { detail: { rgba: string } }).detail.rgba;
             applyThemeColor(themeType);
             saveSettingsDebounced();
         });
@@ -3602,11 +3718,12 @@ function registerSettingsPanelHandlers() {
     if (sortOrderEl) sortOrderEl.addEventListener('change', function () {
         if (this instanceof HTMLSelectElement) {
             const selectedOption = this.options[this.selectedIndex];
-            const field = String(selectedOption?.dataset.field ?? '');
+            if (!selectedOption) return;
+            const field = String(selectedOption.dataset.field ?? '');
             if (field !== 'search') {
                 power_user.sort_field = field;
-                power_user.sort_order = selectedOption?.dataset.order ?? '';
-                power_user.sort_rule = selectedOption?.dataset.rule ?? '';
+                power_user.sort_order = selectedOption.dataset.order ?? '';
+                power_user.sort_rule = selectedOption.dataset.rule ?? '';
             }
         }
         printCharactersDebounced();
@@ -3616,7 +3733,8 @@ function registerSettingsPanelHandlers() {
     // Gestures checkbox
     const gesturesEl = guardEl('gestures-checkbox');
     if (gesturesEl) gesturesEl.addEventListener('change', function () {
-        power_user.gestures = !!(h('gestures-checkbox') instanceof HTMLInputElement && h('gestures-checkbox').checked);
+        const gEl = h('gestures-checkbox') as HTMLInputElement | null;
+        power_user.gestures = !!(gEl?.checked);
         saveSettingsDebounced();
     });
 
@@ -4285,8 +4403,9 @@ document.addEventListener('DOMContentLoaded', () => {
 /**
  * Executes a function when DOM is ready.
  * Works whether this runs before or after DOMContentLoaded has fired.
+ * @param fn
  */
-function onDomReady(fn) {
+function onDomReady(fn: () => void) {
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', fn);
     } else {
@@ -4345,15 +4464,16 @@ onDomReady(() => {
         const scaleY = parseFloat(Number(window.innerHeight / coreTruthWinHeight).toFixed(4));
         const scaleX = parseFloat(Number(window.innerWidth / coreTruthWinWidth).toFixed(4));
 
-        if (Object.keys(power_user.movingUIState).length > 0) {
-            for (const elmntName of Object.keys(power_user.movingUIState)) {
-                const elmntState = power_user.movingUIState[elmntName];
-                const oldHeight = elmntState.height;
-                const oldWidth = elmntState.width;
-                const oldLeft = elmntState.left;
-                const oldTop = elmntState.top;
-                const oldBottom = elmntState.bottom;
-                const oldRight = elmntState.right;
+        const movingUIStateRec = power_user.movingUIState as Record<string, Record<string, string>>;
+        if (Object.keys(movingUIStateRec).length > 0) {
+            for (const elmntName of Object.keys(movingUIStateRec)) {
+                const elmntState = movingUIStateRec[elmntName]!;
+                const oldHeight = Number(elmntState.height ?? 0);
+                const oldWidth = Number(elmntState.width ?? 0);
+                const oldLeft = Number(elmntState.left ?? 0);
+                const oldTop = Number(elmntState.top ?? 0);
+                const oldBottom = Number(elmntState.bottom ?? 0);
+                const oldRight = Number(elmntState.right ?? 0);
                 const newHeight = Number(oldHeight * scaleY).toFixed(0);
                 const newWidth = Number(oldWidth * scaleX).toFixed(0);
                 const newLeft = Number(oldLeft * scaleX).toFixed(0);
@@ -4364,15 +4484,15 @@ onDomReady(() => {
                     const elmnt = document.getElementById(elmntName);
                     if (elmnt) {
                         console.log(`scaling ${elmntName} by ${scaleX}x${scaleY} to ${newWidth}x${newHeight}`);
-                        elmnt.style.height = newHeight;
-                        elmnt.style.width = newWidth;
-                        elmnt.style.inset = `${newTop}px ${newRight}px ${newBottom}px ${newLeft}px`;
-                        power_user.movingUIState[elmntName].height = newHeight;
-                        power_user.movingUIState[elmntName].width = newWidth;
-                        power_user.movingUIState[elmntName].top = newTop;
-                        power_user.movingUIState[elmntName].bottom = newBottom;
-                        power_user.movingUIState[elmntName].left = newLeft;
-                        power_user.movingUIState[elmntName].right = newRight;
+                        (elmnt as HTMLElement).style.height = newHeight;
+                        (elmnt as HTMLElement).style.width = newWidth;
+                        (elmnt as HTMLElement).style.inset = `${newTop}px ${newRight}px ${newBottom}px ${newLeft}px`;
+                        movingUIStateRec[elmntName]!.height = newHeight;
+                        movingUIStateRec[elmntName]!.width = newWidth;
+                        movingUIStateRec[elmntName]!.top = newTop;
+                        movingUIStateRec[elmntName]!.bottom = newBottom;
+                        movingUIStateRec[elmntName]!.left = newLeft;
+                        movingUIStateRec[elmntName]!.right = newRight;
                     } else {
                         console.log(`skipping ${elmntName} because it doesn't exist in the DOM`);
                     }

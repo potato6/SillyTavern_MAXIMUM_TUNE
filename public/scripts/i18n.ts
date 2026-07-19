@@ -263,7 +263,6 @@ async function getMissingTranslations() {
         console.log(trackMissingDynamicTranslateMap);
     }
 
-    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
     notyf.success(`Found ${uniqueMissingData.length} missing translations. See browser console for details.`);
 }
 
@@ -363,15 +362,12 @@ export async function initLocales() {
             localStorage.setItem('trackDynamicTranslate', isTracking ? 'true' : 'false');
             if (isTracking && isSupportedNonEnglish()) {
                 trackMissingDynamicTranslate = new Set();
-                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 notyf.success('Dynamic translation tracking enabled.');
             } else if (isTracking) {
                 trackMissingDynamicTranslate = null;
-                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 notyf.warning('Dynamic translation tracking enabled, but will not be tracked with locale English.');
             } else {
                 trackMissingDynamicTranslate = null;
-                // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 notyf.info('Dynamic translation tracking disabled.');
             }
         });

@@ -164,7 +164,6 @@ export function getSystemMessageByType(type, text, extra = {}) {
 // @ts-expect-error TS(7006) FIXME: Parameter 'type' implicitly has an 'any' type.
 export function sendSystemMessage(type, text, extra = {}) {
     const newMessage = getSystemMessageByType(type, text, extra);
-    // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
     chat.push(newMessage);
     addOneMessage(newMessage);
     setSendButtonState(false);

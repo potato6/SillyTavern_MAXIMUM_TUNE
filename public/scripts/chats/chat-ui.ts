@@ -113,7 +113,7 @@ export function initChatUtilities(): void {
         };
         const chatToSave = [
             chatHeader,
-            ...chat.filter((x) => x?.extra?.type !== system_message_types.ASSISTANT_NOTE),
+            ...chat.filter((x: ChatMessage) => x?.extra?.type !== system_message_types.ASSISTANT_NOTE),
         ];
         download(chatToSave.map((m) => JSON.stringify(m)).join('\n'), `Assistant - ${humanizedDateTime()}.jsonl`, 'application/json');
     });
@@ -124,11 +124,11 @@ export function initChatUtilities(): void {
             if (!file) return;
 
             try {
-                const text = await getFileText(file);
+                const text = await getFileText(file) as string;
                 const lines = text.split('\n').filter((line: string) => line.trim() !== '');
                 const messages = lines.map((line: string) => JSON.parse(line));
                 const metadata = messages.shift()?.chat_metadata || {};
-                messages.unshift(getSystemMessageByType(system_message_types.ASSISTANT_NOTE));
+                messages.unshift(getSystemMessageByType(system_message_types.ASSISTANT_NOTE, ''));
                 await clearChat();
                 chat.splice(0, chat.length, ...messages);
                 updateChatMetadata(metadata, true);
@@ -155,7 +155,7 @@ export function initChatUtilities(): void {
         const onChangeHandler = async () => {
             const merged = mergeFilesIntoDataTransfer(dt.files, Array.from(fileInput.files!));
             fileInput.files = merged.files;
-            await onFileAttach(fileInput.files);
+            await onFileAttach(fileInput.files!);
         };
 
         fileInput.addEventListener('change', onChangeHandler);
@@ -239,6 +239,10 @@ export function initChatUtilities(): void {
     });
 
     // ── Media container actions ──────────────────────────────
+    /**
+     *
+     * @param containerClass
+     */
     function getMediaContainerInfo(this: Element, containerClass = '.mes_media_container') {
         const messageBlock = this.closest('.mes');
         const messageId = Number(messageBlock?.getAttribute('mesid'));
@@ -247,7 +251,11 @@ export function initChatUtilities(): void {
         return { messageBlock, messageId, mediaBlock, mediaIndex };
     }
 
-    /** Register a click handler on a media container child selector. */
+    /**
+     * Register a click handler on a media container child selector.
+     * @param selector
+     * @param handler
+     */
     function onMediaClick(
         selector: string,
         handler: (info: ReturnType<typeof getMediaContainerInfo>) => void | Promise<void>,
@@ -261,15 +269,15 @@ export function initChatUtilities(): void {
         });
     }
 
-    onMediaClick('.mes_img', ({ messageId, mediaIndex }) => expandMessageMedia(messageId, mediaIndex));
-    onMediaClick('.mes_media_enlarge', ({ messageId, mediaIndex }) => expandMessageMedia(messageId, mediaIndex));
+    onMediaClick('.mes_img', ({ messageId, mediaIndex }) => { expandMessageMedia(messageId, mediaIndex); });
+    onMediaClick('.mes_media_enlarge', ({ messageId, mediaIndex }) => { expandMessageMedia(messageId, mediaIndex); });
     onMediaClick('.mes_media_delete', async ({ messageId, mediaIndex, messageBlock }) => {
         await deleteMessageMedia(messageId, mediaIndex, messageBlock);
     });
     onMediaClick('.mes_media_list', ({ messageId, messageBlock }) => switchMessageMediaDisplay(messageId, messageBlock, MEDIA_DISPLAY.GALLERY));
     onMediaClick('.mes_media_gallery', ({ messageId, messageBlock }) => switchMessageMediaDisplay(messageId, messageBlock, MEDIA_DISPLAY.LIST));
-    onMediaClick('.mes_img_swipe_left', ({ messageId, messageBlock }) => onImageSwiped(messageId, messageBlock, SWIPE_DIRECTION.LEFT));
-    onMediaClick('.mes_img_swipe_right', ({ messageId, messageBlock }) => onImageSwiped(messageId, messageBlock, SWIPE_DIRECTION.RIGHT));
+    onMediaClick('.mes_img_swipe_left', ({ messageId, messageBlock }) => { if (messageBlock) return onImageSwiped(messageId, messageBlock, SWIPE_DIRECTION.LEFT); });
+    onMediaClick('.mes_img_swipe_right', ({ messageId, messageBlock }) => { if (messageBlock) return onImageSwiped(messageId, messageBlock, SWIPE_DIRECTION.RIGHT); });
 
     // ── File form reset ──────────────────────────────────────
     document.getElementById('file_form')?.addEventListener('reset', function () {
@@ -291,11 +299,15 @@ export function initChatUtilities(): void {
         await handleFileAttach(files);
     });
 
+    /**
+     *
+     * @param files
+     */
     async function handleFileAttach(files: File[]) {
         if (!(fileInput instanceof HTMLInputElement)) return;
         const merged = mergeFilesIntoDataTransfer(fileInput.files!, files);
         fileInput.files = merged.files;
-        await onFileAttach(fileInput.files);
+        await onFileAttach(fileInput.files!);
     }
 
     // ── Chat changed event ──────────────────────────────────
@@ -306,15 +318,18 @@ export function initChatUtilities(): void {
 
 /**
  * Register a delegated click handler with the standard guard pattern.
+ * @param selector
+ * @param handler
+ * @param useCapture
  */
 function delegateClick(
     selector: string,
     handler: (el: Element, event: MouseEvent) => void,
     useCapture = false,
 ): void {
-    document.addEventListener('click', function (e) {
+    document.addEventListener('click', function (this: void, e: Event) {
         if (!(e.target instanceof Element)) return;
-        const el = (e.target as Element).closest(selector);
-        if (el) handler(el, e);
+        const el = e.target.closest(selector);
+        if (el) handler(el, e as MouseEvent);
     }, useCapture);
 }
