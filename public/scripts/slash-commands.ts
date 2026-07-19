@@ -103,6 +103,7 @@ export {
 };
 
 export const parser = new SlashCommandParser();
+SlashCommandParser.registerBuiltinCommands();
 /**
  * @deprecated Use SlashCommandParser.addCommandObject() instead
  */

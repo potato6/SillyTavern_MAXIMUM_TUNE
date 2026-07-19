@@ -161,8 +161,12 @@ export class SlashCommandParser {
 
 
     constructor() {
-        // add dummy commands for help strings / autocomplete
-        if (!Object.keys(this.commands).includes('parser-flag')) {
+        //TODO should not be re-registered from every instance
+        this.registerLanguage();
+    }
+
+    static registerBuiltinCommands() {
+        if (!Object.keys(SlashCommandParser.commands).includes('parser-flag')) {
             const help = {};
             // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             help[PARSER_FLAG.REPLACE_GETVAR] = 'Replace all {{getvar::}} and {{getglobalvar::}} macros with scoped variables to avoid double macro substitution.';
@@ -188,7 +192,7 @@ export class SlashCommandParser {
                 helpString: 'Set a parser flag.',
             }));
         }
-        if (!Object.keys(this.commands).includes('/')) {
+        if (!Object.keys(SlashCommandParser.commands).includes('/')) {
             SlashCommandParser.addCommandObjectUnsafe(SlashCommand.fromProps({ name: '/',
                 aliases: ['#'],
                 unnamedArgumentList: [
@@ -200,12 +204,12 @@ export class SlashCommandParser {
                 helpString: 'Write a comment.',
             }));
         }
-        if (!Object.keys(this.commands).includes('breakpoint')) {
+        if (!Object.keys(SlashCommandParser.commands).includes('breakpoint')) {
             SlashCommandParser.addCommandObjectUnsafe(SlashCommand.fromProps({ name: 'breakpoint',
                 helpString: 'Set a breakpoint for debugging in the QR Editor.',
             }));
         }
-        if (!Object.keys(this.commands).includes('break')) {
+        if (!Object.keys(SlashCommandParser.commands).includes('break')) {
             SlashCommandParser.addCommandObjectUnsafe(SlashCommand.fromProps({ name: 'break',
                 helpString: 'Break out of a loop or closure executed through /run or /:',
                 unnamedArgumentList: [
@@ -215,9 +219,6 @@ export class SlashCommandParser {
                 ],
             }));
         }
-
-        //TODO should not be re-registered from every instance
-        this.registerLanguage();
     }
     registerLanguage() {
         // NUMBER mode is copied from highlightjs's own implementation for JavaScript
