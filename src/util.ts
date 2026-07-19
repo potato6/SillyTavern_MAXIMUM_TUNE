@@ -19,7 +19,10 @@ import bytes from 'bytes';
 import { LOG_LEVELS, CHAT_COMPLETION_SOURCES, MEDIA_REQUEST_TYPE } from './constants.js';
 import { serverDirectory } from './server-directory.js';
 import { sync as writeFileAtomicSync } from 'write-file-atomic';
-import { isFirefox } from './express-common.js';
+export function isFirefox(req: import('express').Request) {
+    const userAgent = req.headers['user-agent'] || '';
+    return /firefox/i.test(userAgent);
+}
 
 /**
  * Parsed config object.

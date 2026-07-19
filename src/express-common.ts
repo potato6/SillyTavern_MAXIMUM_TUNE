@@ -82,10 +82,7 @@ export function getIpAddress(request: express.Request, includeHeaderIp: boolean)
  * @param {import('express').Request} req Request object
  * @returns {boolean} True if the request is from Firefox, false otherwise.
  */
-export function isFirefox(req: express.Request) {
-    const userAgent = req.headers['user-agent'] || '';
-    return /firefox/i.test(userAgent);
-}
+export { isFirefox } from './util.js';
 
 /**
  * Filters and validates IP patterns.

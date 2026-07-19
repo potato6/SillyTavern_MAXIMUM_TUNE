@@ -6,71 +6,47 @@ import { sync as writeFileAtomicSync } from 'write-file-atomic';
 import { color, getConfigValue, uuidv4 } from '../util.js';
 
 export const SECRETS_FILE = 'secrets.json';
-export const SECRET_KEYS = {
+import { CHAT_COMPLETION_SOURCES, TEXTGEN_TYPES } from '../constants.js';
+import type { UserDirectoryList } from '../users.js';
+
+const KEY_OVERRIDES = {
     _MIGRATED: '_migrated',
-    HORDE: 'api_key_horde',
-    MANCER: 'api_key_mancer',
-    VLLM: 'api_key_vllm',
-    APHRODITE: 'api_key_aphrodite',
-    TABBY: 'api_key_tabby',
-    OPENAI: 'api_key_openai',
-    NOVEL: 'api_key_novel',
-    CLAUDE: 'api_key_claude',
     DEEPL: 'deepl',
     LIBRE: 'libre',
     LIBRE_URL: 'libre_url',
     LINGVA_URL: 'lingva_url',
-    OPENROUTER: 'api_key_openrouter',
-    AI21: 'api_key_ai21',
     ONERING_URL: 'oneringtranslator_url',
     DEEPLX_URL: 'deeplx_url',
-    MAKERSUITE: 'api_key_makersuite',
-    VERTEXAI: 'api_key_vertexai',
-    SERPAPI: 'api_key_serpapi',
-    TOGETHERAI: 'api_key_togetherai',
-    MISTRALAI: 'api_key_mistralai',
-    CUSTOM: 'api_key_custom',
-    OOBA: 'api_key_ooba',
-    INFERMATICAI: 'api_key_infermaticai',
-    DREAMGEN: 'api_key_dreamgen',
-    NOMICAI: 'api_key_nomicai',
-    KOBOLDCPP: 'api_key_koboldcpp',
-    LLAMACPP: 'api_key_llamacpp',
-    COHERE: 'api_key_cohere',
-    PERPLEXITY: 'api_key_perplexity',
-    GROQ: 'api_key_groq',
-    AZURE_TTS: 'api_key_azure_tts',
-    FEATHERLESS: 'api_key_featherless',
-    HUGGINGFACE: 'api_key_huggingface',
-    STABILITY: 'api_key_stability',
-    CUSTOM_OPENAI_TTS: 'api_key_custom_openai_tts',
-    TAVILY: 'api_key_tavily',
-    CHUTES: 'api_key_chutes',
-    ELECTRONHUB: 'api_key_electronhub',
-    NANOGPT: 'api_key_nanogpt',
-    BFL: 'api_key_bfl',
-    COMFY_RUNPOD: 'api_key_comfy_runpod',
-    FALAI: 'api_key_falai',
-    GENERIC: 'api_key_generic',
-    DEEPSEEK: 'api_key_deepseek',
-    SERPER: 'api_key_serper',
-    AIMLAPI: 'api_key_aimlapi',
-    XAI: 'api_key_xai',
-    FIREWORKS: 'api_key_fireworks',
     VERTEXAI_SERVICE_ACCOUNT: 'vertexai_service_account_json',
-    MINIMAX: 'api_key_minimax',
     MINIMAX_GROUP_ID: 'minimax_group_id',
-    MOONSHOT: 'api_key_moonshot',
-    COMETAPI: 'api_key_cometapi',
-    AZURE_OPENAI: 'api_key_azure_openai',
-    ZAI: 'api_key_zai',
-    SILICONFLOW: 'api_key_siliconflow',
-    ELEVENLABS: 'api_key_elevenlabs',
-    POLLINATIONS: 'api_key_pollinations',
     VOLCENGINE_APP_ID: 'volcengine_app_id',
     VOLCENGINE_ACCESS_KEY: 'volcengine_access_key',
-    WORKERS_AI: 'api_key_workers_ai',
 };
+
+function deriveKey(name: string): string {
+    return (KEY_OVERRIDES as Record<string, string>)[name] ?? `api_key_${name.toLowerCase()}`;
+}
+
+const STANDARD_EXTRAS = [
+    'HORDE', 'NOVEL', 'SERPAPI', 'STABILITY', 'AZURE_TTS',
+    'CUSTOM_OPENAI_TTS', 'TAVILY', 'BFL', 'COMFY_RUNPOD',
+    'FALAI', 'SERPER', 'ELEVENLABS', 'NOMICAI',
+] as const;
+
+type ChatSourceKey = keyof typeof CHAT_COMPLETION_SOURCES;
+type TextgenKey = keyof typeof TEXTGEN_TYPES;
+type OverrideKey = keyof typeof KEY_OVERRIDES;
+type ExtraKey = typeof STANDARD_EXTRAS[number];
+type SecretKeyName = ChatSourceKey | TextgenKey | OverrideKey | ExtraKey;
+
+export const SECRET_KEYS = Object.fromEntries(
+    [...new Set([
+        ...(Object.keys(CHAT_COMPLETION_SOURCES) as ChatSourceKey[]),
+        ...(Object.keys(TEXTGEN_TYPES) as TextgenKey[]),
+        ...(Object.keys(KEY_OVERRIDES) as OverrideKey[]),
+        ...(STANDARD_EXTRAS as unknown as ExtraKey[]),
+    ])].map(name => [name as string, deriveKey(name as string)])
+) as { [K in SecretKeyName]: string } & Record<string, string>;
 
 /**
  * @typedef {object} SecretValue
@@ -113,12 +89,12 @@ export const allowKeysExposure = !!getConfigValue('allowKeysExposure', false, 'b
  */
 export class SecretManager {
     defaultSecrets: Record<string, never>;
-    directories: import('../users.js').UserDirectoryList;
+    directories: UserDirectoryList;
     filePath: string;
     /**
-     * @param {import('../users.js').UserDirectoryList} directories User directories
+     * @param {UserDirectoryList} directories User directories
      */
-    constructor(directories: import('../users.js').UserDirectoryList) {
+    constructor(directories: UserDirectoryList) {
         this.directories = directories;
         this.filePath = path.join(directories.root, SECRETS_FILE);
         this.defaultSecrets = {};
@@ -437,42 +413,42 @@ export class SecretManager {
 //#region Backwards compatibility
 /**
  * Writes a secret to the secrets file
- * @param {import('../users.js').UserDirectoryList} directories User directories
+ * @param {UserDirectoryList} directories User directories
  * @param {string} key Secret key
  * @param {string} value Secret value
  * @returns {string} The ID of the newly created secret
  */
-export function writeSecret(directories: import('../users.js').UserDirectoryList, key: string, value: string) {
+export function writeSecret(directories: UserDirectoryList, key: string, value: string) {
     return new SecretManager(directories).writeSecret(key, value);
 }
 
 /**
  * Deletes a secret from the secrets file
- * @param {import('../users.js').UserDirectoryList} directories User directories
+ * @param {UserDirectoryList} directories User directories
  * @param {string} key Secret key
  * @returns {void}
  */
-export function deleteSecret(directories: import('../users.js').UserDirectoryList, key: string) {
+export function deleteSecret(directories: UserDirectoryList, key: string) {
     return new SecretManager(directories).deleteSecret(key, null);
 }
 
 /**
  * Reads a secret from the secrets file
- * @param {import('../users.js').UserDirectoryList} directories User directories
+ * @param {UserDirectoryList} directories User directories
  * @param {string} key Secret key
  * @param {string?} id Secret ID (optional)
  * @returns {string} Secret value
  */
-export function readSecret(directories: import('../users.js').UserDirectoryList, key: string, id: string | null = null) {
+export function readSecret(directories: UserDirectoryList, key: string, id: string | null = null) {
     return new SecretManager(directories).readSecret(key, id);
 }
 
 /**
  * Reads the secret state from the secrets file
- * @param {import('../users.js').UserDirectoryList} directories User directories
+ * @param {UserDirectoryList} directories User directories
  * @returns {Record<string, boolean>} Secret state
  */
-export function readSecretState(directories: import('../users.js').UserDirectoryList) {
+export function readSecretState(directories: UserDirectoryList) {
     const state = new SecretManager(directories).getSecretState();
     const result = /** @type {Record<string, boolean>} */ ({});
     for (const key of Object.values(SECRET_KEYS)) {
@@ -488,10 +464,10 @@ export function readSecretState(directories: import('../users.js').UserDirectory
 
 /**
  * Reads all secrets from the secrets file
- * @param {import('../users.js').UserDirectoryList} directories User directories
+ * @param {UserDirectoryList} directories User directories
  * @returns {Record<string, string>} Secrets
  */
-export function getAllSecrets(directories: import('../users.js').UserDirectoryList) {
+export function getAllSecrets(directories: UserDirectoryList) {
     const secrets = new SecretManager(directories).getAllSecrets();
     const result = /** @type {Record<string, string>} */ ({});
     for (const [key, values] of Object.entries(secrets)) {
@@ -513,9 +489,9 @@ export function getAllSecrets(directories: import('../users.js').UserDirectoryLi
 
 /**
  * Migrates legacy flat secrets format to the new format for all user directories
- * @param {import('../users.js').UserDirectoryList[]} directoriesList User directories
+ * @param {UserDirectoryList[]} directoriesList User directories
  */
-export function migrateFlatSecrets(directoriesList: import('../users.js').UserDirectoryList[]) {
+export function migrateFlatSecrets(directoriesList: UserDirectoryList[]) {
     for (const directories of directoriesList) {
         try {
             const manager = new SecretManager(directories);

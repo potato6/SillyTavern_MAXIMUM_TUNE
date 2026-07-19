@@ -1,7 +1,6 @@
 import { DOMPurify, moment, sha256 } from '../lib.js';
 import { event_types, eventSource, getRequestHeaders, saveSettings } from '../script.js';
 import { t } from './i18n.js';
-import { chat_completion_sources } from './openai.js';
 import { callGenericPopup, Popup, POPUP_RESULT, POPUP_TYPE } from './popup.js';
 import { SlashCommand } from './slash-commands/SlashCommand.js';
 import { ARGUMENT_TYPE, SlashCommandArgument, SlashCommandNamedArgument } from './slash-commands/SlashCommandArgument.js';
@@ -9,75 +8,71 @@ import { enumIcons } from './slash-commands/SlashCommandCommonEnumsProvider.js';
 import { enumTypes, SlashCommandEnumValue } from './slash-commands/SlashCommandEnumValue.js';
 import { SlashCommandParser } from './slash-commands/SlashCommandParser.js';
 import { renderTemplateAsync } from './templates.js';
-import { textgen_types } from './textgen-settings.js';
 import { getCurrentUserHandle } from './user.js';
 import { copyText, isTrueBoolean, uuidv4 } from './utils.js';
 import { accountStorage } from './util/AccountStorage.js';
 
-export const SECRET_KEYS = {
-    HORDE: 'api_key_horde',
-    MANCER: 'api_key_mancer',
-    VLLM: 'api_key_vllm',
-    APHRODITE: 'api_key_aphrodite',
-    TABBY: 'api_key_tabby',
-    OPENAI: 'api_key_openai',
-    NOVEL: 'api_key_novel',
-    CLAUDE: 'api_key_claude',
+const KEY_OVERRIDES = {
     DEEPL: 'deepl',
     LIBRE: 'libre',
     LIBRE_URL: 'libre_url',
     LINGVA_URL: 'lingva_url',
-    OPENROUTER: 'api_key_openrouter',
-    AI21: 'api_key_ai21',
     ONERING_URL: 'oneringtranslator_url',
     DEEPLX_URL: 'deeplx_url',
-    MAKERSUITE: 'api_key_makersuite',
-    VERTEXAI: 'api_key_vertexai',
-    SERPAPI: 'api_key_serpapi',
-    MISTRALAI: 'api_key_mistralai',
-    TOGETHERAI: 'api_key_togetherai',
-    INFERMATICAI: 'api_key_infermaticai',
-    DREAMGEN: 'api_key_dreamgen',
-    CUSTOM: 'api_key_custom',
-    OOBA: 'api_key_ooba',
-    NOMICAI: 'api_key_nomicai',
-    KOBOLDCPP: 'api_key_koboldcpp',
-    LLAMACPP: 'api_key_llamacpp',
-    COHERE: 'api_key_cohere',
-    PERPLEXITY: 'api_key_perplexity',
-    GROQ: 'api_key_groq',
-    AZURE_TTS: 'api_key_azure_tts',
-    AZURE_OPENAI: 'api_key_azure_openai',
-    FEATHERLESS: 'api_key_featherless',
-    HUGGINGFACE: 'api_key_huggingface',
-    STABILITY: 'api_key_stability',
-    CUSTOM_OPENAI_TTS: 'api_key_custom_openai_tts',
-    CHUTES: 'api_key_chutes',
-    ELECTRONHUB: 'api_key_electronhub',
-    NANOGPT: 'api_key_nanogpt',
-    TAVILY: 'api_key_tavily',
-    BFL: 'api_key_bfl',
-    COMFY_RUNPOD: 'api_key_comfy_runpod',
-    GENERIC: 'api_key_generic',
-    DEEPSEEK: 'api_key_deepseek',
-    SERPER: 'api_key_serper',
-    AIMLAPI: 'api_key_aimlapi',
-    FALAI: 'api_key_falai',
-    XAI: 'api_key_xai',
-    FIREWORKS: 'api_key_fireworks',
     VERTEXAI_SERVICE_ACCOUNT: 'vertexai_service_account_json',
-    MINIMAX: 'api_key_minimax',
     MINIMAX_GROUP_ID: 'minimax_group_id',
-    MOONSHOT: 'api_key_moonshot',
-    COMETAPI: 'api_key_cometapi',
-    ZAI: 'api_key_zai',
-    SILICONFLOW: 'api_key_siliconflow',
-    ELEVENLABS: 'api_key_elevenlabs',
-    POLLINATIONS: 'api_key_pollinations',
     VOLCENGINE_APP_ID: 'volcengine_app_id',
     VOLCENGINE_ACCESS_KEY: 'volcengine_access_key',
-    WORKERS_AI: 'api_key_workers_ai',
-} as const;
+};
+
+function deriveKey(name: string): string {
+    return (KEY_OVERRIDES as Record<string, string>)[name] ?? `api_key_${name.toLowerCase()}`;
+}
+
+const STANDARD_EXTRAS = [
+    'HORDE', 'NOVEL', 'SERPAPI', 'STABILITY', 'AZURE_TTS',
+    'CUSTOM_OPENAI_TTS', 'TAVILY', 'BFL', 'COMFY_RUNPOD',
+    'FALAI', 'SERPER', 'ELEVENLABS', 'NOMICAI',
+] as const;
+
+const CHAT_COMPLETION_SOURCE_NAMES = [
+    'OPENAI', 'CLAUDE', 'OPENROUTER', 'AI21', 'MAKERSUITE',
+    'VERTEXAI', 'MISTRALAI', 'CUSTOM', 'COHERE', 'PERPLEXITY',
+    'GROQ', 'ELECTRONHUB', 'CHUTES', 'NANOGPT', 'DEEPSEEK',
+    'AIMLAPI', 'XAI', 'POLLINATIONS', 'MOONSHOT', 'FIREWORKS',
+    'COMETAPI', 'AZURE_OPENAI', 'ZAI', 'SILICONFLOW',
+    'WORKERS_AI', 'MINIMAX',
+] as const;
+
+const TEXTGEN_TYPE_NAMES = [
+    'OOBA', 'MANCER', 'VLLM', 'APHRODITE', 'TABBY',
+    'KOBOLDCPP', 'TOGETHERAI', 'LLAMACPP', 'OLLAMA',
+    'INFERMATICAI', 'DREAMGEN', 'OPENROUTER', 'FEATHERLESS',
+    'HUGGINGFACE', 'GENERIC',
+] as const;
+
+type ChatSourceKey = typeof CHAT_COMPLETION_SOURCE_NAMES[number];
+type TextgenKey = typeof TEXTGEN_TYPE_NAMES[number];
+type OverrideKey = keyof typeof KEY_OVERRIDES;
+type ExtraKey = typeof STANDARD_EXTRAS[number];
+type SecretKeyName = ChatSourceKey | TextgenKey | OverrideKey | ExtraKey;
+
+const chat_completion_sources = Object.fromEntries(
+    CHAT_COMPLETION_SOURCE_NAMES.map(k => [k, k.toLowerCase()])
+) as { [K in ChatSourceKey]: string };
+
+const textgen_types = Object.fromEntries(
+    TEXTGEN_TYPE_NAMES.map(k => [k, k.toLowerCase()])
+) as { [K in TextgenKey]: string };
+
+export const SECRET_KEYS = Object.fromEntries(
+    [...new Set([
+        ...(CHAT_COMPLETION_SOURCE_NAMES as unknown as string[]),
+        ...(TEXTGEN_TYPE_NAMES as unknown as string[]),
+        ...(Object.keys(KEY_OVERRIDES) as string[]),
+        ...(STANDARD_EXTRAS as unknown as string[]),
+    ])].map(name => [name as string, deriveKey(name as string)])
+) as { [K in SecretKeyName]: string } & Record<string, string>;
 
 const FRIENDLY_NAMES: Record<string, string> = {
     [SECRET_KEYS.HORDE]: 'AI Horde',
@@ -211,8 +206,8 @@ export function resolveSecretKey() {
 
     if (mainApi === 'textgenerationwebui') {
         const [key] = Object.entries(textgen_types).find(([, value]) => value === textCompletionType) ?? [null];
-        if (key && (SECRET_KEYS as Record<string, string | undefined>)[key as string]) {
-            return (SECRET_KEYS as Record<string, string | undefined>)[key as string]!;
+        if (key && SECRET_KEYS[key]) {
+            return SECRET_KEYS[key]!;
         }
     }
 
@@ -227,8 +222,8 @@ export function resolveSecretKey() {
         }
 
         const [key] = Object.entries(chat_completion_sources).find(([, value]) => value === chatCompletionSource) ?? [null];
-        if (key && (SECRET_KEYS as Record<string, string | undefined>)[key as string]) {
-            return (SECRET_KEYS as Record<string, string | undefined>)[key as string]!;
+        if (key && SECRET_KEYS[key]) {
+            return SECRET_KEYS[key]!;
         }
     }
 
@@ -1186,7 +1181,7 @@ export async function initSecrets() {
         const manageBtn = e.target.closest('.manage-api-keys') as HTMLElement | null;
         if (!manageBtn) return;
         const key = manageBtn.getAttribute('data-key');
-        if (!key || !(Object.values(SECRET_KEYS) as string[]).includes(key)) {
+        if (!key || !Object.values(SECRET_KEYS).includes(key)) {
             console.error('Invalid key for manage-api-keys:', key);
             return;
         }

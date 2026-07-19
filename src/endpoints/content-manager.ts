@@ -11,6 +11,7 @@ import { getConfigValue, color, setPermissionsSync, isValidUrl } from '../util.j
 import { write } from '../character-card-parser.js';
 import { serverDirectory } from '../server-directory.js';
 import { DEFAULT_AVATAR_PATH } from '../constants.js';
+import type { UserDirectoryList } from '../users.js';
 
 const contentDirectory = path.join(serverDirectory, 'default/content');
 const scaffoldDirectory = path.join(serverDirectory, 'default/scaffold');
@@ -79,10 +80,10 @@ function getScopeByType(type: string) {
 
 /**
  * Gets the default presets from the content directory.
- * @param {import('../users.js').UserDirectoryList} directories User directories
+ * @param {UserDirectoryList} directories User directories
  * @returns {object[]} Array of default presets
  */
-export function getDefaultPresets(directories: import('../users.js').UserDirectoryList) {
+export function getDefaultPresets(directories: UserDirectoryList) {
     try {
         const contentIndex = getContentIndex(CONTENT_SCOPE.USER);
         const presets = [];
@@ -183,12 +184,12 @@ function seedContent(contentIndex: ContentItem[], contentLogPath: string, resolv
 /**
  * Seeds content for a user.
  * @param {ContentItem[]} contentIndex Content index
- * @param {import('../users.js').UserDirectoryList} directories User directories
+ * @param {UserDirectoryList} directories User directories
  * @param {string[]} forceCategories List of categories to force check (even if content check is skipped)
  * @returns {Promise<boolean>} Whether any content was added
  */
 // @ts-expect-error TS(2304) FIXME: Cannot find name 'ContentItem'.
-async function seedContentForUser(contentIndex: ContentItem[], directories: import('../users.js').UserDirectoryList, forceCategories: string[]) {
+async function seedContentForUser(contentIndex: ContentItem[], directories: UserDirectoryList, forceCategories: string[]) {
     if (!fs.existsSync(directories.root)) {
         fs.mkdirSync(directories.root, { recursive: true });
     }
@@ -210,11 +211,11 @@ async function seedGlobalContent(contentIndex: ContentItem[]) {
 
 /**
  * Checks for new content and seeds it for all users.
- * @param {import('../users.js').UserDirectoryList[]} directoriesList List of user directories
+ * @param {UserDirectoryList[]} directoriesList List of user directories
  * @param {string[]} forceCategories List of categories to force check (even if content check is skipped)
  * @returns {Promise<void>}
  */
-export async function checkForNewContent(directoriesList: import('../users.js').UserDirectoryList[], forceCategories: string[] = []) {
+export async function checkForNewContent(directoriesList: UserDirectoryList[], forceCategories: string[] = []) {
     try {
         // @ts-expect-error TS(2345) FIXME: Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
         const contentCheckSkip = getConfigValue('skipContentCheck', false, 'boolean');
@@ -323,10 +324,10 @@ export function getContentOfType(type: string, format: 'json' | 'string' | 'raw'
 /**
  * Gets the target directory for the specified asset type.
  * @param {ContentType} type Asset type
- * @param {import('../users.js').UserDirectoryList} directories User directories
+ * @param {UserDirectoryList} directories User directories
  * @returns {string | null} Target directory
  */
-export function getUserTargetByType(type: string, directories: import('../users.js').UserDirectoryList) {
+export function getUserTargetByType(type: string, directories: UserDirectoryList) {
     switch (type) {
         case CONTENT_TYPES.SETTINGS:
             return directories.root;

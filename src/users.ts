@@ -16,8 +16,7 @@ import ipMatching from 'ip-matching';
 
 import { USER_DIRECTORY_TEMPLATE, DEFAULT_USER, PUBLIC_DIRECTORIES, SETTINGS_FILE, UPLOADS_DIRECTORY } from './constants.js';
 import { getConfigValue, color, delay, generateTimestamp, invalidateFirefoxCache, isPathUnderParent, setPermissionsSync } from './util.js';
-import { allowKeysExposure, readSecret, writeSecret, SECRETS_FILE } from './endpoints/secrets.js';
-import { getContentOfType } from './endpoints/content-manager.js';
+
 import { serverDirectory } from './server-directory.js';
 import { filterValidIpPatterns, getIpFromRequest } from './express-common.js';
 import { extensionsEnabledFeatureGuard } from './endpoints/extensions.js';
@@ -452,6 +451,7 @@ export async function migrateSystemPrompts() {
      */
     async function getDefaultSystemPrompts() {
         try {
+            const { getContentOfType } = await import('./endpoints/' + 'content-manager.js');
             return getContentOfType('sysprompt', 'json');
         } catch {
             return [];
@@ -488,7 +488,7 @@ export async function migrateSystemPrompts() {
             // Only leave unique contents
             migratedPrompts = uniqBy(migratedPrompts, item => item.content);
             // Only leave contents that are not in the default prompts
-            migratedPrompts = migratedPrompts.filter(x => !defaultPrompts.some(y => y.content === x.content));
+            migratedPrompts = migratedPrompts.filter(x => !defaultPrompts.some((y: any) => y.content === x.content));
             for (const sysPromptData of migratedPrompts) {
                 sysPromptData.name = `[Migrated] ${sysPromptData.name}`;
                 const syspromptPath = path.join(directory.sysprompt, `${sysPromptData.name}.json`);
@@ -672,11 +672,12 @@ export function getPasswordHash(password: string, salt: string) {
  * @param {import('express').Request} [request] HTTP request object
  * @returns {string} The CSRF secret
  */
-export function getCsrfSecret(request: import('express').Request) {
+export async function getCsrfSecret(request: import('express').Request) {
     if (!request || !request.user) {
         return ANON_CSRF_SECRET;
     }
 
+    const { readSecret, writeSecret } = await import('./endpoints/' + 'secrets.js');
     let csrfSecret = readSecret(request.user.directories, STORAGE_KEYS.csrfSecret);
 
     if (!csrfSecret) {
@@ -1199,6 +1200,7 @@ export async function createBackupArchive(handle: string, response: express.Resp
     archive.pipe(response);
 
     // Append files from a sub-directory, putting its contents at the root of archive
+    const { allowKeysExposure, SECRETS_FILE } = await import('./endpoints/' + 'secrets.js');
     const ignore = allowKeysExposure ? [] : [SECRETS_FILE, 'backups/secrets_migration_*.json'];
     archive.glob('**/*', {
         cwd: directories.root,

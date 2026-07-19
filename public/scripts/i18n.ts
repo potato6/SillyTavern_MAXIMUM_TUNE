@@ -1,5 +1,4 @@
 import { registerDebugFunction } from './power-user.js';
-import { updateSecretDisplay } from './secrets.js';
 
 const storageKey = 'language';
 const overrideLanguage = localStorage.getItem(storageKey);
@@ -321,6 +320,7 @@ export async function initLocales() {
     document.documentElement.lang = localeFile;
     applyLocale();
     addLanguagesToDropdown();
+    const { updateSecretDisplay } = await import('./secrets.js');
     updateSecretDisplay();
 
     for (const select of document.querySelectorAll('#ui_language_select, #onboarding_ui_language_select')) {
