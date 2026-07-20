@@ -99,6 +99,7 @@ const provider: ChatProvider = {
         const data = await response.json() as Record<string, unknown>;
         return (data.data as ModelEntry[]) || [];
     },
+    resolveTokenizer: () => 'jamba',
 };
 
 export default provider;

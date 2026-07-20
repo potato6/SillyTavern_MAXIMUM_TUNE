@@ -105,6 +105,19 @@ const provider: ChatProvider = {
 
         return [];
     },
+
+    resolveTokenizer: (model) => {
+        const m = model.toLowerCase();
+        if (m.includes('deepseek')) return 'deepseek';
+        if (m.includes('qwen') || m.includes('qwq') || m.includes('kimi')) return 'qwen2';
+        if (m.includes('llama-3') || m.includes('llama-4')) return 'llama3';
+        if (m.includes('llama')) return 'llama';
+        if (m.includes('gemma')) return 'gemma';
+        if (m.includes('mistral')) return 'mistral';
+        if (m.includes('phi')) return 'gpt-3.5-turbo';
+        if (m.includes('gpt-oss')) return 'gpt-4o';
+        return 'llama3';
+    },
 };
 
 export default provider;

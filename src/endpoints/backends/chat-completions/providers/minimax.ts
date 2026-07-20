@@ -94,6 +94,7 @@ const provider: ChatProvider = {
         const data = await response.json() as Record<string, unknown>;
         return (data.data as ModelEntry[]) || [];
     },
+    resolveTokenizer: () => 'gpt-3.5-turbo',
 };
 
 export default provider;

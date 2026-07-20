@@ -22,4 +22,5 @@ export default createOAIChatProvider({
         reasoning_effort: req.body.reasoning_effort || undefined,
         ...(req.body.logprobs > 0 ? { top_logprobs: req.body.logprobs, logprobs: true } : {}),
     }),
+    tokenizer: 'deepseek',
 });

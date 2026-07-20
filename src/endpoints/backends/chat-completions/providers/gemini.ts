@@ -309,6 +309,7 @@ const provider: ChatProvider = {
             return [];
         }
     },
+    resolveTokenizer: () => 'gemma',
 };
 
 export default provider;

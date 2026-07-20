@@ -44,300 +44,46 @@ let llamacppModels: ApiModel[] = [];
 export let openRouterModels: ApiModel[] = [];
 
 /**
- * List of OpenRouter providers.
+ * OpenRouter providers list, fetched from the backend on init.
  * @type {string[]}
  */
-const OPENROUTER_PROVIDERS = [
-    // Providers endpoint: https://openrouter.ai/api/v1/providers
-    // The list should resemble the sidebar from https://openrouter.ai/models
-    // Their docs no longer displays the list, which had "super dead" ones at top, thankfully gone from /v1/providers
-    'AI21',
-    'AionLabs',
-    'Alibaba',
-    'AkashML',
-    'Amazon Bedrock',
-    'Amazon Nova',
-    'Ambient',
-    'Anthropic',
-    'Arcee AI',
-    'AtlasCloud',
-    'Avian',
-    'Azure',
-    'Baidu',
-    'BaseTen',
-    'Black Forest Labs',
-    'Cerebras',
-    'Chutes',
-    'Cirrascale',
-    'Clarifai',
-    'Cloudflare',
-    'Cohere',
-    'Crusoe',
-    'DeepInfra',
-    'DeepSeek',
-    'DekaLLM',
-    'FakeProvider',
-    'Featherless',
-    'Fireworks',
-    'Friendli',
-    'GMICloud',
-    'Google',
-    'Google AI Studio',
-    'Groq',
-    'Hyperbolic',
-    'Inception',
-    'Inceptron',
-    'InferenceNet',
-    'Infermatic',
-    'Inflection',
-    'Io Net',
-    'Ionstream',
-    'Liquid',
-    'Mancer 2',
-    'Mara',
-    'Minimax',
-    'Mistral',
-    'ModelRun',
-    'Modular',
-    'Moonshot AI',
-    'Morph',
-    'NCompass',
-    'Nebius',
-    'NextBit',
-    'Novita',
-    'Nvidia',
-    'OpenAI',
-    'OpenInference',
-    'Parasail',
-    'Perplexity',
-    'Phala',
-    'Recraft',
-    'Reka',
-    'Relace',
-    'SambaNova',
-    'Seed',
-    'SiliconFlow',
-    'Sourceful',
-    'Stealth',
-    'StepFun',
-    'StreamLake',
-    'Switchpoint',
-    'Together',
-    'Upstage',
-    'Venice',
-    'WandB',
-    'xAI',
-    'Xiaomi',
-    'Z.AI',
-];
+export let openRouterProviders: string[] = [];
 
 /**
- * List of NanoGPT providers.
- * Providers endpoint: https://nano-gpt.com/api/models/providers
+ * NanoGPT providers list, fetched from the backend on init.
  * @type {{id: string, label: string}[]}
  */
-const NANOGPT_PROVIDERS = [
-    {
-        'id': 'akash',
-        'label': 'Akash',
-    },
-    {
-        'id': 'alibaba',
-        'label': 'Alibaba',
-    },
-    {
-        'id': 'ambient',
-        'label': 'Ambient',
-    },
-    {
-        'id': 'arliai',
-        'label': 'ArliAI',
-    },
-    {
-        'id': 'atlascloud',
-        'label': 'AtlasCloud',
-    },
-    {
-        'id': 'azure',
-        'label': 'Azure',
-    },
-    {
-        'id': 'awsbedrock',
-        'label': 'Amazon Bedrock',
-    },
-    {
-        'id': 'baidu',
-        'label': 'Baidu',
-    },
-    {
-        'id': 'baseten',
-        'label': 'BaseTen',
-    },
-    {
-        'id': 'cerebras',
-        'label': 'Cerebras',
-    },
-    {
-        'id': 'chutes',
-        'label': 'Chutes',
-    },
-    {
-        'id': 'clarifai',
-        'label': 'Clarifai',
-    },
-    {
-        'id': 'cloudflare',
-        'label': 'Cloudflare',
-    },
-    {
-        'id': 'crusoe',
-        'label': 'Crusoe',
-    },
-    {
-        'id': 'dekallm',
-        'label': 'DekaLLM',
-    },
-    {
-        'id': 'deepinfra',
-        'label': 'DeepInfra',
-    },
-    {
-        'id': 'deepseek',
-        'label': 'DeepSeek',
-    },
-    {
-        'id': 'fireworks',
-        'label': 'Fireworks',
-    },
-    {
-        'id': 'friendli',
-        'label': 'Friendli',
-    },
-    {
-        'id': 'gmicloud',
-        'label': 'GMICloud',
-    },
-    {
-        'id': 'lilac',
-        'label': 'Lilac',
-    },
-    {
-        'id': 'google',
-        'label': 'Google',
-    },
-    {
-        'id': 'groq',
-        'label': 'Groq',
-    },
-    {
-        'id': 'hyperbolic',
-        'label': 'Hyperbolic',
-    },
-    {
-        'id': 'ionet',
-        'label': 'Io Net',
-    },
-    {
-        'id': 'inceptron',
-        'label': 'Inceptron',
-    },
-    {
-        'id': 'mancer',
-        'label': 'Mancer',
-    },
-    {
-        'id': 'mara',
-        'label': 'Mara',
-    },
-    {
-        'id': 'meganova',
-        'label': 'MegaNova',
-    },
-    {
-        'id': 'minimax',
-        'label': 'MiniMax',
-    },
-    {
-        'id': 'modelrun',
-        'label': 'ModelRun',
-    },
-    {
-        'id': 'moonshot',
-        'label': 'Moonshot',
-    },
-    {
-        'id': 'morph',
-        'label': 'Morph',
-    },
-    {
-        'id': 'ncompass',
-        'label': 'NCompass',
-    },
-    {
-        'id': 'nebius',
-        'label': 'Nebius',
-    },
-    {
-        'id': 'neuralwatt',
-        'label': 'Neuralwatt',
-    },
-    {
-        'id': 'nextbit',
-        'label': 'NextBit',
-    },
-    {
-        'id': 'novita',
-        'label': 'Novita',
-    },
-    {
-        'id': 'parasail',
-        'label': 'Parasail',
-    },
-    {
-        'id': 'phala',
-        'label': 'Phala',
-    },
-    {
-        'id': 'redpill',
-        'label': 'Redpill',
-    },
-    {
-        'id': 'sambanova',
-        'label': 'SambaNova',
-    },
-    {
-        'id': 'sambanova-high-throughput',
-        'label': 'SambaNova (High Throughput)',
-    },
-    {
-        'id': 'siliconflow',
-        'label': 'SiliconFlow',
-    },
-    {
-        'id': 'streamlake',
-        'label': 'StreamLake',
-    },
-    {
-        'id': 'tinfoil',
-        'label': 'Tinfoil',
-    },
-    {
-        'id': 'together',
-        'label': 'Together',
-    },
-    {
-        'id': 'venice',
-        'label': 'Venice',
-    },
-    {
-        'id': 'wandb',
-        'label': 'Weights & Biases',
-    },
-    {
-        'id': 'zai',
-        'label': 'Z.AI',
-    },
-];
+export let nanoGptProviders: { id: string; label: string }[] = [];
+
+/**
+ * Fetches the full OpenRouter provider list from the backend.
+ */
+export async function loadOpenRouterProviders(): Promise<void> {
+    try {
+        const res = await fetch('/api/openrouter/providers');
+        if (res.ok) {
+            const data = await res.json();
+            if (Array.isArray(data)) openRouterProviders = data;
+        }
+    } catch (e) {
+        console.warn('Failed to load OpenRouter providers', e);
+    }
+}
+
+/**
+ * Fetches the full NanoGPT provider list from the backend.
+ */
+export async function loadNanoGptProviders(): Promise<void> {
+    try {
+        const res = await fetch('/api/nanogpt/providers');
+        if (res.ok) {
+            const data = await res.json();
+            if (Array.isArray(data)) nanoGptProviders = data;
+        }
+    } catch (e) {
+        console.warn('Failed to load NanoGPT providers', e);
+    }
+}
 
 const OPENROUTER_PROVIDER_WARNING_SELECTORS = {
     '#openrouter_providers_text': {
@@ -1546,21 +1292,39 @@ export function initTextGenModels() {
     document.getElementById('llamacpp_model')?.addEventListener('change', onLlamaCppModelSelect);
     document.getElementById('featherless_model')?.addEventListener('change', () => onFeatherlessModelSelect(String((document.getElementById('featherless_model') as HTMLSelectElement)?.value ?? '')));
 
+    // Provider lists are fetched from the backend asynchronously;
+    // populate selects from pre-loaded arrays, and re-populate if they arrive later.
+
     const providersSelect = document.querySelector('.openrouter_providers');
-    for (const provider of OPENROUTER_PROVIDERS) {
-        const option = document.createElement('option');
-        option.value = provider;
-        option.textContent = provider;
-        providersSelect?.appendChild(option);
-    }
+    const populateOpenRouterProviders = () => {
+        if (!providersSelect || !openRouterProviders.length) return;
+        // Avoid double-populating
+        if (providersSelect.querySelectorAll('option').length > 0) return;
+        for (const provider of openRouterProviders) {
+            const option = document.createElement('option');
+            option.value = typeof provider === 'string' ? provider : (provider as { name?: string }).name || '';
+            option.textContent = typeof provider === 'string' ? provider : (provider as { name?: string }).name || '';
+            providersSelect.appendChild(option);
+        }
+    };
+    populateOpenRouterProviders();
 
     const nanoGptProvidersSelect = document.getElementById('nanogpt_provider');
-    for (const provider of NANOGPT_PROVIDERS) {
-        const option = document.createElement('option');
-        option.value = provider.id;
-        option.textContent = provider.label;
-        nanoGptProvidersSelect?.appendChild(option);
-    }
+    const populateNanoGptProviders = () => {
+        if (!nanoGptProvidersSelect || !nanoGptProviders.length) return;
+        if (nanoGptProvidersSelect.querySelectorAll('option').length > 0) return;
+        for (const provider of nanoGptProviders) {
+            const option = document.createElement('option');
+            option.value = provider.id;
+            option.textContent = provider.label;
+            nanoGptProvidersSelect.appendChild(option);
+        }
+    };
+    populateNanoGptProviders();
+
+    // Fire async loads — when they complete, re-populate the selects
+    loadOpenRouterProviders().then(populateOpenRouterProviders);
+    loadNanoGptProviders().then(populateNanoGptProviders);
 
     if (!isMobile()) {
         new TomSelect(document.getElementById('mancer_model'), {

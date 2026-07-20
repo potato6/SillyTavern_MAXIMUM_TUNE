@@ -20,4 +20,11 @@ export default createOAIChatProvider({
         tools: Array.isArray(req.body.tools) && req.body.tools.length > 0 ? req.body.tools : undefined,
         tool_choice: req.body.tool_choice || undefined,
     }),
+    tokenizer: (model) => {
+        if (model.includes('qwen')) return 'qwen2';
+        if (model.includes('llama-3') || model.includes('llama3')) return 'llama3';
+        if (model.includes('mistral') || model.includes('mixtral')) return 'mistral';
+        if (model.includes('gemma')) return 'gemma';
+        return 'llama3';
+    },
 });

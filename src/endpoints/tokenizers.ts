@@ -1075,6 +1075,40 @@ router.post('/openai/count', async function (req, res) {
     }
 });
 
+// ── Tokenizer resolution ───────────────────────────────────────────────────────
+
+/**
+ * Resolves the tokenizer model name for a given chat-completion source and AI model.
+ * Delegates to the provider's resolveTokenizer() when available;
+ * otherwise falls back to the generic model-name heuristic.
+ */
+router.post('/resolve', async function (req, res) {
+    try {
+        const { source, model } = req.body;
+        if (!source || !model) {
+            return res.status(400).json({ error: 'source and model are required' });
+        }
+
+        // Try the chat-completion provider first
+        try {
+            const { getChatProvider } = await import('./backends/chat-completions/registry.js');
+            const provider = await getChatProvider(source);
+            if (provider?.resolveTokenizer) {
+                const tokenizer = provider.resolveTokenizer(model);
+                return res.json({ tokenizer });
+            }
+        } catch {
+            // Provider doesn't exist for this source — fall through
+        }
+
+        // Fall back to the generic model-name heuristic
+        return res.json({ tokenizer: getTokenizerModel(model) });
+    } catch (error) {
+        console.error('Tokenizer resolution error:', error);
+        return res.json({ tokenizer: getTokenizerModel(req.body?.model || '') });
+    }
+});
+
 router.post('/remote/kobold/count', async function (request, response) {
     if (!request.body) {
         return response.sendStatus(400);

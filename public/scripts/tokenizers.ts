@@ -1,12 +1,12 @@
 import { localspace } from '../lib.js';
 import { characters, event_types, eventSource, main_api, nai_settings, online_status, this_chid } from '../script.js';
 import { power_user, registerDebugFunction } from './power-user.js';
-import { chat_completion_sources, model_list, oai_settings } from './openai.js';
+import { chat_completion_sources, oai_settings } from './openai.js';
 import { groups, selected_group } from './group-chats.js';
 import { getStringHash } from './utils.js';
 import { kai_flags, kai_settings } from './kai-settings.js';
 import { textgen_types, textgenerationwebui_settings as textgen_settings, getTextGenServer, getTextGenModel } from './textgen-settings.js';
-import { getCurrentDreamGenModelTokenizer, getCurrentOpenRouterModelTokenizer, openRouterModels } from './textgen-models.js';
+import { getCurrentDreamGenModelTokenizer, getCurrentOpenRouterModelTokenizer } from './textgen-models.js';
 
 /** @type {string} */
 let _csrfToken = '';
@@ -624,227 +624,131 @@ function counterWrapperOpenAIAsync(text) {
 /**
  *
  */
-export function getTokenizerModel() {
-    // OpenAI models always provide their own tokenizer
-    if (oai_settings.chat_completion_source == chat_completion_sources.OPENAI) {
-        return oai_settings.openai_model;
-    }
+/**
+ * Resolves the tokenizer model name from a raw model ID via a simple model-name heuristic.
+ * Used as a synchronous fallback when the backend's provider-based resolution isn't cached yet.
+ * Mirrors src/endpoints/tokenizers.ts:getTokenizerModel().
+ */
+function resolveTokenizerFromModelName(model: string): string {
+    if (!model) return 'gpt-3.5-turbo';
+    if (model === 'o1' || model.includes('o1-preview') || model.includes('o1-mini') || model.includes('o3-mini')) return 'o1';
+    if (model.includes('gpt-5') || model.includes('o3') || model.includes('o4-mini')) return 'o1';
+    if (model.includes('gpt-4o') || model.includes('chatgpt-4o-latest')) return 'gpt-4o';
+    if (model.includes('gpt-4.1') || model.includes('gpt-4.5')) return 'gpt-4o';
+    if (model.includes('gpt-4-32k')) return 'gpt-4-32k';
+    if (model.includes('gpt-4')) return 'gpt-4';
+    if (model.includes('gpt-3.5-turbo-0301')) return 'gpt-3.5-turbo-0301';
+    if (model.includes('gpt-3.5-turbo')) return 'gpt-3.5-turbo';
+    if (model.includes('claude')) return 'claude';
+    if (model.includes('llama3') || model.includes('llama-3')) return 'llama3';
+    if (model.includes('llama')) return 'llama';
+    if (model.includes('mistral')) return 'mistral';
+    if (model.includes('yi')) return 'yi';
+    if (model.includes('deepseek')) return 'deepseek';
+    if (model.includes('gemma') || model.includes('gemini') || model.includes('learnlm')) return 'gemma';
+    if (model.includes('jamba')) return 'jamba';
+    if (model.includes('qwen2') || model.includes('qwq')) return 'qwen2';
+    if (model.includes('command-a')) return 'command-a';
+    if (model.includes('command-r')) return 'command-r';
+    if (model.includes('nemo') || model.includes('pixtral')) return 'nemo';
+    if (model.includes('phi')) return 'gpt-3.5-turbo';
+    return 'gpt-3.5-turbo';
+}
 
-    const turboTokenizer = 'gpt-3.5-turbo';
-    const gpt4Tokenizer = 'gpt-4';
-    const gpt4oTokenizer = 'gpt-4o';
-    const gpt2Tokenizer = 'gpt2';
-    const claudeTokenizer = 'claude';
-    const llamaTokenizer = 'llama';
-    const llama3Tokenizer = 'llama3';
-    const mistralTokenizer = 'mistral';
-    const yiTokenizer = 'yi';
-    const gemmaTokenizer = 'gemma';
-    const jambaTokenizer = 'jamba';
-    const qwen2Tokenizer = 'qwen2';
-    const commandRTokenizer = 'command-r';
-    const commandATokenizer = 'command-a';
-    const nemoTokenizer = 'nemo';
-    const deepseekTokenizer = 'deepseek';
+/** In-memory cache for backend-resolved tokenizer models (source:model → tokenizer name). */
+const _tokenizerResolveCache = new Map<string, string>();
 
-    if (oai_settings.chat_completion_source == chat_completion_sources.AZURE_OPENAI) {
-        return oai_settings.azure_openai_model || turboTokenizer;
-    }
+/** Pending resolution promises to avoid duplicate requests. */
+const _tokenizerPendingFetches = new Map<string, Promise<string>>();
 
-    if (oai_settings.chat_completion_source == chat_completion_sources.DEEPSEEK) {
-        return deepseekTokenizer;
-    }
+/**
+ * Asynchronously resolves the tokenizer model name from the backend.
+ * Populates the sync cache so subsequent getTokenizerModel() calls return the resolved value.
+ */
+export async function resolveTokenizerModel(source: string, model: string): Promise<string> {
+    if (!source || !model) return 'gpt-3.5-turbo';
+    const cacheKey = `${source}:${model}`;
+    const cached = _tokenizerResolveCache.get(cacheKey);
+    if (cached) return cached;
 
-    // And for OpenRouter (if not a site model, then it's impossible to determine the tokenizer)
-    if (main_api == 'openai' && oai_settings.chat_completion_source == chat_completion_sources.OPENROUTER && oai_settings.openrouter_model ||
-        main_api == 'textgenerationwebui' && textgen_settings.type === textgen_types.OPENROUTER && textgen_settings.openrouter_model) {
-        const model = main_api == 'openai'
-            ? model_list.find(x => x.id === oai_settings.openrouter_model)
-            : openRouterModels.find(x => x.id === textgen_settings.openrouter_model);
+    const pending = _tokenizerPendingFetches.get(cacheKey);
+    if (pending) return pending;
 
-        if (model?.architecture?.tokenizer === 'Llama2') {
-            return llamaTokenizer;
-        } else if (model?.architecture?.tokenizer === 'Llama3') {
-            return llama3Tokenizer;
-        } else if (model?.architecture?.tokenizer === 'Mistral') {
-            return mistralTokenizer;
-        } else if (model?.architecture?.tokenizer === 'Yi') {
-            return yiTokenizer;
-        } else if (model?.architecture?.tokenizer === 'Gemini') {
-            return gemmaTokenizer;
-        } else if (model?.architecture?.tokenizer === 'Qwen') {
-            return qwen2Tokenizer;
-        } else if (model?.architecture?.tokenizer === 'Cohere') {
-            if (model?.id && model?.id.includes('command-a')) {
-                return commandATokenizer;
+    const promise = (async () => {
+        try {
+            const res = await fetch('/api/tokenizers/resolve', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ source, model }),
+            });
+            if (res.ok) {
+                const data = await res.json();
+                const tokenizer = data?.tokenizer || resolveTokenizerFromModelName(model);
+                _tokenizerResolveCache.set(cacheKey, tokenizer);
+                return tokenizer;
             }
-            return commandRTokenizer;
-        } else if (oai_settings.openrouter_model.includes('gpt-4o')) {
-            return gpt4oTokenizer;
-        } else if (oai_settings.openrouter_model.includes('gpt-4')) {
-            return gpt4Tokenizer;
-        } else if (oai_settings.openrouter_model.includes('gpt-3.5-turbo')) {
-            return turboTokenizer;
-        } else if (oai_settings.openrouter_model.includes('claude')) {
-            return claudeTokenizer;
-        } else if (oai_settings.openrouter_model.includes('GPT-NeoXT')) {
-            return gpt2Tokenizer;
-        } else if (oai_settings.openrouter_model.includes('jamba')) {
-            return jambaTokenizer;
-        } else if (oai_settings.openrouter_model.includes('deepseek')) {
-            return deepseekTokenizer;
-        }
+        } catch { /* fall through to heuristic */ }
+        const fallback = resolveTokenizerFromModelName(model);
+        _tokenizerResolveCache.set(cacheKey, fallback);
+        return fallback;
+    })();
+
+    _tokenizerPendingFetches.set(cacheKey, promise);
+    promise.finally(() => _tokenizerPendingFetches.delete(cacheKey));
+    return promise;
+}
+
+/**
+ * Returns the current model name for a given chat-completion source.
+ */
+function getCurrentModelForSource(source: string): string {
+    switch (source) {
+        case 'openai': return oai_settings.openai_model || '';
+        case 'claude': return oai_settings.claude_model || '';
+        case 'openrouter': return oai_settings.openrouter_model || '';
+        case 'deepseek': return oai_settings.deepseek_model || '';
+        case 'mistralai': return oai_settings.mistralai_model || '';
+        case 'cohere': return oai_settings.cohere_model || '';
+        case 'perplexity': return oai_settings.perplexity_model || '';
+        case 'groq': return oai_settings.groq_model || '';
+        case 'electronhub': return oai_settings.electronhub_model || '';
+        case 'chutes': return oai_settings.chutes_model || '';
+        case 'workers_ai': return oai_settings.workers_ai_model || '';
+        case 'custom': return oai_settings.custom_model || '';
+        case 'makersuite':
+        case 'vertexai': return oai_settings.google_model || '';
+        default: return '';
+    }
+}
+
+/**
+ * Gets the tokenizer model name for the current chat-completion source and model.
+ * Returns cached backend resolution, or falls back to a model-name heuristic.
+ */
+export function getTokenizerModel(): string {
+    // OpenAI models directly pass through for tiktoken
+    if (oai_settings.chat_completion_source == chat_completion_sources.OPENAI) {
+        return oai_settings.openai_model || 'gpt-3.5-turbo';
     }
 
-    if (oai_settings.chat_completion_source == chat_completion_sources.ELECTRONHUB && oai_settings.electronhub_model) {
-        if (oai_settings.electronhub_model.includes('gpt-4o') || oai_settings.electronhub_model.includes('gpt-5')) {
-            return gpt4oTokenizer;
-        } else if (oai_settings.electronhub_model.includes('gpt-4.1') || oai_settings.electronhub_model.includes('gpt-4.5')) {
-            return gpt4oTokenizer;
-        } else if (oai_settings.electronhub_model.includes('gpt-4')) {
-            return gpt4Tokenizer;
-        } else if (oai_settings.electronhub_model.includes('gpt-3.5-turbo')) {
-            return turboTokenizer;
-        } else if (oai_settings.electronhub_model.includes('claude')) {
-            return claudeTokenizer;
-        } else if (oai_settings.electronhub_model.includes('jamba')) {
-            return jambaTokenizer;
-        } else if (oai_settings.electronhub_model.includes('deepseek') || oai_settings.electronhub_model.includes('sonar-reasoning') || oai_settings.electronhub_model.includes('r1')) {
-            return deepseekTokenizer;
-        } else if (oai_settings.electronhub_model.includes('qwen')) {
-            return qwen2Tokenizer;
-        } else if (oai_settings.electronhub_model.includes('gemma')) {
-            return gemmaTokenizer;
-        } else if (oai_settings.electronhub_model.includes('mistral')) {
-            return mistralTokenizer;
-        } else if (oai_settings.electronhub_model.includes('yi')) {
-            return yiTokenizer;
-        } else if (oai_settings.electronhub_model.includes('llama3') || oai_settings.electronhub_model.includes('llama-3') || oai_settings.electronhub_model.startsWith('l3')) {
-            return llama3Tokenizer;
-        } else if (oai_settings.electronhub_model.includes('llama')) {
-            return llamaTokenizer;
-        } else if (oai_settings.electronhub_model.includes('command-a')) {
-            return commandATokenizer;
-        } else if (oai_settings.electronhub_model.includes('command-r')) {
-            return commandRTokenizer;
-        } else if (oai_settings.electronhub_model.includes('nemo')) {
-            return nemoTokenizer;
-        }
-    }
-
-    if (oai_settings.chat_completion_source == chat_completion_sources.CHUTES && oai_settings.chutes_model) {
-        const model = oai_settings.chutes_model.toLowerCase();
-
-        if (model.includes('deepseek') || model.includes('mai-ds')) {
-            return deepseekTokenizer;
-        } else if (model.includes('qwen') || model.includes('qwq') || model.includes('tongyi') || model.includes('kimi')) {
-            return qwen2Tokenizer;
-        } else if (model.includes('llama') || model.includes('longcat') || model.includes('hermes')) {
-            return llama3Tokenizer;
-        } else if (model.includes('gemma')) {
-            return gemmaTokenizer;
-        } else if (model.includes('nemo')) {
-            return nemoTokenizer;
-        } else if (model.includes('mistral')) {
-            return mistralTokenizer;
-        } else if (model.includes('gpt-oss')) {
-            return gpt4oTokenizer;
-        }
-    }
-
-    if (oai_settings.chat_completion_source == chat_completion_sources.MINIMAX) {
-        // MiniMax uses a proprietary tokenizer; fall back to a coarse OpenAI estimation.
-        return 'gpt-3.5-turbo';
-    }
-
-    if (oai_settings.chat_completion_source == chat_completion_sources.WORKERS_AI && oai_settings.workers_ai_model) {
-        const model = oai_settings.workers_ai_model.toLowerCase();
-
-        if (model.includes('deepseek')) {
-            return deepseekTokenizer;
-        } else if (model.includes('qwen') || model.includes('qwq') || model.includes('kimi')) {
-            return qwen2Tokenizer;
-        } else if (model.includes('llama-3') || model.includes('llama-4')) {
-            return llama3Tokenizer;
-        } else if (model.includes('llama')) {
-            return llamaTokenizer;
-        } else if (model.includes('gemma')) {
-            return gemmaTokenizer;
-        } else if (model.includes('mistral')) {
-            return mistralTokenizer;
-        } else if (model.includes('phi')) {
-            return turboTokenizer;
-        } else if (model.includes('gpt-oss')) {
-            return gpt4oTokenizer;
-        }
-    }
-
-    if (oai_settings.chat_completion_source == chat_completion_sources.COHERE) {
-        if (oai_settings.cohere_model.includes('command-a')) {
-            return commandATokenizer;
-        }
-        return commandRTokenizer;
-    }
-
-    if (oai_settings.chat_completion_source == chat_completion_sources.MAKERSUITE) {
-        return gemmaTokenizer;
-    }
-
-    if (oai_settings.chat_completion_source == chat_completion_sources.VERTEXAI) {
-        return gemmaTokenizer;
-    }
-
-    if (oai_settings.chat_completion_source == chat_completion_sources.AI21) {
-        return jambaTokenizer;
-    }
-
-    if (oai_settings.chat_completion_source == chat_completion_sources.CLAUDE) {
-        return claudeTokenizer;
-    }
-
-    if (oai_settings.chat_completion_source == chat_completion_sources.MISTRALAI) {
-        if (oai_settings.mistralai_model.includes('nemo') || oai_settings.mistralai_model.includes('pixtral')) {
-            return nemoTokenizer;
-        }
-        return mistralTokenizer;
-    }
-
+    // Custom/OpenAI-compatible pass through
     if (oai_settings.chat_completion_source == chat_completion_sources.CUSTOM) {
-        return oai_settings.custom_model;
+        return oai_settings.custom_model || 'gpt-3.5-turbo';
     }
 
-    if (oai_settings.chat_completion_source === chat_completion_sources.PERPLEXITY) {
-        if (oai_settings.perplexity_model.includes('sonar-reasoning') || oai_settings.perplexity_model.includes('r1-1776')) {
-            return deepseekTokenizer;
-        }
-        if (oai_settings.perplexity_model.includes('llama-3') || oai_settings.perplexity_model.includes('llama3')) {
-            return llama3Tokenizer;
-        }
-        if (oai_settings.perplexity_model.includes('llama')) {
-            return llamaTokenizer;
-        }
-        if (oai_settings.perplexity_model.includes('mistral') || oai_settings.perplexity_model.includes('mixtral')) {
-            return mistralTokenizer;
-        }
+    const source = oai_settings.chat_completion_source;
+    const model = getCurrentModelForSource(source);
+    if (!model) return 'gpt-3.5-turbo';
+
+    const cacheKey = `${source}:${model}`;
+    if (_tokenizerResolveCache.has(cacheKey)) {
+        return _tokenizerResolveCache.get(cacheKey)!;
     }
 
-    if (oai_settings.chat_completion_source === chat_completion_sources.GROQ) {
-        if (oai_settings.groq_model.includes('qwen')) {
-            return qwen2Tokenizer;
-        }
-        if (oai_settings.groq_model.includes('llama-3') || oai_settings.groq_model.includes('llama3')) {
-            return llama3Tokenizer;
-        }
-        if (oai_settings.groq_model.includes('mistral') || oai_settings.groq_model.includes('mixtral')) {
-            return mistralTokenizer;
-        }
-        if (oai_settings.groq_model.includes('gemma')) {
-            return gemmaTokenizer;
-        }
-    }
+    // Fire async resolution for next call, return heuristic now
+    resolveTokenizerModel(source, model);
 
-    // Default to Turbo 3.5
-    return turboTokenizer;
+    return resolveTokenizerFromModelName(model);
 }
 
 /**

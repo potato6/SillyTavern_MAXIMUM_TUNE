@@ -99,6 +99,13 @@ export interface ChatProvider {
      * from standard SSE (e.g. Ollama's NDJSON).
      */
     stream?(fetchResponse: unknown, req: express.Request, res: express.Response): Promise<void>;
+
+    /**
+     * Resolve the tokenizer model name for a given AI model.
+     * Returns a tokenizer name (e.g. 'claude', 'gpt-4o', 'llama3', 'deepseek').
+     * When not provided, falls back to the generic model-name heuristic.
+     */
+    resolveTokenizer?(model: string): string;
 }
 
 // ── Default endpoint map ───────────────────────────────────────────────────────

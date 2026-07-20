@@ -28,6 +28,8 @@ const provider: ChatProvider = {
         supportsReasoning: true,
     },
 
+    resolveTokenizer: (model: string) => model,
+
     async chat(req, res): Promise<void> {
         const apiUrl = new URL(req.body.reverse_proxy || API_OPENAI).toString();
         const apiKey = req.body.reverse_proxy

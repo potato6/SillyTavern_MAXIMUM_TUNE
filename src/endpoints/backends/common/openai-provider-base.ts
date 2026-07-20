@@ -39,6 +39,8 @@ export interface OAIConfig {
     supportsVision?: boolean;
     supportsTools?: boolean;
     supportsReasoning?: boolean;
+    /** Fixed tokenizer name, or resolver function for model-dependent providers. */
+    tokenizer?: string | ((model: string) => string);
 }
 
 /**
@@ -57,13 +59,23 @@ export function createOAIChatProvider(cfg: OAIConfig): ChatProvider {
         supportsVision = false,
         supportsTools = true,
         supportsReasoning = false,
+        tokenizer,
     } = cfg;
+
+    /** Build resolveTokenizer from the tokenizer config. */
+    const resolveTokenizer: ((model: string) => string) | undefined =
+        typeof tokenizer === 'function'
+            ? tokenizer as (model: string) => string
+            : tokenizer
+                ? () => tokenizer as string
+                : undefined;
 
     return {
         source,
         secretKey,
         endpoints: { chat: '/chat/completions', models: modelsPath },
         capabilities: { supportsStreaming, supportsVision, supportsTools, supportsReasoning },
+        resolveTokenizer,
 
         async chat(req, res) {
             const baseUrl = supportsReverseProxy && req.body.reverse_proxy

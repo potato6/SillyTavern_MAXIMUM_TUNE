@@ -21,4 +21,11 @@ export default createOAIChatProvider({
         tool_choice: req.body.tool_choice || undefined,
         reasoning_effort: req.body.reasoning_effort || undefined,
     }),
+    tokenizer: (model) => {
+        if (model.includes('sonar-reasoning') || model.includes('r1-1776')) return 'deepseek';
+        if (model.includes('llama-3') || model.includes('llama3')) return 'llama3';
+        if (model.includes('llama')) return 'llama';
+        if (model.includes('mistral') || model.includes('mixtral')) return 'mistral';
+        return 'llama3';
+    },
 });

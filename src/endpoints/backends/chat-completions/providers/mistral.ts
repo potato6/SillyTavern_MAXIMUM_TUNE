@@ -93,6 +93,7 @@ const provider: ChatProvider = {
         const data = await response.json() as Record<string, unknown>;
         return (data.data || []) as ModelEntry[];
     },
+    resolveTokenizer: (model) => model.includes('nemo') || model.includes('pixtral') ? 'nemo' : 'mistral',
 };
 
 export default provider;

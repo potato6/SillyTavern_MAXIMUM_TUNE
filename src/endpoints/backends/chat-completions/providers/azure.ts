@@ -14,6 +14,8 @@ const provider: ChatProvider = {
         supportsReasoning: true,
     },
 
+    resolveTokenizer: (model: string) => model,
+
     async chat(req, res): Promise<void> {
         const { azure_base_url, azure_deployment_name, azure_api_version } = req.body;
         const apiKey = readSecret(req.user.directories, SECRET_KEYS.AZURE_OPENAI, req.body.secret_id);

@@ -113,6 +113,7 @@ const provider: ChatProvider = {
         }
         return [];
     },
+    resolveTokenizer: (model) => model.includes('command-a') ? 'command-a' : 'command-r',
 };
 
 export default provider;

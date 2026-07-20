@@ -28,4 +28,15 @@ export default createOAIChatProvider({
         return params;
     },
     supportsReasoning: true,
+    tokenizer: (model) => {
+        const m = model.toLowerCase();
+        if (m.includes('deepseek') || m.includes('mai-ds')) return 'deepseek';
+        if (m.includes('qwen') || m.includes('qwq') || m.includes('tongyi') || m.includes('kimi')) return 'qwen2';
+        if (m.includes('llama') || m.includes('longcat') || m.includes('hermes')) return 'llama3';
+        if (m.includes('gemma')) return 'gemma';
+        if (m.includes('nemo')) return 'nemo';
+        if (m.includes('mistral')) return 'mistral';
+        if (m.includes('gpt-oss')) return 'gpt-4o';
+        return 'llama3';
+    },
 });

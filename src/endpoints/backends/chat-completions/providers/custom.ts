@@ -15,6 +15,8 @@ const provider: ChatProvider = {
         supportsReasoning: true,
     },
 
+    resolveTokenizer: (model: string) => model,
+
     async chat(req, res): Promise<void> {
         const apiUrl = req.body.custom_url;
         const apiKey = readSecret(req.user.directories, SECRET_KEYS.CUSTOM, req.body.secret_id);

@@ -5,6 +5,33 @@ export const router = express.Router();
 const API_NANOGPT = 'https://nano-gpt.com/api';
 
 /**
+ * Fetches the full list of available NanoGPT providers.
+ * Cached in-memory with a 1-hour TTL.
+ */
+let _providersCache: { id: string; label: string }[] | null = null;
+let _providersCacheTime = 0;
+
+router.get('/providers', async (_req, res) => {
+    try {
+        if (_providersCache && (Date.now() - _providersCacheTime) < 3600_000) {
+            return res.json(_providersCache);
+        }
+        const response = await fetch(`${API_NANOGPT}/models/providers`, {
+            method: 'GET',
+            headers: { 'Accept': 'application/json' },
+        });
+        if (!response.ok) return res.json(_providersCache ?? []);
+        const data = await response.json() as { providers?: { id: string; label: string }[] };
+        _providersCache = data?.providers ?? [];
+        _providersCacheTime = Date.now();
+        return res.json(_providersCache);
+    } catch (error) {
+        console.error(error);
+        return res.json(_providersCache ?? []);
+    }
+});
+
+/**
  * Parses a numeric API value, returning 0 for missing or invalid values.
  * @param {unknown} value Value to parse.
  * @returns {number}

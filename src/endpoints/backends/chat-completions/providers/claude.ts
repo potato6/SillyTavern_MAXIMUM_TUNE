@@ -221,6 +221,7 @@ const provider: ChatProvider = {
         const data = await response.json() as any;
         return data.data || [];
     },
+    resolveTokenizer: () => 'claude',
 };
 
 export default provider;

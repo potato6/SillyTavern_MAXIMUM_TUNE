@@ -6,6 +6,33 @@ import { OPENROUTER_HEADERS } from '../constants.js';
 export const router = express.Router();
 const API_OPENROUTER = 'https://openrouter.ai/api/v1';
 
+/**
+ * Fetches the full list of available OpenRouter providers.
+ * Cached in-memory with a 1-hour TTL.
+ */
+let _providersCache: string[] | null = null;
+let _providersCacheTime = 0;
+
+router.get('/providers', async (_req, res) => {
+    try {
+        if (_providersCache && (Date.now() - _providersCacheTime) < 3600_000) {
+            return res.json(_providersCache);
+        }
+        const response = await fetch(`${API_OPENROUTER}/providers`, {
+            method: 'GET',
+            headers: { 'Accept': 'application/json' },
+        });
+        if (!response.ok) return res.json(_providersCache ?? []);
+        const data = await response.json() as { data?: string[] };
+        _providersCache = data?.data ?? [];
+        _providersCacheTime = Date.now();
+        return res.json(_providersCache);
+    } catch (error) {
+        console.error(error);
+        return res.json(_providersCache ?? []);
+    }
+});
+
 router.post('/models/providers', async (req, res) => {
     try {
         const { model } = req.body;
