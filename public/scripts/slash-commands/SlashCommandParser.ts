@@ -77,8 +77,8 @@ export class SlashCommandParser {
      */
     // @ts-expect-error TS(7006) FIXME: Parameter 'command' implicitly has an 'any' type.
     static addCommandObjectUnsafe(command) {
-        if ([command.name, ...command.aliases].some(x => Object.hasOwn(this.commands, x))) {
-            console.trace('WARN: Duplicate slash command registered!', [command.name, ...command.aliases]);
+        if ([command.name, ...(command.aliases ?? [])].some(x => Object.hasOwn(this.commands, x))) {
+            console.trace('WARN: Duplicate slash command registered!', [command.name, ...(command.aliases ?? [])]);
         }
 
         // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
@@ -172,7 +172,7 @@ export class SlashCommandParser {
             help[PARSER_FLAG.REPLACE_GETVAR] = 'Replace all {{getvar::}} and {{getglobalvar::}} macros with scoped variables to avoid double macro substitution.';
             // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             help[PARSER_FLAG.STRICT_ESCAPING] = 'Allows to escape all delimiters with backslash, and allows escaping of backslashes.';
-            SlashCommandParser.addCommandObjectUnsafe(SlashCommand.fromProps({ name: 'parser-flag',
+            SlashCommandParser.addCommandObjectUnsafe({ name: 'parser-flag',
                 unnamedArgumentList: [
                     SlashCommandArgument.fromProps({
                         description: 'The parser flag to modify.',
@@ -190,10 +190,10 @@ export class SlashCommandParser {
                 ],
                 splitUnnamedArgument: true,
                 helpString: 'Set a parser flag.',
-            }));
+            });
         }
         if (!Object.keys(SlashCommandParser.commands).includes('/')) {
-            SlashCommandParser.addCommandObjectUnsafe(SlashCommand.fromProps({ name: '/',
+            SlashCommandParser.addCommandObjectUnsafe({ name: '/',
                 aliases: ['#'],
                 unnamedArgumentList: [
                     SlashCommandArgument.fromProps({
@@ -202,22 +202,22 @@ export class SlashCommandParser {
                     }),
                 ],
                 helpString: 'Write a comment.',
-            }));
+            });
         }
         if (!Object.keys(SlashCommandParser.commands).includes('breakpoint')) {
-            SlashCommandParser.addCommandObjectUnsafe(SlashCommand.fromProps({ name: 'breakpoint',
+            SlashCommandParser.addCommandObjectUnsafe({ name: 'breakpoint',
                 helpString: 'Set a breakpoint for debugging in the QR Editor.',
-            }));
+            });
         }
         if (!Object.keys(SlashCommandParser.commands).includes('break')) {
-            SlashCommandParser.addCommandObjectUnsafe(SlashCommand.fromProps({ name: 'break',
+            SlashCommandParser.addCommandObjectUnsafe({ name: 'break',
                 helpString: 'Break out of a loop or closure executed through /run or /:',
                 unnamedArgumentList: [
                     SlashCommandArgument.fromProps({ description: 'value to pass down the pipe instead of the current pipe value',
                         typeList: Object.values(ARGUMENT_TYPE),
                     }),
                 ],
-            }));
+            });
         }
     }
     registerLanguage() {
