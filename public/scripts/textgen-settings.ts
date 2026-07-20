@@ -1202,7 +1202,7 @@ export function initTextGenSettings() {
         for (const key of keys) {
             const keyValue = String(document.getElementById(key.id) instanceof HTMLInputElement ? (document.getElementById(key.id) as HTMLInputElement).value : '').trim();
             if (keyValue.length) {
-                await writeSecret(key.secret, keyValue, '');
+                await writeSecret(key.secret!, keyValue, '');
             }
         }
 

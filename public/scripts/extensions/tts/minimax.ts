@@ -176,8 +176,8 @@ class MiniMaxTtsProvider {
         // @ts-expect-error TS(2339): Property 'handler' does not exist on type 'MiniMax... Remove this comment to see the full error message
         this.handler = async function(this: any, /** @type {string} */ key: any) {
             if (![SECRET_KEYS.MINIMAX, SECRET_KEYS.MINIMAX_GROUP_ID].includes(key)) return;
-            $('#api_key_minimax').toggleClass('success', !!(secret_state as Record<string, unknown>)[SECRET_KEYS.MINIMAX]);
-            $('#minimax_group_id').toggleClass('success', !!(secret_state as Record<string, unknown>)[SECRET_KEYS.MINIMAX_GROUP_ID]);
+            $('#api_key_minimax').toggleClass('success', !!(secret_state as Record<string, unknown>)[SECRET_KEYS.MINIMAX as string]);
+            $('#minimax_group_id').toggleClass('success', !!(secret_state as Record<string, unknown>)[SECRET_KEYS.MINIMAX_GROUP_ID as string]);
             await this.onRefreshClick();
         }.bind(this);
     }
@@ -599,15 +599,15 @@ class MiniMaxTtsProvider {
             console.debug('MiniMax: Voice map initialization failed, but continuing');
         }
 
-        $('#api_key_minimax').toggleClass('success', !!(secret_state as Record<string, unknown>)[SECRET_KEYS.MINIMAX]);
-        $('#minimax_group_id').toggleClass('success', !!(secret_state as Record<string, unknown>)[SECRET_KEYS.MINIMAX_GROUP_ID]);
+        $('#api_key_minimax').toggleClass('success', !!(secret_state as Record<string, unknown>)[SECRET_KEYS.MINIMAX as string]);
+        $('#minimax_group_id').toggleClass('success', !!(secret_state as Record<string, unknown>)[SECRET_KEYS.MINIMAX_GROUP_ID as string]);
         [event_types.SECRET_WRITTEN, event_types.SECRET_DELETED, event_types.SECRET_ROTATED].forEach(event => {
             // @ts-expect-error TS(2339): Property 'handler' does not exist on type 'MiniMax... Remove this comment to see the full error message
             eventSource.on(event, this.handler);
         });
 
         // Only check ready status when API credentials are available
-        if ((secret_state as Record<string, unknown>)[SECRET_KEYS.MINIMAX] && (secret_state as Record<string, unknown>)[SECRET_KEYS.MINIMAX_GROUP_ID]) {
+        if ((secret_state as Record<string, unknown>)[SECRET_KEYS.MINIMAX as string] && (secret_state as Record<string, unknown>)[SECRET_KEYS.MINIMAX_GROUP_ID as string]) {
             try {
                 await this.checkReady();
                 console.debug('MiniMax TTS: Settings loaded and ready');
@@ -621,7 +621,7 @@ class MiniMaxTtsProvider {
 
     // Perform a simple readiness check
     async checkReady() {
-        if (!(secret_state as Record<string, unknown>)[SECRET_KEYS.MINIMAX] || !(secret_state as Record<string, unknown>)[SECRET_KEYS.MINIMAX_GROUP_ID]) {
+        if (!(secret_state as Record<string, unknown>)[SECRET_KEYS.MINIMAX as string] || !(secret_state as Record<string, unknown>)[SECRET_KEYS.MINIMAX_GROUP_ID as string]) {
             const error = new Error('API Key and Group ID are required');
             console.error('MiniMax TTS checkReady error:', error.message);
             throw error;
@@ -724,7 +724,7 @@ class MiniMaxTtsProvider {
 
     async fetchTtsVoiceObjects() {
         try {
-        if (!(secret_state as Record<string, unknown>)[SECRET_KEYS.MINIMAX] || !(secret_state as Record<string, unknown>)[SECRET_KEYS.MINIMAX_GROUP_ID]) {
+        if (!(secret_state as Record<string, unknown>)[SECRET_KEYS.MINIMAX as string] || !(secret_state as Record<string, unknown>)[SECRET_KEYS.MINIMAX_GROUP_ID as string]) {
                 console.warn('MiniMax TTS: API Key and Group ID required for fetching voices');
                 console.warn('Using all available voices (default + custom). Please check your API credentials');
                 return this.getAllVoices();
@@ -790,7 +790,7 @@ class MiniMaxTtsProvider {
     async fetchTtsGeneration(inputText: any, voiceId: any, language = null) {
         console.info(`Generating new MiniMax TTS for voice_id ${voiceId}`);
 
-        if (!(secret_state as Record<string, unknown>)[SECRET_KEYS.MINIMAX] || !(secret_state as Record<string, unknown>)[SECRET_KEYS.MINIMAX_GROUP_ID]) {
+        if (!(secret_state as Record<string, unknown>)[SECRET_KEYS.MINIMAX as string] || !(secret_state as Record<string, unknown>)[SECRET_KEYS.MINIMAX_GROUP_ID as string]) {
             const error = new Error('API Key and Group ID are required');
             console.error('MiniMax TTS fetchTtsGeneration error:', error.message);
             throw error;

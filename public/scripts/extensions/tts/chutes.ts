@@ -43,7 +43,7 @@ class ChutesTtsProvider {
         // @ts-expect-error TS(2339): Property 'handler' does not exist on type 'ChutesT... Remove this comment to see the full error message
         this.handler = async function(this: any, /** @type {string} */ key: any) {
             if (key !== SECRET_KEYS.CHUTES) return;
-            $('#chutes_tts_key').toggleClass('success', !!secret_state[SECRET_KEYS.CHUTES]);
+            $('#chutes_tts_key').toggleClass('success', !!secret_state[SECRET_KEYS.CHUTES as string]);
             await this.onRefreshClick();
         }.bind(this);
     }
@@ -77,7 +77,7 @@ class ChutesTtsProvider {
         $('#chutes_tts_speed').val(this.settings.speed);
         $('#chutes_tts_speed_output').text(this.settings.speed);
 
-        $('#chutes_tts_key').toggleClass('success', !!secret_state[SECRET_KEYS.CHUTES]);
+        $('#chutes_tts_key').toggleClass('success', !!secret_state[SECRET_KEYS.CHUTES as string]);
         [event_types.SECRET_WRITTEN, event_types.SECRET_DELETED, event_types.SECRET_ROTATED].forEach(event => {
             // @ts-expect-error TS(2339): Property 'handler' does not exist on type 'ChutesT... Remove this comment to see the full error message
             eventSource.on(event, this.handler);
@@ -200,7 +200,7 @@ class ChutesTtsProvider {
     }
 
     async fetchTtsGeneration(text: any, voiceId: any) {
-        const apiKey = secret_state[SECRET_KEYS.CHUTES];
+        const apiKey = secret_state[SECRET_KEYS.CHUTES as string];
 
         if (!apiKey) {
             throw new Error('No Chutes API key found');

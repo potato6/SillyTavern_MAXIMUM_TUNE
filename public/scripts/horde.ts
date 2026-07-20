@@ -522,7 +522,7 @@ export function initHorde() {
                 notyf.warning(t`Please enter your Horde API key`);
             return;
         }
-        await writeSecret(SECRET_KEYS.HORDE, key, undefined, undefined);
+        await writeSecret(SECRET_KEYS.HORDE!, key, undefined, undefined);
     });
 
     document.getElementById('horde_refresh')?.addEventListener('click', () => getHordeModels(true));

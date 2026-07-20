@@ -1128,19 +1128,19 @@ async function insertVectorItems(collectionId: any, items: any) {
  */
 function throwIfSourceInvalid() {
     const sec = secret_state as Record<string, boolean>;
-    if (settings.source === 'openai' && !sec[SECRET_KEYS.OPENAI] ||
-        settings.source === 'electronhub' && !sec[SECRET_KEYS.ELECTRONHUB] ||
-        settings.source === 'chutes' && !sec[SECRET_KEYS.CHUTES] ||
-        settings.source === 'nanogpt' && !sec[SECRET_KEYS.NANOGPT] ||
-        settings.source === 'openrouter' && !sec[SECRET_KEYS.OPENROUTER] ||
-        settings.source === 'palm' && !sec[SECRET_KEYS.MAKERSUITE] ||
-        settings.source === 'vertexai' && !sec[SECRET_KEYS.VERTEXAI] && !sec[SECRET_KEYS.VERTEXAI_SERVICE_ACCOUNT] ||
-        settings.source === 'mistral' && !sec[SECRET_KEYS.MISTRALAI] ||
-        settings.source === 'togetherai' && !sec[SECRET_KEYS.TOGETHERAI] ||
-        settings.source === 'nomicai' && !sec[SECRET_KEYS.NOMICAI] ||
-        settings.source === 'cohere' && !sec[SECRET_KEYS.COHERE] ||
-        settings.source === 'workers_ai' && !sec[SECRET_KEYS.WORKERS_AI] ||
-        settings.source === 'siliconflow' && !sec[SECRET_KEYS.SILICONFLOW]) {
+    if (settings.source === 'openai' && !sec[SECRET_KEYS.OPENAI as string] ||
+        settings.source === 'electronhub' && !sec[SECRET_KEYS.ELECTRONHUB as string] ||
+        settings.source === 'chutes' && !sec[SECRET_KEYS.CHUTES as string] ||
+        settings.source === 'nanogpt' && !sec[SECRET_KEYS.NANOGPT as string] ||
+        settings.source === 'openrouter' && !sec[SECRET_KEYS.OPENROUTER as string] ||
+        settings.source === 'palm' && !sec[SECRET_KEYS.MAKERSUITE as string] ||
+        settings.source === 'vertexai' && !sec[SECRET_KEYS.VERTEXAI as string] && !sec[SECRET_KEYS.VERTEXAI_SERVICE_ACCOUNT as string] ||
+        settings.source === 'mistral' && !sec[SECRET_KEYS.MISTRALAI as string] ||
+        settings.source === 'togetherai' && !sec[SECRET_KEYS.TOGETHERAI as string] ||
+        settings.source === 'nomicai' && !sec[SECRET_KEYS.NOMICAI as string] ||
+        settings.source === 'cohere' && !sec[SECRET_KEYS.COHERE as string] ||
+        settings.source === 'workers_ai' && !sec[SECRET_KEYS.WORKERS_AI as string] ||
+        settings.source === 'siliconflow' && !sec[SECRET_KEYS.SILICONFLOW as string]) {
 
         throw new Error('Vectors: API key missing', { cause: 'api_key_missing' });
     }
@@ -2442,11 +2442,11 @@ export async function init() {
         });
     }
 
-    $('#api_key_nomicai').toggleClass('success', !!(secret_state as Record<string, boolean>)[SECRET_KEYS.NOMICAI]);
+    $('#api_key_nomicai').toggleClass('success', !!(secret_state as Record<string, boolean>)[SECRET_KEYS.NOMICAI as string]);
     [event_types.SECRET_WRITTEN, event_types.SECRET_DELETED, event_types.SECRET_ROTATED].forEach(event => {
         eventSource.on(event, (/** @type {string} */ key: any) => {
             if (key !== SECRET_KEYS.NOMICAI) return;
-            $('#api_key_nomicai').toggleClass('success', !!(secret_state as Record<string, boolean>)[SECRET_KEYS.NOMICAI]);
+            $('#api_key_nomicai').toggleClass('success', !!(secret_state as Record<string, boolean>)[SECRET_KEYS.NOMICAI as string]);
         });
     });
 

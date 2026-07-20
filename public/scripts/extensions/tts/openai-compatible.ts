@@ -45,7 +45,7 @@ class OpenAICompatibleTtsProvider {
     constructor() {
         this.handler = async function(this: any, /** @type {string} */ key: any) {
             if (key !== SECRET_KEYS.CUSTOM_OPENAI_TTS) return;
-            $('#openai_compatible_tts_key').toggleClass('success', !!(secret_state as Record<string, unknown>)[SECRET_KEYS.CUSTOM_OPENAI_TTS]);
+            $('#openai_compatible_tts_key').toggleClass('success', !!(secret_state as Record<string, unknown>)[SECRET_KEYS.CUSTOM_OPENAI_TTS as string]);
             await this.onRefreshClick();
         }.bind(this);
     }
@@ -89,7 +89,7 @@ class OpenAICompatibleTtsProvider {
 
         $('#openai_compatible_tts_speed_output').text(this.settings.speed);
 
-        $('#openai_compatible_tts_key').toggleClass('success', !!(secret_state as Record<string, unknown>)[SECRET_KEYS.CUSTOM_OPENAI_TTS]);
+        $('#openai_compatible_tts_key').toggleClass('success', !!(secret_state as Record<string, unknown>)[SECRET_KEYS.CUSTOM_OPENAI_TTS as string]);
         [event_types.SECRET_WRITTEN, event_types.SECRET_DELETED, event_types.SECRET_ROTATED].forEach(event => {
             eventSource.on(event, this.handler);
         });

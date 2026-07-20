@@ -43,7 +43,7 @@ class AzureTtsProvider {
     constructor() {
         this.handler = async function(this: any, /** @type {string} */ key: any) {
             if (key !== SECRET_KEYS.AZURE_TTS) return;
-            $('#azure_tts_key').toggleClass('success', !!(secret_state as Record<string, unknown>)[SECRET_KEYS.AZURE_TTS]);
+            $('#azure_tts_key').toggleClass('success', !!(secret_state as Record<string, unknown>)[SECRET_KEYS.AZURE_TTS as string]);
             await this.onRefreshClick();
         }.bind(this);
     }
@@ -80,7 +80,7 @@ class AzureTtsProvider {
         }
 
         $('#azure_tts_region').val(this.settings.region).on('input', () => this.onSettingsChange());
-        $('#azure_tts_key').toggleClass('success', !!(secret_state as Record<string, unknown>)[SECRET_KEYS.AZURE_TTS]);
+        $('#azure_tts_key').toggleClass('success', !!(secret_state as Record<string, unknown>)[SECRET_KEYS.AZURE_TTS as string]);
         [event_types.SECRET_WRITTEN, event_types.SECRET_DELETED, event_types.SECRET_ROTATED].forEach(event => {
             eventSource.on(event, this.handler);
         });
@@ -95,7 +95,7 @@ class AzureTtsProvider {
 
     // Perform a simple readiness check by trying to fetch voiceIds
     async checkReady() {
-        if ((secret_state as Record<string, unknown>)[SECRET_KEYS.AZURE_TTS]) {
+        if ((secret_state as Record<string, unknown>)[SECRET_KEYS.AZURE_TTS as string]) {
             await this.fetchTtsVoiceObjects();
         } else {
             this.voices = [];
@@ -133,7 +133,7 @@ class AzureTtsProvider {
     // API CALLS //
     //###########//
     async fetchTtsVoiceObjects() {
-        if (!(secret_state as Record<string, unknown>)[SECRET_KEYS.AZURE_TTS]) {
+        if (!(secret_state as Record<string, unknown>)[SECRET_KEYS.AZURE_TTS as string]) {
             console.warn('Azure TTS API Key not set');
             return [];
         }
@@ -189,7 +189,7 @@ class AzureTtsProvider {
     }
 
     async fetchTtsGeneration(text: any, voiceId: any) {
-        if (!(secret_state as Record<string, unknown>)[SECRET_KEYS.AZURE_TTS]) {
+        if (!(secret_state as Record<string, unknown>)[SECRET_KEYS.AZURE_TTS as string]) {
             throw new Error('Azure TTS API Key not set');
         }
 

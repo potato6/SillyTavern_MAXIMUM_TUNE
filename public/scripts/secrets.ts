@@ -31,25 +31,6 @@ function deriveKey(name: string): string {
 
 // ── Dynamic key registry (populated from /api/backends/keys) ────────────────
 
-/** All known secret key IDs (for strict typechecking with noUncheckedIndexedAccess). */
-type SecretKeyName =
-    // Chat-completion providers
-    | 'OPENAI' | 'CLAUDE' | 'OPENROUTER' | 'AI21' | 'MAKERSUITE'
-    | 'VERTEXAI' | 'MISTRALAI' | 'CUSTOM' | 'COHERE' | 'PERPLEXITY'
-    | 'GROQ' | 'ELECTRONHUB' | 'CHUTES' | 'NANOGPT' | 'DEEPSEEK'
-    | 'AIMLAPI' | 'XAI' | 'POLLINATIONS' | 'MOONSHOT' | 'FIREWORKS'
-    | 'COMETAPI' | 'AZURE_OPENAI' | 'ZAI' | 'SILICONFLOW' | 'WORKERS_AI' | 'MINIMAX'
-    // Textgen providers
-    | 'OOBA' | 'MANCER' | 'VLLM' | 'APHRODITE' | 'TABBY'
-    | 'KOBOLDCPP' | 'TOGETHERAI' | 'LLAMACPP' | 'OLLAMA'
-    | 'INFERMATICAI' | 'DREAMGEN' | 'FEATHERLESS' | 'HUGGINGFACE' | 'GENERIC'
-    // KEY_OVERRIDES keys
-    | keyof typeof KEY_OVERRIDES
-    // STANDARD_EXTRAS (non-provider services)
-    | 'HORDE' | 'NOVEL' | 'SERPAPI' | 'STABILITY' | 'AZURE_TTS'
-    | 'CUSTOM_OPENAI_TTS' | 'TAVILY' | 'BFL' | 'COMFY_RUNPOD'
-    | 'FALAI' | 'SERPER' | 'ELEVENLABS' | 'NOMICAI';
-
 interface KeyDescriptor {
     id: string;
     label: string;
@@ -80,20 +61,16 @@ async function initKeyRegistry(): Promise<void> {
             const storageKey = d.storageKey ?? `api_key_${d.id.toLowerCase()}`;
             _keyStore[d.id] = storageKey;
             _friendlyNames[storageKey] = d.label;
-            if (d.selector) {
+            // Convention: #api_key_{id} for most, with known exceptions
+            if (d.id === 'HORDE') {
+                _inputMap[storageKey] = '#horde_api_key';
+            } else if (d.id === 'OPENROUTER') {
+                _inputMap[storageKey] = '.api_key_openrouter';
+            } else if (d.id === 'VERTEXAI_SERVICE_ACCOUNT') {
+                _inputMap[storageKey] = '#vertexai_service_account_json';
+            } else if (d.selector) {
                 _inputMap[storageKey] = d.selector;
-            }
-        }
-
-        // Apply INPUT_MAP overrides for non-standard selectors
-        // (convention is #api_key_{id}, but some keys differ)
-        _inputMap[_keyStore['HORDE'] ?? 'horde_api_key'] = '#horde_api_key';
-        _inputMap[_keyStore['OPENROUTER'] ?? 'api_key_openrouter'] = '.api_key_openrouter';
-        _inputMap[_keyStore['VERTEXAI_SERVICE_ACCOUNT'] ?? 'vertexai_service_account_json'] = '#vertexai_service_account_json';
-        // For all known keys without an explicit selector, derive one
-        for (const d of descriptors) {
-            const storageKey = d.storageKey ?? `api_key_${d.id.toLowerCase()}`;
-            if (!_inputMap[storageKey] && d.category !== 'translation' && d.category !== 'search' && d.category !== 'image' && d.id !== 'NOVEL' && d.id !== 'HORDE' && d.id !== 'NOMICAI') {
+            } else if (d.category && ['chat-completion', 'textgen', 'tts', 'image', 'misc'].includes(d.category)) {
                 _inputMap[storageKey] = `#api_key_${d.id.toLowerCase()}`;
             }
         }
@@ -132,7 +109,7 @@ export const SECRET_KEYS = new Proxy(_keyStore, {
             return { configurable: true, enumerable: true, writable: true, value: SECRET_KEYS[prop] };
         }
     },
-}) as { [K in SecretKeyName]: string } & Record<string, string>;
+}) as Record<string, string>;
 
 /**
  * Friendly display names for secret keys (populated from registry).
@@ -169,28 +146,6 @@ export const INPUT_MAP: Record<string, string> = new Proxy({} as Record<string, 
     },
 });
 
-// ── Local lookup maps (used by resolveSecretKey) ────────────────────────────
-
-const chat_completion_sources: Record<string, string> = {
-    OPENAI: 'openai', CLAUDE: 'claude', OPENROUTER: 'openrouter',
-    AI21: 'ai21', MAKERSUITE: 'makersuite', VERTEXAI: 'vertexai',
-    MISTRALAI: 'mistralai', CUSTOM: 'custom', COHERE: 'cohere',
-    PERPLEXITY: 'perplexity', GROQ: 'groq', CHUTES: 'chutes',
-    ELECTRONHUB: 'electronhub', NANOGPT: 'nanogpt', DEEPSEEK: 'deepseek',
-    AIMLAPI: 'aimlapi', XAI: 'xai', POLLINATIONS: 'pollinations',
-    MOONSHOT: 'moonshot', FIREWORKS: 'fireworks', COMETAPI: 'cometapi',
-    AZURE_OPENAI: 'azure_openai', ZAI: 'zai', SILICONFLOW: 'siliconflow',
-    MINIMAX: 'minimax', WORKERS_AI: 'workers_ai',
-};
-
-const textgen_types: Record<string, string> = {
-    OOBA: 'ooba', MANCER: 'mancer', VLLM: 'vllm', APHRODITE: 'aphrodite',
-    TABBY: 'tabby', KOBOLDCPP: 'koboldcpp', TOGETHERAI: 'togetherai',
-    LLAMACPP: 'llamacpp', OLLAMA: 'ollama', INFERMATICAI: 'infermaticai',
-    DREAMGEN: 'dreamgen', OPENROUTER: 'openrouter', FEATHERLESS: 'featherless',
-    HUGGINGFACE: 'huggingface', GENERIC: 'generic',
-};
-
 const getLabel = () => moment().format('L LT');
 
 /**
@@ -204,34 +159,30 @@ export function resolveSecretKey() {
     const textCompletionType = textCompletionSettings.type as string;
 
     if (mainApi === 'koboldhorde') {
-        return SECRET_KEYS.HORDE;
+        return SECRET_KEYS['HORDE'] as string;
     }
 
     if (mainApi === 'novel') {
-        return SECRET_KEYS.NOVEL;
+        return SECRET_KEYS['NOVEL'] as string;
     }
 
     if (mainApi === 'textgenerationwebui') {
-        const [key] = Object.entries(textgen_types).find(([, value]) => value === textCompletionType) ?? [null];
-        if (key && SECRET_KEYS[key]) {
-            return SECRET_KEYS[key]!;
-        }
+        const match = _keyDescriptors.find(d => d.category === 'textgen' && d.id.toLowerCase() === textCompletionType);
+        if (match) return SECRET_KEYS[match.id] as string;
     }
 
     if (mainApi === 'openai') {
-        if (chatCompletionSource === chat_completion_sources.VERTEXAI) {
+        if (chatCompletionSource === 'vertexai') {
             switch ((chatCompletionSettings as Record<string, unknown>).vertexai_auth_mode as string) {
                 case 'express':
-                    return SECRET_KEYS.VERTEXAI;
+                    return SECRET_KEYS['VERTEXAI'] as string;
                 case 'full':
-                    return SECRET_KEYS.VERTEXAI_SERVICE_ACCOUNT;
+                    return SECRET_KEYS['VERTEXAI_SERVICE_ACCOUNT'] as string;
             }
         }
 
-        const [key] = Object.entries(chat_completion_sources).find(([, value]) => value === chatCompletionSource) ?? [null];
-        if (key && SECRET_KEYS[key]) {
-            return SECRET_KEYS[key]!;
-        }
+        const match = _keyDescriptors.find(d => d.category === 'chat-completion' && d.id.toLowerCase() === chatCompletionSource);
+        if (match) return SECRET_KEYS[match.id] as string;
     }
 
     return null;
@@ -538,7 +489,7 @@ const generateChallenge = (input: string) => {
  * Redirects the user to authorize OpenRouter.
  */
 async function authorizeOpenRouter() {
-    if ((secret_state as Record<string, unknown>)[SECRET_KEYS.OPENROUTER]) {
+    if ((secret_state as Record<string, unknown>)[SECRET_KEYS.OPENROUTER as string]) {
         const confirmed = await Popup.show.confirm(t`OpenRouter API key already exists`, t`Do you really wish to create a new OpenRouter key? Your existing key will not be deleted.`);
         if (!confirmed) {
             return;
@@ -598,9 +549,9 @@ export async function checkOpenRouterAuth() {
                 throw new Error('OpenRouter invalid response');
             }
 
-            await writeSecret(SECRET_KEYS.OPENROUTER, data.key as string);
+            await writeSecret(SECRET_KEYS.OPENROUTER!, data.key as string);
 
-            if ((secret_state as Record<string, unknown>)[SECRET_KEYS.OPENROUTER]) {
+            if ((secret_state as Record<string, unknown>)[SECRET_KEYS.OPENROUTER as string]) {
                 notyf.success('OpenRouter token saved');
             } else {
                 throw new Error('OpenRouter token not saved');

@@ -1035,10 +1035,10 @@ export function initNovelAISettings() {
         const api_key_novel = String((document.getElementById('api_key_novel') as HTMLInputElement | null)?.value).trim();
 
         if (api_key_novel.length) {
-            await writeSecret(SECRET_KEYS.NOVEL, api_key_novel, '', undefined);
+            await writeSecret(SECRET_KEYS.NOVEL!, api_key_novel, '', undefined);
         }
 
-        if (!(secret_state as Record<string, unknown>)[SECRET_KEYS.NOVEL]) {
+        if (!(secret_state as Record<string, unknown>)[SECRET_KEYS.NOVEL as string]) {
             console.log('No secret key saved for NovelAI');
             return;
         }

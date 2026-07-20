@@ -173,23 +173,23 @@ function throwIfInvalidModel(useReverseProxy: boolean) {
         throw new Error('Secondary endpoint URL is not set.');
     }
 
-    if (multimodalApi === 'openai' && !secrets[SECRET_KEYS.OPENAI] && !useReverseProxy) {
+    if (multimodalApi === 'openai' && !secrets[SECRET_KEYS.OPENAI as string] && !useReverseProxy) {
         throw new Error('OpenAI API key is not set.');
     }
 
-    if (multimodalApi === 'openrouter' && !secrets[SECRET_KEYS.OPENROUTER]) {
+    if (multimodalApi === 'openrouter' && !secrets[SECRET_KEYS.OPENROUTER as string]) {
         throw new Error('OpenRouter API key is not set.');
     }
 
-    if (multimodalApi === 'anthropic' && !secrets[SECRET_KEYS.CLAUDE] && !useReverseProxy) {
+    if (multimodalApi === 'anthropic' && !secrets[SECRET_KEYS.CLAUDE as string] && !useReverseProxy) {
         throw new Error('Anthropic (Claude) API key is not set.');
     }
 
-    if (multimodalApi === 'groq' && !secrets[SECRET_KEYS.GROQ]) {
+    if (multimodalApi === 'groq' && !secrets[SECRET_KEYS.GROQ as string]) {
         throw new Error('Groq API key is not set.');
     }
 
-    if (multimodalApi === 'google' && !secrets[SECRET_KEYS.MAKERSUITE] && !useReverseProxy) {
+    if (multimodalApi === 'google' && !secrets[SECRET_KEYS.MAKERSUITE as string] && !useReverseProxy) {
         throw new Error('Google AI Studio API key is not set.');
     }
 
@@ -199,12 +199,12 @@ function throwIfInvalidModel(useReverseProxy: boolean) {
 
         if (authMode === 'express') {
             // Express mode requires API key
-            if (!secrets[SECRET_KEYS.VERTEXAI]) {
+            if (!secrets[SECRET_KEYS.VERTEXAI as string]) {
                 throw new Error('Google Vertex AI API key is not set for Express mode.');
             }
         } else if (authMode === 'full') {
             // Full mode requires Service Account JSON and region settings
-            if (!secrets[SECRET_KEYS.VERTEXAI_SERVICE_ACCOUNT]) {
+            if (!secrets[SECRET_KEYS.VERTEXAI_SERVICE_ACCOUNT as string]) {
                 throw new Error('Service Account JSON is required for Vertex AI Full mode. Please validate and save your Service Account JSON.');
             }
             if (!oai_settings.vertexai_region) {
@@ -213,15 +213,15 @@ function throwIfInvalidModel(useReverseProxy: boolean) {
         }
     }
 
-    if (multimodalApi === 'mistral' && !secrets[SECRET_KEYS.MISTRALAI] && !useReverseProxy) {
+    if (multimodalApi === 'mistral' && !secrets[SECRET_KEYS.MISTRALAI as string] && !useReverseProxy) {
         throw new Error('Mistral AI API key is not set.');
     }
 
-    if (multimodalApi === 'cohere' && !secrets[SECRET_KEYS.COHERE]) {
+    if (multimodalApi === 'cohere' && !secrets[SECRET_KEYS.COHERE as string]) {
         throw new Error('Cohere API key is not set.');
     }
 
-    if (multimodalApi === 'xai' && !secrets[SECRET_KEYS.XAI] && !useReverseProxy) {
+    if (multimodalApi === 'xai' && !secrets[SECRET_KEYS.XAI as string] && !useReverseProxy) {
         throw new Error('xAI API key is not set.');
     }
 
@@ -265,35 +265,35 @@ function throwIfInvalidModel(useReverseProxy: boolean) {
         throw new Error('Custom OpenAI-compatible Model ID is not set.');
     }
 
-    if (multimodalApi === 'aimlapi' && !secrets[SECRET_KEYS.AIMLAPI]) {
+    if (multimodalApi === 'aimlapi' && !secrets[SECRET_KEYS.AIMLAPI as string]) {
         throw new Error('AI/ML API key is not set.');
     }
 
-    if (multimodalApi === 'moonshot' && !secrets[SECRET_KEYS.MOONSHOT]) {
+    if (multimodalApi === 'moonshot' && !secrets[SECRET_KEYS.MOONSHOT as string]) {
         throw new Error('Moonshot AI API key is not set.');
     }
 
-    if (multimodalApi === 'nanogpt' && !secrets[SECRET_KEYS.NANOGPT]) {
+    if (multimodalApi === 'nanogpt' && !secrets[SECRET_KEYS.NANOGPT as string]) {
         throw new Error('NanoGPT API key is not set.');
     }
 
-    if (multimodalApi === 'electronhub' && !secrets[SECRET_KEYS.ELECTRONHUB]) {
+    if (multimodalApi === 'electronhub' && !secrets[SECRET_KEYS.ELECTRONHUB as string]) {
         throw new Error('Electron Hub API key is not set.');
     }
 
-    if (multimodalApi === 'chutes' && !secrets[SECRET_KEYS.CHUTES]) {
+    if (multimodalApi === 'chutes' && !secrets[SECRET_KEYS.CHUTES as string]) {
         throw new Error('Chutes API key is not set.');
     }
 
-    if (multimodalApi === 'zai' && !secrets[SECRET_KEYS.ZAI]) {
+    if (multimodalApi === 'zai' && !secrets[SECRET_KEYS.ZAI as string]) {
         throw new Error('Z.AI API key is not set.');
     }
 
-    if (multimodalApi === 'pollinations' && !secrets[SECRET_KEYS.POLLINATIONS]) {
+    if (multimodalApi === 'pollinations' && !secrets[SECRET_KEYS.POLLINATIONS as string]) {
         throw new Error('Pollinations API key is not set.');
     }
 
-    if (multimodalApi === 'workers_ai' && (!secrets[SECRET_KEYS.WORKERS_AI] || !oai_settings.workers_ai_account_id)) {
+    if (multimodalApi === 'workers_ai' && (!secrets[SECRET_KEYS.WORKERS_AI as string] || !oai_settings.workers_ai_account_id)) {
         throw new Error('Workers AI API key or account ID is not set.');
     }
 }

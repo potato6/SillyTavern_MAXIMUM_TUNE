@@ -66,8 +66,8 @@ class VolcengineTtsProvider {
     constructor() {
         this.handler = async function(this: any, /** @type {string} */ key: any) {
             if (![SECRET_KEYS.VOLCENGINE_APP_ID, SECRET_KEYS.VOLCENGINE_ACCESS_KEY].includes(key)) return;
-            $('#volcengine-tts-app-id').toggleClass('success', !!(secret_state as Record<string, unknown>)[SECRET_KEYS.VOLCENGINE_APP_ID]);
-            $('#volcengine-tts-access-key').toggleClass('success', !!(secret_state as Record<string, unknown>)[SECRET_KEYS.VOLCENGINE_ACCESS_KEY]);
+            $('#volcengine-tts-app-id').toggleClass('success', !!(secret_state as Record<string, unknown>)[SECRET_KEYS.VOLCENGINE_APP_ID as string]);
+            $('#volcengine-tts-access-key').toggleClass('success', !!(secret_state as Record<string, unknown>)[SECRET_KEYS.VOLCENGINE_ACCESS_KEY as string]);
             await this.onRefreshClick();
         }.bind(this);
     }
@@ -236,8 +236,8 @@ class VolcengineTtsProvider {
         $('#volcengine-tts-provider-endpoint').val(this.settings.provider_endpoint).on('change', this.onSettingsChange.bind(this));
 
         // Initialize secret keys UI
-        $('#volcengine-tts-app-id').toggleClass('success', !!(secret_state as Record<string, unknown>)[SECRET_KEYS.VOLCENGINE_APP_ID]);
-        $('#volcengine-tts-access-key').toggleClass('success', !!(secret_state as Record<string, unknown>)[SECRET_KEYS.VOLCENGINE_ACCESS_KEY]);
+        $('#volcengine-tts-app-id').toggleClass('success', !!(secret_state as Record<string, unknown>)[SECRET_KEYS.VOLCENGINE_APP_ID as string]);
+        $('#volcengine-tts-access-key').toggleClass('success', !!(secret_state as Record<string, unknown>)[SECRET_KEYS.VOLCENGINE_ACCESS_KEY as string]);
         [event_types.SECRET_WRITTEN, event_types.SECRET_DELETED, event_types.SECRET_ROTATED].forEach(event => {
             eventSource.on(event, this.handler);
         });

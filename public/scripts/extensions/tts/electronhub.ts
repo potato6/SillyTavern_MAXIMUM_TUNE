@@ -100,7 +100,7 @@ class ElectronHubTtsProvider {
     constructor() {
         this.handler = async function(this: any, /** @type {string} */ key: any) {
             if (key !== SECRET_KEYS.ELECTRONHUB) return;
-            $('#electronhub_tts_key').toggleClass('success', !!(secret_state as Record<string, unknown>)[SECRET_KEYS.ELECTRONHUB]);
+            $('#electronhub_tts_key').toggleClass('success', !!(secret_state as Record<string, unknown>)[SECRET_KEYS.ELECTRONHUB as string]);
             await this.onRefreshClick();
         }.bind(this);
     }
@@ -151,7 +151,7 @@ class ElectronHubTtsProvider {
         $('#electronhub_tts_emotional_style').val(this.settings.emotional_style);
         $('#electronhub_tts_emotional_style').on('input', () => { this.onSettingsChange(); });
 
-        $('#electronhub_tts_key').toggleClass('success', !!(secret_state as Record<string, unknown>)[SECRET_KEYS.ELECTRONHUB]);
+        $('#electronhub_tts_key').toggleClass('success', !!(secret_state as Record<string, unknown>)[SECRET_KEYS.ELECTRONHUB as string]);
         [event_types.SECRET_WRITTEN, event_types.SECRET_DELETED, event_types.SECRET_ROTATED].forEach(event => {
             eventSource.on(event, this.handler);
         });

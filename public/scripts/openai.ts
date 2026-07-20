@@ -6509,7 +6509,7 @@ async function onConnectButtonClick(e) {
 
     // Vertex AI Full version - use service account
     if (oai_settings.chat_completion_source === chat_completion_sources.VERTEXAI && oai_settings.vertexai_auth_mode === 'full') {
-        if (!(secret_state as Record<string, unknown>)[SECRET_KEYS.VERTEXAI_SERVICE_ACCOUNT]) {
+        if (!(secret_state as Record<string, unknown>)[SECRET_KEYS.VERTEXAI_SERVICE_ACCOUNT as string]) {
             notyf.error(t`Service Account JSON is required for Vertex AI full version. Please validate and save your Service Account JSON.`);
             return;
         }
@@ -6520,10 +6520,10 @@ async function onConnectButtonClick(e) {
     if (config) {
         const apiKey = String((document.querySelector(config.selector) as HTMLInputElement | null)?.value ?? '').trim();
         if (apiKey.length) {
-            await writeSecret(config.key, apiKey, '');
+            await writeSecret(config.key!, apiKey, '');
         }
 
-        if (!secret_state[config.key] && (!config.proxy || !oai_settings.reverse_proxy) && !config.keyless) {
+        if (!secret_state[config.key!] && (!config.proxy || !oai_settings.reverse_proxy) && !config.keyless) {
             console.log(`No secret key saved for ${oai_settings.chat_completion_source}`);
             return;
         }
@@ -7147,7 +7147,7 @@ async function onVertexAIValidateServiceAccount() {
 
         // Save to backend secret storage
         const keyLabel = serviceAccount.client_email || '';
-        await writeSecret(SECRET_KEYS.VERTEXAI_SERVICE_ACCOUNT, jsonContent, keyLabel);
+        await writeSecret(SECRET_KEYS.VERTEXAI_SERVICE_ACCOUNT!, jsonContent, keyLabel);
 
         // Show success status
         updateVertexAIServiceAccountStatus(true, `Project: ${serviceAccount.project_id}, Email: ${serviceAccount.client_email}`);
@@ -7168,7 +7168,7 @@ async function onVertexAIClearServiceAccount() {
     (document.getElementById('vertexai_service_account_json') as HTMLInputElement | null)!.value = '';
 
     // Clear from backend secret storage
-    await writeSecret(SECRET_KEYS.VERTEXAI_SERVICE_ACCOUNT, '', '');
+    await writeSecret(SECRET_KEYS.VERTEXAI_SERVICE_ACCOUNT!, '', '');
 
     updateVertexAIServiceAccountStatus(false);
     notyf.info(t`Service Account JSON cleared`);
@@ -7220,7 +7220,7 @@ function updateVertexAIServiceAccountStatus(isValid = false, message = '') {
     const infoSpan = document.getElementById('vertexai_service_account_info');
 
     // If no explicit message provided, check if we have a saved service account
-    if (!message && secret_state[SECRET_KEYS.VERTEXAI_SERVICE_ACCOUNT]) {
+    if (!message && secret_state[SECRET_KEYS.VERTEXAI_SERVICE_ACCOUNT as string]) {
         isValid = true;
         message = t`Service Account JSON is saved and ready to use`;
     }
