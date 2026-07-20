@@ -978,14 +978,14 @@ function getGroupAvatar(group) {
     if (!group) {
         const div = document.createElement('div');
         div.className = 'avatar';
-        div.innerHTML = `<img src="${default_avatar}">`;
+        div.innerHTML = `<img src="${default_avatar}" alt="">`;
         return div;
     }
     if (isValidImageUrl(group.avatar_url)) {
         const div = document.createElement('div');
         div.className = 'avatar';
         div.title = `[Group] ${group.name}`;
-        div.innerHTML = `<img src="${group.avatar_url}">`;
+        div.innerHTML = `<img src="${group.avatar_url}" alt="">`;
         return div;
     }
 

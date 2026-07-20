@@ -757,6 +757,8 @@ async function firstLoadInit() {
         splashLogo.src = '/img/logo.png';
         splashLogo.alt = 'SillyTavern';
         splashLogo.className = 'splash-logo';
+        splashLogo.width = 330;
+        splashLogo.height = 330;
         splashLogo.ariaLabel = t`SillyTavern Logo`;
 
         const splashMessage = document.createElement('h2');
