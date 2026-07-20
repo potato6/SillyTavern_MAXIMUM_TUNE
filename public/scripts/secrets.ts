@@ -51,8 +51,7 @@ function findSecretByPriority(secrets: ApiSecret[], id?: string): ApiSecret | un
     if (!id) return secrets.find(s => s.active);
     let labelMatch: ApiSecret | undefined;
     let activeMatch: ApiSecret | undefined;
-    for (let i = 0; i < secrets.length; i++) {
-        const s = secrets[i];
+    for (const s of secrets) {
         if (s.id === id) return s; // Highest priority, early exit
         if (!labelMatch && s.label === id) labelMatch = s;
         if (!activeMatch && s.active) activeMatch = s;
@@ -88,8 +87,7 @@ async function initKeyRegistry(): Promise<void> {
         const descriptors: KeyDescriptor[] = await response.json();
         _keyDescriptors = descriptors;
 
-        for (let i = 0; i < descriptors.length; i++) {
-            const d = descriptors[i];
+        for (const d of descriptors) {
             const storageKey = d.storageKey ?? `api_key_${d.id.toLowerCase()}`;
             _keyStore[d.id] = storageKey;
             _friendlyNames[storageKey] = d.label;
@@ -133,7 +131,7 @@ export const SECRET_KEYS = new Proxy(_keyStore, {
     },
     ownKeys() {
         const known = new Set(Object.keys(_keyStore));
-        for (let i = 0; i < _keyDescriptors.length; i++) known.add(_keyDescriptors[i].id);
+        for (const d of _keyDescriptors) known.add(d.id);
         return Array.from(known);
     },
     getOwnPropertyDescriptor(_target, prop: string) {
@@ -195,8 +193,7 @@ export function resolveSecretKey() {
 
     if (mainApi === 'textgenerationwebui') {
         const textCompLower = textCompletionType?.toLowerCase();
-        for (let i = 0; i < _keyDescriptors.length; i++) {
-            const d = _keyDescriptors[i];
+        for (const d of _keyDescriptors) {
             if (d.category === 'textgen' && d.id.toLowerCase() === textCompLower) return SECRET_KEYS[d.id] as string;
         }
     }
@@ -212,8 +209,7 @@ export function resolveSecretKey() {
         }
 
         const chatCompLower = chatCompletionSource?.toLowerCase();
-        for (let i = 0; i < _keyDescriptors.length; i++) {
-            const d = _keyDescriptors[i];
+        for (const d of _keyDescriptors) {
             if (d.category === 'chat-completion' && d.id.toLowerCase() === chatCompLower) return SECRET_KEYS[d.id] as string;
         }
     }
@@ -229,7 +225,7 @@ export function resolveSecretKey() {
 export function getSecretLabelById(id: string) {
     const keys = Object.values(SECRET_KEYS);
     for (let i = 0; i < keys.length; i++) {
-        const secrets = getSecretsForKey(keys[i]);
+        const secrets = getSecretsForKey(keys[i]!);
         if (secrets.length === 0) continue;
 
         const secret = secrets.find(s => s.id === id);
@@ -244,8 +240,8 @@ export function getSecretLabelById(id: string) {
 export function updateSecretDisplay() {
     const keys = Object.keys(_inputMap);
     for (let i = 0; i < keys.length; i++) {
-        const secret_key = keys[i];
-        const input_selector = _inputMap[secret_key];
+        const secret_key = keys[i]!;
+        const input_selector = _inputMap[secret_key]!;
 
         const secrets = getSecretsForKey(secret_key);
         const validSecret = secrets.length > 0;
@@ -587,8 +583,8 @@ function updateInputDataLists() {
 
     const keys = Object.keys(_inputMap);
     for (let i = 0; i < keys.length; i++) {
-        const key = keys[i];
-        const inputSelector = _inputMap[key];
+        const key = keys[i]!;
+        const inputSelector = _inputMap[key]!;
         const inputElements = document.querySelectorAll(inputSelector);
         if (inputElements.length === 0) continue;
 
@@ -607,8 +603,7 @@ function updateInputDataLists() {
 
         // Batch DOM operations using DocumentFragment
         const fragment = document.createDocumentFragment();
-        for (let j = 0; j < secrets.length; j++) {
-            const secret = secrets[j];
+        for (const secret of secrets) {
             const option = document.createElement('option');
             option.value = secret.id;
             option.textContent = `${secret.label} (${secret.value})`;
@@ -668,8 +663,7 @@ async function openKeyManagerDialog(key: string) {
         }
 
         const fragment = document.createDocumentFragment();
-        for (let i = 0; i < secrets.length; i++) {
-            const secret = secrets[i];
+        for (const secret of secrets) {
             const itemWrapper = document.createElement('div');
             itemWrapper.innerHTML = await renderTemplateAsync('secretKeyManagerListItem', secret);
             const itemTemplate = itemWrapper;
@@ -1092,16 +1086,15 @@ export async function initSecrets() {
         // and stop iterating selectors as soon as one is matched.
         if (value.length > 0) {
             const keys = Object.keys(_inputMap);
-            for (let i = 0; i < keys.length; i++) {
-                const key = keys[i];
-                const inputSelector = _inputMap[key];
+            for (const key of keys) {
+                const inputSelector = _inputMap[key]!;
 
                 if (target.matches(inputSelector)) {
                     const secrets = getSecretsForKey(key);
                     const secretMatch = secrets.find(secret => secret.id === value);
                     if (secretMatch) {
                         target.value = '';
-                        rotateSecret(key, secretMatch.id);
+                        rotateSecret(key, secretMatch.id!);
                         return;
                     }
                     break;
@@ -1182,7 +1175,7 @@ export async function initSecrets() {
         // Reduces style recalculation checks when building UI dynamically.
         const fragment = document.createDocumentFragment();
         for (let i = 0; i < rows.length; i++) {
-            const [label, value] = rows[i];
+            const [label, value] = rows[i]!;
             const labelDiv = document.createElement('div');
             labelDiv.textContent = label;
             fragment.appendChild(labelDiv);
