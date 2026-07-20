@@ -777,6 +777,134 @@ function createWebTokenizerDecodingHandler(tokenizer: WebTokenizer): Tokenizatio
 
 export const router = express.Router();
 
+// ── Generic tokenizer endpoints (replaces per-tokenizer routes) ──────────────
+
+/**
+ * Encode text to token IDs using the tokenizer named in the request body.
+ *
+ * POST /api/tokenizers/encode
+ * Body: { text: string, tokenizer: string }
+ * Response: { ids: number[], count: number, chunks?: string[] }
+ */
+router.post('/encode', async function (req, res) {
+    try {
+        const text: string = req.body.text || '';
+        const tokenizerName: string = req.body.tokenizer || 'gpt-3.5-turbo';
+
+        // SentencePiece tokenizers
+        if (sentencepieceTokenizers.includes(tokenizerName)) {
+            const tokenizer = getSentencepiceTokenizer(tokenizerName);
+            const instance = await tokenizer?.get();
+            if (!instance) {
+                return res.send({ ids: [], count: guesstimate(text), chunks: [] });
+            }
+            const ids = instance.encodeIds(text);
+            const chunks = instance.encodePieces(text);
+            return res.send({ ids, count: ids.length, chunks });
+        }
+
+        // Web tokenizers
+        if (webTokenizers.includes(tokenizerName)) {
+            const tokenizer = getWebTokenizer(tokenizerName);
+            const instance = await tokenizer?.get();
+            if (!instance) {
+                return res.send({ ids: [], count: guesstimate(text), chunks: [] });
+            }
+            const ids = Array.from(instance.encode(text));
+            return res.send({ ids, count: ids.length });
+        }
+
+        // Tiktoken (OpenAI-compatible)
+        const tiktokenTokenizer = getTiktokenTokenizer(tokenizerName);
+        const ids = Array.from(tiktokenTokenizer.encode(text));
+        return res.send({ ids, count: ids.length });
+    } catch (error) {
+        console.error('Generic encode error:', error);
+        return res.send({ ids: [], count: guesstimate(req.body.text || '') });
+    }
+});
+
+/**
+ * Decode token IDs to text using the tokenizer named in the request body.
+ *
+ * POST /api/tokenizers/decode
+ * Body: { ids: number[], tokenizer: string }
+ * Response: { text: string, chunks?: string[] }
+ */
+router.post('/decode', async function (req, res) {
+    try {
+        const ids: number[] = req.body.ids || [];
+        const tokenizerName: string = req.body.tokenizer || 'gpt-3.5-turbo';
+
+        // SentencePiece tokenizers
+        if (sentencepieceTokenizers.includes(tokenizerName)) {
+            const tokenizer = getSentencepiceTokenizer(tokenizerName);
+            const instance = await tokenizer?.get();
+            if (!instance) return res.send({ text: '', chunks: [] });
+            const ops = ids.map((id: number) => instance.decodeIds([id]));
+            const chunks = await Promise.all(ops);
+            return res.send({ text: chunks.join(''), chunks });
+        }
+
+        // Web tokenizers
+        if (webTokenizers.includes(tokenizerName)) {
+            const tokenizer = getWebTokenizer(tokenizerName);
+            const instance = await tokenizer?.get();
+            if (!instance) return res.send({ text: '', chunks: [] });
+            const text = instance.decode(new Int32Array(ids));
+            return res.send({ text });
+        }
+
+        // Tiktoken
+        const tiktokenTokenizer = getTiktokenTokenizer(tokenizerName);
+        const decoder = new TextDecoder();
+        const bytes = tiktokenTokenizer.decode(new Uint32Array(ids));
+        return res.send({ text: decoder.decode(bytes) });
+    } catch (error) {
+        console.error('Generic decode error:', error);
+        return res.send({ text: '', chunks: [] });
+    }
+});
+
+/**
+ * Count tokens using the tokenizer named in the request body.
+ *
+ * POST /api/tokenizers/count
+ * Body: { text: string, tokenizer: string }
+ * Response: { count: number }
+ */
+router.post('/count', async function (req, res) {
+    try {
+        const text: string = req.body.text || '';
+        const tokenizerName: string = req.body.tokenizer || 'gpt-3.5-turbo';
+
+        // SentencePiece
+        if (sentencepieceTokenizers.includes(tokenizerName)) {
+            const tokenizer = getSentencepiceTokenizer(tokenizerName);
+            if (!tokenizer) return res.send({ count: guesstimate(text) });
+            const { count } = await countSentencepieceTokens(tokenizer, text);
+            return res.send({ count });
+        }
+
+        // Web tokenizers
+        if (webTokenizers.includes(tokenizerName)) {
+            const tokenizer = getWebTokenizer(tokenizerName);
+            const instance = await tokenizer?.get();
+            if (!instance) return res.send({ count: guesstimate(text) });
+            return res.send({ count: instance.encode(text).length });
+        }
+
+        // Tiktoken
+        const tiktokenTokenizer = getTiktokenTokenizer(tokenizerName);
+        return res.send({ count: tiktokenTokenizer.encode(text).length });
+    } catch (error) {
+        console.error('Generic count error:', error);
+        return res.send({ count: guesstimate(req.body.text || '') });
+    }
+});
+
+// ── Legacy per-tokenizer routes (kept for backward compatibility) ────────────
+
 router.post('/llama/encode', createSentencepieceEncodingHandler(spp_llama));
 router.post('/nerdstash/encode', createSentencepieceEncodingHandler(spp_nerd));
 router.post('/nerdstash_v2/encode', createSentencepieceEncodingHandler(spp_nerd_v2));

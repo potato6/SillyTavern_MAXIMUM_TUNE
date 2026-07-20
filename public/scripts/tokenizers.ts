@@ -82,95 +82,30 @@ export const ENCODE_TOKENIZERS = [
  */
 export const TEXTGEN_TOKENIZERS: string[] = [];
 
-const TOKENIZER_URLS = {
-    [tokenizers.GPT2]: {
-        encode: '/api/tokenizers/gpt2/encode',
-        decode: '/api/tokenizers/gpt2/decode',
-        count: '/api/tokenizers/gpt2/encode',
-    },
-    [tokenizers.OPENAI]: {
-        encode: '/api/tokenizers/openai/encode',
-        decode: '/api/tokenizers/openai/decode',
-        count: '/api/tokenizers/openai/encode',
-    },
-    [tokenizers.LLAMA]: {
-        encode: '/api/tokenizers/llama/encode',
-        decode: '/api/tokenizers/llama/decode',
-        count: '/api/tokenizers/llama/encode',
-    },
-    [tokenizers.NERD]: {
-        encode: '/api/tokenizers/nerdstash/encode',
-        decode: '/api/tokenizers/nerdstash/decode',
-        count: '/api/tokenizers/nerdstash/encode',
-    },
-    [tokenizers.NERD2]: {
-        encode: '/api/tokenizers/nerdstash_v2/encode',
-        decode: '/api/tokenizers/nerdstash_v2/decode',
-        count: '/api/tokenizers/nerdstash_v2/encode',
-    },
-    [tokenizers.API_KOBOLD]: {
-        count: '/api/tokenizers/remote/kobold/count',
-        encode: '/api/tokenizers/remote/kobold/count',
-    },
-    [tokenizers.MISTRAL]: {
-        encode: '/api/tokenizers/mistral/encode',
-        decode: '/api/tokenizers/mistral/decode',
-        count: '/api/tokenizers/mistral/encode',
-    },
-    [tokenizers.YI]: {
-        encode: '/api/tokenizers/yi/encode',
-        decode: '/api/tokenizers/yi/decode',
-        count: '/api/tokenizers/yi/encode',
-    },
-    [tokenizers.CLAUDE]: {
-        encode: '/api/tokenizers/claude/encode',
-        decode: '/api/tokenizers/claude/decode',
-        count: '/api/tokenizers/claude/encode',
-    },
-    [tokenizers.LLAMA3]: {
-        encode: '/api/tokenizers/llama3/encode',
-        decode: '/api/tokenizers/llama3/decode',
-        count: '/api/tokenizers/llama3/encode',
-    },
-    [tokenizers.GEMMA]: {
-        encode: '/api/tokenizers/gemma/encode',
-        decode: '/api/tokenizers/gemma/decode',
-        count: '/api/tokenizers/gemma/encode',
-    },
-    [tokenizers.JAMBA]: {
-        encode: '/api/tokenizers/jamba/encode',
-        decode: '/api/tokenizers/jamba/decode',
-        count: '/api/tokenizers/jamba/encode',
-    },
-    [tokenizers.QWEN2]: {
-        encode: '/api/tokenizers/qwen2/encode',
-        decode: '/api/tokenizers/qwen2/decode',
-        count: '/api/tokenizers/qwen2/encode',
-    },
-    [tokenizers.COMMAND_R]: {
-        encode: '/api/tokenizers/command-r/encode',
-        decode: '/api/tokenizers/command-r/decode',
-        count: '/api/tokenizers/command-r/encode',
-    },
-    [tokenizers.COMMAND_A]: {
-        encode: '/api/tokenizers/command-a/encode',
-        decode: '/api/tokenizers/command-a/decode',
-        count: '/api/tokenizers/command-a/encode',
-    },
-    [tokenizers.NEMO]: {
-        encode: '/api/tokenizers/nemo/encode',
-        decode: '/api/tokenizers/nemo/decode',
-        count: '/api/tokenizers/nemo/encode',
-    },
-    [tokenizers.DEEPSEEK]: {
-        encode: '/api/tokenizers/deepseek/encode',
-        decode: '/api/tokenizers/deepseek/decode',
-        count: '/api/tokenizers/deepseek/encode',
-    },
-    [tokenizers.API_TEXTGENERATIONWEBUI]: {
-        encode: '/api/tokenizers/remote/textgenerationwebui/encode',
-        count: '/api/tokenizers/remote/textgenerationwebui/encode',
-    },
+/** Base URL for generic tokenizer endpoints. */
+const TOKENIZER_BASE = '/api/tokenizers';
+
+/** Remote tokenizer endpoints (proxied to external APIs, not handled locally). */
+const TOKENIZER_REMOTE_KOBOLD = `${TOKENIZER_BASE}/remote/kobold/count`;
+const TOKENIZER_REMOTE_TEXTGEN = `${TOKENIZER_BASE}/remote/textgenerationwebui/encode`;
+
+/** Maps numeric tokenizer IDs to their backend name strings for generic endpoints. */
+const TOKENIZER_NAME_BY_ID: Record<number, string> = {
+    [tokenizers.GPT2]:      'gpt2',
+    [tokenizers.LLAMA]:     'llama',
+    [tokenizers.NERD]:      'nerdstash',
+    [tokenizers.NERD2]:     'nerdstash_v2',
+    [tokenizers.MISTRAL]:   'mistral',
+    [tokenizers.YI]:        'yi',
+    [tokenizers.CLAUDE]:    'claude',
+    [tokenizers.LLAMA3]:    'llama3',
+    [tokenizers.GEMMA]:     'gemma',
+    [tokenizers.JAMBA]:     'jamba',
+    [tokenizers.QWEN2]:     'qwen2',
+    [tokenizers.COMMAND_R]: 'command-r',
+    [tokenizers.COMMAND_A]: 'command-a',
+    [tokenizers.NEMO]:      'nemo',
+    [tokenizers.DEEPSEEK]:  'deepseek',
 };
 
 const textEncoder = new TextEncoder();
@@ -439,13 +374,9 @@ function callTokenizer(type, str) {
             // @ts-expect-error TS(2554) FIXME: Expected 2 arguments, but got 1.
             return countTokensFromTextgenAPI(str);
         default: {
-            const endpointUrl = TOKENIZER_URLS[type]?.count;
-            if (!endpointUrl) {
-                console.warn('Unknown tokenizer type', type);
-                return apiFailureTokenCount(str);
-            }
+            const tokenizerName = TOKENIZER_NAME_BY_ID[type] || getTokenizerModel();
             // @ts-expect-error TS(2554) FIXME: Expected 3 arguments, but got 2.
-            return countTokensFromServer(endpointUrl, str);
+            return genericCountTokens(tokenizerName, str);
         }
     }
 }
@@ -471,12 +402,8 @@ function callTokenizerAsync(type, str) {
             case tokenizers.API_TEXTGENERATIONWEBUI:
                 return countTokensFromTextgenAPI(str, resolve);
             default: {
-                const endpointUrl = TOKENIZER_URLS[type]?.count;
-                if (!endpointUrl) {
-                    console.warn('Unknown tokenizer type', type);
-                    return resolve(apiFailureTokenCount(str));
-                }
-                return countTokensFromServer(endpointUrl, str, resolve);
+                const tokenizerName = TOKENIZER_NAME_BY_ID[type] || getTokenizerModel();
+                return genericCountTokens(tokenizerName, str, resolve);
             }
         }
     });
@@ -837,35 +764,6 @@ function getTokenCacheObject() {
 }
 
 /**
- * Count tokens using the server API.
- * @param {string} endpoint API endpoint.
- * @param {string} str String to tokenize.
- * @param {function} [resolve] Promise resolve function.s
- * @returns {number} Token count.
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'endpoint' implicitly has an 'any' type.
-async function countTokensFromServer(endpoint, str, resolve) {
-    const isAsync = typeof resolve === 'function';
-    let tokenCount = 0;
-
-    const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: str }),
-    });
-    const data = await response.json();
-    if (typeof data.count === 'number') {
-        tokenCount = data.count;
-    } else {
-        tokenCount = apiFailureTokenCount(str);
-    }
-
-    if (isAsync) resolve(tokenCount);
-
-    return tokenCount;
-}
-
-/**
  * Count tokens using the AI provider's API.
  * @param {string} str String to tokenize.
  * @param {function} [resolve] Promise resolve function.
@@ -877,7 +775,7 @@ async function countTokensFromKoboldAPI(str, resolve) {
     let tokenCount = 0;
 
     const response = await fetch(
-        TOKENIZER_URLS[tokenizers.API_KOBOLD]!.count, {
+        TOKENIZER_REMOTE_KOBOLD, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -926,7 +824,7 @@ async function countTokensFromTextgenAPI(str, resolve) {
     let tokenCount = 0;
 
     const response = await fetch(
-        TOKENIZER_URLS[tokenizers.API_TEXTGENERATIONWEBUI]!.count, {
+        TOKENIZER_REMOTE_TEXTGEN, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(getTextgenAPITokenizationParams(str)),
@@ -971,32 +869,70 @@ function apiFailureTokenCount(str) {
 }
 
 /**
- * Calls the underlying tokenizer model to encode a string to tokens.
- * @param {string} endpoint API endpoint.
+ * Calls the generic /api/tokenizers/count endpoint.
+ * @param {string} tokenizerName Tokenizer name (e.g. 'llama', 'claude', 'gpt-4o')
  * @param {string} str String to tokenize.
  * @param {function} [resolve] Promise resolve function.
- * @returns {number[]} Array of token ids.
+ * @returns {Promise<number>} Token count.
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'endpoint' implicitly has an 'any' type.
-async function getTextTokensFromServer(endpoint, str, resolve) {
+// @ts-expect-error TS(7006) — dynamic args for legacy sync/async dual mode
+async function genericCountTokens(tokenizerName, str, resolve) {
     const isAsync = typeof resolve === 'function';
-    let ids = [];
-    const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: str }),
-    });
-    const data = await response.json();
-    ids = data.ids;
-
-    // Don't want to break reverse compatibility, so sprinkle in some of the JS magic
-    if (Array.isArray(data.chunks)) {
-        Object.defineProperty(ids, 'chunks', { value: data.chunks });
+    let tokenCount = 0;
+    try {
+        const response = await fetch(`${TOKENIZER_BASE}/count`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: str, tokenizer: tokenizerName }),
+        });
+        const data = await response.json();
+        tokenCount = typeof data.count === 'number' ? data.count : guesstimate(str);
+    } catch {
+        tokenCount = apiFailureTokenCount(str);
     }
+    if (isAsync) resolve(tokenCount);
+    return tokenCount;
+}
 
-    if (isAsync) resolve(ids);
-
+/**
+ * Calls the generic /api/tokenizers/encode endpoint.
+ */
+// @ts-expect-error TS(7006) — dynamic args for legacy compatibility
+async function genericGetTextTokens(tokenizerName, str) {
+    let ids = [];
+    try {
+        const response = await fetch(`${TOKENIZER_BASE}/encode`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: str, tokenizer: tokenizerName }),
+        });
+        const data = await response.json();
+        ids = data.ids || [];
+        if (Array.isArray(data.chunks)) {
+            Object.defineProperty(ids, 'chunks', { value: data.chunks });
+        }
+    } catch { /* return empty */ }
     return ids;
+}
+
+/**
+ * Calls the generic /api/tokenizers/decode endpoint.
+ */
+// @ts-expect-error TS(7006) — dynamic args for legacy compatibility
+async function genericDecodeTokens(tokenizerName, ids) {
+    let text = '';
+    let chunks: string[] = [];
+    try {
+        const response = await fetch(`${TOKENIZER_BASE}/decode`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ids, tokenizer: tokenizerName }),
+        });
+        const data = await response.json();
+        text = data.text || '';
+        chunks = data.chunks || [];
+    } catch { /* return empty */ }
+    return { text, chunks };
 }
 
 /**
@@ -1010,7 +946,7 @@ async function getTextTokensFromTextgenAPI(str, resolve) {
     const isAsync = typeof resolve === 'function';
     let ids = [];
     const response = await fetch(
-        TOKENIZER_URLS[tokenizers.API_TEXTGENERATIONWEBUI]!.encode, {
+        TOKENIZER_REMOTE_TEXTGEN, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(getTextgenAPITokenizationParams(str)),
@@ -1035,7 +971,7 @@ async function getTextTokensFromKoboldAPI(str, resolve) {
     let ids = [];
 
     const response = await fetch(
-        TOKENIZER_URLS[tokenizers.API_KOBOLD]!.encode, {
+        TOKENIZER_REMOTE_KOBOLD, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -1049,31 +985,6 @@ async function getTextTokensFromKoboldAPI(str, resolve) {
     if (isAsync) resolve(ids);
 
     return ids;
-}
-
-/**
- * Calls the underlying tokenizer model to decode token ids to text.
- * @param endpoint
- * @param ids
- * @param resolve
- * @returns {({ text: string, chunks?: string[] })} Decoded token text as a single string and individual chunks (if available).
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'endpoint' implicitly has an 'any' type.
-async function decodeTextTokensFromServer(endpoint, ids, resolve) {
-    const isAsync = typeof resolve === 'function';
-    let text = '';
-    let chunks = [];
-    const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ids: ids }),
-    });
-    const data = await response.json();
-    text = data.text;
-    chunks = data.chunks;
-    if (isAsync) resolve({ text, chunks });
-
-    return { text, chunks };
 }
 
 /**
@@ -1094,23 +1005,8 @@ export function getTextTokens(tokenizerType, str) {
             // @ts-expect-error TS(2554) FIXME: Expected 2 arguments, but got 1.
             return getTextTokensFromKoboldAPI(str);
         default: {
-            const tokenizerEndpoints = TOKENIZER_URLS[tokenizerType];
-            if (!tokenizerEndpoints) {
-                apiFailureTokenCount(str);
-                console.warn('Unknown tokenizer type', tokenizerType);
-                return [];
-            }
-            let endpointUrl = tokenizerEndpoints.encode;
-            if (!endpointUrl) {
-                apiFailureTokenCount(str);
-                console.warn('This tokenizer type does not support encoding', tokenizerType);
-                return [];
-            }
-            if (tokenizerType === tokenizers.OPENAI) {
-                endpointUrl += `?model=${getTokenizerModel()}`;
-            }
-            // @ts-expect-error TS(2554) FIXME: Expected 3 arguments, but got 2.
-            return getTextTokensFromServer(endpointUrl, str);
+            const tokenizerName = TOKENIZER_NAME_BY_ID[tokenizerType] || getTokenizerModel();
+            return genericGetTextTokens(tokenizerName, str);
         }
     }
 }
@@ -1127,21 +1023,8 @@ export function decodeTextTokens(tokenizerType, ids) {
     if (tokenizerType === tokenizers.API_CURRENT) {
         return decodeTextTokens(tokenizers.NONE, ids);
     }
-    const tokenizerEndpoints = TOKENIZER_URLS[tokenizerType];
-    if (!tokenizerEndpoints) {
-        console.warn('Unknown tokenizer type', tokenizerType);
-        return { text: '', chunks: [] };
-    }
-    let endpointUrl = tokenizerEndpoints.decode;
-    if (!endpointUrl) {
-        console.warn('This tokenizer type does not support decoding', tokenizerType);
-        return { text: '', chunks: [] };
-    }
-    if (tokenizerType === tokenizers.OPENAI) {
-        endpointUrl += `?model=${getTokenizerModel()}`;
-    }
-    // @ts-expect-error TS(2554) FIXME: Expected 3 arguments, but got 2.
-    return decodeTextTokensFromServer(endpointUrl, ids);
+    const tokenizerName = TOKENIZER_NAME_BY_ID[tokenizerType] || getTokenizerModel();
+    return genericDecodeTokens(tokenizerName, ids);
 }
 
 /**
