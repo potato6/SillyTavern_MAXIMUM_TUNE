@@ -111,7 +111,7 @@ async function getBookmarkName({ isReplace = false, forceName = null } = {}) {
     const suggestedName = getUniqueName(mainChatName, (x) => existingChats.includes(x), { nameBuilder: buildCheckpointName });
 
     const body = await renderTemplateAsync('createCheckpoint', { isReplace: isReplace, suggestedName: suggestedName });
-    let name = forceName ?? (await Popup.show.input('Create Checkpoint', body, suggestedName));
+    let name = forceName ?? (await Popup.show.input('Create Checkpoint', body, suggestedName ?? undefined));
     // Special handling for confirmed empty input (=> auto-generate name)
     if (name === '') {
         name = suggestedName;

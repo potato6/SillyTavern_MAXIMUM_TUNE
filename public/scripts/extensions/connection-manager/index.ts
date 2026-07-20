@@ -307,7 +307,7 @@ async function createConnectionProfile(forceName = null) {
     const isNameTaken = (n: any) => extension_settings.connectionManager.profiles.some(p => p.name === n);
     // @ts-expect-error TS(2339): Property 'api' does not exist on type '{ id: strin... Remove this comment to see the full error message
     const suggestedName = getUniqueName(collapseSpaces(`${profile.api ?? ''} ${profile.model ?? ''} - ${profile.preset ?? ''}`), isNameTaken);
-    let name = forceName ?? (await callGenericPopup(template, POPUP_TYPE.INPUT, suggestedName));
+    let name = forceName ?? (await callGenericPopup(template, POPUP_TYPE.INPUT, suggestedName ?? undefined));
     // If it's cancelled, it will be false
     if (!name) {
         return null;

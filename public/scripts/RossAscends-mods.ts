@@ -386,17 +386,17 @@ function RA_autoconnect(PrevApi?: string) {
                 }
                 break;
             case 'novel':
-                            if ((secret_state as Record<string, unknown>)[SECRET_KEYS.NOVEL]) {
+                            if ((secret_state as Record<string, unknown>)[SECRET_KEYS.NOVEL!]) {
                     document.getElementById('api_button_novel')?.dispatchEvent(new Event('click', { bubbles: true }));
                 }
                 break;
             case 'textgenerationwebui':
-                if ((textgen_settings.type === textgen_types.MANCER && (secret_state as Record<string, unknown>)[SECRET_KEYS.MANCER])
-                    || (textgen_settings.type === textgen_types.TOGETHERAI && (secret_state as Record<string, unknown>)[SECRET_KEYS.TOGETHERAI])
-                    || (textgen_settings.type === textgen_types.INFERMATICAI && (secret_state as Record<string, unknown>)[SECRET_KEYS.INFERMATICAI])
-                    || (textgen_settings.type === textgen_types.DREAMGEN && (secret_state as Record<string, unknown>)[SECRET_KEYS.DREAMGEN])
-                    || (textgen_settings.type === textgen_types.OPENROUTER && (secret_state as Record<string, unknown>)[SECRET_KEYS.OPENROUTER])
-                    || (textgen_settings.type === textgen_types.FEATHERLESS && (secret_state as Record<string, unknown>)[SECRET_KEYS.FEATHERLESS])
+                if ((textgen_settings.type === textgen_types.MANCER && (secret_state as Record<string, unknown>)[SECRET_KEYS.MANCER!])
+                    || (textgen_settings.type === textgen_types.TOGETHERAI && (secret_state as Record<string, unknown>)[SECRET_KEYS.TOGETHERAI!])
+                    || (textgen_settings.type === textgen_types.INFERMATICAI && (secret_state as Record<string, unknown>)[SECRET_KEYS.INFERMATICAI!])
+                    || (textgen_settings.type === textgen_types.DREAMGEN && (secret_state as Record<string, unknown>)[SECRET_KEYS.DREAMGEN!])
+                    || (textgen_settings.type === textgen_types.OPENROUTER && (secret_state as Record<string, unknown>)[SECRET_KEYS.OPENROUTER!])
+                    || (textgen_settings.type === textgen_types.FEATHERLESS && (secret_state as Record<string, unknown>)[SECRET_KEYS.FEATHERLESS!])
                 ) {
                     document.getElementById('api_button_textgenerationwebui')?.dispatchEvent(new Event('click', { bubbles: true }));
                 } else if (isValidUrl(getTextGenServer())) {
@@ -404,33 +404,33 @@ function RA_autoconnect(PrevApi?: string) {
                 }
                 break;
             case 'openai':
-                if ((((secret_state as Record<string, unknown>)[SECRET_KEYS.OPENAI] || oai_settings.reverse_proxy) && oai_settings.chat_completion_source == chat_completion_sources.OPENAI)
-                    || (((secret_state as Record<string, unknown>)[SECRET_KEYS.CLAUDE] || oai_settings.reverse_proxy) && oai_settings.chat_completion_source == chat_completion_sources.CLAUDE)
-                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.OPENROUTER] && oai_settings.chat_completion_source == chat_completion_sources.OPENROUTER)
-                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.AI21] && oai_settings.chat_completion_source == chat_completion_sources.AI21)
-                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.MAKERSUITE] && oai_settings.chat_completion_source == chat_completion_sources.MAKERSUITE)
-                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.VERTEXAI] && oai_settings.chat_completion_source == chat_completion_sources.VERTEXAI && oai_settings.vertexai_auth_mode === 'express')
-                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.VERTEXAI_SERVICE_ACCOUNT] && oai_settings.chat_completion_source == chat_completion_sources.VERTEXAI && oai_settings.vertexai_auth_mode === 'full')
-                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.MISTRALAI] && oai_settings.chat_completion_source == chat_completion_sources.MISTRALAI)
-                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.COHERE] && oai_settings.chat_completion_source == chat_completion_sources.COHERE)
-                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.PERPLEXITY] && oai_settings.chat_completion_source == chat_completion_sources.PERPLEXITY)
-                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.GROQ] && oai_settings.chat_completion_source == chat_completion_sources.GROQ)
-                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.CHUTES] && oai_settings.chat_completion_source == chat_completion_sources.CHUTES)
-                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.SILICONFLOW] && oai_settings.chat_completion_source == chat_completion_sources.SILICONFLOW)
-                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.ELECTRONHUB] && oai_settings.chat_completion_source == chat_completion_sources.ELECTRONHUB)
-                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.NANOGPT] && oai_settings.chat_completion_source == chat_completion_sources.NANOGPT)
-                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.DEEPSEEK] && oai_settings.chat_completion_source == chat_completion_sources.DEEPSEEK)
-                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.XAI] && oai_settings.chat_completion_source == chat_completion_sources.XAI)
-                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.AIMLAPI] && oai_settings.chat_completion_source == chat_completion_sources.AIMLAPI)
-                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.MOONSHOT] && oai_settings.chat_completion_source == chat_completion_sources.MOONSHOT)
-                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.FIREWORKS] && oai_settings.chat_completion_source == chat_completion_sources.FIREWORKS)
-                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.COMETAPI] && oai_settings.chat_completion_source == chat_completion_sources.COMETAPI)
-                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.ZAI] && oai_settings.chat_completion_source == chat_completion_sources.ZAI)
-                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.POLLINATIONS] && oai_settings.chat_completion_source === chat_completion_sources.POLLINATIONS)
-                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.WORKERS_AI] && oai_settings.chat_completion_source == chat_completion_sources.WORKERS_AI)
-                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.MINIMAX] && oai_settings.chat_completion_source == chat_completion_sources.MINIMAX)
+                if ((((secret_state as Record<string, unknown>)[SECRET_KEYS.OPENAI!] || oai_settings.reverse_proxy) && oai_settings.chat_completion_source == chat_completion_sources.OPENAI)
+                    || (((secret_state as Record<string, unknown>)[SECRET_KEYS.CLAUDE!] || oai_settings.reverse_proxy) && oai_settings.chat_completion_source == chat_completion_sources.CLAUDE)
+                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.OPENROUTER!] && oai_settings.chat_completion_source == chat_completion_sources.OPENROUTER)
+                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.AI21!] && oai_settings.chat_completion_source == chat_completion_sources.AI21)
+                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.MAKERSUITE!] && oai_settings.chat_completion_source == chat_completion_sources.MAKERSUITE)
+                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.VERTEXAI!] && oai_settings.chat_completion_source == chat_completion_sources.VERTEXAI && oai_settings.vertexai_auth_mode === 'express')
+                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.VERTEXAI_SERVICE_ACCOUNT!] && oai_settings.chat_completion_source == chat_completion_sources.VERTEXAI && oai_settings.vertexai_auth_mode === 'full')
+                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.MISTRALAI!] && oai_settings.chat_completion_source == chat_completion_sources.MISTRALAI)
+                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.COHERE!] && oai_settings.chat_completion_source == chat_completion_sources.COHERE)
+                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.PERPLEXITY!] && oai_settings.chat_completion_source == chat_completion_sources.PERPLEXITY)
+                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.GROQ!] && oai_settings.chat_completion_source == chat_completion_sources.GROQ)
+                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.CHUTES!] && oai_settings.chat_completion_source == chat_completion_sources.CHUTES)
+                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.SILICONFLOW!] && oai_settings.chat_completion_source == chat_completion_sources.SILICONFLOW)
+                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.ELECTRONHUB!] && oai_settings.chat_completion_source == chat_completion_sources.ELECTRONHUB)
+                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.NANOGPT!] && oai_settings.chat_completion_source == chat_completion_sources.NANOGPT)
+                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.DEEPSEEK!] && oai_settings.chat_completion_source == chat_completion_sources.DEEPSEEK)
+                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.XAI!] && oai_settings.chat_completion_source == chat_completion_sources.XAI)
+                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.AIMLAPI!] && oai_settings.chat_completion_source == chat_completion_sources.AIMLAPI)
+                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.MOONSHOT!] && oai_settings.chat_completion_source == chat_completion_sources.MOONSHOT)
+                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.FIREWORKS!] && oai_settings.chat_completion_source == chat_completion_sources.FIREWORKS)
+                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.COMETAPI!] && oai_settings.chat_completion_source == chat_completion_sources.COMETAPI)
+                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.ZAI!] && oai_settings.chat_completion_source == chat_completion_sources.ZAI)
+                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.POLLINATIONS!] && oai_settings.chat_completion_source === chat_completion_sources.POLLINATIONS)
+                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.WORKERS_AI!] && oai_settings.chat_completion_source == chat_completion_sources.WORKERS_AI)
+                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.MINIMAX!] && oai_settings.chat_completion_source == chat_completion_sources.MINIMAX)
                     || (isValidUrl(oai_settings.custom_url) && oai_settings.chat_completion_source == chat_completion_sources.CUSTOM)
-                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.AZURE_OPENAI] && oai_settings.chat_completion_source == chat_completion_sources.AZURE_OPENAI)
+                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.AZURE_OPENAI!] && oai_settings.chat_completion_source == chat_completion_sources.AZURE_OPENAI)
                 ) {
                     document.getElementById('api_button_openai')?.dispatchEvent(new Event('click', { bubbles: true }));
                 }

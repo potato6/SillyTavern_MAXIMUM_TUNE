@@ -240,7 +240,7 @@ export function registerWorldInfoSlashCommands() {
         })();
 
         // Make sure the name is unique
-        newName = getUniqueName(newName, wiManager.worldNames.includes.bind(wiManager.worldNames));
+        newName = getUniqueName(newName, wiManager.worldNames.includes.bind(wiManager.worldNames)) ?? newName;
 
         await createNewWorldInfo(newName);
         return newName;
