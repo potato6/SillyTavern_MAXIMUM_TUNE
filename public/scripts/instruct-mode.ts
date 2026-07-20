@@ -20,32 +20,32 @@ export const names_behavior_types = {
     ALWAYS: 'always',
 };
 
-const controls = [
-    { id: 'instruct_enabled', property: 'enabled', isCheckbox: true },
-    { id: 'instruct_wrap', property: 'wrap', isCheckbox: true },
-    { id: 'instruct_macro', property: 'macro', isCheckbox: true },
-    { id: 'instruct_story_string_prefix', property: 'story_string_prefix', isCheckbox: false },
-    { id: 'instruct_story_string_suffix', property: 'story_string_suffix', isCheckbox: false },
-    { id: 'instruct_input_sequence', property: 'input_sequence', isCheckbox: false },
-    { id: 'instruct_input_suffix', property: 'input_suffix', isCheckbox: false },
-    { id: 'instruct_output_sequence', property: 'output_sequence', isCheckbox: false },
-    { id: 'instruct_output_suffix', property: 'output_suffix', isCheckbox: false },
-    { id: 'instruct_system_sequence', property: 'system_sequence', isCheckbox: false },
-    { id: 'instruct_system_suffix', property: 'system_suffix', isCheckbox: false },
-    { id: 'instruct_last_system_sequence', property: 'last_system_sequence', isCheckbox: false },
-    { id: 'instruct_user_alignment_message', property: 'user_alignment_message', isCheckbox: false },
-    { id: 'instruct_stop_sequence', property: 'stop_sequence', isCheckbox: false },
-    { id: 'instruct_first_output_sequence', property: 'first_output_sequence', isCheckbox: false },
-    { id: 'instruct_last_output_sequence', property: 'last_output_sequence', isCheckbox: false },
-    { id: 'instruct_first_input_sequence', property: 'first_input_sequence', isCheckbox: false },
-    { id: 'instruct_last_input_sequence', property: 'last_input_sequence', isCheckbox: false },
-    { id: 'instruct_activation_regex', property: 'activation_regex', isCheckbox: false },
-    { id: 'instruct_bind_to_context', property: 'bind_to_context', isCheckbox: true },
-    { id: 'instruct_skip_examples', property: 'skip_examples', isCheckbox: true },
-    { id: 'instruct_names_behavior', property: 'names_behavior', isCheckbox: false },
-    { id: 'instruct_system_same_as_user', property: 'system_same_as_user', isCheckbox: true, trigger: true },
-    { id: 'instruct_sequences_as_stop_strings', property: 'sequences_as_stop_strings', isCheckbox: true },
-];
+const bindings = {
+    instruct_enabled: 'enabled',
+    instruct_wrap: 'wrap',
+    instruct_macro: 'macro',
+    instruct_story_string_prefix: 'story_string_prefix',
+    instruct_story_string_suffix: 'story_string_suffix',
+    instruct_input_sequence: 'input_sequence',
+    instruct_input_suffix: 'input_suffix',
+    instruct_output_sequence: 'output_sequence',
+    instruct_output_suffix: 'output_suffix',
+    instruct_system_sequence: 'system_sequence',
+    instruct_system_suffix: 'system_suffix',
+    instruct_last_system_sequence: 'last_system_sequence',
+    instruct_user_alignment_message: 'user_alignment_message',
+    instruct_stop_sequence: 'stop_sequence',
+    instruct_first_output_sequence: 'first_output_sequence',
+    instruct_last_output_sequence: 'last_output_sequence',
+    instruct_first_input_sequence: 'first_input_sequence',
+    instruct_last_input_sequence: 'last_input_sequence',
+    instruct_activation_regex: 'activation_regex',
+    instruct_bind_to_context: 'bind_to_context',
+    instruct_skip_examples: 'skip_examples',
+    instruct_names_behavior: 'names_behavior',
+    instruct_system_same_as_user: 'system_same_as_user',
+    instruct_sequences_as_stop_strings: 'sequences_as_stop_strings',
+} as const;
 
 /**
  * Migrates instruct mode settings into the evergreen format.
@@ -123,37 +123,31 @@ export async function loadInstructMode(data) {
     document.getElementById('instruct_derived')?.parentElement?.querySelector('i')?.classList.toggle('toggleEnabled', !!power_user.instruct_derived);
     document.getElementById('instruct_bind_to_context')?.parentElement?.querySelector('i')?.classList.toggle('toggleEnabled', !!power_user.instruct.bind_to_context);
 
-    controls.forEach(control => {
-        const element = document.getElementById(control.id);
-        if (!element) return;
+    for (const [id, property] of Object.entries(bindings)) {
+        const element = document.getElementById(id);
+        if (!element) continue;
 
-        if (control.isCheckbox) {
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-            if (element instanceof HTMLInputElement) element.checked = power_user.instruct[control.property];
-        } else if (element instanceof HTMLSelectElement) {
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-            const value = power_user.instruct[control.property];
-            element.value = value;
-            // @ts-expect-error TS(2339) FIXME: Property 'checked' does not exist on type 'HTMLSel... Remove this comment to see the full error message
-            if (element.matches(`[value="${value}"]`)) element.checked = true;
-        } else {
-            // @ts-expect-error TS(2339) FIXME: Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
-            element.value = power_user.instruct[control.property];
+        if (element instanceof HTMLInputElement && element.type === 'checkbox') {
+            element.checked = Boolean((power_user.instruct as Record<string, unknown>)[property]);
+        } else if (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement || element instanceof HTMLSelectElement) {
+            element.value = String((power_user.instruct as Record<string, unknown>)[property] ?? '');
         }
 
-        element.addEventListener('input', async function () {
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-            power_user.instruct[control.property] = control.isCheckbox ? !!this.checked : this.value;
-            if (!CSS.supports('field-sizing', 'content') && this instanceof HTMLTextAreaElement) {
-                await resetScrollHeight(this);
+        element.addEventListener('input', async () => {
+            if (element instanceof HTMLInputElement && element.type === 'checkbox') {
+                (power_user.instruct as Record<string, unknown>)[property] = element.checked;
+            } else if (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement || element instanceof HTMLSelectElement) {
+                (power_user.instruct as Record<string, unknown>)[property] = element.value;
+            }
+            if (!CSS.supports('field-sizing', 'content') && element instanceof HTMLTextAreaElement) {
+                await resetScrollHeight(element);
             }
             saveSettingsDebounced();
         });
+    }
 
-        if (control.trigger) {
-            element.dispatchEvent(new Event('input'));
-        }
-    });
+    // Trigger initialization for system_same_as_user
+    document.getElementById('instruct_system_same_as_user')?.dispatchEvent(new Event('input'));
 
     instruct_presets.forEach((preset) => {
         // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
@@ -557,7 +551,6 @@ export function formatInstructModeStoryString(storyString, { customContext = nul
 export function formatInstructModeExamples(mesExamplesArray, name1, name2) {
     const blockHeading = power_user.context.example_separator ? `${substituteParams(power_user.context.example_separator)}\n` : '';
 
-    // @ts-expect-error TS(2339) FIXME: Property 'skip_examples' does not exist on type '{... Remove this comment to see the full error message
     if (power_user.instruct.skip_examples) {
         // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
         return mesExamplesArray.map(x => x.replace(/<START>\n/i, blockHeading));
@@ -894,33 +887,21 @@ document.addEventListener('DOMContentLoaded', () => {
         migrateInstructModeSettings(preset);
 
         power_user.instruct.preset = String(name);
-        controls.forEach(control => {
-            if (preset[control.property] !== undefined) {
-                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                power_user.instruct[control.property] = preset[control.property];
-                const element = document.getElementById(control.id);
-                if (!element) return;
+        for (const [id, property] of Object.entries(bindings)) {
+            const presetValue = (preset as Record<string, unknown>)[property];
+            if (presetValue === undefined) continue;
 
-                if (control.isCheckbox) {
-                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                    if (element instanceof HTMLInputElement) element.checked = power_user.instruct[control.property];
-                    element.dispatchEvent(new Event('input'));
-                } else if (element instanceof HTMLSelectElement) {
-                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                    const value = power_user.instruct[control.property];
-                    element.value = value;
-                    if (element.matches(`[value="${value}"]`)) {
-                        // @ts-expect-error TS(2339) FIXME: Property 'checked' does not exist on type 'HTMLSel... Remove this comment to see the full error message
-                        element.checked = true;
-                        element.dispatchEvent(new Event('input'));
-                    }
-                } else {
-                    // @ts-expect-error TS(2339) FIXME: Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
-                    element.value = power_user.instruct[control.property];
-                    element.dispatchEvent(new Event('input'));
-                }
+            (power_user.instruct as Record<string, unknown>)[property] = presetValue;
+            const element = document.getElementById(id);
+            if (!element) continue;
+
+            if (element instanceof HTMLInputElement && element.type === 'checkbox') {
+                element.checked = Boolean(presetValue);
+            } else if (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement || element instanceof HTMLSelectElement) {
+                element.value = String(presetValue ?? '');
             }
-        });
+            element.dispatchEvent(new Event('input'));
+        }
 
         if (power_user.instruct.bind_to_context) {
             selectMatchingContextTemplate(name);

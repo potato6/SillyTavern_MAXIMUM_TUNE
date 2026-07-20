@@ -265,6 +265,7 @@ export const power_user = {
         /** @deprecated Use output_suffix instead */
         separator_sequence: '',
         sequences_as_stop_strings: true,
+        skip_examples: false,
     },
 
     context: {
