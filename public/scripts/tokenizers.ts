@@ -624,37 +624,6 @@ function counterWrapperOpenAIAsync(text) {
 /**
  *
  */
-/**
- * Resolves the tokenizer model name from a raw model ID via a simple model-name heuristic.
- * Used as a synchronous fallback when the backend's provider-based resolution isn't cached yet.
- * Mirrors src/endpoints/tokenizers.ts:getTokenizerModel().
- */
-function resolveTokenizerFromModelName(model: string): string {
-    if (!model) return 'gpt-3.5-turbo';
-    if (model === 'o1' || model.includes('o1-preview') || model.includes('o1-mini') || model.includes('o3-mini')) return 'o1';
-    if (model.includes('gpt-5') || model.includes('o3') || model.includes('o4-mini')) return 'o1';
-    if (model.includes('gpt-4o') || model.includes('chatgpt-4o-latest')) return 'gpt-4o';
-    if (model.includes('gpt-4.1') || model.includes('gpt-4.5')) return 'gpt-4o';
-    if (model.includes('gpt-4-32k')) return 'gpt-4-32k';
-    if (model.includes('gpt-4')) return 'gpt-4';
-    if (model.includes('gpt-3.5-turbo-0301')) return 'gpt-3.5-turbo-0301';
-    if (model.includes('gpt-3.5-turbo')) return 'gpt-3.5-turbo';
-    if (model.includes('claude')) return 'claude';
-    if (model.includes('llama3') || model.includes('llama-3')) return 'llama3';
-    if (model.includes('llama')) return 'llama';
-    if (model.includes('mistral')) return 'mistral';
-    if (model.includes('yi')) return 'yi';
-    if (model.includes('deepseek')) return 'deepseek';
-    if (model.includes('gemma') || model.includes('gemini') || model.includes('learnlm')) return 'gemma';
-    if (model.includes('jamba')) return 'jamba';
-    if (model.includes('qwen2') || model.includes('qwq')) return 'qwen2';
-    if (model.includes('command-a')) return 'command-a';
-    if (model.includes('command-r')) return 'command-r';
-    if (model.includes('nemo') || model.includes('pixtral')) return 'nemo';
-    if (model.includes('phi')) return 'gpt-3.5-turbo';
-    return 'gpt-3.5-turbo';
-}
-
 /** In-memory cache for backend-resolved tokenizer models (source:model → tokenizer name). */
 const _tokenizerResolveCache = new Map<string, string>();
 
@@ -678,19 +647,18 @@ export async function resolveTokenizerModel(source: string, model: string): Prom
         try {
             const res = await fetch('/api/tokenizers/resolve', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': await getCsrfToken() },
                 body: JSON.stringify({ source, model }),
             });
             if (res.ok) {
                 const data = await res.json();
-                const tokenizer = data?.tokenizer || resolveTokenizerFromModelName(model);
+                const tokenizer = data?.tokenizer || 'gpt-3.5-turbo';
                 _tokenizerResolveCache.set(cacheKey, tokenizer);
                 return tokenizer;
             }
-        } catch { /* fall through to heuristic */ }
-        const fallback = resolveTokenizerFromModelName(model);
-        _tokenizerResolveCache.set(cacheKey, fallback);
-        return fallback;
+        } catch { /* network error — use default */ }
+        _tokenizerResolveCache.set(cacheKey, 'gpt-3.5-turbo');
+        return 'gpt-3.5-turbo';
     })();
 
     _tokenizerPendingFetches.set(cacheKey, promise);
@@ -699,31 +667,8 @@ export async function resolveTokenizerModel(source: string, model: string): Prom
 }
 
 /**
- * Returns the current model name for a given chat-completion source.
- */
-function getCurrentModelForSource(source: string): string {
-    switch (source) {
-        case 'openai': return oai_settings.openai_model || '';
-        case 'claude': return oai_settings.claude_model || '';
-        case 'openrouter': return oai_settings.openrouter_model || '';
-        case 'deepseek': return oai_settings.deepseek_model || '';
-        case 'mistralai': return oai_settings.mistralai_model || '';
-        case 'cohere': return oai_settings.cohere_model || '';
-        case 'perplexity': return oai_settings.perplexity_model || '';
-        case 'groq': return oai_settings.groq_model || '';
-        case 'electronhub': return oai_settings.electronhub_model || '';
-        case 'chutes': return oai_settings.chutes_model || '';
-        case 'workers_ai': return oai_settings.workers_ai_model || '';
-        case 'custom': return oai_settings.custom_model || '';
-        case 'makersuite':
-        case 'vertexai': return oai_settings.google_model || '';
-        default: return '';
-    }
-}
-
-/**
  * Gets the tokenizer model name for the current chat-completion source and model.
- * Returns cached backend resolution, or falls back to a model-name heuristic.
+ * Returns cached backend resolution, or defaults to 'gpt-3.5-turbo' while async fetch is in-flight.
  */
 export function getTokenizerModel(): string {
     // OpenAI models directly pass through for tiktoken
@@ -737,7 +682,13 @@ export function getTokenizerModel(): string {
     }
 
     const source = oai_settings.chat_completion_source;
-    const model = getCurrentModelForSource(source);
+
+    // Dynamic property access: most sources follow `oai_settings.{source}_model`
+    // with two exceptions that alias to `google_model`.
+    const model = source === 'makersuite' || source === 'vertexai'
+        ? oai_settings.google_model || ''
+        : (oai_settings as unknown as Record<string, string>)[`${source}_model`] || '';
+
     if (!model) return 'gpt-3.5-turbo';
 
     const cacheKey = `${source}:${model}`;
@@ -745,10 +696,22 @@ export function getTokenizerModel(): string {
         return _tokenizerResolveCache.get(cacheKey)!;
     }
 
-    // Fire async resolution for next call, return heuristic now
+    // Fire async resolution for next call, return default now
     resolveTokenizerModel(source, model);
 
-    return resolveTokenizerFromModelName(model);
+    return 'gpt-3.5-turbo';
+}
+
+/** Pre-warm the tokenizer cache for the current source+model at init time. */
+function preWarmTokenizerCache(): void {
+    const source = oai_settings.chat_completion_source;
+    if (source === chat_completion_sources.OPENAI || source === chat_completion_sources.CUSTOM) return;
+
+    const model = source === 'makersuite' || source === 'vertexai'
+        ? oai_settings.google_model || ''
+        : (oai_settings as unknown as Record<string, string>)[`${source}_model`] || '';
+
+    if (model) resolveTokenizerModel(source, model);
 }
 
 /**
@@ -1201,6 +1164,7 @@ export async function initTokenizers() {
         }
     });
     await loadTokenCache();
+    preWarmTokenizerCache();
     registerDebugFunction('resetTokenCache', 'Reset token cache', 'Purges the calculated token counts. Use this if you want to force a full re-tokenization of all chats or suspect the token counts are wrong.', resetTokenCache);
 }
 
