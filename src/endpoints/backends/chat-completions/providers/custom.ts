@@ -6,6 +6,7 @@ import type { ChatProvider, ModelEntry } from '../types.js';
 
 const provider: ChatProvider = {
     source: CHAT_COMPLETION_SOURCES.CUSTOM,
+    secretKey: { id: 'CUSTOM', label: 'Custom (OpenAI-compatible)', category: 'chat-completion' },
     endpoints: { chat: '/chat/completions', models: '/models' },
     capabilities: {
         supportsStreaming: true,

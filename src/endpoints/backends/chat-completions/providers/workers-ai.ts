@@ -15,6 +15,7 @@ const API_WORKERS_AI = 'https://api.cloudflare.com/client/v4/accounts';
  */
 const provider: ChatProvider = {
     source: CHAT_COMPLETION_SOURCES.WORKERS_AI,
+    secretKey: { id: 'WORKERS_AI', label: 'Cloudflare Workers AI', category: 'chat-completion' },
     endpoints: { chat: '/chat/completions', models: '/models' },
     capabilities: {
         supportsStreaming: true,

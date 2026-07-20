@@ -5,6 +5,7 @@ import type { BackendProvider } from '../types.js';
 
 const provider: BackendProvider = {
     type: TEXTGEN_TYPES.OPENROUTER,
+    secretKey: { id: 'OPENROUTER', label: 'OpenRouter', category: 'textgen' },
     endpoints: { status: '/v1/models', generate: '/v1/chat/completions' },
 
     buildGenerateBody(body: Record<string, unknown>): Record<string, unknown> {

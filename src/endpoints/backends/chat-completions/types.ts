@@ -1,6 +1,7 @@
 import type express from 'express';
 import { CHAT_COMPLETION_SOURCES } from '../../../constants.js';
 import type { ModelEntry } from '../common/model-cache.js';
+import type { SecretKeyDescriptor } from '../common/key-types.js';
 export type { ModelEntry };
 
 // ── Types ──────────────────────────────────────────────────────────────────────
@@ -37,6 +38,9 @@ export interface ProviderEndpoints {
 export interface ChatProvider {
     /** CHAT_COMPLETION_SOURCES value this provider handles. */
     readonly source: string;
+
+    /** Secret key descriptor for API authentication. */
+    readonly secretKey: SecretKeyDescriptor;
 
     /** Endpoint paths (used when buildChatUrl/buildModelsUrl aren't overridden). */
     readonly endpoints: ProviderEndpoints;

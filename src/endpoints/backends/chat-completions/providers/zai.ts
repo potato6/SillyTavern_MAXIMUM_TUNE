@@ -1,5 +1,4 @@
 import { CHAT_COMPLETION_SOURCES, ZAI_ENDPOINT } from '../../../../constants.js';
-import { SECRET_KEYS } from '../../../secrets.js';
 import { createOAIChatProvider } from '../../common/openai-provider-base.js';
 import type { ModelEntry } from '../types.js';
 
@@ -9,7 +8,7 @@ const API_ZAI_CODING = 'https://api.z.ai/api/coding/paas/v4';
 const base = createOAIChatProvider({
     source: CHAT_COMPLETION_SOURCES.ZAI,
     defaultBase: API_ZAI_COMMON,
-    secretKey: SECRET_KEYS.ZAI,
+    secretKey: { id: 'ZAI', label: 'Z.AI', category: 'chat-completion' },
     supportsReverseProxy: true,
     extraHeaders: {
         'Accept-Language': 'en-US,en',

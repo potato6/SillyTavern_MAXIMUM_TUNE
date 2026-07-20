@@ -3,6 +3,7 @@ import { createOAITextProvider } from '../../common/openai-text-base.js';
 
 export default createOAITextProvider({
     type: TEXTGEN_TYPES.TOGETHERAI,
+    secretKey: { id: 'TOGETHERAI', label: 'TogetherAI', category: 'textgen' },
     allowedKeys: TOGETHERAI_KEYS,
     buildStatusResponse(data: unknown) {
         if (Array.isArray(data)) {

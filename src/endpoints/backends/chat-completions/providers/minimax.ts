@@ -10,6 +10,7 @@ const API_MINIMAX_CN = 'https://api.minimaxi.com/v1';
 
 const provider: ChatProvider = {
     source: CHAT_COMPLETION_SOURCES.MINIMAX,
+    secretKey: { id: 'MINIMAX', label: 'MiniMax', category: 'chat-completion' },
     endpoints: { chat: '/chat/completions', models: '/models' },
     capabilities: {
         supportsStreaming: true,

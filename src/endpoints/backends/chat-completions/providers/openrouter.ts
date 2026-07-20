@@ -53,6 +53,7 @@ async function isOpenRouterModelCacheable(modelId: string): Promise<boolean> {
 
 const provider: ChatProvider = {
     source: CHAT_COMPLETION_SOURCES.OPENROUTER,
+    secretKey: { id: 'OPENROUTER', label: 'OpenRouter', category: 'chat-completion' },
     endpoints: { chat: '/chat/completions', models: '/models' },
     capabilities: {
         supportsStreaming: true,

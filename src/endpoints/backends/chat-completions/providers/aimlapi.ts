@@ -1,5 +1,4 @@
 import { AIMLAPI_HEADERS, CHAT_COMPLETION_SOURCES } from '../../../../constants.js';
-import { SECRET_KEYS } from '../../../secrets.js';
 import { createOAIChatProvider } from '../../common/openai-provider-base.js';
 
 /**
@@ -11,7 +10,7 @@ import { createOAIChatProvider } from '../../common/openai-provider-base.js';
 export default createOAIChatProvider({
     source: CHAT_COMPLETION_SOURCES.AIMLAPI,
     defaultBase: 'https://api.aimlapi.com/v1',
-    secretKey: SECRET_KEYS.AIMLAPI,
+    secretKey: { id: 'AIMLAPI', label: 'AI/ML API', category: 'chat-completion' },
     supportsReverseProxy: false,
     extraHeaders: AIMLAPI_HEADERS,
     supportsStreaming: true,

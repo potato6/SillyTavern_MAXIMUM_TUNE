@@ -24,6 +24,7 @@ const enableAdaptiveThinking: any = getConfigValue('claude.enableAdaptiveThinkin
 
 const provider: ChatProvider = {
     source: CHAT_COMPLETION_SOURCES.CLAUDE,
+    secretKey: { id: 'CLAUDE', label: 'Claude', category: 'chat-completion' },
     endpoints: { chat: '/messages', models: '/models' },
     capabilities: {
         supportsStreaming: true,

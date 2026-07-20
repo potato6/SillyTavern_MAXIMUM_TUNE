@@ -1,5 +1,4 @@
 import { CHAT_COMPLETION_SOURCES, SILICONFLOW_ENDPOINT } from '../../../../constants.js';
-import { SECRET_KEYS } from '../../../secrets.js';
 import { createOAIChatProvider } from '../../common/openai-provider-base.js';
 import type { ModelEntry } from '../types.js';
 
@@ -9,7 +8,7 @@ const API_SILICONFLOW_CN = 'https://api.siliconflow.cn/v1';
 const base = createOAIChatProvider({
     source: CHAT_COMPLETION_SOURCES.SILICONFLOW,
     defaultBase: API_SILICONFLOW,
-    secretKey: SECRET_KEYS.SILICONFLOW,
+    secretKey: { id: 'SILICONFLOW', label: 'SiliconFlow', category: 'chat-completion' },
     supportsReverseProxy: true,
     modelsPath: '/models?type=text&sub_type=chat',
 });

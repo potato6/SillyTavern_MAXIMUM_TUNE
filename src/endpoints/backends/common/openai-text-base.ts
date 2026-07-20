@@ -11,10 +11,13 @@
 import { pickBy } from 'es-toolkit/compat';
 import type { BackendProvider } from '../text-completions/types.js';
 import { PROVIDER_ENDPOINTS } from '../text-completions/types.js';
+import type { SecretKeyDescriptor } from './key-types.js';
 
 export interface OAITextProviderConfig {
     /** TEXTGEN_TYPES value. */
     type: string;
+    /** Secret key descriptor for API authentication. */
+    secretKey: SecretKeyDescriptor;
     /** Allowed key whitelist. */
     allowedKeys: string[];
     /** Extra body mutations applied after key filtering. */
@@ -34,6 +37,7 @@ export interface OAITextProviderConfig {
 export function createOAITextProvider(cfg: OAITextProviderConfig): BackendProvider {
     const {
         type,
+        secretKey,
         allowedKeys,
         extraTransform,
         buildStatusResponse,
@@ -43,6 +47,7 @@ export function createOAITextProvider(cfg: OAITextProviderConfig): BackendProvid
 
     const provider: BackendProvider = {
         type,
+        secretKey,
         endpoints: PROVIDER_ENDPOINTS[type] ?? { status: '/v1/models', generate: '/v1/completions' },
 
         buildGenerateBody(body: Record<string, unknown>): Record<string, unknown> {

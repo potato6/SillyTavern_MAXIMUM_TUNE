@@ -9,6 +9,7 @@ const API_COHERE_V2 = 'https://api.cohere.ai/v2';
 
 const provider: ChatProvider = {
     source: CHAT_COMPLETION_SOURCES.COHERE,
+    secretKey: { id: 'COHERE', label: 'Cohere', category: 'chat-completion' },
     endpoints: { chat: '/chat', models: '/models' },
     capabilities: {
         supportsStreaming: true,

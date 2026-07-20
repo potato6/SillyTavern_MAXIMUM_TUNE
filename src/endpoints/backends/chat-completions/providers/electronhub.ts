@@ -1,11 +1,10 @@
 import { CHAT_COMPLETION_SOURCES } from '../../../../constants.js';
-import { SECRET_KEYS } from '../../../secrets.js';
 import { createOAIChatProvider } from '../../common/openai-provider-base.js';
 
 export default createOAIChatProvider({
     source: CHAT_COMPLETION_SOURCES.ELECTRONHUB,
     defaultBase: 'https://api.electronhub.ai/v1',
-    secretKey: SECRET_KEYS.ELECTRONHUB,
+    secretKey: { id: 'ELECTRONHUB', label: 'Electron Hub', category: 'chat-completion' },
     supportsReverseProxy: false,
     extraBodyParams: (req) => {
         const params: Record<string, unknown> = {};

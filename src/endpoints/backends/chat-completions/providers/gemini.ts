@@ -14,6 +14,7 @@ const API_VERTEX_AI = 'https://us-central1-aiplatform.googleapis.com';
 
 const provider: ChatProvider = {
     source: CHAT_COMPLETION_SOURCES.MAKERSUITE,
+    secretKey: { id: 'MAKERSUITE', label: 'Google AI Studio', category: 'chat-completion' },
     endpoints: { chat: '', models: '/models' },
     capabilities: {
         supportsStreaming: true,

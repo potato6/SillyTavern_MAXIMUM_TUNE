@@ -3,6 +3,7 @@ import { createOAITextProvider } from '../../common/openai-text-base.js';
 
 export default createOAITextProvider({
     type: TEXTGEN_TYPES.INFERMATICAI,
+    secretKey: { id: 'INFERMATICAI', label: 'InfermaticAI', category: 'textgen' },
     allowedKeys: INFERMATICAI_KEYS,
     transformGenerateResponse(data: Record<string, unknown>): Record<string, unknown> {
         if (Array.isArray(data.choices)) {

@@ -9,6 +9,7 @@ const API_AI21 = 'https://api.ai21.com/studio/v1';
 
 const provider: ChatProvider = {
     source: CHAT_COMPLETION_SOURCES.AI21,
+    secretKey: { id: 'AI21', label: 'AI21', category: 'chat-completion' },
     endpoints: { chat: '/chat/completions', models: '/models' },
     capabilities: {
         supportsStreaming: true,

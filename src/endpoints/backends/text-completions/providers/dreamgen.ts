@@ -3,6 +3,7 @@ import type { BackendProvider } from '../types.js';
 
 const provider: BackendProvider = {
     type: TEXTGEN_TYPES.DREAMGEN,
+    secretKey: { id: 'DREAMGEN', label: 'DreamGen', category: 'textgen' },
     endpoints: {
         status: '/api/openai/v1/models',
         generate: '/api/openai/v1/completions',

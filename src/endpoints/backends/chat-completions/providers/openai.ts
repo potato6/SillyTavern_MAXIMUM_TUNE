@@ -19,6 +19,7 @@ const API_OPENAI = 'https://api.openai.com/v1';
 
 const provider: ChatProvider = {
     source: CHAT_COMPLETION_SOURCES.OPENAI,
+    secretKey: { id: 'OPENAI', label: 'OpenAI', category: 'chat-completion' },
     endpoints: { chat: '/chat/completions', models: '/models' },
     capabilities: {
         supportsStreaming: true,

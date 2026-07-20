@@ -1,5 +1,4 @@
 import { CHAT_COMPLETION_SOURCES } from '../../../../constants.js';
-import { SECRET_KEYS } from '../../../secrets.js';
 import { createOAIChatProvider } from '../../common/openai-provider-base.js';
 
 /**
@@ -11,7 +10,7 @@ import { createOAIChatProvider } from '../../common/openai-provider-base.js';
 export default createOAIChatProvider({
     source: CHAT_COMPLETION_SOURCES.PERPLEXITY,
     defaultBase: 'https://api.perplexity.ai',
-    secretKey: SECRET_KEYS.PERPLEXITY,
+    secretKey: { id: 'PERPLEXITY', label: 'Perplexity', category: 'chat-completion' },
     supportsReverseProxy: true,
     supportsStreaming: true,
     supportsVision: true,

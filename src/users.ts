@@ -488,7 +488,7 @@ export async function migrateSystemPrompts() {
             // Only leave unique contents
             migratedPrompts = uniqBy(migratedPrompts, item => item.content);
             // Only leave contents that are not in the default prompts
-            migratedPrompts = migratedPrompts.filter(x => !defaultPrompts.some((y: any) => y.content === x.content));
+            migratedPrompts = migratedPrompts.filter(x => !defaultPrompts.some((y: { content: string }) => y.content === x.content));
             for (const sysPromptData of migratedPrompts) {
                 sysPromptData.name = `[Migrated] ${sysPromptData.name}`;
                 const syspromptPath = path.join(directory.sysprompt, `${sysPromptData.name}.json`);

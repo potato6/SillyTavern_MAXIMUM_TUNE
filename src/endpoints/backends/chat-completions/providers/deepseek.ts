@@ -1,5 +1,4 @@
 import { CHAT_COMPLETION_SOURCES } from '../../../../constants.js';
-import { SECRET_KEYS } from '../../../secrets.js';
 import { createOAIChatProvider } from '../../common/openai-provider-base.js';
 
 /**
@@ -11,7 +10,7 @@ import { createOAIChatProvider } from '../../common/openai-provider-base.js';
 export default createOAIChatProvider({
     source: CHAT_COMPLETION_SOURCES.DEEPSEEK,
     defaultBase: 'https://api.deepseek.com/beta',
-    secretKey: SECRET_KEYS.DEEPSEEK,
+    secretKey: { id: 'DEEPSEEK', label: 'DeepSeek', category: 'chat-completion' },
     supportsReverseProxy: true,
     supportsStreaming: true,
     supportsVision: true,

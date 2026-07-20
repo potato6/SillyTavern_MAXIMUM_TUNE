@@ -3,6 +3,7 @@ import type { BackendProvider } from '../types.js';
 
 const provider: BackendProvider = {
     type: TEXTGEN_TYPES.TABBY,
+    secretKey: { id: 'TABBY', label: 'TabbyAPI', category: 'textgen' },
     endpoints: { status: '/v1/model/list', generate: '/v1/completions' },
 
     async getModelId(baseUrl: string, headers: Record<string, string>) {

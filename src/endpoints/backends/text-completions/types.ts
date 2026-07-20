@@ -1,4 +1,5 @@
 import { TEXTGEN_TYPES } from '../../../constants.js';
+import type { SecretKeyDescriptor } from '../common/key-types.js';
 
 /**
  * Endpoint URL suffixes for each provider.
@@ -18,6 +19,9 @@ export interface ProviderEndpoints {
 export interface BackendProvider {
     /** The TEXTGEN_TYPES value this provider handles. */
     type: string;
+
+    /** Secret key descriptor for API authentication. */
+    secretKey: SecretKeyDescriptor;
 
     /** Endpoint URL suffixes. */
     endpoints: ProviderEndpoints;

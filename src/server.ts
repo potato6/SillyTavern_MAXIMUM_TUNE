@@ -61,6 +61,7 @@ import { router as nanogptRouter } from './endpoints/nanogpt.js';
 import { router as chatCompletionsRouter } from './endpoints/backends/chat-completions/index.js';
 import { router as koboldRouter } from './endpoints/backends/kobold.js';
 import { router as textCompletionsRouter } from './endpoints/backends/text-completions/index.js';
+import { router as backendsKeysRouter } from './endpoints/backends/keys.js';
 import { router as speechRouter } from './endpoints/speech.js';
 import { router as azureRouter } from './endpoints/azure.js';
 import { router as minimaxRouter } from './endpoints/minimax.js';
@@ -214,6 +215,7 @@ export function setupPrivateEndpoints(app: import('express').Express) {
     app.use('/api/nanogpt', nanogptRouter);
     app.use('/api/backends/kobold', koboldRouter);
     app.use('/api/backends/chat-completions', chatCompletionsRouter);
+    app.use('/api/backends/keys', backendsKeysRouter);
     app.use('/api/speech', speechRouter);
     app.use('/api/azure', azureRouter);
     app.use('/api/volcengine', volcengineRouter);

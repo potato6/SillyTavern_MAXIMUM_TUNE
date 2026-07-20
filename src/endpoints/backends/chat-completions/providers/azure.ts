@@ -5,6 +5,7 @@ import type { ChatProvider, ModelEntry } from '../types.js';
 
 const provider: ChatProvider = {
     source: CHAT_COMPLETION_SOURCES.AZURE_OPENAI,
+    secretKey: { id: 'AZURE_OPENAI', label: 'Azure OpenAI', category: 'chat-completion' },
     endpoints: { chat: '', models: '' },
     capabilities: {
         supportsStreaming: true,

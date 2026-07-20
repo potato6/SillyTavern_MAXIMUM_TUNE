@@ -29,159 +29,166 @@ function deriveKey(name: string): string {
     return (KEY_OVERRIDES as Record<string, string>)[name] ?? `api_key_${name.toLowerCase()}`;
 }
 
-const STANDARD_EXTRAS = [
-    'HORDE', 'NOVEL', 'SERPAPI', 'STABILITY', 'AZURE_TTS',
-    'CUSTOM_OPENAI_TTS', 'TAVILY', 'BFL', 'COMFY_RUNPOD',
-    'FALAI', 'SERPER', 'ELEVENLABS', 'NOMICAI',
-] as const;
+// ── Dynamic key registry (populated from /api/backends/keys) ────────────────
 
-const CHAT_COMPLETION_SOURCE_NAMES = [
-    'OPENAI', 'CLAUDE', 'OPENROUTER', 'AI21', 'MAKERSUITE',
-    'VERTEXAI', 'MISTRALAI', 'CUSTOM', 'COHERE', 'PERPLEXITY',
-    'GROQ', 'ELECTRONHUB', 'CHUTES', 'NANOGPT', 'DEEPSEEK',
-    'AIMLAPI', 'XAI', 'POLLINATIONS', 'MOONSHOT', 'FIREWORKS',
-    'COMETAPI', 'AZURE_OPENAI', 'ZAI', 'SILICONFLOW',
-    'WORKERS_AI', 'MINIMAX',
-] as const;
+/** All known secret key IDs (for strict typechecking with noUncheckedIndexedAccess). */
+type SecretKeyName =
+    // Chat-completion providers
+    | 'OPENAI' | 'CLAUDE' | 'OPENROUTER' | 'AI21' | 'MAKERSUITE'
+    | 'VERTEXAI' | 'MISTRALAI' | 'CUSTOM' | 'COHERE' | 'PERPLEXITY'
+    | 'GROQ' | 'ELECTRONHUB' | 'CHUTES' | 'NANOGPT' | 'DEEPSEEK'
+    | 'AIMLAPI' | 'XAI' | 'POLLINATIONS' | 'MOONSHOT' | 'FIREWORKS'
+    | 'COMETAPI' | 'AZURE_OPENAI' | 'ZAI' | 'SILICONFLOW' | 'WORKERS_AI' | 'MINIMAX'
+    // Textgen providers
+    | 'OOBA' | 'MANCER' | 'VLLM' | 'APHRODITE' | 'TABBY'
+    | 'KOBOLDCPP' | 'TOGETHERAI' | 'LLAMACPP' | 'OLLAMA'
+    | 'INFERMATICAI' | 'DREAMGEN' | 'FEATHERLESS' | 'HUGGINGFACE' | 'GENERIC'
+    // KEY_OVERRIDES keys
+    | keyof typeof KEY_OVERRIDES
+    // STANDARD_EXTRAS (non-provider services)
+    | 'HORDE' | 'NOVEL' | 'SERPAPI' | 'STABILITY' | 'AZURE_TTS'
+    | 'CUSTOM_OPENAI_TTS' | 'TAVILY' | 'BFL' | 'COMFY_RUNPOD'
+    | 'FALAI' | 'SERPER' | 'ELEVENLABS' | 'NOMICAI';
 
-const TEXTGEN_TYPE_NAMES = [
-    'OOBA', 'MANCER', 'VLLM', 'APHRODITE', 'TABBY',
-    'KOBOLDCPP', 'TOGETHERAI', 'LLAMACPP', 'OLLAMA',
-    'INFERMATICAI', 'DREAMGEN', 'OPENROUTER', 'FEATHERLESS',
-    'HUGGINGFACE', 'GENERIC',
-] as const;
+interface KeyDescriptor {
+    id: string;
+    label: string;
+    storageKey?: string;
+    selector?: string;
+    category?: string;
+}
 
-type ChatSourceKey = typeof CHAT_COMPLETION_SOURCE_NAMES[number];
-type TextgenKey = typeof TEXTGEN_TYPE_NAMES[number];
-type OverrideKey = keyof typeof KEY_OVERRIDES;
-type ExtraKey = typeof STANDARD_EXTRAS[number];
-type SecretKeyName = ChatSourceKey | TextgenKey | OverrideKey | ExtraKey;
+let _keyDescriptors: KeyDescriptor[] = [];
+const _friendlyNames: Record<string, string> = {};
+const _inputMap: Record<string, string> = {};
 
-const chat_completion_sources = Object.fromEntries(
-    CHAT_COMPLETION_SOURCE_NAMES.map(k => [k, k.toLowerCase()])
-) as { [K in ChatSourceKey]: string };
+/**
+ * Fetch key descriptors from the backend provider registries.
+ * Populates SECRET_KEYS, FRIENDLY_NAMES, and INPUT_MAP.
+ */
+async function initKeyRegistry(): Promise<void> {
+    try {
+        const response = await fetch('/api/backends/keys');
+        if (!response.ok) {
+            console.warn('Failed to load key registry, using fallback');
+            return;
+        }
+        const descriptors: KeyDescriptor[] = await response.json();
+        _keyDescriptors = descriptors;
 
-const textgen_types = Object.fromEntries(
-    TEXTGEN_TYPE_NAMES.map(k => [k, k.toLowerCase()])
-) as { [K in TextgenKey]: string };
+        for (const d of descriptors) {
+            const storageKey = d.storageKey ?? `api_key_${d.id.toLowerCase()}`;
+            _keyStore[d.id] = storageKey;
+            _friendlyNames[storageKey] = d.label;
+            if (d.selector) {
+                _inputMap[storageKey] = d.selector;
+            }
+        }
 
-export const SECRET_KEYS = Object.fromEntries(
-    [...new Set([
-        ...(CHAT_COMPLETION_SOURCE_NAMES as unknown as string[]),
-        ...(TEXTGEN_TYPE_NAMES as unknown as string[]),
-        ...(Object.keys(KEY_OVERRIDES) as string[]),
-        ...(STANDARD_EXTRAS as unknown as string[]),
-    ])].map(name => [name as string, deriveKey(name as string)])
-) as { [K in SecretKeyName]: string } & Record<string, string>;
+        // Apply INPUT_MAP overrides for non-standard selectors
+        // (convention is #api_key_{id}, but some keys differ)
+        _inputMap[_keyStore['HORDE'] ?? 'horde_api_key'] = '#horde_api_key';
+        _inputMap[_keyStore['OPENROUTER'] ?? 'api_key_openrouter'] = '.api_key_openrouter';
+        _inputMap[_keyStore['VERTEXAI_SERVICE_ACCOUNT'] ?? 'vertexai_service_account_json'] = '#vertexai_service_account_json';
+        // For all known keys without an explicit selector, derive one
+        for (const d of descriptors) {
+            const storageKey = d.storageKey ?? `api_key_${d.id.toLowerCase()}`;
+            if (!_inputMap[storageKey] && d.category !== 'translation' && d.category !== 'search' && d.category !== 'image' && d.id !== 'NOVEL' && d.id !== 'HORDE' && d.id !== 'NOMICAI') {
+                _inputMap[storageKey] = `#api_key_${d.id.toLowerCase()}`;
+            }
+        }
+    } catch (error) {
+        console.error('Could not load key registry:', error);
+    }
+}
 
-const FRIENDLY_NAMES: Record<string, string> = {
-    [SECRET_KEYS.HORDE]: 'AI Horde',
-    [SECRET_KEYS.MANCER]: 'Mancer',
-    [SECRET_KEYS.OPENAI]: 'OpenAI',
-    [SECRET_KEYS.NOVEL]: 'NovelAI',
-    [SECRET_KEYS.CLAUDE]: 'Claude',
-    [SECRET_KEYS.OPENROUTER]: 'OpenRouter',
-    [SECRET_KEYS.AI21]: 'AI21',
-    [SECRET_KEYS.MAKERSUITE]: 'Google AI Studio',
-    [SECRET_KEYS.VERTEXAI]: 'Google Vertex AI (Express Mode)',
-    [SECRET_KEYS.VLLM]: 'vLLM',
-    [SECRET_KEYS.APHRODITE]: 'Aphrodite',
-    [SECRET_KEYS.TABBY]: 'TabbyAPI',
-    [SECRET_KEYS.MISTRALAI]: 'MistralAI',
-    [SECRET_KEYS.CUSTOM]: 'Custom (OpenAI-compatible)',
-    [SECRET_KEYS.TOGETHERAI]: 'TogetherAI',
-    [SECRET_KEYS.OOBA]: 'Text Generation WebUI',
-    [SECRET_KEYS.INFERMATICAI]: 'InfermaticAI',
-    [SECRET_KEYS.DREAMGEN]: 'DreamGen',
-    [SECRET_KEYS.NOMICAI]: 'NomicAI',
-    [SECRET_KEYS.KOBOLDCPP]: 'KoboldCpp',
-    [SECRET_KEYS.LLAMACPP]: 'llama.cpp',
-    [SECRET_KEYS.COHERE]: 'Cohere',
-    [SECRET_KEYS.PERPLEXITY]: 'Perplexity',
-    [SECRET_KEYS.GROQ]: 'Groq',
-    [SECRET_KEYS.FEATHERLESS]: 'Featherless',
-    [SECRET_KEYS.HUGGINGFACE]: 'HuggingFace',
-    [SECRET_KEYS.CHUTES]: 'Chutes',
-    [SECRET_KEYS.ELECTRONHUB]: 'Electron Hub',
-    [SECRET_KEYS.NANOGPT]: 'NanoGPT',
-    [SECRET_KEYS.GENERIC]: 'Generic (OpenAI-compatible)',
-    [SECRET_KEYS.DEEPSEEK]: 'DeepSeek',
-    [SECRET_KEYS.XAI]: 'xAI (Grok)',
-    [SECRET_KEYS.VERTEXAI_SERVICE_ACCOUNT]: 'Google Vertex AI (Service Account)',
-    [SECRET_KEYS.STABILITY]: 'Stability AI',
-    [SECRET_KEYS.CUSTOM_OPENAI_TTS]: 'Custom OpenAI TTS',
-    [SECRET_KEYS.TAVILY]: 'Tavily',
-    [SECRET_KEYS.BFL]: 'Black Forest Labs',
-    [SECRET_KEYS.COMFY_RUNPOD]: 'ComfyUI RunPod',
-    [SECRET_KEYS.SERPAPI]: 'SerpApi',
-    [SECRET_KEYS.SERPER]: 'Serper',
-    [SECRET_KEYS.FALAI]: 'FAL.AI',
-    [SECRET_KEYS.AZURE_TTS]: 'Azure TTS',
-    [SECRET_KEYS.AIMLAPI]: 'AI/ML API',
-    [SECRET_KEYS.FIREWORKS]: 'Fireworks AI',
-    [SECRET_KEYS.DEEPL]: 'DeepL',
-    [SECRET_KEYS.LIBRE]: 'LibreTranslate',
-    [SECRET_KEYS.LIBRE_URL]: 'LibreTranslate Endpoint (e.g. http://127.0.0.1:5000/translate)',
-    [SECRET_KEYS.LINGVA_URL]: 'Lingva Endpoint (e.g. https://lingva.ml/api/v1)',
-    [SECRET_KEYS.ONERING_URL]: 'OneRingTranslator Endpoint (e.g. http://127.0.0.1:4990/translate)',
-    [SECRET_KEYS.DEEPLX_URL]: 'DeepLX Endpoint (e.g. http://127.0.0.1:1188/translate)',
-    [SECRET_KEYS.MINIMAX]: 'MiniMax',
-    [SECRET_KEYS.MINIMAX_GROUP_ID]: 'MiniMax Group ID',
-    [SECRET_KEYS.MOONSHOT]: 'Moonshot AI',
-    [SECRET_KEYS.COMETAPI]: 'CometAPI',
-    [SECRET_KEYS.AZURE_OPENAI]: 'Azure OpenAI',
-    [SECRET_KEYS.ZAI]: 'Z.AI',
-    [SECRET_KEYS.SILICONFLOW]: 'SiliconFlow',
-    [SECRET_KEYS.ELEVENLABS]: 'ElevenLabs TTS',
-    [SECRET_KEYS.POLLINATIONS]: 'Pollinations',
-    [SECRET_KEYS.VOLCENGINE_APP_ID]: 'Volcengine App ID',
-    [SECRET_KEYS.VOLCENGINE_ACCESS_KEY]: 'Volcengine Access Key',
-    [SECRET_KEYS.WORKERS_AI]: 'Cloudflare Workers AI',
+/** Internal mutable target for the SECRET_KEYS proxy. */
+const _keyStore: Record<string, string> = { ...KEY_OVERRIDES };
+
+/**
+ * Map of provider name → storage key string.
+ *
+ * Lazily derived on first access; populated from the backend registry
+ * when initKeyRegistry() runs. All 14+ consumers that reference
+ * `SECRET_KEYS.OPENAI` continue to work synchronously.
+ */
+export const SECRET_KEYS = new Proxy(_keyStore, {
+    get(target, prop: string) {
+        if (prop in target) return target[prop];
+        const derived = deriveKey(prop);
+        (target as Record<string, string>)[prop] = derived;
+        return derived;
+    },
+    has(target, prop: string) {
+        return prop in target || (KEY_OVERRIDES as Record<string, string>)[prop] !== undefined;
+    },
+    ownKeys() {
+        const known = new Set(Object.keys(_keyStore));
+        for (const d of _keyDescriptors) known.add(d.id);
+        return [...known];
+    },
+    getOwnPropertyDescriptor(_target, prop: string) {
+        if (typeof prop === 'string' && (prop in _keyStore || (KEY_OVERRIDES as Record<string, string>)[prop] !== undefined || _keyDescriptors.some(d => d.id === prop))) {
+            return { configurable: true, enumerable: true, writable: true, value: SECRET_KEYS[prop] };
+        }
+    },
+}) as { [K in SecretKeyName]: string } & Record<string, string>;
+
+/**
+ * Friendly display names for secret keys (populated from registry).
+ */
+export function getSecretFriendlyName(storageKey: string): string | undefined {
+    return _friendlyNames[storageKey];
+}
+
+export const FRIENDLY_NAMES: Record<string, string> = new Proxy({} as Record<string, string>, {
+    get(_target, prop: string) {
+        return _friendlyNames[prop] ?? prop;
+    },
+    ownKeys() {
+        return Object.keys(_friendlyNames);
+    },
+    getOwnPropertyDescriptor(_target, prop: string) {
+        if (prop in _friendlyNames) {
+            return { configurable: true, enumerable: true, value: _friendlyNames[prop] };
+        }
+    },
+});
+
+export const INPUT_MAP: Record<string, string> = new Proxy({} as Record<string, string>, {
+    get(_target, prop: string) {
+        return _inputMap[prop];
+    },
+    ownKeys() {
+        return Object.keys(_inputMap);
+    },
+    getOwnPropertyDescriptor(_target, prop: string) {
+        if (prop in _inputMap) {
+            return { configurable: true, enumerable: true, value: _inputMap[prop] };
+        }
+    },
+});
+
+// ── Local lookup maps (used by resolveSecretKey) ────────────────────────────
+
+const chat_completion_sources: Record<string, string> = {
+    OPENAI: 'openai', CLAUDE: 'claude', OPENROUTER: 'openrouter',
+    AI21: 'ai21', MAKERSUITE: 'makersuite', VERTEXAI: 'vertexai',
+    MISTRALAI: 'mistralai', CUSTOM: 'custom', COHERE: 'cohere',
+    PERPLEXITY: 'perplexity', GROQ: 'groq', CHUTES: 'chutes',
+    ELECTRONHUB: 'electronhub', NANOGPT: 'nanogpt', DEEPSEEK: 'deepseek',
+    AIMLAPI: 'aimlapi', XAI: 'xai', POLLINATIONS: 'pollinations',
+    MOONSHOT: 'moonshot', FIREWORKS: 'fireworks', COMETAPI: 'cometapi',
+    AZURE_OPENAI: 'azure_openai', ZAI: 'zai', SILICONFLOW: 'siliconflow',
+    MINIMAX: 'minimax', WORKERS_AI: 'workers_ai',
 };
 
-const INPUT_MAP: Record<string, string> = {
-    [SECRET_KEYS.HORDE]: '#horde_api_key',
-    [SECRET_KEYS.MANCER]: '#api_key_mancer',
-    [SECRET_KEYS.OPENAI]: '#api_key_openai',
-    [SECRET_KEYS.NOVEL]: '#api_key_novel',
-    [SECRET_KEYS.CLAUDE]: '#api_key_claude',
-    [SECRET_KEYS.OPENROUTER]: '.api_key_openrouter',
-    [SECRET_KEYS.AI21]: '#api_key_ai21',
-    [SECRET_KEYS.MAKERSUITE]: '#api_key_makersuite',
-    [SECRET_KEYS.VERTEXAI]: '#api_key_vertexai',
-    [SECRET_KEYS.VLLM]: '#api_key_vllm',
-    [SECRET_KEYS.APHRODITE]: '#api_key_aphrodite',
-    [SECRET_KEYS.TABBY]: '#api_key_tabby',
-    [SECRET_KEYS.MISTRALAI]: '#api_key_mistralai',
-    [SECRET_KEYS.CUSTOM]: '#api_key_custom',
-    [SECRET_KEYS.TOGETHERAI]: '#api_key_togetherai',
-    [SECRET_KEYS.OOBA]: '#api_key_ooba',
-    [SECRET_KEYS.INFERMATICAI]: '#api_key_infermaticai',
-    [SECRET_KEYS.DREAMGEN]: '#api_key_dreamgen',
-    [SECRET_KEYS.KOBOLDCPP]: '#api_key_koboldcpp',
-    [SECRET_KEYS.LLAMACPP]: '#api_key_llamacpp',
-    [SECRET_KEYS.COHERE]: '#api_key_cohere',
-    [SECRET_KEYS.PERPLEXITY]: '#api_key_perplexity',
-    [SECRET_KEYS.GROQ]: '#api_key_groq',
-    [SECRET_KEYS.FEATHERLESS]: '#api_key_featherless',
-    [SECRET_KEYS.HUGGINGFACE]: '#api_key_huggingface',
-    [SECRET_KEYS.CHUTES]: '#api_key_chutes',
-    [SECRET_KEYS.ELECTRONHUB]: '#api_key_electronhub',
-    [SECRET_KEYS.NANOGPT]: '#api_key_nanogpt',
-    [SECRET_KEYS.GENERIC]: '#api_key_generic',
-    [SECRET_KEYS.DEEPSEEK]: '#api_key_deepseek',
-    [SECRET_KEYS.AIMLAPI]: '#api_key_aimlapi',
-    [SECRET_KEYS.XAI]: '#api_key_xai',
-    [SECRET_KEYS.VERTEXAI_SERVICE_ACCOUNT]: '#vertexai_service_account_json',
-    [SECRET_KEYS.MOONSHOT]: '#api_key_moonshot',
-    [SECRET_KEYS.FIREWORKS]: '#api_key_fireworks',
-    [SECRET_KEYS.COMETAPI]: '#api_key_cometapi',
-    [SECRET_KEYS.AZURE_OPENAI]: '#api_key_azure_openai',
-    [SECRET_KEYS.ZAI]: '#api_key_zai',
-    [SECRET_KEYS.SILICONFLOW]: '#api_key_siliconflow',
-    [SECRET_KEYS.MINIMAX]: '#api_key_minimax',
-    [SECRET_KEYS.POLLINATIONS]: '#api_key_pollinations',
-    [SECRET_KEYS.WORKERS_AI]: '#api_key_workers_ai',
+const textgen_types: Record<string, string> = {
+    OOBA: 'ooba', MANCER: 'mancer', VLLM: 'vllm', APHRODITE: 'aphrodite',
+    TABBY: 'tabby', KOBOLDCPP: 'koboldcpp', TOGETHERAI: 'togetherai',
+    LLAMACPP: 'llamacpp', OLLAMA: 'ollama', INFERMATICAI: 'infermaticai',
+    DREAMGEN: 'dreamgen', OPENROUTER: 'openrouter', FEATHERLESS: 'featherless',
+    HUGGINGFACE: 'huggingface', GENERIC: 'generic',
 };
 
 const getLabel = () => moment().format('L LT');
@@ -1175,6 +1182,7 @@ function registerSecretSlashCommands() {
  *
  */
 export async function initSecrets() {
+    await initKeyRegistry();
     document.getElementById('viewSecrets')?.addEventListener('click', viewSecrets);
     document.addEventListener('click', async function (e: Event) {
         if (!(e.target instanceof Element)) return;

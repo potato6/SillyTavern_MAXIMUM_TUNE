@@ -10,6 +10,7 @@ const API_MISTRAL = 'https://api.mistral.ai/v1';
 
 const provider: ChatProvider = {
     source: CHAT_COMPLETION_SOURCES.MISTRALAI,
+    secretKey: { id: 'MISTRALAI', label: 'Mistral AI', category: 'chat-completion' },
     endpoints: { chat: '/chat/completions', models: '/models' },
     capabilities: {
         supportsStreaming: true,

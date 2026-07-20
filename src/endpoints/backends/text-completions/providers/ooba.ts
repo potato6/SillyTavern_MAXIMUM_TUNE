@@ -3,6 +3,7 @@ import type { BackendProvider } from '../types.js';
 
 const provider: BackendProvider = {
     type: TEXTGEN_TYPES.OOBA,
+    secretKey: { id: 'OOBA', label: 'Text Generation WebUI', category: 'textgen' },
     endpoints: { status: '/v1/models', generate: '/v1/completions' },
 
     async getModelId(baseUrl: string, headers: Record<string, string>) {

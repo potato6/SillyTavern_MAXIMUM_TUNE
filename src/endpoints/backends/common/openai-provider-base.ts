@@ -14,14 +14,16 @@
 
 import type { ChatProvider, ModelEntry } from '../chat-completions/types.js';
 import { proxyRequest } from './proxy.js';
+import { deriveStorageKey } from './key-types.js';
+import type { SecretKeyDescriptor } from './key-types.js';
 
 export interface OAIConfig {
     /** CHAT_COMPLETION_SOURCES value. */
     source: string;
     /** Default base URL (overridable via reverse_proxy). */
     defaultBase: string;
-    /** SECRET_KEYS entry to read the API key from. */
-    secretKey: string;
+    /** Secret key descriptor for API authentication. */
+    secretKey: SecretKeyDescriptor;
     /** Whether the provider supports reverse_proxy. */
     supportsReverseProxy?: boolean;
     /** Extra headers to include on every request. */
@@ -59,6 +61,7 @@ export function createOAIChatProvider(cfg: OAIConfig): ChatProvider {
 
     return {
         source,
+        secretKey,
         endpoints: { chat: '/chat/completions', models: modelsPath },
         capabilities: { supportsStreaming, supportsVision, supportsTools, supportsReasoning },
 
@@ -70,7 +73,7 @@ export function createOAIChatProvider(cfg: OAIConfig): ChatProvider {
             const apiKey = supportsReverseProxy && req.body.reverse_proxy
                 ? req.body.proxy_password
                 : (await import('../../secrets.js')).readSecret(
-                    req.user.directories, secretKey, req.body.secret_id);
+                    req.user.directories, deriveStorageKey(secretKey), req.body.secret_id);
 
             if (!apiKey && !req.body.reverse_proxy) {
                 console.warn(`${source} API key is missing.`);
@@ -136,7 +139,7 @@ export function createOAIChatProvider(cfg: OAIConfig): ChatProvider {
             const apiKey = supportsReverseProxy && req.body.reverse_proxy
                 ? req.body.proxy_password
                 : (await import('../../secrets.js')).readSecret(
-                    req.user.directories, secretKey, req.body.secret_id);
+                    req.user.directories, deriveStorageKey(secretKey), req.body.secret_id);
 
             if (!apiKey && !req.body.reverse_proxy) return [];
 

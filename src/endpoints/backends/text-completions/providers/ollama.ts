@@ -6,6 +6,7 @@ import type { BackendProvider } from '../types.js';
 
 const provider: BackendProvider = {
     type: TEXTGEN_TYPES.OLLAMA,
+    secretKey: { id: 'OLLAMA', label: 'Ollama', category: 'textgen' },
     endpoints: { status: '/api/tags', generate: '/api/generate' },
 
     buildGenerateBody(body: Record<string, unknown>): Record<string, unknown> {
