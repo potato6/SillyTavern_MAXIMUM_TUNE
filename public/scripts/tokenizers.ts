@@ -58,22 +58,8 @@ export const tokenizers = {
 };
 
 // A list of local tokenizers that support encoding and decoding token ids.
-export const ENCODE_TOKENIZERS = [
-    tokenizers.LLAMA,
-    tokenizers.MISTRAL,
-    tokenizers.YI,
-    tokenizers.LLAMA3,
-    tokenizers.GEMMA,
-    tokenizers.JAMBA,
-    tokenizers.QWEN2,
-    tokenizers.COMMAND_R,
-    tokenizers.COMMAND_A,
-    tokenizers.NEMO,
-    tokenizers.DEEPSEEK,
-    // uncomment when NovelAI releases Kayra and Clio weights, lol
-    //tokenizers.NERD,
-    //tokenizers.NERD2,
-];
+// Populated at init from GET /api/tokenizers/map.
+export const ENCODE_TOKENIZERS: number[] = [];
 
 /**
  * A list of Text Completion sources that support remote tokenization.
@@ -89,24 +75,16 @@ const TOKENIZER_BASE = '/api/tokenizers';
 const TOKENIZER_REMOTE_KOBOLD = `${TOKENIZER_BASE}/remote/kobold/count`;
 const TOKENIZER_REMOTE_TEXTGEN = `${TOKENIZER_BASE}/remote/textgenerationwebui/encode`;
 
-/** Maps numeric tokenizer IDs to their backend name strings for generic endpoints. */
-const TOKENIZER_NAME_BY_ID: Record<number, string> = {
-    [tokenizers.GPT2]:      'gpt2',
-    [tokenizers.LLAMA]:     'llama',
-    [tokenizers.NERD]:      'nerdstash',
-    [tokenizers.NERD2]:     'nerdstash_v2',
-    [tokenizers.MISTRAL]:   'mistral',
-    [tokenizers.YI]:        'yi',
-    [tokenizers.CLAUDE]:    'claude',
-    [tokenizers.LLAMA3]:    'llama3',
-    [tokenizers.GEMMA]:     'gemma',
-    [tokenizers.JAMBA]:     'jamba',
-    [tokenizers.QWEN2]:     'qwen2',
-    [tokenizers.COMMAND_R]: 'command-r',
-    [tokenizers.COMMAND_A]: 'command-a',
-    [tokenizers.NEMO]:      'nemo',
-    [tokenizers.DEEPSEEK]:  'deepseek',
-};
+/** Maps numeric tokenizer IDs to their backend name strings. Populated at init. */
+let _tokenizerNameById: Record<number, string> = {};
+
+/**
+ * Resolves a numeric tokenizer ID to a backend name, falling back to
+ * getTokenizerModel() for dynamically-resolved OpenAI-compatible names.
+ */
+function resolveTokenizerName(id: number): string {
+    return _tokenizerNameById[id] || getTokenizerModel();
+}
 
 const textEncoder = new TextEncoder();
 const objectStore = localspace.createInstance({ name: 'SillyTavern_ChatCompletions' });
@@ -374,7 +352,7 @@ function callTokenizer(type, str) {
             // @ts-expect-error TS(2554) FIXME: Expected 2 arguments, but got 1.
             return countTokensFromTextgenAPI(str);
         default: {
-            const tokenizerName = TOKENIZER_NAME_BY_ID[type] || getTokenizerModel();
+            const tokenizerName = resolveTokenizerName(type);
             // @ts-expect-error TS(2554) FIXME: Expected 3 arguments, but got 2.
             return genericCountTokens(tokenizerName, str);
         }
@@ -402,7 +380,7 @@ function callTokenizerAsync(type, str) {
             case tokenizers.API_TEXTGENERATIONWEBUI:
                 return countTokensFromTextgenAPI(str, resolve);
             default: {
-                const tokenizerName = TOKENIZER_NAME_BY_ID[type] || getTokenizerModel();
+                const tokenizerName = resolveTokenizerName(type);
                 return genericCountTokens(tokenizerName, str, resolve);
             }
         }
@@ -1005,7 +983,7 @@ export function getTextTokens(tokenizerType, str) {
             // @ts-expect-error TS(2554) FIXME: Expected 2 arguments, but got 1.
             return getTextTokensFromKoboldAPI(str);
         default: {
-            const tokenizerName = TOKENIZER_NAME_BY_ID[tokenizerType] || getTokenizerModel();
+            const tokenizerName = resolveTokenizerName(tokenizerType);
             return genericGetTextTokens(tokenizerName, str);
         }
     }
@@ -1023,14 +1001,38 @@ export function decodeTextTokens(tokenizerType, ids) {
     if (tokenizerType === tokenizers.API_CURRENT) {
         return decodeTextTokens(tokenizers.NONE, ids);
     }
-    const tokenizerName = TOKENIZER_NAME_BY_ID[tokenizerType] || getTokenizerModel();
+    const tokenizerName = resolveTokenizerName(tokenizerType);
     return genericDecodeTokens(tokenizerName, ids);
+}
+
+/**
+ * Fetches the tokenizer map from the backend and populates the local
+ * lookup tables (ENCODE_TOKENIZERS, _tokenizerNameById).
+ */
+async function loadTokenizerMap(): Promise<void> {
+    try {
+        const res = await fetch(`${TOKENIZER_BASE}/map`);
+        if (!res.ok) return;
+        const data = await res.json();
+        const list: { id: number; name: string; supportsEncode: boolean }[] = data?.tokenizers || [];
+        const nameById: Record<number, string> = {};
+        for (const t of list) {
+            if (t.id >= 0) nameById[t.id] = t.name;
+            if (t.supportsEncode && t.id >= 0) {
+                (ENCODE_TOKENIZERS as number[]).push(t.id);
+            }
+        }
+        _tokenizerNameById = nameById;
+    } catch (e) {
+        console.warn('Failed to load tokenizer map from backend', e);
+    }
 }
 
 /**
  *
  */
 export async function initTokenizers() {
+    await loadTokenizerMap();
     TEXTGEN_TOKENIZERS.push(
         textgen_types.OOBA,
         textgen_types.TABBY,

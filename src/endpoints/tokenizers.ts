@@ -903,6 +903,39 @@ router.post('/count', async function (req, res) {
     }
 });
 
+// ── Tokenizer map endpoint ────────────────────────────────────────────────────
+
+/**
+ * Returns metadata about all known tokenizers so the frontend can build
+ * its lookup tables (TOKENIZER_NAME_BY_ID, ENCODE_TOKENIZERS, etc.) at
+ * runtime without hardcoded lists.
+ *
+ * GET /api/tokenizers/map
+ * Response: { tokenizers: { id: number, name: string, supportsEncode: boolean, supportsDecode: boolean }[] }
+ */
+router.get('/map', function (_req, res) {
+    const nameToId: Record<string, number> = {
+        gpt2: 1,
+        llama: 3, nerdstash: 4, nerdstash_v2: 5, mistral: 7, yi: 8,
+        claude: 11, llama3: 12, gemma: 13, jamba: 14,
+        qwen2: 15, 'command-r': 16, nemo: 17, deepseek: 18, 'command-a': 19,
+    };
+
+    const tokenizers: { id: number; name: string; supportsEncode: boolean; supportsDecode: boolean }[] = [];
+
+    for (const name of sentencepieceTokenizers) {
+        tokenizers.push({ id: nameToId[name] ?? -1, name, supportsEncode: true, supportsDecode: true });
+    }
+    for (const name of webTokenizers) {
+        tokenizers.push({ id: nameToId[name] ?? -1, name, supportsEncode: true, supportsDecode: true });
+    }
+    // Tiktoken-compatible — gpt2 maps to id 1, everything else uses the openai id (2)
+    tokenizers.push({ id: 1, name: 'gpt2', supportsEncode: true, supportsDecode: true });
+    tokenizers.push({ id: 2, name: 'gpt-3.5-turbo', supportsEncode: true, supportsDecode: true });
+
+    return res.json({ tokenizers });
+});
+
 // ── Legacy per-tokenizer routes (kept for backward compatibility) ────────────
 
 router.post('/llama/encode', createSentencepieceEncodingHandler(spp_llama));
