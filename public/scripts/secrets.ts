@@ -29,6 +29,37 @@ function deriveKey(name: string): string {
     return (KEY_OVERRIDES as Record<string, string>)[name] ?? `api_key_${name.toLowerCase()}`;
 }
 
+// ── Provide stable object shapes for Inline Caches (ICs) ──
+
+interface ApiSecret {
+    id: string;
+    label?: string;
+    value?: string;
+    active?: boolean;
+}
+
+function getSecretsForKey(key: string): ApiSecret[] {
+    const secrets = secret_state[key];
+    return Array.isArray(secrets) ? secrets as ApiSecret[] : [];
+}
+
+/**
+ * Single-pass loop to find a secret by ID, falling back to label, then active.
+ * Avoids creating multiple closures and doing 3x .find() passes.
+ */
+function findSecretByPriority(secrets: ApiSecret[], id?: string): ApiSecret | undefined {
+    if (!id) return secrets.find(s => s.active);
+    let labelMatch: ApiSecret | undefined;
+    let activeMatch: ApiSecret | undefined;
+    for (let i = 0; i < secrets.length; i++) {
+        const s = secrets[i];
+        if (s.id === id) return s; // Highest priority, early exit
+        if (!labelMatch && s.label === id) labelMatch = s;
+        if (!activeMatch && s.active) activeMatch = s;
+    }
+    return labelMatch ?? activeMatch;
+}
+
 // ── Dynamic key registry (populated from /api/backends/keys) ────────────────
 
 interface KeyDescriptor {
@@ -57,7 +88,8 @@ async function initKeyRegistry(): Promise<void> {
         const descriptors: KeyDescriptor[] = await response.json();
         _keyDescriptors = descriptors;
 
-        for (const d of descriptors) {
+        for (let i = 0; i < descriptors.length; i++) {
+            const d = descriptors[i];
             const storageKey = d.storageKey ?? `api_key_${d.id.toLowerCase()}`;
             _keyStore[d.id] = storageKey;
             _friendlyNames[storageKey] = d.label;
@@ -70,7 +102,7 @@ async function initKeyRegistry(): Promise<void> {
                 _inputMap[storageKey] = '#vertexai_service_account_json';
             } else if (d.selector) {
                 _inputMap[storageKey] = d.selector;
-            } else if (d.category && ['chat-completion', 'textgen', 'tts', 'image', 'misc'].includes(d.category)) {
+            } else if (d.category && (d.category === 'chat-completion' || d.category === 'textgen' || d.category === 'tts' || d.category === 'image' || d.category === 'misc')) {
                 _inputMap[storageKey] = `#api_key_${d.id.toLowerCase()}`;
             }
         }
@@ -93,19 +125,19 @@ export const SECRET_KEYS = new Proxy(_keyStore, {
     get(target, prop: string) {
         if (prop in target) return target[prop];
         const derived = deriveKey(prop);
-        (target as Record<string, string>)[prop] = derived;
+        target[prop] = derived;
         return derived;
     },
     has(target, prop: string) {
-        return prop in target || (KEY_OVERRIDES as Record<string, string>)[prop] !== undefined;
+        return prop in target || KEY_OVERRIDES[prop as keyof typeof KEY_OVERRIDES] !== undefined;
     },
     ownKeys() {
         const known = new Set(Object.keys(_keyStore));
-        for (const d of _keyDescriptors) known.add(d.id);
-        return [...known];
+        for (let i = 0; i < _keyDescriptors.length; i++) known.add(_keyDescriptors[i].id);
+        return Array.from(known);
     },
     getOwnPropertyDescriptor(_target, prop: string) {
-        if (typeof prop === 'string' && (prop in _keyStore || (KEY_OVERRIDES as Record<string, string>)[prop] !== undefined || _keyDescriptors.some(d => d.id === prop))) {
+        if (typeof prop === 'string' && (prop in _keyStore || KEY_OVERRIDES[prop as keyof typeof KEY_OVERRIDES] !== undefined || _keyDescriptors.some(d => d.id === prop))) {
             return { configurable: true, enumerable: true, writable: true, value: SECRET_KEYS[prop] };
         }
     },
@@ -158,22 +190,20 @@ export function resolveSecretKey() {
     const chatCompletionSource = chatCompletionSettings.chat_completion_source as string;
     const textCompletionType = textCompletionSettings.type as string;
 
-    if (mainApi === 'koboldhorde') {
-        return SECRET_KEYS['HORDE'] as string;
-    }
-
-    if (mainApi === 'novel') {
-        return SECRET_KEYS['NOVEL'] as string;
-    }
+    if (mainApi === 'koboldhorde') return SECRET_KEYS['HORDE'] as string;
+    if (mainApi === 'novel') return SECRET_KEYS['NOVEL'] as string;
 
     if (mainApi === 'textgenerationwebui') {
-        const match = _keyDescriptors.find(d => d.category === 'textgen' && d.id.toLowerCase() === textCompletionType);
-        if (match) return SECRET_KEYS[match.id] as string;
+        const textCompLower = textCompletionType?.toLowerCase();
+        for (let i = 0; i < _keyDescriptors.length; i++) {
+            const d = _keyDescriptors[i];
+            if (d.category === 'textgen' && d.id.toLowerCase() === textCompLower) return SECRET_KEYS[d.id] as string;
+        }
     }
 
     if (mainApi === 'openai') {
         if (chatCompletionSource === 'vertexai') {
-            switch ((chatCompletionSettings as Record<string, unknown>).vertexai_auth_mode as string) {
+            switch (chatCompletionSettings.vertexai_auth_mode as string) {
                 case 'express':
                     return SECRET_KEYS['VERTEXAI'] as string;
                 case 'full':
@@ -181,8 +211,11 @@ export function resolveSecretKey() {
             }
         }
 
-        const match = _keyDescriptors.find(d => d.category === 'chat-completion' && d.id.toLowerCase() === chatCompletionSource);
-        if (match) return SECRET_KEYS[match.id] as string;
+        const chatCompLower = chatCompletionSource?.toLowerCase();
+        for (let i = 0; i < _keyDescriptors.length; i++) {
+            const d = _keyDescriptors[i];
+            if (d.category === 'chat-completion' && d.id.toLowerCase() === chatCompLower) return SECRET_KEYS[d.id] as string;
+        }
     }
 
     return null;
@@ -194,15 +227,13 @@ export function resolveSecretKey() {
  * @returns {string} The label of the secret with the given ID, or an empty string if not found.
  */
 export function getSecretLabelById(id: string) {
-    for (const key of Object.values(SECRET_KEYS)) {
-        const secrets = (secret_state as Record<string, unknown>)[key] as Array<Record<string, unknown>> | undefined;
-        if (!Array.isArray(secrets)) {
-            continue;
-        }
+    const keys = Object.values(SECRET_KEYS);
+    for (let i = 0; i < keys.length; i++) {
+        const secrets = getSecretsForKey(keys[i]);
+        if (secrets.length === 0) continue;
+
         const secret = secrets.find(s => s.id === id);
-        if (secret) {
-            return `${secret.label as string} (${secret.value as string})`;
-        }
+        if (secret) return `${secret.label} (${secret.value})`;
     }
     return '';
 }
@@ -211,30 +242,29 @@ export function getSecretLabelById(id: string) {
  *
  */
 export function updateSecretDisplay() {
-    for (const [secret_key, input_selector] of Object.entries(INPUT_MAP)) {
-        const validSecret = !!((secret_state as Record<string, unknown>)[secret_key]);
-        const placeholder = document.getElementById('viewSecrets')?.getAttribute(validSecret ? 'key_saved_text' : 'missing_key_text');
-        const label = getActiveSecretLabel(secret_key);
-        const placeholderWithLabel = label ? `${placeholder} (${label})` : placeholder;
-        document.querySelector(input_selector)?.setAttribute('placeholder', placeholderWithLabel ?? '');
-    }
-}
+    const keys = Object.keys(_inputMap);
+    for (let i = 0; i < keys.length; i++) {
+        const secret_key = keys[i];
+        const input_selector = _inputMap[secret_key];
 
-/**
- * Gets the active secret label for a given key.
- * @param {string} key Gets the active secret label for a given key.
- * @returns {string} The label of the active secret, or '[No label]' if none is active.
- */
-function getActiveSecretLabel(key: string) {
-    const selectedSecret = (secret_state as Record<string, unknown>)[key] as Array<Record<string, unknown>> | undefined;
-    if (Array.isArray(selectedSecret)) {
-        const activeSecret = selectedSecret.find(x => x.active);
-        if (!activeSecret) {
-            return '';
+        const secrets = getSecretsForKey(secret_key);
+        const validSecret = secrets.length > 0;
+
+        const viewEl = document.getElementById('viewSecrets');
+        const placeholder = viewEl?.getAttribute(validSecret ? 'key_saved_text' : 'missing_key_text') || '';
+
+        let label = '';
+        if (validSecret) {
+            const activeSecret = secrets.find(x => x.active);
+            if (activeSecret) {
+                label = activeSecret.label || activeSecret.value || t`[No label]`;
+            }
         }
-        return (activeSecret.label as string) || (activeSecret.value as string) || t`[No label]`;
+
+        const placeholderWithLabel = label ? `${placeholder} (${label})` : placeholder;
+        const targetEl = document.querySelector(input_selector);
+        if (targetEl) targetEl.setAttribute('placeholder', placeholderWithLabel);
     }
-    return '';
 }
 
 /**
@@ -248,9 +278,7 @@ export async function canViewSecrets() {
             headers: getRequestHeaders({ omitContentType: true }),
         });
 
-        if (!response.ok) {
-            return null;
-        }
+        if (!response.ok) return null;
 
         const data = await response.json() as Record<string, unknown>;
         return data?.allowKeysExposure === true;
@@ -274,21 +302,20 @@ async function viewSecrets() {
         return;
     }
 
-    if (!response.ok) {
-        return;
-    }
+    if (!response.ok) return;
 
     const data = await response.json() as Record<string, string>;
 
+    // Accumulating HTML string is vastly faster than appending Document nodes in a loop.
+    let htmlContent = '<thead><tr><th>Key</th><th>Value</th></tr></thead><tbody>';
+    for (const [key, value] of Object.entries(data)) {
+        htmlContent += `<tr><td>${DOMPurify.sanitize(key)}</td><td>${DOMPurify.sanitize(value)}</td></tr>`;
+    }
+    htmlContent += '</tbody>';
+
     const table = document.createElement('table');
     table.classList.add('responsiveTable');
-    table.innerHTML = '<thead><th>Key</th><th>Value</th></thead>';
-
-    for (const [key, value] of Object.entries(data)) {
-        const row = document.createElement('tr');
-        row.innerHTML = `<td>${DOMPurify.sanitize(key)}</td><td>${DOMPurify.sanitize(value)}</td>`;
-        table.appendChild(row);
-    }
+    table.innerHTML = htmlContent;
 
     await callGenericPopup(table.outerHTML, POPUP_TYPE.TEXT, '', { wide: true, large: true, allowVerticalScrolling: true });
 }
@@ -327,13 +354,11 @@ export async function writeSecret(key: string, value: string, label?: string, {
             body: JSON.stringify({ key, value, label }),
         });
 
-        if (!response.ok) {
-            return null;
-        }
+        if (!response.ok) return null;
 
         const { id } = await response.json() as { id: string };
-        // Clear the input field
-        const inputSelector = INPUT_MAP[key];
+
+        const inputSelector = _inputMap[key];
         const inputEl = inputSelector ? document.querySelector(inputSelector) : null;
         if (inputEl instanceof HTMLInputElement) {
             inputEl.value = '';
@@ -363,7 +388,6 @@ export async function deleteSecret(key: string, id?: string) {
 
         if (response.ok) {
             await readSecretState();
-            // Force reconnection to the API with the new key
             document.getElementById('main_api')?.dispatchEvent(new Event('change'));
             await eventSource.emit(event_types.SECRET_DELETED, key);
         }
@@ -407,9 +431,7 @@ export async function findSecret(key: string, id?: string) {
             body: JSON.stringify({ key, id }),
         });
 
-        if (!response.ok) {
-            return null;
-        }
+        if (!response.ok) return null;
 
         const data = await response.json() as Record<string, unknown>;
         return data.value as string;
@@ -434,7 +456,6 @@ export async function rotateSecret(key: string, id: string) {
 
         if (response.ok) {
             await readSecretState();
-            // Force reconnection to the API with the new key
             document.getElementById('main_api')?.dispatchEvent(new Event('change'));
             await eventSource.emit(event_types.SECRET_ROTATED, key);
         }
@@ -466,12 +487,10 @@ export async function renameSecret(key: string, id: string, label: string) {
     }
 }
 
-/**
- * Generates a storage key for the PKCE code verifier for a given source.
- * @param {string} source Source for which to generate the storage key (e.g. 'openrouter')
- * @returns {string} The storage key for the PKCE code verifier for a given source.
- */
 const getVerifierKey = (source: string) => `${getCurrentUserHandle()}_${source}_code_verifier`;
+
+// Hoist shared instance to module scope to avoid re-allocating inside hot/repeated functions.
+const sharedTextEncoder = new TextEncoder();
 
 /**
  * Generates a code challenge for PKCE authentication flows.
@@ -479,8 +498,7 @@ const getVerifierKey = (source: string) => `${getCurrentUserHandle()}_${source}_
  * @returns {string} S256 code challenge generated from the input string, encoded in base64url format.
  */
 const generateChallenge = (input: string) => {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(input);
+    const data = sharedTextEncoder.encode(input);
     const hashBytes = sha256.array(data);
     return btoa(String.fromCharCode(...hashBytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 };
@@ -489,20 +507,16 @@ const generateChallenge = (input: string) => {
  * Redirects the user to authorize OpenRouter.
  */
 async function authorizeOpenRouter() {
-    if ((secret_state as Record<string, unknown>)[SECRET_KEYS.OPENROUTER as string]) {
+    if (getSecretsForKey(SECRET_KEYS.OPENROUTER as string).length > 0) {
         const confirmed = await Popup.show.confirm(t`OpenRouter API key already exists`, t`Do you really wish to create a new OpenRouter key? Your existing key will not be deleted.`);
-        if (!confirmed) {
-            return;
-        }
+        if (!confirmed) return;
     }
 
-    // Generate a PKCE code verifier and code challenge
     const codeVerifier = uuidv4() + uuidv4();
     const codeChallenge = generateChallenge(codeVerifier);
     accountStorage.setItem(getVerifierKey('openrouter'), codeVerifier);
     await saveSettings();
 
-    // Redirect to OpenRouter authorization URL with the code challenge and callback URL
     const redirectUrl = new URL('/callback/openrouter', window.location.origin);
     const openRouterUrl = `https://openrouter.ai/auth?callback_url=${encodeURIComponent(redirectUrl.toString())}&code_challenge=${codeChallenge}&code_challenge_method=S256`;
     location.href = openRouterUrl;
@@ -519,20 +533,14 @@ export async function checkOpenRouterAuth() {
         const query = new URLSearchParams(params.get('query') ?? '');
         try {
             const code = query.get('code');
-            if (!code) {
-                throw new Error('OpenRouter authorization code not found in URL');
-            }
+            if (!code) throw new Error('OpenRouter authorization code not found in URL');
 
             const codeVerifier = accountStorage.getItem(getVerifierKey('openrouter'));
-            if (!codeVerifier) {
-                throw new Error('OpenRouter code verifier not found in accountStorage');
-            }
+            if (!codeVerifier) throw new Error('OpenRouter code verifier not found in accountStorage');
 
             const response = await fetch('https://openrouter.ai/api/v1/auth/keys', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     code: code,
                     code_verifier: codeVerifier,
@@ -540,18 +548,14 @@ export async function checkOpenRouterAuth() {
                 }),
             });
 
-            if (!response.ok) {
-                throw new Error('OpenRouter exchange error');
-            }
+            if (!response.ok) throw new Error('OpenRouter exchange error');
 
             const data = await response.json() as Record<string, unknown>;
-            if (!data || !data.key) {
-                throw new Error('OpenRouter invalid response');
-            }
+            if (!data || !data.key) throw new Error('OpenRouter invalid response');
 
             await writeSecret(SECRET_KEYS.OPENROUTER!, data.key as string);
 
-            if ((secret_state as Record<string, unknown>)[SECRET_KEYS.OPENROUTER as string]) {
+            if (getSecretsForKey(SECRET_KEYS.OPENROUTER as string).length > 0) {
                 notyf.success('OpenRouter token saved');
             } else {
                 throw new Error('OpenRouter token not saved');
@@ -560,14 +564,12 @@ export async function checkOpenRouterAuth() {
             notyf.error('Could not verify OpenRouter token. Please try again.');
             console.error('OpenRouter OAuth error:', err);
         } finally {
-            // Remove the code from the URL
             const currentUrl = window.location.href;
             const urlWithoutSearchParams = currentUrl.split('?')[0];
             window.history.pushState({}, '', urlWithoutSearchParams);
         }
     }
 
-    // Clean-up any code verifiers that might be left in accountStorage from abandoned auth flows
     accountStorage.removeItem(getVerifierKey('openrouter'));
 }
 
@@ -583,12 +585,15 @@ function updateInputDataLists() {
         document.body.appendChild(container);
     }
 
-    for (const [key, inputSelector] of Object.entries(INPUT_MAP)) {
+    const keys = Object.keys(_inputMap);
+    for (let i = 0; i < keys.length; i++) {
+        const key = keys[i];
+        const inputSelector = _inputMap[key];
         const inputElements = document.querySelectorAll(inputSelector);
-        if (inputElements.length === 0) {
-            console.warn(`No input elements found for key: ${key}`);
-            continue;
-        }
+        if (inputElements.length === 0) continue;
+
+        const secrets = getSecretsForKey(key);
+        if (secrets.length === 0) continue;
 
         const dataListId = `${key}_datalist`;
         let dataList = document.getElementById(dataListId);
@@ -598,22 +603,19 @@ function updateInputDataLists() {
             container.appendChild(dataList);
         }
 
-        // Clear existing options
         dataList.innerHTML = '';
 
-        const secrets = (secret_state as Record<string, unknown>)[key] as Array<Record<string, unknown>> | undefined;
-        if (!Array.isArray(secrets)) {
-            continue;
-        }
-
-        for (const secret of secrets) {
+        // Batch DOM operations using DocumentFragment
+        const fragment = document.createDocumentFragment();
+        for (let j = 0; j < secrets.length; j++) {
+            const secret = secrets[j];
             const option = document.createElement('option');
-            option.value = secret.id as string;
-            option.textContent = `${secret.label as string} (${secret.value as string})`;
-            dataList.appendChild(option);
+            option.value = secret.id;
+            option.textContent = `${secret.label} (${secret.value})`;
+            fragment.appendChild(option);
         }
+        dataList.appendChild(fragment);
 
-        // Set the input element to use the datalist
         inputElements.forEach(element => {
             element.setAttribute('list', dataListId);
         });
@@ -625,20 +627,17 @@ function updateInputDataLists() {
  * @param {string} key Key for which to open the key manager dialog.
  */
 async function openKeyManagerDialog(key: string) {
-    const name = FRIENDLY_NAMES[key] || key;
+    const name = _friendlyNames[key] || key;
     const wrapper = document.createElement('div');
     wrapper.innerHTML = await renderTemplateAsync('secretKeyManager', { name, key });
     const template = wrapper;
+
     const addSecretBtn = template.querySelector('button[data-action="add-secret"]') as HTMLElement | null;
     if (addSecretBtn) addSecretBtn.addEventListener('click', async function () {
         let label = '';
         let result = POPUP_RESULT.CANCELLED;
         const value = await Popup.show.input(t`Add Secret`, t`Secret value (can be empty):`, '', {
-            customInputs: [{
-                id: 'newSecretLabel',
-                type: 'text',
-                label: t`Label (optional):`,
-            }],
+            customInputs: [{ id: 'newSecretLabel', type: 'text', label: t`Label (optional):` }],
             onClose: (popup: Record<string, unknown>) => {
                 if (popup.result) {
                     label = String((popup.inputResults as Map<string, unknown>)?.get('newSecretLabel') ?? '').trim();
@@ -647,13 +646,9 @@ async function openKeyManagerDialog(key: string) {
             },
         });
         if (!value) {
-            if (result !== POPUP_RESULT.AFFIRMATIVE) {
-                return;
-            }
+            if (result !== POPUP_RESULT.AFFIRMATIVE) return;
             const allowEmpty = await Popup.show.confirm(t`No value entered`, t`No value was entered for the secret. Do you want to add an empty secret?`);
-            if (!allowEmpty) {
-                return;
-            }
+            if (!allowEmpty) return;
         }
         await writeSecret(key, value ?? '', label, { allowEmpty: true });
         await renderSecretsList();
@@ -662,11 +657,8 @@ async function openKeyManagerDialog(key: string) {
     await renderSecretsList();
     await callGenericPopup(template, POPUP_TYPE.TEXT, '', { wide: true, large: true, onOpen: scrollToActive });
 
-    /**
-     *
-     */
     async function renderSecretsList() {
-        const secrets = ((secret_state as Record<string, unknown>)[key] ?? []) as Array<Record<string, unknown>>;
+        const secrets = getSecretsForKey(key);
         const list = template.querySelector('.secretKeyManagerList') as HTMLElement | null;
         const previousScrollTop = list?.scrollTop ?? 0;
 
@@ -675,24 +667,26 @@ async function openKeyManagerDialog(key: string) {
             emptyMessage.style.display = secrets.length === 0 ? '' : 'none';
         }
 
-        const itemBlocks: HTMLElement[] = [];
-        for (const secret of secrets) {
+        const fragment = document.createDocumentFragment();
+        for (let i = 0; i < secrets.length; i++) {
+            const secret = secrets[i];
             const itemWrapper = document.createElement('div');
             itemWrapper.innerHTML = await renderTemplateAsync('secretKeyManagerListItem', secret);
             const itemTemplate = itemWrapper;
+
             const copyIdBtn = itemTemplate.querySelector('button[data-action="copy-id"]') as HTMLElement | null;
             if (copyIdBtn) copyIdBtn.addEventListener('click', async function () {
-                await copyText(secret.id as string);
+                await copyText(secret.id);
                 notyf.info(t`Secret ID copied to clipboard.`);
             });
             const rotateSecretBtn = itemTemplate.querySelector('button[data-action="rotate-secret"]') as HTMLElement | null;
             if (rotateSecretBtn) rotateSecretBtn.addEventListener('click', async function () {
-                await rotateSecret(key, secret.id as string);
+                await rotateSecret(key, secret.id);
                 await renderSecretsList();
             });
             const copySecretBtn = itemTemplate.querySelector('button[data-action="copy-secret"]') as HTMLElement | null;
             if (copySecretBtn) copySecretBtn.addEventListener('click', async function () {
-                const secretValue = await findSecret(key, secret.id as string);
+                const secretValue = await findSecret(key, secret.id);
                 if (secretValue === null) {
                     notyf.error(t`The key exposure might be disabled by the server config.`, t`Failed to copy secret value`);
                     return;
@@ -702,43 +696,35 @@ async function openKeyManagerDialog(key: string) {
             });
             const renameSecretBtn = itemTemplate.querySelector('button[data-action="rename-secret"]') as HTMLElement | null;
             if (renameSecretBtn) renameSecretBtn.addEventListener('click', async function () {
-                const label = await Popup.show.input(t`Rename Secret`, t`Enter new label for the secret:`, (secret as Record<string, unknown>)?.label as string || getLabel());
-                if (!label) {
-                    return;
-                }
-                await renameSecret(key, secret.id as string, label);
+                const label = await Popup.show.input(t`Rename Secret`, t`Enter new label for the secret:`, secret.label || getLabel());
+                if (!label) return;
+
+                await renameSecret(key, secret.id, label);
                 await renderSecretsList();
             });
             const deleteSecretBtn = itemTemplate.querySelector('button[data-action="delete-secret"]') as HTMLElement | null;
             if (deleteSecretBtn) deleteSecretBtn.addEventListener('click', async function () {
-                const confirm = await Popup.show.confirm(t`Delete Secret: ${(secret as Record<string, unknown>)?.label as string}`, t`Are you sure you want to delete this secret? This action cannot be undone.`);
-                if (!confirm) {
-                    return;
-                }
-                await deleteSecret(key, secret.id as string);
+                const confirm = await Popup.show.confirm(t`Delete Secret: ${secret.label}`, t`Are you sure you want to delete this secret? This action cannot be undone.`);
+                if (!confirm) return;
+
+                await deleteSecret(key, secret.id);
                 await renderSecretsList();
             });
-            itemBlocks.push(itemTemplate);
+            fragment.appendChild(itemTemplate);
         }
 
         if (list) {
             list.innerHTML = '';
-            for (const block of itemBlocks) {
-                list.appendChild(block);
-            }
+            list.appendChild(fragment);
             list.scrollTop = previousScrollTop;
         }
     }
 
-    /**
-     *
-     */
     function scrollToActive() {
         const list = template.querySelector('.secretKeyManagerList') as HTMLElement | null;
         const activeKey = list?.querySelector('.active');
         if (activeKey instanceof HTMLElement && list instanceof HTMLElement) {
-            const activeKeyScrollTop = activeKey.offsetTop + list.scrollTop - list.clientHeight / 2;
-            list.scrollTop = activeKeyScrollTop;
+            list.scrollTop = activeKey.offsetTop + list.scrollTop - list.clientHeight / 2;
         }
     }
 }
@@ -747,15 +733,16 @@ async function openKeyManagerDialog(key: string) {
  *
  */
 function registerSecretSlashCommands() {
-    const secretKeyEnumProvider = () => Object.values(SECRET_KEYS).map(key => new SlashCommandEnumValue(key, (FRIENDLY_NAMES[key] || key), enumTypes.name, enumIcons.key));
+    const secretKeyEnumProvider = () => Object.values(SECRET_KEYS).map(key => new SlashCommandEnumValue(key, (_friendlyNames[key] || key), enumTypes.name, enumIcons.key));
     const secretIdEnumProvider = (executor: Record<string, unknown> | undefined, _scope: unknown) => {
         const key = (executor?.namedArgumentList as Array<Record<string, unknown>> | undefined)?.find(x => x.name === 'key')?.value?.toString() || resolveSecretKey();
-        if (!key || !(secret_state as Record<string, unknown>)[key] || !Array.isArray((secret_state as Record<string, unknown>)[key]) || ((secret_state as Record<string, unknown>)[key] as unknown[]).length === 0) {
-            return [];
-        }
+        if (!key) return [];
 
-        return ((secret_state as Record<string, unknown>)[key] as Array<Record<string, unknown>>).map(secret => {
-            return new SlashCommandEnumValue(secret.id as string, `${secret.label as string} (${secret.value as string})`, enumTypes.name, enumIcons.key);
+        const secrets = getSecretsForKey(key);
+        if (secrets.length === 0) return [];
+
+        return secrets.map(secret => {
+            return new SlashCommandEnumValue(secret.id, `${secret.label} (${secret.value})`, enumTypes.name, enumIcons.key);
         });
     };
 
@@ -794,46 +781,29 @@ function registerSecretSlashCommands() {
             const key = args?.key?.toString()?.trim() || resolveSecretKey();
 
             if (!key) {
-                if (!quiet) {
-                    notyf.error(t`No secret key provided, and the key can't be resolved for the currently selected API type.`);
-                }
+                if (!quiet) notyf.error(t`No secret key provided, and the key can't be resolved for the currently selected API type.`);
                 return '';
             }
 
-            const secrets = (secret_state as Record<string, unknown>)[key] as Array<Record<string, unknown>> | undefined;
-            if (!Array.isArray(secrets) || secrets.length === 0) {
-                if (!quiet) {
-                    notyf.error(t`No saved secrets found for the key: ${key}`);
-                }
+            const secrets = getSecretsForKey(key);
+            if (secrets.length === 0) {
+                if (!quiet) notyf.error(t`No saved secrets found for the key: ${key}`);
                 return '';
             }
 
-            if (!id) {
-                const activeSecret = secrets.find(s => s.active);
-                if (!activeSecret) {
-                    if (!quiet) {
-                        notyf.error(t`No active secret found for the key: ${key}`);
-                    }
-                    return '';
-                }
-                return activeSecret.id as string;
-            }
+            const targetSecret = findSecretByPriority(secrets, id);
 
-            const savedSecret = secrets.find(s => s.id === id) ?? secrets.find(s => s.label === id);
-            if (!savedSecret) {
-                if (!quiet) {
-                    notyf.error(t`No secret found with ID: ${id} for the key: ${key}`);
-                }
+            if (!targetSecret) {
+                if (!quiet) notyf.error(id ? t`No secret found with ID: ${id} for the key: ${key}` : t`No active secret found for the key: ${key}`);
                 return '';
             }
 
-            // Set the secret as active
-            await rotateSecret(key, savedSecret.id as string);
-            if (!quiet) {
-                notyf.success(t`Secret with ID: ${id} is now active for the key: ${key}`);
+            if (id) {
+                await rotateSecret(key, targetSecret.id);
+                if (!quiet) notyf.success(t`Secret with ID: ${id} is now active for the key: ${key}`);
             }
 
-            return savedSecret.id as string;
+            return targetSecret.id;
         },
     }));
 
@@ -870,35 +840,26 @@ function registerSecretSlashCommands() {
             const key = args?.key?.toString()?.trim() || resolveSecretKey();
 
             if (!key) {
-                if (!quiet) {
-                    notyf.error(t`No secret key provided, and the key can't be resolved for the currently selected API type.`);
-                }
+                if (!quiet) notyf.error(t`No secret key provided, and the key can't be resolved for the currently selected API type.`);
                 return '';
             }
 
-            const secrets = (secret_state as Record<string, unknown>)[key] as Array<Record<string, unknown>> | undefined;
-            if (!Array.isArray(secrets) || secrets.length === 0) {
-                if (!quiet) {
-                    notyf.error(t`No saved secrets found for the key: ${key}`);
-                }
+            const secrets = getSecretsForKey(key);
+            if (secrets.length === 0) {
+                if (!quiet) notyf.error(t`No saved secrets found for the key: ${key}`);
                 return '';
             }
 
-            const savedSecret = secrets.find(s => s.id === id) ?? secrets.find(s => s.label === id) ?? secrets.find(s => s.active);
+            const savedSecret = findSecretByPriority(secrets, id);
             if (!savedSecret) {
-                if (!quiet) {
-                    notyf.error(t`No secret found with ID: ${id} for the key: ${key}`);
-                }
+                if (!quiet) notyf.error(t`No secret found with ID: ${id} for the key: ${key}`);
                 return '';
             }
 
-            // Delete the secret
-            await deleteSecret(key, savedSecret.id as string);
-            if (!quiet) {
-                notyf.success(t`Secret with ID: ${id} has been deleted for the key: ${key}`);
-            }
+            await deleteSecret(key, savedSecret.id);
+            if (!quiet) notyf.success(t`Secret with ID: ${id} has been deleted for the key: ${key}`);
 
-            return savedSecret.id as string;
+            return savedSecret.id;
         },
     }));
 
@@ -948,34 +909,26 @@ function registerSecretSlashCommands() {
             const key = args?.key?.toString()?.trim() || resolveSecretKey();
 
             if (!key) {
-                if (!quiet) {
-                    notyf.error(t`No secret key provided, and the key can't be resolved for the currently selected API type.`);
-                }
+                if (!quiet) notyf.error(t`No secret key provided, and the key can't be resolved for the currently selected API type.`);
                 return '';
             }
 
-            const secrets = (secret_state as Record<string, unknown>)[key] as Array<Record<string, unknown>> | undefined;
-            if (!Array.isArray(secrets) || secrets.length === 0) {
-                if (!quiet) {
-                    notyf.error(t`No saved secrets found for the key: ${key}`);
-                }
+            const secrets = getSecretsForKey(key);
+            if (secrets.length === 0) {
+                if (!quiet) notyf.error(t`No saved secrets found for the key: ${key}`);
                 return '';
             }
 
             const valueStr = value?.toString()?.trim();
             if (!valueStr && !allowEmpty) {
-                if (!quiet) {
-                    notyf.error(t`No value provided for the secret key: ${key}`);
-                }
+                if (!quiet) notyf.error(t`No value provided for the secret key: ${key}`);
                 return '';
             }
 
             const label = args?.label?.toString()?.trim() || getLabel();
             const id = await writeSecret(key, valueStr, label, { allowEmpty });
 
-            if (!quiet) {
-                notyf.success(t`Secret has been written for the key: ${key}`);
-            }
+            if (!quiet) notyf.success(t`Secret has been written for the key: ${key}`);
 
             return id || '';
         },
@@ -1019,43 +972,32 @@ function registerSecretSlashCommands() {
             const id = args?.id?.toString()?.trim();
 
             if (!key) {
-                if (!quiet) {
-                    notyf.error(t`No secret key provided, and the key can't be resolved for the currently selected API type.`);
-                }
+                if (!quiet) notyf.error(t`No secret key provided, and the key can't be resolved for the currently selected API type.`);
                 return '';
             }
 
-            const secrets = (secret_state as Record<string, unknown>)[key] as Array<Record<string, unknown>> | undefined;
-            if (!Array.isArray(secrets) || secrets.length === 0) {
-                if (!quiet) {
-                    notyf.error(t`No saved secrets found for the key: ${key}`);
-                }
+            const secrets = getSecretsForKey(key);
+            if (secrets.length === 0) {
+                if (!quiet) notyf.error(t`No saved secrets found for the key: ${key}`);
                 return '';
             }
 
             const newLabel = value?.toString()?.trim();
             if (!newLabel) {
-                if (!quiet) {
-                    notyf.error(t`No new label provided for the secret key: ${key}`);
-                }
+                if (!quiet) notyf.error(t`No new label provided for the secret key: ${key}`);
                 return '';
             }
 
-            const savedSecret = secrets.find(s => s.id === id) ?? secrets.find(s => s.label === id) ?? secrets.find(s => s.active);
+            const savedSecret = findSecretByPriority(secrets, id);
             if (!savedSecret) {
-                if (!quiet) {
-                    notyf.error(t`No secret found with ID: ${id} for the key: ${key}`);
-                }
+                if (!quiet) notyf.error(t`No secret found with ID: ${id} for the key: ${key}`);
                 return '';
             }
 
-            // Rename the secret
-            await renameSecret(key, savedSecret.id as string, newLabel);
-            if (!quiet) {
-                notyf.success(t`Secret with ID: ${id} has been renamed to "${newLabel}" for the key: ${key}`);
-            }
+            await renameSecret(key, savedSecret.id, newLabel);
+            if (!quiet) notyf.success(t`Secret with ID: ${id} has been renamed to "${newLabel}" for the key: ${key}`);
 
-            return savedSecret.id as string;
+            return savedSecret.id;
         },
     }));
 
@@ -1094,33 +1036,25 @@ function registerSecretSlashCommands() {
             const id = value?.toString()?.trim();
 
             if (!key) {
-                if (!quiet) {
-                    notyf.error(t`No secret key provided, and the key can't be resolved for the currently selected API type.`);
-                }
+                if (!quiet) notyf.error(t`No secret key provided, and the key can't be resolved for the currently selected API type.`);
                 return '';
             }
 
-            const secrets = (secret_state as Record<string, unknown>)[key] as Array<Record<string, unknown>> | undefined;
-            if (!Array.isArray(secrets) || secrets.length === 0) {
-                if (!quiet) {
-                    notyf.error(t`No saved secrets found for the key: ${key}`);
-                }
+            const secrets = getSecretsForKey(key);
+            if (secrets.length === 0) {
+                if (!quiet) notyf.error(t`No saved secrets found for the key: ${key}`);
                 return '';
             }
 
-            const savedSecret = secrets.find(s => s.id === id) ?? secrets.find(s => s.label === id) ?? secrets.find(s => s.active);
+            const savedSecret = findSecretByPriority(secrets, id);
             if (!savedSecret) {
-                if (!quiet) {
-                    notyf.error(t`No secret found with ID: ${id} for the key: ${key}`);
-                }
+                if (!quiet) notyf.error(t`No secret found with ID: ${id} for the key: ${key}`);
                 return '';
             }
 
-            const secretValue = await findSecret(key, savedSecret.id as string);
+            const secretValue = await findSecret(key, savedSecret.id);
             if (secretValue === null) {
-                if (!quiet) {
-                    notyf.error(t`Could not retrieve the secret value for key: ${key}. Key exposure might be disabled.`);
-                }
+                if (!quiet) notyf.error(t`Could not retrieve the secret value for key: ${key}. Key exposure might be disabled.`);
                 return '';
             }
 
@@ -1135,6 +1069,7 @@ function registerSecretSlashCommands() {
 export async function initSecrets() {
     await initKeyRegistry();
     document.getElementById('viewSecrets')?.addEventListener('click', viewSecrets);
+
     document.addEventListener('click', async function (e: Event) {
         if (!(e.target instanceof Element)) return;
         const manageBtn = e.target.closest('.manage-api-keys') as HTMLElement | null;
@@ -1146,33 +1081,42 @@ export async function initSecrets() {
         }
         await openKeyManagerDialog(key);
     });
-    document.addEventListener('input', function (this: HTMLElement, e: Event) {
-        if (!(e.target instanceof Element)) return;
-        const id = e.target.getAttribute('id');
-        const value = (e.target as HTMLInputElement).value;
 
-        // Find the key based on the entered value
-        for (const [key, inputSelector] of Object.entries(INPUT_MAP)) {
-            if (!value || !e.target.matches(inputSelector)) {
-                continue;
-            }
-            const secrets = (secret_state as Record<string, unknown>)[key] as Array<Record<string, unknown>> | undefined;
-            if (!Array.isArray(secrets)) {
-                continue;
-            }
-            const secretMatch = secrets.find(secret => secret.id === value);
-            if (secretMatch) {
-                (e.target as HTMLInputElement).value = '';
-                return rotateSecret(key, secretMatch.id as string);
+    document.addEventListener('input', function (this: HTMLElement, e: Event) {
+        if (!(e.target instanceof HTMLInputElement)) return;
+        const target = e.target;
+        const value = target.value;
+        const id = target.getAttribute('id');
+
+        // V8 Optimization: Skip DOM checks completely if the field is empty,
+        // and stop iterating selectors as soon as one is matched.
+        if (value.length > 0) {
+            const keys = Object.keys(_inputMap);
+            for (let i = 0; i < keys.length; i++) {
+                const key = keys[i];
+                const inputSelector = _inputMap[key];
+
+                if (target.matches(inputSelector)) {
+                    const secrets = getSecretsForKey(key);
+                    const secretMatch = secrets.find(secret => secret.id === value);
+                    if (secretMatch) {
+                        target.value = '';
+                        rotateSecret(key, secretMatch.id);
+                        return;
+                    }
+                    break;
+                }
             }
         }
 
         const warningElement = document.querySelector(`[data-for="${id}"]`);
         if (warningElement) {
-            warningElement.classList.toggle('hidden', !(value.length > 0));
+            warningElement.classList.toggle('hidden', value.length === 0);
         }
     });
+
     document.querySelector('.openrouter_authorize')?.addEventListener('click', authorizeOpenRouter);
+
     document.addEventListener('click', async function (e: Event) {
         const creditsBtn = e.target instanceof Element ? e.target.closest('.openrouter_view_credits') as HTMLElement | null : null;
         if (!creditsBtn) return;
@@ -1185,13 +1129,11 @@ export async function initSecrets() {
                 method: 'POST',
                 headers: getRequestHeaders(),
             });
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}`);
-            }
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
             const data = await response.json() as Record<string, unknown>;
-            if (typeof data.remaining !== 'number') {
-                throw new Error('Invalid response');
-            }
+            if (typeof data.remaining !== 'number') throw new Error('Invalid response');
+
             display.textContent = `$${(data.remaining as number).toFixed(2)}`;
         } catch (error) {
             console.error('Failed to fetch OpenRouter credits:', error);
@@ -1236,14 +1178,19 @@ export async function initSecrets() {
             addUsage(t`Images/day`, sub.daily_images as Record<string, unknown>, (sub.limits as Record<string, unknown>)?.dailyImages as number);
         }
 
-        for (const [label, value] of rows) {
+        // Batch these appends with a DocumentFragment.
+        // Reduces style recalculation checks when building UI dynamically.
+        const fragment = document.createDocumentFragment();
+        for (let i = 0; i < rows.length; i++) {
+            const [label, value] = rows[i];
             const labelDiv = document.createElement('div');
             labelDiv.textContent = label;
-            root.appendChild(labelDiv);
+            fragment.appendChild(labelDiv);
             const valueDiv = document.createElement('div');
             valueDiv.textContent = value;
-            root.appendChild(valueDiv);
+            fragment.appendChild(valueDiv);
         }
+        root.appendChild(fragment);
 
         return root;
     };
@@ -1262,9 +1209,7 @@ export async function initSecrets() {
                 headers: getRequestHeaders(),
             });
 
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}`);
-            }
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
             const data = await response.json() as Record<string, unknown>;
 
