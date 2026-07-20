@@ -2,6 +2,52 @@ import { fuzzySearchCharacters, fuzzySearchGroups, fuzzySearchPersonas, fuzzySea
 import { tag_map } from './tags.js';
 import { includesIgnoreCaseAndAccents } from './utils.js';
 
+/**
+ * ============================================================================
+ * QUICK USAGE SUMMARY — In-Memory UI Filtering
+ * ============================================================================
+ *
+ * The FilterHelper runs a 7-stage synchronous pipeline over an array of
+ * entity objects (characters, groups, world-info entries, persona strings).
+ * Each stage reads from a shared `filterData` record; update those values
+ * (via setFilterData) and re-run applyFilters() to get the filtered result.
+ *
+ * // 1. Create the helper (pass a callback invoked when filter data mutates)
+ * const filter = new FilterHelper(() => renderList());
+ *
+ * // 2. Your data array expects entities with shapes like:
+ * //    { type: 'character'|'group'|'tag', id, item: { name, avatar, fav } }
+ * //    or raw strings for personas.
+ *
+ * // 3. Set filter values (UI dropdowns, toggles, search boxes call these)
+ * filter.setFilterData(FILTER_TYPES.SEARCH, 'alice');
+ * filter.setFilterData(FILTER_TYPES.FAV, FILTER_STATES.SELECTED);
+ * filter.setFilterData(FILTER_TYPES.TAG, { selected: ['tag1'], excluded: [] });
+ *
+ * // 4. Run the pipeline (returns a new filtered copy, does NOT mutate input)
+ * const visible = filter.applyFilters(myEntities);
+ *
+ * // 5. Temp overrides — apply one-off filters without persisting state:
+ * //    Useful for "quick filter" toggles that shouldn't touch the main UI
+ * const preview = filter.applyFilters(data, {
+ *   tempOverrides: { [FILTER_TYPES.SEARCH]: 'bob' }
+ * });
+ *
+ * // 6. Pipeline order (hardcoded, runs every stage):
+ * //    searchFilter → favFilter → groupFilter → folderFilter →
+ * //    tagFilter → wiSearchFilter → personaSearchFilter
+ * //
+ * //    Types with type==='tag' pass through most stages unchanged — they
+ * //    represent folder headers in the entity list, not filterable content.
+ *
+ * // 7. Checking whether anything is active:
+ * if (filter.hasAnyFilter()) { /* show a "clear all" button *\/ }
+ *
+ * // 8. Fuzzy search scores are cached automatically per FILTER_TYPE.
+ * //    Retrieve them for sort-order display:
+ * const score = filter.getScore(FILTER_TYPES.SEARCH, `character.${charId}`);
+ * ============================================================================
+ */
 
 /**
  * @typedef FilterType The filter type possible for this filter helper
