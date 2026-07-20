@@ -891,7 +891,7 @@ class PromptManager {
         // Re-render when chat history changes.
         eventSource.on(event_types.MESSAGE_DELETED, () => this.renderDebounced());
         eventSource.on(event_types.MESSAGE_EDITED, () => this.renderDebounced());
-        eventSource.on(event_types.MESSAGE_RECEIVED, () => this.renderDebounced());
+        eventSource.on(event_types.MESSAGE_RECEIVED, () => this.render(false));
 
         // Re-render when chatcompletion settings change
         eventSource.on(event_types.CHATCOMPLETION_SOURCE_CHANGED, () => this.renderDebounced());
@@ -902,7 +902,7 @@ class PromptManager {
         // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
         eventSource.on(event_types.CHAT_LOADED, (event) => {
             this.handleCharacterSelected(event);
-            this.saveServiceSettings().then(() => this.renderDebounced());
+            this.saveServiceSettings().then(() => this.render(false));
         });
 
         // Re-render when the character gets edited.

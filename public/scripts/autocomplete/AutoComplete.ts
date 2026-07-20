@@ -560,9 +560,10 @@ export class AutoComplete {
             // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             rect[AUTOCOMPLETE_WIDTH.INPUT] = this.textarea.getBoundingClientRect();
             // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-            rect[AUTOCOMPLETE_WIDTH.CHAT] = document.querySelector('#sheld').getBoundingClientRect();
+            rect[AUTOCOMPLETE_WIDTH.CHAT] = document.querySelector('#sheld')?.getBoundingClientRect() ?? { top: 0, bottom: 0, left: 0, right: 0 };
+            const layerRect = this.getLayer()?.getBoundingClientRect() ?? { top: 0, bottom: 0, left: 0, right: 0 };
             // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-            rect[AUTOCOMPLETE_WIDTH.FULL] = this.getLayer().getBoundingClientRect();
+            rect[AUTOCOMPLETE_WIDTH.FULL] = layerRect;
             // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             this.domWrap.style.setProperty('--bottom', `${window.innerHeight - rect[AUTOCOMPLETE_WIDTH.INPUT].top}px`);
             // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
@@ -630,8 +631,10 @@ export class AutoComplete {
      */
     updateFloatingPosition() {
         const location = this.getCursorPosition();
+        const layer = this.getLayer();
+        if (!layer) return;
         const rect = this.textarea.getBoundingClientRect();
-        const layerRect = this.getLayer().getBoundingClientRect();
+        const layerRect = layer.getBoundingClientRect();
         // cursor is out of view -> hide
         if (location.bottom < rect.top || location.top > rect.bottom || location.left < rect.left || location.left > rect.right) {
             return this.hide();

@@ -704,7 +704,7 @@ function setupChatCompletionPromptManager(openAiSettings: Record<string, unknown
 
         promptManager.tryGenerate = async () => {
             if (characters[this_chid]) {
-                Generate('manual');
+                Generate('manual', {}, true);
             }
         };
 
