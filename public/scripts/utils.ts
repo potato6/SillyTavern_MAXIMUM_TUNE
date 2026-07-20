@@ -272,11 +272,11 @@ export function deepMerge(target, source) {
         Object.keys(source).forEach(key => {
             if (isObject(source[key])) {
                 if (!(key in target))
-                    Object.assign(output, { [key]: source[key] });
+                    output[key] = source[key];
                 else
                     output[key] = deepMerge(target[key], source[key]);
             } else {
-                Object.assign(output, { [key]: source[key] });
+                output[key] = source[key];
             }
         });
     }
@@ -439,7 +439,7 @@ export function convertValueType(value, type) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'input' implicitly has an 'any' type.
 export function stringToRange(input, min, max) {
-    let start, end;
+    let start = NaN, end = NaN;
 
     if (typeof input !== 'string') {
         input = String(input);
@@ -479,10 +479,9 @@ export function onlyUnique(value, index, array) {
  * @param {any[]} array The array being processed.
  * @returns {boolean} True if the value is unique, false otherwise.
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
-export function onlyUniqueJson(value, index, array) {
-    // @ts-expect-error TS(7006) FIXME: Parameter 'v' implicitly has an 'any' type.
-    return array.map(v => JSON.stringify(v)).indexOf(JSON.stringify(value)) === index;
+export function onlyUniqueJson<T>(value: T, index: number, array: T[]) {
+    const stringified = JSON.stringify(value);
+    return array.findIndex(v => JSON.stringify(v) === stringified) === index;
 }
 
 /**
@@ -558,7 +557,7 @@ export async function bufferToBase64(buffer) {
 // @ts-expect-error TS(7006) FIXME: Parameter 'array' implicitly has an 'any' type.
 export function shuffle(array) {
     let currentIndex = array.length,
-        randomIndex;
+        randomIndex = 0;
 
     while (currentIndex != 0) {
         randomIndex = Math.floor(Math.random() * currentIndex);
@@ -758,12 +757,10 @@ const debounceMap = new WeakMap();
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'func' implicitly has an 'any' type.
 export function debounce(func, timeout = debounce_timeout.standard) {
-    // @ts-expect-error TS(7034) FIXME: Variable 'timer' implicitly has type 'any' in some... Remove this comment to see the full error message
-    let timer;
+    let timer: ReturnType<typeof setTimeout> | null = null;
     // @ts-expect-error TS(7019) FIXME: Rest parameter 'args' implicitly has an 'any[]' ty... Remove this comment to see the full error message
     const fn = (...args) => {
-        // @ts-expect-error TS(7005) FIXME: Variable 'timer' implicitly has an 'any' type.
-        clearTimeout(timer);
+        if (timer !== null) clearTimeout(timer);
         timer = setTimeout(async () => {
             try {
                 // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
@@ -787,23 +784,14 @@ export function debounce(func, timeout = debounce_timeout.standard) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'func' implicitly has an 'any' type.
 export function debounceAsync(func, timeout = debounce_timeout.standard) {
-    // @ts-expect-error TS(7034) FIXME: Variable 'timer' implicitly has type 'any' in some... Remove this comment to see the full error message
-    let timer;
-    /**@type {Promise}*/
-    // @ts-expect-error TS(7034) FIXME: Variable 'debouncePromise' implicitly has type 'an... Remove this comment to see the full error message
-    let debouncePromise;
-    /**@type {Function}*/
-    // @ts-expect-error TS(7034) FIXME: Variable 'debounceResolver' implicitly has type 'a... Remove this comment to see the full error message
-    let debounceResolver;
-    /**@type {Function}*/
-    // @ts-expect-error TS(7034) FIXME: Variable 'debounceReject' implicitly has type 'any... Remove this comment to see the full error message
-    let debounceReject;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    let debouncePromise: Promise<unknown> | null = null;
+    let debounceResolver: ((value: unknown) => void) | null = null;
+    let debounceReject: ((reason?: unknown) => void) | null = null;
     // @ts-expect-error TS(7019) FIXME: Rest parameter 'args' implicitly has an 'any[]' ty... Remove this comment to see the full error message
     return (...args) => {
-        // @ts-expect-error TS(7005) FIXME: Variable 'timer' implicitly has an 'any' type.
-        clearTimeout(timer);
-        // @ts-expect-error TS(7005) FIXME: Variable 'debouncePromise' implicitly has an 'any'... Remove this comment to see the full error message
-        if (!debouncePromise) {
+        if (timer !== null) clearTimeout(timer);
+        if (debouncePromise === null) {
             debouncePromise = new Promise((resolve, reject) => {
                 debounceResolver = resolve;
                 debounceReject = reject;
@@ -813,12 +801,10 @@ export function debounceAsync(func, timeout = debounce_timeout.standard) {
             try {
                 // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
                 const result = await func.apply(this, args);
-                // @ts-expect-error TS(7005) FIXME: Variable 'debounceResolver' implicitly has an 'any... Remove this comment to see the full error message
-                debounceResolver(result);
+                debounceResolver!(result);
             } catch (e) {
                 console.error('Error in debouncedAsync function:', e);
-                // @ts-expect-error TS(7005) FIXME: Variable 'debounceReject' implicitly has an 'any' ... Remove this comment to see the full error message
-                debounceReject(e);
+                debounceReject!(e);
             } finally {
                 debouncePromise = null;
             }
@@ -848,13 +834,11 @@ export function cancelDebounce(func) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'func' implicitly has an 'any' type.
 export function throttle(func, limit = 300) {
-    // @ts-expect-error TS(7034) FIXME: Variable 'lastCall' implicitly has type 'any' in s... Remove this comment to see the full error message
-    let lastCall;
+    let lastCall = 0;
     // @ts-expect-error TS(7019) FIXME: Rest parameter 'args' implicitly has an 'any[]' ty... Remove this comment to see the full error message
     return (...args) => {
         const now = Date.now();
-        // @ts-expect-error TS(7005) FIXME: Variable 'lastCall' implicitly has an 'any' type.
-        if (!lastCall || (now - lastCall) >= limit) {
+        if (lastCall === 0 || (now - lastCall) >= limit) {
             lastCall = now;
             // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
             func.apply(this, args);
@@ -870,17 +854,14 @@ export function throttle(func, limit = 300) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'func' implicitly has an 'any' type.
 export function debouncedThrottle(func, limit = 300) {
-    // @ts-expect-error TS(7034) FIXME: Variable 'last' implicitly has type 'any' in some ... Remove this comment to see the full error message
-    let last, deferTimer;
+    let last = 0, deferTimer: ReturnType<typeof setTimeout> | null = null;
     const db = debounce(func);
 
     // @ts-expect-error TS(7019) FIXME: Rest parameter 'args' implicitly has an 'any[]' ty... Remove this comment to see the full error message
     return function (...args) {
-        const now = +new Date;
-        // @ts-expect-error TS(7005) FIXME: Variable 'last' implicitly has an 'any' type.
-        if (!last || (last && now < last + limit)) {
-            // @ts-expect-error TS(7005) FIXME: Variable 'deferTimer' implicitly has an 'any' type... Remove this comment to see the full error message
-            clearTimeout(deferTimer);
+        const now = Date.now();
+        if (last === 0 || (last > 0 && now < last + limit)) {
+            if (deferTimer !== null) clearTimeout(deferTimer);
             // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
             db.apply(this, args);
             deferTimer = setTimeout(function () {
@@ -936,7 +917,7 @@ export function getUniqueName(baseName, exists, { nameBuilder = null, maxTries =
     // @ts-expect-error TS(2322) FIXME: Type '(baseName: any, i: any) => any' is not assig... Remove this comment to see the full error message
     nameBuilder ??= (baseName, i) => i === 0 ? baseName : `${baseName} (${i})`;
     let i = startIndex;
-    let name;
+    let name = '';
     while (i < maxTries + startIndex) {
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         name = nameBuilder(baseName, i);
@@ -1581,28 +1562,22 @@ export function getVideoThumbnail(videoUrl, maxWidth = null, maxHeight = null, t
 export function calculateThumbnailSize(width, height, maxWidth, maxHeight) {
     // Calculate the thumbnail dimensions while maintaining the aspect ratio
     const aspectRatio = width / height;
-    let thumbnailWidth = maxWidth;
-    let thumbnailHeight = maxHeight;
 
-    if (maxWidth === null) {
-        thumbnailWidth = width;
-        maxWidth = width;
-    }
+    const effMaxWidth = maxWidth === null ? width : maxWidth;
+    const effMaxHeight = maxHeight === null ? height : maxHeight;
 
-    if (maxHeight === null) {
-        thumbnailHeight = height;
-        maxHeight = height;
-    }
+    let thumbnailWidth = effMaxWidth;
+    let thumbnailHeight = effMaxHeight;
 
     // Do not upscale if image is already smaller than max dimensions
-    if (width <= maxWidth && height <= maxHeight) {
+    if (width <= effMaxWidth && height <= effMaxHeight) {
         thumbnailWidth = width;
         thumbnailHeight = height;
     } else {
         if (width > height) {
-            thumbnailHeight = maxWidth / aspectRatio;
+            thumbnailHeight = effMaxWidth / aspectRatio;
         } else {
-            thumbnailWidth = maxHeight * aspectRatio;
+            thumbnailWidth = effMaxHeight * aspectRatio;
         }
     }
 
@@ -2540,6 +2515,8 @@ export function deleteValueByPath(obj, path) {
         current = current[keyParts[i]];
     }
     if (current && typeof current === 'object') {
+        // Kept as 'delete' since it is the explicit intent of this function
+        // to remove the property, typically for JSON serialization or `in` checks.
         delete current[keyParts[keyParts.length - 1]];
     }
 }
@@ -2690,7 +2667,9 @@ export function select2ModifyOptions(element, items, { select = false, changeEve
     if (!items.length) return;
     /** @type {Select2Option[]} */
     // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
-    const dataItems = items.map(x => typeof x === 'string' ? { id: getSelect2OptionId(x), text: x } : x);
+    const dataItems = items.map(x => typeof x === 'string'
+        ? { id: getSelect2OptionId(x), text: x, count: undefined }
+        : { id: x.id, text: x.text, count: x.count ?? undefined });
 
     // @ts-expect-error TS(7034) FIXME: Variable 'optionsToSelect' implicitly has type 'an... Remove this comment to see the full error message
     const optionsToSelect = [];
@@ -3085,7 +3064,7 @@ export async function showFontAwesomePicker(customList = null) {
  */
 export function findPersona({ name = null as string | null, allowAvatar = true, insensitive = true, preferCurrentPersona = true, quiet = false } = {}) {
     /** @type {PersonaViewModel[]} */
-    const personas = Object.entries(power_user.personas).map(([avatar, name]) => ({ avatar, name }));
+    const personas = Object.entries(power_user.personas).map(([avatar, personaName]) => ({ avatar, name: personaName }));
     // @ts-expect-error TS(7006) FIXME: Parameter 'persona' implicitly has an 'any' type.
     const matches = (/** @type {PersonaViewModel} */ persona) => !name || (allowAvatar && persona.avatar === name) || (insensitive ? equalsIgnoreCaseAndAccents(persona.name, name) : persona.name === name);
 
@@ -3384,12 +3363,9 @@ export function setupScrollToTop({ scrollContainerId, buttonId, drawerId, visibi
     };
     btn.addEventListener('click', onActivate);
 
-    // @ts-expect-error TS(7034) FIXME: Variable 'frameHandle' implicitly has type 'any' i... Remove this comment to see the full error message
-    let frameHandle = null;
+    let frameHandle: number | null = null;
     const resizeObserver = new ResizeObserver(() => {
-        // @ts-expect-error TS(7005) FIXME: Variable 'frameHandle' implicitly has an 'any' typ... Remove this comment to see the full error message
         if (frameHandle !== null) {
-            // @ts-expect-error TS(7005) FIXME: Variable 'frameHandle' implicitly has an 'any' typ... Remove this comment to see the full error message
             cancelAnimationFrame(frameHandle);
         }
         frameHandle = requestAnimationFrame(() => {
@@ -3524,11 +3500,9 @@ export function createTimeout(ms, errorMessage = '') {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'selector' implicitly has an 'any' type.
 export function addLongPressEvent(selector, callback, delay = 500) {
-    // @ts-expect-error TS(7034) FIXME: Variable 'timer' implicitly has type 'any' in some... Remove this comment to see the full error message
-    let timer = null;
+    let timer: ReturnType<typeof setTimeout> | null = null;
     let fired = false;
-    // @ts-expect-error TS(7034) FIXME: Variable 'target' implicitly has type 'any' in som... Remove this comment to see the full error message
-    let target = null;
+    let target: Element | null = null;
 
     document.addEventListener('touchstart', function (event) {
         if (!(event.target instanceof Element)) return;
@@ -3561,8 +3535,7 @@ export function addLongPressEvent(selector, callback, delay = 500) {
      *
      */
     function cancelTimer() {
-        // @ts-expect-error TS(7005) FIXME: Variable 'timer' implicitly has an 'any' type.
-        clearTimeout(timer);
+        if (timer !== null) clearTimeout(timer);
         timer = null;
     }
 }
