@@ -613,7 +613,7 @@ export function sortWorldInfoEntries(data: WorldInfoEntryData[], { customSort = 
         primarySort = (a: WorldInfoEntryData, b: WorldInfoEntryData) => {
             const aScore = worldInfoFilter.getScore(FILTER_TYPES.WORLD_INFO_SEARCH, a.uid);
             const bScore = worldInfoFilter.getScore(FILTER_TYPES.WORLD_INFO_SEARCH, b.uid);
-            return aScore - bScore;
+            return (aScore ?? 0) - (bScore ?? 0);
         };
     } else if (sortRule === 'custom') {
         // First by display index

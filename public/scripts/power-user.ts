@@ -2742,7 +2742,7 @@ const compareFunc = (first: Record<string, unknown>, second: Record<string, unkn
  * @param {boolean} forceSearch Whether to force search sorting
  * @param {import('./filters.js').FilterHelper} [filterHelper] Filter helper to use
  */
-export function sortEntitiesList(entities: { type?: string; id?: string; item?: Record<string, unknown> }[], forceSearch: boolean, filterHelper: { getScore: (type: string, id: string) => number } | null = null) {
+export function sortEntitiesList(entities: { type?: string; id?: string; item?: Record<string, unknown> }[], forceSearch: boolean, filterHelper: { getScore: (type: string, id: string | number) => number | undefined } | null = null) {
     filterHelper = filterHelper ?? entitiesFilter;
     if (power_user.sort_field == undefined || entities.length === 0) {
         return;
@@ -2766,7 +2766,7 @@ export function sortEntitiesList(entities: { type?: string; id?: string; item?: 
         if (isSearch) {
             const aScore = filterHelper.getScore(FILTER_TYPES.SEARCH, `${a.type}.${a.id}`);
             const bScore = filterHelper.getScore(FILTER_TYPES.SEARCH, `${b.type}.${b.id}`);
-            return (aScore - bScore);
+            return (aScore ?? 0) - (bScore ?? 0);
         }
 
         return sortFunc(a.item ?? {}, b.item ?? {});

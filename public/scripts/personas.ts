@@ -199,7 +199,7 @@ function sortPersonas(personas: string[]) {
         personas.sort((a: string, b: string) => {
             const aScore = personasFilter.getScore(FILTER_TYPES.PERSONA_SEARCH, a);
             const bScore = personasFilter.getScore(FILTER_TYPES.PERSONA_SEARCH, b);
-            return (aScore - bScore);
+            return (aScore ?? 0) - (bScore ?? 0);
         });
     } else {
         personas.sort((a: string, b: string) => {
@@ -311,7 +311,7 @@ export async function getUserAvatars(doRender = true, openPageAt = '') {
         verifyPersonaSearchSortRule();
 
         let entities = personasFilter.applyFilters(allEntities);
-        entities = sortPersonas(entities);
+        entities = sortPersonas(entities as string[]);
 
         const storageKey = 'Personas_PerPage';
         const listId = document.getElementById('user_avatar_block');
@@ -321,7 +321,7 @@ export async function getUserAvatars(doRender = true, openPageAt = '') {
         const pagContainer = document.getElementById('persona_pagination_container');
         if (pagContainer) {
             personaPaginator = createPaginator(pagContainer, {
-                dataSource: entities,
+                dataSource: entities as string[],
                 pageSize: perPage,
                 pageNumber: savePersonasPage || 1,
                 showSizeChanger: true,

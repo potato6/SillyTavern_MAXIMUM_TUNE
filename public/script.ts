@@ -1281,7 +1281,7 @@ export function getEntitiesList({ doFilter = false, doSort = true } = {}) {
             subEntities = filterByTagState(entities, { subForEntity: entity });
             if (doFilter) {
                 // sub entities filter "hacked" because folder filter should not be applied there, so even in "only folders" mode characters show up
-                subEntities = entitiesFilter.applyFilters(subEntities, { clearScoreCache: false, tempOverrides: { [FILTER_TYPES.FOLDER]: FILTER_STATES.UNDEFINED }, clearFuzzySearchCaches: false });
+                subEntities = entitiesFilter.applyFilters(subEntities, { clearScoreCache: false, tempOverrides: { [FILTER_TYPES.FOLDER]: FILTER_STATES.UNDEFINED }, clearFuzzySearchCaches: false }) as Record<string, unknown>[];
             }
             if (doSort) {
                 sortEntitiesList(subEntities, false);
@@ -1296,11 +1296,11 @@ export function getEntitiesList({ doFilter = false, doSort = true } = {}) {
     // Second run filters, hiding whatever should be filtered later
     if (doFilter) {
         const beforeFinalEntities = filterByTagState(entities, { globalDisplayFilters: true });
-        entities = entitiesFilter.applyFilters(beforeFinalEntities, { clearFuzzySearchCaches: false });
+        entities = entitiesFilter.applyFilters(beforeFinalEntities, { clearFuzzySearchCaches: false }) as { item: unknown; id: unknown; type: string }[];
 
         // Magic for folder filter. If that one is enabled, and no folders are display anymore, we remove that filter to actually show the characters.
         if (isFilterState(entitiesFilter.getFilterData(FILTER_TYPES.FOLDER), FILTER_STATES.SELECTED) && entities.filter(x => x.type == 'tag').length == 0) {
-            entities = entitiesFilter.applyFilters(beforeFinalEntities, { tempOverrides: { [FILTER_TYPES.FOLDER]: FILTER_STATES.UNDEFINED }, clearFuzzySearchCaches: false });
+            entities = entitiesFilter.applyFilters(beforeFinalEntities, { tempOverrides: { [FILTER_TYPES.FOLDER]: FILTER_STATES.UNDEFINED }, clearFuzzySearchCaches: false }) as { item: unknown; id: unknown; type: string }[];
         }
     }
 

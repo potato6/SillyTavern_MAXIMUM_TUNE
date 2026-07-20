@@ -82,7 +82,7 @@ export function filterByTagState(entities: Record<string, unknown>[], { globalDi
         const closedFolders = entities.filter((x: Record<string, unknown>) => x.type === 'tag' && (getFolderType(x.item as Record<string, unknown>) as Record<string, unknown>).class === (TAG_FOLDER_TYPES as Record<string, { class: string }>).CLOSED!.class);
 
         entities = entities.filter((entity: Record<string, unknown>) => {
-            if (filterHidden && entity.type !== 'tag' && closedFolders.some((f: Record<string, unknown>) => entitiesFilter.isElementTagged(entity, f.id) && !filterData.selected.includes(f.id as string))) {
+            if (filterHidden && entity.type !== 'tag' && closedFolders.some((f: Record<string, unknown>) => entitiesFilter.isElementTagged(entity, f.id as string) && !filterData.selected.includes(f.id as string))) {
                 return false;
             }
             if (entity.type === 'tag') {
