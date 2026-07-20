@@ -1,3 +1,56 @@
+/**
+ * ============================================================================
+ * QUICK USAGE SUMMARY
+ * ============================================================================
+ *
+ * // 1. Define your entity (must have an `id` property)
+ * interface User {
+ *   id: string;
+ *   email: string;
+ *   role: 'admin' | 'user';
+ *   age: number;
+ * }
+ *
+ * // 2. Instantiate the store
+ * const userStore = new EntityStore<User>('MyAppDB', 'users_store');
+ *
+ * // 3. Initialize the database and define native B-Tree indices (Crucial for performance)
+ * await userStore.init([
+ *   { name: 'by_role', keyPath: 'role' },
+ *   { name: 'by_email', keyPath: 'email', options: { unique: true } }
+ * ]);
+ *
+ * // --- Basic CRUD ---
+ * await userStore.add({ id: 'u1', email: 'alice@x.com', role: 'admin', age: 28 });
+ * const user = await userStore.get('u1');
+ * await userStore.update('u1', { age: 29 });
+ *
+ * // --- Native Index Lookups (🔥 FAST PATH - O(log n)) ---
+ * // Use `.by()` to leverage the native IDB indices configured during `init()`
+ * const admins = await userStore.by('by_role', 'admin');
+ *
+ * // --- Custom JS Queries (🐢 SLOW PATH - Iterates cursor) ---
+ * // Fallback when you need complex logic that a native index cannot handle
+ * const youngAdmins = await userStore.query({
+ *   where: (u) => u.role === 'admin' && u.age < 30,
+ *   sort: (a, b) => a.age - b.age,
+ *   limit: 10
+ * });
+ *
+ * // --- High-Performance Bulk Operations ---
+ * // Automatically wraps all operations in a single atomic transaction
+ * await userStore.bulkAdd(largeArrayOfUsers);
+ *
+ * // --- History Tracking (Undo / Redo) ---
+ * // Tracks adds, updates, and removes automatically
+ * if (userStore.canUndo) await userStore.undo();
+ * if (userStore.canRedo) await userStore.redo();
+ *
+ * // --- Events ---
+ * userStore.on('added', (user) => console.log('New user:', user));
+ * ============================================================================
+ */
+
 // ──────────────────────────────────────────────
 // Types & Interfaces
 // ──────────────────────────────────────────────
@@ -5,12 +58,9 @@
 export type StoreEvent = 'added' | 'removed' | 'changed' | 'cleared' | 'loaded';
 
 export interface QueryOptions<T> {
-    /** Custom filter function. Warning: requires iterating via cursor. */
-    where?: (item: T) => boolean;
-    /** Sorting function applied after filtering. */
-    sort?: (a: T, b: T) => number;
-    /** Maximum number of results to return. */
-    limit?: number;
+    where?: ((item: T) => boolean) | null;
+    sort?: ((a: T, b: T) => number) | null;
+    limit?: number | null;
 }
 
 export interface IndexConfig {
@@ -21,10 +71,10 @@ export interface IndexConfig {
 
 export interface HistoryAction<T> {
     type: 'add' | 'remove' | 'update';
-    /** The state of the item AFTER an add/update, or BEFORE a remove. */
     item: T;
-    /** The state of the item BEFORE an update. */
-    oldItem?: T;
+    // strictly define oldItem so the Object Shape (Hidden Class)
+    // never splits between { type, item } and { type, item, oldItem }.
+    oldItem: T | null;
 }
 
 export interface HistoryEntry<T> {
@@ -35,43 +85,58 @@ export interface HistoryEntry<T> {
 // EntityStore Class
 // ──────────────────────────────────────────────
 
-/**
- * A highly optimized, atomic, and transactional IndexedDB wrapper.
- * Provides advanced history tracking (undo/redo), event observation,
- * and high-performance querying capabilities.
- */
 export class EntityStore<T extends { id: string | number }> {
-    protected db: IDBDatabase | null = null;
-    protected currentTxn: IDBTransaction | null = null;
+    // All properties declared and initialized explicitly in the constructor
+    // to guarantee exactly ONE Hidden Class (Map) for all instances of EntityStore.
+    protected db: IDBDatabase | null;
+    protected currentTxn: IDBTransaction | null;
 
-    protected pendingEvents: Array<{ event: StoreEvent; data: unknown }> = [];
-    protected listeners = new Map<StoreEvent, Set<(data: unknown) => void>>();
+    protected pendingEvents: Array<{ event: StoreEvent; data: unknown }>;
 
-    protected undoStack: HistoryEntry<T>[] = [];
-    protected redoStack: HistoryEntry<T>[] = [];
-    protected currentHistoryEntry: HistoryEntry<T> | null = null;
+    // Replaced dynamic `Map` with a fixed-shape object.
+    // V8 creates highly optimized monomorphic Inline Caches (ICs) for fixed keys.
+    protected listeners: Record<StoreEvent, Set<(data: unknown) => void>>;
 
-    /** History limit to prevent memory bloat. */
-    protected maxHistory = 50;
+    protected undoStack: HistoryEntry<T>[];
+    protected redoStack: HistoryEntry<T>[];
+    protected currentHistoryEntry: HistoryEntry<T>;
 
-    /** Guard to prevent undo/redo operations from recording their own history. */
-    protected isUndoRedoInProgress = false;
-
-    /** Hook for subclasses to execute logic after a transaction successfully commits. */
-    public onTransactionComplete?: () => void;
+    protected maxHistory: number;
+    protected isUndoRedoInProgress: boolean;
+    public onTransactionComplete: (() => void) | null;
 
     constructor(
         protected dbName: string,
         protected storeName: string,
         protected dbVersion: number = 1
-    ) {}
+    ) {
+        // Pre-initialize everything in fixed order
+        this.db = null;
+        this.currentTxn = null;
+
+        // Arrays start as PACKED_ELEMENTS and should stay hole-free
+        this.pendingEvents = [];
+        this.undoStack = [];
+        this.redoStack = [];
+
+        // Pre-allocate first history entry so it never transitions to `null`
+        this.currentHistoryEntry = { actions: [] };
+
+        this.maxHistory = 50;
+        this.isUndoRedoInProgress = false;
+        this.onTransactionComplete = null;
+
+        this.listeners = {
+            added: new Set(),
+            removed: new Set(),
+            changed: new Set(),
+            cleared: new Set(),
+            loaded: new Set(),
+        };
+    }
 
     // ── Database Initialization ──────────────────────────────────────────
 
-    /**
-     * Initializes the DB connection and applies schema upgrades if necessary.
-     * @param indexes Configuration for native IndexedDB indices to optimize lookups.
-     */
     public async init(indexes: IndexConfig[] = []): Promise<void> {
         if (this.db) return;
 
@@ -88,8 +153,8 @@ export class EntityStore<T extends { id: string | number }> {
                     store = (request.transaction as IDBTransaction).objectStore(this.storeName);
                 }
 
-                // Synchronize indexes
-                for (const idx of indexes) {
+                for (let i = 0; i < indexes.length; i++) {
+                    const idx = indexes[i]!;
                     if (!store.indexNames.contains(idx.name)) {
                         store.createIndex(idx.name, idx.keyPath, idx.options);
                     }
@@ -103,19 +168,12 @@ export class EntityStore<T extends { id: string | number }> {
         this.emit('loaded', null);
     }
 
-    /**
-     * Core execution engine. Reuses active transactions if present to maintain atomicity.
-     * OPTIMIZATION: Resolves readonly queries immediately on success rather than waiting for txn completion.
-     * @param mode
-     * @param fn
-     */
     protected async execute<R>(
         mode: IDBTransactionMode,
         fn: (store: IDBObjectStore) => IDBRequest<R>
     ): Promise<R> {
-        if (!this.db) throw new Error(`[EntityStore:${this.storeName}] Database not initialized. Call init() first.`);
+        if (!this.db) throw new Error("Database not initialized");
 
-        // 1. Utilize existing transaction if available
         if (this.currentTxn) {
             const store = this.currentTxn.objectStore(this.storeName);
             return new Promise<R>((resolve, reject) => {
@@ -125,7 +183,6 @@ export class EntityStore<T extends { id: string | number }> {
             });
         }
 
-        // 2. Create isolated transaction
         return new Promise<R>((resolve, reject) => {
             const txn = this.db!.transaction(this.storeName, mode);
             const store = txn.objectStore(this.storeName);
@@ -135,14 +192,12 @@ export class EntityStore<T extends { id: string | number }> {
 
             req.onsuccess = () => {
                 result = req.result;
-                // Opt: Reads are safe to resolve immediately without waiting for transaction closure.
-                if (mode === 'readonly') resolve(result);
+                if (mode === 'readonly') resolve(result); // Fast path for reads
             };
             req.onerror = () => reject(req.error);
 
             txn.oncomplete = () => {
-                // Ensure writes fully commit before resolving
-                if (mode === 'readwrite') resolve(result);
+                if (mode === 'readwrite') resolve(result); // Commit wait for writes
             };
             txn.onerror = () => reject(txn.error);
             txn.onabort = () => reject(txn.error);
@@ -155,10 +210,6 @@ export class EntityStore<T extends { id: string | number }> {
         return this.execute<T | undefined>('readonly', store => store.get(id));
     }
 
-    /**
-     * Uses store.count() which avoids deserializing the object, making it exceptionally fast.
-     * @param id
-     */
     public async has(id: string | number): Promise<boolean> {
         const count = await this.execute<number>('readonly', store => store.count(id));
         return count > 0;
@@ -169,10 +220,10 @@ export class EntityStore<T extends { id: string | number }> {
     }
 
     public async add(item: T): Promise<void> {
-        if (item.id == null) throw new Error("Entity must contain a valid 'id' property.");
+        if (item.id == null) throw new Error("Entity requires 'id'");
 
         await this.execute('readwrite', store => store.add(item));
-        this.recordHistory({ type: 'add', item });
+        this.recordHistory({ type: 'add', item, oldItem: null });
         this.emit('added', item);
     }
 
@@ -181,7 +232,7 @@ export class EntityStore<T extends { id: string | number }> {
         if (!item) return false;
 
         await this.execute('readwrite', store => store.delete(id));
-        this.recordHistory({ type: 'remove', item });
+        this.recordHistory({ type: 'remove', item, oldItem: null });
         this.emit('removed', item);
         return true;
     }
@@ -190,7 +241,7 @@ export class EntityStore<T extends { id: string | number }> {
         const oldItem = await this.get(id);
         if (!oldItem) return false;
 
-        const newItem = { ...oldItem, ...patch, id }; // ensure ID is never overwritten maliciously
+        const newItem = { ...oldItem, ...patch, id };
         await this.execute('readwrite', store => store.put(newItem));
 
         this.recordHistory({ type: 'update', item: newItem, oldItem });
@@ -201,7 +252,7 @@ export class EntityStore<T extends { id: string | number }> {
     public async clear(): Promise<void> {
         await this.execute('readwrite', store => store.clear());
 
-        // Complete data annihilation breaks undo continuity
+        // Re-assign empty arrays instead of mutating to preserve PACKED status
         this.undoStack = [];
         this.redoStack = [];
         this.emit('cleared', null);
@@ -209,38 +260,32 @@ export class EntityStore<T extends { id: string | number }> {
 
     // ── High Performance Bulk Operations ─────────────────────────────────
 
-    /**
-     * Bypasses individual promises to flood the transaction synchronously.
-     * Exponentially faster than looping 'await this.add(item)'.
-     * @param items
-     */
     public async bulkAdd(items: T[]): Promise<void> {
-        if (!items.length) return;
+        const len = items.length;
+        if (len === 0) return;
 
         await this.transaction(() => {
             const store = this.currentTxn!.objectStore(this.storeName);
-            for (const item of items) {
+            // OPTIMIZATION: `for` loops avoid allocating an iterator (HeapObject), keeping the index purely Smi.
+            for (let i = 0; i < len; i++) {
+                const item = items[i]!;
                 store.add(item);
-                this.recordHistory({ type: 'add', item });
+                this.recordHistory({ type: 'add', item, oldItem: null });
                 this.emit('added', item);
             }
         });
     }
 
-    /**
-     * Replaces the entire store contents. Optimized for importing state.
-     * @param items
-     */
     public async replaceAll(items: T[]): Promise<void> {
+        const len = items.length;
         await this.transaction(() => {
             const store = this.currentTxn!.objectStore(this.storeName);
             store.clear();
-            for (const item of items) {
-                store.add(item);
+            for (let i = 0; i < len; i++) {
+                store.add(items[i]);
             }
         });
 
-        // Wiping out the store invalidates history context
         this.undoStack = [];
         this.redoStack = [];
         this.emit('loaded', items);
@@ -252,81 +297,62 @@ export class EntityStore<T extends { id: string | number }> {
         return this.execute<number>('readonly', store => store.count());
     }
 
-    /**
-     * O(log n) lookup utilizing native IndexedDB B-Tree indices.
-     * @param indexName
-     * @param value
-     */
     public async by(indexName: string, value: string | number): Promise<T[]> {
         return this.execute<T[]>('readonly', store => store.index(indexName).getAll(value));
     }
 
-    /**
-     * Flexible querying engine with built-in fast paths.
-     * @param opts
-     */
     public async query(opts: QueryOptions<T> = {}): Promise<T[]> {
         if (!this.db) throw new Error("Database not initialized");
 
-        // FAST-PATH: If there are no JS-level filters or sorting, rely purely on native IDB implementation
-        if (!opts.where && !opts.sort) {
-            return this.execute<T[]>('readonly', store => store.getAll(undefined, opts.limit));
+        // Resolve variables upfront. Passing missing properties into V8 loops
+        // triggers deoptimization (undefined vs value).
+        const limit = opts.limit ?? Infinity;
+        const where = opts.where ?? null;
+        const sort = opts.sort ?? null;
+
+        // FAST-PATH: Native implementation
+        if (where === null && sort === null) {
+            return this.execute<T[]>('readonly', store =>
+                store.getAll(undefined, limit === Infinity ? undefined : limit)
+            );
         }
 
-        // SLOW-PATH: Need iteration to evaluate custom 'where' functions and full sorting
+        // SLOW-PATH: Extracted logic to keep closure flat
         return new Promise((resolve, reject) => {
             const txn = this.currentTxn ?? this.db!.transaction(this.storeName, 'readonly');
-            const store = txn.objectStore(this.storeName);
-            const request = store.openCursor();
-
+            const request = txn.objectStore(this.storeName).openCursor();
             const results: T[] = [];
-            const limit = opts.limit ?? Infinity;
-            const requiresSort = typeof opts.sort === 'function';
+            const requiresSort = sort !== null;
 
             request.onsuccess = () => {
                 const cursor = request.result;
 
-                if (!cursor) return completeRequest(); // End of DB
+                if (!cursor) {
+                    if (requiresSort) results.sort(sort);
+                    return resolve(limit !== Infinity ? results.slice(0, limit) : results);
+                }
 
                 const item = cursor.value as T;
-                if (!opts.where || opts.where(item)) {
+                if (where === null || where(item)) {
                     results.push(item);
                 }
 
-                // Break early OPTIMIZATION: Only safe if NO custom sorting is applied
                 if (!requiresSort && results.length >= limit) {
-                    return completeRequest();
+                    return resolve(results);
                 }
 
                 cursor.continue();
             };
 
             request.onerror = () => reject(request.error);
-
-            /**
-             *
-             */
-            function completeRequest() {
-                if (requiresSort && opts.sort) {
-                    results.sort(opts.sort);
-                }
-                // Finally slice down to limit (in case sort forced us to grab the entire matching dataset)
-                resolve(results.slice(0, limit));
-            }
         });
     }
 
     // ── Transaction Management ───────────────────────────────────────────
 
-    /**
-     * Enforces atomicity. Batches multiple interactions into one native transaction.
-     * Automatically rolls back memory state and aborts IDB on failure.
-     * @param fn
-     */
     public async transaction(fn: () => Promise<void> | void): Promise<void> {
         if (!this.db) throw new Error("Database not initialized");
 
-        // Support nested transaction boundaries transparently
         if (this.currentTxn) {
             await fn();
             return;
@@ -335,18 +361,27 @@ export class EntityStore<T extends { id: string | number }> {
         return new Promise<void>(async (resolve, reject) => {
             const txn = this.db!.transaction(this.storeName, 'readwrite');
             this.currentTxn = txn;
-            this.currentHistoryEntry = { actions: [] };
+
+            // Reuse object shape
+            this.currentHistoryEntry.actions = [];
 
             txn.oncomplete = () => {
-                if (this.currentHistoryEntry && this.currentHistoryEntry.actions.length > 0) {
+                if (this.currentHistoryEntry.actions.length > 0) {
                     this.undoStack.push(this.currentHistoryEntry);
                     if (this.undoStack.length > this.maxHistory) this.undoStack.shift();
-                    this.redoStack = []; // Break future redo continuity
+                    this.redoStack = [];
                 }
+
+                // Allocate a fresh object for the next transaction to not mutate the historic one
+                this.currentHistoryEntry = { actions: [] };
 
                 this.flushPendingEvents();
                 this.cleanupTransactionContext();
-                this.onTransactionComplete?.();
+
+                if (this.onTransactionComplete) {
+                    this.onTransactionComplete();
+                }
+
                 resolve();
             };
 
@@ -355,7 +390,7 @@ export class EntityStore<T extends { id: string | number }> {
 
             const rejectTransaction = (error: unknown) => {
                 console.error(`[EntityStore:${this.storeName}] Transaction Failed:`, error);
-                this.pendingEvents = []; // Dump events; state rolled back
+                this.pendingEvents = [];
                 this.cleanupTransactionContext();
                 reject(error);
             };
@@ -363,7 +398,7 @@ export class EntityStore<T extends { id: string | number }> {
             try {
                 await fn();
             } catch (error) {
-                txn.abort(); // Native rollback
+                txn.abort();
                 rejectTransaction(error);
             }
         });
@@ -371,7 +406,8 @@ export class EntityStore<T extends { id: string | number }> {
 
     private cleanupTransactionContext(): void {
         this.currentTxn = null;
-        this.currentHistoryEntry = null;
+        // Do NOT nullify this.currentHistoryEntry to keep property types strictly monomorphic
+        this.currentHistoryEntry.actions = [];
     }
 
     // ── History Tracking (Undo / Redo) ───────────────────────────────────
@@ -379,7 +415,7 @@ export class EntityStore<T extends { id: string | number }> {
     protected recordHistory(action: HistoryAction<T>): void {
         if (this.isUndoRedoInProgress) return;
 
-        if (this.currentHistoryEntry) {
+        if (this.currentTxn) {
             this.currentHistoryEntry.actions.push(action);
         } else {
             this.undoStack.push({ actions: [action] });
@@ -389,17 +425,16 @@ export class EntityStore<T extends { id: string | number }> {
     }
 
     public async undo(): Promise<boolean> {
-        if (!this.canUndo) return false;
+        if (this.undoStack.length === 0) return false;
 
         const entry = this.undoStack.pop()!;
         this.isUndoRedoInProgress = true;
 
         try {
-            // Apply undo atomically within a transaction
             await this.transaction(async () => {
-                // Must reverse actions in inverted order they were applied
-                for (let i = entry.actions.length - 1; i >= 0; i--) {
-                    await this.reverseAction(entry.actions[i]!);
+                const actions = entry.actions;
+                for (let i = actions.length - 1; i >= 0; i--) {
+                    await this.reverseAction(actions[i]!);
                 }
             });
             this.redoStack.push(entry);
@@ -410,15 +445,16 @@ export class EntityStore<T extends { id: string | number }> {
     }
 
     public async redo(): Promise<boolean> {
-        if (!this.canRedo) return false;
+        if (this.redoStack.length === 0) return false;
 
         const entry = this.redoStack.pop()!;
         this.isUndoRedoInProgress = true;
 
         try {
             await this.transaction(async () => {
-                for (const action of entry.actions) {
-                    await this.applyAction(action);
+                const actions = entry.actions;
+                for (let i = 0; i < actions.length; i++) {
+                    await this.applyAction(actions[i]!);
                 }
             });
             this.undoStack.push(entry);
@@ -429,6 +465,7 @@ export class EntityStore<T extends { id: string | number }> {
     }
 
     private async applyAction(action: HistoryAction<T>): Promise<void> {
+        // V8 Sparkplug/TurboFan highly optimize simple switch statements into jump tables.
         switch (action.type) {
             case 'add':
                 await this.add(action.item);
@@ -437,7 +474,6 @@ export class EntityStore<T extends { id: string | number }> {
                 await this.remove(action.item.id);
                 break;
             case 'update':
-                // Redo needs the NEW state, which is stored in action.item
                 await this.update(action.item.id, action.item);
                 break;
         }
@@ -452,8 +488,7 @@ export class EntityStore<T extends { id: string | number }> {
                 await this.add(action.item);
                 break;
             case 'update':
-                // Undo requires reverting to the PREVIOUS state
-                if (action.oldItem) {
+                if (action.oldItem !== null) {
                     await this.update(action.item.id, action.oldItem);
                 }
                 break;
@@ -471,18 +506,14 @@ export class EntityStore<T extends { id: string | number }> {
     // ── Event Emitter ────────────────────────────────────────────────────
 
     public on(event: StoreEvent, callback: (data: unknown) => void): void {
-        if (!this.listeners.has(event)) {
-            this.listeners.set(event, new Set());
-        }
-        this.listeners.get(event)!.add(callback);
+        this.listeners[event].add(callback);
     }
 
     public off(event: StoreEvent, callback: (data: unknown) => void): void {
-        this.listeners.get(event)?.delete(callback);
+        this.listeners[event].delete(callback);
     }
 
     protected emit(event: StoreEvent, data: unknown): void {
-        // If in transaction, defer events until commit is fully verified
         if (this.currentTxn) {
             this.pendingEvents.push({ event, data });
             return;
@@ -491,9 +522,10 @@ export class EntityStore<T extends { id: string | number }> {
     }
 
     protected dispatchEvent(event: StoreEvent, data: unknown): void {
-        const cbs = this.listeners.get(event);
-        if (!cbs) return;
+        const cbs = this.listeners[event];
+        if (cbs.size === 0) return;
 
+        // Sets iterators are fast and un-indexable
         for (const cb of cbs) {
             try {
                 cb(data);
@@ -504,10 +536,16 @@ export class EntityStore<T extends { id: string | number }> {
     }
 
     private flushPendingEvents(): void {
-        if (!this.pendingEvents.length) return;
+        const events = this.pendingEvents;
+        const len = events.length;
+        if (len === 0) return;
 
-        const events = this.pendingEvents.splice(0, this.pendingEvents.length);
-        for (const { event, data } of events) {
+        // Replacing with an empty array drops the old memory instantly for GC
+        // and avoids the performance hit / array-kind shifting penalty of .splice() or .length=0
+        this.pendingEvents = [];
+
+        for (let i = 0; i < len; i++) {
+            const { event, data } = events[i]!;
             this.dispatchEvent(event, data);
         }
     }
