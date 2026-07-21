@@ -1411,7 +1411,7 @@ export async function generateTextGenWithStreaming(generate_data: Record<string,
     const eventStream = getEventSourceStream();
     if (!response.body) throw new Error('Response body is null');
     response.body.pipeThrough(eventStream as unknown as TransformStream<Uint8Array, Uint8Array>);
-    const reader = (eventStream as unknown as ReadableStream).getReader() as ReadableStreamDefaultReader<{ data: string }>;
+    const reader = eventStream.readable!.getReader() as ReadableStreamDefaultReader<{ data: string }>;
 
     return async function* streamData() {
         let text = '';
