@@ -1,0 +1,35 @@
+{
+    "name": "SillyTavern (Bun)",
+    "image": "oven/bun:1.3.14",
+    "remoteUser": "root",
+    "features": {
+        "ghcr.io/devcontainers/features/git:1": {},
+        "ghcr.io/devcontainers/features/common-utils:1": {},
+        "ghcr.io/devcontainers-contrib/features/bun:1": {}
+
+    },
+    "containerEnv": {
+        "NODE_ENV": "development"
+    },
+    "forwardPorts": [8000],
+    "portsAttributes": {
+        "8000": {
+            "label": "SillyTavern",
+            "onAutoForward": "notify"
+        }
+    },
+    "postCreateCommand": "git config --global --add safe.directory ${containerWorkspaceFolder} && bun --version && bun install --frozen-lockfile && bun run build.ts",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "dbaeumer.vscode-eslint",
+                "EditorConfig.EditorConfig",
+                "mrcrowl.easy-less"
+            ],
+            "settings": {
+                "js/ts.tsdk.promptToUseWorkspaceVersion": true,
+                "js/ts.tsdk.path": "./node_modules/typescript/lib"
+            }
+        }
+    }
+}

@@ -48,9 +48,9 @@ async function addDockerHostsToWhitelist() {
             const result = await dns.promises.lookup(entry);
             console.info(`Resolved whitelist hostname ${color.green(entry)} to IPv${result.family} address ${color.green(result.address)}`);
             whitelist.push(result.address);
-    } catch {
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'e'.
-            console.warn(`Failed to resolve whitelist hostname ${color.red(entry)}: ${e.message}`);
+        } catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
+            console.warn(`Failed to resolve whitelist hostname ${color.red(entry)}: ${message}`);
         }
     }
 }
