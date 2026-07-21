@@ -212,7 +212,6 @@ import {
 } from './scripts/tags.js';
 import { checkOpenRouterAuth, initSecrets, readSecretState } from './scripts/secrets.js';
 import { processMarkdownExclusions } from './scripts/markdown-exclusion.js';
-import { processMarkdownUnderscores } from './scripts/markdown-underscore.js';
 import { NOTE_MODULE_NAME, initAuthorsNote, metadata_keys, setFloatingPrompt, shouldWIAddPrompt } from './scripts/authors-note.js';
 import { registerPromptManagerMigration } from './scripts/PromptManager.js';
 import { getRegexedString, regex_placement } from './scripts/extensions/regex/engine.js';
@@ -2063,7 +2062,6 @@ export function messageFormatting(mes, ch_name, isSystem, isUser, messageId, san
         mes = mes.replaceAll('\\end{align*}', '$$');
         mes = processMarkdownExclusions(mes);
         mes = converter.render(mes);
-        mes = processMarkdownUnderscores(mes);
 
         // @ts-expect-error TS(7006) FIXME: Parameter 'match' implicitly has an 'any' type.
         mes = mes.replace(/<code(.*)>[\s\S]*?<\/code>/g, function (match) {
