@@ -31,8 +31,7 @@ public/stats.json
 public/settings.json
 /thumbnails
 whitelist.txt
-.vscode/**
-!.vscode/extensions.json
+.vscode
 .idea/
 secrets.json
 /dist
