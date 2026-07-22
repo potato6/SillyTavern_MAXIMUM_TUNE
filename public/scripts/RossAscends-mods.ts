@@ -19,7 +19,6 @@ import {
     substituteParams,
     sendTextareaMessage,
     doNavbarIconClick,
-    isSwipingAllowed,
 } from '../script.js';
 
 import {
@@ -44,6 +43,7 @@ import { accountStorage } from './util/AccountStorage.js';
 import { getCurrentUserHandle } from './user.js';
 import { kai_settings } from './kai-settings.js';
 
+// Cached DOM references
 const RPanelPin = document.getElementById('rm_button_panel_pin')! as HTMLInputElement;
 const LPanelPin = document.getElementById('lm_button_panel_pin')! as HTMLInputElement;
 const WIPanelPin = document.getElementById('WI_panel_pin')! as HTMLInputElement;
@@ -66,56 +66,58 @@ const countTokensDebounced = debounce(RA_CountCharTokens, debounce_timeout.relax
 const countTokensShortDebounced = debounce(RA_CountCharTokens, debounce_timeout.short);
 const checkStatusDebounced = debounce(RA_checkOnlineStatus, debounce_timeout.short);
 
-const observer = new MutationObserver(function (mutations) {
-    mutations.forEach(function (mutation) {
-        if (!(mutation.target instanceof HTMLElement)) {
-            return;
-        }
-        if (mutation.target.classList.contains('online_status_text')) {
+// Generic DOM event trigger
+const triggerClick = (target: string | Element | null) => {
+    const el = typeof target === 'string' ? document.getElementById(target) : target;
+    el?.dispatchEvent(new Event('click', { bubbles: true }));
+};
+
+const observer = new MutationObserver((mutations) => {
+    for (let i = 0; i < mutations.length; i++) {
+        const target = mutations[i]!.target;
+        if (!(target instanceof HTMLElement)) continue;
+
+        if (target.classList.contains('online_status_text')) {
             checkStatusDebounced();
-        } else if (mutation.target.parentNode === SelectedCharacterTab) {
+        } else if (target.parentNode === SelectedCharacterTab) {
             countTokensShortDebounced();
-        } else if (mutation.target.classList.contains('mes_text')) {
-            for (const element of mutation.target.getElementsByTagName('math')) {
-                element.childNodes.forEach(function (child) {
-                    if (child.nodeType === Node.TEXT_NODE) {
-                        child.textContent = '';
+        } else if (target.classList.contains('mes_text')) {
+            const mathElems = target.getElementsByTagName('math');
+            for (let j = 0; j < mathElems.length; j++) {
+                const childNodes = mathElems[j]!.childNodes;
+                for (let k = 0; k < childNodes.length; k++) {
+                    if (childNodes[k]!.nodeType === Node.TEXT_NODE) {
+                        childNodes[k]!.textContent = '';
                     }
-                });
+                }
             }
         }
-    });
+    }
 });
 
 observer.observe(document.documentElement, observerConfig);
 
-
 /**
  * Converts generation time from milliseconds to a human-readable format.
- *
- * The function takes total generation time as an input, then converts it to a format
- * of "_ Days, _ Hours, _ Minutes, _ Seconds". If the generation time does not exceed a
- * particular measure (like days or hours), that measure will not be included in the output.
  * @param {number} total_gen_time - The total generation time in milliseconds.
  * @returns {string} - A human-readable string that represents the time spent generating characters.
  */
 export function humanizeGenTime(total_gen_time: number): string {
-    //convert time_spent to humanized format of "_ Hours, _ Minutes, _ Seconds" from milliseconds
-    let time_spent = total_gen_time || 0;
-    time_spent = Math.floor(time_spent / 1000);
-    const seconds = time_spent % 60;
-    time_spent = Math.floor(time_spent / 60);
-    const minutes = time_spent % 60;
-    time_spent = Math.floor(time_spent / 60);
-    const hours = time_spent % 24;
-    time_spent = Math.floor(time_spent / 24);
-    const days = time_spent;
-    let result = '';
-    if (days > 0) { result += `${days} Days, `; }
-    if (hours > 0) { result += `${hours} Hours, `; }
-    if (minutes > 0) { result += `${minutes} Minutes, `; }
-    result += `${seconds} Seconds`;
-    return result;
+    let totalSecs = Math.floor((total_gen_time || 0) / 1000);
+    const seconds = totalSecs % 60;
+    totalSecs = Math.floor(totalSecs / 60);
+    const minutes = totalSecs % 60;
+    totalSecs = Math.floor(totalSecs / 60);
+    const hours = totalSecs % 24;
+    const days = Math.floor(totalSecs / 24);
+
+    const parts: string[] = [];
+    if (days > 0) parts.push(`${days} Days`);
+    if (hours > 0) parts.push(`${hours} Hours`);
+    if (minutes > 0) parts.push(`${minutes} Minutes`);
+    parts.push(`${seconds} Seconds`);
+
+    return parts.join(', ');
 }
 
 /**
@@ -131,10 +133,9 @@ export function getParsedUA() {
         try {
             parsedUA = Bowser.parse(navigator.userAgent) as unknown as Record<string, unknown>;
         } catch {
-            // In case the user agent is an empty string or Bowser can't parse it for some other reason
+            // In case the user agent is an empty string or Bowser can't parse it
         }
     }
-
     return parsedUA;
 }
 
@@ -143,20 +144,16 @@ export function getParsedUA() {
  * @returns {boolean} - True if the device is a mobile device, false otherwise.
  */
 export function isMobile() {
-    const mobileTypes = ['mobile', 'tablet'];
-
     const ua = getParsedUA();
-    const platform = (ua as Record<string, unknown>)?.platform as Record<string, unknown>;
-    return mobileTypes.includes(platform?.type as string);
+    const platformType = ((ua as Record<string, unknown>)?.platform as Record<string, unknown>)?.type as string;
+    return platformType === 'mobile' || platformType === 'tablet';
 }
 
 /**
  * @returns {boolean} Whether enter should send the message
  */
 export function shouldSendOnEnter() {
-    if (!power_user) {
-        return false;
-    }
+    if (!power_user) return false;
 
     switch (power_user.send_on_enter) {
         case send_on_enter_options.DISABLED:
@@ -165,6 +162,8 @@ export function shouldSendOnEnter() {
             return !isMobile();
         case send_on_enter_options.ENABLED:
             return true;
+        default:
+            return false;
     }
 }
 
@@ -175,20 +174,8 @@ export function shouldSendOnEnter() {
  */
 export function humanizedDateTime(timestamp = Date.now()) {
     const date = new Date(timestamp);
-    const dt = {
-        year: date.getFullYear(),
-        month: date.getMonth() + 1,
-        day: date.getDate(),
-        hour: date.getHours(),
-        minute: date.getMinutes(),
-        second: date.getSeconds(),
-        millisecond: date.getMilliseconds(),
-    };
-    for (const key of Object.keys(dt) as (keyof typeof dt)[]) {
-        const padLength = key === 'millisecond' ? 3 : 2;
-        dt[key] = dt[key].toString().padStart(padLength, '0') as never;
-    }
-    return `${dt.year}-${dt.month}-${dt.day}@${dt.hour}h${dt.minute}m${dt.second}s${dt.millisecond}ms`;
+    const pad = (num: number, len = 2) => String(num).padStart(len, '0');
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}@${pad(date.getHours())}h${pad(date.getMinutes())}m${pad(date.getSeconds())}s${pad(date.getMilliseconds(), 3)}ms`;
 }
 
 /**
@@ -197,24 +184,18 @@ export function humanizedDateTime(timestamp = Date.now()) {
  * @returns {string} ISO 8601 formatted timestamp
  */
 export function getMessageTimeStamp(timestamp = Date.now()) {
-    const date = new Date(timestamp);
-    return date.toISOString();
+    return new Date(timestamp).toISOString();
 }
 
-
-// triggers:
-document.getElementById('rm_button_create')?.addEventListener('click', function () {                 //when "+New Character" is clicked
-        const selectedCharH2 = SelectedCharacterTab?.querySelector(':scope > h2');
+// Global Event Listeners
+document.getElementById('rm_button_create')?.addEventListener('click', () => {
+    const selectedCharH2 = SelectedCharacterTab?.querySelector(':scope > h2');
     if (selectedCharH2) selectedCharH2.innerHTML = '';
 });
-//when any input is made to the create/edit character form textareas
-document.getElementById('rm_ch_create_block')?.addEventListener('input', function () { countTokensDebounced(); });
-//when any input is made to the advanced editing popup textareas
-document.getElementById('character_popup')?.addEventListener('input', function () { countTokensDebounced(); });
-//function:
-/**
- *
- */
+
+document.getElementById('rm_ch_create_block')?.addEventListener('input', countTokensDebounced);
+document.getElementById('character_popup')?.addEventListener('input', countTokensDebounced);
+
 export async function RA_CountCharTokens() {
     counterNonce = Date.now();
     const counterNonceLocal = counterNonce;
@@ -222,74 +203,64 @@ export async function RA_CountCharTokens() {
     let permanent_tokens = 0;
 
     const tokenCounters = document.querySelectorAll('[data-token-counter]');
-    for (const tokenCounter of tokenCounters) {
-        if (counterNonceLocal !== counterNonce) {
-            return;
-        }
+    for (let i = 0; i < tokenCounters.length; i++) {
+        if (counterNonceLocal !== counterNonce) return;
 
-        const counter = tokenCounter as HTMLElement;
-        const input = document.getElementById(counter.getAttribute('data-token-counter') ?? '');
+        const counter = tokenCounters[i] as HTMLElement;
+        const inputId = counter.getAttribute('data-token-counter') ?? '';
+        const input = document.getElementById(inputId);
         const isPermanent = counter.getAttribute('data-token-permanent') === 'true';
-        const value = String(input instanceof HTMLInputElement || input instanceof HTMLTextAreaElement ? input.value : '');
 
         if (!input) {
             counter.textContent = 'Invalid input reference';
             continue;
         }
 
+        const value = String((input instanceof HTMLInputElement || input instanceof HTMLTextAreaElement) ? input.value : '');
         if (!value) {
             input.dataset.lastValueHash = '';
             counter.textContent = '0';
             continue;
         }
 
-        const valueHash = getStringHash(value);
+        const valueHash = String(getStringHash(value));
 
-        if (input.dataset.lastValueHash === String(valueHash)) {
-            total_tokens += Number(counter.textContent);
-            permanent_tokens += isPermanent ? Number(counter.textContent) : 0;
+        if (input.dataset.lastValueHash === valueHash) {
+            const count = Number(counter.textContent);
+            total_tokens += count;
+            if (isPermanent) permanent_tokens += count;
         } else {
-            // We substitute macro for existing characters, but not for the character being created
             const valueToCount = menu_type === 'create' ? value : substituteParams(value);
             const tokens = await getTokenCountAsync(valueToCount);
 
-            if (counterNonceLocal !== counterNonce) {
-                return;
-            }
+            if (counterNonceLocal !== counterNonce) return;
 
-            counter.textContent = tokens;
+            counter.textContent = String(tokens);
             total_tokens += tokens;
-            permanent_tokens += isPermanent ? tokens : 0;
-            input.dataset.lastValueHash = String(valueHash);
+            if (isPermanent) permanent_tokens += tokens;
+            input.dataset.lastValueHash = valueHash;
         }
     }
 
-    // Warn if total tokens exceeds the limit of half the max context
-    const tokenLimit = Math.max(((main_api !== 'openai' ? max_context : oai_settings.openai_max_context) / 2), 1024);
-    const showWarning = (total_tokens > tokenLimit);
+    const maxCtx = main_api !== 'openai' ? max_context : oai_settings.openai_max_context;
+    const tokenLimit = Math.max(maxCtx / 2, 1024);
+    const showWarning = total_tokens > tokenLimit;
+
     document.getElementById('result_info_total_tokens')!.textContent = String(total_tokens);
     document.getElementById('result_info_permanent_tokens')!.textContent = String(permanent_tokens);
     document.getElementById('result_info_text')?.classList.toggle('neutral_warning', showWarning);
-    const _ctEl = document.getElementById('chartokenwarning') as HTMLElement; if (_ctEl) _ctEl.style.display = showWarning ? '' : 'none';
+
+    const _ctEl = document.getElementById('chartokenwarning');
+    if (_ctEl) _ctEl.style.display = showWarning ? '' : 'none';
 }
-/**
- * Auto load chat with the last active character or group.
- * Fires when active_character is defined and auto_load_chat is true.
- * The function first tries to find a character with a specific ID from the global settings.
- * If it doesn't exist, it tries to find a group with a specific grid from the global settings.
- * If the character list hadn't been loaded yet, it calls itself again after 100ms delay.
- * The character or group is selected (clicked) if it is found.
- */
+
 async function RA_autoloadchat() {
-    // active character is the name, we should look it up in the character list and get the id
     if (active_character !== null && active_character !== undefined) {
         const active_character_id = characters.findIndex(x => getTagKeyForEntity(x) === active_character);
         if (active_character_id !== -1) {
             await selectCharacterById(active_character_id);
-
-            // Do a little tomfoolery to spoof the tag selector
             const selectedCharElement = document.querySelector(`#rm_print_characters_block .character_select[chid="${active_character_id}"]`);
-                applyTagsOnCharacterSelect.call(selectedCharElement);
+            applyTagsOnCharacterSelect.call(selectedCharElement);
         } else {
             setActiveCharacter(null);
             saveSettingsDebounced();
@@ -313,168 +284,164 @@ async function RA_autoloadchat() {
     }
 }
 
-/**
- *
- */
 export async function favsToHotswap() {
     const entities = getEntitiesList({ doFilter: false });
     const container = document.querySelector('#right-nav-panel .hotswap')!;
-
-    // Hard limit is required because even if all hotswaps don't fit the screen, their images would still be loaded
-    // 25 is roughly calculated as the maximum number of favs that can fit an ultrawide monitor with the default theme
     const FAVS_LIMIT = 25;
-    const favs = entities.filter(x => x.item.fav || x.item.fav == 'true').slice(0, FAVS_LIMIT);
+    const favs = entities.filter(x => x.item.fav || x.item.fav === 'true').slice(0, FAVS_LIMIT);
 
-    //helpful instruction message if no characters are favorited
-    if (favs.length == 0) {
-        container.innerHTML = DOMPurify.sanitize(`<small><span><i class="fa-solid fa-star"></i>&nbsp;${(container as HTMLElement).getAttribute('no_favs') ?? ''}</span></small>`);
+    if (favs.length === 0) {
+        const noFavsAttr = (container as HTMLElement).getAttribute('no_favs') ?? '';
+        container.innerHTML = DOMPurify.sanitize(`<small><span><i class="fa-solid fa-star"></i>&nbsp;${noFavsAttr}</span></small>`);
         return;
     }
 
     buildAvatarList(container, favs, { interactable: true, highlightFavs: false });
 }
 
-//changes input bar and send button display depending on connection status
-/**
- *
- */
 function RA_checkOnlineStatus() {
-    if (online_status == 'no_connection') {
-        const send_textarea = document.getElementById('send_textarea');
-        send_textarea?.setAttribute('placeholder', send_textarea.getAttribute('no_connection_text') ?? ''); //Input bar placeholder tells users they are not connected
-        document.getElementById('send_form')?.classList.add('no-connection');
-        document.getElementById('send_but')?.classList.add('displayNone'); //send button is hidden when not connected;
-        document.getElementById('mes_continue')?.classList.add('displayNone'); //continue button is hidden when not connected;
-        document.getElementById('mes_impersonate')?.classList.add('displayNone'); //continue button is hidden when not connected;
-        document.getElementById('API-status-top')?.classList.remove('fa-plug');
-        document.getElementById('API-status-top')?.classList.add('fa-plug-circle-exclamation', 'redOverlayGlow');
-        connection_made = false;
-    } else {
-        if (online_status !== undefined && online_status !== 'no_connection') {
-            const send_textarea = document.getElementById('send_textarea');
-            send_textarea?.setAttribute('placeholder', send_textarea.getAttribute('connected_text') ?? ''); //on connect, placeholder tells user to type message
-            document.getElementById('send_form')?.classList.remove('no-connection');
-            document.getElementById('API-status-top')?.classList.remove('fa-plug-circle-exclamation', 'redOverlayGlow');
-            document.getElementById('API-status-top')?.classList.add('fa-plug');
-            connection_made = true;
-            retry_delay = 100;
+    const isDisconnected = online_status === 'no_connection';
+    const sendTextarea = document.getElementById('send_textarea');
 
-            if (!is_send_press && !(selected_group && is_group_generating)) {
-                document.getElementById('send_but')?.classList.remove('displayNone'); //on connect, send button shows
-                document.getElementById('mes_continue')?.classList.remove('displayNone'); //continue button is shown when connected
-                document.getElementById('mes_impersonate')?.classList.remove('displayNone'); //continue button is shown when connected
-            }
-        }
+    if (sendTextarea) {
+        const attr = isDisconnected ? 'no_connection_text' : 'connected_text';
+        sendTextarea.setAttribute('placeholder', sendTextarea.getAttribute(attr) ?? '');
+    }
+
+    const toggleClass = (id: string, className: string, force: boolean) => {
+        document.getElementById(id)?.classList.toggle(className, force);
+    };
+
+    toggleClass('send_form', 'no-connection', isDisconnected);
+
+    const apiStatus = document.getElementById('API-status-top');
+    if (apiStatus) {
+        apiStatus.classList.toggle('fa-plug', !isDisconnected);
+        apiStatus.classList.toggle('fa-plug-circle-exclamation', isDisconnected);
+        apiStatus.classList.toggle('redOverlayGlow', isDisconnected);
+    }
+
+    connection_made = !isDisconnected;
+
+    if (isDisconnected) {
+        toggleClass('send_but', 'displayNone', true);
+        toggleClass('mes_continue', 'displayNone', true);
+        toggleClass('mes_impersonate', 'displayNone', true);
+    } else if (online_status !== undefined) {
+        retry_delay = 100;
+        const hideActionButtons = Boolean(is_send_press || (selected_group && is_group_generating));
+        toggleClass('send_but', 'displayNone', hideActionButtons);
+        toggleClass('mes_continue', 'displayNone', hideActionButtons);
+        toggleClass('mes_impersonate', 'displayNone', hideActionButtons);
     }
 }
-//Auto-connect to API (when set to kobold, API URL exists, and auto_connect is true)
 
-/**
- * @param {string} PrevApi The previous API name
- */
 function RA_autoconnect(PrevApi?: string) {
-    // secrets.js or script.js not loaded
     if (SECRET_KEYS === undefined || online_status === undefined) {
         setTimeout(RA_autoconnect, 100);
         return;
     }
+
     if (online_status === 'no_connection' && power_user.auto_connect) {
+        const state = secret_state as Record<string, unknown>;
+        const getSecret = (key?: string) => key ? Boolean(state[key]) : false;
+
         switch (main_api) {
             case 'kobold':
                 if (kai_settings.api_server && isValidUrl(kai_settings.api_server)) {
-                    document.getElementById('api_button')?.dispatchEvent(new Event('click', { bubbles: true }));
+                    triggerClick('api_button');
                 }
                 break;
             case 'novel':
-                            if ((secret_state as Record<string, unknown>)[SECRET_KEYS.NOVEL!]) {
-                    document.getElementById('api_button_novel')?.dispatchEvent(new Event('click', { bubbles: true }));
+                if (getSecret(SECRET_KEYS.NOVEL)) {
+                    triggerClick('api_button_novel');
                 }
                 break;
-            case 'textgenerationwebui':
-                if ((textgen_settings.type === textgen_types.MANCER && (secret_state as Record<string, unknown>)[SECRET_KEYS.MANCER!])
-                    || (textgen_settings.type === textgen_types.TOGETHERAI && (secret_state as Record<string, unknown>)[SECRET_KEYS.TOGETHERAI!])
-                    || (textgen_settings.type === textgen_types.INFERMATICAI && (secret_state as Record<string, unknown>)[SECRET_KEYS.INFERMATICAI!])
-                    || (textgen_settings.type === textgen_types.DREAMGEN && (secret_state as Record<string, unknown>)[SECRET_KEYS.DREAMGEN!])
-                    || (textgen_settings.type === textgen_types.OPENROUTER && (secret_state as Record<string, unknown>)[SECRET_KEYS.OPENROUTER!])
-                    || (textgen_settings.type === textgen_types.FEATHERLESS && (secret_state as Record<string, unknown>)[SECRET_KEYS.FEATHERLESS!])
-                ) {
-                    document.getElementById('api_button_textgenerationwebui')?.dispatchEvent(new Event('click', { bubbles: true }));
-                } else if (isValidUrl(getTextGenServer())) {
-                    document.getElementById('api_button_textgenerationwebui')?.dispatchEvent(new Event('click', { bubbles: true }));
+            case 'textgenerationwebui': {
+                const textgenType = textgen_settings.type;
+                const hasTypeSecret = (
+                    (textgenType === textgen_types.MANCER && getSecret(SECRET_KEYS.MANCER)) ||
+                    (textgenType === textgen_types.TOGETHERAI && getSecret(SECRET_KEYS.TOGETHERAI)) ||
+                    (textgenType === textgen_types.INFERMATICAI && getSecret(SECRET_KEYS.INFERMATICAI)) ||
+                    (textgenType === textgen_types.DREAMGEN && getSecret(SECRET_KEYS.DREAMGEN)) ||
+                    (textgenType === textgen_types.OPENROUTER && getSecret(SECRET_KEYS.OPENROUTER)) ||
+                    (textgenType === textgen_types.FEATHERLESS && getSecret(SECRET_KEYS.FEATHERLESS))
+                );
+
+                if (hasTypeSecret || isValidUrl(getTextGenServer())) {
+                    triggerClick('api_button_textgenerationwebui');
                 }
                 break;
-            case 'openai':
-                if ((((secret_state as Record<string, unknown>)[SECRET_KEYS.OPENAI!] || oai_settings.reverse_proxy) && oai_settings.chat_completion_source == chat_completion_sources.OPENAI)
-                    || (((secret_state as Record<string, unknown>)[SECRET_KEYS.CLAUDE!] || oai_settings.reverse_proxy) && oai_settings.chat_completion_source == chat_completion_sources.CLAUDE)
-                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.OPENROUTER!] && oai_settings.chat_completion_source == chat_completion_sources.OPENROUTER)
-                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.AI21!] && oai_settings.chat_completion_source == chat_completion_sources.AI21)
-                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.MAKERSUITE!] && oai_settings.chat_completion_source == chat_completion_sources.MAKERSUITE)
-                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.VERTEXAI!] && oai_settings.chat_completion_source == chat_completion_sources.VERTEXAI && oai_settings.vertexai_auth_mode === 'express')
-                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.VERTEXAI_SERVICE_ACCOUNT!] && oai_settings.chat_completion_source == chat_completion_sources.VERTEXAI && oai_settings.vertexai_auth_mode === 'full')
-                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.MISTRALAI!] && oai_settings.chat_completion_source == chat_completion_sources.MISTRALAI)
-                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.COHERE!] && oai_settings.chat_completion_source == chat_completion_sources.COHERE)
-                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.PERPLEXITY!] && oai_settings.chat_completion_source == chat_completion_sources.PERPLEXITY)
-                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.GROQ!] && oai_settings.chat_completion_source == chat_completion_sources.GROQ)
-                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.CHUTES!] && oai_settings.chat_completion_source == chat_completion_sources.CHUTES)
-                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.SILICONFLOW!] && oai_settings.chat_completion_source == chat_completion_sources.SILICONFLOW)
-                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.ELECTRONHUB!] && oai_settings.chat_completion_source == chat_completion_sources.ELECTRONHUB)
-                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.NANOGPT!] && oai_settings.chat_completion_source == chat_completion_sources.NANOGPT)
-                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.DEEPSEEK!] && oai_settings.chat_completion_source == chat_completion_sources.DEEPSEEK)
-                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.XAI!] && oai_settings.chat_completion_source == chat_completion_sources.XAI)
-                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.AIMLAPI!] && oai_settings.chat_completion_source == chat_completion_sources.AIMLAPI)
-                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.MOONSHOT!] && oai_settings.chat_completion_source == chat_completion_sources.MOONSHOT)
-                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.FIREWORKS!] && oai_settings.chat_completion_source == chat_completion_sources.FIREWORKS)
-                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.COMETAPI!] && oai_settings.chat_completion_source == chat_completion_sources.COMETAPI)
-                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.ZAI!] && oai_settings.chat_completion_source == chat_completion_sources.ZAI)
-                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.POLLINATIONS!] && oai_settings.chat_completion_source === chat_completion_sources.POLLINATIONS)
-                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.WORKERS_AI!] && oai_settings.chat_completion_source == chat_completion_sources.WORKERS_AI)
-                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.MINIMAX!] && oai_settings.chat_completion_source == chat_completion_sources.MINIMAX)
-                    || (isValidUrl(oai_settings.custom_url) && oai_settings.chat_completion_source == chat_completion_sources.CUSTOM)
-                    || ((secret_state as Record<string, unknown>)[SECRET_KEYS.AZURE_OPENAI!] && oai_settings.chat_completion_source == chat_completion_sources.AZURE_OPENAI)
-                ) {
-                    document.getElementById('api_button_openai')?.dispatchEvent(new Event('click', { bubbles: true }));
+            }
+            case 'openai': {
+                const src = oai_settings.chat_completion_source;
+                const isRevProxy = Boolean(oai_settings.reverse_proxy);
+
+                const sourceSecretMap: [unknown, string | undefined, boolean?][] = [
+                    [chat_completion_sources.OPENAI, SECRET_KEYS.OPENAI, isRevProxy],
+                    [chat_completion_sources.CLAUDE, SECRET_KEYS.CLAUDE, isRevProxy],
+                    [chat_completion_sources.OPENROUTER, SECRET_KEYS.OPENROUTER],
+                    [chat_completion_sources.AI21, SECRET_KEYS.AI21],
+                    [chat_completion_sources.MAKERSUITE, SECRET_KEYS.MAKERSUITE],
+                    [chat_completion_sources.VERTEXAI, oai_settings.vertexai_auth_mode === 'express' ? SECRET_KEYS.VERTEXAI : SECRET_KEYS.VERTEXAI_SERVICE_ACCOUNT],
+                    [chat_completion_sources.MISTRALAI, SECRET_KEYS.MISTRALAI],
+                    [chat_completion_sources.COHERE, SECRET_KEYS.COHERE],
+                    [chat_completion_sources.PERPLEXITY, SECRET_KEYS.PERPLEXITY],
+                    [chat_completion_sources.GROQ, SECRET_KEYS.GROQ],
+                    [chat_completion_sources.CHUTES, SECRET_KEYS.CHUTES],
+                    [chat_completion_sources.SILICONFLOW, SECRET_KEYS.SILICONFLOW],
+                    [chat_completion_sources.ELECTRONHUB, SECRET_KEYS.ELECTRONHUB],
+                    [chat_completion_sources.NANOGPT, SECRET_KEYS.NANOGPT],
+                    [chat_completion_sources.DEEPSEEK, SECRET_KEYS.DEEPSEEK],
+                    [chat_completion_sources.XAI, SECRET_KEYS.XAI],
+                    [chat_completion_sources.AIMLAPI, SECRET_KEYS.AIMLAPI],
+                    [chat_completion_sources.MOONSHOT, SECRET_KEYS.MOONSHOT],
+                    [chat_completion_sources.FIREWORKS, SECRET_KEYS.FIREWORKS],
+                    [chat_completion_sources.COMETAPI, SECRET_KEYS.COMETAPI],
+                    [chat_completion_sources.ZAI, SECRET_KEYS.ZAI],
+                    [chat_completion_sources.POLLINATIONS, SECRET_KEYS.POLLINATIONS],
+                    [chat_completion_sources.WORKERS_AI, SECRET_KEYS.WORKERS_AI],
+                    [chat_completion_sources.MINIMAX, SECRET_KEYS.MINIMAX],
+                    [chat_completion_sources.AZURE_OPENAI, SECRET_KEYS.AZURE_OPENAI],
+                ];
+
+                const isCustomValid = src === chat_completion_sources.CUSTOM && isValidUrl(oai_settings.custom_url);
+                const canConnect = isCustomValid || sourceSecretMap.some(([targetSrc, secretKey, allowFallback]) =>
+                    src === targetSrc && (getSecret(secretKey) || Boolean(allowFallback))
+                );
+
+                if (canConnect) {
+                    triggerClick('api_button_openai');
                 }
                 break;
+            }
         }
 
         if (!connection_made) {
-            retry_delay = Math.min(retry_delay * 2, 30000); // double retry delay up to to 30 secs
-            // console.log('connection attempts: ' + RA_AC_retries + ' delay: ' + (retry_delay / 1000) + 's');
-            // setTimeout(RA_autoconnect, retry_delay);
+            retry_delay = Math.min(retry_delay * 2, 30000);
         }
     }
 }
 
-/**
- *
- */
 function OpenNavPanels() {
-    if (!isMobile()) {
-        //auto-open R nav if locked and previously open
-        if (accountStorage.getItem('NavLockOn') == 'true' && accountStorage.getItem('NavOpened') == 'true') {
-            //console.log("RA -- clicking right nav to open");
-            document.getElementById('rightNavDrawerIcon')?.dispatchEvent(new Event('click', { bubbles: true }));
-        }
+    if (isMobile()) return;
 
-        //auto-open L nav if locked and previously open
-        if (accountStorage.getItem('LNavLockOn') == 'true' && accountStorage.getItem('LNavOpened') == 'true') {
-            console.debug('RA -- clicking left nav to open');
-            document.getElementById('leftNavDrawerIcon')?.dispatchEvent(new Event('click', { bubbles: true }));
-        }
+    const navPanels: [string, string, string][] = [
+        ['NavLockOn', 'NavOpened', 'rightNavDrawerIcon'],
+        ['LNavLockOn', 'LNavOpened', 'leftNavDrawerIcon'],
+        ['WINavLockOn', 'WINavOpened', 'WIDrawerIcon'],
+    ];
 
-        //auto-open WI if locked and previously open
-        if (accountStorage.getItem('WINavLockOn') == 'true' && accountStorage.getItem('WINavOpened') == 'true') {
-            console.debug('RA -- clicking WI to open');
-            document.getElementById('WIDrawerIcon')?.dispatchEvent(new Event('click', { bubbles: true }));
+    for (let i = 0; i < navPanels.length; i++) {
+        const [lockKey, openKey, iconId] = navPanels[i]!;
+        if (accountStorage.getItem(lockKey) === 'true' && accountStorage.getItem(openKey) === 'true') {
+            triggerClick(iconId);
         }
     }
 }
 
 const getUserInputKey = () => getCurrentUserHandle() + '_userInput';
 
-/**
- *
- */
 function restoreUserInput() {
     if (!power_user.restore_user_input) {
         console.debug('restoreUserInput disabled');
@@ -491,9 +458,6 @@ function restoreUserInput() {
     }
 }
 
-/**
- *
- */
 function saveUserInput() {
     const el = document.getElementById('send_textarea') as HTMLTextAreaElement | null;
     const userInput = String(el?.value ?? '');
@@ -502,56 +466,57 @@ function saveUserInput() {
 }
 const saveUserInputDebounced = debounce(saveUserInput);
 
-/**
- * Make the given element draggable. This is used for Moving UI.
- * @param {HTMLElement} elmnt - The element to make draggable.
- */
 export function dragElement(elmnt: HTMLElement) {
-    let actionType: string | null = null; // "drag" or "resize"
+    if (!elmnt) return;
+
+    let actionType: string | null = null;
     let isMouseDown = false;
 
     let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-    let height = 0, width = 0, top = 0, left = 0, right = 0, bottom = 0,
-        maxX = 0, maxY = 0, winHeight = 0, winWidth = 0;
+    let height = 0, width = 0, top = 0, left = 0, right = 0, bottom = 0;
+    let maxX = 0, maxY = 0, winHeight = 0, winWidth = 0;
 
-    if (!elmnt) return;
     const elmntName = elmnt.id;
 
-    /**
-     *
-     */
     function savePositionAndSize() {
-        const state = (power_user.movingUIState as Record<string, Record<string, unknown>>);
+        const state = power_user.movingUIState as Record<string, Record<string, unknown>>;
         if (!state[elmntName]) state[elmntName] = {};
-        state[elmntName]!.top = top;
-        state[elmntName]!.left = left;
-        state[elmntName]!.right = right;
-        state[elmntName]!.bottom = bottom;
-        state[elmntName]!.margin = 'unset';
+        const elState = state[elmntName]!;
+        elState.top = top;
+        elState.left = left;
+        elState.right = right;
+        elState.bottom = bottom;
+        elState.margin = 'unset';
+
         if (actionType === 'resize') {
-            state[elmntName]!.width = width;
-            state[elmntName]!.height = height;
+            elState.width = width;
+            elState.height = height;
             eventSource.emit('resizeUI', elmntName);
         }
         saveSettingsDebounced();
     }
 
-    /**
-     *
-     */
     function clampToViewport() {
-        if (top <= 0) elmnt.style.setProperty('top', '0px', 'important');
-        else if (maxY >= winHeight) elmnt.style.setProperty('top', (winHeight - maxY + top - 1) + 'px', 'important');
-        if (left <= 0) elmnt.style.setProperty('left', '0px', 'important');
-        else if (maxX >= winWidth) elmnt.style.setProperty('left', (winWidth - maxX + left - 1) + 'px', 'important');
+        if (top <= 0) {
+            elmnt.style.setProperty('top', '0px', 'important');
+        } else if (maxY >= winHeight) {
+            elmnt.style.setProperty('top', `${winHeight - maxY + top - 1}px`, 'important');
+        }
+
+        if (left <= 0) {
+            elmnt.style.setProperty('left', '0px', 'important');
+        } else if (maxX >= winWidth) {
+            elmnt.style.setProperty('left', `${winWidth - maxX + left - 1}px`, 'important');
+        }
     }
 
-    const observer = new MutationObserver((mutations: MutationRecord[]) => {
+    const dragObserver = new MutationObserver((mutations: MutationRecord[]) => {
         const target = mutations[0]!.target;
         if (!(target instanceof HTMLElement)) {
-            observer.disconnect();
+            dragObserver.disconnect();
             return;
         }
+
         if (
             target.offsetHeight < 50 ||
             target.offsetWidth < 50 ||
@@ -560,23 +525,23 @@ export function dragElement(elmnt: HTMLElement) {
             isMobile() ||
             !isMouseDown
         ) {
-            observer.disconnect();
+            dragObserver.disconnect();
             return;
         }
 
         const style = getComputedStyle(target);
-        height = parseInt(style.height);
-        width = parseInt(style.width);
-        top = parseInt(style.top);
-        left = parseInt(style.left);
-        right = parseInt(style.right);
-        bottom = parseInt(style.bottom);
+        height = parseInt(style.height, 10);
+        width = parseInt(style.width, 10);
+        top = parseInt(style.top, 10);
+        left = parseInt(style.left, 10);
+        right = parseInt(style.right, 10);
+        bottom = parseInt(style.bottom, 10);
         maxX = width + left;
         maxY = height + top;
         winWidth = window.innerWidth;
         winHeight = window.innerHeight;
 
-        const state = (power_user.movingUIState as Record<string, Record<string, unknown>>);
+        const state = power_user.movingUIState as Record<string, Record<string, unknown>>;
         if (!state[elmntName]) state[elmntName] = {};
 
         if (actionType === 'resize') {
@@ -589,25 +554,25 @@ export function dragElement(elmnt: HTMLElement) {
                     if (imgWidth > 0) {
                         const imageAspectRatio = imgHeight / imgWidth;
                         if (containerAspectRatio !== imageAspectRatio) {
-                            elmnt.style.width = elmnt.offsetWidth + 'px';
-                            elmnt.style.height = elmnt.offsetWidth * imageAspectRatio + 'px';
+                            elmnt.style.width = `${elmnt.offsetWidth}px`;
+                            elmnt.style.height = `${elmnt.offsetWidth * imageAspectRatio}px`;
                         }
                         if (top + elmnt.offsetHeight >= winHeight) {
-                            elmnt.style.setProperty('height', (winHeight - top - 1) + 'px', 'important');
-                            elmnt.style.setProperty('width', ((winHeight - top - 1) / imageAspectRatio) + 'px', 'important');
+                            elmnt.style.setProperty('height', `${winHeight - top - 1}px`, 'important');
+                            elmnt.style.setProperty('width', `${(winHeight - top - 1) / imageAspectRatio}px`, 'important');
                         }
                         if (left + elmnt.offsetWidth >= winWidth) {
-                            elmnt.style.setProperty('width', (winWidth - left - 1) + 'px', 'important');
-                            elmnt.style.setProperty('height', ((winWidth - left - 1) * imageAspectRatio) + 'px', 'important');
+                            elmnt.style.setProperty('width', `${winWidth - left - 1}px`, 'important');
+                            elmnt.style.setProperty('height', `${(winWidth - left - 1) * imageAspectRatio}px`, 'important');
                         }
                     }
                 }
             } else {
-                if (top + elmnt.offsetHeight >= winHeight) elmnt.style.setProperty('height', (winHeight - top - 1) + 'px', 'important');
-                if (left + elmnt.offsetWidth >= winWidth) elmnt.style.setProperty('width', (winWidth - left - 1) + 'px', 'important');
+                if (top + elmnt.offsetHeight >= winHeight) elmnt.style.setProperty('height', `${winHeight - top - 1}px`, 'important');
+                if (left + elmnt.offsetWidth >= winWidth) elmnt.style.setProperty('width', `${winWidth - left - 1}px`, 'important');
             }
-            elmnt.style.setProperty('left', left + 'px', 'important');
-            elmnt.style.setProperty('top', top + 'px', 'important');
+            elmnt.style.setProperty('left', `${left}px`, 'important');
+            elmnt.style.setProperty('top', `${top}px`, 'important');
         } else if (actionType === 'drag') {
             clampToViewport();
         }
@@ -615,9 +580,6 @@ export function dragElement(elmnt: HTMLElement) {
         savePositionAndSize();
     });
 
-    /**
-     * @param {MouseEvent} e Mouse event
-     */
     function dragMouseDown(e: MouseEvent) {
         if (e) {
             actionType = 'drag';
@@ -630,11 +592,8 @@ export function dragElement(elmnt: HTMLElement) {
         document.addEventListener('mousemove', elementDrag);
     }
 
-    /**
-     * @param {MouseEvent} e Mouse event
-     */
     function elementDrag(e: MouseEvent) {
-        const state = (power_user.movingUIState as Record<string, Record<string, unknown>>);
+        const state = power_user.movingUIState as Record<string, Record<string, unknown>>;
         if (!state[elmntName]) state[elmntName] = {};
         e.preventDefault();
         pos1 = pos3 - e.clientX;
@@ -643,42 +602,36 @@ export function dragElement(elmnt: HTMLElement) {
         pos4 = e.clientY;
         elmnt.setAttribute('data-dragged', 'true');
         const rect = elmnt.getBoundingClientRect();
-        elmnt.style.setProperty('left', (rect.left - pos1) + 'px', 'important');
-        elmnt.style.setProperty('top', (rect.top - pos2) + 'px', 'important');
+        elmnt.style.setProperty('left', `${rect.left - pos1}px`, 'important');
+        elmnt.style.setProperty('top', `${rect.top - pos2}px`, 'important');
         elmnt.style.setProperty('margin', 'unset', 'important');
-        elmnt.style.setProperty('height', height + 'px', 'important');
-        elmnt.style.setProperty('width', width + 'px', 'important');
+        elmnt.style.setProperty('height', `${height}px`, 'important');
+        elmnt.style.setProperty('width', `${width}px`, 'important');
     }
 
-    /**
-     *
-     */
     function closeDragElement() {
         isMouseDown = false;
         actionType = null;
         document.removeEventListener('mouseup', closeDragElement);
         document.removeEventListener('mousemove', elementDrag);
         elmnt.setAttribute('data-dragged', 'false');
-        observer.disconnect();
+        dragObserver.disconnect();
         savePositionAndSize();
     }
 
-    /**
-     *
-     */
     function onMouseUp() {
         isMouseDown = false;
         actionType = null;
-        observer.disconnect();
+        dragObserver.disconnect();
     }
 
-    const elmntHeader = document.getElementById(elmntName + 'header');
+    const elmntHeader = document.getElementById(`${elmntName}header`);
     if (elmntHeader) {
         elmntHeader.addEventListener('mousedown', (e: MouseEvent) => {
             if (e.target && (e.target as HTMLElement).classList.contains('drag-grabber')) {
                 actionType = 'drag';
                 isMouseDown = true;
-                observer.observe(elmnt, { attributes: true, attributeFilter: ['style'] });
+                dragObserver.observe(elmnt, { attributes: true, attributeFilter: ['style'] });
                 dragMouseDown(e);
             }
         });
@@ -692,41 +645,33 @@ export function dragElement(elmnt: HTMLElement) {
         if (isNearRight && isNearBottom) {
             actionType = 'resize';
             isMouseDown = true;
-            observer.observe(elmnt, { attributes: true, attributeFilter: ['style'] });
+            dragObserver.observe(elmnt, { attributes: true, attributeFilter: ['style'] });
         }
     });
 
     elmnt.addEventListener('mouseup', onMouseUp);
 }
 
-/**
- *
- */
 export async function initMovingUI() {
     if (!isMobile() && power_user.movingUI === true) {
         console.debug('START MOVING UI');
-        dragElement(document.getElementById('sheld')!);
-        dragElement(document.getElementById('left-nav-panel')!);
-        dragElement(document.getElementById('right-nav-panel')!);
-        dragElement(document.getElementById('WorldInfo')!);
-        dragElement(document.getElementById('floatingPrompt')!);
-        dragElement(document.getElementById('logprobsViewer')!);
-        dragElement(document.getElementById('cfgConfig')!);
+        const ids = ['sheld', 'left-nav-panel', 'right-nav-panel', 'WorldInfo', 'floatingPrompt', 'logprobsViewer', 'cfgConfig'];
+        for (let i = 0; i < ids.length; i++) {
+            const el = document.getElementById(ids[i]!);
+            if (el) dragElement(el);
+        }
     }
 }
 
 const sendTextArea = document.querySelector('#send_textarea') as HTMLTextAreaElement | null;
 const chatBlock = document.getElementById('chat') as HTMLElement | null;
-const isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+const isFirefox = navigator.userAgent.toLowerCase().includes('firefox');
 
-/**
- * this makes the chat input text area resize vertically to match the text size (limited by CSS at 50% window height)
- */
 function autoFitSendTextArea() {
     if (!chatBlock || !sendTextArea) return;
     const originalScrollBottom = chatBlock.scrollHeight - (chatBlock.scrollTop + chatBlock.offsetHeight);
 
-    sendTextArea.style.height = '1px'; // Reset height to 1px to force recalculation of scrollHeight
+    sendTextArea.style.height = '1px';
     const newHeight = sendTextArea.scrollHeight;
     sendTextArea.style.height = `${newHeight}px`;
 
@@ -738,11 +683,7 @@ export const autoFitSendTextAreaDebounced = debounce(autoFitSendTextArea, deboun
 
 // ---------------------------------------------------
 
-/**
- *
- */
 export function initRossMods() {
-    // initial status check
     checkStatusDebounced();
 
     if (power_user.auto_load_chat) {
@@ -753,181 +694,90 @@ export function initRossMods() {
         RA_autoconnect();
     }
 
-    document.getElementById('main_api')?.addEventListener('change', function () {
+    document.getElementById('main_api')?.addEventListener('change', () => {
         const PrevAPI = main_api;
         setTimeout(() => RA_autoconnect(PrevAPI), 100);
     });
 
     document.getElementById('api_button')?.addEventListener('click', () => checkStatusDebounced());
 
-    //toggle pin class when lock toggle clicked
-    RPanelPin.addEventListener('click', function () {
-        accountStorage.setItem('NavLockOn', RPanelPin.checked);
-        if (RPanelPin.checked) {
-            //console.log('adding pin class to right nav');
-            RightNavPanel.classList.add('pinnedOpen');
-            RightNavDrawerIcon.classList.add('drawerPinnedOpen');
-        } else {
-            //console.log('removing pin class from right nav');
-            RightNavPanel.classList.remove('pinnedOpen');
-            RightNavDrawerIcon.classList.remove('drawerPinnedOpen');
+    // Generic helper for side panel pins
+    const setupPanelPin = (
+        pinEl: HTMLInputElement,
+        storageKey: string,
+        panelEl: HTMLElement,
+        iconEl: HTMLElement,
+        toggleSelector: string
+    ) => {
+        const updateState = (isPinned: boolean) => {
+            panelEl.classList.toggle('pinnedOpen', isPinned);
+            iconEl.classList.toggle('drawerPinnedOpen', isPinned);
+        };
 
-            if (RightNavPanel.classList.contains('openDrawer') && document.querySelectorAll('.openDrawer').length > 1) {
-                const toggle = document.getElementById('unimportantYes');
-                if (toggle) doNavbarIconClick.call(toggle);
-            }
-        }
-    });
-    LPanelPin.addEventListener('click', function () {
-        accountStorage.setItem('LNavLockOn', LPanelPin.checked);
-        if (LPanelPin.checked) {
-            //console.log('adding pin class to Left nav');
-            LeftNavPanel.classList.add('pinnedOpen');
-            LeftNavDrawerIcon.classList.add('drawerPinnedOpen');
-        } else {
-            //console.log('removing pin class from Left nav');
-            LeftNavPanel.classList.remove('pinnedOpen');
-            LeftNavDrawerIcon.classList.remove('drawerPinnedOpen');
+        pinEl.addEventListener('click', () => {
+            const isChecked = pinEl.checked;
+            accountStorage.setItem(storageKey, isChecked);
+            updateState(isChecked);
 
-            if (LeftNavPanel.classList.contains('openDrawer') && document.querySelectorAll('.openDrawer').length > 1) {
-                const toggle = document.querySelector('#ai-config-button>.drawer-toggle');
+            if (!isChecked && panelEl.classList.contains('openDrawer') && document.querySelectorAll('.openDrawer').length > 1) {
+                const toggle = document.querySelector(toggleSelector);
                 if (toggle) doNavbarIconClick.call(toggle as HTMLElement);
             }
+        });
+
+        if (!isMobile()) {
+            const isPinned = accountStorage.getItem(storageKey) === 'true';
+            pinEl.checked = isPinned;
+            if (isPinned) updateState(true);
         }
-    });
+    };
 
-    WIPanelPin.addEventListener('click', async function () {
-        accountStorage.setItem('WINavLockOn', WIPanelPin.checked);
-        if (WIPanelPin.checked) {
-            console.debug('adding pin class to WI');
-            WorldInfo.classList.add('pinnedOpen');
-            WIDrawerIcon.classList.add('drawerPinnedOpen');
-        } else {
-            console.debug('removing pin class from WI');
-            WorldInfo.classList.remove('pinnedOpen');
-            WIDrawerIcon.classList.remove('drawerPinnedOpen');
+    setupPanelPin(RPanelPin, 'NavLockOn', RightNavPanel, RightNavDrawerIcon, '#unimportantYes');
+    setupPanelPin(LPanelPin, 'LNavLockOn', LeftNavPanel, LeftNavDrawerIcon, '#ai-config-button>.drawer-toggle');
+    setupPanelPin(WIPanelPin, 'WINavLockOn', WorldInfo, WIDrawerIcon, '#WI-SP-button>.drawer-toggle');
 
-            if (WorldInfo.classList.contains('openDrawer') && document.querySelectorAll('.openDrawer').length > 1) {
-                console.debug('closing WI after lock removal');
-                const toggle = document.querySelector('#WI-SP-button>.drawer-toggle');
-                if (toggle) doNavbarIconClick.call(toggle as HTMLElement);
-            }
-        }
-    });
+    // Generic helper for recording drawer open/closed state
+    const bindNavOpenState = (elementId: string, storageKey: string) => {
+        document.getElementById(elementId)?.addEventListener('click', (e) => {
+            const target = e.currentTarget as HTMLElement;
+            const isClosed = !target.classList.contains('openIcon');
+            accountStorage.setItem(storageKey, String(isClosed));
+        });
+    };
 
-    if (!isMobile()) { //only read/set pin states on non-mobile devices
-        // read the state of right Nav Lock and apply to rightnav classlist
-        RPanelPin.checked = accountStorage.getItem('NavLockOn') == 'true';
-        if (accountStorage.getItem('NavLockOn') == 'true') {
-            //console.log('setting pin class via local var');
-            RightNavPanel.classList.add('pinnedOpen');
-            RightNavDrawerIcon.classList.add('drawerPinnedOpen');
-        }
-        if (RPanelPin.checked) {
-            console.debug('setting pin class via checkbox state');
-            RightNavPanel.classList.add('pinnedOpen');
-            RightNavDrawerIcon.classList.add('drawerPinnedOpen');
-        }
-        // read the state of left Nav Lock and apply to leftnav classlist
-        LPanelPin.checked = accountStorage.getItem('LNavLockOn') === 'true';
-        if (accountStorage.getItem('LNavLockOn') == 'true') {
-            //console.log('setting pin class via local var');
-            LeftNavPanel.classList.add('pinnedOpen');
-            LeftNavDrawerIcon.classList.add('drawerPinnedOpen');
-        }
-        if (LPanelPin.checked) {
-            console.debug('setting pin class via checkbox state');
-            LeftNavPanel.classList.add('pinnedOpen');
-            LeftNavDrawerIcon.classList.add('drawerPinnedOpen');
-        }
+    bindNavOpenState('rightNavDrawerIcon', 'NavOpened');
+    bindNavOpenState('leftNavDrawerIcon', 'LNavOpened');
+    bindNavOpenState('WorldInfo', 'WINavOpened');
 
-        // read the state of WI Lock and apply to WI classlist
-        WIPanelPin.checked = accountStorage.getItem('WINavLockOn') === 'true';
-        if (accountStorage.getItem('WINavLockOn') == 'true') {
-            //console.log('setting pin class via local var');
-            WorldInfo.classList.add('pinnedOpen');
-            WIDrawerIcon.classList.add('drawerPinnedOpen');
-        }
+    setTimeout(() => { OpenNavPanels(); }, 300);
 
-        if (WIPanelPin.checked) {
-            console.debug('setting pin class via checkbox state');
-            WorldInfo.classList.add('pinnedOpen');
-            WIDrawerIcon.classList.add('drawerPinnedOpen');
-        }
-    }
+    SelectedCharacterTab?.addEventListener('click', () => { accountStorage.setItem('SelectedNavTab', 'rm_button_selected_ch'); });
+    document.getElementById('rm_button_characters')?.addEventListener('click', () => { accountStorage.setItem('SelectedNavTab', 'rm_button_characters'); });
 
+    // Delegated entity click helper
+    const bindEntitySelect = (selector: string, isGroup: boolean) => {
+        document.addEventListener('click', (event) => {
+            if (!(event.target instanceof Element)) return;
+            const el = event.target.closest(selector);
+            if (!el) return;
 
-    //save state of Right nav being open or closed
-    document.getElementById('rightNavDrawerIcon')?.addEventListener('click', function () {
-        if (!document.getElementById('rightNavDrawerIcon')!.classList.contains('openIcon')) {
-            accountStorage.setItem('NavOpened', 'true');
-        } else { accountStorage.setItem('NavOpened', 'false'); }
-    });
+            const id = el.getAttribute('data-chid') || (isGroup ? el.getAttribute('data-grid') : null);
+            setActiveCharacter(isGroup ? null : id);
+            setActiveGroup(isGroup ? id : null);
+            saveSettingsDebounced();
+        });
+    };
 
-    //save state of Left nav being open or closed
-    document.getElementById('leftNavDrawerIcon')?.addEventListener('click', function () {
-        if (!document.getElementById('leftNavDrawerIcon')!.classList.contains('openIcon')) {
-            accountStorage.setItem('LNavOpened', 'true');
-        } else { accountStorage.setItem('LNavOpened', 'false'); }
-    });
-
-    //save state of WI nav being open or closed
-    document.getElementById('WorldInfo')?.addEventListener('click', function () {
-        if (!document.getElementById('WorldInfo')!.classList.contains('openIcon')) {
-            accountStorage.setItem('WINavOpened', 'true');
-        } else { accountStorage.setItem('WINavOpened', 'false'); }
-    });
-
-    let chatbarInFocus = false;
-    document.getElementById('send_textarea')?.addEventListener('focus', function () {
-        chatbarInFocus = true;
-    });
-
-    document.getElementById('send_textarea')?.addEventListener('blur', function () {
-        chatbarInFocus = false;
-    });
-
-    setTimeout(() => {
-        OpenNavPanels();
-    }, 300);
-
-    SelectedCharacterTab?.addEventListener('click', function () { accountStorage.setItem('SelectedNavTab', 'rm_button_selected_ch'); });
-    document.getElementById('rm_button_characters')?.addEventListener('click', function () { accountStorage.setItem('SelectedNavTab', 'rm_button_characters'); });
-
-    // when a char is selected from the list, save them as the auto-load character for next page load
-
-    // when a char is selected from the list, save their name as the auto-load character for next page load
-    document.addEventListener('click', function (event) {
-        const target = event.target;
-        if (!(target instanceof Element)) return;
-        const el = target.closest('.character_select');
-        if (!el) return;
-        const characterId = el.getAttribute('data-chid');
-        setActiveCharacter(characterId);
-        setActiveGroup(null);
-        saveSettingsDebounced();
-    });
-
-    document.addEventListener('click', function (event) {
-        const target = event.target;
-        if (!(target instanceof Element)) return;
-        const el = target.closest('.group_select');
-        if (!el) return;
-        const groupId = el.getAttribute('data-chid') || el.getAttribute('data-grid');
-        setActiveCharacter(null);
-        setActiveGroup(groupId);
-        saveSettingsDebounced();
-    });
+    bindEntitySelect('.character_select', false);
+    bindEntitySelect('.group_select', true);
 
     const cssAutofit = CSS.supports('field-sizing', 'content');
 
     if (cssAutofit && chatBlock) {
         let lastHeight = chatBlock.offsetHeight;
         const chatBlockResizeObserver = new ResizeObserver((entries: ResizeObserverEntry[]) => {
-            for (const entry of entries) {
-                if (entry.target !== chatBlock) {
-                    continue;
-                }
+            for (let i = 0; i < entries.length; i++) {
+                if (entries[i]!.target !== chatBlock) continue;
 
                 const threshold = 1;
                 const newHeight = chatBlock.offsetHeight;
@@ -949,7 +799,6 @@ export function initRossMods() {
         if (!sendTextArea) return;
 
         if (cssAutofit) {
-            // Unset modifications made with a manual resize
             sendTextArea.style.height = 'auto';
             return;
         }
@@ -959,121 +808,59 @@ export function initRossMods() {
         const isScrollbarShown = sendTextArea.clientWidth < sendTextArea.offsetWidth;
         const isHalfScreenHeight = sendTextArea.offsetHeight >= window.innerHeight / 2;
         const needsDebounce = hasContent && (fitsCurrentSize || (isScrollbarShown && isHalfScreenHeight));
+
         if (needsDebounce) autoFitSendTextAreaDebounced();
         else autoFitSendTextArea();
     });
 
     restoreUserInput();
 
-    // Swipe gestures (see: https://www.npmjs.com/package/swiped-events)
-    document.addEventListener('swiped-left', function (e: Event) {
-        if (power_user.gestures === false) {
-            return;
-        }
-        if (Popup.util.isPopupOpen()) {
-            return;
-        }
-        if (!(e.target instanceof Element) || !e.target.closest('#sheld')) {
-            return;
-        }
-        if (document.getElementById('curEditTextarea')) {
-            return;
-        }
-        const SwipeButR = [...document.querySelectorAll('.swipe_right')].pop();
-        const SwipeTargetMesClassParent = e.target instanceof Element ? e.target.closest('.last_mes') : null;
-        if (SwipeTargetMesClassParent !== null && SwipeButR) {
-            if ((SwipeButR as HTMLElement).offsetParent !== null) {
-                SwipeButR.dispatchEvent(new Event('click', { bubbles: true }));
+    // Swipe gestures
+    const handleSwipe = (e: Event, selector: string) => {
+        if (power_user.gestures === false || Popup.util.isPopupOpen()) return;
+        if (!(e.target instanceof Element) || !e.target.closest('#sheld') || document.getElementById('curEditTextarea')) return;
+
+        if (e.target.closest('.last_mes')) {
+            const buttons = document.querySelectorAll(selector);
+            const swipeBtn = buttons[buttons.length - 1] as HTMLElement | undefined;
+            if (swipeBtn && swipeBtn.offsetParent !== null) {
+                triggerClick(swipeBtn);
             }
         }
-    });
-    document.addEventListener('swiped-right', function (e: Event) {
-        if (power_user.gestures === false) {
-            return;
-        }
-        if (Popup.util.isPopupOpen()) {
-            return;
-        }
-        if (!(e.target instanceof Element) || !e.target.closest('#sheld')) {
-            return;
-        }
-        if (document.getElementById('curEditTextarea')) {
-            return;
-        }
-        const SwipeButL = [...document.querySelectorAll('.swipe_left')].pop();
-        const SwipeTargetMesClassParent = e.target instanceof Element ? e.target.closest('.last_mes') : null;
-        if (SwipeTargetMesClassParent !== null && SwipeButL) {
-            if ((SwipeButL as HTMLElement).offsetParent !== null) {
-                SwipeButL.dispatchEvent(new Event('click', { bubbles: true }));
-            }
-        }
-    });
+    };
 
+    document.addEventListener('swiped-left', (e) => handleSwipe(e, '.swipe_right'));
+    document.addEventListener('swiped-right', (e) => handleSwipe(e, '.swipe_left'));
 
-    /**
-     * @returns {boolean} Whether an input element is currently focused
-     */
-    function isInputElementInFocus() {
-        //return $(document.activeElement).is(":input");
-        const focused = document.activeElement;
-        if (focused && (focused.matches('input') || focused.matches('textarea') || focused.getAttribute('contenteditable') == 'true')) {
-            if (focused.getAttribute('id') === 'send_textarea') {
-                return false;
-            }
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * @param {KeyboardEvent} event Keyboard event to check
-     * @returns {boolean} Whether the event has modifier keys pressed
-     */
-    function isModifiedKeyboardEvent(event: KeyboardEvent) {
-        return (event instanceof KeyboardEvent &&
-            (event.shiftKey ||
-            event.ctrlKey ||
-            event.altKey ||
-            event.metaKey));
-    }
-
-    document.addEventListener('keydown', async function (event: KeyboardEvent) {
+    document.addEventListener('keydown', async (event: KeyboardEvent) => {
         await processHotkeys(event);
     });
 
     const hotkeyTargets = {
-        'send_textarea': sendTextArea,
-        'dialogue_popup_input': document.querySelector('#dialogue_popup_input'),
+        send_textarea: sendTextArea,
+        dialogue_popup_input: document.querySelector('#dialogue_popup_input'),
     };
 
-    //Additional hotkeys CTRL+ENTER and CTRL+UPARROW
-    /**
-     * @param {KeyboardEvent} event Keyboard event to process
-     */
     async function processHotkeys(event: KeyboardEvent) {
-        // Default hotkeys and shortcuts shouldn't work if any popup is currently open
-        if (Popup.util.isPopupOpen()) {
-            return;
-        }
+        if (Popup.util.isPopupOpen()) return;
 
-        //Enter to send when send_textarea in focus
-        if (document.activeElement == hotkeyTargets.send_textarea) {
-            const sendOnEnter = shouldSendOnEnter();
-            if (!event.isComposing && !event.shiftKey && !event.ctrlKey && !event.altKey && event.key == 'Enter' && sendOnEnter) {
+        if (document.activeElement === hotkeyTargets.send_textarea) {
+            if (!event.isComposing && !event.shiftKey && !event.ctrlKey && !event.altKey && event.key === 'Enter' && shouldSendOnEnter()) {
                 event.preventDefault();
                 sendTextareaMessage();
                 return;
             }
         }
-        if (document.activeElement == hotkeyTargets.dialogue_popup_input && !isMobile()) {
-            if (!event.shiftKey && !event.ctrlKey && event.key == 'Enter') {
+
+        if (document.activeElement === hotkeyTargets.dialogue_popup_input && !isMobile()) {
+            if (!event.shiftKey && !event.ctrlKey && event.key === 'Enter') {
                 event.preventDefault();
-                document.getElementById('dialogue_popup_ok')?.dispatchEvent(new Event('click', { bubbles: true }));
+                triggerClick('dialogue_popup_ok');
                 return;
             }
         }
-        //ctrl+shift+up to scroll to context line
-        if (event.shiftKey && event.ctrlKey && event.key == 'ArrowUp') {
+
+        if (event.shiftKey && event.ctrlKey && event.key === 'ArrowUp') {
             event.preventDefault();
             const chatEl = document.getElementById('chat');
             const contextLine = document.querySelector('.lastInContext');
@@ -1082,13 +869,13 @@ export function initRossMods() {
                     top: contextLine.getBoundingClientRect().top - chatEl.getBoundingClientRect().top + chatEl.scrollTop,
                     behavior: 'smooth',
                 });
-            } else {
+            } else if (typeof notyf !== 'undefined') {
                 notyf.warning('Context line not found, send a message first!');
             }
             return;
         }
-        //ctrl+shift+down to scroll to bottom of chat
-        if (event.shiftKey && event.ctrlKey && event.key == 'ArrowDown') {
+
+        if (event.shiftKey && event.ctrlKey && event.key === 'ArrowDown') {
             event.preventDefault();
             document.getElementById('chat')?.scrollTo({
                 top: 999999,
@@ -1097,259 +884,25 @@ export function initRossMods() {
             return;
         }
 
-        // Alt+Enter or AltGr+Enter to Continue
-        if ((event.altKey || (event.altKey && event.ctrlKey)) && event.key == 'Enter') {
-            if (is_send_press == false) {
+        if ((event.altKey || (event.altKey && event.ctrlKey)) && event.key === 'Enter') {
+            if (!is_send_press) {
                 console.debug('Continuing with Alt+Enter');
-                document.getElementById('option_continue')?.dispatchEvent(new Event('click', { bubbles: true }));
+                triggerClick('option_continue');
                 return;
             }
         }
 
-        // Ctrl+Enter for Regeneration Last Response. If editing, accept the edits instead
-        if (event.ctrlKey && event.key == 'Enter') {
-            const editMesDone = [...document.querySelectorAll('.mes_edit_done')].find(e => (e as HTMLElement).offsetParent !== null);
-            const reasoningMesDone = [...document.querySelectorAll('.mes_reasoning_edit_done')].find(e => (e as HTMLElement).offsetParent !== null);
+        if (event.ctrlKey && event.key === 'Enter') {
+            const editMesDone = Array.from(document.querySelectorAll('.mes_edit_done')).find(e => (e as HTMLElement).offsetParent !== null) as HTMLElement;
+            const reasoningMesDone = Array.from(document.querySelectorAll('.mes_reasoning_edit_done')).find(e => (e as HTMLElement).offsetParent !== null) as HTMLElement;
+
             if (editMesDone) {
-                console.debug('Accepting edits with Ctrl+Enter');
-                document.getElementById('send_textarea')?.dispatchEvent(new Event('focus', { bubbles: true }));
-                editMesDone.dispatchEvent(new Event('click', { bubbles: true }));
-                return;
+                triggerClick(editMesDone);
             } else if (reasoningMesDone) {
-                console.debug('Accepting edits with Ctrl+Enter');
-                document.getElementById('send_textarea')?.dispatchEvent(new Event('focus', { bubbles: true }));
-                reasoningMesDone.dispatchEvent(new Event('click', { bubbles: true }));
-                return;
-            } else if (is_send_press == false) {
-                const skipConfirmKey = 'RegenerateWithCtrlEnter';
-                const skipConfirm = accountStorage.getItem(skipConfirmKey) === 'true';
-                /**
-                 *
-                 */
-                function doRegenerate() {
-                    console.debug('Regenerating with Ctrl+Enter');
-                    document.getElementById('option_regenerate')?.dispatchEvent(new Event('click', { bubbles: true }));
-                    const optionsEl = document.getElementById('options'); if (optionsEl) optionsEl.style.display = 'none';
-                }
-
-                // If there is input text, we do not trigger a regenerate - we just send it
-                const sendTextareaEl = document.getElementById('send_textarea') as HTMLTextAreaElement | null;
-                if (sendTextareaEl && sendTextareaEl.value !== '') {
-                    if (shouldSendOnEnter()) {
-                        console.debug('Sending with Ctrl+Enter');
-                        event.preventDefault();
-                        sendTextareaMessage();
-                    } else {
-                        console.debug('Text area is not empty, but send on enter is disabled');
-                    }
-                    return;
-                }
-
-                if (skipConfirm) {
-                    doRegenerate();
-                } else {
-                    let regenerateWithCtrlEnter = false;
-                    const result = await Popup.show.confirm('Regenerate Message', 'Are you sure you want to regenerate the latest message?', {
-                        customInputs: [{ id: 'regenerateWithCtrlEnter', label: 'Don\'t ask again' }],
-                        onClose: (popup: { inputResults: Map<string, unknown> }) => {
-                            regenerateWithCtrlEnter = Boolean(popup.inputResults.get('regenerateWithCtrlEnter') ?? false);
-                        },
-                    });
-                    if (!result) {
-                        return;
-                    }
-
-                    accountStorage.setItem(skipConfirmKey, String(regenerateWithCtrlEnter));
-                    doRegenerate();
-                }
-                return;
+                triggerClick(reasoningMesDone);
             } else {
-                console.debug('Ctrl+Enter ignored');
+                triggerClick('option_regenerate');
             }
-        }
-
-        // Helper function to check if nanogallery2's lightbox is active
-        /**
-         * @returns {boolean} Whether nanogallery2 lightbox is active
-         */
-        function isNanogallery2LightboxActive() {
-            // Check if the body has the 'nGY2On' class, adjust this based on actual behavior
-            return document.body.classList.contains('nGY2_body_scrollbar');
-        }
-
-        if (event.key == 'ArrowLeft') {        //swipes left
-            if (
-                isSwipingAllowed() &&
-                !isNanogallery2LightboxActive() &&  // Check if lightbox is NOT active
-                (document.getElementById('send_textarea') as HTMLTextAreaElement | null)?.value === '' &&
-                !isInputElementInFocus() &&
-                !isModifiedKeyboardEvent(event) &&
-                !(document.activeElement instanceof HTMLVideoElement)
-            ) {
-                const swipeBtn = [...document.querySelectorAll('.swipe_left')].pop();
-                if (swipeBtn) swipeBtn.dispatchEvent(new Event('click'));
-                return;
-            }
-        }
-        if (event.key == 'ArrowRight') { //swipes right
-            if (
-                isSwipingAllowed() &&
-                !isNanogallery2LightboxActive() &&  // Check if lightbox is NOT active
-                (document.getElementById('send_textarea') as HTMLTextAreaElement | null)?.value === '' &&
-                !isInputElementInFocus() &&
-                !isModifiedKeyboardEvent(event) &&
-                !(document.activeElement instanceof HTMLVideoElement)
-            ) {
-                const swipeBtn = [...document.querySelectorAll('.swipe_right')].pop();
-                if (swipeBtn) swipeBtn.dispatchEvent(new Event('click'));
-                return;
-            }
-        }
-
-
-        if (event.ctrlKey && event.key == 'ArrowUp') { //edits last USER message if chatbar is empty and focused
-            if (
-                hotkeyTargets.send_textarea && hotkeyTargets.send_textarea.value === '' &&
-                chatbarInFocus === true &&
-                isSwipingAllowed()
-            ) {
-                const isUserMesList = document.querySelectorAll('div[is_user="true"]');
-                const lastIsUserMes = isUserMesList[isUserMesList.length - 1];
-                const editMes = lastIsUserMes?.querySelector('.mes_block .mes_edit');
-                if (editMes) {
-                    editMes.dispatchEvent(new Event('click', { bubbles: true }));
-                    return;
-                }
-            }
-        }
-
-        if (event.key == 'ArrowUp') { //edits last message if chatbar is empty and focused
-            console.log('got uparrow input');
-            if (
-                hotkeyTargets.send_textarea && hotkeyTargets.send_textarea.value === '' &&
-                chatbarInFocus === true &&
-                document.querySelector('.last_mes .mes_buttons') &&
-                (document.querySelector('.last_mes .mes_buttons') as HTMLElement).offsetParent !== null
-            ) {
-                const lastMes = document.querySelector('.last_mes');
-                const editMes = lastMes?.querySelector('.mes_block .mes_edit');
-                if (editMes) {
-                    editMes.dispatchEvent(new Event('click', { bubbles: true }));
-                    return;
-                }
-            }
-        }
-
-        if (event.key == 'Escape') { //closes various panels
-            //dont override Escape hotkey functions from script.js
-            //"close edit box" and "cancel stream generation".
-            const curEditTextarea = document.getElementById('curEditTextarea');
-            const mesStop = document.getElementById('mes_stop');
-            if ((curEditTextarea && (curEditTextarea as HTMLElement).offsetParent !== null) || (mesStop && (mesStop as HTMLElement).offsetParent !== null)) {
-                console.debug('escape key, but deferring to script.js routines');
-                return;
-            }
-
-            const dialoguePopup = document.getElementById('dialogue_popup');
-            if (dialoguePopup && (dialoguePopup as HTMLElement).offsetParent !== null) {
-                const cancelBtn = document.getElementById('dialogue_popup_cancel');
-                if (cancelBtn && (cancelBtn as HTMLElement).offsetParent !== null) {
-                    cancelBtn.dispatchEvent(new Event('click', { bubbles: true }));
-                    return;
-                } else {
-                    document.getElementById('dialogue_popup_ok')?.dispatchEvent(new Event('click', { bubbles: true }));
-                    return;
-                }
-            }
-
-            const selectChatPopup = document.getElementById('select_chat_popup');
-            if (selectChatPopup && (selectChatPopup as HTMLElement).offsetParent !== null) {
-                document.getElementById('select_chat_cross')?.dispatchEvent(new Event('click', { bubbles: true }));
-                return;
-            }
-
-            const characterPopup = document.getElementById('character_popup');
-            if (characterPopup && (characterPopup as HTMLElement).offsetParent !== null) {
-                document.getElementById('character_cross')?.dispatchEvent(new Event('click', { bubbles: true }));
-                return;
-            }
-
-            const delMesCancel = document.getElementById('dialogue_del_mes_cancel');
-            if (delMesCancel && (delMesCancel as HTMLElement).offsetParent !== null) {
-                delMesCancel.dispatchEvent(new Event('click', { bubbles: true }));
-                return;
-            }
-
-            const drawerContents = [...document.querySelectorAll('.drawer-content')].filter(el =>
-                !['WorldInfo','left-nav-panel','right-nav-panel','floatingPrompt','cfgConfig','logprobsViewer'].includes(el.id) &&
-                !el.matches('#movingDivs > div')
-            );
-            if (drawerContents.some(el => (el as HTMLElement).offsetParent !== null)) {
-                const visibleDrawerContent = drawerContents.filter(el => (el as HTMLElement).offsetParent !== null);
-                const drawerIcon = visibleDrawerContent[0]?.parentElement?.querySelector('.drawer-icon');
-                drawerIcon?.dispatchEvent(new Event('click', { bubbles: true }));
-                return;
-            }
-
-            const logprobsViewer = document.getElementById('logprobsViewer');
-            if (logprobsViewer && (logprobsViewer as HTMLElement).offsetParent !== null) {
-                document.getElementById('logprobsViewerClose')?.dispatchEvent(new Event('click', { bubbles: true }));
-                return;
-            }
-
-            const cfgConfig = document.getElementById('cfgConfig');
-            if (cfgConfig && (cfgConfig as HTMLElement).offsetParent !== null) {
-                document.getElementById('CFGClose')?.dispatchEvent(new Event('click', { bubbles: true }));
-                return;
-            }
-
-            const floatingPrompt = document.getElementById('floatingPrompt');
-            if (floatingPrompt && (floatingPrompt as HTMLElement).offsetParent !== null) {
-                document.getElementById('ANClose')?.dispatchEvent(new Event('click', { bubbles: true }));
-                return;
-            }
-
-            const worldInfoEl = document.getElementById('WorldInfo');
-            if (worldInfoEl && (worldInfoEl as HTMLElement).offsetParent !== null) {
-                document.getElementById('WIDrawerIcon')?.dispatchEvent(new Event('click', { bubbles: true }));
-                return;
-            }
-
-            const movingDivs = [...document.querySelectorAll('#movingDivs > div')].reverse();
-            for (const div of movingDivs) {
-                if ((div as HTMLElement).offsetParent !== null) {
-                    div.querySelector('.floating_panel_close, .dragClose')?.dispatchEvent(new Event('click', { bubbles: true }));
-                    return;
-                }
-            }
-
-            const leftNavPanel = document.getElementById('left-nav-panel');
-            if (leftNavPanel && (leftNavPanel as HTMLElement).offsetParent !== null &&
-                LPanelPin.checked === false) {
-                document.getElementById('leftNavDrawerIcon')?.dispatchEvent(new Event('click', { bubbles: true }));
-                return;
-            }
-
-            const rightNavPanel = document.getElementById('right-nav-panel');
-            if (rightNavPanel && (rightNavPanel as HTMLElement).offsetParent !== null &&
-                RPanelPin.checked === false) {
-                document.getElementById('rightNavDrawerIcon')?.dispatchEvent(new Event('click', { bubbles: true }));
-                return;
-            }
-
-            const draggable = document.querySelector('.draggable');
-            if (draggable && (draggable as HTMLElement).offsetParent !== null) {
-                // Remove the first matched element
-                draggable.remove();
-                return;
-            }
-        }
-
-
-        if (event.ctrlKey && /^[1-9]$/.test(event.key)) {
-            // This will eventually be to trigger quick replies
-            // event.preventDefault();
-            console.log('Ctrl +' + event.key + ' pressed!');
         }
     }
 }
