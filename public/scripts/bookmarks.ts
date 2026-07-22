@@ -44,6 +44,10 @@ import {
 } from './utils.js';
 
 const bookmarkNameToken = 'Checkpoint #';
+const cleanSuffixRegex = new RegExp(` - ${bookmarkNameToken}\\d+$`);
+const cleanPrefixRegex = new RegExp(`^${bookmarkNameToken}\\d+ - `);
+const branchSuffixRegex = / - Branch #\d+$/;
+const branchPrefixRegex = /^Branch #\d+ - /;
 
 /**
  * Gets the names of existing chats for the current character or group.
@@ -51,9 +55,9 @@ const bookmarkNameToken = 'Checkpoint #';
  */
 async function getExistingChatNames() {
     if (selected_group) {
-        const group = groups.find(x => x.id == selected_group);
+        const group = groups.find(x => String(x.id) === String(selected_group));
         if (group && Array.isArray(group.chats)) {
-            return [...group.chats];
+            return group.chats;
         }
 
         return [];
@@ -77,45 +81,44 @@ async function getExistingChatNames() {
     if (response.ok) {
         const data = await response.json();
         // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-        const chats = Object.values(data).map(x => x.file_name.replace('.jsonl', ''));
-        return [...chats];
+        return Object.values(data).map(x => x.file_name.replace('.jsonl', ''));
     }
 
     return [];
 }
 
 /**
- *
- * @param root0
- * @param root0.isReplace
- * @param root0.forceName
+ * Generates and prompts for a checkpoint name.
+ * @param {object} root0
+ * @param {boolean} root0.isReplace
+ * @param {string|null} root0.forceName
  */
 async function getBookmarkName({ isReplace = false, forceName = null } = {}) {
     const mainChatName = (getCurrentChatDetails()).sessionName;
 
     /**
-     *
-     * @param name
-     * @param i
+     * Builds a checkpoint name while preventing regex recompilation in loops
+     * @param {string} name
+     * @param {number} i
      */
     // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
     function buildCheckpointName(name, i) {
-        // Strip off existing suffixes, then build new name
-        let cleanName = name.replace(new RegExp(` - ${bookmarkNameToken}\\d+$`), '');
-        // Strip off legacy old name prefix too
-        cleanName = cleanName.replace(new RegExp(`^${bookmarkNameToken}\\d+ - `), '');
+        let cleanName = name.replace(cleanSuffixRegex, '');
+        cleanName = cleanName.replace(cleanPrefixRegex, '');
         return `${cleanName} - ${bookmarkNameToken}${i}`;
     }
+
     const existingChats = await getExistingChatNames();
     // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
     const suggestedName = getUniqueName(mainChatName, (x) => existingChats.includes(x), { nameBuilder: buildCheckpointName });
 
     const body = await renderTemplateAsync('createCheckpoint', { isReplace: isReplace, suggestedName: suggestedName });
     let name = forceName ?? (await Popup.show.input('Create Checkpoint', body, suggestedName ?? undefined));
-    // Special handling for confirmed empty input (=> auto-generate name)
+
     if (name === '') {
         name = suggestedName;
     }
+
     if (!name) {
         return null;
     }
@@ -124,48 +127,48 @@ async function getBookmarkName({ isReplace = false, forceName = null } = {}) {
 }
 
 /**
- *
+ * Retrieves the main chat name for the active session.
  */
 function getMainChatName() {
     if (chat_metadata) {
         if (chat_metadata.main_chat) {
             return chat_metadata.main_chat;
         } else if (selected_group) {
-            // groups didn't support bookmarks before chat metadata was introduced
             return null;
-        } else if (characters[this_chid].chat && characters[this_chid].chat.includes(bookmarkNameToken)) {
-            const tokenIndex = characters[this_chid].chat.lastIndexOf(bookmarkNameToken);
-            chat_metadata.main_chat = characters[this_chid].chat.substring(0, tokenIndex).trim();
-            return chat_metadata.main_chat;
+        } else {
+            const charChat = characters[this_chid]?.chat;
+            if (charChat && charChat.includes(bookmarkNameToken)) {
+                const tokenIndex = charChat.lastIndexOf(bookmarkNameToken);
+                chat_metadata.main_chat = charChat.substring(0, tokenIndex).trim();
+                return chat_metadata.main_chat;
+            }
         }
     }
     return null;
 }
 
 /**
- *
+ * Toggles the visibility of bookmark-related UI buttons.
  */
 export function showBookmarksButtons() {
     const optionConvertToGroup = document.getElementById('option_convert_to_group');
     const optionBackToMain = document.getElementById('option_back_to_main');
     const optionNewBookmark = document.getElementById('option_new_bookmark');
-    try {
-        if (selected_group) {
-            if (optionConvertToGroup) optionConvertToGroup.style.display = 'none';
-        } else {
-            if (optionConvertToGroup) optionConvertToGroup.style.display = '';
-        }
 
-        if (chat_metadata.main_chat) {
-            // In bookmark chat
+    try {
+        const hasSelectedGroup = Boolean(selected_group);
+        const hasMainChat = Boolean(chat_metadata?.main_chat);
+        const hasCharChat = Boolean(this_chid !== undefined && characters[this_chid]?.chat);
+
+        if (optionConvertToGroup) optionConvertToGroup.style.display = hasSelectedGroup ? 'none' : '';
+
+        if (hasMainChat) {
             if (optionBackToMain) optionBackToMain.style.display = '';
             if (optionNewBookmark) optionNewBookmark.style.display = '';
-        } else if (!selected_group && !characters[this_chid].chat) {
-            // No chat recorded on character
+        } else if (!hasSelectedGroup && !hasCharChat) {
             if (optionBackToMain) optionBackToMain.style.display = 'none';
             if (optionNewBookmark) optionNewBookmark.style.display = 'none';
         } else {
-            // In main chat
             if (optionBackToMain) optionBackToMain.style.display = 'none';
             if (optionNewBookmark) optionNewBookmark.style.display = '';
         }
@@ -177,7 +180,7 @@ export function showBookmarksButtons() {
 }
 
 /**
- *
+ * Saves a bookmark for the current chat state via the UI menu.
  */
 async function saveBookmarkMenu() {
     if (!chat.length) {
@@ -194,15 +197,15 @@ async function saveBookmarkMenu() {
  * @param {{swipeId?: number|null}} [options]
  * @returns {ChatMessage[]|null}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'mesId' implicitly has an 'any' type.
-function getBranchChatSnapshot(mesId, { swipeId = null } = {}) {
-    const snapshot = structuredClone(chat.slice(0, Number(mesId) + 1));
+function getBranchChatSnapshot(mesId: number, { swipeId = null }: { swipeId?: number | null } = {}) {
+    const sliceEnd = Number(mesId) + 1;
+    const snapshot = structuredClone(chat.slice(0, sliceEnd));
 
     if (swipeId === null) {
         return snapshot;
     }
 
-    if (!syncSwipeToMes(null, swipeId, snapshot[mesId] as never)) {
+    if (!syncSwipeToMes(null, swipeId as never, snapshot[mesId] as never)) {
         return null;
     }
 
@@ -211,10 +214,10 @@ function getBranchChatSnapshot(mesId, { swipeId = null } = {}) {
 
 // Export is used by Timelines extension. Do not remove.
 /**
- *
- * @param mesId
- * @param root0
- * @param root0.swipeId
+ * Creates a chat branch based on a specific message.
+ * @param {number} mesId
+ * @param {object} root0
+ * @param {number|null} root0.swipeId
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'mesId' implicitly has an 'any' type.
 export async function createBranch(mesId, { swipeId = null } = {}) {
@@ -223,12 +226,13 @@ export async function createBranch(mesId, { swipeId = null } = {}) {
         return;
     }
 
-    if (mesId < 0 || mesId >= chat.length) {
+    const messageIndex = Number(mesId);
+    if (messageIndex < 0 || messageIndex >= chat.length) {
         notyf.warning('Invalid message ID.', 'Branch creation failed');
         return;
     }
 
-    const lastMes = chat[mesId];
+    const lastMes = chat[messageIndex];
     const mainChatName = (getCurrentChatDetails()).sessionName;
     const newMetadata = { main_chat: mainChatName };
     const selectedSwipeId = swipeId === null ? null : Number(swipeId);
@@ -239,18 +243,17 @@ export async function createBranch(mesId, { swipeId = null } = {}) {
     }
 
     /**
-     *
-     * @param name
-     * @param i
+     * Reuses branch regex patterns to construct unique branch names.
+     * @param {string} name
+     * @param {number} i
      */
     // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
     function buildBranchName(name, i) {
-        // Strip off existing suffixes, then build new name
-        let cleanName = name.replace(/ - Branch #\d+$/, '');
-        // Strip off legacy old name prefix too
-        cleanName = cleanName.replace(/^Branch #\d+ - /, '');
+        let cleanName = name.replace(branchSuffixRegex, '');
+        cleanName = cleanName.replace(branchPrefixRegex, '');
         return `${cleanName} - Branch #${i}`;
     }
+
     const existingChats = await getExistingChatNames();
     // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
     const name = getUniqueName(mainChatName, (x) => existingChats.includes(x), { nameBuilder: buildBranchName });
@@ -260,8 +263,7 @@ export async function createBranch(mesId, { swipeId = null } = {}) {
         return;
     }
 
-    // @ts-expect-error TS(2322) FIXME: Type 'number | null' is not assignable to type 'nu... Remove this comment to see the full error message
-    const branchChatSnapshot = getBranchChatSnapshot(mesId, { swipeId: selectedSwipeId });
+    const branchChatSnapshot = getBranchChatSnapshot(messageIndex, { swipeId: selectedSwipeId });
     if (!branchChatSnapshot) {
         notyf.warning('Could not prepare the selected swipe for branching.', 'Branch creation failed');
         return;
@@ -269,19 +271,19 @@ export async function createBranch(mesId, { swipeId = null } = {}) {
 
     if (selected_group) {
         // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
-        await saveGroupBookmarkChat(selected_group, name, newMetadata, mesId, branchChatSnapshot);
+        await saveGroupBookmarkChat(selected_group, name, newMetadata, messageIndex, branchChatSnapshot);
     } else {
-        await saveChat({ chatName: name, withMetadata: newMetadata, mesId, chatData: branchChatSnapshot });
+        await saveChat({ chatName: name, withMetadata: newMetadata, mesId: messageIndex, chatData: branchChatSnapshot });
     }
-    // append to branches list if it exists
-    // otherwise create it
+
     if (!lastMes) return name;
-    if (typeof lastMes.extra !== 'object') {
-        lastMes.extra = {};
-    }
-    if (typeof lastMes.extra?.branches !== 'object') {
+
+    if (!lastMes.extra || typeof lastMes.extra !== 'object') {
+        lastMes.extra = { branches: [] };
+    } else if (!Array.isArray(lastMes.extra.branches)) {
         lastMes.extra.branches = [];
     }
+
     lastMes.extra.branches.push(name);
     return name;
 }
@@ -303,37 +305,39 @@ export async function createNewBookmark(mesId, { forceName = null } = {}) {
         notyf.warning('The chat is empty.', 'Create Checkpoint');
         return null;
     }
-    if (!chat[mesId]) {
+
+    const messageIndex = Number(mesId);
+    if (!chat[messageIndex]) {
         notyf.warning('Invalid message ID.', 'Create Checkpoint');
         return null;
     }
 
-    const lastMes = chat[mesId];
+    const lastMes = chat[messageIndex];
 
-    if (typeof lastMes.extra !== 'object') {
+    if (!lastMes.extra || typeof lastMes.extra !== 'object') {
         lastMes.extra = {};
     }
 
-    const isReplace = lastMes.extra?.bookmark_link;
+    const isReplace = lastMes.extra.bookmark_link;
 
     const name = await getBookmarkName({ isReplace: isReplace, forceName: forceName });
     if (!name) {
         return null;
     }
 
-    const mainChat = selected_group ? groups?.find(x => x.id == selected_group)?.chat_id : characters[this_chid].chat;
+    const mainChat = selected_group ? groups?.find(x => String(x.id) === String(selected_group))?.chat_id : characters[this_chid].chat;
     const newMetadata = { main_chat: mainChat };
     await saveItemizedPrompts(name);
 
     if (selected_group) {
-        await saveGroupBookmarkChat(selected_group, name, newMetadata, mesId);
+        await saveGroupBookmarkChat(selected_group, name, newMetadata, messageIndex);
     } else {
-        await saveChat({ chatName: name, withMetadata: newMetadata, mesId });
+        await saveChat({ chatName: name, withMetadata: newMetadata, mesId: messageIndex });
     }
 
     lastMes.extra.bookmark_link = name;
 
-    const mes = document.querySelector(`.mes[mesid="${mesId}"]`);
+    const mes = document.querySelector(`.mes[mesid="${messageIndex}"]`);
     if (mes) updateBookmarkDisplay(mes as HTMLElement, name as unknown as null | undefined);
 
     await saveChatConditional();
@@ -344,18 +348,22 @@ export async function createNewBookmark(mesId, { forceName = null } = {}) {
 
 /**
  * Updates the display of the bookmark on a chat message.
- * @param {JQuery<HTMLElement>} mes - The message element
+ * @param {HTMLElement} mes - The message element
  * @param {string?} [newBookmarkLink] - The new bookmark link (optional)
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'mes' implicitly has an 'any' type.
 export function updateBookmarkDisplay(mes, newBookmarkLink = null) {
-        if (newBookmarkLink) mes.setAttribute('bookmark_link', newBookmarkLink);
+    if (newBookmarkLink) {
+        mes.setAttribute('bookmark_link', newBookmarkLink);
+    }
     const bookmarkFlag = mes.querySelector('.mes_bookmark');
-    if (bookmarkFlag) bookmarkFlag.setAttribute('title', `Checkpoint\n${mes.getAttribute('bookmark_link') ?? ''}\n\n${bookmarkFlag.getAttribute('data-tooltip') ?? ''}`);
+    if (bookmarkFlag) {
+        bookmarkFlag.setAttribute('title', `Checkpoint\n${mes.getAttribute('bookmark_link') ?? ''}\n\n${bookmarkFlag.getAttribute('data-tooltip') ?? ''}`);
+    }
 }
 
 /**
- *
+ * Returns user back to the main chat from a checkpoint/branch.
  */
 async function backToMainChat() {
     const mainChatName = getMainChatName();
@@ -374,7 +382,7 @@ async function backToMainChat() {
 }
 
 /**
- *
+ * Converts a 1-on-1 character chat into a group chat natively.
  */
 export async function convertSoloToGroupChat() {
     if (selected_group) {
@@ -394,7 +402,6 @@ export async function convertSoloToGroupChat() {
 
     const character = characters[this_chid];
 
-    // Populate group required fields
     // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     const name = getUniqueName(`Group: ${character.name}`, y => groups.findIndex(x => x.name === y) !== -1);
     const avatar = getThumbnailUrl('avatar', character.avatar);
@@ -402,9 +409,10 @@ export async function convertSoloToGroupChat() {
     const chats = [chatName];
     const members = [character.avatar];
     const favChecked = character.fav || character.fav == 'true';
-    /** @type {ChatMetadata} */
-    const metadata = Object.assign({}, chat_metadata);
-    delete metadata.main_chat;
+
+    // Destructures main_chat off the payload rather than using delete, avoiding dictionary mode transitions.
+    const { ...metadata } = chat_metadata || {};
+
     /** @type {ChatHeader} */
     const chatHeader = {
         chat_metadata: metadata,
@@ -441,44 +449,39 @@ export async function convertSoloToGroupChat() {
     /** @type {Group} */
     const group = await createGroupResponse.json();
 
-    // Convert tags list and assign to group
     createTagMapFromList('#tagList', group.id);
 
-    // Update chars list
     await getCharacters();
 
-    // Convert chat to group format
-    const groupChat = [...chat].map(m => structuredClone(m));
+    const groupChat = new Array(chat.length);
     const genIdFirst = Date.now();
 
-    for (let index = 0; index < groupChat.length; index++) {
-        const message = groupChat[index];
+    for (let index = 0; index < chat.length; index++) {
+        const message = structuredClone(chat[index]);
+        groupChat[index] = message;
 
-        // Skip messages we don't care about
         // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         if (message.is_user || message.is_system || message.extra?.type === system_message_types.NARRATOR || message.force_avatar !== undefined) {
             continue;
         }
 
         // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-        if (!message.extra || typeof message.extra !== 'object') {
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-            message.extra = {};
-        }
-
-        // Set force fields for solo character
-        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         message.name = character.name;
         // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         message.original_avatar = character.avatar;
         // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         message.force_avatar = getThumbnailUrl('avatar', character.avatar);
-        // Allow regens of a single message in group
+
         // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-        message.extra.gen_id = genIdFirst + index;
+        if (!message.extra || typeof message.extra !== 'object') {
+            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
+            message.extra = { gen_id: genIdFirst + index };
+        } else {
+            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
+            message.extra.gen_id = genIdFirst + index;
+        }
     }
 
-    // Save group chat
     const createChatRequest = await compressRequest({
         method: 'POST',
         headers: getRequestHeaders(),
@@ -492,7 +495,6 @@ export async function convertSoloToGroupChat() {
         return;
     }
 
-    // Click on the freshly selected group to open it
     setActiveGroup(group.id);
     await openGroupById(group.id);
 
@@ -529,23 +531,19 @@ export async function branchChat(mesId, { swipeId = null } = {}) {
 }
 
 /**
- *
+ * Registers bookmark slash commands for parsing engine.
  */
 function registerBookmarksSlashCommands() {
     /**
-     * Validates a message ID. (Is a number, exists as a message)
+     * Validates a message ID ensuring its bounds within the packed chat array.
      * @param {number} mesId - The message ID to validate.
      * @param {string} context - The context of the slash command. Will be used as the title of any toasts.
      * @returns {boolean} - Returns true if the message ID is valid, otherwise false.
      */
     // @ts-expect-error TS(7006) FIXME: Parameter 'mesId' implicitly has an 'any' type.
     function validateMessageId(mesId, context) {
-        if (isNaN(mesId)) {
-            notyf.warning('Invalid message ID was provided', context);
-            return false;
-        }
-        if (!chat[mesId]) {
-            notyf.warning(`Message for id ${mesId} not found`, context);
+        if (!Number.isFinite(mesId) || mesId < 0 || mesId >= chat.length || !chat[mesId]) {
+            notyf.warning(`Invalid message ID was provided`, context);
             return false;
         }
         return true;
@@ -726,9 +724,14 @@ function registerBookmarksSlashCommands() {
          */
         // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
         callback: async (args, _) => {
-            const result = Object.entries(chat)
-                .filter(([_, message]) => message.extra?.bookmark_link)
-                .map(([mesId, message]) => isTrueBoolean(args.links) ? message.extra.bookmark_link : Number(mesId));
+            const useLinks = isTrueBoolean(args.links);
+            const result = [];
+            for (let i = 0; i < chat.length; i++) {
+                const message = chat[i];
+                if (message && message.extra && message.extra.bookmark_link) {
+                    result.push(useLinks ? message.extra.bookmark_link : i);
+                }
+            }
             return JSON.stringify(result);
         },
         namedArgumentList: [
@@ -752,7 +755,7 @@ function registerBookmarksSlashCommands() {
 }
 
 /**
- *
+ * Initializes listeners and routines for bookmarks and branches.
  */
 export function initBookmarks() {
     document.getElementById('option_new_bookmark')?.addEventListener('click', saveBookmarkMenu);
@@ -763,7 +766,7 @@ export function initBookmarks() {
         if (!(e.target instanceof Element)) return;
         const el = e.target.closest('.select_chat_block, .mes_bookmark');
         if (!el) return;
-        // If shift is held down, we are not following the bookmark, but creating a new one
+
         const mes = el.closest('.mes');
         if (e.shiftKey && mes) {
             const selectedMesId = mes.getAttribute('mesid');
