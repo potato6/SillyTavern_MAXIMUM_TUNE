@@ -13323,7 +13323,9 @@ function initCharacterSearch() {
                 return;
             }
 
-            const $hiddenHints = $('.extraMesButtonsHint:hidden');
+            const $hiddenHints = $('.extraMesButtonsHint').filter(function () {
+                return this.offsetParent === null;
+            });
 
             // Transition out the .extraMesButtons first
             $visibleButtons.transition({

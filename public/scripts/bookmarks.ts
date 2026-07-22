@@ -353,6 +353,11 @@ export async function createNewBookmark(mesId, { forceName = null } = {}) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'mes' implicitly has an 'any' type.
 export function updateBookmarkDisplay(mes, newBookmarkLink = null) {
+    // Unwrap Cash object to DOM element if needed
+    if (mes?.[0] instanceof Element) {
+        mes = mes[0];
+    }
+    if (!(mes instanceof Element)) return;
     if (newBookmarkLink) {
         mes.setAttribute('bookmark_link', newBookmarkLink);
     }

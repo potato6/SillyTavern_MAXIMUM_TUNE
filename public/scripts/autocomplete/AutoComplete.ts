@@ -658,7 +658,9 @@ export class AutoComplete {
         // @ts-expect-error TS(2322) FIXME: Type '{ left: number; top: number; bottom: number;... Remove this comment to see the full error message
         if (!location) location = this.getCursorPosition();
         const rect = this.textarea.getBoundingClientRect();
-        const layerRect = this.getLayer().getBoundingClientRect();
+        const layer = this.getLayer();
+        if (!layer) return;
+        const layerRect = layer.getBoundingClientRect();
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         if (location.bottom < rect.top || location.top > rect.bottom || location.left < rect.left || location.left > rect.right) {
             return this.hide();
