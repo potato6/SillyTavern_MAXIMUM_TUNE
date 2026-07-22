@@ -1,0 +1,12 @@
+{
+  "oxc.enableLinting": true,
+  "oxc.lint.configPath": ".oxlintrc.json",
+  "oxc.enableFormatting": true,
+  "oxc.format.configPath": ".oxfmtrc.json",
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "oxc.oxlint",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.oxlint": "explicit"
+  },
+  "typescript.tsdk": "node_modules/typescript/lib"
+}
