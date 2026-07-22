@@ -256,8 +256,8 @@ export function getContext() {
         reloadWorldInfoEditor: reloadEditor,
         updateWorldInfoList,
         convertCharacterBook,
-        getWorldInfoPrompt,[...wiManager.worldNames
-        getWorldInfoNames: () => Array.isArray(world_names) ? [...world_names] : [],
+        getWorldInfoPrompt,
+        getWorldInfoNames: () => Array.isArray(wiManager.worldNames) ? [...wiManager.worldNames] : [],
         CONNECT_API_MAP,
         getTextGenServer,
         extractMessageFromData,
