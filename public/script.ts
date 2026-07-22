@@ -417,6 +417,7 @@ export {
     setUserAvatar,
     getUserAvatars,
     getUserAvatar,
+    setPersonaDescription,
     nai_settings,
     isOdd,
     countOccurrences,
