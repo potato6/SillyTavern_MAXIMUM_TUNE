@@ -2,7 +2,6 @@ import {
     activateSendButtons,
     addOneMessage,
     appendMediaToMessage,
-    callPopup,
     characters,
     chat,
     chat_metadata,
@@ -41,7 +40,6 @@ import {
     stopGeneration,
     streamingProcessor,
     substituteParams,
-    substituteParamsExtended,
     this_chid,
     updateChatMetadata,
     updateMessageBlock,
@@ -50,8 +48,7 @@ import {
     unshallowCharacter,
     deleteLastMessage,
     getCharacterCardFields,
-    swipe_right,
-    swipe_left,
+
     generateRaw,
     generateRawData,
     showSwipeButtons,
@@ -74,7 +71,6 @@ import {
     getExtensionManifest,
     ModuleWorkerWrapper,
     openThirdPartyExtensionMenu,
-    renderExtensionTemplate,
     renderExtensionTemplateAsync,
     saveMetadataDebounced,
     UNSET_VALUE,
@@ -83,7 +79,7 @@ import {
 } from './extensions.js';
 import { groups, openGroupChat, selected_group, unshallowGroupMembers } from './group-chats.js';
 import { addLocaleData, getCurrentLocale, t, translate } from './i18n.js';
-import { hideLoader, showLoader } from './loader.js';
+
 import { loader } from './action-loader.js';
 import { getChatCompletionModel, oai_settings } from './openai.js';
 import { callGenericPopup, Popup, POPUP_RESULT, POPUP_TYPE } from './popup.js';
@@ -91,23 +87,24 @@ import { power_user, registerDebugFunction } from './power-user.js';
 import { getPresetManager } from './preset-manager.js';
 import { humanizedDateTime, isMobile, shouldSendOnEnter } from './RossAscends-mods.js';
 import { ScraperManager } from './scrapers.js';
-import { executeSlashCommands, executeSlashCommandsWithOptions, registerSlashCommand } from './slash-commands.js';
+import { executeSlashCommandsWithOptions } from './slash-commands.js';
 import { SlashCommand } from './slash-commands/SlashCommand.js';
 import { ARGUMENT_TYPE, SlashCommandArgument, SlashCommandNamedArgument } from './slash-commands/SlashCommandArgument.js';
 import { SlashCommandEnumValue } from './slash-commands/SlashCommandEnumValue.js';
 import { SlashCommandParser } from './slash-commands/SlashCommandParser.js';
 import { tag_map, tags, importTags } from './tags.js';
 import { getTextGenServer, textgenerationwebui_settings } from './textgen-settings.js';
-import { tokenizers, getTextTokens, getTokenCount, getTokenCountAsync, getTokenizerModel } from './tokenizers.js';
+import { tokenizers, getTextTokens, getTokenCountAsync, getTokenizerModel } from './tokenizers.js';
 import { ToolManager } from './tool-calling.js';
 import { accountStorage } from './util/AccountStorage.js';
 import { timestampToMoment, uuidv4, importFromExternalUrl } from './utils.js';
 import { addGlobalVariable, addLocalVariable, decrementGlobalVariable, decrementLocalVariable, deleteGlobalVariable, deleteLocalVariable, existsGlobalVariable, existsLocalVariable, getGlobalVariable, getLocalVariable, incrementGlobalVariable, incrementLocalVariable, setGlobalVariable, setLocalVariable } from './variables.js';
-import { convertCharacterBook, getWorldInfoPrompt, loadWorldInfo, reloadEditor, saveWorldInfo, updateWorldInfoList, world_names } from './world-info.js';
+import { convertCharacterBook, getWorldInfoPrompt, loadWorldInfo, reloadEditor, saveWorldInfo, updateWorldInfoList } from './world-info.js';
+import { wiManager } from './world-info/manager.js';
 import { ChatCompletionService, TextCompletionService } from './custom-request.js';
 import { ConnectionManagerRequestService } from './extensions/shared.js';
 import { updateReasoningUI, parseReasoningFromString, getReasoningTemplateByName } from './reasoning.js';
-import { IGNORE_SYMBOL } from './constants.js';
+import { IGNORE_SYMBOL, SWIPE_DIRECTION } from './constants.js';
 import { macros } from './macros/macro-system.js';
 
 /**
@@ -147,8 +144,6 @@ export function getContext() {
         stopGeneration,
         tokenizers,
         getTextTokens,
-        /** @deprecated Use getTokenCountAsync instead */
-        getTokenCount,
         getTokenCountAsync,
         extensionPrompts: extension_prompts,
         setExtensionPrompt,
@@ -162,7 +157,6 @@ export function getContext() {
         deactivateSendButtons,
         saveReply,
         substituteParams,
-        substituteParamsExtended,
         SlashCommandParser,
         SlashCommand,
         SlashCommandArgument,
@@ -170,34 +164,18 @@ export function getContext() {
         SlashCommandEnumValue,
         ARGUMENT_TYPE,
         executeSlashCommandsWithOptions,
-        /** @deprecated Use SlashCommandParser.addCommandObject() instead */
-        registerSlashCommand,
-        /** @deprecated Use executeSlashCommandWithOptions instead */
-        executeSlashCommands,
         timestampToMoment,
-        /** @deprecated Handlebars for extensions are no longer supported. */
-        registerHelper: () => { },
-        /** @deprecated Use `macros.register(name, { handler, description })` from scripts/macros/macro-system.js instead. */
-        registerMacro: macros.register.bind(macros),
-        /** @deprecated Use `macros.registry.unregisterMacro(name)` from scripts/macros/macro-system.js instead. */
-        unregisterMacro: macros.registry.unregisterMacro.bind(macros.registry),
+
         registerFunctionTool: ToolManager.registerFunctionTool.bind(ToolManager),
         unregisterFunctionTool: ToolManager.unregisterFunctionTool.bind(ToolManager),
         isToolCallingSupported: ToolManager.isToolCallingSupported.bind(ToolManager),
         canPerformToolCalls: ToolManager.canPerformToolCalls.bind(ToolManager),
         ToolManager,
         registerDebugFunction,
-        /** @deprecated Use renderExtensionTemplateAsync instead. */
-        renderExtensionTemplate,
         renderExtensionTemplateAsync,
         registerDataBankScraper: ScraperManager.registerDataBankScraper.bind(ScraperManager),
-        /** @deprecated Use callGenericPopup or Popup instead. */
-        callPopup,
         callGenericPopup,
-        /** @deprecated Use loader.show instead. */
-        showLoader,
-        /** @deprecated Use loader.hide instead. */
-        hideLoader,
+
         mainApi: main_api,
         extensionSettings: extension_settings,
         ModuleWorkerWrapper,
@@ -220,8 +198,6 @@ export function getContext() {
         tagMap: tag_map,
         menuType: menu_type,
         createCharacterData: create_save,
-        /** @deprecated Legacy snake-case naming, compatibility with old extensions */
-        event_types: event_types,
         Popup,
         POPUP_TYPE,
         POPUP_RESULT,
@@ -246,8 +222,8 @@ export function getContext() {
         macros,
         loader,
         swipe: {
-            left: swipe_left,
-            right: swipe_right,
+            left: (event, params) => swipe(event, SWIPE_DIRECTION.LEFT, params),
+            right: (event, params) => swipe(event, SWIPE_DIRECTION.RIGHT, params),
             to: swipe,
             show: showSwipeButtons,
             hide: hideSwipeButtons,
@@ -280,7 +256,7 @@ export function getContext() {
         reloadWorldInfoEditor: reloadEditor,
         updateWorldInfoList,
         convertCharacterBook,
-        getWorldInfoPrompt,
+        getWorldInfoPrompt,[...wiManager.worldNames
         getWorldInfoNames: () => Array.isArray(world_names) ? [...world_names] : [],
         CONNECT_API_MAP,
         getTextGenServer,

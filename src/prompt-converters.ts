@@ -15,8 +15,6 @@ const REASONING_EFFORT = {
 
 export const PROMPT_PROCESSING_TYPE = {
     NONE: '',
-    /** @deprecated Use MERGE instead. */
-    CLAUDE: 'claude',
     MERGE: 'merge',
     MERGE_TOOLS: 'merge_tools',
     SEMI: 'semi',

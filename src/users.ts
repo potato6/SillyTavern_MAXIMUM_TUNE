@@ -46,10 +46,6 @@ const COOKIE_SECRET_PATH = 'cookie-secret.txt';
 
 const STORAGE_KEYS = {
     csrfSecret: 'csrfSecret',
-    /**
-     * @deprecated Read from COOKIE_SECRET_PATH in DATA_ROOT instead.
-     */
-    cookieSecret: 'cookieSecret',
 };
 
 /**

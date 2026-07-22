@@ -1,6 +1,6 @@
- 
+
 declare const TomSelect: unknown;
- 
+
 declare const Sortable: unknown;
 
 import { saveSettings, getRequestHeaders, chat_metadata, this_chid, characters, saveCharacterDebounced, menu_type, eventSource, event_types, saveMetadata, getCurrentChatId, extension_prompt_roles, create_save, createOrEditCharacter, getOneCharacter, select_selected_character } from '../script.js';
@@ -438,7 +438,14 @@ export function setWorldInfoSettings(settings: Record<string, unknown>, data: Re
     });
 
     // Add slash commands
-    registerWorldInfoSlashCommands();
+    registerWorldInfoSlashCommands({
+        onWorldInfoChange,
+        setWorldInfoButtonClass,
+        charUpdateAddAuxWorld,
+        charUpdatePrimaryWorld,
+        reloadEditor,
+        setPersonaDescription,
+    });
 }
 
 /**
@@ -2644,7 +2651,7 @@ export async function updateWorldInfoLinks(oldName: unknown, newName: unknown) {
 
 /**
  * @param {number} [chid] - Character ID
- 
+
 /**
  * @param {number} [chid] - Character ID
  * @param {boolean} [forceValue] - Force a specific state

@@ -4,7 +4,7 @@ import { getGroupMembers, groups } from '../group-chats.js';
 import { power_user } from '../power-user.js';
 import { searchCharByName, getTagsList, tags, tag_map } from '../tags.js';
 import { onlyUniqueJson, sortIgnoreCaseAndAccents } from '../utils.js';
-import { world_names } from '../world-info.js';
+import { wiManager } from '../world-info/manager.js';
 import { SlashCommandClosure } from './SlashCommandClosure.js';
 import { SlashCommandEnumValue, enumTypes } from './SlashCommandEnumValue.js';
 
@@ -306,7 +306,7 @@ export const commonEnumProviders = {
      * @returns {SlashCommandEnumValue[]}
      */
     // @ts-expect-error TS(7006) FIXME: Parameter 'worldName' implicitly has an 'any' type... Remove this comment to see the full error message
-    worlds: () => world_names.map(worldName => new SlashCommandEnumValue(worldName, null, enumTypes.name, enumIcons.world)),
+    worlds: () => wiManager.worldNames.map(worldName => new SlashCommandEnumValue(worldName, null, enumTypes.name, enumIcons.world)),
 
     /**
      * All existing injects for the current chat

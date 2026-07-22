@@ -35,7 +35,6 @@ import {
     name1,
     this_chid,
 } from '../../script.js';
-import { setPersonaDescription } from '../personas.js';
 
 
 // World-info internal modules
@@ -52,20 +51,22 @@ import { wiManager } from './manager.js';
 import { worldInfoCache, WorldInfoTimedEffects, loadWorldInfo } from './engine.js';
 import { setWIOriginalDataValue } from './editor.js';
 
-// Circular-safe imports from the parent world-info.ts (used at runtime only)
-import {
-    onWorldInfoChange,
-    setWorldInfoButtonClass,
-    charUpdateAddAuxWorld,
-    charUpdatePrimaryWorld,
-    reloadEditor,
-} from '../world-info.js';
+/** @typedef {{ onWorldInfoChange: Function, setWorldInfoButtonClass: Function, charUpdateAddAuxWorld: Function, charUpdatePrimaryWorld: Function, reloadEditor: Function, setPersonaDescription: Function }} WIDeps */
 
 /**
  * Registers all world-info related slash commands.
+ * @param {WIDeps} deps - Dependencies from the parent module to avoid circular imports
  * @returns {void}
  */
-export function registerWorldInfoSlashCommands() {
+export function registerWorldInfoSlashCommands(deps) {
+    const {
+        onWorldInfoChange,
+        setWorldInfoButtonClass,
+        charUpdateAddAuxWorld,
+        charUpdatePrimaryWorld,
+        reloadEditor,
+        setPersonaDescription,
+    } = deps;
     /**
      * Gets a *rough* approximation of the current chat context.
      * Normally, it is provided externally by the prompt builder.

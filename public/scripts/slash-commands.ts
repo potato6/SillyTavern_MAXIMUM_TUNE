@@ -99,15 +99,11 @@ import { kai_settings } from './kai-settings.js';
 import { instruct_presets, selectContextPreset, selectInstructPreset } from './instruct-mode.js';
 import { debounce_timeout, SWIPE_DIRECTION, SWIPE_SOURCE } from './constants.js';
 export {
-    executeSlashCommands, executeSlashCommandsWithOptions, getSlashCommandsHelp, registerSlashCommand,
+    executeSlashCommandsWithOptions, getSlashCommandsHelp,
 };
 
 export const parser = new SlashCommandParser();
 SlashCommandParser.registerBuiltinCommands();
-/**
- * @deprecated Use SlashCommandParser.addCommandObject() instead
- */
-const registerSlashCommand = SlashCommandParser.addCommand.bind(SlashCommandParser);
 const getSlashCommandsHelp = parser.getHelpString.bind(parser);
 
 /**
@@ -7615,30 +7611,6 @@ async function executeSlashCommandsWithOptions(text, options = {}) {
         }
     }
 }
-/**
- * Executes slash commands in the provided text
- * @deprecated Use executeSlashCommandWithOptions instead
- * @param {string} text Slash command text
- * @param {boolean} handleParserErrors Whether to handle parser errors (show toast on error) or throw
- * @param {SlashCommandScope} scope The scope to be used when executing the commands.
- * @param {boolean} handleExecutionErrors Whether to handle execution errors (show toast on error) or throw
- * @param {{[id:import('./slash-commands/SlashCommandParser.js').PARSER_FLAG]:boolean}} parserFlags Parser flags to apply
- * @param {SlashCommandAbortController} abortController Controller used to abort or pause command execution
- * @param {(done:number, total:number)=>void} onProgress Callback to handle progress events
- * @returns {Promise<SlashCommandClosureResult>}
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'text' implicitly has an 'any' type.
-async function executeSlashCommands(text, handleParserErrors = true, scope = null, handleExecutionErrors = false, parserFlags = null, abortController = null, onProgress = null) {
-    return executeSlashCommandsWithOptions(text, {
-        handleParserErrors,
-        scope,
-        handleExecutionErrors,
-        parserFlags,
-        abortController,
-        onProgress,
-    });
-}
-
 /**
  *
  * @param {HTMLTextAreaElement} textarea The textarea to receive autocomplete

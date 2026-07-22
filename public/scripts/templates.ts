@@ -96,49 +96,4 @@ export async function renderTemplateAsync(templateId, templateData = {}, sanitiz
     }
 }
 
-/**
- * Renders a Handlebars template synchronously.
- * @param {string} templateId ID of the template to render
- * @param {Record<string, any>} templateData The data to pass to the template
- * @param {boolean} sanitize Should the template be sanitized with DOMPurify
- * @param {boolean} localize Should the template be localized
- * @param {boolean} fullPath Should the template ID be treated as a full path or a relative path
- * @returns {string} Rendered template
- * @deprecated Use renderTemplateAsync instead.
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'templateId' implicitly has an 'any' typ... Remove this comment to see the full error message
-export function renderTemplate(templateId, templateData = {}, sanitize = true, localize = true, fullPath = false) {
-    /**
-     *
-     * @param pathToTemplate
-     */
-    // @ts-expect-error TS(7006) FIXME: Parameter 'pathToTemplate' implicitly has an 'any'... Remove this comment to see the full error message
-    function fetchTemplateSync(pathToTemplate) {
-        let template = TEMPLATE_CACHE.get(pathToTemplate);
-        if (!template) {
-            const templateContent = getUrlSync(pathToTemplate);
-            template = Handlebars.compile(templateContent);
-            TEMPLATE_CACHE.set(pathToTemplate, template);
-        }
-        return template;
-    }
 
-    try {
-        const pathToTemplate = fullPath ? templateId : `/scripts/templates/${templateId}.html`;
-        const template = fetchTemplateSync(pathToTemplate);
-        let result = template(templateData);
-
-        if (sanitize) {
-            result = DOMPurify.sanitize(result);
-        }
-
-        if (localize) {
-            result = applyLocale(result);
-        }
-
-        return result;
-    } catch (err) {
-        console.error('Error rendering template', templateId, templateData, err);
-        notyf.error('Check the DevTools console for more information.', 'Error rendering template');
-    }
-}

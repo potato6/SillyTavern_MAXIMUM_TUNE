@@ -12,7 +12,7 @@ import {
     generateQuietPrompt,
     is_send_press,
     saveSettingsDebounced,
-    substituteParamsExtended,
+    substituteParams,
     generateRaw,
     getMaxPromptTokens,
     setExtensionPrompt,
@@ -88,7 +88,7 @@ const formatMemoryValue = function (value: any) {
     // @ts-expect-error TS(2339): Property 'template' does not exist on type '{}'.
     if (extension_settings.memory.template) {
         // @ts-expect-error TS(2339): Property 'template' does not exist on type '{}'.
-        return substituteParamsExtended(extension_settings.memory.template, { summary: value });
+        return substituteParams(extension_settings.memory.template, { dynamicMacros: { summary: value } });
     } else {
         return `Summary: ${value}`;
     }
@@ -599,7 +599,7 @@ async function summarizeCallback(args: any, text: any) {
     // @ts-expect-error TS(2339): Property 'source' does not exist on type '{}'.
     const source = args.source || extension_settings.memory.source;
     // @ts-expect-error TS(2339): Property 'prompt' does not exist on type '{}'.
-    const prompt = substituteParamsExtended((args.prompt || extension_settings.memory.prompt), { words: extension_settings.memory.promptWords });
+    const prompt = substituteParams((args.prompt || extension_settings.memory.prompt), { dynamicMacros: { words: extension_settings.memory.promptWords } });
 
     try {
         switch (source) {
@@ -711,7 +711,7 @@ async function getSummaryPromptForNow(context: any, force: any) {
 
     console.log('Summarizing chat, messages since last summary: ' + messagesSinceLastSummary, 'words since last summary: ' + wordsSinceLastSummary);
     // @ts-expect-error TS(2339): Property 'prompt' does not exist on type '{}'.
-    const prompt = substituteParamsExtended(extension_settings.memory.prompt, { words: extension_settings.memory.promptWords });
+    const prompt = substituteParams(extension_settings.memory.prompt, { dynamicMacros: { words: extension_settings.memory.promptWords } });
 
     if (!prompt) {
         console.debug('Summarization prompt is empty. Skipping summarization.');

@@ -49,10 +49,6 @@ declare global {
 
     interface ChatHeader {
         chat_metadata: ChatMetadata;
-        /** @deprecated For backward compatibility ONLY */
-        user_name: 'unused';
-        /** @deprecated For backward compatibility ONLY */
-        character_name: 'unused';
     }
 
     interface ChatMetadata {
@@ -109,24 +105,6 @@ declare global {
         media_display?: string;
         media_index?: number;
         media?: MediaAttachment[],
-        /** @deprecated Use `files` instead */
-        file?: FileAttachment;
-        /** @deprecated Use `media` instead */
-        image?: string;
-        /** @deprecated Use `media` instead */
-        video?: string;
-        /** @deprecated Use `media` with `media_display = 'gallery'` instead */
-        image_swipes?: string[];
-        /** @deprecated Use `MediaAttachment.append_title` instead */
-        append_title?: boolean;
-        /** @deprecated Use `MediaAttachment.generation_type` instead */
-        generationType?: number;
-        /** @deprecated Use `MediaAttachment.negative` instead */
-        negative?: string;
-        /** Will exclude this message from prompt processing */
-        [IGNORE_SYMBOL]?: boolean;
-    }
-
     type MediaAttachment = MediaAttachmentProps & ImageGenerationAttachmentProps & ImageCaptionAttachmentProps;
 
     interface MediaAttachmentProps {

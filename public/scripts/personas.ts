@@ -54,7 +54,8 @@ import { FILTER_TYPES, FilterHelper } from './filters.js';
 import { groups, selected_group } from './group-chats.js';
 import { POPUP_RESULT, POPUP_TYPE, Popup, callGenericPopup } from './popup.js';
 import { t } from './i18n.js';
-import { openWorldInfoEditor, world_names } from './world-info.js';
+import { openWorldInfoEditor } from './world-info.js';
+import { wiManager } from './world-info/manager.js';
 import { renderTemplateAsync } from './templates.js';
 import { saveMetadataDebounced } from './extensions.js';
 import { accountStorage } from './util/AccountStorage.js';
@@ -82,10 +83,6 @@ interface PersonaState {
 
 export const persona_description_positions = {
     IN_PROMPT: 0,
-    /**
-     * @deprecated Use persona_description_positions.IN_PROMPT instead.
-     */
-    AFTER_CHAR: 1,
     TOP_AN: 2,
     BOTTOM_AN: 3,
     AT_DEPTH: 4,
@@ -1345,7 +1342,7 @@ async function onPersonaLoreButtonClick({ shiftKey, altKey }: { shiftKey: boolea
 
     const worldSelect = templateEl.querySelector('select') as HTMLSelectElement | null;
     (templateEl.querySelector('.persona_name') as HTMLElement).textContent = personaName;
-
+wiManager.worldNames
     for (const worldName of (world_names as string[])) {
         const option = document.createElement('option');
         option.value = worldName;

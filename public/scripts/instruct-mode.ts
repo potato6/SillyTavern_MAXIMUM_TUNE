@@ -494,18 +494,6 @@ export function formatInstructModeChat(name, mes, isUser, isNarrator, forceAvata
 }
 
 /**
- * Formats instruct mode system prompt.
- * @param {string} systemPrompt System prompt string.
- * @param {InstructSettings} _customInstruct Custom instruct mode settings.
- * @returns {string} Formatted instruct mode system prompt.
- * @deprecated Currently doesn't do anything useful.
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'systemPrompt' implicitly has an 'any' t... Remove this comment to see the full error message
-export function formatInstructModeSystemPrompt(systemPrompt, _customInstruct = null) {
-    return systemPrompt || '';
-}
-
-/**
  * Formats instruct mode story string.
  * @param {string} storyString Story string and anchors
  * @param {object} [params]

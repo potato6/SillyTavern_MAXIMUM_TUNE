@@ -1,6 +1,6 @@
 import { eventSource, event_types, saveSettings, saveSettingsDebounced, getRequestHeaders, CLIENT_VERSION } from '../script.js';
 import { POPUP_RESULT, POPUP_TYPE, Popup } from './popup.js';
-import { renderTemplate, renderTemplateAsync } from './templates.js';
+import { renderTemplateAsync } from './templates.js';
 import { delay, deleteValueByPath, equalsIgnoreCaseAndAccents, escapeHtml, isSubsetOf, sanitizeSelector, setValueByPath, versionCompare } from './utils.js';
 import { getContext } from './st-context.js';
 import { isAdmin } from './user.js';
@@ -114,21 +114,6 @@ export function saveMetadataDebounced(): void {
         await newContext.saveMetadata();
         console.debug('Saved metadata...');
     }, debounce_timeout.relaxed);
-}
-
-/**
- * Provides an ability for extensions to render HTML templates synchronously.
- * Templates sanitation and localization is forced.
- * @param {string} extensionName Extension name
- * @param {string} templateId Template ID
- * @param {object} templateData Additional data to pass to the template
- * @param sanitize
- * @param localize
- * @returns {string} Rendered HTML
- * @deprecated Use renderExtensionTemplateAsync instead.
- */
-export function renderExtensionTemplate(extensionName: string, templateId: string, templateData: Record<string, unknown> = {}, sanitize = true, localize = true): string {
-    return renderTemplate(`scripts/extensions/${extensionName}/${templateId}.html`, templateData, sanitize, localize, true);
 }
 
 /**

@@ -227,7 +227,7 @@ import {
     getInstructStoppingSequences,
 } from './scripts/instruct-mode.js';
 import { initLocales, t } from './scripts/i18n.js';
-import { getFriendlyTokenizerName, getTokenCount, getTokenCountAsync, initTokenizers, saveTokenCache } from './scripts/tokenizers.js';
+import { getFriendlyTokenizerName, getTokenCountAsync, initTokenizers, saveTokenCache } from './scripts/tokenizers.js';
 import {
     user_avatar,
     getUserAvatars,
@@ -249,7 +249,7 @@ import { getLastMessageId } from './scripts/macros.js';
 import { initRegisterMacros } from './scripts/macros/macro-system.js';
 import { currentUser, setUserControls } from './scripts/user.js';
 import { POPUP_RESULT, POPUP_TYPE, Popup, callGenericPopup } from './scripts/popup.js';
-import { renderTemplate, renderTemplateAsync } from './scripts/templates.js';
+import { renderTemplateAsync } from './scripts/templates.js';
 import { initScrapers } from './scripts/scrapers.js';
 import { initCustomSelectedSamplers, validateDisabledSamplers } from './scripts/samplerSelect.js';
 import { DragAndDropHandler } from './scripts/dragdrop.js';
@@ -420,7 +420,6 @@ export {
     nai_settings,
     isOdd,
     countOccurrences,
-    renderTemplate,
     promptItemize,
     itemizedPrompts,
     saveItemizedPrompts,
@@ -442,12 +441,6 @@ export {
     getSystemMessageByType,
     event_types,
     eventSource,
-    /** @deprecated Use setCharacterSettingsOverrides instead. */
-    setCharacterSettingsOverrides as setScenarioOverride,
-    /** @deprecated Use appendMediaToMessage instead. */
-    appendMediaToMessage as appendImageToMessage,
-    /** @deprecated Use getMaxPromptTokens instead. */
-    getMaxPromptTokens as getMaxContextSize,
 };
 
 /**
@@ -3120,20 +3113,6 @@ export function scrollChatToBottom({
     // https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame#return_value
     // https://gist.github.com/paulirish/5d52fb081b3570c81e3a#file-what-forces-layout-md
     requestId = requestAnimationFrame(() => doScroll());
-}
-
-/**
- * @param content
- * @param additionalMacro
- * @param postProcessFn
- * @deprecated Function is not needed anymore, as the new signature of substituteParams is more flexible.
- *
- * Substitutes {{macro}} parameters in a string.
- * @returns {string} The string with substituted parameters.
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'content' implicitly has an 'any' type.
-export function substituteParamsExtended(content, additionalMacro = {}, postProcessFn = (x) => x) {
-    return substituteParams(content, { dynamicMacros: additionalMacro, postProcessFn });
 }
 
 /** @typedef {import('./scripts/macros/engine/MacroRegistry.js').MacroHandler} MacroHandler */
@@ -6165,10 +6144,10 @@ export function getNextMessageId(type) {
  * Determines if the message should be auto-continued.
  * @param {string} messageChunk Current message chunk
  * @param {boolean} isImpersonate Is the user impersonation
- * @returns {boolean} Whether the message should be auto-continued
+ * @returns {Promise<boolean>} Whether the message should be auto-continued
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'messageChunk' implicitly has an 'any' t... Remove this comment to see the full error message
-export function shouldAutoContinue(messageChunk, isImpersonate) {
+export async function shouldAutoContinue(messageChunk, isImpersonate) {
     if (!power_user.auto_continue.enabled) {
         console.debug('Auto-continue is disabled by user.');
         return false;
@@ -6215,7 +6194,7 @@ export function shouldAutoContinue(messageChunk, isImpersonate) {
     if (messageChunk.trim().length > USABLE_LENGTH && chat.length) {
         const lastMessage = chat[chat.length - 1];
         // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-        const messageLength = getTokenCount(lastMessage.mes);
+        const messageLength = await getTokenCountAsync(lastMessage.mes, 0);
         const shouldAutoContinue = messageLength < power_user.auto_continue.target_length;
 
         if (shouldAutoContinue) {
@@ -6237,13 +6216,13 @@ export function shouldAutoContinue(messageChunk, isImpersonate) {
  * @param {boolean} isImpersonate Is the user impersonation
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'messageChunk' implicitly has an 'any' t... Remove this comment to see the full error message
-export function triggerAutoContinue(messageChunk, isImpersonate) {
+export async function triggerAutoContinue(messageChunk, isImpersonate) {
     if (selected_group) {
         console.debug('Auto-continue is disabled for group chat');
         return;
     }
 
-    if (shouldAutoContinue(messageChunk, isImpersonate)) {
+    if (await shouldAutoContinue(messageChunk, isImpersonate)) {
         $('#option_continue').trigger('click');
     }
 }
@@ -10058,98 +10037,6 @@ export async function setCharacterSettingsOverrides() {
 /**
  * Displays a blocking popup with a given text and type.
  * @param {JQuery<HTMLElement>|string|Element} text - Text to display in the popup.
- * @param {string} type
- * @param {string} inputValue - Value to set the input to.
- * @param {PopupOptions} options - Options for the popup.
- * @typedef {{okButton?: string, rows?: number, wide?: boolean, wider?: boolean, large?: boolean, allowHorizontalScrolling?: boolean, allowVerticalScrolling?: boolean, cropAspect?: number }} PopupOptions - Options for the popup.
- * @returns {Promise<any>} A promise that resolves when the popup is closed.
- * @deprecated Use `callGenericPopup` instead.
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'text' implicitly has an 'any' type.
-export async function callPopup(text, type, inputValue = '', {
-    okButton,
-    rows,
-    wide,
-    wider,
-    large,
-    allowHorizontalScrolling,
-    allowVerticalScrolling,
-    cropAspect
-}: Record<string, unknown> = {}) {
-    try {
-        /**
-         *
-         *
-         */
-    function getOkButtonText() {
-        if (['text', 'char_not_selected'].includes(popup_type)) {
-            $dialoguePopupCancel.css('display', 'none');
-            return okButton ?? t`Ok`;
-        } else if (['delete_extension'].includes(popup_type)) {
-            return okButton ?? t`Ok`;
-        } else if (['new_chat', 'confirm'].includes(popup_type)) {
-            return okButton ?? t`Yes`;
-        } else if (['input'].includes(popup_type)) {
-            return okButton ?? t`Save`;
-        }
-        return okButton ?? t`Delete`;
-    }
-
-    dialogueCloseStop = true;
-    if (type) {
-        popup_type = type;
-    }
-
-    const $dialoguePopup = $('#dialogue_popup');
-    const $dialoguePopupCancel = $('#dialogue_popup_cancel');
-    const $dialoguePopupOk = $('#dialogue_popup_ok');
-    const $dialoguePopupInput = $('#dialogue_popup_input');
-    const $dialoguePopupText = $('#dialogue_popup_text');
-    const $shadowPopup = $('#shadow_popup');
-
-    $dialoguePopup.toggleClass('wide_dialogue_popup', !!wide)
-        .toggleClass('wider_dialogue_popup', !!wider)
-        .toggleClass('large_dialogue_popup', !!large)
-        .toggleClass('horizontal_scrolling_dialogue_popup', !!allowHorizontalScrolling)
-        .toggleClass('vertical_scrolling_dialogue_popup', !!allowVerticalScrolling);
-
-    $dialoguePopupCancel.css('display', 'inline-block');
-    $dialoguePopupOk.text(getOkButtonText());
-// @ts-expect-error Suppressed after fixes
-    $dialoguePopupInput.toggle(popup_type === 'input').val(inputValue).attr('rows', rows ?? 1);
-    const dpTextEl = $dialoguePopupText[0];
-// @ts-expect-error Suppressed after fixes
-    dpTextEl.innerHTML = '';
-    if (typeof text === 'string') {
-// @ts-expect-error Suppressed after fixes
-        dpTextEl.insertAdjacentHTML('beforeend', text);
-    } else if (text instanceof $) {
-// @ts-expect-error Suppressed after fixes
-        dpTextEl.append(text[0]);
-    } else {
-// @ts-expect-error Suppressed after fixes
-        dpTextEl.append(text);
-    }
-    $shadowPopup.css('display', 'block');
-
-    if (popup_type == 'input') {
-        $dialoguePopupInput.trigger('focus');
-    }
-
-    $shadowPopup.transition({
-        opacity: 1,
-        duration: animation_duration,
-        easing: animation_easing,
-    });
-
-    } catch (error) {
-        console.error('Error in callPopup:', error);
-
-        notyf.error(t`An error occurred while opening the popup. Check console for details.`, t`Popup Error`);
-        return Promise.resolve(null);
-    }
-}
-
 /**
  * Update the swipe counter for mesId.
  * By default, the swipe counter's opacity will appear greyed out. The opacity is changed with CSS.
@@ -11672,43 +11559,6 @@ export async function swipe(event, direction, {
 }
 
 /**
- * @deprecated Use `swipe` instead.
- * Handles the swipe to the left event.
- * @param {SwipeEvent} [event] Event.
- * @param {object} params Additional parameters.
- * @param {import('./scripts/constants.js').SWIPE_SOURCE} [params.source]  The source of the swipe event.
- * @param {boolean} [params.repeated] Is the swipe event repeated.
- * @param {object} [params.message] The chat message to swipe.
- */
-export async function swipe_left(event: Event, {
-    source,
-    repeated,
-    message
-}: { source?: string; repeated?: boolean; message?: string } = {}) {
-    // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-    await swipe.call(this, event, SWIPE_DIRECTION.LEFT, { source: source, repeated: repeated, message: message });
-}
-
-/**
- * @deprecated Use `swipe` instead.
- * Handles the swipe to the right event.
- * @param {SwipeEvent} [event] Event.
- * @param {object} params Additional parameters.
- * @param {import('./scripts/constants.js').SWIPE_SOURCE} [params.source] The source of the swipe event.
- * @param {boolean} [params.repeated] Is the swipe event repeated.
- * @param {object} [params.message] The chat message to swipe.
- */
-//MARK: swipe_right
-export async function swipe_right(event: Event | null = null, {
-    source,
-    repeated,
-    message
-}: { source?: string; repeated?: boolean; message?: string } = {}) {
-    // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-    await swipe.call(this, event, SWIPE_DIRECTION.RIGHT, { source: source, repeated: repeated, message: message });
-}
-
-/**
  * Imports supported files dropped into the app window.
  * @param {File[]} files Array of files to process
  * @param {Map<File, string>} [data] Extra data to pass to the import function
@@ -12954,7 +12804,7 @@ function initCharacterSearch() {
         }
     });
 
-    /* $('#set_chat_character_settings').on('click', setScenarioOverride); */
+
 
     ///////////// OPTIMIZED LISTENERS FOR LEFT SIDE OPTIONS POPUP MENU //////////////////////
     $('#options [id]').on('click', async function (event, customData) {
@@ -14022,15 +13872,7 @@ function initCharacterSearch() {
             case 'import_tags': {
                 await importTags(characters[this_chid], { importSetting: tag_import_setting.ASK });
             } break;
-            /*case 'delete_button':
-                popup_type = "del_ch";
-                callPopup(`
-                        <h3>Delete the character?</h3>
-                        <b>THIS IS PERMANENT!<br><br>
-                        THIS WILL ALSO DELETE ALL<br>
-                        OF THE CHARACTER'S CHAT FILES.<br><br></b>`
-                );
-                break;*/
+
             default:
                 await eventSource.emit(event_types.CHARACTER_MANAGEMENT_DROPDOWN, target);
         }

@@ -12,7 +12,6 @@ import {
     getUserAvatar,
     saveSettingsDebounced,
     substituteParams,
-    substituteParamsExtended,
     systemUserName,
     this_chid,
     user_avatar,
@@ -4989,7 +4988,7 @@ async function sendMessage(prompt, image, generationType, additionalNegativePref
     const context = getContext();
     const name = context.groupId ? systemUserName : context.name2;
     const template = extension_settings.sd.prompts[generationMode.MESSAGE] || '{{prompt}}';
-    const messageText = substituteParamsExtended(template, { char: name, prompt: prompt, prefixedPrompt: prefixedPrompt });
+    const messageText = substituteParams(template, { dynamicMacros: { char: name, prompt: prompt, prefixedPrompt: prefixedPrompt } });
     const mediaType = isVideo(format) ? MEDIA_TYPE.VIDEO : MEDIA_TYPE.IMAGE;
     /** @type {MediaAttachment} */
     const mediaAttachment = {

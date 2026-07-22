@@ -69,8 +69,7 @@ export const event_types = {
     CHARACTER_DUPLICATED: 'character_duplicated',
     CHARACTER_RENAMED: 'character_renamed',
     CHARACTER_RENAMED_IN_PAST_CHAT: 'character_renamed_in_past_chat',
-    /** @deprecated The event is aliased to STREAM_TOKEN_RECEIVED. */
-    SMOOTH_STREAM_TOKEN_RECEIVED: 'stream_token_received',
+
     STREAM_TOKEN_RECEIVED: 'stream_token_received',
     STREAM_REASONING_DONE: 'stream_reasoning_done',
     FILE_ATTACHMENT_DELETED: 'file_attachment_deleted',

@@ -4,12 +4,6 @@ import { RateLimiterRes } from 'rate-limiter-flexible';
 import express from 'express';
 import { getConfigValue } from './util.js';
 
-const noopMiddleware = (_req: express.Request, _res: express.Response, next: express.NextFunction) => next();
-/** @deprecated Do not use. A global middleware is provided at the application level. */
-export const jsonParser = noopMiddleware;
-/** @deprecated Do not use. A global middleware is provided at the application level. */
-export const urlencodedParser = noopMiddleware;
-
 /**
  * Gets the IP address of the client from the request object.
  * @param {import('express').Request} req Request object

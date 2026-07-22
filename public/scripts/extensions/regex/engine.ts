@@ -1,4 +1,4 @@
-import { characters, saveSettingsDebounced, substituteParams, substituteParamsExtended, this_chid } from '../../../script.js';
+import { characters, saveSettingsDebounced, substituteParams, this_chid } from '../../../script.js';
 import { extension_settings, writeExtensionField } from '../../extensions.js';
 import { getPresetManager } from '../../preset-manager.js';
 import { regexFromString } from '../../utils.js';
@@ -296,10 +296,7 @@ export function getCurrentPresetName() {
  * @enum {number} Where the regex script should be applied
  */
 export const regex_placement = {
-    /**
-     * @deprecated MD Display is deprecated. Do not use.
-     */
-    MD_DISPLAY: 0,
+
     USER_INPUT: 1,
     AI_OUTPUT: 2,
     SLASH_COMMAND: 3,
@@ -426,9 +423,9 @@ export function runRegexScript(regexScript: any, rawString: any, {
             case substitute_find_regex.NONE:
                 return regexScript.findRegex;
             case substitute_find_regex.RAW:
-                return substituteParamsExtended(regexScript.findRegex);
+                return substituteParams(regexScript.findRegex);
             case substitute_find_regex.ESCAPED:
-                return substituteParamsExtended(regexScript.findRegex, {}, sanitizeRegexMacro);
+                return substituteParams(regexScript.findRegex, { postProcessFn: sanitizeRegexMacro });
             default:
                 console.warn(`runRegexScript: Unknown substituteRegex value ${regexScript.substituteRegex}. Using raw regex.`);
                 return regexScript.findRegex;

@@ -41,22 +41,6 @@ export class SlashCommandParser {
     /** @type {Object.<string, SlashCommand>} */ static commands = {};
 
     /**
-     * @deprecated Use SlashCommandParser.addCommandObject() instead.
-     * @param {string} command Command name
-     * @param {(namedArguments:NamedArguments|NamedArgumentsCapture, unnamedArguments:string|SlashCommandClosure|(string|SlashCommandClosure)[])=>string|SlashCommandClosure|Promise<string|SlashCommandClosure>} callback callback The function to execute when the command is called
-     * @param {string[]} aliases List of alternative command names
-     * @param {string} helpString Help text shown in autocomplete and command browser
-     */
-    // @ts-expect-error TS(7006) FIXME: Parameter 'command' implicitly has an 'any' type.
-    static addCommand(command, callback, aliases, helpString = '') {
-        this.addCommandObject(SlashCommand.fromProps({
-            name: command,
-            callback,
-            aliases,
-            helpString,
-        }));
-    }
-    /**
      *
      * @param {SlashCommand} command
      */

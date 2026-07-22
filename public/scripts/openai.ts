@@ -28,7 +28,7 @@ import {
     setOnlineStatus,
     startStatusLoading,
     substituteParams,
-    substituteParamsExtended,
+
     system_message_types,
     this_chid,
 } from '../script.js';
@@ -222,8 +222,6 @@ const continue_postfix_types = {
 
 export const custom_prompt_post_processing_types = {
     NONE: '',
-    /** @deprecated Use MERGE instead. */
-    CLAUDE: 'claude',
     MERGE: 'merge',
     MERGE_TOOLS: 'merge_tools',
     SEMI: 'semi',
@@ -927,7 +925,7 @@ async function populateChatHistory(messages, prompts, chatCompletion, type = nul
         const promptObject = {
             identifier: 'continueNudge',
             role: 'system',
-            content: substituteParamsExtended(oai_settings.continue_nudge_prompt, { lastChatMessage: String(cyclePrompt).trim() }),
+            content: substituteParams(oai_settings.continue_nudge_prompt, { dynamicMacros: { lastChatMessage: String(cyclePrompt).trim() } }),
             system_prompt: true,
         };
         continueMessageCollection = new MessageCollection('continueNudge');
@@ -7839,10 +7837,10 @@ export function initOpenAI() {
 
         oai_settings.openrouter_quantizations = selectedQuantizations as string[];
         (oai_settings as Record<string, unknown>).openrouter_quantizations = selectedQuantizations;
-        
+
         saveSettingsDebounced();
     });
-    
+
     document.getElementById('nanogpt_provider')?.addEventListener('change', function () {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         oai_settings.nanogpt_provider = String(this.value || '');

@@ -10,8 +10,6 @@
 /** @enum {number} */
 export const tag_filter_type = {
     character: 0,
-    /** @deprecated use `group_candidates_list` instead */
-    group_member: 1,
     group_candidates_list: 1,
     group_members_list: 2,
 };

@@ -8,7 +8,7 @@ import {
     getGeneratingApi,
     is_send_press,
     isStreamingEnabled,
-    substituteParamsExtended,
+    substituteParams,
 } from '../script.js';
 import { debounce, delay, getStringHash } from './utils.js';
 import { decodeTextTokens, getTokenizerBestMatch } from './tokenizers.js';
@@ -434,8 +434,8 @@ function createSwipe(messageId, prompt) {
 
     const msg = chat[messageId];
 
-    const reasoningPrefix = substituteParamsExtended(power_user.reasoning.prefix);
-    const reasoningSuffix = substituteParamsExtended(power_user.reasoning.suffix);
+    const reasoningPrefix = substituteParams(power_user.reasoning.prefix);
+    const reasoningSuffix = substituteParams(power_user.reasoning.suffix);
     const isReasoningAutoParsed = power_user.reasoning.auto_parse;
     // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     const msgHasParsedReasoning = msg.extra?.reasoning?.length > 0;

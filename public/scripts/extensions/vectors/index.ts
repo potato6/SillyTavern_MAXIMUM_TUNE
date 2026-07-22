@@ -10,7 +10,7 @@ import {
     setExtensionPrompt,
     substituteParams,
     generateRaw,
-    substituteParamsExtended,
+
 } from '../../../script.js';
 // @ts-expect-error TS(2451): Cannot redeclare block-scoped variable '$'.
 declare const $: any; declare const toastr: any;
@@ -704,7 +704,7 @@ async function injectDataBankChunks(queryText: any, collectionIds: any) {
             return;
         }
 
-        const insertedText = substituteParamsExtended(settings.file_template_db, { text: textResult });
+        const insertedText = substituteParams(settings.file_template_db, { dynamicMacros: { text: textResult } });
         setExtensionPrompt(EXTENSION_PROMPT_TAG_DB, insertedText, settings.file_position_db, settings.file_depth_db, settings.include_wi, settings.file_depth_role_db);
     } catch (error) {
         console.error('Vectors: Failed to insert Data Bank chunks', error);
@@ -885,7 +885,7 @@ async function rearrangeChat(chat: any, _contextSize: any, _abort: any, type: an
 function getPromptText(queriedMessages: any) {
     const queriedText = queriedMessages.map((x: any) => collapseNewlines(`${x.name}: ${x.mes}`).trim()).join('\n\n');
     console.log('Vectors: relevant past messages found.\n', queriedText);
-    return substituteParamsExtended(settings.template, { text: queriedText });
+    return substituteParams(settings.template, { dynamicMacros: { text: queriedText } });
 }
 
 /**

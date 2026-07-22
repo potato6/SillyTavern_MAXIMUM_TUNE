@@ -262,8 +262,7 @@ export const power_user = {
         bind_to_context: false,
         user_alignment_message: '',
         system_same_as_user: false,
-        /** @deprecated Use output_suffix instead */
-        separator_sequence: '',
+
         sequences_as_stop_strings: true,
         skip_examples: false,
     },
@@ -369,8 +368,7 @@ export const power_user = {
     import_card_tags: undefined as boolean | undefined,
     persona_allow_multi_connections: false,
     persona_auto_lock: false,
-    /** @deprecated Use stscript.autocomplete.style instead */
-    autocomplete_style: undefined as string | undefined,
+
 };
 
 interface Theme {

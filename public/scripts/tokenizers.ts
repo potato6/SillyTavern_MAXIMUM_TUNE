@@ -445,77 +445,6 @@ export async function getTokenCountAsync(str, padding = undefined) {
 }
 
 /**
- * Gets the token count for a string using the current model tokenizer.
- * @param {string} str String to tokenize
- * @param {number | undefined} padding Optional padding tokens. Defaults to 0.
- * @returns {number} Token count.
- * @deprecated Use getTokenCountAsync instead.
- */
-// @ts-expect-error TS(7023) FIXME: 'getTokenCount' implicitly has return type 'any' b... Remove this comment to see the full error message
-export function getTokenCount(str, padding = undefined) {
-    if (typeof str !== 'string' || !str?.length) {
-        return 0;
-    }
-
-    let tokenizerType = power_user.tokenizer;
-    let modelHash = '';
-
-    if (main_api === 'openai') {
-        if (padding === power_user.token_padding) {
-            // For main "shadow" prompt building
-            tokenizerType = tokenizers.NONE;
-        } else {
-            // For extensions and WI
-            return counterWrapperOpenAI(str);
-        }
-    }
-
-    if (tokenizerType === tokenizers.BEST_MATCH) {
-        tokenizerType = getTokenizerBestMatch(main_api);
-    }
-
-    if (tokenizerType === tokenizers.API_TEXTGENERATIONWEBUI) {
-        modelHash = getStringHash(getTextGenModel() || online_status).toString();
-    }
-
-    if (padding === undefined) {
-        // @ts-expect-error TS(2322) FIXME: Type '0' is not assignable to type 'undefined'.
-        padding = 0;
-    }
-
-    const cacheObject = getTokenCacheObject();
-    const hash = getStringHash(str);
-    const cacheKey = `${tokenizerType}-${hash}${modelHash}+${padding}`;
-
-    if (typeof cacheObject[cacheKey] === 'number') {
-        return cacheObject[cacheKey];
-    }
-
-    // @ts-expect-error TS(7022) FIXME: 'result' implicitly has type 'any' because it does... Remove this comment to see the full error message
-    const result = callTokenizer(tokenizerType, str) + padding;
-
-    if (isNaN(result)) {
-        console.warn('Token count calculation returned NaN');
-        return 0;
-    }
-
-    cacheObject[cacheKey] = result;
-    return result;
-}
-
-/**
- * Gets the token count for a string using the OpenAI tokenizer.
- * @param {string} text Text to tokenize.
- * @returns {number} Token count.
- * @deprecated Use counterWrapperOpenAIAsync instead.
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'text' implicitly has an 'any' type.
-function counterWrapperOpenAI(text) {
-    const message = { role: 'system', content: text };
-    return countTokensOpenAI(message, true);
-}
-
-/**
  * Gets the token count for a string using the OpenAI tokenizer.
  * @param {string} text Text to tokenize.
  * @returns {Promise<number>} Token count.
@@ -620,44 +549,6 @@ function preWarmTokenizerCache(): void {
 }
 
 /**
- * @param {any[] | object} messages
- * @param full
- * @deprecated Use countTokensOpenAIAsync instead.
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'messages' implicitly has an 'any' type.
-export async function countTokensOpenAI(messages, full = false) {
-    const tokenizerEndpoint = `/api/tokenizers/openai/count?model=${getTokenizerModel()}`;
-    const cacheObject = getTokenCacheObject();
-
-    if (!Array.isArray(messages)) {
-        messages = [messages];
-    }
-
-    let token_count = -1;
-
-    for (const message of messages) {
-        const model = getTokenizerModel();
-
-        if (model === 'claude') {
-            full = true;
-        }
-
-        const hash = getStringHash(JSON.stringify(message));
-        const cacheKey = `${model}-${hash}`;
-        const cachedCount = cacheObject[cacheKey];
-
-        if (typeof cachedCount === 'number') {
-            token_count += cachedCount;
-        } else {
-            const response = await fetch(tokenizerEndpoint, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': await getCsrfToken() },
-                body: JSON.stringify([message]),
-            });
-            const data = await response.json();
-            token_count += Number(data.token_count);
-            cacheObject[cacheKey] = Number(data.token_count);
-        }
     }
 
     if (!full) token_count -= 2;
@@ -840,7 +731,7 @@ function apiFailureTokenCount(str) {
 
     // Only try again if we guarantee not to be looped by the same error
     if (shouldTryAgain && power_user.tokenizer === tokenizers.BEST_MATCH) {
-        return getTokenCount(str);
+        return guesstimate(str);
     }
 
     return guesstimate(str);

@@ -117,16 +117,6 @@ export function getConfigValue(key: string, defaultValue = null, typeConverter =
 }
 
 /**
- * THIS FUNCTION IS DEPRECATED AND ONLY EXISTS FOR BACKWARDS COMPATIBILITY. DON'T USE IT.
- * @param {unknown} _key Unused
- * @param {unknown} _value Unused
- * @deprecated Configs are read-only. Use environment variables instead.
- */
-export function setConfigValue(_key: unknown, _value: unknown) {
-    console.trace(color.yellow('setConfigValue is deprecated and should not be used.'));
-}
-
-/**
  * Encodes the Basic Auth header value for the given user and password.
  * @param {string} auth username:password
  * @returns {string} Basic Auth header value
@@ -668,62 +658,6 @@ export async function forwardFetchResponse(from: Response, to: import('express')
     } else {
         to.end();
     }
-}
-
-/**
- * Makes an HTTP/2 request to the specified endpoint.
- * @deprecated Use `node-fetch` if possible.
- * @param {string} endpoint URL to make the request to
- * @param {string} method HTTP method to use
- * @param {string} body Request body
- * @param {object} headers Request headers
- * @returns {Promise<string>} Response body
- */
-export function makeHttp2Request(endpoint: string, method: string, body: string, headers: Record<string, string>) {
-    return new Promise((resolve, reject) => {
-        try {
-            const url = new URL(endpoint);
-            const client = http2.connect(url.origin);
-
-            const req = client.request({
-                ':method': method,
-                ':path': url.pathname,
-                ...headers,
-            });
-            req.setEncoding('utf8');
-
-            req.on('response', (headers) => {
-                const status = Number(headers[':status']);
-
-                if (status < 200 || status >= 300) {
-                    reject(new Error(`Request failed with status ${status}`));
-                }
-
-                let data = '';
-
-                req.on('data', (chunk) => {
-                    data += chunk;
-                });
-
-                req.on('end', () => {
-                    console.debug(data);
-                    resolve(data);
-                });
-            });
-
-            req.on('error', (err) => {
-                reject(err);
-            });
-
-            if (body) {
-                req.write(body);
-            }
-
-            req.end();
-        } catch (e) {
-            reject(e);
-        }
-    });
 }
 
 /**

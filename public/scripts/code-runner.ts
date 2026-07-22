@@ -200,7 +200,7 @@ async function runJS(block: HTMLElement) {
  * @param block
  */
 async function runST(block: HTMLElement) {
-    const { executeSlashCommands } = SillyTavern.getContext() as unknown as { executeSlashCommands: (code: string, handleParserErrors?: boolean, scope?: unknown, handleExecutionErrors?: boolean, parserFlags?: unknown, abortController?: AbortController, onProgress?: () => void) => Promise<string> };
+    const { executeSlashCommandsWithOptions } = SillyTavern.getContext();
     try {
         const { el, loader, cleared } = getOutput(block);
         show(loader);
@@ -208,7 +208,7 @@ async function runST(block: HTMLElement) {
         const ac = new AbortController();
         const t0 = performance.now();
         const result = await Promise.race([
-            executeSlashCommands(code, true, null, false, null, ac, () => {}),
+            executeSlashCommandsWithOptions(code, { handleParserErrors: true, scope: null, handleExecutionErrors: false, parserFlags: null, abortController: ac, onProgress: () => {} }),
             cleared,
         ]);
         hide(loader);

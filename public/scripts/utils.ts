@@ -15,7 +15,6 @@ import { SlashCommandClosure } from './slash-commands/SlashCommandClosure.js';
 import { getTagsList } from './tags.js';
 import { groups, selected_group } from './group-chats.js';
 import { getCurrentLocale, t } from './i18n.js';
-import { importWorldInfo } from './world-info.js';
 import { throttle as esThrottle } from 'es-toolkit';
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
@@ -3435,6 +3434,7 @@ export async function importFromExternalUrl(url, { preserveFileName = null } = {
             await processDroppedFiles([file], extraData);
             break;
         case 'lorebook':
+            const { importWorldInfo } = await import('./world-info.js');
             await importWorldInfo(file);
             break;
         default:

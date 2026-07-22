@@ -1,7 +1,7 @@
 import { Fuse } from '../../../lib.js';
 declare const $: any; declare const toastr: any;
 
-import { characters, eventSource, event_types, generateQuietPrompt, generateRaw, getRequestHeaders, online_status, saveSettingsDebounced, substituteParams, substituteParamsExtended, system_message_types, this_chid } from '../../../script.js';
+import { characters, eventSource, event_types, generateQuietPrompt, generateRaw, getRequestHeaders, online_status, saveSettingsDebounced, substituteParams, system_message_types, this_chid } from '../../../script.js';
 import { dragElement, isMobile } from '../../RossAscends-mods.js';
 import { getContext, getApiUrl, modules, extension_settings as _extSettingsUntyped, ModuleWorkerWrapper, doExtrasFetch, renderExtensionTemplateAsync } from '../../extensions.js';
 const extension_settings = _extSettingsUntyped as any;
@@ -1014,7 +1014,7 @@ function sampleClassifyText(text: any) {
  */
 async function getLlmPrompt(labels: any) {
     const labelsString = labels.map((x: any) => `"${x}"`).join(', ');
-    const prompt = substituteParamsExtended(String(extension_settings.expressions.llmPrompt), { labels: labelsString });
+    const prompt = substituteParams(String(extension_settings.expressions.llmPrompt), { dynamicMacros: { labels: labelsString } });
     return prompt;
 }
 
@@ -1149,7 +1149,7 @@ export async function getExpressionLabel(text: any, expressionsApi = extension_s
 
                 // @ts-expect-error TS(2322): Type 'null' is not assignable to type 'boolean | u... Remove this comment to see the full error message
                 const expressionsList = await getExpressionsList({ filterAvailable: filterAvailable });
-                const prompt = substituteParamsExtended(customPrompt, { labels: expressionsList }) || (await getLlmPrompt(expressionsList));
+                const prompt = substituteParams(customPrompt, { dynamicMacros: { labels: expressionsList } }) || (await getLlmPrompt(expressionsList));
                 eventSource.once(event_types.TEXT_COMPLETION_SETTINGS_READY, onTextGenSettingsReady);
 
                 let emotionResponse;
@@ -1177,7 +1177,7 @@ export async function getExpressionLabel(text: any, expressionsApi = extension_s
 
                 // @ts-expect-error TS(2322): Type 'null' is not assignable to type 'boolean | u... Remove this comment to see the full error message
                 const expressionsList = await getExpressionsList({ filterAvailable: filterAvailable });
-                const prompt = substituteParamsExtended(customPrompt, { labels: expressionsList }) || (await getLlmPrompt(expressionsList));
+                const prompt = substituteParams(customPrompt, { dynamicMacros: { labels: expressionsList } }) || (await getLlmPrompt(expressionsList));
                 const messages = [
                     { role: 'user', content: text + '\n\n' + prompt },
                 ];
