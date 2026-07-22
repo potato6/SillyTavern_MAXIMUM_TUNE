@@ -375,35 +375,31 @@ function RA_autoconnect(PrevApi?: string) {
             }
             case 'openai': {
                 const src = oai_settings.chat_completion_source;
-                const isRevProxy = Boolean(oai_settings.reverse_proxy);
 
-                const sourceSecretMap: [unknown, string | undefined, boolean?][] = [
-                    [chat_completion_sources.OPENAI, SECRET_KEYS.OPENAI, isRevProxy],
-                    [chat_completion_sources.CLAUDE, SECRET_KEYS.CLAUDE, isRevProxy],
-                    [chat_completion_sources.OPENROUTER, SECRET_KEYS.OPENROUTER],
-                    [chat_completion_sources.AI21, SECRET_KEYS.AI21],
-                    [chat_completion_sources.MAKERSUITE, SECRET_KEYS.MAKERSUITE],
-                    [chat_completion_sources.VERTEXAI, oai_settings.vertexai_auth_mode === 'express' ? SECRET_KEYS.VERTEXAI : SECRET_KEYS.VERTEXAI_SERVICE_ACCOUNT],
-                    [chat_completion_sources.MISTRALAI, SECRET_KEYS.MISTRALAI],
-                    [chat_completion_sources.COHERE, SECRET_KEYS.COHERE],
-                    [chat_completion_sources.PERPLEXITY, SECRET_KEYS.PERPLEXITY],
-                    [chat_completion_sources.GROQ, SECRET_KEYS.GROQ],
-                    [chat_completion_sources.CHUTES, SECRET_KEYS.CHUTES],
-                    [chat_completion_sources.SILICONFLOW, SECRET_KEYS.SILICONFLOW],
-                    [chat_completion_sources.ELECTRONHUB, SECRET_KEYS.ELECTRONHUB],
-                    [chat_completion_sources.NANOGPT, SECRET_KEYS.NANOGPT],
-                    [chat_completion_sources.DEEPSEEK, SECRET_KEYS.DEEPSEEK],
-                    [chat_completion_sources.XAI, SECRET_KEYS.XAI],
-                    [chat_completion_sources.AIMLAPI, SECRET_KEYS.AIMLAPI],
-                    [chat_completion_sources.MOONSHOT, SECRET_KEYS.MOONSHOT],
-                    [chat_completion_sources.FIREWORKS, SECRET_KEYS.FIREWORKS],
-                    [chat_completion_sources.COMETAPI, SECRET_KEYS.COMETAPI],
-                    [chat_completion_sources.ZAI, SECRET_KEYS.ZAI],
-                    [chat_completion_sources.POLLINATIONS, SECRET_KEYS.POLLINATIONS],
-                    [chat_completion_sources.WORKERS_AI, SECRET_KEYS.WORKERS_AI],
-                    [chat_completion_sources.MINIMAX, SECRET_KEYS.MINIMAX],
-                    [chat_completion_sources.AZURE_OPENAI, SECRET_KEYS.AZURE_OPENAI],
-                ];
+                /**
+                 * Builds the source-to-secret mapping for chat completion providers.
+                 * Derives the mapping from shared property names between chat_completion_sources
+                 * and SECRET_KEYS, so you never have to repeat a provider name.
+                 */
+                const sourceSecretMap = ((): [string, string | undefined, boolean?][] => {
+                    const isRevProxy = Boolean(oai_settings.reverse_proxy);
+                    const secrets = SECRET_KEYS as Record<string, string | undefined>;
+                    const REV_PROXY_SOURCES = new Set(['OPENAI', 'CLAUDE']);
+
+                    return (Object.entries(chat_completion_sources) as [string, string][])
+                        .filter(([key]) => key !== 'CUSTOM')
+                        .map(([key, source]): [string, string | undefined, boolean?] => {
+                            if (key === 'VERTEXAI') {
+                                return [
+                                    source,
+                                    oai_settings.vertexai_auth_mode === 'express'
+                                        ? secrets.VERTEXAI
+                                        : secrets.VERTEXAI_SERVICE_ACCOUNT,
+                                ];
+                            }
+                            return [source, secrets[key], REV_PROXY_SOURCES.has(key) ? isRevProxy : undefined];
+                        });
+                })();
 
                 const isCustomValid = src === chat_completion_sources.CUSTOM && isValidUrl(oai_settings.custom_url);
                 const canConnect = isCustomValid || sourceSecretMap.some(([targetSrc, secretKey, allowFallback]) =>
