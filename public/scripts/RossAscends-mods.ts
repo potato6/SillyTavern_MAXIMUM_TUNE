@@ -336,6 +336,35 @@ function RA_checkOnlineStatus() {
     }
 }
 
+/**
+ * Builds a source-to-secret mapping from two objects that share property names.
+ * By convention, a key in `sources` maps to the same key in `secrets`.
+ * Exceptions (VERTEXAI's two-key auth, rev-proxy eligibility) are declared as
+ * data in the options, so no provider name ever needs to be written inline.
+ */
+type BuildSourceMapOptions = {
+    skip?: string[];
+    revProxySources?: string[];
+    isRevProxy?: boolean;
+    overrides?: Record<string, (sourceValue: string, secrets: Record<string, string | undefined>) => string | undefined>;
+};
+
+function buildSourceMap(
+    sources: Record<string, string>,
+    secrets: Record<string, string | undefined>,
+    options: BuildSourceMapOptions = {},
+): [string, string | undefined, boolean?][] {
+    const skip = new Set(options.skip ?? ['CUSTOM']);
+    const revProxy = new Set(options.revProxySources ?? []);
+
+    return (Object.entries(sources) as [string, string][])
+        .filter(([key]) => !skip.has(key))
+        .map(([key, source]): [string, string | undefined, boolean?] => {
+            const secretKey = options.overrides?.[key]?.(source, secrets) ?? secrets[key];
+            return [source, secretKey, revProxy.has(key) ? options.isRevProxy : undefined];
+        });
+}
+
 function RA_autoconnect(PrevApi?: string) {
     if (SECRET_KEYS === undefined || online_status === undefined) {
         setTimeout(RA_autoconnect, 100);
@@ -381,25 +410,21 @@ function RA_autoconnect(PrevApi?: string) {
                  * Derives the mapping from shared property names between chat_completion_sources
                  * and SECRET_KEYS, so you never have to repeat a provider name.
                  */
-                const sourceSecretMap = ((): [string, string | undefined, boolean?][] => {
-                    const isRevProxy = Boolean(oai_settings.reverse_proxy);
-                    const secrets = SECRET_KEYS as Record<string, string | undefined>;
-                    const REV_PROXY_SOURCES = new Set(['OPENAI', 'CLAUDE']);
-
-                    return (Object.entries(chat_completion_sources) as [string, string][])
-                        .filter(([key]) => key !== 'CUSTOM')
-                        .map(([key, source]): [string, string | undefined, boolean?] => {
-                            if (key === 'VERTEXAI') {
-                                return [
-                                    source,
-                                    oai_settings.vertexai_auth_mode === 'express'
-                                        ? secrets.VERTEXAI
-                                        : secrets.VERTEXAI_SERVICE_ACCOUNT,
-                                ];
-                            }
-                            return [source, secrets[key], REV_PROXY_SOURCES.has(key) ? isRevProxy : undefined];
-                        });
-                })();
+                const sourceSecretMap = buildSourceMap(
+                    chat_completion_sources as Record<string, string>,
+                    SECRET_KEYS as Record<string, string | undefined>,
+                    {
+                        skip: ['CUSTOM'],
+                        revProxySources: ['OPENAI', 'CLAUDE'],
+                        isRevProxy: Boolean(oai_settings.reverse_proxy),
+                        overrides: {
+                            VERTEXAI: (_src, secrets) =>
+                                oai_settings.vertexai_auth_mode === 'express'
+                                    ? secrets.VERTEXAI
+                                    : secrets.VERTEXAI_SERVICE_ACCOUNT,
+                        },
+                    },
+                );
 
                 const isCustomValid = src === chat_completion_sources.CUSTOM && isValidUrl(oai_settings.custom_url);
                 const canConnect = isCustomValid || sourceSecretMap.some(([targetSrc, secretKey, allowFallback]) =>
