@@ -156,7 +156,8 @@ async function openSwipePicker(messageId) {
                         const template = document.querySelector('#past_chat_template .select_chat_block_wrapper').cloneNode(true);
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const block = template.querySelector('.select_chat_block');
-            block.removeClass('select_chat_block').classList.add('swipe_picker_block');
+            block.classList.remove('select_chat_block');
+            block.classList.add('swipe_picker_block');
                         block.querySelector('.select_chat_actions').classList.remove('gap10px');
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const branchButton = template.querySelector('.exportRawChatButton');
@@ -178,49 +179,40 @@ async function openSwipePicker(messageId) {
                 swipeDetails.push(`${tokenCount}t`);
             }
 
-            block.attr({
-                file_name: `swipe-${index + 1}`,
-                'data-swipe-id': index,
-            });
+            block.setAttribute('file_name', `swipe-${index + 1}`);
+            block.setAttribute('data-swipe-id', String(index));
 
             // @ts-expect-error TS(7006) FIXME: Parameter 'el' implicitly has an 'any' type.
             template.querySelectorAll('.renameChatButton, .exportChatButton').forEach(el => el.remove());
-            branchButton
-                .removeAttr('data-format')
-                .attr({
-                    title: t`Create Branch`,
-                    'data-i18n': '[title]Create Branch',
-                })
-                .classList.remove('exportRawChatButton fa-solid fa-file-export')
-                .classList.add('swipe_picker_branch mes_button fa-fw fa-regular fa-code-branch')
-            branchButton[0]?.addEventListener('click', async (event: Event) => {
+            branchButton.removeAttribute('data-format');
+            branchButton.setAttribute('title', t`Create Branch`);
+            branchButton.setAttribute('data-i18n', '[title]Create Branch');
+            branchButton.classList.remove('exportRawChatButton', 'fa-solid', 'fa-file-export');
+            branchButton.classList.add('swipe_picker_branch', 'mes_button', 'fa-fw', 'fa-regular', 'fa-code-branch');
+            branchButton.addEventListener('click', async (event: Event) => {
                 event.preventDefault();
                 event.stopPropagation();
                 setSelectedSwipe(index);
                 branchActionSwipeId = index;
                 await popup.completeCancelled();
             });
-            deleteButton
-                .removeAttribute('file_name')
-                .attr('aria-disabled', String(!canDeleteSwipe))
-                .classList.remove('fa-skull')
-                .classList.add('swipe_picker_delete fa-fw fa-trash-can')
-                .toggleClass('hoverglow', canDeleteSwipe)
-                .toggleClass('disabled', !canDeleteSwipe);
+            if (deleteButton) {
+                deleteButton.removeAttribute('file_name');
+                deleteButton.setAttribute('aria-disabled', String(!canDeleteSwipe));
+                deleteButton.classList.remove('fa-skull');
+                deleteButton.classList.add('swipe_picker_delete', 'fa-fw', 'fa-trash-can');
+                deleteButton.classList.toggle('hoverglow', canDeleteSwipe);
+                deleteButton.classList.toggle('disabled', !canDeleteSwipe);
 
-            for (const el of deleteButton) {
                 if (canDeleteSwipe) {
-                    el.attr({
-                        title: t`Delete Swipe`,
-                        'data-i18n': '[title]Delete Swipe',
-                    });
+                    deleteButton.setAttribute('title', t`Delete Swipe`);
+                    deleteButton.setAttribute('data-i18n', '[title]Delete Swipe');
                 } else {
-                    el.removeAttribute('title').removeAttr('data-i18n');
+                    deleteButton.removeAttribute('title');
+                    deleteButton.removeAttribute('data-i18n');
                 }
-            }
 
-            for (const el of deleteButton) {
-                el.addEventListener('click', async (event: Event) => {
+                deleteButton.addEventListener('click', async (event: Event) => {
                     event.preventDefault();
                     event.stopPropagation();
 
