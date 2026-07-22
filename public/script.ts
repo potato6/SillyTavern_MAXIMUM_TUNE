@@ -8813,7 +8813,8 @@ export function setUserName(value, { toastPersonaNameChange = true } = {}) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'avatarId' implicitly has an 'any' type.
 async function doOnboarding(avatarId) {
-    const template = $('#onboarding_template .onboarding');
+    const templateElement = document.querySelector('#onboarding_template .onboarding');
+    const template = templateElement?.cloneNode(true) ?? document.createElement('div');
     let userName = await callGenericPopup(template, POPUP_TYPE.INPUT, currentUser?.name || name1, { wider: true, cancelButton: false });
 
     if (userName) {
@@ -8983,6 +8984,8 @@ export async function getSettings(initLoaderHandle = null) {
             await initLoaderHandle?.hide();
             await doOnboarding(user_avatar);
             firstRun = false;
+            settings.firstRun = false;
+            await saveSettings();
         }
     }
     await validateDisabledSamplers();
