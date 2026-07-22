@@ -18,7 +18,8 @@
         "no-constant-condition": ["error", { "checkLoops": false }],
         "require-yield": "off",
         "no-unused-vars": ["error", { "args": "none" }],
-        "no-undef": "off"
+        "no-undef": "off",
+        "import/no-cycle": "warn"
     },
     "env": {
         "builtin": true,
