@@ -127,7 +127,7 @@ function sortBackgrounds(backgrounds: string[], isCustom = false): string[] {
         sortOrder === BG_SORT_OPTIONS.NEWEST ? b.time - a.time : a.time - b.time,
     );
 
-    const result = new Array(mapped.length);
+    const result = Array.from({ length: mapped.length });
     for (let i = 0; i < mapped.length; i++) result[i] = mapped[i]!.bg;
     return result;
 }

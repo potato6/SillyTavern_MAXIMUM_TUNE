@@ -1296,7 +1296,7 @@ async function populateDialogueExamples(prompts, chatCompletion, messageExamples
             substituteParams(oai_settings.new_example_chat_prompt),
             'newChat',
         );
-        for (const dialogue of [...messageExamples]) {
+        for (const dialogue of messageExamples) {
             const dialogueIndex = messageExamples.indexOf(dialogue);
             const chatMessages = [];
 
@@ -5879,7 +5879,7 @@ async function onLogitBiasPresetImportFileChange(e: Event) {
     const validEntries = [];
 
     for (const entry of importedFile) {
-        if (typeof entry == 'object' && entry !== null) {
+        if (typeof entry === 'object' && entry !== null) {
             if (Object.hasOwn(entry, 'text') && Object.hasOwn(entry, 'value')) {
                 if (!entry.id) {
                     entry.id = uuidv4();

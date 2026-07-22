@@ -14,8 +14,7 @@
 
 import type { ChatProvider, ModelEntry } from '../chat-completions/types.js';
 import { proxyRequest } from './proxy.js';
-import { deriveStorageKey } from './key-types.js';
-import type { SecretKeyDescriptor } from './key-types.js';
+import { deriveStorageKey, type SecretKeyDescriptor } from './key-types.js';
 
 export interface OAIConfig {
     /** CHAT_COMPLETION_SOURCES value. */

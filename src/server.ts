@@ -19,11 +19,11 @@ import type { App } from 'open';
 
 import { addMissingConfigValues } from './config-init.js';
 import { serverDirectory } from './server-directory.js';
-import { color, urlHostnameToIPv6, getHasIP } from './util.js';
+import { color, urlHostnameToIPv6, getHasIP, getVersion, getSeparator, removeColorFormatting, safeReadFileSync, setupLogLevel, setWindowTitle, getConfigValue } from './util.js';
 import bunSessionMiddleware from './middleware/bun-session.js';
 
 // Express routers
-import { router as userDataRouter } from './users.js';
+import { router as userDataRouter, initUserStorage, getCookieSecret, getCookieSessionName, ensurePublicDirectoriesExist, getUserDirectoriesList, migrateSystemPrompts, migrateUserData, requireLoginMiddleware, setUserDataMiddleware, shouldRedirectToLogin, cleanUploads, getSessionCookieAge, verifySecuritySettings, loginPageMiddleware, migratePublicOverrides } from './users.js';
 import { router as usersPrivateRouter } from './endpoints/users-private.js';
 import { router as usersAdminRouter } from './endpoints/users-admin.js';
 import { router as movingUIRouter } from './endpoints/moving-ui.js';
@@ -36,19 +36,19 @@ import { router as googleRouter } from './endpoints/google.js';
 import { router as anthropicRouter } from './endpoints/anthropic.js';
 import { router as tokenizersRouter } from './endpoints/tokenizers.js';
 import { router as presetsRouter } from './endpoints/presets.js';
-import { router as secretsRouter } from './endpoints/secrets.js';
+import { router as secretsRouter, migrateFlatSecrets } from './endpoints/secrets.js';
 import { router as thumbnailRouter } from './endpoints/thumbnails.js';
 import { router as novelAiRouter } from './endpoints/novelai.js';
 import { router as extensionsRouter } from './endpoints/extensions.js';
 import { router as assetsRouter } from './endpoints/assets.js';
 import { router as filesRouter } from './endpoints/files.js';
-import { router as charactersRouter } from './endpoints/characters.js';
+import { router as charactersRouter, diskCache } from './endpoints/characters.js';
 import { router as chatsRouter } from './endpoints/chats.js';
-import { router as groupsRouter } from './endpoints/groups.js';
+import { router as groupsRouter, migrateGroupChatsMetadataFormat } from './endpoints/groups.js';
 import { router as worldInfoRouter } from './endpoints/worldinfo.js';
-import { router as statsRouter } from './endpoints/stats.js';
-import { router as contentManagerRouter } from './endpoints/content-manager.js';
-import { router as settingsRouter } from './endpoints/settings.js';
+import { router as statsRouter, init as statsInit, onExit as statsOnExit } from './endpoints/stats.js';
+import { router as contentManagerRouter, checkForNewContent } from './endpoints/content-manager.js';
+import { router as settingsRouter, init as settingsInit } from './endpoints/settings.js';
 import { router as backgroundsRouter } from './endpoints/backgrounds.js';
 import { router as spritesRouter } from './endpoints/sprites.js';
 import { router as stableDiffusionRouter } from './endpoints/stable-diffusion.js';
@@ -427,23 +427,6 @@ export class ServerStartup {
 // ── Server main (Express app, middleware, routes, lifecycle) ──────────────────
 import './fetch-patch.js';
 import { loadPlugins } from './plugin-loader.js';
-import {
-    initUserStorage,
-    getCookieSecret,
-    getCookieSessionName,
-    ensurePublicDirectoriesExist,
-    getUserDirectoriesList,
-    migrateSystemPrompts,
-    migrateUserData,
-    requireLoginMiddleware,
-    setUserDataMiddleware,
-    shouldRedirectToLogin,
-    cleanUploads,
-    getSessionCookieAge,
-    verifySecuritySettings,
-    loginPageMiddleware,
-    migratePublicOverrides,
-} from './users.js';
 import getLibServeMiddleware from './middleware/lib-serve.js';
 import basicAuthMiddleware from './middleware/basicAuth.js';
 import getWhitelistMiddleware from './middleware/whitelist.js';
@@ -458,23 +441,8 @@ import cacheBuster from './middleware/cacheBuster.js';
 import corsProxyMiddleware from './middleware/corsProxy.js';
 import hostWhitelistMiddleware from './middleware/hostWhitelist.js';
 import userCssMiddleware from './middleware/userCss.js';
-import {
-    getVersion,
-    getSeparator,
-    removeColorFormatting,
-    safeReadFileSync,
-    setupLogLevel,
-    setWindowTitle,
-    getConfigValue,
-} from './util.js';
 import { UPLOADS_DIRECTORY } from './constants.js';
 import { router as usersPublicRouter } from './endpoints/users-public.js';
-import { init as statsInit, onExit as statsOnExit } from './endpoints/stats.js';
-import { checkForNewContent } from './endpoints/content-manager.js';
-import { init as settingsInit } from './endpoints/settings.js';
-import { diskCache } from './endpoints/characters.js';
-import { migrateFlatSecrets } from './endpoints/secrets.js';
-import { migrateGroupChatsMetadataFormat } from './endpoints/groups.js';
 
 // Work around a node v20.0.0, v20.1.0, and v20.2.0 bug
 if (process.versions?.node?.match(/20\.[0-2]\.0/)) {

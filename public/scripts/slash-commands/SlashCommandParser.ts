@@ -1,7 +1,6 @@
 import { hljs } from '../../lib.js';
 import { power_user } from '../power-user.js';
 import { isFalseBoolean, isTrueBoolean, uuidv4 } from '../utils.js';
-import { SlashCommand } from './SlashCommand.js';
 import { ARGUMENT_TYPE, SlashCommandArgument } from './SlashCommandArgument.js';
 import { SlashCommandClosure } from './SlashCommandClosure.js';
 import { SlashCommandExecutor } from './SlashCommandExecutor.js';
@@ -1122,7 +1121,7 @@ export class SlashCommandParser {
                     // @ts-expect-error TS(2339) FIXME: Property 'value' does not exist on type 'never'.
                     this.scope.variableNames.push(keyArg.value.toString());
                     // @ts-expect-error TS(2339) FIXME: Property 'value' does not exist on type 'never'.
-                } else if (typeof cmd.unnamedArgumentList[0]?.value == 'string') {
+                } else if (typeof cmd.unnamedArgumentList[0]?.value === 'string') {
                     // @ts-expect-error TS(2339) FIXME: Property 'value' does not exist on type 'never'.
                     this.scope.variableNames.push(cmd.unnamedArgumentList[0].value);
                 }
@@ -1286,7 +1285,7 @@ export class SlashCommandParser {
         }
         if (isList) {
             const firstVal = listValues[0];
-            if (typeof firstVal?.value == 'string') {
+            if (typeof firstVal?.value === 'string') {
                 if (!listQuoted[0]) {
                     // only trim the first part if it wasn't quoted
                     firstVal.value = firstVal.value.trimStart();
@@ -1297,7 +1296,7 @@ export class SlashCommandParser {
                 }
             }
             const lastVal = listValues.slice(-1)[0];
-            if (typeof lastVal?.value == 'string') {
+            if (typeof lastVal?.value === 'string') {
                 if (!listQuoted.slice(-1)[0]) {
                     // only trim the last part if it wasn't quoted
                     lastVal.value = lastVal.value.trimEnd();

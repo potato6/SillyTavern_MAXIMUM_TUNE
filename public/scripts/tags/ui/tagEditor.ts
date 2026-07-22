@@ -28,8 +28,7 @@ import {
     getTagFromEvent,
     getFolderType,
 } from '../store/tagStore.js';
-import { TAG_FOLDER_TYPES } from '../types.js';
-import { tag_sort_mode } from '../types.js';
+import { TAG_FOLDER_TYPES, tag_sort_mode } from '../types.js';
 import { appendTagToList } from './tagList.js';
 
 import { power_user } from '../../power-user.js';

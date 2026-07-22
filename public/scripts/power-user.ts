@@ -74,7 +74,7 @@ import {
     sortMoments,
     timestampToMoment,
 } from './utils.js';
-import { FILTER_TYPES } from './filters.js';
+import { FILTER_TYPES, fuzzySearchCategories } from './filters.js';
 import { PARSER_FLAG } from './slash-commands/SlashCommandParser.js';
 import {
     AUTOCOMPLETE_SELECT_KEY,
@@ -83,7 +83,6 @@ import {
 } from './autocomplete/AutoComplete.js';
 import { POPUP_TYPE, callGenericPopup } from './popup.js';
 import { loadSystemPrompts } from './sysprompt.js';
-import { fuzzySearchCategories } from './filters.js';
 import { accountStorage } from './util/AccountStorage.js';
 
 import { DEFAULT_REASONING_TEMPLATE, loadReasoningTemplates } from './reasoning.js';
@@ -3417,7 +3416,7 @@ const compareFunc = (first: Record<string, unknown>, second: Record<string, unkn
             if (a === b) return 0; // Sort equal values normally
             return (a as number) < (b as number) ? -1 : 1; // Sort non-boolean values normally
         default:
-            return typeof a == 'string'
+            return typeof a === 'string'
                 ? (a as string).localeCompare(b as string)
                 : (a as number) - (b as number);
     }

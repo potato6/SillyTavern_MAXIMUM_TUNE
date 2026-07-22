@@ -64,7 +64,7 @@ export class MockServer {
                         res.writeHead(404);
                         res.end();
                     }
-                } catch (error) {
+                } catch {
                     res.writeHead(500);
                     res.end();
                 }

@@ -24,7 +24,7 @@ export function applyCharacterTagsToMessageDivs({
 
         // Clear existing tags
         messages.forEach((element) => {
-            for (const attr of [...element.attributes]) {
+            for (const attr of element.attributes) {
                 if (attr.name.startsWith('data-char-tag-') || attr.name === 'data-char-tags') {
                     element.removeAttribute(attr.name);
                 }

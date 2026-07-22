@@ -2,9 +2,23 @@ import { Fuse, DOMPurify } from '../lib.js';
 import {
     canUseNegativeLookbehind,
     copyText,
+    debounce,
+    delay,
+    equalsIgnoreCaseAndAccents,
+    findChar,
     findPersona,
     flashHighlight,
+    getCharIndex,
+    isFalseBoolean,
+    isTrueBoolean,
+    onlyUnique,
+    regexFromString,
     resolveAvatarData,
+    showFontAwesomePicker,
+    stringToRange,
+    trimToEndSentence,
+    trimToStartSentence,
+    waitUntilCondition,
 } from './utils.js';
 
 import {
@@ -111,22 +125,6 @@ import {
     getTokenCountAsync,
     selectTokenizer,
 } from './tokenizers.js';
-import {
-    debounce,
-    delay,
-    equalsIgnoreCaseAndAccents,
-    findChar,
-    getCharIndex,
-    isFalseBoolean,
-    isTrueBoolean,
-    onlyUnique,
-    regexFromString,
-    showFontAwesomePicker,
-    stringToRange,
-    trimToEndSentence,
-    trimToStartSentence,
-    waitUntilCondition,
-} from './utils.js';
 import { registerVariableCommands, resolveVariable } from './variables.js';
 import { registerActionLoaderSlashCommands } from './action-loader-slashcommands.js';
 import { background_settings } from './backgrounds.js';

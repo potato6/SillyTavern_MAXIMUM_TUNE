@@ -1915,13 +1915,9 @@ class PromptManager {
         }
 
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        injectionPositionField.removeEventListener('change', (e) =>
-            this.handleInjectionPositionChange(e),
-        );
+        injectionPositionField.removeEventListener('change', this.handleInjectionPositionChange);
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        injectionPositionField.addEventListener('change', (e) =>
-            this.handleInjectionPositionChange(e),
-        );
+        injectionPositionField.addEventListener('change', this.handleInjectionPositionChange);
 
         const savePromptButton = document.getElementById(
             this.configuration.prefix + 'prompt_manager_popup_entry_form_save',

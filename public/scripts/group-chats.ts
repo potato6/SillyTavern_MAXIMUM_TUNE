@@ -1214,7 +1214,7 @@ async function generateGroupWrapper(byAutoMode, type = null, params = {}) {
         let activatedMembers = [];
 
         // @ts-expect-error TS(2339) FIXME: Property 'force_chid' does not exist on type '{}'.
-        if (params && typeof params.force_chid == 'number') {
+        if (params && typeof params.force_chid === 'number') {
             // @ts-expect-error TS(2339) FIXME: Property 'force_chid' does not exist on type '{}'.
             activatedMembers = [params.force_chid];
         } else if (type === 'quiet') {
@@ -2686,15 +2686,15 @@ async function createGroup() {
     const allowSelfResponses = !!document.getElementById('rm_group_allow_self_responses').checked;
     // @ts-expect-error TS(2339) FIXME: Property 'value' does not exist on type 'Element'.
     const activationStrategy =
-        Number(document.querySelector('#rm_group_activation_strategy :checked')?.value) ??
+        Number(document.querySelector('#rm_group_activation_strategy :checked')?.value) ||
         group_activation_strategy.NATURAL;
     // @ts-expect-error TS(2339) FIXME: Property 'value' does not exist on type 'Element'.
     const generationMode =
-        Number(document.querySelector('#rm_group_generation_mode :checked')?.value) ??
+        Number(document.querySelector('#rm_group_generation_mode :checked')?.value) ||
         group_generation_mode.SWAP;
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     const autoModeDelay =
-        Number(document.getElementById('rm_group_automode_delay').value) ?? DEFAULT_AUTO_MODE_DELAY;
+        Number(document.getElementById('rm_group_automode_delay').value) || DEFAULT_AUTO_MODE_DELAY;
     // @ts-expect-error TS(7005) FIXME: Variable 'newGroupMembers' implicitly has an 'any[... Remove this comment to see the full error message
     const members = newGroupMembers;
 

@@ -340,7 +340,7 @@ function toggleTagThreeState(
     }
 
     const overrideKey =
-        typeof stateOverride == 'string' && states.includes(stateOverride)
+        typeof stateOverride === 'string' && states.includes(stateOverride)
             ? stateOverride
             : Object.keys(FILTER_STATES).find(
                   (key) => (FILTER_STATES as Record<string, unknown>)[key] === stateOverride,

@@ -507,7 +507,7 @@ export async function convertSoloToGroupChat() {
 
     await getCharacters();
 
-    const groupChat = new Array(chat.length);
+    const groupChat = Array.from({ length: chat.length });
     const genIdFirst = Date.now();
 
     for (let index = 0; index < chat.length; index++) {

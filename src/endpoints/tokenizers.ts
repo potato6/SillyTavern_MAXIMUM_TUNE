@@ -10,7 +10,7 @@ import { sync as writeFileAtomicSync } from 'write-file-atomic';
 import { Tokenizer } from '@agnai/web-tokenizers';
 // @ts-expect-error TS(2792) FIXME: Cannot find module '@agnai/sentencepiece-js'. Did ... Remove this comment to see the full error message
 import { SentencePieceProcessor } from '@agnai/sentencepiece-js';
-import tiktoken, { type TiktokenModel } from 'tiktoken';
+import { encoding_for_model, type TiktokenModel } from 'tiktoken';
 
 import { convertClaudePrompt } from '../prompt-converters.js';
 import { TEXTGEN_TYPES } from '../constants.js';
@@ -564,7 +564,7 @@ export function getTiktokenTokenizer(model: string) {
         return tokenizersCache[model];
     }
 
-    const tokenizer = tiktoken.encoding_for_model(model as TiktokenModel);
+    const tokenizer = encoding_for_model(model as TiktokenModel);
     console.info('Instantiated the tokenizer for', model);
     // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     tokenizersCache[model] = tokenizer;

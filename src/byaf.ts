@@ -318,7 +318,7 @@ export class ByafParser {
                         continue; // Skip adding a new background since it already exists
                     }
                     backgrounds.push({
-                        name: `${character?.name} bg ${i++}` || '',
+                        name: `${character?.name} bg ${i++}`,
                         data: data,
                         paths: [bgImagePath],
                     });

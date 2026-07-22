@@ -6,10 +6,8 @@
  * imports from world-info.ts directly to avoid circular dependencies.
  */
 
-import { getSelect2OptionId } from '../utils.js';
+import { getSelect2OptionId, setValueByPath } from '../utils.js';
 import type { WorldInfoBook } from './types.js';
-
-import { setValueByPath } from '../utils.js';
 
 // ═══════════════════════════════════════════════════════════════
 //  Template references

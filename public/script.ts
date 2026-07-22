@@ -388,8 +388,7 @@ import {
 import { range } from 'es-toolkit';
 import { addExecuteButtonToCodeBlocks } from './scripts/code-runner.js';
 import $, { Cash } from 'cash-dom';
-import { Notyf, NotyfNotification } from 'notyf';
-import type { INotyfPosition } from 'notyf';
+import { Notyf, NotyfNotification, type INotyfPosition } from 'notyf';
 
 // Apply cash-dom polyfills (normally defined in index.html) to the bundled copy of cash-dom.
 // The bundle gets its own separate instance via import, so the index.html polyfills don't carry over.
@@ -433,22 +432,21 @@ import type { INotyfPosition } from 'notyf';
             delete props.complete;
             const complete = opts && opts.complete;
             this.each(function () {
-                const el = this;
                 if (duration > 0) {
-                    el.style.transition = `all ${duration}ms ${easing}`;
+                    this.style.transition = `all ${duration}ms ${easing}`;
                 }
                 for (const [key, value] of Object.entries(props)) {
-                    el.style[key] = value;
+                    this.style[key] = value;
                 }
                 if (duration > 0) {
                     const handler = () => {
-                        el.style.transition = '';
-                        el.removeEventListener('transitionend', handler);
-                        if (typeof complete === 'function') complete.call(el);
+                        this.style.transition = '';
+                        this.removeEventListener('transitionend', handler);
+                        if (typeof complete === 'function') complete.call(this);
                     };
-                    el.addEventListener('transitionend', handler);
+                    this.addEventListener('transitionend', handler);
                 } else if (typeof complete === 'function') {
-                    complete.call(el);
+                    complete.call(this);
                 }
             });
             return this;
@@ -6026,7 +6024,7 @@ export async function Generate(
     }
 
     // Collect enough messages to fill the context
-    let arrMes = new Array(chat2.length);
+    let arrMes = Array.from({ length: chat2.length });
     let tokenCount = await getMessagesTokenCount();
     let lastAddedIndex = 0;
 
@@ -11490,7 +11488,7 @@ export function getOverswipeBehavior(messageId: number, message?: ChatMessage) {
     const isGreeting = messageId === 0;
 
     //Do not override explicitly set overswipe_behavior.
-    if (typeof message?.extra?.overswipe_behavior == 'string')
+    if (typeof message?.extra?.overswipe_behavior === 'string')
         return message.extra.overswipe_behavior;
     //Some messages, like the welcome screen, are not swipeable.
     else if (message?.extra?.swipeable === false) return OVERSWIPE_BEHAVIOR.NONE;
@@ -12448,7 +12446,7 @@ export async function swipe(
     //Only set messageIndex if message exists because -1 is truthy.
     if (message) {
         messageIndex = chat.indexOf(message);
-        if (messageIndex === -1 && typeof forceMesId != 'number') {
+        if (messageIndex === -1 && typeof forceMesId !== 'number') {
             console.error(`The message must exist in chat. ${message};`);
             return;
         }
@@ -14724,7 +14722,7 @@ function initCharacterSearch() {
     ////////////////// OPTIMIZED RANGE SLIDER LISTENERS////////////////
 
     let sliderLocked = true;
-    let sliderTimer;
+    let sliderTimer = null;
 
     $("input[type='range']").on('touchstart', function () {
         // Unlock the slider after 300ms

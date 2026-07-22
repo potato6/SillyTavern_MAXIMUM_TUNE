@@ -52,8 +52,8 @@ import {
     loadTogetherAIModels,
     loadVllmModels,
     updateOpenRouterProvidersWarning,
+    type ApiModel,
 } from './textgen-models.js';
-import type { ApiModel } from './textgen-models.js';
 declare const Sortable: new (el: HTMLElement | null, options: Record<string, unknown>) => unknown;
 import {
     ENCODE_TOKENIZERS,

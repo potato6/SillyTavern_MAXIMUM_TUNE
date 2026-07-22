@@ -50,7 +50,7 @@ export function getLocalVariable(name, args = {}) {
                 // @ts-expect-error TS(2339) FIXME: Property 'index' does not exist on type '{}'.
                 localVariable = localVariable[Number(args.index)];
             }
-            if (typeof localVariable == 'object') {
+            if (typeof localVariable === 'object') {
                 localVariable = JSON.stringify(localVariable);
             }
         } catch {
@@ -131,7 +131,7 @@ export function getGlobalVariable(name, args = {}) {
                 // @ts-expect-error TS(2339) FIXME: Property 'index' does not exist on type '{}'.
                 globalVariable = globalVariable[Number(args.index)];
             }
-            if (typeof globalVariable == 'object') {
+            if (typeof globalVariable === 'object') {
                 globalVariable = JSON.stringify(globalVariable);
             }
         } catch {
@@ -1073,7 +1073,7 @@ function randValuesCallback(from, to, args) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
 function customSortComparitor(a, b) {
-    if (typeof a != typeof b) {
+    if (typeof a !== typeof b) {
         a = typeof a;
         b = typeof b;
     }
@@ -1089,7 +1089,7 @@ function customSortComparitor(a, b) {
 function sortArrayObjectCallback(args, value) {
     // @ts-expect-error TS(7034) FIXME: Variable 'parsedValue' implicitly has type 'any' i... Remove this comment to see the full error message
     let parsedValue;
-    if (typeof value == 'string') {
+    if (typeof value === 'string') {
         try {
             parsedValue = JSON.parse(value);
         } catch {
@@ -1102,7 +1102,7 @@ function sortArrayObjectCallback(args, value) {
     if (Array.isArray(parsedValue)) {
         // always sort lists by value
         parsedValue.sort(customSortComparitor);
-    } else if (typeof parsedValue == 'object') {
+    } else if (typeof parsedValue === 'object') {
         const keysort = args.keysort;
         if (isFalseBoolean(keysort)) {
             // @ts-expect-error TS(7005) FIXME: Variable 'parsedValue' implicitly has an 'any' typ... Remove this comment to see the full error message
@@ -1127,9 +1127,9 @@ function letCallback(args, value) {
     if (!Array.isArray(value)) value = [value];
     if (args.key !== undefined) {
         const key = args.key;
-        if (typeof key != 'string') throw new Error('Key must be a string');
+        if (typeof key !== 'string') throw new Error('Key must be a string');
         if (args._hasUnnamedArgument) {
-            const val = typeof value[0] == 'string' ? value.join(' ') : value[0];
+            const val = typeof value[0] === 'string' ? value.join(' ') : value[0];
             args._scope.letVariable(key, val);
             return val;
         } else {
@@ -1138,9 +1138,9 @@ function letCallback(args, value) {
         }
     }
     const key = value.shift();
-    if (typeof key != 'string') throw new Error('Key must be a string');
+    if (typeof key !== 'string') throw new Error('Key must be a string');
     if (value.length > 0) {
-        const val = typeof value[0] == 'string' ? value.join(' ') : value[0];
+        const val = typeof value[0] === 'string' ? value.join(' ') : value[0];
         args._scope.letVariable(key, val);
         return val;
     } else {
@@ -1160,9 +1160,9 @@ function varCallback(args, value) {
     if (!Array.isArray(value)) value = [value];
     if (args.key !== undefined) {
         const key = args.key;
-        if (typeof key != 'string') throw new Error('Key must be a string');
+        if (typeof key !== 'string') throw new Error('Key must be a string');
         if (args._hasUnnamedArgument) {
-            const val = typeof value[0] == 'string' ? value.join(' ') : value[0];
+            const val = typeof value[0] === 'string' ? value.join(' ') : value[0];
             args._scope.setVariable(key, val, args.index, args.as);
             return val;
         } else {
@@ -1170,9 +1170,9 @@ function varCallback(args, value) {
         }
     }
     const key = value.shift();
-    if (typeof key != 'string') throw new Error('Key must be a string');
+    if (typeof key !== 'string') throw new Error('Key must be a string');
     if (value.length > 0) {
-        const val = typeof value[0] == 'string' ? value.join(' ') : value[0];
+        const val = typeof value[0] === 'string' ? value.join(' ') : value[0];
         args._scope.setVariable(key, val, args.index, args.as);
         return val;
     } else {

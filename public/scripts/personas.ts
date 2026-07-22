@@ -55,7 +55,6 @@ import { groups, selected_group } from './group-chats.js';
 import { POPUP_RESULT, POPUP_TYPE, Popup, callGenericPopup } from './popup.js';
 import { t } from './i18n.js';
 import { openWorldInfoEditor } from './world-info.js';
-import { wiManager } from './world-info/manager.js';
 import { renderTemplateAsync } from './templates.js';
 import { saveMetadataDebounced } from './extensions.js';
 import { accountStorage } from './util/AccountStorage.js';
@@ -1651,7 +1650,6 @@ async function onPersonaLoreButtonClick({
 
     const worldSelect = templateEl.querySelector('select') as HTMLSelectElement | null;
     (templateEl.querySelector('.persona_name') as HTMLElement).textContent = personaName;
-    wiManager.worldNames;
     for (const worldName of world_names as string[]) {
         const option = document.createElement('option');
         option.value = worldName;

@@ -113,7 +113,7 @@ export class SlashCommandScope {
                 } else {
                     v = v[numIndex];
                 }
-                if (typeof v == 'object') return JSON.stringify(v);
+                if (typeof v === 'object') return JSON.stringify(v);
                 return v ?? '';
             } else {
                 // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message

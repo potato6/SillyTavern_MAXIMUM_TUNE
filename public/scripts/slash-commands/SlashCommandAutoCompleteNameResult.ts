@@ -109,7 +109,7 @@ export class SlashCommandAutoCompleteNameResult extends AutoCompleteNameResult {
         ) {
             // cursor is somewhere within the unnamed arguments
             // if index is in first array item and that is a string, treat it as an unfinished named arg
-            if (typeof this.executor.unnamedArgumentList[0]?.value == 'string') {
+            if (typeof this.executor.unnamedArgumentList[0]?.value === 'string') {
                 if (
                     index <=
                     this.executor.startUnnamedArgs +

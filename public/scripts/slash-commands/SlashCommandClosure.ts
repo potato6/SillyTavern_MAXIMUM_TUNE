@@ -254,7 +254,7 @@ export class SlashCommandClosure {
                 v = this.substituteParams(v);
             }
             // unescape value
-            if (typeof v == 'string') {
+            if (typeof v === 'string') {
                 v = v?.replace(/\\\{/g, '{')?.replace(/\\\}/g, '}');
             }
             // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
@@ -277,7 +277,7 @@ export class SlashCommandClosure {
                 v = this.substituteParams(v, this.scope.parent);
             }
             // unescape value
-            if (typeof v == 'string') {
+            if (typeof v === 'string') {
                 v = v?.replace(/\\\{/g, '{')?.replace(/\\\}/g, '}');
             }
             // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
@@ -448,7 +448,7 @@ export class SlashCommandClosure {
                     this.onProgress?.(done + subDone, this.commandCount);
                 const isStepping = this.debugController?.testStepping(this);
                 if (this.debugController) {
-                    this.debugController.isStepping = false || this.debugController.isSteppingInto;
+                    this.debugController.isStepping = this.debugController.isSteppingInto;
                 }
                 try {
                     // @ts-expect-error TS(2339) FIXME: Property 'command' does not exist on type 'never'.
@@ -530,7 +530,7 @@ export class SlashCommandClosure {
             name = definition?.name ?? name;
 
             // Unescape named argument
-            if (value && typeof value == 'string') {
+            if (value && typeof value === 'string') {
                 value = value.replace(/\\\{/g, '{').replace(/\\\}/g, '}');
             }
 
@@ -624,11 +624,11 @@ export class SlashCommandClosure {
             }
         }
         // unescape unnamed argument
-        if (typeof value == 'string') {
+        if (typeof value === 'string') {
             value = value?.replace(/\\\{/g, '{')?.replace(/\\\}/g, '}');
         } else if (Array.isArray(value)) {
             value = value.map((v) => {
-                if (typeof v == 'string') {
+                if (typeof v === 'string') {
                     return v?.replace(/\\\{/g, '{')?.replace(/\\\}/g, '}');
                 }
                 return v;
@@ -657,7 +657,7 @@ export class SlashCommandClosure {
             );
             this.scope.pipe = '';
         } else if (
-            !(typeof this.scope.pipe == 'string' || this.scope.pipe instanceof SlashCommandClosure)
+            !(typeof this.scope.pipe === 'string' || this.scope.pipe instanceof SlashCommandClosure)
         ) {
             console.warn(
                 `/${command.name} returned illegal type (${typeof this.scope.pipe} - ${this.scope.pipe.constructor?.name ?? ''}). Auto-fixing to stringified JSON.`,

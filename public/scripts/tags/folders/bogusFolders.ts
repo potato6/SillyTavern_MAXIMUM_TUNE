@@ -6,8 +6,7 @@
 import { TAG_FOLDER_DEFAULT_TYPE } from '../types.js';
 import { FILTER_STATES, FILTER_TYPES, DEFAULT_FILTER_STATE } from '../../filters.js';
 import { entitiesFilter, buildAvatarList } from '../../../script.js';
-import { getTagById } from '../store/tagStore.js';
-import { getFolderType } from '../store/tagStore.js';
+import { getTagById, getFolderType } from '../store/tagStore.js';
 import { toggleTagThreeState } from '../filters/filterState.js';
 import { t } from '../../i18n.js';
 

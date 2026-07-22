@@ -1,4 +1,4 @@
-import { describe, test, expect, jest, beforeAll, mock } from '@jest/globals';
+import { describe, test, expect, beforeAll, mock } from '@jest/globals';
 
 mock.module('../src/util.js', () => ({
     // Bun's mock() functions act exactly like jest.fn() and are spyable

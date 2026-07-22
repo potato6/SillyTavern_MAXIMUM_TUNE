@@ -365,32 +365,6 @@ function currentRemoteTokenizerAPI() {
 
 /**
  * Calls the underlying tokenizer model to the token count for a string.
- * @param {number} type Tokenizer type.
- * @param {string} str String to tokenize.
- * @returns {number} Token count.
- */
-// @ts-expect-error TS(7023) FIXME: 'callTokenizer' implicitly has return type 'any' b... Remove this comment to see the full error message
-function callTokenizer(type, str) {
-    if (type === tokenizers.NONE) return guesstimate(str);
-
-    switch (type) {
-        case tokenizers.API_CURRENT:
-            return callTokenizer(currentRemoteTokenizerAPI(), str);
-        case tokenizers.API_KOBOLD:
-            // @ts-expect-error TS(2554) FIXME: Expected 2 arguments, but got 1.
-            return countTokensFromKoboldAPI(str);
-        case tokenizers.API_TEXTGENERATIONWEBUI:
-            // @ts-expect-error TS(2554) FIXME: Expected 2 arguments, but got 1.
-            return countTokensFromTextgenAPI(str);
-        default: {
-            const tokenizerName = resolveTokenizerName(type);
-            // @ts-expect-error TS(2554) FIXME: Expected 3 arguments, but got 2.
-            return genericCountTokens(tokenizerName, str);
-        }
-    }
-}
-
-/**
  * Calls the underlying tokenizer model to the token count for a string.
  * @param {number} type Tokenizer type.
  * @param {string} str String to tokenize.

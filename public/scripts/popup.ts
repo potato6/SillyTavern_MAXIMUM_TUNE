@@ -586,7 +586,7 @@ export class Popup {
             }
         } else if (content instanceof HTMLElement) {
             this.content.appendChild(content);
-        } else if (typeof content == 'string') {
+        } else if (typeof content === 'string') {
             this.content.innerHTML = content;
         } else {
             console.warn(

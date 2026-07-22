@@ -1034,7 +1034,7 @@ export function incrementString(str) {
 export function stringFormat(format, ...args) {
     // @ts-expect-error TS(7006) FIXME: Parameter 'match' implicitly has an 'any' type.
     return format.replace(/{(\d+)}/g, function (match, number) {
-        return typeof args[number] != 'undefined' ? args[number] : match;
+        return typeof args[number] !== 'undefined' ? args[number] : match;
     });
 }
 

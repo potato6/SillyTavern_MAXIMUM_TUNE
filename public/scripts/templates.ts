@@ -8,25 +8,7 @@ import { applyLocale } from './i18n.js';
 const TEMPLATE_CACHE = new Map();
 
 /**
- * Loads a URL content using XMLHttpRequest synchronously.
- * @param {string} url URL to load synchronously
- * @returns {string} Response text
- */
-// @ts-expect-error TS(7006) FIXME: Parameter 'url' implicitly has an 'any' type.
-function getUrlSync(url) {
-    console.debug('Loading URL synchronously', url);
-    const request = new XMLHttpRequest();
-    request.open('GET', url, false); // `false` makes the request synchronous
-    request.send();
-
-    if (request.status >= 200 && request.status < 300) {
-        return request.responseText;
-    }
-
-    throw new Error(`Error loading ${url}: ${request.status} ${request.statusText}`);
-}
-
-/**
+ * Loads a URL content using XMLHttpRequest asynchronously.
  * Loads a URL content using XMLHttpRequest asynchronously.
  * @param {string} url URL to load asynchronously
  * @returns {Promise<string>} Response text

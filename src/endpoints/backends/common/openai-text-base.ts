@@ -9,8 +9,7 @@
  */
 
 import { pickBy } from 'es-toolkit/compat';
-import type { BackendProvider } from '../text-completions/types.js';
-import { PROVIDER_ENDPOINTS } from '../text-completions/types.js';
+import { type BackendProvider, PROVIDER_ENDPOINTS } from '../text-completions/types.js';
 import type { SecretKeyDescriptor } from './key-types.js';
 
 export interface OAITextProviderConfig {

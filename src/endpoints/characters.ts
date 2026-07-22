@@ -1,6 +1,5 @@
 import path from 'node:path';
-import fs from 'node:fs';
-import { promises as fsPromises } from 'node:fs';
+import fs, { promises as fsPromises } from 'node:fs';
 import { Buffer } from 'node:buffer';
 
 import express from 'express';
@@ -323,7 +322,7 @@ export async function applyAvatarCropResize(buffer: Buffer, crop: Crop | undefin
 
     // Apply crop if defined
     if (
-        typeof crop == 'object' &&
+        typeof crop === 'object' &&
         [crop.x, crop.y, crop.width, crop.height].every((x) => typeof x === 'number')
     ) {
         const width = Math.round(crop.width);
@@ -669,7 +668,7 @@ function charaFormatData(
     set(
         char,
         'tags',
-        typeof data.tags == 'string'
+        typeof data.tags === 'string'
             ? data.tags
                   .split(',')
                   .map((x: string) => x.trim())
@@ -694,7 +693,7 @@ function charaFormatData(
     set(
         char,
         'data.tags',
-        typeof data.tags == 'string'
+        typeof data.tags === 'string'
             ? data.tags
                   .split(',')
                   .map((x: string) => x.trim())
