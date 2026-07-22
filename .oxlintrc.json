@@ -1,0 +1,76 @@
+{
+    "$schema": "./node_modules/oxlint/configuration_schema.json",
+    "plugins": [
+        "typescript",
+        "unicorn",
+        "oxc",
+        "import",
+        "jest"
+    ],
+    "categories": {
+        "correctness": "error",
+        "suspicious": "warn",
+        "perf": "warn"
+    },
+    "rules": {
+        "no-cond-assign": "error",
+        "no-unneeded-ternary": "error",
+        "no-irregular-whitespace": [
+            "error",
+            { "skipStrings": true, "skipTemplates": true }
+        ],
+        "dot-notation": [
+            "error",
+            { "allowPattern": "[A-Z]\\w*$" }
+        ],
+        "no-async-promise-executor": "off",
+        "no-inner-declarations": "off",
+        "no-unused-expressions": [
+            "error",
+            { "allowShortCircuit": true, "allowTernary": true }
+        ],
+        "no-control-regex": "off",
+        "no-constant-condition": [
+            "error",
+            { "checkLoops": false }
+        ],
+        "require-yield": "off",
+        "no-unused-vars": [
+            "error",
+            { "args": "none" }
+        ],
+        "no-undef": "off"
+    },
+    "env": {
+        "builtin": true,
+        "browser": true,
+        "node": true,
+        "es2024": true
+    },
+    "globals": {
+        "ePub": "readonly",
+        "pdfjsLib": "readonly",
+        "notyf": "readonly",
+        "SillyTavern": "readonly",
+        "Deno": "readonly",
+        "globalThis": "readonly"
+    },
+    "ignorePatterns": [
+        "**/node_modules/**",
+        "**/dist/**",
+        "**/.git/**",
+        "public/lib/**",
+        "backups/**",
+        "data/**",
+        "cache/**",
+        "src/tokenizers/**",
+        "docker/**",
+        "plugins/**",
+        "**/*.min.js",
+        "public/scripts/extensions/**",
+        "public/dist/**",
+        "**/*.d.ts",
+        "public/scripts/extensions/quick-reply/lib/**",
+        "public/scripts/extensions/tts/lib/**"
+    ]
+}
