@@ -3,7 +3,7 @@ declare const TomSelect: unknown;
 
 declare const Sortable: unknown;
 
-import { saveSettings, getRequestHeaders, chat_metadata, this_chid, characters, saveCharacterDebounced, menu_type, eventSource, event_types, saveMetadata, getCurrentChatId, extension_prompt_roles, create_save, createOrEditCharacter, getOneCharacter, select_selected_character } from '../script.js';
+import { saveSettings, getRequestHeaders, chat_metadata, this_chid, characters, saveCharacterDebounced, menu_type, eventSource, event_types, saveMetadata, getCurrentChatId, extension_prompt_roles, create_save, createOrEditCharacter, getOneCharacter, select_selected_character, setPersonaDescription } from '../script.js';
 import { download, debounce, initScrollHeight, resetScrollHeight, getCharaFilename, getSortableDelay, navigation_option, waitUntilCondition, isTrueBoolean, flashHighlight, select2ModifyOptions, getSelect2OptionId, highlightRegex, select2ChoiceClickSubscribe, normalizeArray, addLongPressEvent, createPaginator } from './utils.js';
 import { getContext } from './extensions.js';
 import { isMobile } from './RossAscends-mods.js';
