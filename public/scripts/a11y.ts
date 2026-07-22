@@ -3,129 +3,69 @@
  * Be careful what you import!
  */
 
-const buttonSelectors = [
-    '.menu_button',
-    '.right_menu_button',
-    '.mes_button',
-    '.drawer-icon',
-    '.inline-drawer-icon',
-    '.swipe_left',
-    '.swipe_right',
-    '.character_select',
-    '.tags .tag',
-    '.jg-menu .jg-button',
-    '.bg_example .mobile-only-menu-toggle',
-    '.paginationjs-pages li a',
-    '#show_more_messages',
-].join(', ');
-
-const listSelectors = [
-    '.options-content',
-    '.list-group',
-    '#rm_print_characters_block',
-    '#rm_group_members',
-    '#rm_group_add_members',
-    '.tag_view_list_tags',
-    '.secretKeyManagerList',
-    '.recentChatList',
-    '.dataMaidCategoryContent',
-    '#userList',
-    '.bg_list',
-].join(', ');
-
-const listItemSelectors = [
-    '.options-content .list-group-item',
-    '.list-group .list-group-item',
-    '#rm_print_characters_block .entity_block',
-    '#rm_group_members .group_member',
-    '#rm_group_add_members .group_member',
-    '.tag_view_list_tags .tag_view_item',
-    '.secretKeyManagerList .secretKeyManagerItem',
-    '.recentChatList .recentChat',
-    '.dataMaidCategoryContent .dataMaidItem',
-    '#userList .userSelect',
-    '.bg_list .bg_example',
-].join(', ');
-
-const toolbarSelectors = [
-    '.jg-menu',
-].join(', ');
-
-const tabListSelectors = [
-    '#bg_tabs .bg_tabs_list',
-].join(', ');
-
-const tabItemSelectors = [
-    '#bg_tabs .bg_tabs_list .bg_tab_button',
-].join(', ');
-
-/** @type {Record<string, (element: Element) => void>} */
-const a11yRules = {
-    // @ts-expect-error TS(7006) FIXME: Parameter 'element' implicitly has an 'any' type.
-    [buttonSelectors]: (element) => {
-        element.setAttribute('role', 'button');
+const A11Y_RULES = [
+    {
+        role: 'button',
+        selector: '.menu_button,.right_menu_button,.mes_button,.drawer-icon,.inline-drawer-icon,.swipe_left,.swipe_right,.character_select,.tags .tag,.jg-menu .jg-button,.bg_example .mobile-only-menu-toggle,.paginationjs-pages li a,#show_more_messages'
     },
-    // @ts-expect-error TS(7006) FIXME: Parameter 'element' implicitly has an 'any' type.
-    [listSelectors]: (element) => {
-        element.setAttribute('role', 'list');
+    {
+        role: 'list',
+        selector: '.options-content,.list-group,#rm_print_characters_block,#rm_group_members,#rm_group_add_members,.tag_view_list_tags,.secretKeyManagerList,.recentChatList,.dataMaidCategoryContent,#userList,.bg_list'
     },
-    // @ts-expect-error TS(7006) FIXME: Parameter 'element' implicitly has an 'any' type.
-    [listItemSelectors]: (element) => {
-        element.setAttribute('role', 'listitem');
+    {
+        role: 'listitem',
+        selector: '.options-content .list-group-item,.list-group .list-group-item,#rm_print_characters_block .entity_block,#rm_group_members .group_member,#rm_group_add_members .group_member,.tag_view_list_tags .tag_view_item,.secretKeyManagerList .secretKeyManagerItem,.recentChatList .recentChat,.dataMaidCategoryContent .dataMaidItem,#userList .userSelect,.bg_list .bg_example'
     },
-    // @ts-expect-error TS(7006) FIXME: Parameter 'element' implicitly has an 'any' type.
-    [toolbarSelectors]: (element) => {
-        element.setAttribute('role', 'toolbar');
+    {
+        role: 'toolbar',
+        selector: '.jg-menu'
     },
-    // @ts-expect-error TS(7006) FIXME: Parameter 'element' implicitly has an 'any' type.
-    [tabListSelectors]: (element) => {
-        element.setAttribute('role', 'tablist');
+    {
+        role: 'tablist',
+        selector: '#bg_tabs .bg_tabs_list'
     },
-    // @ts-expect-error TS(7006) FIXME: Parameter 'element' implicitly has an 'any' type.
-    [tabItemSelectors]: (element) => {
-        element.setAttribute('role', 'tab');
+    {
+        role: 'tab',
+        selector: '#bg_tabs .bg_tabs_list .bg_tab_button'
     },
-    // @ts-expect-error TS(7006) FIXME: Parameter 'element' implicitly has an 'any' type.
-    '#toast-container .toast': (element) => {
-        element.setAttribute('role', 'status');
-    },
-};
+    {
+        role: 'status',
+        selector: '#toast-container .toast'
+    }
+];
 
 /**
- * Apply accessibility rules to an element.
+ * Apply accessibility rules to an element and its descendants.
  * @param {Element} element Element to process.
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'element' implicitly has an 'any' type.
-function applyA11yRules(element) {
-    try {
-        for (const [selector, rule] of Object.entries(a11yRules)) {
-            // Apply if the element directly matches the selector
-            if (element.matches(selector)) {
-                rule(element);
-            }
-            // Apply the rule to descendants
-            element.querySelectorAll(selector).forEach(rule);
+function applyA11yRules(element: Element) {
+    for (const rule of A11Y_RULES) {
+        // Apply if the parent element directly matches
+        if (element.matches(rule.selector)) {
+            element.setAttribute('role', rule.role);
         }
-    } catch (error) {
-        console.error('Error applying accessibility rules to element:', element, error);
+
+        // Apply to all matching descendants
+        const children = element.querySelectorAll(rule.selector);
+        for (const child of children) {
+            child.setAttribute('role', rule.role);
+        }
     }
 }
 
 /**
- *
+ * Initializes the accessibility module and sets up the MutationObserver.
  */
-function setAccessibilityObserver() {
-    // Apply for existing elements
+export function initAccessibility() {
+    // Apply for existing elements on load
     applyA11yRules(document.body);
 
-    // Setup observer for dynamic content
-    const observer = new MutationObserver((mutationsList) => {
-        for (const mutation of mutationsList) {
-            if (mutation.type === 'childList') {
-                for (const addedNode of mutation.addedNodes) {
-                    if (addedNode instanceof Element && addedNode.nodeType === Node.ELEMENT_NODE) {
-                        applyA11yRules(addedNode);
-                    }
+    const observer = new MutationObserver((mutations) => {
+        for (const mutation of mutations) {
+            for (const node of mutation.addedNodes) {
+                // nodeType 1 is Node.ELEMENT_NODE. Considerably faster than `instanceof Element`
+                if (node.nodeType === 1) {
+                    applyA11yRules(node as Element);
                 }
             }
         }
@@ -135,11 +75,4 @@ function setAccessibilityObserver() {
         childList: true,
         subtree: true,
     });
-}
-
-/**
- *
- */
-export function initAccessibility() {
-    setAccessibilityObserver();
 }
