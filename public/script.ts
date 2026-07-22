@@ -1346,7 +1346,7 @@ export async function getOneCharacter(avatarUrl) {
         if (indexOf !== -1) {
             characters[indexOf] = getData;
         } else {
-    
+
             notyf.error(t`Character ${avatarUrl} not found in the list`, t`Error`, { timeOut: 5000, preventDuplicates: true });
         }
     }
@@ -2524,7 +2524,7 @@ export function appendMediaToMessage(mes, messageElement, scrollBehavior = SCROL
             }
         }));
 
-        new AudioPlayer(audio.get(0), template.get(0));
+        new AudioPlayer(audio.get(0) as HTMLAudioElement, template.get(0) as HTMLElement);
 
         mediaBlocks.push(template);
         return template;
@@ -2685,7 +2685,7 @@ export function addCopyToCodeBlocks(messageElement) {
 // @ts-expect-error Suppressed after fixes
             const text = codeBlocks.get(i).textContent;
             await copyText(text);
-    
+
             notyf.info(t`Copied!`, '', { timeOut: 2000 });
         });
     }
@@ -4774,7 +4774,7 @@ export async function Generate(type, {
 
         if (!pingResult) {
             unblockGeneration(type);
-    
+
             notyf.error(t`Verify that the server is running and accessible.`, t`ST Server cannot be reached`);
             throw new Error('Server unreachable');
         }
@@ -5996,7 +5996,7 @@ export async function Generate(type, {
             unblockGeneration(type);
 
             if (data?.response) {
-        
+
                 notyf.error(data.response, t`API Error`, { preventDuplicates: true });
             }
             throw new Error(data?.response);
@@ -6122,7 +6122,7 @@ export async function Generate(type, {
     function onError(exception) {
         // if the response JSON was thrown (novel|textgenerationwebui|kobold), show the error message
         if (typeof exception?.error?.message === 'string') {
-    
+
             notyf.error(exception.error.message, t`Text generation error`, { timeOut: 10000, extendedTimeOut: 20000 });
         }
 
@@ -6616,14 +6616,14 @@ export async function duplicateCharacter({ avatar = null, silent = false } = {})
     if (avatar) {
         const character = characters.find(c => c.avatar === avatar);
         if (!character) {
-    
+
             notyf.warning(t`Character not found: ${avatar}`);
             return '';
         }
         targetAvatar = avatar;
     } else {
         if (this_chid === undefined || !characters[this_chid]) {
-    
+
             notyf.warning(t`You must first select a character to duplicate!`);
             return '';
         }
@@ -8117,10 +8117,10 @@ export async function renameCharacter(name = null, { silent = false, renameChats
                 if (renamePastChatsConfirm) {
                     await renamePastChats(oldAvatar, newAvatar, newValue);
                     await reloadCurrentChat();
-            
+
                     notyf.success(t`Character renamed and past chats updated!`, t`Rename Character`);
                 } else {
-            
+
                     notyf.success(t`Character renamed!`, t`Rename Character`);
                 }
             } else {
@@ -8201,7 +8201,7 @@ async function renamePastChats(oldAvatar, newAvatar, newName) {
                 }
             }
         } catch (error) {
-    
+
             notyf.error(t`Past chat could not be updated: ${file_name}`);
             console.error(error);
         }
@@ -10472,7 +10472,7 @@ export async function deleteSwipe(swipeId = null, messageId = chat.length - 1) {
         swipeId = Number(swipeId);
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         if (!Number.isInteger(swipeId) || swipeId < 0) {
-    
+
             notyf.warning(t`Invalid swipe ID.`);
             return;
         }
@@ -10983,12 +10983,12 @@ export async function createOrEditCharacter(e) {
 
     if ($('#form_create').attr('actiontype') == 'createcharacter') {
         if (String($('#character_name_pole').val()).length === 0) {
-    
+
             notyf.error(t`Name is required`);
             return;
         }
         if (is_group_generating || is_send_press) {
-    
+
             notyf.error(t`Cannot create characters while generating. Stop the request and try again.`, t`Creation aborted`);
             return;
         }
@@ -11107,7 +11107,7 @@ export async function createOrEditCharacter(e) {
             crop_data = undefined;
         } catch (error) {
             console.error('Error creating character', error);
-    
+
             notyf.error(t`Failed to create character`);
         }
     } else {
@@ -11172,7 +11172,7 @@ export async function createOrEditCharacter(e) {
             }
         } catch (error) {
             console.log(error);
-    
+
             notyf.error(t`Something went wrong while saving the character, or the image file provided was in an invalid format. Double check that the image is not a webp.`);
         }
     }
@@ -11240,7 +11240,7 @@ export async function swipe(event, direction, {
     } else {
         //Only show an error if swipes are not hidden and a message is generating.
         if (isGenerating() && (swipes && !swipesHidden && (swipeState === SWIPE_STATE.NONE))) {
-    
+
             notyf.warning(t`Cannot swipe while generating. Stop the request and try again.`, t`Swipe aborted`);
             return;
         }
@@ -11437,7 +11437,7 @@ export async function swipe(event, direction, {
         //Load from swipes.
         if (syncSwipeToMes(mesId, newSwipeId) == false) {
             const errorMessage = t`When swiping ${direction} on message ${mesId}, syncSwipeToMes has returned false. Attempting to swipe back!`;
-    
+
             notyf.error(errorMessage);
 
             // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
@@ -11704,7 +11704,7 @@ export async function swipe(event, direction, {
         //Limit swipe_id to swipes.
         // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         if (newSwipeId > chat[mesId].swipes.length - 1) {
-    
+
 // @ts-expect-error Suppressed after fixes
             notyf.warning(`The swipe_id for message #${mesId} was ${newSwipeId}. It has been reset to ${chat[mesId].swipes.length - 1}.`);
             // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
@@ -11721,7 +11721,7 @@ export async function swipe(event, direction, {
 
         //Minimum of zero.
         if (newSwipeId < 0) {
-    
+
             notyf.warning(`The swipe_id for message #${mesId} was ${newSwipeId}. It has been reset to zero.`);
             // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             chat[mesId].swipe_id = 0;
@@ -11835,7 +11835,7 @@ export async function processDroppedFiles(files, data = new Map()) {
                 avatarFileNames.push(avatarFileName);
             }
         } else {
-    
+
             notyf.warning(t`Unsupported file type: ` + file.name);
         }
     }
@@ -11934,10 +11934,10 @@ async function importCharacter(file, { preserveFileName = '', importTags = false
             $('#character_search_bar').val('').trigger('input');
 
             if (exists) {
-        
+
                 notyf.success(t`Character Replaced: ${String(data.file_name).replace('.png', '')}`);
             } else {
-        
+
                 notyf.success(t`Character Created: ${String(data.file_name).replace('.png', '')}`);
             }
             if (importTags) {
@@ -12233,7 +12233,7 @@ export async function deleteCharacter(characterKey, { deleteChats = true } = {})
     for (const key of characterKey) {
         const character = characters.find(x => x.avatar == key);
         if (!character) {
-    
+
             notyf.warning(t`Character ${key} not found. Skipping deletion.`);
             continue;
         }
@@ -12252,7 +12252,7 @@ export async function deleteCharacter(characterKey, { deleteChats = true } = {})
         });
 
         if (!response.ok) {
-    
+
             notyf.error(`${response.status} ${response.statusText}`, t`Failed to delete character`);
             continue;
         }
@@ -12465,10 +12465,10 @@ API Settings: ${JSON.stringify(getSettingsContents[getSettingsContents.main_api 
 
         try {
             await copyText(logMessage);
-    
+
             notyf.info('Your ST API setup data has been copied to the clipboard.');
         } catch (error) {
-    
+
 // @ts-expect-error Suppressed after fixes
             notyf.error('Failed to copy ST Setup to clipboard:', error);
         }
@@ -12861,7 +12861,7 @@ function initCharacterSearch() {
 
     $('#delete_button').on('click', async function () {
         if (this_chid === undefined || !characters[this_chid]) {
-    
+
             notyf.warning('No character selected.');
             return;
         }
@@ -12978,7 +12978,7 @@ function initCharacterSearch() {
                 // display error message
                 console.log(data.message);
                 await delay(250);
-        
+
                 notyf.error(`Error: ${data.message}`);
                 return;
             } else {
@@ -12986,7 +12986,7 @@ function initCharacterSearch() {
                 // success, handle response data
                 console.log(data);
                 await delay(250);
-        
+
                 notyf.success(data.message);
                 download(data.result, body.exportfilename, mimeType);
             }
@@ -12995,7 +12995,7 @@ function initCharacterSearch() {
             // display error message
             console.log(`An error has occurred: ${err.message}`);
             await delay(250);
-    
+
             notyf.error(`Error: ${err.message}`);
         }
     });
@@ -13103,7 +13103,7 @@ function initCharacterSearch() {
             //Attempting to regenerate a user message will instead generate a new message.
             // @ts-expect-error TS(7005) FIXME: Variable 'this_edit_mes_id' implicitly has an 'any... Remove this comment to see the full error message
             if (chat.length && chat.length - 1 === this_edit_mes_id && chat[this_edit_mes_id]?.is_user == false) {
-        
+
                 notyf.warning(t`Finish the edit before starting a generation.`, t`You cannot regenerate the message you are editing.`);
                 return;
             }
@@ -13122,13 +13122,13 @@ function initCharacterSearch() {
             }
         } else if (id == 'option_continue') {
             if (swipeState == SWIPE_STATE.EDITING) {
-        
+
                 notyf.warning(t`Confirm the edit to start a generation.`, t`You cannot send a message during a swipe-edit.`);
                 return;
             }
             // @ts-expect-error TS(7005) FIXME: Variable 'this_edit_mes_id' implicitly has an 'any... Remove this comment to see the full error message
             if (chat.length && chat.length - 1 === this_edit_mes_id) {
-        
+
                 notyf.warning(t`Finish the edit before starting a generation.`, t`You cannot continue the message you are editing.`);
                 return;
             }
@@ -13323,7 +13323,7 @@ function initCharacterSearch() {
                 // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                 const text = chat[messageId].mes;
                 await copyText(text);
-        
+
                 notyf.info('Copied!', '', { timeOut: 2000 });
             } catch (err) {
                 console.error('Failed to copy: ', err);
@@ -13628,13 +13628,13 @@ function initCharacterSearch() {
 
             // @ts-expect-error TS(2345) FIXME: Argument of type 'string | undefined' is not assig... Remove this comment to see the full error message
             if (!['json', 'jsonl'].includes(format)) {
-        
+
                 notyf.warning(t`Only JSON and JSONL files are supported for chat imports.`);
                 continue;
             }
 
             if (selected_group && format === 'json') {
-        
+
                 notyf.warning(t`Only SillyTavern's own format is supported for group chat imports. Sorry!`);
                 continue;
             }
@@ -13650,7 +13650,7 @@ function initCharacterSearch() {
         }
 
         if (importedFileNames.length > 0) {
-    
+
             notyf.success(t`Successfully imported ${importedFileNames.length} chat(s).`);
         }
 
@@ -14036,7 +14036,7 @@ function initCharacterSearch() {
                         window.open(source, '_blank');
                     }
                 } else {
-            
+
                     notyf.info('This character doesn\'t seem to have a source.');
                 }
             } break;
@@ -14090,7 +14090,7 @@ function initCharacterSearch() {
                                 await processDroppedFiles([file], data);
                                 await postReplace();
                             } catch {
-                        
+
                                 notyf.error('Failed to replace the character card.', 'Something went wrong');
                             }
                         }
@@ -14172,7 +14172,7 @@ function initCharacterSearch() {
                     $(masterElement).val($(this).val()).trigger('input', { forced: true });
                 } else {
                     //if value not ok, warn and reset to last known valid value
-            
+
                     notyf.warning(`Invalid value. Must be between ${$(this).attr('min')} and ${$(this).attr('max')}`);
                     //newSlider.val(valueBeforeManualInput)
                     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -14200,7 +14200,7 @@ function initCharacterSearch() {
                 $(masterElement).val($(this).val()).trigger('input', { forced: true });
             } else {
                 //if value not ok, warn and reset to last known valid value
-        
+
                 notyf.warning(`Invalid value. Must be between ${$(this).attr('min')} and ${$(this).attr('max')}`);
                 // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 $(this).val(valueBeforeManualInput);
