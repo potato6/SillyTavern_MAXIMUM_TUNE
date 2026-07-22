@@ -14,42 +14,42 @@ type OpenAIEmbeddingResponse = {
 };
 
 const SOURCES = {
-    'togetherai': {
+    togetherai: {
         secretKey: SECRET_KEYS.TOGETHERAI,
         url: 'https://api.together.xyz/v1',
         model: 'togethercomputer/m2-bert-80M-32k-retrieval',
         headers: {},
         processBody: () => {},
     },
-    'mistral': {
+    mistral: {
         secretKey: SECRET_KEYS.MISTRALAI,
         url: 'https://api.mistral.ai/v1',
         model: 'mistral-embed',
         headers: {},
         processBody: () => {},
     },
-    'openai': {
+    openai: {
         secretKey: SECRET_KEYS.OPENAI,
         url: 'https://api.openai.com/v1',
         model: 'text-embedding-ada-002',
         headers: {},
         processBody: () => {},
     },
-    'electronhub': {
+    electronhub: {
         secretKey: SECRET_KEYS.ELECTRONHUB,
         url: 'https://api.electronhub.ai/v1',
         model: 'text-embedding-3-small',
         headers: {},
         processBody: () => {},
     },
-    'openrouter': {
+    openrouter: {
         secretKey: SECRET_KEYS.OPENROUTER,
         url: 'https://openrouter.ai/api/v1',
         model: 'openai/text-embedding-3-large',
         headers: { ...OPENROUTER_HEADERS },
         processBody: () => {},
     },
-    'chutes': {
+    chutes: {
         secretKey: SECRET_KEYS.CHUTES,
         url: 'https://{{MODEL}}.chutes.ai/v1',
         model: 'chutes-qwen-qwen3-embedding-8b',
@@ -58,21 +58,21 @@ const SOURCES = {
             body.model = null;
         },
     },
-    'nanogpt': {
+    nanogpt: {
         secretKey: SECRET_KEYS.NANOGPT,
         url: 'https://nano-gpt.com/api/v1',
         model: 'text-embedding-3-small',
         headers: {},
         processBody: () => {},
     },
-    'siliconflow': {
+    siliconflow: {
         secretKey: SECRET_KEYS.SILICONFLOW,
         url: 'https://api.siliconflow.com/v1',
         model: 'Qwen/Qwen3-Embedding-0.6B',
         headers: {},
         processBody: () => {},
     },
-    'workers_ai': {
+    workers_ai: {
         secretKey: SECRET_KEYS.WORKERS_AI,
         url: '', // Constructed at runtime from account ID via urlOverride
         model: '@cf/baai/bge-m3',
@@ -90,7 +90,13 @@ const SOURCES = {
  * @param {string|null} urlOverride - Optional URL override for the API endpoint
  * @returns {Promise<number[][]>} - The array of vectors for the texts
  */
-export async function getBatchVector(texts: string[], source: string, directories: import('../users.js').UserDirectoryList, model = '', urlOverride: string | null = null): Promise<number[][]> {
+export async function getBatchVector(
+    texts: string[],
+    source: string,
+    directories: import('../users.js').UserDirectoryList,
+    model = '',
+    urlOverride: string | null = null,
+): Promise<number[][]> {
     // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     const config = SOURCES[source];
 
@@ -126,7 +132,7 @@ export async function getBatchVector(texts: string[], source: string, directorie
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${key}`,
+            Authorization: `Bearer ${key}`,
             ...config.headers,
         },
         body: JSON.stringify(body),
@@ -138,7 +144,7 @@ export async function getBatchVector(texts: string[], source: string, directorie
         throw new Error('API request failed');
     }
 
-    const data = await response.json() as OpenAIEmbeddingResponse;
+    const data = (await response.json()) as OpenAIEmbeddingResponse;
 
     if (!Array.isArray(data?.data)) {
         console.warn('API response was not an array');
@@ -161,7 +167,13 @@ export async function getBatchVector(texts: string[], source: string, directorie
  * @param {string|null} urlOverride - Optional URL override for the API endpoint
  * @returns {Promise<number[]>} - The vector for the text
  */
-export async function getVector(text: string, source: string, directories: import('../users.js').UserDirectoryList, model = '', urlOverride: string | null = null): Promise<number[]> {
+export async function getVector(
+    text: string,
+    source: string,
+    directories: import('../users.js').UserDirectoryList,
+    model = '',
+    urlOverride: string | null = null,
+): Promise<number[]> {
     const vectors = await getBatchVector([text], source, directories, model, urlOverride);
     return vectors[0]!;
 }

@@ -60,8 +60,16 @@ import { renderTemplateAsync } from './templates.js';
 import { saveMetadataDebounced } from './extensions.js';
 import { accountStorage } from './util/AccountStorage.js';
 import { SlashCommand } from './slash-commands/SlashCommand.js';
-import { SlashCommandNamedArgument, ARGUMENT_TYPE, SlashCommandArgument } from './slash-commands/SlashCommandArgument.js';
-import { commonEnumMatchProviders, commonEnumProviders, enumIcons } from './slash-commands/SlashCommandCommonEnumsProvider.js';
+import {
+    SlashCommandNamedArgument,
+    ARGUMENT_TYPE,
+    SlashCommandArgument,
+} from './slash-commands/SlashCommandArgument.js';
+import {
+    commonEnumMatchProviders,
+    commonEnumProviders,
+    enumIcons,
+} from './slash-commands/SlashCommandCommonEnumsProvider.js';
 import { SlashCommandEnumValue, enumTypes } from './slash-commands/SlashCommandEnumValue.js';
 import { SlashCommandParser } from './slash-commands/SlashCommandParser.js';
 import { isFirefox } from './browser-fixes.js';
@@ -107,14 +115,18 @@ export const personasFilter = new FilterHelper(debounce(getUserAvatars, debounce
 let personaLastLoadedChatId: string | null = null;
 
 /** @type {function(string): void} */
-let navigateToAvatar: (...args: unknown[]) => void = () => { };
+let navigateToAvatar: (...args: unknown[]) => void = () => {};
 
 /**
  * Checks if the Persona Management panel is currently open
  * @returns {boolean}
  */
 export function isPersonaPanelOpen() {
-    return document.querySelector('#persona-management-button .drawer-content')?.classList.contains('openDrawer') ?? false;
+    return (
+        document
+            .querySelector('#persona-management-button .drawer-content')
+            ?.classList.contains('openDrawer') ?? false
+    );
 }
 
 /**
@@ -151,9 +163,18 @@ export function initUserAvatar(avatar: string) {
  * @param {boolean} [options.toastPersonaNameChange] Whether to show a toast when the persona name is changed
  * @param {boolean} [options.navigateToCurrent] Whether to navigate to the current persona after setting the avatar
  */
-export async function setUserAvatar(imgfile: string, { toastPersonaNameChange = true, navigateToCurrent = false }: { toastPersonaNameChange?: boolean; navigateToCurrent?: boolean } = {}) {
+export async function setUserAvatar(
+    imgfile: string,
+    {
+        toastPersonaNameChange = true,
+        navigateToCurrent = false,
+    }: { toastPersonaNameChange?: boolean; navigateToCurrent?: boolean } = {},
+) {
     const currentUserAvatar = user_avatar;
-    user_avatar = imgfile && typeof imgfile === 'string' ? imgfile : (document.querySelector('[data-avatar-id]') as HTMLElement)?.dataset.avatarId ?? '';
+    user_avatar =
+        imgfile && typeof imgfile === 'string'
+            ? imgfile
+            : ((document.querySelector('[data-avatar-id]') as HTMLElement)?.dataset.avatarId ?? '');
     if (currentUserAvatar === user_avatar) {
         return;
     }
@@ -171,7 +192,7 @@ export async function setUserAvatar(imgfile: string, { toastPersonaNameChange = 
  * @param force
  */
 function reloadUserAvatar(force = false) {
-    document.querySelectorAll('.mes').forEach(el => {
+    document.querySelectorAll('.mes').forEach((el) => {
         const avatarImg = el.querySelector('.avatar img') as HTMLImageElement | null;
         if (!avatarImg) return;
         if (force) {
@@ -190,7 +211,9 @@ function reloadUserAvatar(force = false) {
  * @returns {string[]} The sorted persona names array, same reference as passed in
  */
 function sortPersonas(personas: string[]) {
-    const option = document.querySelector('#persona_sort_order option:checked') as HTMLOptionElement | null;
+    const option = document.querySelector(
+        '#persona_sort_order option:checked',
+    ) as HTMLOptionElement | null;
     if (!option) return personas;
     if (option.getAttribute('value') === 'search') {
         personas.sort((a: string, b: string) => {
@@ -203,7 +226,9 @@ function sortPersonas(personas: string[]) {
             const personasMap = power_user.personas as Record<string, string | undefined>;
             const aName = String(personasMap[a] || a);
             const bName = String(personasMap[b] || b);
-            return power_user.persona_sort_order === 'asc' ? aName.localeCompare(bName) : bName.localeCompare(aName);
+            return power_user.persona_sort_order === 'asc'
+                ? aName.localeCompare(bName)
+                : bName.localeCompare(aName);
         });
     }
 
@@ -213,7 +238,9 @@ function sortPersonas(personas: string[]) {
 /** Checks the state of the current search, and adds/removes the search sorting option accordingly */
 function verifyPersonaSearchSortRule() {
     const searchTerm = personasFilter.getFilterData(FILTER_TYPES.PERSONA_SEARCH);
-    const searchOption = document.querySelector('#persona_sort_order option[value="search"]') as HTMLOptionElement | null;
+    const searchOption = document.querySelector(
+        '#persona_sort_order option[value="search"]',
+    ) as HTMLOptionElement | null;
     const selector = document.getElementById('persona_sort_order') as HTMLSelectElement | null;
     if (!searchOption || !selector) return;
     const isHidden = searchOption.getAttribute('hidden') !== undefined;
@@ -237,18 +264,31 @@ function verifyPersonaSearchSortRule() {
  * @returns {JQuery<HTMLElement>} Avatar block
  */
 function getUserAvatarBlock(avatarId: string): HTMLElement {
-    const template = document.querySelector('#user_avatar_template .avatar-container')!.cloneNode(true) as HTMLElement;
+    const template = document
+        .querySelector('#user_avatar_template .avatar-container')!
+        .cloneNode(true) as HTMLElement;
     const templateEl = template;
     const personasMap = power_user.personas as Record<string, string | undefined>;
-    const personaDescsMap = power_user.persona_descriptions as Record<string, Record<string, unknown> | undefined>;
+    const personaDescsMap = power_user.persona_descriptions as Record<
+        string,
+        Record<string, unknown> | undefined
+    >;
     const personaName = personasMap[avatarId];
     const personaDescription = personaDescsMap[avatarId]?.description as string | undefined;
     const personaTitle = personaDescsMap[avatarId]?.title as string | undefined;
 
-    (templateEl.querySelector('.ch_name') as HTMLElement).textContent = personaName || '[Unnamed Persona]';
-    (templateEl.querySelector('.ch_description') as HTMLElement).textContent = personaDescription || document.getElementById('user_avatar_block')?.getAttribute('no_desc_text') || 'No description';
-    (templateEl.querySelector('.ch_description') as HTMLElement).classList.toggle('text_muted', !personaDescription);
-    (templateEl.querySelector('.ch_additional_info') as HTMLElement).textContent = personaTitle || '';
+    (templateEl.querySelector('.ch_name') as HTMLElement).textContent =
+        personaName || '[Unnamed Persona]';
+    (templateEl.querySelector('.ch_description') as HTMLElement).textContent =
+        personaDescription ||
+        document.getElementById('user_avatar_block')?.getAttribute('no_desc_text') ||
+        'No description';
+    (templateEl.querySelector('.ch_description') as HTMLElement).classList.toggle(
+        'text_muted',
+        !personaDescription,
+    );
+    (templateEl.querySelector('.ch_additional_info') as HTMLElement).textContent =
+        personaTitle || '';
     template.setAttribute('data-avatar-id', avatarId);
     (templateEl.querySelector('.avatar') as HTMLElement)?.setAttribute('data-avatar-id', avatarId);
     (templateEl.querySelector('.avatar') as HTMLElement)?.setAttribute('title', avatarId);
@@ -257,9 +297,11 @@ function getUserAvatarBlock(avatarId: string): HTMLElement {
     (templateEl.querySelector('img') as HTMLImageElement).setAttribute('src', avatarUrl);
 
     // Make sure description block has at least three rows. Otherwise height looks inconsistent. I don't have a better idea for this.
-    const currentText = (templateEl.querySelector('.ch_description') as HTMLElement).textContent ?? '';
+    const currentText =
+        (templateEl.querySelector('.ch_description') as HTMLElement).textContent ?? '';
     if (currentText.split('\n').length < 3) {
-        (templateEl.querySelector('.ch_description') as HTMLElement).textContent = currentText + '\n\xa0\n\xa0';
+        (templateEl.querySelector('.ch_description') as HTMLElement).textContent =
+            currentText + '\n\xa0\n\xa0';
     }
 
     document.getElementById('user_avatar_block')!.append(template);
@@ -415,7 +457,9 @@ async function changeUserAvatar(e: Event) {
     let url = '/api/avatars/upload';
 
     if (!power_user.never_resize_avatars) {
-        const dlg = new Popup(t`Set the crop position of the avatar image`, POPUP_TYPE.CROP, '', { cropImage: dataUrl } as Record<string, unknown>);
+        const dlg = new Popup(t`Set the crop position of the avatar image`, POPUP_TYPE.CROP, '', {
+            cropImage: dataUrl,
+        } as Record<string, unknown>);
         const result = await dlg.show();
 
         if (!result) {
@@ -472,18 +516,30 @@ async function changeUserAvatar(e: Event) {
  * @returns {Promise} Promise that resolves when the persona is set
  */
 export async function createPersona(avatarId: string) {
-    const personaName = await Popup.show.input(t`Enter a name for this persona:`, t`Cancel if you're just uploading an avatar.`, '');
+    const personaName = await Popup.show.input(
+        t`Enter a name for this persona:`,
+        t`Cancel if you're just uploading an avatar.`,
+        '',
+    );
 
     if (!personaName) {
         console.debug('User cancelled creating a persona');
         return;
     }
 
-    const personaDescription = await Popup.show.input(t`Enter a description for this persona:`, t`You can always add or change it later.`, '', { rows: 4 });
+    const personaDescription = await Popup.show.input(
+        t`Enter a description for this persona:`,
+        t`You can always add or change it later.`,
+        '',
+        { rows: 4 },
+    );
 
     await initPersona(avatarId, personaName, personaDescription ?? '', '');
     if (power_user.persona_show_notifications) {
-        notyf.success(t`You can now pick ${personaName} as a persona in the Persona Management menu.`, t`Persona Created`);
+        notyf.success(
+            t`You can now pick ${personaName} as a persona in the Persona Management menu.`,
+            t`Persona Created`,
+        );
     }
 }
 
@@ -492,11 +548,13 @@ export async function createPersona(avatarId: string) {
  */
 async function createDummyPersona() {
     const popup = new Popup(t`Enter a name for this persona:`, POPUP_TYPE.INPUT, '', {
-        customInputs: [{
-            id: 'persona_title',
-            type: 'text' as const,
-            label: t`Persona Title (optional, display only)`,
-        }],
+        customInputs: [
+            {
+                id: 'persona_title',
+                type: 'text' as const,
+                label: t`Persona Title (optional, display only)`,
+            },
+        ],
     } as Record<string, unknown>);
 
     const personaName: unknown = await popup.show();
@@ -527,19 +585,25 @@ async function createDummyPersona() {
  * @param {string} [options.lorebook] Attached lorebook name
  * @returns {Promise<void>}
  */
-export async function initPersona(avatarId: string, personaName: string, personaDescription: string, personaTitle: string, {
-    silent = false,
-    position = persona_description_positions.IN_PROMPT,
-    depth = DEFAULT_DEPTH,
-    role = DEFAULT_ROLE,
-    lorebook = '',
-}: {
-    silent?: boolean;
-    position?: number;
-    depth?: number;
-    role?: number;
-    lorebook?: string;
-} = {}) {
+export async function initPersona(
+    avatarId: string,
+    personaName: string,
+    personaDescription: string,
+    personaTitle: string,
+    {
+        silent = false,
+        position = persona_description_positions.IN_PROMPT,
+        depth = DEFAULT_DEPTH,
+        role = DEFAULT_ROLE,
+        lorebook = '',
+    }: {
+        silent?: boolean;
+        position?: number;
+        depth?: number;
+        role?: number;
+        lorebook?: string;
+    } = {},
+) {
     (power_user.personas as Record<string, string>)[avatarId] = personaName;
     (power_user.persona_descriptions as Record<string, Record<string, unknown>>)[avatarId] = {
         description: personaDescription || '',
@@ -553,7 +617,12 @@ export async function initPersona(avatarId: string, personaName: string, persona
     saveSettingsDebounced();
 
     if (!silent) {
-        await eventSource.emit(event_types.PERSONA_CREATED, { avatarId, name: personaName, description: personaDescription || '', title: personaTitle || '' });
+        await eventSource.emit(event_types.PERSONA_CREATED, {
+            avatarId,
+            name: personaName,
+            description: personaDescription || '',
+            title: personaTitle || '',
+        });
     }
 }
 
@@ -582,7 +651,10 @@ export async function convertCharacterToPersona(characterId: number | null = nul
     const overwriteName = `${name} (Persona).png`;
 
     if (overwriteName in power_user.personas) {
-        const confirm = await Popup.show.confirm(t`Overwrite Existing Persona`, t`This character exists as a persona already. Do you want to overwrite it?`);
+        const confirm = await Popup.show.confirm(
+            t`Overwrite Existing Persona`,
+            t`This character exists as a persona already. Do you want to overwrite it?`,
+        );
         if (!confirm) {
             console.log('User cancelled the overwrite of the persona');
             return false;
@@ -590,10 +662,17 @@ export async function convertCharacterToPersona(characterId: number | null = nul
     }
 
     if (description.includes('{{char}}') || description.includes('{{user}}')) {
-        const confirm = await Popup.show.confirm(t`Persona Description Macros`, t`This character has a description that uses <code>{{char}}</code> or <code>{{user}}</code> macros. Do you want to swap them in the persona description?`);
+        const confirm = await Popup.show.confirm(
+            t`Persona Description Macros`,
+            t`This character has a description that uses <code>{{char}}</code> or <code>{{user}}</code> macros. Do you want to swap them in the persona description?`,
+        );
         if (confirm) {
-            description = description.replace(/{{char}}/gi, '{{personaChar}}').replace(/{{user}}/gi, '{{personaUser}}');
-            description = description.replace(/{{personaUser}}/gi, '{{char}}').replace(/{{personaChar}}/gi, '{{user}}');
+            description = description
+                .replace(/{{char}}/gi, '{{personaChar}}')
+                .replace(/{{user}}/gi, '{{personaUser}}');
+            description = description
+                .replace(/{{personaUser}}/gi, '{{char}}')
+                .replace(/{{personaChar}}/gi, '{{user}}');
         }
     }
 
@@ -616,10 +695,18 @@ export async function convertCharacterToPersona(characterId: number | null = nul
     }
 
     saveSettingsDebounced();
-    await eventSource.emit(event_types.PERSONA_CREATED, { avatarId: overwriteName, name, description, title: '' });
+    await eventSource.emit(event_types.PERSONA_CREATED, {
+        avatarId: overwriteName,
+        name,
+        description,
+        title: '',
+    });
 
     console.log('Persona for character created');
-    notyf.success(t`You can now pick ${name} as a persona in the Persona Management menu.`, t`Persona Created`);
+    notyf.success(
+        t`You can now pick ${name} as a persona in the Persona Management menu.`,
+        t`Persona Created`,
+    );
 
     // Refresh the persona selector
     await getUserAvatars(true, overwriteName);
@@ -632,7 +719,9 @@ export async function convertCharacterToPersona(characterId: number | null = nul
  * Counts the number of tokens in a persona description.
  */
 const countPersonaDescriptionTokens = debounce(async () => {
-    const description = String((document.getElementById('persona_description') as HTMLInputElement).value);
+    const description = String(
+        (document.getElementById('persona_description') as HTMLInputElement).value,
+    );
     const count = await getTokenCountAsync(description);
     document.getElementById('persona_description_token_count')!.textContent = String(count);
 }, debounce_timeout.relaxed);
@@ -648,22 +737,39 @@ export function setPersonaDescription() {
     }
 
     const _el695 = document.getElementById('persona_depth_position_settings') as HTMLElement;
-    if (_el695) _el695.style.display = power_user.persona_description_position === persona_description_positions.AT_DEPTH ? '' : 'none';
-    (document.getElementById('persona_description') as HTMLInputElement).value = power_user.persona_description;
-    (document.getElementById('persona_depth_value') as HTMLInputElement).value = String(power_user.persona_description_depth ?? DEFAULT_DEPTH);
-    const personaDescPosEl = document.querySelector('#persona_description_position') as HTMLSelectElement | null;
+    if (_el695)
+        _el695.style.display =
+            power_user.persona_description_position === persona_description_positions.AT_DEPTH
+                ? ''
+                : 'none';
+    (document.getElementById('persona_description') as HTMLInputElement).value =
+        power_user.persona_description;
+    (document.getElementById('persona_depth_value') as HTMLInputElement).value = String(
+        power_user.persona_description_depth ?? DEFAULT_DEPTH,
+    );
+    const personaDescPosEl = document.querySelector(
+        '#persona_description_position',
+    ) as HTMLSelectElement | null;
     if (personaDescPosEl) {
         personaDescPosEl.value = String(power_user.persona_description_position);
-        const option = personaDescPosEl.querySelector(`option[value="${power_user.persona_description_position}"]`) as HTMLOptionElement | null;
+        const option = personaDescPosEl.querySelector(
+            `option[value="${power_user.persona_description_position}"]`,
+        ) as HTMLOptionElement | null;
         if (option) option.selected = true;
     }
-    const personaDepthRoleEl = document.querySelector('#persona_depth_role') as HTMLSelectElement | null;
+    const personaDepthRoleEl = document.querySelector(
+        '#persona_depth_role',
+    ) as HTMLSelectElement | null;
     if (personaDepthRoleEl) {
         personaDepthRoleEl.value = String(power_user.persona_description_role);
-        const option = personaDepthRoleEl.querySelector(`option[value="${power_user.persona_description_role}"]`) as HTMLOptionElement | null;
+        const option = personaDepthRoleEl.querySelector(
+            `option[value="${power_user.persona_description_role}"]`,
+        ) as HTMLOptionElement | null;
         if (option) option.selected = true;
     }
-    document.getElementById('persona_lore_button')!.classList.toggle('world_set', !!power_user.persona_description_lorebook);
+    document
+        .getElementById('persona_lore_button')!
+        .classList.toggle('world_set', !!power_user.persona_description_lorebook);
     countPersonaDescriptionTokens();
 
     updatePersonaUIStates();
@@ -675,7 +781,8 @@ export function setPersonaDescription() {
  * @returns {string[]} An array of persona identifiers
  */
 function getPersonasOfCurrentChat() {
-    const personas = chat.filter((message: ChatMessage) => String(message.force_avatar).startsWith(USER_AVATAR_PATH))
+    const personas = chat
+        .filter((message: ChatMessage) => String(message.force_avatar).startsWith(USER_AVATAR_PATH))
         .map((message: ChatMessage) => message.force_avatar!.replace(USER_AVATAR_PATH, ''))
         .filter(onlyUnique);
     return personas;
@@ -690,10 +797,21 @@ function getPersonasOfCurrentChat() {
  * @param {boolean} [options.interactable] - Whether the avatars should be interactable
  * @param {boolean} [options.highlightFavs] - Whether to highlight favorite avatars
  */
-export function buildPersonaAvatarList(block: HTMLElement, personas: string[], { empty = true, interactable = false, highlightFavs = true }: { empty?: boolean; interactable?: boolean; highlightFavs?: boolean } = {}) {
+export function buildPersonaAvatarList(
+    block: HTMLElement,
+    personas: string[],
+    {
+        empty = true,
+        interactable = false,
+        highlightFavs = true,
+    }: { empty?: boolean; interactable?: boolean; highlightFavs?: boolean } = {},
+) {
     const personasMap = power_user.personas as Record<string, string | undefined>;
-    const personaDescsMap = power_user.persona_descriptions as Record<string, Record<string, unknown> | undefined>;
-    const personaEntities = personas.map(avatar => ({
+    const personaDescsMap = power_user.persona_descriptions as Record<
+        string,
+        Record<string, unknown> | undefined
+    >;
+    const personaEntities = personas.map((avatar) => ({
         type: 'persona',
         id: avatar,
         item: {
@@ -704,7 +822,11 @@ export function buildPersonaAvatarList(block: HTMLElement, personas: string[], {
         },
     }));
 
-    buildAvatarList(block, personaEntities, { empty: empty, interactable: interactable, highlightFavs: highlightFavs });
+    buildAvatarList(block, personaEntities, {
+        empty: empty,
+        interactable: interactable,
+        highlightFavs: highlightFavs,
+    });
 }
 
 /**
@@ -712,26 +834,33 @@ export function buildPersonaAvatarList(block: HTMLElement, personas: string[], {
  * Converts connections to entities and populates the avatar list. Shows a message if no connections are found.
  */
 export function updatePersonaConnectionsAvatarList() {
-    const personaDescsMap = power_user.persona_descriptions as Record<string, Record<string, unknown> | undefined>;
+    const personaDescsMap = power_user.persona_descriptions as Record<
+        string,
+        Record<string, unknown> | undefined
+    >;
     const connections = (personaDescsMap[user_avatar]?.connections ?? []) as PersonaConnection[];
-    const entities = connections.map((connection: PersonaConnection) => {
-        if (connection.type === 'character') {
-            const character = characters.find(c => c.avatar === connection.id);
-            if (character) return characterToEntity(character, getCharIndex(character));
-        }
-        if (connection.type === 'group') {
-            const group = groups.find(g => g.id === connection.id);
-            if (group) return groupToEntity(group);
-        }
-        return undefined;
-    }).filter((entity): entity is NonNullable<typeof entity> => entity?.item !== undefined);
+    const entities = connections
+        .map((connection: PersonaConnection) => {
+            if (connection.type === 'character') {
+                const character = characters.find((c) => c.avatar === connection.id);
+                if (character) return characterToEntity(character, getCharIndex(character));
+            }
+            if (connection.type === 'group') {
+                const group = groups.find((g) => g.id === connection.id);
+                if (group) return groupToEntity(group);
+            }
+            return undefined;
+        })
+        .filter((entity): entity is NonNullable<typeof entity> => entity?.item !== undefined);
 
     if (entities.length)
-        buildAvatarList(document.getElementById('persona_connections_list')!, entities, { interactable: true });
+        buildAvatarList(document.getElementById('persona_connections_list')!, entities, {
+            interactable: true,
+        });
     else
-        document.getElementById('persona_connections_list')!.textContent = t`[No character connections. Click one of the buttons above to connect this persona.]`;
+        document.getElementById('persona_connections_list')!.textContent =
+            t`[No character connections. Click one of the buttons above to connect this persona.]`;
 }
-
 
 /**
  * Displays a popup for persona selection and returns the selected persona.
@@ -745,12 +874,22 @@ export function updatePersonaConnectionsAvatarList() {
  * @param {PersonaConnection} [options.targetedChar] - The targeted character or gorup for this persona selection
  * @returns {Promise<string?>} - A promise that resolves to the selected persona id or null if no selection was made
  */
-export async function askForPersonaSelection(title: string, text: string, personas: string[], { okButton = 'None', shiftClickHandler = undefined, highlightPersonas = false, targetedChar = undefined }: {
-    okButton?: string;
-    shiftClickHandler?: ((element: HTMLElement, ev: MouseEvent) => void) | undefined;
-    highlightPersonas?: boolean | string[];
-    targetedChar?: PersonaConnection | null | undefined;
-} = {}) {
+export async function askForPersonaSelection(
+    title: string,
+    text: string,
+    personas: string[],
+    {
+        okButton = 'None',
+        shiftClickHandler = undefined,
+        highlightPersonas = false,
+        targetedChar = undefined,
+    }: {
+        okButton?: string;
+        shiftClickHandler?: ((element: HTMLElement, ev: MouseEvent) => void) | undefined;
+        highlightPersonas?: boolean | string[];
+        targetedChar?: PersonaConnection | null | undefined;
+    } = {},
+) {
     const content = document.createElement('div');
     const titleElement = document.createElement('h3');
     titleElement.textContent = title;
@@ -762,18 +901,26 @@ export async function askForPersonaSelection(title: string, text: string, person
     content.appendChild(textElement);
 
     const personaListBlock = document.createElement('div');
-    personaListBlock.classList.add('persona-list', 'avatars_inline', 'avatars_multiline', 'text_muted');
+    personaListBlock.classList.add(
+        'persona-list',
+        'avatars_inline',
+        'avatars_multiline',
+        'text_muted',
+    );
     content.appendChild(personaListBlock);
 
     if (personas.length > 0)
         buildPersonaAvatarList(personaListBlock, personas, { interactable: true });
-    else
-        personaListBlock.textContent = t`[Currently no personas connected]`;
+    else personaListBlock.textContent = t`[Currently no personas connected]`;
 
-    const personasToHighlight = Array.isArray(highlightPersonas) ? highlightPersonas as string[] : (highlightPersonas ? getPersonasOfCurrentChat() : []);
+    const personasToHighlight = Array.isArray(highlightPersonas)
+        ? (highlightPersonas as string[])
+        : highlightPersonas
+          ? getPersonasOfCurrentChat()
+          : [];
 
     // Make the persona blocks clickable and close the popup
-    personaListBlock.querySelectorAll('.avatar[data-type="persona"]').forEach(block => {
+    personaListBlock.querySelectorAll('.avatar[data-type="persona"]').forEach((block) => {
         if (!(block instanceof HTMLElement)) return;
         block.dataset.result = String(100 + personas.indexOf(block.dataset.pid ?? ''));
 
@@ -788,11 +935,15 @@ export async function askForPersonaSelection(title: string, text: string, person
         if (personasToHighlight && personasToHighlight.includes(block.dataset.pid ?? '')) {
             block.classList.add('is_active');
             block.title = block.title + '\n\n' + t`Was used in current chat.`;
-            if (block.classList.contains('is_fav')) block.title = block.title + '\n' + t`Is your default persona.`;
+            if (block.classList.contains('is_fav'))
+                block.title = block.title + '\n' + t`Is your default persona.`;
         }
     });
 
-    const personaDescsMap = power_user.persona_descriptions as Record<string, Record<string, unknown> | undefined>;
+    const personaDescsMap = power_user.persona_descriptions as Record<
+        string,
+        Record<string, unknown> | undefined
+    >;
     const customButtons: Record<string, unknown>[] = [];
     if (targetedChar) {
         customButtons.push({
@@ -802,26 +953,38 @@ export async function askForPersonaSelection(title: string, text: string, person
                 for (const [personaId, description] of Object.entries(personaDescsMap)) {
                     const connections = (description?.connections ?? []) as PersonaConnection[];
                     if (connections) {
-                        (personaDescsMap[personaId]!).connections = connections.filter((c: PersonaConnection) => {
-                            if (targetedChar!.type == c.type && targetedChar!.id == c.id) return false;
-                            return true;
-                        });
+                        personaDescsMap[personaId]!.connections = connections.filter(
+                            (c: PersonaConnection) => {
+                                if (targetedChar!.type == c.type && targetedChar!.id == c.id)
+                                    return false;
+                                return true;
+                            },
+                        );
                     }
                 }
 
                 saveSettingsDebounced();
                 updatePersonaConnectionsAvatarList();
                 if (power_user.persona_show_notifications) {
-                    const name = targetedChar!.type == 'character' ? characters.find(c => c.avatar === targetedChar!.id)?.name : groups.find(g => g.id === targetedChar!.id)?.name;
-                    notyf.info(t`All connections to ${name} have been removed.`, t`Personas Unlocked`);
+                    const name =
+                        targetedChar!.type == 'character'
+                            ? characters.find((c) => c.avatar === targetedChar!.id)?.name
+                            : groups.find((g) => g.id === targetedChar!.id)?.name;
+                    notyf.info(
+                        t`All connections to ${name} have been removed.`,
+                        t`Personas Unlocked`,
+                    );
                 }
             },
         });
     }
 
-    const popup = new Popup(content, POPUP_TYPE.TEXT, '', { okButton: okButton, customButtons: customButtons } as Record<string, unknown>);
+    const popup = new Popup(content, POPUP_TYPE.TEXT, '', {
+        okButton: okButton,
+        customButtons: customButtons,
+    } as Record<string, unknown>);
     const result = await popup.show();
-    return Number(result) >= 100 ? personas[Number(result) - 100] ?? null : null;
+    return Number(result) >= 100 ? (personas[Number(result) - 100] ?? null) : null;
 }
 
 /**
@@ -831,7 +994,10 @@ export async function askForPersonaSelection(title: string, text: string, person
  * @param {string} [options.personaKey] - Optionally a persona avatar key to target (if multiple persona have the same name); must match the name
  * @returns {Promise<boolean>} True if a matching persona was found and selected, false otherwise
  */
-export async function autoSelectPersona(name: string, { personaKey = null }: { personaKey?: string | null } = {}) {
+export async function autoSelectPersona(
+    name: string,
+    { personaKey = null }: { personaKey?: string | null } = {},
+) {
     const persona = findPersona({ name: personaKey ?? name, allowAvatar: !!personaKey });
     if (persona) {
         console.log(`Auto-selecting persona ${persona.avatar} for name ${name}`);
@@ -852,7 +1018,10 @@ async function editPersonaTitle(popup: Popup, avatarId: string, currentTitle: st
         return;
     }
 
-    const personaDescsMap = power_user.persona_descriptions as Record<string, Record<string, unknown> | undefined>;
+    const personaDescsMap = power_user.persona_descriptions as Record<
+        string,
+        Record<string, unknown> | undefined
+    >;
     if (!personaDescsMap[avatarId]) {
         console.warn('Uninitialized persona descriptor for avatar:', avatarId);
         return;
@@ -886,18 +1055,28 @@ async function editPersonaTitle(popup: Popup, avatarId: string, currentTitle: st
  */
 async function renamePersona(avatarId: string) {
     const personasMap = power_user.personas as Record<string, string | undefined>;
-    const personaDescsMap = power_user.persona_descriptions as Record<string, Record<string, unknown> | undefined>;
+    const personaDescsMap = power_user.persona_descriptions as Record<
+        string,
+        Record<string, unknown> | undefined
+    >;
     const currentName = personasMap[avatarId];
     const currentTitle = (personaDescsMap[avatarId]?.title as string) || '';
-    const newName = await Popup.show.input(t`Rename Persona`, t`Enter a new name for this persona:`, currentName, {
-        customInputs: [{
-            id: 'persona_title',
-            type: 'text',
-            label: t`Persona Title (optional, display only)`,
-            defaultState: currentTitle,
-        }],
-        onClose: (popup: Popup) => editPersonaTitle(popup, avatarId, currentTitle),
-    });
+    const newName = await Popup.show.input(
+        t`Rename Persona`,
+        t`Enter a new name for this persona:`,
+        currentName,
+        {
+            customInputs: [
+                {
+                    id: 'persona_title',
+                    type: 'text',
+                    label: t`Persona Title (optional, display only)`,
+                    defaultState: currentTitle,
+                },
+            ],
+            onClose: (popup: Popup) => editPersonaTitle(popup, avatarId, currentTitle),
+        },
+    );
 
     if (!newName || newName === currentName) {
         console.debug('User cancelled renaming persona or name is unchanged');
@@ -912,7 +1091,11 @@ async function renamePersona(avatarId: string) {
     }
 
     saveSettingsDebounced();
-    await eventSource.emit(event_types.PERSONA_RENAMED, { avatarId, oldName: currentName, newName });
+    await eventSource.emit(event_types.PERSONA_RENAMED, {
+        avatarId,
+        oldName: currentName,
+        newName,
+    });
     await getUserAvatars(true, avatarId);
     updatePersonaUIStates();
     setPersonaDescription();
@@ -925,23 +1108,33 @@ async function renamePersona(avatarId: string) {
  * @param {boolean} [options.toastPersonaNameChange] - Whether to show a toast when the persona name is changed
  * @returns {Promise<void>}
  */
-async function selectCurrentPersona({ toastPersonaNameChange = true }: { toastPersonaNameChange?: boolean } = {}) {
+async function selectCurrentPersona({
+    toastPersonaNameChange = true,
+}: { toastPersonaNameChange?: boolean } = {}) {
     const personasMap = power_user.personas as Record<string, string | undefined>;
-    const personaDescsMap = power_user.persona_descriptions as Record<string, Record<string, unknown> | undefined>;
+    const personaDescsMap = power_user.persona_descriptions as Record<
+        string,
+        Record<string, unknown> | undefined
+    >;
     const personaName = personasMap[user_avatar];
     if (personaName) {
-        const shouldAutoLock = !!(power_user as Record<string, unknown>).persona_auto_lock && user_avatar !== chat_metadata.persona;
+        const shouldAutoLock =
+            !!(power_user as Record<string, unknown>).persona_auto_lock &&
+            user_avatar !== chat_metadata.persona;
 
         if (personaName !== name1) {
             console.log(`Auto-updating user name to ${personaName}`);
-            setUserName(personaName, { toastPersonaNameChange: !shouldAutoLock && toastPersonaNameChange });
+            setUserName(personaName, {
+                toastPersonaNameChange: !shouldAutoLock && toastPersonaNameChange,
+            });
         }
 
         const descriptor = personaDescsMap[user_avatar];
 
         if (descriptor) {
             power_user.persona_description = (descriptor.description as string) ?? '';
-            power_user.persona_description_position = (descriptor.position as number) ?? persona_description_positions.IN_PROMPT;
+            power_user.persona_description_position =
+                (descriptor.position as number) ?? persona_description_positions.IN_PROMPT;
             power_user.persona_description_depth = (descriptor.depth as number) ?? DEFAULT_DEPTH;
             power_user.persona_description_role = (descriptor.role as number) ?? DEFAULT_ROLE;
             power_user.persona_description_lorebook = (descriptor.lorebook as string) ?? '';
@@ -969,7 +1162,10 @@ async function selectCurrentPersona({ toastPersonaNameChange = true }: { toastPe
             chat_metadata.persona = user_avatar;
             console.log(`Auto locked persona to ${user_avatar}`);
             if (toastPersonaNameChange && power_user.persona_show_notifications) {
-                notyf.success(t`Persona ${personaName} selected and auto-locked to current chat`, t`Persona Selected`);
+                notyf.success(
+                    t`Persona ${personaName} selected and auto-locked to current chat`,
+                    t`Persona Selected`,
+                );
             }
             saveMetadataDebounced();
             updatePersonaUIStates();
@@ -979,12 +1175,20 @@ async function selectCurrentPersona({ toastPersonaNameChange = true }: { toastPe
         if (power_user.persona_show_notifications && !isPersonaPanelOpen()) {
             const temporary = getPersonaTemporaryLockInfo();
             if (temporary.isTemporary) {
-                notyf.info(t`This persona is only temporarily chosen. Click for more info.`, t`Temporary Persona`, {
-                    preventDuplicates: true,
-                    onclick: () => {
-                        notyf.info(escapeHtml(temporary.info).replaceAll('\n', '<br />'), t`Temporary Persona`, { escapeHtml: false });
+                notyf.info(
+                    t`This persona is only temporarily chosen. Click for more info.`,
+                    t`Temporary Persona`,
+                    {
+                        preventDuplicates: true,
+                        onclick: () => {
+                            notyf.info(
+                                escapeHtml(temporary.info).replaceAll('\n', '<br />'),
+                                t`Temporary Persona`,
+                                { escapeHtml: false },
+                            );
+                        },
                     },
-                });
+                );
             }
         }
     }
@@ -996,8 +1200,12 @@ async function selectCurrentPersona({ toastPersonaNameChange = true }: { toastPe
  * @returns {boolean} Whether the connection is locked
  */
 export function isPersonaConnectionLocked(connection: PersonaConnection) {
-    return (!selected_group && connection.type === 'character' && connection.id === characters[Number(this_chid)]?.avatar)
-        || (selected_group && connection.type === 'group' && connection.id === selected_group);
+    return (
+        (!selected_group &&
+            connection.type === 'character' &&
+            connection.id === characters[Number(this_chid)]?.avatar) ||
+        (selected_group && connection.type === 'group' && connection.id === selected_group)
+    );
 }
 
 /**
@@ -1012,10 +1220,16 @@ export function isPersonaLocked(type: string = 'chat') {
         case 'chat':
             return chat_metadata.persona == user_avatar;
         case 'character': {
-            const descs = power_user.persona_descriptions as Record<string, Record<string, unknown> | undefined>;
-            return !!(descs[user_avatar]?.connections as PersonaConnection[] | undefined)?.some(isPersonaConnectionLocked);
+            const descs = power_user.persona_descriptions as Record<
+                string,
+                Record<string, unknown> | undefined
+            >;
+            return !!(descs[user_avatar]?.connections as PersonaConnection[] | undefined)?.some(
+                isPersonaConnectionLocked,
+            );
         }
-        default: throw new Error(`Unknown persona lock type: ${type}`);
+        default:
+            throw new Error(`Unknown persona lock type: ${type}`);
     }
 }
 
@@ -1061,21 +1275,34 @@ async function unlockPersona(type: string = 'chat') {
                 delete chat_metadata.persona;
                 await saveMetadata();
                 if (power_user.persona_show_notifications && !isPersonaPanelOpen()) {
-                    notyf.info(t`Persona ${name1} is now unlocked from this chat.`, t`Persona Unlocked`);
+                    notyf.info(
+                        t`Persona ${name1} is now unlocked from this chat.`,
+                        t`Persona Unlocked`,
+                    );
                 }
             }
             break;
         }
         case 'character': {
-            const personaDescsMap = power_user.persona_descriptions as Record<string, Record<string, unknown> | undefined>;
-            const connections = personaDescsMap[user_avatar]?.connections as PersonaConnection[] | undefined;
+            const personaDescsMap = power_user.persona_descriptions as Record<
+                string,
+                Record<string, unknown> | undefined
+            >;
+            const connections = personaDescsMap[user_avatar]?.connections as
+                | PersonaConnection[]
+                | undefined;
             if (connections) {
                 console.log(`Unlocking persona ${user_avatar} from this character ${name2}`);
-                personaDescsMap[user_avatar]!.connections = connections.filter((c: PersonaConnection) => !isPersonaConnectionLocked(c));
+                personaDescsMap[user_avatar]!.connections = connections.filter(
+                    (c: PersonaConnection) => !isPersonaConnectionLocked(c),
+                );
                 saveSettingsDebounced();
                 updatePersonaConnectionsAvatarList();
                 if (power_user.persona_show_notifications && !isPersonaPanelOpen()) {
-                    notyf.info(t`Persona ${name1} is now unlocked from character ${name2}.`, t`Persona Unlocked`);
+                    notyf.info(
+                        t`Persona ${name1} is now unlocked from character ${name2}.`,
+                        t`Persona Unlocked`,
+                    );
                 }
             }
             break;
@@ -1093,12 +1320,18 @@ async function unlockPersona(type: string = 'chat') {
  */
 async function lockPersona(type: string = 'chat') {
     const personasMap = power_user.personas as Record<string, string | undefined>;
-    const personaDescsMap = power_user.persona_descriptions as Record<string, Record<string, unknown> | undefined>;
+    const personaDescsMap = power_user.persona_descriptions as Record<
+        string,
+        Record<string, unknown> | undefined
+    >;
     // First make sure that user_avatar is actually a persona
     if (!(user_avatar in personasMap)) {
         console.log(`Creating a new persona ${user_avatar}`);
         if (power_user.persona_show_notifications) {
-            notyf.info(t`Creating a new persona for currently selected user name and avatar...`, t`Persona Not Found`);
+            notyf.info(
+                t`Creating a new persona for currently selected user name and avatar...`,
+                t`Persona Not Found`,
+            );
         }
         (power_user.personas as Record<string, string>)[user_avatar] = name1;
         personaDescsMap[user_avatar] = {
@@ -1110,7 +1343,12 @@ async function lockPersona(type: string = 'chat') {
             connections: [],
             title: '',
         };
-        await eventSource.emit(event_types.PERSONA_CREATED, { avatarId: user_avatar, name: name1, description: '', title: '' });
+        await eventSource.emit(event_types.PERSONA_CREATED, {
+            avatarId: user_avatar,
+            name: name1,
+            description: '',
+            title: '',
+        });
     }
 
     switch (type) {
@@ -1123,26 +1361,43 @@ async function lockPersona(type: string = 'chat') {
             chat_metadata.persona = user_avatar;
             saveMetadataDebounced();
             if (power_user.persona_show_notifications && !isPersonaPanelOpen()) {
-                notyf.success(t`User persona ${name1} is locked to ${name2} in this chat`, t`Persona Locked`);
+                notyf.success(
+                    t`User persona ${name1} is locked to ${name2} in this chat`,
+                    t`Persona Locked`,
+                );
             }
             break;
         }
         case 'character': {
             const newConnection = getCurrentConnectionObj();
-            const existingConnections = personaDescsMap[user_avatar]!.connections as PersonaConnection[] | undefined;
-            const connections = existingConnections?.filter((c: PersonaConnection) => !isPersonaConnectionLocked(c)) ?? [];
+            const existingConnections = personaDescsMap[user_avatar]!.connections as
+                | PersonaConnection[]
+                | undefined;
+            const connections =
+                existingConnections?.filter(
+                    (c: PersonaConnection) => !isPersonaConnectionLocked(c),
+                ) ?? [];
             if (newConnection && newConnection.id) {
                 console.log(`Locking persona ${user_avatar} to this character ${name2}`);
                 personaDescsMap[user_avatar]!.connections = [...connections, newConnection];
 
                 const unlinkedCharacters: string[] = [];
                 if (!(power_user as Record<string, unknown>).persona_allow_multi_connections) {
-                    const allDescs = power_user.persona_descriptions as Record<string, Record<string, unknown> | undefined>;
+                    const allDescs = power_user.persona_descriptions as Record<
+                        string,
+                        Record<string, unknown> | undefined
+                    >;
                     for (const [avatarId, description] of Object.entries(allDescs)) {
                         if (avatarId === user_avatar) continue;
 
-                        const descConns = description?.connections as PersonaConnection[] | undefined;
-                        const filteredConnections = descConns?.filter((c: PersonaConnection) => !(c.type === newConnection!.type && c.id === newConnection!.id)) ?? [];
+                        const descConns = description?.connections as
+                            | PersonaConnection[]
+                            | undefined;
+                        const filteredConnections =
+                            descConns?.filter(
+                                (c: PersonaConnection) =>
+                                    !(c.type === newConnection!.type && c.id === newConnection!.id),
+                            ) ?? [];
                         if (filteredConnections.length !== descConns?.length) {
                             if (description) description.connections = filteredConnections;
                             unlinkedCharacters.push(personasMap[avatarId] ?? '');
@@ -1157,7 +1412,11 @@ async function lockPersona(type: string = 'chat') {
                     if (unlinkedCharacters.length)
                         additional += `<br /><br />${t`Unlinked existing persona${unlinkedCharacters.length > 1 ? 's' : ''}: ${unlinkedCharacters.map(escapeHtml).join(', ')}`}`;
                     if (additional || !isPersonaPanelOpen()) {
-                        notyf.success(t`User persona ${escapeHtml(name1)} is locked to character ${escapeHtml(name2)}${additional}`, t`Persona Locked`, { escapeHtml: false });
+                        notyf.success(
+                            t`User persona ${escapeHtml(name1)} is locked to character ${escapeHtml(name2)}${additional}`,
+                            t`Persona Locked`,
+                            { escapeHtml: false },
+                        );
                     }
                 }
             }
@@ -1169,7 +1428,6 @@ async function lockPersona(type: string = 'chat') {
 
     updatePersonaUIStates();
 }
-
 
 /**
  * Click handler for the delete persona button. Delegates to deletePersona with the current user avatar.
@@ -1192,13 +1450,19 @@ async function deletePersona(avatarId: string, { silent = false }: { silent?: bo
     }
 
     const personasMap = power_user.personas as Record<string, string | undefined>;
-    const personaDescsMap = power_user.persona_descriptions as Record<string, Record<string, unknown> | undefined>;
+    const personaDescsMap = power_user.persona_descriptions as Record<
+        string,
+        Record<string, unknown> | undefined
+    >;
     const name = personasMap[avatarId] || '';
 
     if (!silent) {
         const confirm = await Popup.show.confirm(
             t`Delete Persona` + `: ${name}`,
-            t`Are you sure you want to delete this avatar?` + '<br />' + t`All information associated with its linked persona will be lost.`);
+            t`Are you sure you want to delete this avatar?` +
+                '<br />' +
+                t`All information associated with its linked persona will be lost.`,
+        );
 
         if (!confirm) {
             console.debug('User cancelled deleting avatar');
@@ -1210,7 +1474,7 @@ async function deletePersona(avatarId: string, { silent = false }: { silent?: bo
         method: 'POST',
         headers: getRequestHeaders(),
         body: JSON.stringify({
-            'avatar': avatarId,
+            avatar: avatarId,
         }),
     });
 
@@ -1220,12 +1484,20 @@ async function deletePersona(avatarId: string, { silent = false }: { silent?: bo
         delete personaDescsMap[avatarId];
 
         if (avatarId === power_user.default_persona) {
-            if (!silent) notyf.warning(t`The default persona was deleted. You will need to set a new default persona.`, t`Default Persona Deleted`);
+            if (!silent)
+                notyf.warning(
+                    t`The default persona was deleted. You will need to set a new default persona.`,
+                    t`Default Persona Deleted`,
+                );
             power_user.default_persona = null;
         }
 
         if (avatarId === chat_metadata.persona) {
-            if (!silent) notyf.warning(t`The locked persona was deleted. You will need to set a new persona for this chat.`, t`Persona Deleted`);
+            if (!silent)
+                notyf.warning(
+                    t`The locked persona was deleted. You will need to set a new persona for this chat.`,
+                    t`Persona Deleted`,
+                );
             delete chat_metadata.persona;
             await saveMetadata();
         }
@@ -1246,11 +1518,16 @@ async function deletePersona(avatarId: string, { silent = false }: { silent?: bo
  *
  */
 async function onPersonaDescriptionInput() {
-    power_user.persona_description = String((document.getElementById('persona_description') as HTMLInputElement).value);
+    power_user.persona_description = String(
+        (document.getElementById('persona_description') as HTMLInputElement).value,
+    );
     countPersonaDescriptionTokens();
 
     const personasMap = power_user.personas as Record<string, string | undefined>;
-    const personaDescsMap = power_user.persona_descriptions as Record<string, Record<string, unknown> | undefined>;
+    const personaDescsMap = power_user.persona_descriptions as Record<
+        string,
+        Record<string, unknown> | undefined
+    >;
 
     if (personasMap[user_avatar]) {
         let object = personaDescsMap[user_avatar];
@@ -1258,9 +1535,23 @@ async function onPersonaDescriptionInput() {
         if (!object) {
             object = {
                 description: power_user.persona_description,
-                position: Number((document.querySelector('#persona_description_position option:checked') as HTMLOptionElement)?.value),
-                depth: Number((document.getElementById('persona_depth_value') as HTMLInputElement).value),
-                role: Number((document.querySelector('#persona_depth_role option:checked') as HTMLOptionElement)?.value),
+                position: Number(
+                    (
+                        document.querySelector(
+                            '#persona_description_position option:checked',
+                        ) as HTMLOptionElement
+                    )?.value,
+                ),
+                depth: Number(
+                    (document.getElementById('persona_depth_value') as HTMLInputElement).value,
+                ),
+                role: Number(
+                    (
+                        document.querySelector(
+                            '#persona_depth_role option:checked',
+                        ) as HTMLOptionElement
+                    )?.value,
+                ),
                 lorebook: '',
                 title: '',
             };
@@ -1270,9 +1561,14 @@ async function onPersonaDescriptionInput() {
         object.description = power_user.persona_description;
     }
 
-    const chDescEl = document.querySelector(`.avatar-container[data-avatar-id="${user_avatar}"] .ch_description`) as HTMLElement | null;
+    const chDescEl = document.querySelector(
+        `.avatar-container[data-avatar-id="${user_avatar}"] .ch_description`,
+    ) as HTMLElement | null;
     if (chDescEl) {
-        chDescEl.textContent = power_user.persona_description || document.getElementById('user_avatar_block')?.getAttribute('no_desc_text') || '';
+        chDescEl.textContent =
+            power_user.persona_description ||
+            document.getElementById('user_avatar_block')?.getAttribute('no_desc_text') ||
+            '';
         chDescEl.classList.toggle('text_muted', !power_user.persona_description);
     }
     saveSettingsDebounced();
@@ -1286,7 +1582,9 @@ async function onPersonaDescriptionInput() {
  *
  */
 async function onPersonaDescriptionDepthValueInput() {
-    power_user.persona_description_depth = Number((document.getElementById('persona_depth_value') as HTMLInputElement).value);
+    power_user.persona_description_depth = Number(
+        (document.getElementById('persona_depth_value') as HTMLInputElement).value,
+    );
 
     const personasMap = power_user.personas as Record<string, string | undefined>;
     if (personasMap[user_avatar]) {
@@ -1304,7 +1602,9 @@ async function onPersonaDescriptionDepthValueInput() {
  *
  */
 async function onPersonaDescriptionDepthRoleInput() {
-    power_user.persona_description_role = Number((document.querySelector('#persona_depth_role option:checked') as HTMLOptionElement)?.value);
+    power_user.persona_description_role = Number(
+        (document.querySelector('#persona_depth_role option:checked') as HTMLOptionElement)?.value,
+    );
 
     const personasMap = power_user.personas as Record<string, string | undefined>;
     if (personasMap[user_avatar]) {
@@ -1322,13 +1622,22 @@ async function onPersonaDescriptionDepthRoleInput() {
  * Opens a popup to set the lorebook for the current persona.
  * @param {Pick<JQuery.ClickEvent, 'shiftKey' | 'altKey'>} event Click event
  */
-async function onPersonaLoreButtonClick({ shiftKey, altKey }: { shiftKey: boolean; altKey: boolean }) {
+async function onPersonaLoreButtonClick({
+    shiftKey,
+    altKey,
+}: {
+    shiftKey: boolean;
+    altKey: boolean;
+}) {
     const personasMap = power_user.personas as Record<string, string | undefined>;
     const personaName = personasMap[user_avatar];
     const selectedLorebook = power_user.persona_description_lorebook;
 
     if (!personaName) {
-        notyf.warning(t`You must bind a name to this persona before you can set a lorebook.`, t`Persona Name Not Set`);
+        notyf.warning(
+            t`You must bind a name to this persona before you can set a lorebook.`,
+            t`Persona Name Not Set`,
+        );
         return;
     }
 
@@ -1342,8 +1651,8 @@ async function onPersonaLoreButtonClick({ shiftKey, altKey }: { shiftKey: boolea
 
     const worldSelect = templateEl.querySelector('select') as HTMLSelectElement | null;
     (templateEl.querySelector('.persona_name') as HTMLElement).textContent = personaName;
-wiManager.worldNames
-    for (const worldName of (world_names as string[])) {
+    wiManager.worldNames;
+    for (const worldName of world_names as string[]) {
         const option = document.createElement('option');
         option.value = worldName;
         option.innerText = worldName;
@@ -1359,7 +1668,9 @@ wiManager.worldNames
             object.lorebook = power_user.persona_description_lorebook;
         }
 
-        document.getElementById('persona_lore_button')!.classList.toggle('world_set', !!power_user.persona_description_lorebook);
+        document
+            .getElementById('persona_lore_button')!
+            .classList.toggle('world_set', !!power_user.persona_description_lorebook);
         saveSettingsDebounced();
 
         if (personasMap[user_avatar]) {
@@ -1375,7 +1686,11 @@ wiManager.worldNames
  */
 async function onPersonaDescriptionPositionInput() {
     power_user.persona_description_position = Number(
-        (document.querySelector('#persona_description_position option:checked') as HTMLOptionElement)?.value,
+        (
+            document.querySelector(
+                '#persona_description_position option:checked',
+            ) as HTMLOptionElement
+        )?.value,
     );
 
     const personasMap = power_user.personas as Record<string, string | undefined>;
@@ -1385,20 +1700,31 @@ async function onPersonaDescriptionPositionInput() {
         saveSettingsDebounced();
         await eventSource.emit(event_types.PERSONA_UPDATED, user_avatar);
         const _el1487 = document.getElementById('persona_depth_position_settings') as HTMLElement;
-        if (_el1487) _el1487.style.display = power_user.persona_description_position === persona_description_positions.AT_DEPTH ? '' : 'none';
+        if (_el1487)
+            _el1487.style.display =
+                power_user.persona_description_position === persona_description_positions.AT_DEPTH
+                    ? ''
+                    : 'none';
         return;
     }
 
     saveSettingsDebounced();
     const _el1493 = document.getElementById('persona_depth_position_settings') as HTMLElement;
-    if (_el1493) _el1493.style.display = power_user.persona_description_position === persona_description_positions.AT_DEPTH ? '' : 'none';
+    if (_el1493)
+        _el1493.style.display =
+            power_user.persona_description_position === persona_description_positions.AT_DEPTH
+                ? ''
+                : 'none';
 }
 
 /**
  *
  */
 export function getOrCreatePersonaDescriptor(): Record<string, unknown> {
-    const personaDescsMap = power_user.persona_descriptions as Record<string, Record<string, unknown> | undefined>;
+    const personaDescsMap = power_user.persona_descriptions as Record<
+        string,
+        Record<string, unknown> | undefined
+    >;
     let object = personaDescsMap[user_avatar];
 
     if (!object) {
@@ -1434,14 +1760,19 @@ async function toggleDefaultPersona(avatarId: string, { quiet = false }: { quiet
 
     if (personasMap[avatarId] === undefined) {
         console.warn(`No persona name found for avatar ${avatarId}`);
-        notyf.warning(t`You must bind a name to this persona before you can set it as the default.`, t`Persona Name Not Set`);
+        notyf.warning(
+            t`You must bind a name to this persona before you can set it as the default.`,
+            t`Persona Name Not Set`,
+        );
         return;
     }
 
-
     if (avatarId === currentDefault) {
         if (!quiet) {
-            const confirm = await Popup.show.confirm(t`Are you sure you want to remove the default persona?`, personasMap[avatarId]);
+            const confirm = await Popup.show.confirm(
+                t`Are you sure you want to remove the default persona?`,
+                personasMap[avatarId],
+            );
             if (!confirm) {
                 console.debug('User cancelled removing default persona');
                 return;
@@ -1450,15 +1781,20 @@ async function toggleDefaultPersona(avatarId: string, { quiet = false }: { quiet
 
         console.log(`Removing default persona ${avatarId}`);
         if (power_user.persona_show_notifications && !isPersonaPanelOpen()) {
-            notyf.info(t`This persona will no longer be used by default when you open a new chat.`, t`Default Persona Removed`);
+            notyf.info(
+                t`This persona will no longer be used by default when you open a new chat.`,
+                t`Default Persona Removed`,
+            );
         }
         (power_user as Record<string, unknown>).default_persona = null;
     } else {
         if (!quiet) {
-            const confirm = await Popup.show.confirm(t`Set Default Persona`,
-                t`Are you sure you want to set "${personasMap[avatarId]}" as the default persona?`
-                + '<br /><br />'
-                + t`This name and avatar will be used for all new chats, as well as existing chats where the user persona is not locked.`);
+            const confirm = await Popup.show.confirm(
+                t`Set Default Persona`,
+                t`Are you sure you want to set "${personasMap[avatarId]}" as the default persona?` +
+                    '<br /><br />' +
+                    t`This name and avatar will be used for all new chats, as well as existing chats where the user persona is not locked.`,
+            );
             if (!confirm) {
                 console.debug('User cancelled setting default persona');
                 return;
@@ -1467,7 +1803,10 @@ async function toggleDefaultPersona(avatarId: string, { quiet = false }: { quiet
 
         (power_user as Record<string, unknown>).default_persona = avatarId;
         if (power_user.persona_show_notifications && !isPersonaPanelOpen()) {
-            notyf.success(t`Set to ${personasMap[avatarId]}.This persona will be used by default when you open a new chat.`, t`Default Persona`);
+            notyf.success(
+                t`Set to ${personasMap[avatarId]}.This persona will be used by default when you open a new chat.`,
+                t`Default Persona`,
+            );
         }
     }
 
@@ -1490,11 +1829,18 @@ function getPersonaStates(avatarId: string): PersonaState {
     const isDefaultPersona = power_user.default_persona === avatarId;
     const hasChatLock = chat_metadata.persona == avatarId;
 
-    const personaDescsMap = power_user.persona_descriptions as Record<string, Record<string, unknown> | undefined>;
+    const personaDescsMap = power_user.persona_descriptions as Record<
+        string,
+        Record<string, unknown> | undefined
+    >;
     const connections = personaDescsMap[avatarId]?.connections as PersonaConnection[] | undefined;
-    const hasCharLock = !!connections?.some((c: PersonaConnection) =>
-        (!selected_group && c.type === 'character' && c.id === characters[Number(this_chid)]?.avatar)
-        || (selected_group && c.type === 'group' && c.id === selected_group));
+    const hasCharLock = !!connections?.some(
+        (c: PersonaConnection) =>
+            (!selected_group &&
+                c.type === 'character' &&
+                c.id === characters[Number(this_chid)]?.avatar) ||
+            (selected_group && c.type === 'group' && c.id === selected_group),
+    );
 
     return {
         avatarId: avatarId,
@@ -1521,13 +1867,15 @@ function getPersonaStates(avatarId: string): PersonaState {
  * @param root0
  * @param root0.navigateToCurrent
  */
-function updatePersonaUIStates({ navigateToCurrent = false }: { navigateToCurrent?: boolean } = {}) {
+function updatePersonaUIStates({
+    navigateToCurrent = false,
+}: { navigateToCurrent?: boolean } = {}) {
     if (navigateToCurrent) {
         navigateToAvatar(user_avatar);
     }
 
     // Update the persona list
-    document.querySelectorAll('#user_avatar_block .avatar-container').forEach(el => {
+    document.querySelectorAll('#user_avatar_block .avatar-container').forEach((el) => {
         const avatarId = el.getAttribute('data-avatar-id');
         const states = getPersonaStates(avatarId!);
         el.classList.toggle('default_persona', states.default);
@@ -1539,15 +1887,33 @@ function updatePersonaUIStates({ navigateToCurrent = false }: { navigateToCurren
     // Buttons for the persona panel on the right
     const personaStates = getPersonaStates(user_avatar);
 
-    document.getElementById('lock_persona_default')!.classList.toggle('locked', personaStates.default);
+    document
+        .getElementById('lock_persona_default')!
+        .classList.toggle('locked', personaStates.default);
 
-    document.getElementById('lock_user_name')!.classList.toggle('locked', personaStates.locked.chat);
-    (document.querySelector('#lock_user_name i.icon') as HTMLElement)!.classList.toggle('fa-lock', personaStates.locked.chat);
-    (document.querySelector('#lock_user_name i.icon') as HTMLElement)!.classList.toggle('fa-unlock', !personaStates.locked.chat);
+    document
+        .getElementById('lock_user_name')!
+        .classList.toggle('locked', personaStates.locked.chat);
+    (document.querySelector('#lock_user_name i.icon') as HTMLElement)!.classList.toggle(
+        'fa-lock',
+        personaStates.locked.chat,
+    );
+    (document.querySelector('#lock_user_name i.icon') as HTMLElement)!.classList.toggle(
+        'fa-unlock',
+        !personaStates.locked.chat,
+    );
 
-    document.getElementById('lock_persona_to_char')!.classList.toggle('locked', personaStates.locked.character);
-    (document.querySelector('#lock_persona_to_char i.icon') as HTMLElement)!.classList.toggle('fa-lock', personaStates.locked.character);
-    (document.querySelector('#lock_persona_to_char i.icon') as HTMLElement)!.classList.toggle('fa-unlock', !personaStates.locked.character);
+    document
+        .getElementById('lock_persona_to_char')!
+        .classList.toggle('locked', personaStates.locked.character);
+    (document.querySelector('#lock_persona_to_char i.icon') as HTMLElement)!.classList.toggle(
+        'fa-lock',
+        personaStates.locked.character,
+    );
+    (document.querySelector('#lock_persona_to_char i.icon') as HTMLElement)!.classList.toggle(
+        'fa-unlock',
+        !personaStates.locked.character,
+    );
 
     // Persona panel info block
     const { isTemporary, info } = getPersonaTemporaryLockInfo();
@@ -1589,14 +1955,21 @@ function updatePersonaUIStates({ navigateToCurrent = false }: { navigateToCurren
  */
 function getPersonaTemporaryLockInfo() {
     const hasDifferentChatLock = !!chat_metadata.persona && chat_metadata.persona !== user_avatar;
-    const hasDifferentDefaultLock = power_user.default_persona && power_user.default_persona !== user_avatar;
+    const hasDifferentDefaultLock =
+        power_user.default_persona && power_user.default_persona !== user_avatar;
     const isTemporary = hasDifferentChatLock || (!chat_metadata.persona && hasDifferentDefaultLock);
     const personasMap = power_user.personas as Record<string, string | undefined>;
-    const info = isTemporary ? t`A different persona is locked to this chat, or you have a different default persona set. The currently selected persona will only be temporary, and resets on reload. Consider locking this persona to the chat if you want to permanently use it.`
-        + '\n\n'
-        + t`Current Persona: ${personasMap[user_avatar]}`
-        + (hasDifferentChatLock ? '\n' + t`Chat persona: ${personasMap[chat_metadata.persona!]}` : '')
-        + (hasDifferentDefaultLock ? '\n' + t`Default persona: ${personasMap[power_user.default_persona!]}` : '') : '';
+    const info = isTemporary
+        ? t`A different persona is locked to this chat, or you have a different default persona set. The currently selected persona will only be temporary, and resets on reload. Consider locking this persona to the chat if you want to permanently use it.` +
+          '\n\n' +
+          t`Current Persona: ${personasMap[user_avatar]}` +
+          (hasDifferentChatLock
+              ? '\n' + t`Chat persona: ${personasMap[chat_metadata.persona!]}`
+              : '') +
+          (hasDifferentDefaultLock
+              ? '\n' + t`Default persona: ${personasMap[power_user.default_persona!]}`
+              : '')
+        : '';
 
     return {
         isTemporary: isTemporary,
@@ -1622,8 +1995,13 @@ async function loadPersonaForCurrentChat({ doRender = false }: { doRender?: bool
 
     // Check if the user avatar is set and exists in the list of user avatars
     if (userAvatars && userAvatars.length && !userAvatars.includes(user_avatar)) {
-        console.log(`User avatar ${user_avatar} not found in user avatars list, pick the first available one`);
-        await setUserAvatar(userAvatars[0]!, { toastPersonaNameChange: false, navigateToCurrent: true });
+        console.log(
+            `User avatar ${user_avatar} not found in user avatars list, pick the first available one`,
+        );
+        await setUserAvatar(userAvatars[0]!, {
+            toastPersonaNameChange: false,
+            navigateToCurrent: true,
+        });
     }
 
     // Define a persona for this chat
@@ -1682,12 +2060,21 @@ async function loadPersonaForCurrentChat({ doRender = false }: { doRender?: bool
             if (connectedPersonas.length === 1) {
                 chatPersona = connectedPersonas[0]!;
             } else if (!(power_user as Record<string, unknown>).persona_allow_multi_connections) {
-                console.warn('More than one persona is connected to this character.Using the first available persona for this chat.');
+                console.warn(
+                    'More than one persona is connected to this character.Using the first available persona for this chat.',
+                );
                 chatPersona = connectedPersonas[0]!;
             } else {
-                chatPersona = await askForPersonaSelection(t`Select Persona`,
-                    t`Multiple personas are connected to this character.\nSelect a persona to use for this chat.`,
-                    connectedPersonas, { highlightPersonas: true, targetedChar: getCurrentConnectionObj() ?? undefined }) ?? '';
+                chatPersona =
+                    (await askForPersonaSelection(
+                        t`Select Persona`,
+                        t`Multiple personas are connected to this character.\nSelect a persona to use for this chat.`,
+                        connectedPersonas,
+                        {
+                            highlightPersonas: true,
+                            targetedChar: getCurrentConnectionObj() ?? undefined,
+                        },
+                    )) ?? '';
             }
         }
 
@@ -1709,7 +2096,11 @@ async function loadPersonaForCurrentChat({ doRender = false }: { doRender?: bool
     }
 
     // Default persona missing
-    if (power_user.default_persona && userAvatars && !userAvatars.includes(power_user.default_persona)) {
+    if (
+        power_user.default_persona &&
+        userAvatars &&
+        !userAvatars.includes(power_user.default_persona)
+    ) {
         console.warn('Default persona avatar not found, clearing default persona');
         power_user.default_persona = null;
         saveSettingsDebounced();
@@ -1718,8 +2109,13 @@ async function loadPersonaForCurrentChat({ doRender = false }: { doRender?: bool
     // Persona avatar found, select it
     const personasMap = power_user.personas as Record<string, string | undefined>;
     if (chatPersona && user_avatar !== chatPersona) {
-        const willAutoLock = !!(power_user as Record<string, unknown>).persona_auto_lock && user_avatar !== chat_metadata.persona;
-        await setUserAvatar(chatPersona, { toastPersonaNameChange: false, navigateToCurrent: true });
+        const willAutoLock =
+            !!(power_user as Record<string, unknown>).persona_auto_lock &&
+            user_avatar !== chat_metadata.persona;
+        await setUserAvatar(chatPersona, {
+            toastPersonaNameChange: false,
+            navigateToCurrent: true,
+        });
 
         if (power_user.persona_show_notifications) {
             let message = t`Auto-selected persona based on ${connectType} connection.<br />Your messages will now be sent as ${personasMap[chatPersona]}.`;
@@ -1728,7 +2124,11 @@ async function loadPersonaForCurrentChat({ doRender = false }: { doRender?: bool
             }
             notyf.success(message, t`Persona Auto Selected`, { escapeHtml: false });
         }
-    } else if (chatPersona && (power_user as Record<string, unknown>).persona_auto_lock && !chat_metadata.persona) {
+    } else if (
+        chatPersona &&
+        (power_user as Record<string, unknown>).persona_auto_lock &&
+        !chat_metadata.persona
+    ) {
         // Even if it's the same persona, we still might need to auto-lock to chat if that's enabled
         await lockPersona('chat');
     }
@@ -1746,7 +2146,10 @@ async function loadPersonaForCurrentChat({ doRender = false }: { doRender?: bool
  */
 export function getConnectedPersonas(characterKey?: string) {
     characterKey ??= selected_group || characters[Number(this_chid)]?.avatar;
-    const descsMap = power_user.persona_descriptions as Record<string, Record<string, unknown> | undefined>;
+    const descsMap = power_user.persona_descriptions as Record<
+        string,
+        Record<string, unknown> | undefined
+    >;
     const connectedPersonas = Object.entries(descsMap)
         .filter(([_, desc]) => {
             const conns = desc?.connections as PersonaConnection[] | undefined;
@@ -1755,7 +2158,6 @@ export function getConnectedPersonas(characterKey?: string) {
         .map(([key, _]) => key);
     return connectedPersonas;
 }
-
 
 /**
  * Shows a popup with all personas connected to the currently selected character or group.
@@ -1767,41 +2169,68 @@ export async function showCharConnections() {
 
     const connections = getConnectedPersonas();
     const message = t`The following personas are connected to the current character.\n\nClick on a persona to select it for the current character.\nShift + Click to unlink the persona from the character.`;
-    const selectedPersona = await askForPersonaSelection(t`Persona Connections`, message, connections, {
-        okButton: t`Ok`,
-        highlightPersonas: true,
-        targetedChar: getCurrentConnectionObj() ?? undefined,
-        shiftClickHandler: (element: HTMLElement, ev: MouseEvent) => {
-            const personaId = element.dataset.pid;
-            if (!personaId) return;
-            const personaDescsMap = power_user.persona_descriptions as Record<string, Record<string, unknown> | undefined>;
-            const personasMap = power_user.personas as Record<string, string | undefined>;
-            const connections = personaDescsMap[personaId]?.connections as PersonaConnection[] | undefined;
-            if (connections) {
-                console.log(`Unlocking persona ${personaId} from current character ${name2}`);
-                personaDescsMap[personaId]!.connections = connections.filter((c: PersonaConnection) => {
-                    if (menu_type == 'group_edit' && c.type == 'group' && c.id == selected_group) return false;
-                    else if (c.type == 'character' && c.id == characters[Number(this_chid)]?.avatar) return false;
-                    return true;
-                });
-                saveSettingsDebounced();
-                updatePersonaConnectionsAvatarList();
-                if (power_user.persona_show_notifications) {
-                    notyf.info(t`User persona ${personasMap[personaId]} is now unlocked from the current character ${name2}.`, t`Persona unlocked`);
-                }
+    const selectedPersona = await askForPersonaSelection(
+        t`Persona Connections`,
+        message,
+        connections,
+        {
+            okButton: t`Ok`,
+            highlightPersonas: true,
+            targetedChar: getCurrentConnectionObj() ?? undefined,
+            shiftClickHandler: (element: HTMLElement, ev: MouseEvent) => {
+                const personaId = element.dataset.pid;
+                if (!personaId) return;
+                const personaDescsMap = power_user.persona_descriptions as Record<
+                    string,
+                    Record<string, unknown> | undefined
+                >;
+                const personasMap = power_user.personas as Record<string, string | undefined>;
+                const connections = personaDescsMap[personaId]?.connections as
+                    | PersonaConnection[]
+                    | undefined;
+                if (connections) {
+                    console.log(`Unlocking persona ${personaId} from current character ${name2}`);
+                    personaDescsMap[personaId]!.connections = connections.filter(
+                        (c: PersonaConnection) => {
+                            if (
+                                menu_type == 'group_edit' &&
+                                c.type == 'group' &&
+                                c.id == selected_group
+                            )
+                                return false;
+                            else if (
+                                c.type == 'character' &&
+                                c.id == characters[Number(this_chid)]?.avatar
+                            )
+                                return false;
+                            return true;
+                        },
+                    );
+                    saveSettingsDebounced();
+                    updatePersonaConnectionsAvatarList();
+                    if (power_user.persona_show_notifications) {
+                        notyf.info(
+                            t`User persona ${personasMap[personaId]} is now unlocked from the current character ${name2}.`,
+                            t`Persona unlocked`,
+                        );
+                    }
 
-                isRemoving = true;
-                document.getElementById('char_connections_button')?.click();
-            }
+                    isRemoving = true;
+                    document.getElementById('char_connections_button')?.click();
+                }
+            },
         },
-    });
+    );
 
     // One of the persona was selected. So load it.
     if (!isRemoving && selectedPersona) {
         await setUserAvatar(selectedPersona, { toastPersonaNameChange: false });
         if (power_user.persona_show_notifications) {
             const personasMap = power_user.personas as Record<string, string | undefined>;
-            notyf.success(t`Selected persona ${personasMap[selectedPersona]} for current chat.`, t`Connected Persona Selected`);
+            notyf.success(
+                t`Selected persona ${personasMap[selectedPersona]} for current chat.`,
+                t`Connected Persona Selected`,
+            );
         }
     }
 }
@@ -1811,8 +2240,7 @@ export async function showCharConnections() {
  * @returns {PersonaConnection} An object representing the current connection
  */
 export function getCurrentConnectionObj(): PersonaConnection | null {
-    if (selected_group)
-        return { type: 'group', id: selected_group };
+    if (selected_group) return { type: 'group', id: selected_group };
     if (characters[Number(this_chid)]?.avatar)
         return { type: 'character', id: characters[Number(this_chid)]!.avatar };
     return null;
@@ -1824,11 +2252,15 @@ export function getCurrentConnectionObj(): PersonaConnection | null {
 function onBackupPersonas() {
     const timestamp = new Date().toISOString().split('T')[0]!.replace(/-/g, '');
     const filename = `personas_${timestamp}.json`;
-    const data = JSON.stringify({
-        'personas': power_user.personas,
-        'persona_descriptions': power_user.persona_descriptions,
-        'default_persona': power_user.default_persona,
-    }, null, 2);
+    const data = JSON.stringify(
+        {
+            personas: power_user.personas,
+            persona_descriptions: power_user.persona_descriptions,
+            default_persona: power_user.default_persona,
+        },
+        null,
+        2,
+    );
 
     const blob = new Blob([data], { type: 'application/json' });
     download(blob, filename, 'application/json');
@@ -1847,7 +2279,10 @@ async function onPersonasRestoreInput(e: Event) {
         return;
     }
 
-    const data: Record<string, unknown> | null = await parseJsonFile(file) as Record<string, unknown> | null;
+    const data: Record<string, unknown> | null = (await parseJsonFile(file)) as Record<
+        string,
+        unknown
+    > | null;
 
     if (!data) {
         notyf.warning(t`Invalid file selected`, t`Persona Management`);
@@ -1855,7 +2290,12 @@ async function onPersonasRestoreInput(e: Event) {
         return;
     }
 
-    if (!data.personas || !data.persona_descriptions || typeof data.personas !== 'object' || typeof data.persona_descriptions !== 'object') {
+    if (
+        !data.personas ||
+        !data.persona_descriptions ||
+        typeof data.personas !== 'object' ||
+        typeof data.persona_descriptions !== 'object'
+    ) {
         notyf.warning(t`Invalid file format`, t`Persona Management`);
         console.debug('Invalid file selected');
         return;
@@ -1864,7 +2304,10 @@ async function onPersonasRestoreInput(e: Event) {
     const avatarsList = await getUserAvatars(false);
     const warnings: string[] = [];
     const personasMap = power_user.personas as Record<string, string | undefined>;
-    const personaDescsMap = power_user.persona_descriptions as Record<string, Record<string, unknown> | undefined>;
+    const personaDescsMap = power_user.persona_descriptions as Record<
+        string,
+        Record<string, unknown> | undefined
+    >;
 
     // Merge personas with existing ones
     for (const [key, value] of Object.entries(data.personas as Record<string, unknown>)) {
@@ -1883,9 +2326,13 @@ async function onPersonasRestoreInput(e: Event) {
     }
 
     // Merge persona descriptions with existing ones
-    for (const [key, value] of Object.entries(data.persona_descriptions as Record<string, unknown>)) {
+    for (const [key, value] of Object.entries(
+        data.persona_descriptions as Record<string, unknown>,
+    )) {
         if (key in personaDescsMap) {
-            warnings.push(`Persona description for "${key}" (${personasMap[key]}) already exists, skipping`);
+            warnings.push(
+                `Persona description for "${key}" (${personasMap[key]}) already exists, skipping`,
+            );
             continue;
         }
 
@@ -1906,7 +2353,10 @@ async function onPersonasRestoreInput(e: Event) {
     }
 
     if (warnings.length) {
-        notyf.success(t`Personas restored with warnings. Check console for details.`, t`Persona Management`);
+        notyf.success(
+            t`Personas restored with warnings. Check console for details.`,
+            t`Persona Management`,
+        );
         console.warn(`PERSONA RESTORE REPORT\n====================\n${warnings.join('\n')}`);
     } else {
         notyf.success(t`Personas restored successfully.`, t`Persona Management`);
@@ -1927,14 +2377,20 @@ async function onPersonasRestoreInput(e: Event) {
  * @param {string} [options.nameFilter] - Filter messages by name (case-insensitive)
  * @returns {Promise<void>}
  */
-async function syncUserNameToPersona({ start = 0, end = chat.length - 1, quiet = false, nameFilter = '' } = {}) {
+async function syncUserNameToPersona({
+    start = 0,
+    end = chat.length - 1,
+    quiet = false,
+    nameFilter = '',
+} = {}) {
     const isRangeAll = start === 0 && end === chat.length - 1;
     const hasNameFilter = nameFilter?.trim();
-    const confirmMessage = isRangeAll && !hasNameFilter
-        ? t`All user-sent messages in this chat will be attributed to ${name1}.`
-        : isRangeAll && hasNameFilter
-            ? t`User-sent messages with name "${nameFilter}" will be attributed to ${name1}.`
-            : !isRangeAll && !hasNameFilter
+    const confirmMessage =
+        isRangeAll && !hasNameFilter
+            ? t`All user-sent messages in this chat will be attributed to ${name1}.`
+            : isRangeAll && hasNameFilter
+              ? t`User-sent messages with name "${nameFilter}" will be attributed to ${name1}.`
+              : !isRangeAll && !hasNameFilter
                 ? t`User-sent messages in the specified range will be attributed to ${name1}.`
                 : t`User-sent messages with name "${nameFilter}" in the specified range will be attributed to ${name1}.`;
 
@@ -1980,9 +2436,15 @@ export async function retriggerFirstMessageOnEmptyChat() {
  * @param {boolean} [options.select] If true, selects/activates the duplicated persona
  * @returns {Promise<string>} The avatar id of the new persona, or empty string on failure/cancellation
  */
-async function duplicatePersona(avatarId: string, { silent = false, select = false }: { silent?: boolean; select?: boolean } = {}) {
+async function duplicatePersona(
+    avatarId: string,
+    { silent = false, select = false }: { silent?: boolean; select?: boolean } = {},
+) {
     const personasMap = power_user.personas as Record<string, string | undefined>;
-    const personaDescsMap = power_user.persona_descriptions as Record<string, Record<string, unknown> | undefined>;
+    const personaDescsMap = power_user.persona_descriptions as Record<
+        string,
+        Record<string, unknown> | undefined
+    >;
     const personaName = personasMap[avatarId];
 
     if (!personaName) {
@@ -1991,7 +2453,10 @@ async function duplicatePersona(avatarId: string, { silent = false, select = fal
     }
 
     if (!silent) {
-        const confirm = await Popup.show.confirm(t`Are you sure you want to duplicate this persona?`, personaName);
+        const confirm = await Popup.show.confirm(
+            t`Are you sure you want to duplicate this persona?`,
+            personaName,
+        );
 
         if (!confirm) {
             console.debug('User cancelled duplicating persona');
@@ -2047,7 +2512,6 @@ async function migrateNonPersonaUser() {
     await getUserAvatars(true, user_avatar);
 }
 
-
 // #region Persona CRUD Slash Command Utilities
 
 /**
@@ -2055,11 +2519,11 @@ async function migrateNonPersonaUser() {
  * @type {Record<string, number>}
  */
 const POSITION_NAME_MAP = Object.freeze({
-    'inprompt': persona_description_positions.IN_PROMPT,
-    'topan': persona_description_positions.TOP_AN,
-    'bottoman': persona_description_positions.BOTTOM_AN,
-    'atdepth': persona_description_positions.AT_DEPTH,
-    'none': persona_description_positions.NONE,
+    inprompt: persona_description_positions.IN_PROMPT,
+    topan: persona_description_positions.TOP_AN,
+    bottoman: persona_description_positions.BOTTOM_AN,
+    atdepth: persona_description_positions.AT_DEPTH,
+    none: persona_description_positions.NONE,
 });
 
 /**
@@ -2067,9 +2531,9 @@ const POSITION_NAME_MAP = Object.freeze({
  * @type {Record<string, number>}
  */
 const ROLE_NAME_MAP = Object.freeze({
-    'system': 0,
-    'user': 1,
-    'assistant': 2,
+    system: 0,
+    user: 1,
+    assistant: 2,
 });
 
 /**
@@ -2083,7 +2547,11 @@ function parsePersonaPosition(value: string | number | undefined | null): number
     const nameMap = POSITION_NAME_MAP as Record<string, number | undefined>;
     if (strValue in nameMap) return nameMap[strValue] ?? null;
     const numValue = Number(value);
-    if (!isNaN(numValue) && (Object.values(persona_description_positions) as number[]).includes(numValue)) return numValue;
+    if (
+        !isNaN(numValue) &&
+        (Object.values(persona_description_positions) as number[]).includes(numValue)
+    )
+        return numValue;
     return null;
 }
 
@@ -2110,13 +2578,19 @@ function parsePersonaRole(value: string | number | undefined | null): number | n
  * @param {boolean} [options.resizePrompt] Whether to show the crop dialog
  * @returns {Promise<boolean>} True if upload was successful
  */
-async function uploadPersonaAvatar(avatarId: string, base64Data: string, { resizePrompt = false }: { resizePrompt?: boolean } = {}) {
+async function uploadPersonaAvatar(
+    avatarId: string,
+    base64Data: string,
+    { resizePrompt = false }: { resizePrompt?: boolean } = {},
+) {
     if (!base64Data || !avatarId) return false;
 
     let finalImageData = base64Data;
 
     if (resizePrompt && !power_user.never_resize_avatars) {
-        const dlg = new Popup(t`Set the crop position of the avatar image`, POPUP_TYPE.CROP, '', { cropImage: base64Data } as Record<string, unknown>);
+        const dlg = new Popup(t`Set the crop position of the avatar image`, POPUP_TYPE.CROP, '', {
+            cropImage: base64Data,
+        } as Record<string, unknown>);
         const croppedImage = await dlg.show();
         if (!croppedImage) return false;
         finalImageData = String(croppedImage);
@@ -2198,26 +2672,38 @@ async function createPersonaCallback(args: Record<string, unknown>) {
 
     const description = (args.description ?? '') as string;
     const title = (args.title ?? '') as string;
-    const position = parsePersonaPosition(args.descriptionPosition as string) ?? persona_description_positions.IN_PROMPT;
+    const position =
+        parsePersonaPosition(args.descriptionPosition as string) ??
+        persona_description_positions.IN_PROMPT;
     const role = parsePersonaRole(args.descriptionRole as string) ?? DEFAULT_ROLE;
     const lorebook = (args.lorebook ?? '') as string;
 
-    let depth = args.descriptionDepth !== undefined ? Number(args.descriptionDepth as string) : DEFAULT_DEPTH;
+    let depth =
+        args.descriptionDepth !== undefined
+            ? Number(args.descriptionDepth as string)
+            : DEFAULT_DEPTH;
     if (isNaN(depth)) {
-        notyf.warning(t`Invalid description depth "${args.descriptionDepth as string}", defaulting to ${DEFAULT_DEPTH}`);
+        notyf.warning(
+            t`Invalid description depth "${args.descriptionDepth as string}", defaulting to ${DEFAULT_DEPTH}`,
+        );
         depth = DEFAULT_DEPTH;
     }
 
     // Initialize persona data with all fields
     await initPersona(avatarId, trimmedName, description, title, {
-        position, depth, role, lorebook,
+        position,
+        depth,
+        role,
+        lorebook,
     });
 
     // Handle avatar upload
     const avatarData = args.avatar ? await resolveAvatarData(args.avatar) : null;
     if (avatarData) {
         const resizePrompt = !isFalseBoolean(args.avatarPromptResize ?? 'true');
-        const uploaded = await uploadPersonaAvatar(avatarId, avatarData as string, { resizePrompt });
+        const uploaded = await uploadPersonaAvatar(avatarId, avatarData as string, {
+            resizePrompt,
+        });
         if (!uploaded) {
             // Crop was cancelled or upload failed — use default avatar
             await uploadUserAvatar(default_user_avatar, avatarId);
@@ -2248,7 +2734,10 @@ async function updatePersonaCallback(args: Record<string, unknown>) {
     if (!persona) return '';
 
     const avatarId = persona.avatar ?? '';
-    const personaDescsMap = power_user.persona_descriptions as Record<string, Record<string, unknown> | undefined>;
+    const personaDescsMap = power_user.persona_descriptions as Record<
+        string,
+        Record<string, unknown> | undefined
+    >;
     const descriptor = personaDescsMap[avatarId];
 
     if (!descriptor) {
@@ -2337,7 +2826,9 @@ async function updatePersonaCallback(args: Record<string, unknown>) {
     const avatarData = args.avatar ? await resolveAvatarData(args.avatar) : null;
     if (avatarData) {
         const resizePrompt = !isFalseBoolean(args.avatarPromptResize ?? 'true');
-        const uploaded = await uploadPersonaAvatar(avatarId, avatarData as string, { resizePrompt });
+        const uploaded = await uploadPersonaAvatar(avatarId, avatarData as string, {
+            resizePrompt,
+        });
         if (uploaded) {
             hasUpdates = true;
         }
@@ -2373,7 +2864,10 @@ async function getPersonaDataCallback(args: Record<string, unknown>) {
     if (!persona) return '';
 
     const avatarId = persona.avatar;
-    const personaDescsMap = power_user.persona_descriptions as Record<string, Record<string, unknown> | undefined>;
+    const personaDescsMap = power_user.persona_descriptions as Record<
+        string,
+        Record<string, unknown> | undefined
+    >;
     const descriptor = personaDescsMap[avatarId] ?? {};
 
     if (args.field) {
@@ -2397,10 +2891,10 @@ async function getPersonaDataCallback(args: Record<string, unknown>) {
             return '';
         }
 
-        return await slashCommandReturnHelper.doReturn(
-            (args.return as string) ?? 'pipe', value,
-            { objectToStringFunc: (x: unknown) => typeof x === 'object' ? JSON.stringify(x) : String(x) },
-        );
+        return await slashCommandReturnHelper.doReturn((args.return as string) ?? 'pipe', value, {
+            objectToStringFunc: (x: unknown) =>
+                typeof x === 'object' ? JSON.stringify(x) : String(x),
+        });
     }
 
     // Return full persona data
@@ -2418,10 +2912,9 @@ async function getPersonaDataCallback(args: Record<string, unknown>) {
         connections: descriptor.connections ?? [],
     };
 
-    return await slashCommandReturnHelper.doReturn(
-        (args.return as string) ?? 'pipe', personaData,
-        { objectToStringFunc: (x: unknown) => JSON.stringify(x, null, 2) },
-    );
+    return await slashCommandReturnHelper.doReturn((args.return as string) ?? 'pipe', personaData, {
+        objectToStringFunc: (x: unknown) => JSON.stringify(x, null, 2),
+    });
 }
 
 /**
@@ -2448,7 +2941,10 @@ async function duplicatePersonaCallback(args: Record<string, unknown>) {
     if (!persona) return '';
 
     const shouldSelect = isTrueBoolean(args.select);
-    const newAvatarId = await duplicatePersona(persona.avatar, { silent: true, select: shouldSelect });
+    const newAvatarId = await duplicatePersona(persona.avatar, {
+        silent: true,
+        select: shouldSelect,
+    });
 
     if (!newAvatarId) {
         notyf.error(t`Failed to duplicate persona`);
@@ -2570,8 +3066,11 @@ function userMessageNamesEnumProvider(): SlashCommandEnumValue[] {
         .map((mes: ChatMessage) => mes.name)
         .filter((name): name is string => !!name)
         .filter(onlyUnique)
-        .sort(sortIgnoreCaseAndAccents)
-        .map((name: string) => new SlashCommandEnumValue(name, null, enumTypes.name, enumIcons.persona));
+        .toSorted(sortIgnoreCaseAndAccents)
+        .map(
+            (name: string) =>
+                new SlashCommandEnumValue(name, null, enumTypes.name, enumIcons.persona),
+        );
 }
 
 /**
@@ -2585,33 +3084,93 @@ function registerPersonaSlashCommands() {
             description: t`The name of the persona`,
             typeList: [ARGUMENT_TYPE.STRING],
             isRequired: requiredFields.includes('name'),
-                }),
-                SlashCommandNamedArgument.fromProps({
-                    name: 'description',
-                    description: t`The persona description (sent with messages for AI context)`,
-                    typeList: [ARGUMENT_TYPE.STRING],
-                    isRequired: requiredFields.includes('description'),
-                }),
-                SlashCommandNamedArgument.fromProps({
-                    name: 'title',
-                    description: t`A display title for the persona (not sent to the AI, display only)`,
-                    typeList: [ARGUMENT_TYPE.STRING],
-                    isRequired: requiredFields.includes('title'),
-                }),
-                SlashCommandNamedArgument.fromProps({
-                    name: 'avatar',
-                    description: t`Avatar image. Use "prompt" to open file picker, or provide a local ST file path or base64 data URL. Can also be the return value of /imagine.`,
-                    typeList: [ARGUMENT_TYPE.STRING],
-                    isRequired: requiredFields.includes('avatar'),
-                    enumList: [
-                        new SlashCommandEnumValue('prompt', 'Open file picker to select an image', enumTypes.enum, '📁'),
-                        new SlashCommandEnumValue('characters/...', 'Character avatars path (e.g., characters/Name.png)', enumTypes.enum, '📄', (input: string) => commonEnumMatchProviders.folderEnum(input, 'characters/') as SlashCommandEnumValue[], () => 'characters/'),
-                        new SlashCommandEnumValue('backgrounds/...', 'Background image path', enumTypes.enum, '📄', (input: string) => commonEnumMatchProviders.folderEnum(input, 'backgrounds/') as SlashCommandEnumValue[], () => 'backgrounds/'),
-                        new SlashCommandEnumValue('User Avatars/...', 'User avatar path', enumTypes.enum, '📄', (input: string) => commonEnumMatchProviders.folderEnum(input, 'User Avatars/') as SlashCommandEnumValue[], () => 'User Avatars/'),
-                        new SlashCommandEnumValue('assets/...', 'Asset file path', enumTypes.enum, '📄', (input: string) => commonEnumMatchProviders.folderEnum(input, 'assets/') as SlashCommandEnumValue[], () => 'assets/'),
-                        new SlashCommandEnumValue('user/images/...', 'User image path', enumTypes.enum, '📄', (input: string) => commonEnumMatchProviders.folderEnum(input, 'user/images/') as SlashCommandEnumValue[], () => 'user/images/'),
-                    ],
-                }),
+        }),
+        SlashCommandNamedArgument.fromProps({
+            name: 'description',
+            description: t`The persona description (sent with messages for AI context)`,
+            typeList: [ARGUMENT_TYPE.STRING],
+            isRequired: requiredFields.includes('description'),
+        }),
+        SlashCommandNamedArgument.fromProps({
+            name: 'title',
+            description: t`A display title for the persona (not sent to the AI, display only)`,
+            typeList: [ARGUMENT_TYPE.STRING],
+            isRequired: requiredFields.includes('title'),
+        }),
+        SlashCommandNamedArgument.fromProps({
+            name: 'avatar',
+            description: t`Avatar image. Use "prompt" to open file picker, or provide a local ST file path or base64 data URL. Can also be the return value of /imagine.`,
+            typeList: [ARGUMENT_TYPE.STRING],
+            isRequired: requiredFields.includes('avatar'),
+            enumList: [
+                new SlashCommandEnumValue(
+                    'prompt',
+                    'Open file picker to select an image',
+                    enumTypes.enum,
+                    '📁',
+                ),
+                new SlashCommandEnumValue(
+                    'characters/...',
+                    'Character avatars path (e.g., characters/Name.png)',
+                    enumTypes.enum,
+                    '📄',
+                    (input: string) =>
+                        commonEnumMatchProviders.folderEnum(
+                            input,
+                            'characters/',
+                        ) as SlashCommandEnumValue[],
+                    () => 'characters/',
+                ),
+                new SlashCommandEnumValue(
+                    'backgrounds/...',
+                    'Background image path',
+                    enumTypes.enum,
+                    '📄',
+                    (input: string) =>
+                        commonEnumMatchProviders.folderEnum(
+                            input,
+                            'backgrounds/',
+                        ) as SlashCommandEnumValue[],
+                    () => 'backgrounds/',
+                ),
+                new SlashCommandEnumValue(
+                    'User Avatars/...',
+                    'User avatar path',
+                    enumTypes.enum,
+                    '📄',
+                    (input: string) =>
+                        commonEnumMatchProviders.folderEnum(
+                            input,
+                            'User Avatars/',
+                        ) as SlashCommandEnumValue[],
+                    () => 'User Avatars/',
+                ),
+                new SlashCommandEnumValue(
+                    'assets/...',
+                    'Asset file path',
+                    enumTypes.enum,
+                    '📄',
+                    (input: string) =>
+                        commonEnumMatchProviders.folderEnum(
+                            input,
+                            'assets/',
+                        ) as SlashCommandEnumValue[],
+                    () => 'assets/',
+                ),
+                new SlashCommandEnumValue(
+                    'user/images/...',
+                    'User image path',
+                    enumTypes.enum,
+                    '📄',
+                    (input: string) =>
+                        commonEnumMatchProviders.folderEnum(
+                            input,
+                            'user/images/',
+                        ) as SlashCommandEnumValue[],
+                    () => 'user/images/',
+                ),
+            ],
+        }),
         SlashCommandNamedArgument.fromProps({
             name: 'avatarPromptResize',
             description: t`Whether to show the avatar resize/crop dialog when uploading. Ignored if "Never resize avatars" is enabled in settings.`,
@@ -2627,7 +3186,11 @@ function registerPersonaSlashCommands() {
                 new SlashCommandEnumValue('inPrompt', t`In Prompt (default)`, enumTypes.enum),
                 new SlashCommandEnumValue('topAN', t`Top of Author's Note`, enumTypes.enum),
                 new SlashCommandEnumValue('bottomAN', t`Bottom of Author's Note`, enumTypes.enum),
-                new SlashCommandEnumValue('atDepth', t`At a specific depth (uses descriptionDepth and descriptionRole)`, enumTypes.enum),
+                new SlashCommandEnumValue(
+                    'atDepth',
+                    t`At a specific depth (uses descriptionDepth and descriptionRole)`,
+                    enumTypes.enum,
+                ),
                 new SlashCommandEnumValue('none', t`None (don't inject)`, enumTypes.enum),
             ],
         }),
@@ -2662,21 +3225,24 @@ function registerPersonaSlashCommands() {
     // New CRUD commands
     // ========================
 
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'persona-create',
-        callback: createPersonaCallback,
-        returns: t`the avatar key (unique identifier) of the created persona`,
-        namedArgumentList: [
-                    ...(getPersonaFieldArgs({ requiredFields: ['name'] }) as SlashCommandNamedArgument[]),
-            SlashCommandNamedArgument.fromProps({
-                name: 'select',
-                description: t`Whether to select/activate the persona after creation`,
-                typeList: [ARGUMENT_TYPE.BOOLEAN],
-                defaultValue: 'true',
-                enumProvider: commonEnumProviders.boolean('trueFalse'),
-            }),
-        ],
-        helpString: `
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'persona-create',
+            callback: createPersonaCallback,
+            returns: t`the avatar key (unique identifier) of the created persona`,
+            namedArgumentList: [
+                ...(getPersonaFieldArgs({
+                    requiredFields: ['name'],
+                }) as SlashCommandNamedArgument[]),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'select',
+                    description: t`Whether to select/activate the persona after creation`,
+                    typeList: [ARGUMENT_TYPE.BOOLEAN],
+                    defaultValue: 'true',
+                    enumProvider: commonEnumProviders.boolean('trueFalse'),
+                }),
+            ],
+            helpString: `
         <div>
             ${t`Creates a new persona with the specified attributes. Returns the avatar key of the created persona.`}
         </div>
@@ -2705,17 +3271,16 @@ function registerPersonaSlashCommands() {
             </ul>
         </div>
         `,
-    }));
+        }),
+    );
 
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'persona-update',
-        callback: updatePersonaCallback,
-        returns: t`the avatar key of the updated persona`,
-        namedArgumentList: [
-            personaTargetArg,
-            ...getPersonaFieldArgs(),
-        ],
-        helpString: `
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'persona-update',
+            callback: updatePersonaCallback,
+            returns: t`the avatar key of the updated persona`,
+            namedArgumentList: [personaTargetArg, ...getPersonaFieldArgs()],
+            helpString: `
         <div>
             ${t`Updates an existing persona's attributes. Only the provided fields are changed; others are left untouched.`}
         </div>
@@ -2740,41 +3305,98 @@ function registerPersonaSlashCommands() {
             </ul>
         </div>
         `,
-    }));
+        }),
+    );
 
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'persona-get',
-        aliases: ['persona-data'],
-        callback: getPersonaDataCallback,
-        returns: t`persona data as JSON or a specific field value`,
-        namedArgumentList: [
-            personaTargetArg,
-            SlashCommandNamedArgument.fromProps({
-                name: 'field',
-                description: t`Specific field to retrieve. If not provided, returns the entire persona data as JSON.`,
-                typeList: [ARGUMENT_TYPE.STRING],
-                enumList: [
-                    new SlashCommandEnumValue('name', t`Persona name`, enumTypes.enum, enumIcons.persona),
-                    new SlashCommandEnumValue('description', t`Persona description`, enumTypes.enum, enumIcons.default),
-                    new SlashCommandEnumValue('title', t`Display title`, enumTypes.enum, enumIcons.default),
-                    new SlashCommandEnumValue('position', t`Description position (numeric)`, enumTypes.enum, enumIcons.default),
-                    new SlashCommandEnumValue('depth', t`Description depth`, enumTypes.enum, enumIcons.default),
-                    new SlashCommandEnumValue('role', t`Description role (numeric)`, enumTypes.enum, enumIcons.default),
-                    new SlashCommandEnumValue('lorebook', t`Attached lorebook name`, enumTypes.enum, enumIcons.world),
-                    new SlashCommandEnumValue('avatar', t`Avatar filename (unique key)`, enumTypes.enum, enumIcons.persona),
-                    new SlashCommandEnumValue('default', t`Whether this is the default persona`, enumTypes.enum, enumIcons.default),
-                    new SlashCommandEnumValue('connections', t`Character/group connections (array)`, enumTypes.enum, enumIcons.character),
-                ],
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'return',
-                description: t`The way to return the result`,
-                typeList: [ARGUMENT_TYPE.STRING],
-                defaultValue: 'pipe',
-                enumList: slashCommandReturnHelper.enumList({ allowPipe: true, allowObject: true, allowPopup: true, allowTextVersion: false }),
-            }),
-        ],
-        helpString: `
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'persona-get',
+            aliases: ['persona-data'],
+            callback: getPersonaDataCallback,
+            returns: t`persona data as JSON or a specific field value`,
+            namedArgumentList: [
+                personaTargetArg,
+                SlashCommandNamedArgument.fromProps({
+                    name: 'field',
+                    description: t`Specific field to retrieve. If not provided, returns the entire persona data as JSON.`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    enumList: [
+                        new SlashCommandEnumValue(
+                            'name',
+                            t`Persona name`,
+                            enumTypes.enum,
+                            enumIcons.persona,
+                        ),
+                        new SlashCommandEnumValue(
+                            'description',
+                            t`Persona description`,
+                            enumTypes.enum,
+                            enumIcons.default,
+                        ),
+                        new SlashCommandEnumValue(
+                            'title',
+                            t`Display title`,
+                            enumTypes.enum,
+                            enumIcons.default,
+                        ),
+                        new SlashCommandEnumValue(
+                            'position',
+                            t`Description position (numeric)`,
+                            enumTypes.enum,
+                            enumIcons.default,
+                        ),
+                        new SlashCommandEnumValue(
+                            'depth',
+                            t`Description depth`,
+                            enumTypes.enum,
+                            enumIcons.default,
+                        ),
+                        new SlashCommandEnumValue(
+                            'role',
+                            t`Description role (numeric)`,
+                            enumTypes.enum,
+                            enumIcons.default,
+                        ),
+                        new SlashCommandEnumValue(
+                            'lorebook',
+                            t`Attached lorebook name`,
+                            enumTypes.enum,
+                            enumIcons.world,
+                        ),
+                        new SlashCommandEnumValue(
+                            'avatar',
+                            t`Avatar filename (unique key)`,
+                            enumTypes.enum,
+                            enumIcons.persona,
+                        ),
+                        new SlashCommandEnumValue(
+                            'default',
+                            t`Whether this is the default persona`,
+                            enumTypes.enum,
+                            enumIcons.default,
+                        ),
+                        new SlashCommandEnumValue(
+                            'connections',
+                            t`Character/group connections (array)`,
+                            enumTypes.enum,
+                            enumIcons.character,
+                        ),
+                    ],
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'return',
+                    description: t`The way to return the result`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    defaultValue: 'pipe',
+                    enumList: slashCommandReturnHelper.enumList({
+                        allowPipe: true,
+                        allowObject: true,
+                        allowPopup: true,
+                        allowTextVersion: false,
+                    }),
+                }),
+            ],
+            helpString: `
         <div>
             ${t`Retrieves persona data. Can return all data as JSON or a specific field value.`}
         </div>
@@ -2799,23 +3421,25 @@ function registerPersonaSlashCommands() {
             </ul>
         </div>
         `,
-    }));
+        }),
+    );
 
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'persona-delete',
-        callback: deletePersonaCallback,
-        returns: t`true if the persona was deleted, false otherwise`,
-        namedArgumentList: [
-            personaTargetArg,
-            SlashCommandNamedArgument.fromProps({
-                name: 'silent',
-                description: t`Skip the confirmation popup`,
-                typeList: [ARGUMENT_TYPE.BOOLEAN],
-                defaultValue: 'false',
-                enumProvider: commonEnumProviders.boolean('trueFalse'),
-            }),
-        ],
-        helpString: `
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'persona-delete',
+            callback: deletePersonaCallback,
+            returns: t`true if the persona was deleted, false otherwise`,
+            namedArgumentList: [
+                personaTargetArg,
+                SlashCommandNamedArgument.fromProps({
+                    name: 'silent',
+                    description: t`Skip the confirmation popup`,
+                    typeList: [ARGUMENT_TYPE.BOOLEAN],
+                    defaultValue: 'false',
+                    enumProvider: commonEnumProviders.boolean('trueFalse'),
+                }),
+            ],
+            helpString: `
         <div>
             ${t`Deletes a persona and its avatar from the system.`}
         </div>
@@ -2839,23 +3463,25 @@ function registerPersonaSlashCommands() {
             </ul>
         </div>
         `,
-    }));
+        }),
+    );
 
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'persona-duplicate',
-        callback: duplicatePersonaCallback,
-        returns: t`the avatar key (unique identifier) of the duplicated persona`,
-        namedArgumentList: [
-            personaTargetArg,
-            SlashCommandNamedArgument.fromProps({
-                name: 'select',
-                description: t`Whether to select/activate the duplicated persona after creation`,
-                typeList: [ARGUMENT_TYPE.BOOLEAN],
-                defaultValue: 'false',
-                enumProvider: commonEnumProviders.boolean('trueFalse'),
-            }),
-        ],
-        helpString: `
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'persona-duplicate',
+            callback: duplicatePersonaCallback,
+            returns: t`the avatar key (unique identifier) of the duplicated persona`,
+            namedArgumentList: [
+                personaTargetArg,
+                SlashCommandNamedArgument.fromProps({
+                    name: 'select',
+                    description: t`Whether to select/activate the duplicated persona after creation`,
+                    typeList: [ARGUMENT_TYPE.BOOLEAN],
+                    defaultValue: 'false',
+                    enumProvider: commonEnumProviders.boolean('trueFalse'),
+                }),
+            ],
+            helpString: `
         <div>
             ${t`Duplicates a persona including all its data and avatar. Returns the avatar key of the new persona.`}
         </div>
@@ -2880,18 +3506,20 @@ function registerPersonaSlashCommands() {
             </ul>
         </div>
         `,
-    }));
+        }),
+    );
 
     // ========================
     // Existing commands (enhanced help strings)
     // ========================
 
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'persona-lock',
-        aliases: ['lock', 'bind'],
-        callback: lockPersonaCallback,
-        returns: t`The current lock state for the given type`,
-        helpString: `
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'persona-lock',
+            aliases: ['lock', 'bind'],
+            callback: lockPersonaCallback,
+            returns: t`The current lock state for the given type`,
+            helpString: `
         <div>
             ${t`Locks/unlocks the current persona to a chat, character, or as the default. Returns the lock state if no value is provided.`}
         </div>
@@ -2905,54 +3533,68 @@ function registerPersonaSlashCommands() {
             </ul>
         </div>
         `,
-        namedArgumentList: [
-            SlashCommandNamedArgument.fromProps({
-                name: 'type',
-                description: t`The type of the lock, where it should apply to`,
-                typeList: [ARGUMENT_TYPE.STRING],
-                defaultValue: 'chat',
-                enumList: [
-                    new SlashCommandEnumValue('chat', t`Lock the persona to the current chat.`),
-                    new SlashCommandEnumValue('character', t`Lock this persona to the currently selected character. If the setting is enabled, multiple personas can be locked to the same character.`),
-                    new SlashCommandEnumValue('default', t`Lock this persona as the default persona for all new chats.`),
-                ],
-            }),
-        ],
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: 'state',
-                typeList: [ARGUMENT_TYPE.STRING],
-                enumProvider: commonEnumProviders.boolean('onOffToggle'),
-            }),
-        ],
-    }));
+            namedArgumentList: [
+                SlashCommandNamedArgument.fromProps({
+                    name: 'type',
+                    description: t`The type of the lock, where it should apply to`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    defaultValue: 'chat',
+                    enumList: [
+                        new SlashCommandEnumValue('chat', t`Lock the persona to the current chat.`),
+                        new SlashCommandEnumValue(
+                            'character',
+                            t`Lock this persona to the currently selected character. If the setting is enabled, multiple personas can be locked to the same character.`,
+                        ),
+                        new SlashCommandEnumValue(
+                            'default',
+                            t`Lock this persona as the default persona for all new chats.`,
+                        ),
+                    ],
+                }),
+            ],
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: 'state',
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    enumProvider: commonEnumProviders.boolean('onOffToggle'),
+                }),
+            ],
+        }),
+    );
 
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'persona-set',
-        callback: setNameCallback,
-        aliases: ['persona', 'name'],
-        namedArgumentList: [
-            SlashCommandNamedArgument.fromProps({
-                name: 'mode',
-                description: t`The mode for persona selection`,
-                typeList: [ARGUMENT_TYPE.STRING],
-                defaultValue: 'all',
-                enumList: [
-                    new SlashCommandEnumValue('lookup', t`Search for an existing persona only`),
-                    new SlashCommandEnumValue('temp', t`Set a temporary name only (no persona lookup)`),
-                    new SlashCommandEnumValue('all', t`Try persona lookup first, fall back to temporary name`),
-                ],
-            }),
-        ],
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: 'persona name',
-                typeList: [ARGUMENT_TYPE.STRING],
-                isRequired: true,
-                enumProvider: commonEnumProviders.personas({ allowPersonaKey: true }),
-            }),
-        ],
-        helpString: `
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'persona-set',
+            callback: setNameCallback,
+            aliases: ['persona', 'name'],
+            namedArgumentList: [
+                SlashCommandNamedArgument.fromProps({
+                    name: 'mode',
+                    description: t`The mode for persona selection`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    defaultValue: 'all',
+                    enumList: [
+                        new SlashCommandEnumValue('lookup', t`Search for an existing persona only`),
+                        new SlashCommandEnumValue(
+                            'temp',
+                            t`Set a temporary name only (no persona lookup)`,
+                        ),
+                        new SlashCommandEnumValue(
+                            'all',
+                            t`Try persona lookup first, fall back to temporary name`,
+                        ),
+                    ],
+                }),
+            ],
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: 'persona name',
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    isRequired: true,
+                    enumProvider: commonEnumProviders.personas({ allowPersonaKey: true }),
+                }),
+            ],
+            helpString: `
         <div>
             ${t`Selects an existing persona by name or avatar key, or sets a temporary user name.`}
         </div>
@@ -2967,35 +3609,37 @@ function registerPersonaSlashCommands() {
             </ul>
         </div>
         `,
-    }));
+        }),
+    );
 
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'persona-sync',
-        aliases: ['sync'],
-        callback: syncCallback,
-        namedArgumentList: [
-            SlashCommandNamedArgument.fromProps({
-                name: 'from',
-                description: t`only sync messages from a certain persona name`,
-                typeList: [ARGUMENT_TYPE.STRING],
-                enumProvider: userMessageNamesEnumProvider,
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'quiet',
-                description: t`suppress the confirmation popup`,
-                typeList: [ARGUMENT_TYPE.BOOLEAN],
-                enumList: commonEnumProviders.boolean('trueFalse')(),
-                defaultValue: 'true',
-            }),
-        ],
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: t`message index (starts with 0) or range, syncs all user messages if not provided`,
-                typeList: [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.RANGE],
-                defaultValue: '0-{{lastMessageId}}',
-            }),
-        ],
-        helpString: `
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'persona-sync',
+            aliases: ['sync'],
+            callback: syncCallback,
+            namedArgumentList: [
+                SlashCommandNamedArgument.fromProps({
+                    name: 'from',
+                    description: t`only sync messages from a certain persona name`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    enumProvider: userMessageNamesEnumProvider,
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'quiet',
+                    description: t`suppress the confirmation popup`,
+                    typeList: [ARGUMENT_TYPE.BOOLEAN],
+                    enumList: commonEnumProviders.boolean('trueFalse')(),
+                    defaultValue: 'true',
+                }),
+            ],
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: t`message index (starts with 0) or range, syncs all user messages if not provided`,
+                    typeList: [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.RANGE],
+                    defaultValue: '0-{{lastMessageId}}',
+                }),
+            ],
+            helpString: `
         <div>
             ${t`Syncs the user persona (name and avatar) in user-attributed messages in the current chat.`}
         </div>
@@ -3017,7 +3661,8 @@ function registerPersonaSlashCommands() {
             </ul>
         </div>
     `,
-    }));
+        }),
+    );
 }
 
 /**
@@ -3028,31 +3673,57 @@ export async function initPersonas() {
     await migrateNonPersonaUser();
     registerPersonaSlashCommands();
     document.getElementById('persona_delete_button')?.addEventListener('click', deleteUserAvatar);
-    document.getElementById('lock_persona_default')?.addEventListener('click', () => togglePersonaLock('default'));
-    document.getElementById('lock_user_name')?.addEventListener('click', () => togglePersonaLock('chat'));
-    document.getElementById('lock_persona_to_char')?.addEventListener('click', () => togglePersonaLock('character'));
+    document
+        .getElementById('lock_persona_default')
+        ?.addEventListener('click', () => togglePersonaLock('default'));
+    document
+        .getElementById('lock_user_name')
+        ?.addEventListener('click', () => togglePersonaLock('chat'));
+    document
+        .getElementById('lock_persona_to_char')
+        ?.addEventListener('click', () => togglePersonaLock('character'));
     document.getElementById('create_dummy_persona')?.addEventListener('click', createDummyPersona);
-    document.getElementById('persona_description')?.addEventListener('input', onPersonaDescriptionInput);
-    document.getElementById('persona_description_position')?.addEventListener('input', onPersonaDescriptionPositionInput);
-    document.getElementById('persona_depth_value')?.addEventListener('input', onPersonaDescriptionDepthValueInput);
-    document.getElementById('persona_depth_role')?.addEventListener('input', onPersonaDescriptionDepthRoleInput);
-    document.getElementById('persona_lore_button')?.addEventListener('click', onPersonaLoreButtonClick);
+    document
+        .getElementById('persona_description')
+        ?.addEventListener('input', onPersonaDescriptionInput);
+    document
+        .getElementById('persona_description_position')
+        ?.addEventListener('input', onPersonaDescriptionPositionInput);
+    document
+        .getElementById('persona_depth_value')
+        ?.addEventListener('input', onPersonaDescriptionDepthValueInput);
+    document
+        .getElementById('persona_depth_role')
+        ?.addEventListener('input', onPersonaDescriptionDepthRoleInput);
+    document
+        .getElementById('persona_lore_button')
+        ?.addEventListener('click', onPersonaLoreButtonClick);
     addLongPressEvent('#persona_lore_button', function () {
         onPersonaLoreButtonClick({ shiftKey: true, altKey: false });
     });
-    document.getElementById('persona-management-dropdown')?.addEventListener('change', async function (this: HTMLSelectElement) {
-        const target = this.querySelector('option:checked')?.id;
-        this.selectedIndex = 0;
-        switch (target) {
-            case 'persona_lorebook_link':
-                await onPersonaLoreButtonClick({ shiftKey: true, altKey: false });
-                break;
-        }
-    });
+    document
+        .getElementById('persona-management-dropdown')
+        ?.addEventListener('change', async function (this: HTMLSelectElement) {
+            const target = this.querySelector('option:checked')?.id;
+            this.selectedIndex = 0;
+            switch (target) {
+                case 'persona_lorebook_link':
+                    await onPersonaLoreButtonClick({ shiftKey: true, altKey: false });
+                    break;
+            }
+        });
     document.getElementById('personas_backup')?.addEventListener('click', onBackupPersonas);
-    document.getElementById('personas_restore')?.addEventListener('click', () => document.getElementById('personas_restore_input')?.click());
-    document.getElementById('personas_restore_input')?.addEventListener('change', onPersonasRestoreInput);
-    const personaSortOrderEl = document.getElementById('persona_sort_order') as HTMLSelectElement | null;
+    document
+        .getElementById('personas_restore')
+        ?.addEventListener('click', () =>
+            document.getElementById('personas_restore_input')?.click(),
+        );
+    document
+        .getElementById('personas_restore_input')
+        ?.addEventListener('change', onPersonasRestoreInput);
+    const personaSortOrderEl = document.getElementById(
+        'persona_sort_order',
+    ) as HTMLSelectElement | null;
     if (personaSortOrderEl) {
         personaSortOrderEl.value = power_user.persona_sort_order;
         personaSortOrderEl.addEventListener('input', function (this: HTMLSelectElement) {
@@ -3073,12 +3744,16 @@ export async function initPersonas() {
         personasFilter.setFilterData(FILTER_TYPES.PERSONA_SEARCH, searchQuery);
     });
 
-    document.getElementById('persona_search_bar')?.addEventListener('input', function (this: HTMLInputElement) {
-        const searchQuery = String(this.value);
-        debouncedPersonaSearch(searchQuery);
-    });
+    document
+        .getElementById('persona_search_bar')
+        ?.addEventListener('input', function (this: HTMLInputElement) {
+            const searchQuery = String(this.value);
+            debouncedPersonaSearch(searchQuery);
+        });
 
-    document.getElementById('sync_name_button')?.addEventListener('click', async () => await syncUserNameToPersona());
+    document
+        .getElementById('sync_name_button')
+        ?.addEventListener('click', async () => await syncUserNameToPersona());
     document.getElementById('avatar_upload_file')?.addEventListener('change', changeUserAvatar);
 
     document.addEventListener('click', async function (e) {
@@ -3089,7 +3764,9 @@ export async function initPersonas() {
         if (imgfile) await setUserAvatar(imgfile);
     });
 
-    document.getElementById('persona_rename_button')?.addEventListener('click', () => renamePersona(user_avatar));
+    document
+        .getElementById('persona_rename_button')
+        ?.addEventListener('click', () => renamePersona(user_avatar));
 
     document.addEventListener('click', function (e) {
         if (!(e.target instanceof Element)) return;
@@ -3099,7 +3776,9 @@ export async function initPersonas() {
         document.getElementById('avatar_upload_file')?.click();
     });
 
-    document.getElementById('persona_duplicate_button')?.addEventListener('click', () => duplicatePersona(user_avatar));
+    document
+        .getElementById('persona_duplicate_button')
+        ?.addEventListener('click', () => duplicatePersona(user_avatar));
 
     document.getElementById('persona_set_image_button')?.addEventListener('click', function () {
         if (!user_avatar) {
@@ -3107,11 +3786,14 @@ export async function initPersonas() {
             return;
         }
 
-            (document.getElementById('avatar_upload_overwrite') as HTMLInputElement).value = user_avatar;
+        (document.getElementById('avatar_upload_overwrite') as HTMLInputElement).value =
+            user_avatar;
         document.getElementById('avatar_upload_file')?.click();
     });
 
-    document.getElementById('char_connections_button')?.addEventListener('click', showCharConnections);
+    document
+        .getElementById('char_connections_button')
+        ?.addEventListener('click', showCharConnections);
 
     eventSource.on(event_types.CHARACTER_MANAGEMENT_DROPDOWN, (target: unknown) => {
         if (target === 'convert_to_persona') {

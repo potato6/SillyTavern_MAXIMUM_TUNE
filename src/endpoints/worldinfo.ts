@@ -13,7 +13,11 @@ import { tryParse } from '../util.js';
  * @param {boolean} allowDummy If true, returns an empty object if the file doesn't exist
  * @returns {object} World Info file contents
  */
-export function readWorldInfoFile(directories: Record<string, string>, worldInfoName: string, allowDummy: boolean) {
+export function readWorldInfoFile(
+    directories: Record<string, string>,
+    worldInfoName: string,
+    allowDummy: boolean,
+) {
     const dummyObject = allowDummy ? { entries: {} } : null;
 
     if (!worldInfoName) {
@@ -38,9 +42,11 @@ export const router = express.Router();
 router.post('/list', async (request, response) => {
     try {
         const data = [];
-        const jsonFiles = (await fs.promises.readdir(request.user.directories.worlds, { withFileTypes: true }))
+        const jsonFiles = (
+            await fs.promises.readdir(request.user.directories.worlds, { withFileTypes: true })
+        )
             .filter((file) => file.isFile() && path.extname(file.name).toLowerCase() === '.json')
-            .sort((a, b) => a.name.localeCompare(b.name));
+            .toSorted((a, b) => a.name.localeCompare(b.name));
 
         for (const file of jsonFiles) {
             try {
@@ -52,7 +58,10 @@ router.post('/list', async (request, response) => {
                 const fileData = {
                     file_id: fileNameWithoutExt,
                     name: fileContentsParsed?.name || fileNameWithoutExt,
-                    extensions: (typeof fileExtensions === 'object' && fileExtensions !== null) ? fileExtensions : {},
+                    extensions:
+                        typeof fileExtensions === 'object' && fileExtensions !== null
+                            ? fileExtensions
+                            : {},
                 };
                 data.push(fileData);
             } catch (error) {

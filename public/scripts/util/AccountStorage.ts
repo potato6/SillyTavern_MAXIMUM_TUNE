@@ -55,7 +55,7 @@ class AccountStorage {
         }
         for (const key of localStorageKeys) {
             // @ts-expect-error TS(2345) FIXME: Argument of type 'string | null' is not assignable... Remove this comment to see the full error message
-            if (MIGRATABLE_KEYS.some(k => k.test(key))) {
+            if (MIGRATABLE_KEYS.some((k) => k.test(key))) {
                 // @ts-expect-error TS(2345) FIXME: Argument of type 'string | null' is not assignable... Remove this comment to see the full error message
                 const value = globalThis.localStorage.getItem(key);
                 // @ts-expect-error TS(2538) FIXME: Type 'null' cannot be used as an index type.
@@ -113,7 +113,8 @@ class AccountStorage {
         }
 
         // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        const hasPropertySet = Object.hasOwn(this.#state, key) && this.#state[key] === String(value);
+        const hasPropertySet =
+            Object.hasOwn(this.#state, key) && this.#state[key] === String(value);
 
         if (hasPropertySet) {
             return;

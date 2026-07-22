@@ -1,5 +1,12 @@
 import { merge } from 'es-toolkit/compat';
-import { addOneMessage, chat, displayVersion, setSendButtonState, system_avatar, systemUserName } from '../script.js';
+import {
+    addOneMessage,
+    chat,
+    displayVersion,
+    setSendButtonState,
+    system_avatar,
+    systemUserName,
+} from '../script.js';
 import { t } from './i18n.js';
 import { getMessageTimeStamp } from './RossAscends-mods.js';
 import { getSlashCommandsHelp } from './slash-commands.js';
@@ -112,7 +119,6 @@ export async function initSystemMessages() {
     // @ts-expect-error TS(2345) FIXME: Argument of type '{ name: string; force_avatar: st... Remove this comment to see the full error message
     SAFETY_CHAT.splice(0, SAFETY_CHAT.length, safetyMessage);
 }
-
 
 /**
  * Gets a system message by type.

@@ -131,7 +131,10 @@ const showPopupHelper = {
         // @ts-expect-error TS(2345) FIXME: Argument of type 'null' is not assignable to param... Remove this comment to see the full error message
         const popup = new Popup(content, POPUP_TYPE.CONFIRM, null, popupOptions);
         const result = await popup.show();
-        if (typeof result === 'string' || typeof result === 'boolean') throw new Error(`Invalid popup result. CONFIRM popups only support numbers, or null. Result: ${result}`);
+        if (typeof result === 'string' || typeof result === 'boolean')
+            throw new Error(
+                `Invalid popup result. CONFIRM popups only support numbers, or null. Result: ${result}`,
+            );
         return result;
     },
     /**
@@ -147,7 +150,10 @@ const showPopupHelper = {
         // @ts-expect-error TS(2345) FIXME: Argument of type 'null' is not assignable to param... Remove this comment to see the full error message
         const popup = new Popup(content, POPUP_TYPE.TEXT, null, popupOptions);
         const result = await popup.show();
-        if (typeof result === 'string' || typeof result === 'boolean') throw new Error(`Invalid popup result. TEXT popups only support numbers, or null. Result: ${result}`);
+        if (typeof result === 'string' || typeof result === 'boolean')
+            throw new Error(
+                `Invalid popup result. TEXT popups only support numbers, or null. Result: ${result}`,
+            );
         return result;
     },
 };
@@ -210,30 +216,37 @@ export class Popup {
      * @param {PopupOptions} [options] - Additional options for the popup
      */
     // @ts-expect-error TS(7006) FIXME: Parameter 'content' implicitly has an 'any' type.
-    constructor(content, type, inputValue = '', {
-        okButton = null,
-        cancelButton = null,
-        rows = 1,
-        placeholder = null,
-        tooltip = null,
-        wide = false,
-        wider = false,
-        large = false,
-        transparent = false,
-        allowHorizontalScrolling = false,
-        allowVerticalScrolling = false,
-        leftAlign = false,
-        animation = 'fast',
-        defaultResult = POPUP_RESULT.AFFIRMATIVE,
-        customButtons = null,
-        customInputs = null,
-        allowEscapeClose = true,
-        onClosing = null as ((popup: Popup) => boolean | undefined | Promise<boolean | undefined>) | null,
-        onClose = null as ((popup: Popup) => void | Promise<void>) | null,
-        onOpen = null as ((popup: Popup) => void | Promise<void>) | null,
-        cropAspect = null,
-        cropImage = null,
-    } = {}) {
+    constructor(
+        content,
+        type,
+        inputValue = '',
+        {
+            okButton = null,
+            cancelButton = null,
+            rows = 1,
+            placeholder = null,
+            tooltip = null,
+            wide = false,
+            wider = false,
+            large = false,
+            transparent = false,
+            allowHorizontalScrolling = false,
+            allowVerticalScrolling = false,
+            leftAlign = false,
+            animation = 'fast',
+            defaultResult = POPUP_RESULT.AFFIRMATIVE,
+            customButtons = null,
+            customInputs = null,
+            allowEscapeClose = true,
+            onClosing = null as
+                | ((popup: Popup) => boolean | undefined | Promise<boolean | undefined>)
+                | null,
+            onClose = null as ((popup: Popup) => void | Promise<void>) | null,
+            onOpen = null as ((popup: Popup) => void | Promise<void>) | null,
+            cropAspect = null,
+            cropImage = null,
+        } = {},
+    ) {
         // @ts-expect-error TS(2345) FIXME: Argument of type 'this' is not assignable to param... Remove this comment to see the full error message
         Popup.util.popups.push(this);
 
@@ -290,7 +303,10 @@ export class Popup {
         this.okButton.textContent = typeof okButton === 'string' ? okButton : 'OK';
         this.okButton.dataset.i18n = this.okButton.textContent;
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        this.cancelButton.textContent = typeof cancelButton === 'string' ? cancelButton : template.getAttribute('popup-button-cancel');
+        this.cancelButton.textContent =
+            typeof cancelButton === 'string'
+                ? cancelButton
+                : template.getAttribute('popup-button-cancel');
         this.cancelButton.dataset.i18n = this.cancelButton.textContent;
 
         /**
@@ -347,7 +363,7 @@ export class Popup {
 
         this.customInputs = customInputs;
         // @ts-expect-error TS(7006) FIXME: Parameter 'input' implicitly has an 'any' type.
-        this.customInputs?.forEach(input => {
+        this.customInputs?.forEach((input) => {
             if (!input.id || !(typeof input.id === 'string')) {
                 console.warn('Given custom input does not have a valid id set');
                 return;
@@ -447,7 +463,9 @@ export class Popup {
 
                     if (clamped !== value) {
                         inputElement.value = String(clamped);
-                        notyf.warning(t`Value must be between ${min} and ${max}. Clamped to ${clamped}.`);
+                        notyf.warning(
+                            t`Value must be between ${min} and ${max}. Clamped to ${clamped}.`,
+                        );
                     }
                 });
 
@@ -460,13 +478,18 @@ export class Popup {
 
                 this.inputControls.appendChild(label);
             } else {
-                console.warn('Unknown custom input type. Only checkbox, text, number and textarea are supported.', input);
+                console.warn(
+                    'Unknown custom input type. Only checkbox, text, number and textarea are supported.',
+                    input,
+                );
                 return;
             }
         });
 
         // Set the default button class
-        const defaultButton = this.buttonControls.querySelector(`[data-result="${this.defaultResult}"]`);
+        const defaultButton = this.buttonControls.querySelector(
+            `[data-result="${this.defaultResult}"]`,
+        );
         if (defaultButton) defaultButton.classList.add('menu_button_default');
 
         // Styling differences depending on the popup type
@@ -489,9 +512,11 @@ export class Popup {
                 if (cancelButton === false) this.cancelButton.style.display = 'none';
                 // Override default captions for confirm on OK->Yes, CANCEL->No
                 // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-                if (!okButton) this.okButton.textContent = template.getAttribute('popup-button-yes');
+                if (!okButton)
+                    this.okButton.textContent = template.getAttribute('popup-button-yes');
                 // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-                if (!cancelButton) this.cancelButton.textContent = template.getAttribute('popup-button-no');
+                if (!cancelButton)
+                    this.cancelButton.textContent = template.getAttribute('popup-button-no');
                 break;
             }
             case POPUP_TYPE.INPUT: {
@@ -501,7 +526,8 @@ export class Popup {
                 if (cancelButton === false) this.cancelButton.style.display = 'none';
                 // Override default captions for input on OK->Save
                 // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-                if (!okButton) this.okButton.textContent = template.getAttribute('popup-button-save');
+                if (!okButton)
+                    this.okButton.textContent = template.getAttribute('popup-button-save');
                 break;
             }
             case POPUP_TYPE.DISPLAY: {
@@ -528,7 +554,8 @@ export class Popup {
                 if (cancelButton === false) this.cancelButton.style.display = 'none';
                 // Override default captions for crop on OK->Crop
                 // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-                if (!okButton) this.okButton.textContent = template.getAttribute('popup-button-crop');
+                if (!okButton)
+                    this.okButton.textContent = template.getAttribute('popup-button-crop');
                 break;
             }
             default: {
@@ -562,7 +589,10 @@ export class Popup {
         } else if (typeof content == 'string') {
             this.content.innerHTML = content;
         } else {
-            console.warn('Unknown popup text type. Should be jQuery, HTMLElement or string.', content);
+            console.warn(
+                'Unknown popup text type. Should be jQuery, HTMLElement or string.',
+                content,
+            );
         }
 
         // Already prepare the auto-focus control by adding the "autofocus" attribute, this should be respected by showModal()
@@ -570,20 +600,29 @@ export class Popup {
 
         // Set focus event that remembers the focused element
         // @ts-expect-error TS(7006) FIXME: Parameter 'evt' implicitly has an 'any' type.
-        this.dlg.addEventListener('focusin', (evt) => { if (evt.target instanceof HTMLElement && evt.target != this.dlg) this.lastFocus = evt.target; });
+        this.dlg.addEventListener('focusin', (evt) => {
+            if (evt.target instanceof HTMLElement && evt.target != this.dlg)
+                this.lastFocus = evt.target;
+        });
 
         // Bind event listeners for all result controls to their defined event type
         // @ts-expect-error TS(7006) FIXME: Parameter 'resultControl' implicitly has an 'any' ... Remove this comment to see the full error message
-        this.dlg.querySelectorAll('[data-result]').forEach(resultControl => {
+        this.dlg.querySelectorAll('[data-result]').forEach((resultControl) => {
             if (!(resultControl instanceof HTMLElement)) return;
             // If no value was set, we exit out and don't bind an action
             if (String(resultControl.dataset.result) === String(undefined)) return;
 
             // Make sure that both `POPUP_RESULT` numbers and also `null` as 'cancelled' are supported
-            const result = String(resultControl.dataset.result) === String(null) ? null
-                : Number(resultControl.dataset.result);
+            const result =
+                String(resultControl.dataset.result) === String(null)
+                    ? null
+                    : Number(resultControl.dataset.result);
 
-            if (result !== null && isNaN(result)) throw new Error('Invalid result control. Result must be a number. ' + resultControl.dataset.result);
+            if (result !== null && isNaN(result))
+                throw new Error(
+                    'Invalid result control. Result must be a number. ' +
+                        resultControl.dataset.result,
+                );
             const type = resultControl.dataset.resultEvent || 'click';
             resultControl.addEventListener(type, async () => await this.complete(result));
         });
@@ -610,13 +649,16 @@ export class Popup {
                     requestAnimationFrame(async () => {
                         const confirmPopup = new Popup(
                             PopupUtils.BuildTextWithHeader(
-                                t`Force-close Blocking Popup`, `
+                                t`Force-close Blocking Popup`,
+                                `
                                 <p>${t`This action is blocking and not meant to be closed manually.`}</p>
                                 <p>${t`Force-closing may leave the application in an inconsistent state.`}</p>
-                                <p><strong>${t`Are you sure you want to force-close?`}</strong></p>`),
+                                <p><strong>${t`Are you sure you want to force-close?`}</strong></p>`,
+                            ),
                             POPUP_TYPE.CONFIRM,
                             '',
-                            { okButton: t`Force Close`, cancelButton: t`Cancel` });
+                            { okButton: t`Force Close`, cancelButton: t`Cancel` },
+                        );
 
                         // If the the main popup closes while the force-close popup is still being displayed, we gracefully cancel that.
                         const originalOnClose = this.onClose;
@@ -625,7 +667,6 @@ export class Popup {
                             if (originalOnClose) await originalOnClose;
                             await confirmPopup.completeCancelled();
                         };
-
 
                         const result = await confirmPopup.show();
                         this.#isShowingForceCloseConfirm = false;
@@ -664,37 +705,38 @@ export class Popup {
             switch (evt.key) {
                 case 'Enter': {
                     // CTRL+Enter counts as a closing action, but all other modifiers (ALT, SHIFT) should not trigger this
-                    if (evt.altKey || evt.shiftKey)
-                        return;
+                    if (evt.altKey || evt.shiftKey) return;
 
                     // Check if we are the currently active popup
-                    if (this.dlg != document.activeElement?.closest('.popup'))
-                        return;
+                    if (this.dlg != document.activeElement?.closest('.popup')) return;
 
                     // Check if the current focus is a result control. Only should we apply the complete action
                     const resultControl = document.activeElement?.closest('.result-control');
-                    if (!resultControl)
-                        return;
+                    if (!resultControl) return;
 
                     // Check if we are inside an input type text or a textarea field and send on enter is disabled
                     const textarea = document.activeElement?.closest('textarea');
-                    if (textarea instanceof HTMLTextAreaElement && !shouldSendOnEnter())
-                        return;
+                    if (textarea instanceof HTMLTextAreaElement && !shouldSendOnEnter()) return;
                     const input = document.activeElement?.closest('input[type="text"]');
-                    if (input instanceof HTMLInputElement && !shouldSendOnEnter())
-                        return;
+                    if (input instanceof HTMLInputElement && !shouldSendOnEnter()) return;
 
                     // If this is a multiline input popup, we should still not simply send on enter, that'd be weird.
                     // Let's still make it possible if CTRL is toggled though
-                    if ((textarea instanceof HTMLTextAreaElement || input instanceof HTMLInputElement)
-                        && !evt.ctrlKey && this.mainInput.rows > 1) {
+                    if (
+                        (textarea instanceof HTMLTextAreaElement ||
+                            input instanceof HTMLInputElement) &&
+                        !evt.ctrlKey &&
+                        this.mainInput.rows > 1
+                    ) {
                         return;
                     }
 
                     evt.preventDefault();
                     evt.stopPropagation();
                     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-                    const result = Number(document.activeElement.getAttribute('data-result') ?? this.defaultResult);
+                    const result = Number(
+                        document.activeElement.getAttribute('data-result') ?? this.defaultResult,
+                    );
 
                     // Call complete on the popup. Make sure that we handle `onClosing` cancels correctly and don't remove the listener then.
                     await this.complete(result);
@@ -724,14 +766,17 @@ export class Popup {
 
         runAfterAnimation(this.dlg, async () => {
             this.dlg.removeAttribute('opening');
-        
+
             // If we have an onOpen handler, we run it now
             if (this.onOpen) {
                 try {
                     await this.onOpen(this);
                 } catch (error) {
                     console.error('Error in Popup.onOpen handler:', error);
-                    notyf.error(t`An error occurred during popup initialization. Check console for details.`, t`Popup Init Error`);
+                    notyf.error(
+                        t`An error occurred during popup initialization. Check console for details.`,
+                        t`Popup Init Error`,
+                    );
                 }
             }
         });
@@ -758,7 +803,9 @@ export class Popup {
                 }
                 default:
                     // Select default button
-                    control = this.buttonControls.querySelector(`[data-result="${this.defaultResult}"]`);
+                    control = this.buttonControls.querySelector(
+                        `[data-result="${this.defaultResult}"]`,
+                    );
                     break;
             }
         }
@@ -805,19 +852,24 @@ export class Popup {
 
         // Cropped image should be returned as a data URL
         if (this.type === POPUP_TYPE.CROP) {
-            value = result >= POPUP_RESULT.AFFIRMATIVE
-                ? this.cropper!.getCroppedCanvas().toDataURL('image/jpeg')
-                : null;
+            value =
+                result >= POPUP_RESULT.AFFIRMATIVE
+                    ? this.cropper!.getCroppedCanvas().toDataURL('image/jpeg')
+                    : null;
         }
 
         if (this.customInputs?.length) {
             // @ts-expect-error TS(7006) FIXME: Parameter 'input' implicitly has an 'any' type.
-            this.inputResults = new Map(this.customInputs.map(input => {
-                /** @type {HTMLInputElement} */
-                const inputControl = this.dlg.querySelector(`#${input.id}`);
-                const value = ['text', 'textarea', 'number'].includes(input.type) ? inputControl.value : inputControl.checked;
-                return [inputControl.id, value];
-            }));
+            this.inputResults = new Map(
+                this.customInputs.map((input) => {
+                    /** @type {HTMLInputElement} */
+                    const inputControl = this.dlg.querySelector(`#${input.id}`);
+                    const value = ['text', 'textarea', 'number'].includes(input.type)
+                        ? inputControl.value
+                        : inputControl.checked;
+                    return [inputControl.id, value];
+                }),
+            );
         }
 
         this.value = value;
@@ -883,7 +935,7 @@ export class Popup {
                 const activeDialog = document.activeElement?.closest('.popup');
                 const id = activeDialog?.getAttribute('data-id');
                 // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
-                const popup = Popup.util.popups.find(x => x.id == id);
+                const popup = Popup.util.popups.find((x) => x.id == id);
                 if (popup) {
                     // @ts-expect-error TS(2339) FIXME: Property 'lastFocus' does not exist on type 'never... Remove this comment to see the full error message
                     if (popup.lastFocus) popup.lastFocus.focus();
@@ -916,7 +968,7 @@ export class Popup {
         /** @returns {boolean} Checks if any modal popup dialog is open */
         isPopupOpen() {
             // @ts-expect-error TS(2339) FIXME: Property 'dlg' does not exist on type 'never'.
-            return Popup.util.popups.filter(x => x.dlg.hasAttribute('open')).length > 0;
+            return Popup.util.popups.filter((x) => x.dlg.hasAttribute('open')).length > 0;
         },
 
         /**
@@ -957,16 +1009,14 @@ export class PopupUtils {
 // @ts-expect-error TS(7006) FIXME: Parameter 'content' implicitly has an 'any' type.
 export function callGenericPopup(content, type, inputValue = '', popupOptions = {}) {
     try {
-        const popup = new Popup(
-            content,
-            type,
-            inputValue,
-            popupOptions,
-        );
+        const popup = new Popup(content, type, inputValue, popupOptions);
         return popup.show();
     } catch (error) {
         console.error('Error showing generic popup:', error);
-        notyf.error(t`An error occurred while opening the popup. Check console for details.`, t`Popup Error`);
+        notyf.error(
+            t`An error occurred while opening the popup. Check console for details.`,
+            t`Popup Error`,
+        );
         return Promise.resolve(POPUP_RESULT.CANCELLED);
     }
 }

@@ -14,13 +14,23 @@ import type { ChatProvider, ModelEntry } from '../types.js';
 const API_CLAUDE = 'https://api.anthropic.com/v1';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-const cacheTTL: any = getConfigValue('claude.extendedTTL', false as any, 'boolean' as any) ? '1h' : '5m';
-const enableSystemPromptCache: any = getConfigValue('claude.enableSystemPromptCache', false as any, 'boolean' as any);
+const cacheTTL: any = getConfigValue('claude.extendedTTL', false as any, 'boolean' as any)
+    ? '1h'
+    : '5m';
+const enableSystemPromptCache: any = getConfigValue(
+    'claude.enableSystemPromptCache',
+    false as any,
+    'boolean' as any,
+);
 const cachingAtDepth = (() => {
     const value: any = getConfigValue('claude.cachingAtDepth', -1 as any, 'number' as any);
     return Number.isInteger(value) && value >= 0 ? value : -1;
 })();
-const enableAdaptiveThinking: any = getConfigValue('claude.enableAdaptiveThinking', true as any, 'boolean' as any);
+const enableAdaptiveThinking: any = getConfigValue(
+    'claude.enableAdaptiveThinking',
+    true as any,
+    'boolean' as any,
+);
 
 const provider: ChatProvider = {
     source: CHAT_COMPLETION_SOURCES.CLAUDE,
@@ -54,14 +64,30 @@ const provider: ChatProvider = {
             const useTools = Array.isArray(req.body.tools) && req.body.tools.length > 0;
             const useSystemPrompt = Boolean(req.body.use_sysprompt);
             const convertedPrompt = convertClaudeMessages(
-                req.body.messages, req.body.assistant_prefill,
-                useSystemPrompt, useTools, getPromptNames(req),
+                req.body.messages,
+                req.body.assistant_prefill,
+                useSystemPrompt,
+                useTools,
+                getPromptNames(req),
             );
-            const useThinking = /^claude-(3-7|opus-4|sonnet-4|haiku-4-5|opus-4-5|opus-4-6|sonnet-4-6|opus-4-7)/.test(req.body.model);
-            const useWebSearch = /^claude-(3-5|3-7|opus-4|sonnet-4|haiku-4-5|opus-4-5|opus-4-6|sonnet-4-6|opus-4-7)/.test(req.body.model) && Boolean(req.body.enable_web_search);
-            const isLimitedSampling = /^claude-(opus-4-1|sonnet-4-5|haiku-4-5|opus-4-5|opus-4-6|sonnet-4-6)/.test(req.body.model);
-            const useVerbosity = /^claude-(opus-4-5|opus-4-6|sonnet-4-6|opus-4-7)/.test(req.body.model);
-            const isAdaptiveModel = /^claude-(opus-4-7)/.test(req.body.model) || (enableAdaptiveThinking && /^claude-(opus-4-6|sonnet-4-6)/.test(req.body.model));
+            const useThinking =
+                /^claude-(3-7|opus-4|sonnet-4|haiku-4-5|opus-4-5|opus-4-6|sonnet-4-6|opus-4-7)/.test(
+                    req.body.model,
+                );
+            const useWebSearch =
+                /^claude-(3-5|3-7|opus-4|sonnet-4|haiku-4-5|opus-4-5|opus-4-6|sonnet-4-6|opus-4-7)/.test(
+                    req.body.model,
+                ) && Boolean(req.body.enable_web_search);
+            const isLimitedSampling =
+                /^claude-(opus-4-1|sonnet-4-5|haiku-4-5|opus-4-5|opus-4-6|sonnet-4-6)/.test(
+                    req.body.model,
+                );
+            const useVerbosity = /^claude-(opus-4-5|opus-4-6|sonnet-4-6|opus-4-7)/.test(
+                req.body.model,
+            );
+            const isAdaptiveModel =
+                /^claude-(opus-4-7)/.test(req.body.model) ||
+                (enableAdaptiveThinking && /^claude-(opus-4-6|sonnet-4-6)/.test(req.body.model));
             const noSamplingModel = /^claude-(opus-4-7)/.test(req.body.model);
 
             const stopSequences: string[] = [];
@@ -80,9 +106,15 @@ const provider: ChatProvider = {
             };
 
             if (useSystemPrompt) {
-                if (enableSystemPromptCache && Array.isArray(convertedPrompt.systemPrompt) && convertedPrompt.systemPrompt.length) {
+                if (
+                    enableSystemPromptCache &&
+                    Array.isArray(convertedPrompt.systemPrompt) &&
+                    convertedPrompt.systemPrompt.length
+                ) {
                     // @ts-expect-error TS(2532) — cache_control added to last element
-                    convertedPrompt.systemPrompt[convertedPrompt.systemPrompt.length - 1].cache_control = { type: 'ephemeral', ttl: cacheTTL };
+                    convertedPrompt.systemPrompt[
+                        convertedPrompt.systemPrompt.length - 1
+                    ].cache_control = { type: 'ephemeral', ttl: cacheTTL };
                 }
                 requestBody.system = convertedPrompt.systemPrompt;
             } else {
@@ -101,24 +133,34 @@ const provider: ChatProvider = {
                         input_schema: flattenSchema(fn.parameters, req.body.chat_completion_source),
                     }));
                 if (enableSystemPromptCache && requestBody.tools.length) {
-                    requestBody.tools[requestBody.tools.length - 1].cache_control = { type: 'ephemeral', ttl: cacheTTL };
+                    requestBody.tools[requestBody.tools.length - 1].cache_control = {
+                        type: 'ephemeral',
+                        ttl: cacheTTL,
+                    };
                 }
             }
 
             if (req.body.json_schema) {
-                requestBody.tools = [...(requestBody.tools || []), {
-                    name: req.body.json_schema.name,
-                    description: req.body.json_schema.description || 'Well-formed JSON object',
-                    input_schema: req.body.json_schema.value,
-                }];
+                requestBody.tools = [
+                    ...(requestBody.tools || []),
+                    {
+                        name: req.body.json_schema.name,
+                        description: req.body.json_schema.description || 'Well-formed JSON object',
+                        input_schema: req.body.json_schema.value,
+                    },
+                ];
                 requestBody.tool_choice = { type: 'tool', name: req.body.json_schema.name };
             }
 
             if (useWebSearch) {
-                requestBody.tools = [{ type: 'web_search_20250305', name: 'web_search' }, ...(requestBody.tools || [])];
+                requestBody.tools = [
+                    { type: 'web_search_20250305', name: 'web_search' },
+                    ...(requestBody.tools || []),
+                ];
             }
 
-            if (cachingAtDepth !== -1) cachingAtDepthForClaude(convertedPrompt.messages, cachingAtDepth, cacheTTL);
+            if (cachingAtDepth !== -1)
+                cachingAtDepthForClaude(convertedPrompt.messages, cachingAtDepth, cacheTTL);
             if (enableSystemPromptCache || cachingAtDepth !== -1) {
                 betaHeaders.push('prompt-caching-2024-07-31', 'extended-cache-ttl-2025-04-11');
             }
@@ -151,7 +193,9 @@ const provider: ChatProvider = {
             } else if (useThinking && Number.isInteger(budgetTokens)) {
                 if (requestBody.max_tokens <= 1024) {
                     requestBody.max_tokens = requestBody.max_tokens + 1024;
-                    console.warn(color.yellow('Claude thinking requires a minimum of 1024 response tokens.'));
+                    console.warn(
+                        color.yellow('Claude thinking requires a minimum of 1024 response tokens.'),
+                    );
                 }
                 requestBody.thinking = { type: 'enabled', budget_tokens: budgetTokens };
                 delete requestBody.temperature;
@@ -160,7 +204,10 @@ const provider: ChatProvider = {
             }
 
             // @ts-expect-error TS(2532) — prompt messages are arrays, not undefined at this point
-            if (convertedPrompt.messages.length && convertedPrompt.messages[convertedPrompt.messages.length - 1].role === 'assistant') {
+            if (
+                convertedPrompt.messages.length &&
+                convertedPrompt.messages[convertedPrompt.messages.length - 1].role === 'assistant'
+            ) {
                 // @ts-expect-error TS(2532) — ditto
                 convertedPrompt.messages[convertedPrompt.messages.length - 1].role = 'user';
             }
@@ -192,13 +239,20 @@ const provider: ChatProvider = {
             } else {
                 if (!generateResponse.ok) {
                     const text = await generateResponse.text();
-                    console.warn(color.red(`Claude API returned error: ${generateResponse.status} ${generateResponse.statusText}\n${text}\n${divider}`));
+                    console.warn(
+                        color.red(
+                            `Claude API returned error: ${generateResponse.status} ${generateResponse.statusText}\n${text}\n${divider}`,
+                        ),
+                    );
                     res.status(500).send({ error: true });
                     return;
                 }
-                const json = await generateResponse.json() as any;
+                const json = (await generateResponse.json()) as any;
                 const responseText = json?.content?.[0]?.text || '';
-                const reply = { choices: [{ message: { content: responseText } }], content: json.content };
+                const reply = {
+                    choices: [{ message: { content: responseText } }],
+                    content: json.content,
+                };
                 res.send(reply);
             }
         } catch (error) {
@@ -218,7 +272,7 @@ const provider: ChatProvider = {
             headers: { 'anthropic-version': '2023-06-01', 'x-api-key': apiKey },
         });
         if (!response.ok) return [];
-        const data = await response.json() as any;
+        const data = (await response.json()) as any;
         return data.data || [];
     },
     resolveTokenizer: () => 'claude',

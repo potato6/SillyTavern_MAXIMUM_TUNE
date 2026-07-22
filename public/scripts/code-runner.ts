@@ -40,9 +40,11 @@ export function addExecuteButtonToCodeBlocks() {
  * Removes all code-runner buttons and output containers.
  */
 export function removeExecuteButtons() {
-    document.querySelectorAll('.code-runner-button').forEach(el => el.remove());
-    document.querySelectorAll('.code-output').forEach(el => el.remove());
-    document.querySelectorAll('#chat .mes_text pre code.code-runner').forEach(el => el.classList.remove('code-runner'));
+    document.querySelectorAll('.code-runner-button').forEach((el) => el.remove());
+    document.querySelectorAll('.code-output').forEach((el) => el.remove());
+    document
+        .querySelectorAll('#chat .mes_text pre code.code-runner')
+        .forEach((el) => el.classList.remove('code-runner'));
 }
 
 /**
@@ -94,7 +96,8 @@ function getOutput(block: HTMLElement) {
     const pre = block.parentElement!;
     // Walk siblings after <pre> to find existing output (button may be between them)
     let el: HTMLElement | null = pre.nextElementSibling as HTMLElement | null;
-    while (el && !el.classList.contains('code-output')) el = el.nextElementSibling as HTMLElement | null;
+    while (el && !el.classList.contains('code-output'))
+        el = el.nextElementSibling as HTMLElement | null;
     if (!el) {
         el = document.createElement('blockquote');
         el.className = 'code-output';
@@ -113,7 +116,7 @@ function getOutput(block: HTMLElement) {
 
     el.append(clear, loader);
 
-    const cleared = new Promise<symbol>(resolve => {
+    const cleared = new Promise<symbol>((resolve) => {
         clear.addEventListener('click', () => resolve(clearedSymbol), { once: true });
     });
 
@@ -124,31 +127,55 @@ function getOutput(block: HTMLElement) {
  *
  * @param el
  */
-function show(el: HTMLElement) { el.style.display = 'block'; }
+function show(el: HTMLElement) {
+    el.style.display = 'block';
+}
 /**
  *
  * @param el
  */
-function hide(el: HTMLElement) { el.style.display = 'none'; }
+function hide(el: HTMLElement) {
+    el.style.display = 'none';
+}
 
 // ── JS execution ──────────────────────────────────────────────────────────
 
 class SandboxConsole {
     out: HTMLElement;
-    constructor(out: HTMLElement) { this.out = out; }
+    constructor(out: HTMLElement) {
+        this.out = out;
+    }
     _write(args: unknown[]) {
         const d = document.createElement('div');
-        d.textContent = args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' ');
+        d.textContent = args
+            .map((a) => (typeof a === 'object' ? JSON.stringify(a) : String(a)))
+            .join(' ');
         this.out.appendChild(d);
     }
-    log(...a: unknown[]) { this._write(a); }
-    info(...a: unknown[]) { this._write(a); }
-    warn(...a: unknown[]) { this._write(a); }
-    error(...a: unknown[]) { this._write(a); }
-    debug(...a: unknown[]) { this._write(a); }
-    table(...a: unknown[]) { this._write(a); }
-    trace(...a: unknown[]) { this._write(a); }
-    alert(...a: unknown[]) { this._write(a); }
+    log(...a: unknown[]) {
+        this._write(a);
+    }
+    info(...a: unknown[]) {
+        this._write(a);
+    }
+    warn(...a: unknown[]) {
+        this._write(a);
+    }
+    error(...a: unknown[]) {
+        this._write(a);
+    }
+    debug(...a: unknown[]) {
+        this._write(a);
+    }
+    table(...a: unknown[]) {
+        this._write(a);
+    }
+    trace(...a: unknown[]) {
+        this._write(a);
+    }
+    alert(...a: unknown[]) {
+        this._write(a);
+    }
     result(v: unknown, ms: number) {
         const d = document.createElement('div');
         const s = document.createElement('small');
@@ -177,7 +204,10 @@ async function runJS(block: HTMLElement) {
                 ...Sandbox.SAFE_GLOBALS,
                 console: cc,
                 alert: cc.alert.bind(cc),
-                setTimeout, clearTimeout, setInterval, clearInterval,
+                setTimeout,
+                clearTimeout,
+                setInterval,
+                clearInterval,
             },
             prototypeWhitelist: protos,
         });
@@ -208,11 +238,21 @@ async function runST(block: HTMLElement) {
         const ac = new AbortController();
         const t0 = performance.now();
         const result = await Promise.race([
-            executeSlashCommandsWithOptions(code, { handleParserErrors: true, scope: null, handleExecutionErrors: false, parserFlags: null, abortController: ac, onProgress: () => {} }),
+            executeSlashCommandsWithOptions(code, {
+                handleParserErrors: true,
+                scope: null,
+                handleExecutionErrors: false,
+                parserFlags: null,
+                abortController: ac,
+                onProgress: () => {},
+            }),
             cleared,
         ]);
         hide(loader);
-        if (result === clearedSymbol) { ac.abort(); return; }
+        if (result === clearedSymbol) {
+            ac.abort();
+            return;
+        }
         const cc = new SandboxConsole(el);
         cc.result((result as unknown as Record<string, unknown>)?.pipe, performance.now() - t0);
     } catch (e) {
@@ -230,7 +270,7 @@ async function runST(block: HTMLElement) {
  */
 function renderHTML(block: HTMLElement, fullSize = false) {
     // Only one HTML preview at a time — remove all existing code-outputs
-    document.querySelectorAll('#chat .code-output').forEach(el => el.remove());
+    document.querySelectorAll('#chat .code-output').forEach((el) => el.remove());
 
     const html = block.textContent.trim();
     const container = document.createElement('div');

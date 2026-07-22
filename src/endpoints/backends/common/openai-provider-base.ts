@@ -49,7 +49,9 @@ export interface OAIConfig {
  */
 export function createOAIChatProvider(cfg: OAIConfig): ChatProvider {
     const {
-        source, defaultBase, secretKey,
+        source,
+        defaultBase,
+        secretKey,
         supportsReverseProxy = true,
         extraHeaders = {},
         extraBodyParams,
@@ -65,10 +67,10 @@ export function createOAIChatProvider(cfg: OAIConfig): ChatProvider {
     /** Build resolveTokenizer from the tokenizer config. */
     const resolveTokenizer: ((model: string) => string) | undefined =
         typeof tokenizer === 'function'
-            ? tokenizer as (model: string) => string
+            ? (tokenizer as (model: string) => string)
             : tokenizer
-                ? () => tokenizer as string
-                : undefined;
+              ? () => tokenizer as string
+              : undefined;
 
     return {
         source,
@@ -78,14 +80,19 @@ export function createOAIChatProvider(cfg: OAIConfig): ChatProvider {
         resolveTokenizer,
 
         async chat(req, res) {
-            const baseUrl = supportsReverseProxy && req.body.reverse_proxy
-                ? new URL(req.body.reverse_proxy).toString().replace(/\/+$/, '')
-                : defaultBase.replace(/\/+$/, '');
+            const baseUrl =
+                supportsReverseProxy && req.body.reverse_proxy
+                    ? new URL(req.body.reverse_proxy).toString().replace(/\/+$/, '')
+                    : defaultBase.replace(/\/+$/, '');
 
-            const apiKey = supportsReverseProxy && req.body.reverse_proxy
-                ? req.body.proxy_password
-                : (await import('../../secrets.js')).readSecret(
-                    req.user.directories, deriveStorageKey(secretKey), req.body.secret_id);
+            const apiKey =
+                supportsReverseProxy && req.body.reverse_proxy
+                    ? req.body.proxy_password
+                    : (await import('../../secrets.js')).readSecret(
+                          req.user.directories,
+                          deriveStorageKey(secretKey),
+                          req.body.secret_id,
+                      );
 
             if (!apiKey && !req.body.reverse_proxy) {
                 console.warn(`${source} API key is missing.`);
@@ -113,23 +120,25 @@ export function createOAIChatProvider(cfg: OAIConfig): ChatProvider {
                 seed: req.body.seed,
                 n: req.body.n,
                 ...(extraBodyParams ? extraBodyParams(req) : {}),
-                ...(req.body.json_schema ? {
-                    response_format: {
-                        type: 'json_schema',
-                        json_schema: {
-                            name: req.body.json_schema.name,
-                            description: req.body.json_schema.description,
-                            schema: req.body.json_schema.value,
-                            strict: req.body.json_schema.strict ?? true,
-                        },
-                    },
-                } : {}),
+                ...(req.body.json_schema
+                    ? {
+                          response_format: {
+                              type: 'json_schema',
+                              json_schema: {
+                                  name: req.body.json_schema.name,
+                                  description: req.body.json_schema.description,
+                                  schema: req.body.json_schema.value,
+                                  strict: req.body.json_schema.strict ?? true,
+                              },
+                          },
+                      }
+                    : {}),
             };
 
             const url = `${baseUrl}/chat/completions`;
             const headers: Record<string, string> = {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${apiKey}`,
+                Authorization: `Bearer ${apiKey}`,
                 ...extraHeaders,
             };
 
@@ -145,25 +154,34 @@ export function createOAIChatProvider(cfg: OAIConfig): ChatProvider {
         },
 
         async listModels(req): Promise<ModelEntry[]> {
-            const baseUrl = supportsReverseProxy && req.body.reverse_proxy
-                ? new URL(req.body.reverse_proxy).toString().replace(/\/+$/, '')
-                : defaultBase.replace(/\/+$/, '');
-            const apiKey = supportsReverseProxy && req.body.reverse_proxy
-                ? req.body.proxy_password
-                : (await import('../../secrets.js')).readSecret(
-                    req.user.directories, deriveStorageKey(secretKey), req.body.secret_id);
+            const baseUrl =
+                supportsReverseProxy && req.body.reverse_proxy
+                    ? new URL(req.body.reverse_proxy).toString().replace(/\/+$/, '')
+                    : defaultBase.replace(/\/+$/, '');
+            const apiKey =
+                supportsReverseProxy && req.body.reverse_proxy
+                    ? req.body.proxy_password
+                    : (await import('../../secrets.js')).readSecret(
+                          req.user.directories,
+                          deriveStorageKey(secretKey),
+                          req.body.secret_id,
+                      );
 
             if (!apiKey && !req.body.reverse_proxy) return [];
 
             const response = await globalThis.fetch(`${baseUrl}${modelsPath}`, {
-                headers: { 'Authorization': `Bearer ${apiKey}`, ...extraHeaders },
+                headers: { Authorization: `Bearer ${apiKey}`, ...extraHeaders },
             });
             if (!response.ok) return [];
 
-            const data = await response.json() as Record<string, unknown>;
+            const data = (await response.json()) as Record<string, unknown>;
             if (transformModelList) return transformModelList(data);
             if (Array.isArray(data?.data)) return data.data as ModelEntry[];
-            if (Array.isArray(data?.models)) return data.models.map((m: Record<string, unknown>) => ({ id: m.name as string, ...m })) as ModelEntry[];
+            if (Array.isArray(data?.models))
+                return data.models.map((m: Record<string, unknown>) => ({
+                    id: m.name as string,
+                    ...m,
+                })) as ModelEntry[];
             return [];
         },
     };

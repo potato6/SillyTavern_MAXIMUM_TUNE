@@ -12,14 +12,18 @@ import { tags, tag_map } from './store/tagStore.js';
  * @returns {void}
  * @description This function iterates through the chat messages and applies character tags
  */
-export function applyCharacterTagsToMessageDivs({ mesIds = [] as number[] }: { mesIds?: number | number[] } = {}): void {
+export function applyCharacterTagsToMessageDivs({
+    mesIds = [] as number[],
+}: { mesIds?: number | number[] } = {}): void {
     try {
         const messagesFilter = buildMessagesFilter(mesIds);
         const chatEl = document.querySelector('#chat');
-        const messages = chatEl ? [...chatEl.children].filter(el => el.matches(messagesFilter)) : [];
+        const messages = chatEl
+            ? [...chatEl.children].filter((el) => el.matches(messagesFilter))
+            : [];
 
         // Clear existing tags
-        messages.forEach(element => {
+        messages.forEach((element) => {
             for (const attr of [...element.attributes]) {
                 if (attr.name.startsWith('data-char-tag-') || attr.name === 'data-char-tags') {
                     element.removeAttribute(attr.name);
@@ -27,23 +31,29 @@ export function applyCharacterTagsToMessageDivs({ mesIds = [] as number[] }: { m
             }
         });
 
-        const tagsList = tags, characterTagData = tag_map;
+        const tagsList = tags,
+            characterTagData = tag_map;
 
         if (!tagsList?.length || !characterTagData) {
             return;
         }
 
-        const tagNamesById = tagsList.reduce((acc: Record<string, string>, tag) => {
-            acc[tag.id] = tag.name;
-            return acc;
-        }, {} as Record<string, string>);
+        const tagNamesById = tagsList.reduce(
+            (acc: Record<string, string>, tag) => {
+                acc[tag.id] = tag.name;
+                return acc;
+            },
+            {} as Record<string, string>,
+        );
 
         const characterTagsCache = new Map();
 
         // Iterate each message div
-        messages.forEach(element => {
+        messages.forEach((element) => {
             const $this = element;
-            const avatarFileName = extractCharacterAvatar(element.querySelector('.avatar img')?.getAttribute('src'));
+            const avatarFileName = extractCharacterAvatar(
+                element.querySelector('.avatar img')?.getAttribute('src'),
+            );
 
             if (!avatarFileName) {
                 return;
@@ -53,7 +63,9 @@ export function applyCharacterTagsToMessageDivs({ mesIds = [] as number[] }: { m
 
             // If tags are NOT in the cache, compute and store them
             if (!tagsForCharacter) {
-                const tagIds = (characterTagData as Record<string, string[] | undefined>)[avatarFileName];
+                const tagIds = (characterTagData as Record<string, string[] | undefined>)[
+                    avatarFileName
+                ];
                 if (tagIds?.length) {
                     const tagNames = tagIds
                         .map((id: string) => (tagNamesById as Record<string, string>)[id])
@@ -103,7 +115,7 @@ function buildMessagesFilter(mesIds: number | number[]): string {
     if (mesIdsArray?.length) {
         // Create a valid jQuery selector for multiple attribute values.
         // Example output: '.mes[mesid="1"],.mes[mesid="5"]'
-        return mesIdsArray.map(id => `.mes[mesid="${id}"]`).join(',');
+        return mesIdsArray.map((id) => `.mes[mesid="${id}"]`).join(',');
     }
 
     // If mesIds is empty, select all messages.
@@ -117,7 +129,10 @@ function buildMessagesFilter(mesIds: number | number[]): string {
  * @param {string[]} tagData.tagNames - An array of tag names.
  * @param {string} tagData.joinedTagNames - A comma-separated string of tag names.
  */
-function applyTags($element: Element, tagData: { tagNames: string[]; joinedTagNames: string }): void {
+function applyTags(
+    $element: Element,
+    tagData: { tagNames: string[]; joinedTagNames: string },
+): void {
     $element.setAttribute('data-char-tags', tagData.joinedTagNames);
     tagData.tagNames.forEach((tagName: string) => {
         const normalizedTagName = normalizeTagName(tagName);
@@ -142,7 +157,8 @@ function normalizeTagName(name: string): string {
     }
 
     // Normalize the tag name by trimming, converting spaces to hyphens, replacing accented characters, removing special characters, and converting to lowercase
-    return name.trim()
+    return name
+        .trim()
         .normalize('NFD') // Normalize accented characters
         .replace(/[\u0300-\u036f]/g, '') // Remove diacritical marks
         .replace(/[^a-zA-Z0-9\s_-]/g, '') // Remove special characters except spaces, underscores, and hyphens

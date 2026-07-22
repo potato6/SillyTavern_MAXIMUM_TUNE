@@ -64,5 +64,3 @@
  * @property {Object<string, DynamicMacroValue>} dynamicMacros
  * @property {Record<string, unknown>} extra
  */
-
-export {};

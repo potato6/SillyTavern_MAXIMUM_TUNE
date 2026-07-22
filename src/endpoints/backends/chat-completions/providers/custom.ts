@@ -1,4 +1,10 @@
-import { CHAT_COMPLETION_SOURCES, OPENAI_REASONING_EFFORT_MAP, OPENAI_REASONING_EFFORT_MODELS, OPENAI_FIXED_REASONING_EFFORT, OPENAI_VERBOSITY_MODELS } from '../../../../constants.js';
+import {
+    CHAT_COMPLETION_SOURCES,
+    OPENAI_REASONING_EFFORT_MAP,
+    OPENAI_REASONING_EFFORT_MODELS,
+    OPENAI_FIXED_REASONING_EFFORT,
+    OPENAI_VERBOSITY_MODELS,
+} from '../../../../constants.js';
 import { readSecret, SECRET_KEYS } from '../../../secrets.js';
 import { proxyRequest } from '../../common/proxy.js';
 import { createSocketAbortController } from '../../common/abort-controller.js';
@@ -27,16 +33,20 @@ const provider: ChatProvider = {
             top_logprobs: undefined,
         };
 
-        const isTextCompletion = Boolean(req.body.model && (
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (await import('../../../text-completion-models.js')).TEXT_COMPLETION_MODELS as any as string[]
-        ).includes(req.body.model)) || typeof req.body.messages === 'string';
+        const isTextCompletion =
+            Boolean(
+                req.body.model &&
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                (
+                    (await import('../../../text-completion-models.js'))
+                        .TEXT_COMPLETION_MODELS as any as string[]
+                ).includes(req.body.model),
+            ) || typeof req.body.messages === 'string';
 
         if (!isTextCompletion && bodyParams.logprobs > 0) {
             bodyParams.top_logprobs = bodyParams.logprobs;
             bodyParams.logprobs = true;
         }
-
 
         const { embedOpenRouterMedia } = await import('../../../../prompt-converters.js');
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -60,10 +70,14 @@ const provider: ChatProvider = {
 
         if (req.body.reasoning_effort) {
             if (OPENAI_REASONING_EFFORT_MODELS.includes(req.body.model)) {
-
-                bodyParams.reasoning_effort = (OPENAI_FIXED_REASONING_EFFORT as Record<string, string | undefined>)[req.body.model]
-                    ?? (OPENAI_REASONING_EFFORT_MAP as Record<string, string | undefined>)[req.body.reasoning_effort]
-                    ?? req.body.reasoning_effort;
+                bodyParams.reasoning_effort =
+                    (OPENAI_FIXED_REASONING_EFFORT as Record<string, string | undefined>)[
+                        req.body.model
+                    ] ??
+                    (OPENAI_REASONING_EFFORT_MAP as Record<string, string | undefined>)[
+                        req.body.reasoning_effort
+                    ] ??
+                    req.body.reasoning_effort;
             }
             if (/^koboldcpp\/(.+)$/.test(req.body.model)) {
                 bodyParams.reasoning_effort = req.body.reasoning_effort;
@@ -79,7 +93,9 @@ const provider: ChatProvider = {
         }
 
         const textPrompt = isTextCompletion
-            ? (await import('../../../../prompt-converters.js')).convertTextCompletionPrompt(req.body.messages)
+            ? (await import('../../../../prompt-converters.js')).convertTextCompletionPrompt(
+                  req.body.messages,
+              )
             : '';
 
         const endpointUrl = isTextCompletion
@@ -109,9 +125,8 @@ const provider: ChatProvider = {
 
         const headers: Record<string, string> = {
             'Content-Type': 'application/json',
-            ...(apiKey ? { 'Authorization': 'Bearer ' + apiKey } : {}),
+            ...(apiKey ? { Authorization: 'Bearer ' + apiKey } : {}),
         };
-
 
         const { mergeObjectWithYaml, excludeKeysByYaml } = await import('../../../../util.js');
         mergeObjectWithYaml(bodyParams, req.body.custom_include_body);
@@ -134,10 +149,10 @@ const provider: ChatProvider = {
         const apiKey = readSecret(req.user.directories, SECRET_KEYS.CUSTOM, req.body.secret_id);
 
         const response = await globalThis.fetch(`${apiUrl}/models`, {
-            headers: { ...(apiKey ? { 'Authorization': 'Bearer ' + apiKey } : {}) },
+            headers: apiKey ? { Authorization: 'Bearer ' + apiKey } : {},
         });
         if (!response.ok) return [];
-        const data = await response.json() as Record<string, unknown>;
+        const data = (await response.json()) as Record<string, unknown>;
         return (data.data as ModelEntry[]) || [];
     },
 };

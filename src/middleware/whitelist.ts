@@ -7,7 +7,11 @@ import ipMatching from 'ip-matching';
 import isDocker from 'is-docker';
 import express from 'express';
 
-import { filterValidIpPatterns, getIpFromRequest, getRealOrForwardedIp } from '../express-common.js';
+import {
+    filterValidIpPatterns,
+    getIpFromRequest,
+    getRealOrForwardedIp,
+} from '../express-common.js';
 import { color, getConfigValue, safeReadFileSync } from '../util.js';
 
 const whitelistPath = path.join(process.cwd(), './whitelist.txt');
@@ -20,17 +24,30 @@ const whitelistDockerHosts = !!getConfigValue('whitelistDockerHosts', true, 'boo
 let whitelist = getConfigValue('whitelist', []);
 
 if (fs.existsSync(whitelistPath)) {
-    console.warn(color.yellow('whitelist.txt is deprecated and will be removed in a future release.'));
-    console.warn(color.yellow('Please migrate its contents to the whitelist field in config.yaml. See the documentation for more details.'));
+    console.warn(
+        color.yellow('whitelist.txt is deprecated and will be removed in a future release.'),
+    );
+    console.warn(
+        color.yellow(
+            'Please migrate its contents to the whitelist field in config.yaml. See the documentation for more details.',
+        ),
+    );
     try {
         const whitelistTxt = fs.readFileSync(whitelistPath, 'utf-8');
-        whitelist = whitelistTxt.split('\n').filter(ip => ip).map(ip => ip.trim());
+        whitelist = whitelistTxt
+            .split('\n')
+            .filter((ip) => ip)
+            .map((ip) => ip.trim());
     } catch {
         // Ignore errors that may occur when reading the whitelist (e.g. permissions)
     }
 }
 
-whitelist = filterValidIpPatterns(whitelist, (entry: string, message: string) => `${color.red('Warning')}: Ignoring invalid whitelist entry ${color.yellow(entry)} - ${message}`);
+whitelist = filterValidIpPatterns(
+    whitelist,
+    (entry: string, message: string) =>
+        `${color.red('Warning')}: Ignoring invalid whitelist entry ${color.yellow(entry)} - ${message}`,
+);
 
 /**
  * Resolves the IP addresses of Docker hostnames and adds them to the whitelist.
@@ -46,7 +63,9 @@ async function addDockerHostsToWhitelist() {
     for (const entry of whitelistHosts) {
         try {
             const result = await dns.promises.lookup(entry);
-            console.info(`Resolved whitelist hostname ${color.green(entry)} to IPv${result.family} address ${color.green(result.address)}`);
+            console.info(
+                `Resolved whitelist hostname ${color.green(entry)} to IPv${result.family} address ${color.green(result.address)}`,
+            );
             whitelist.push(result.address);
         } catch (error) {
             const message = error instanceof Error ? error.message : String(error);
@@ -61,12 +80,12 @@ async function addDockerHostsToWhitelist() {
  */
 export default async function getWhitelistMiddleware() {
     const forbiddenWebpage = Handlebars.compile(
-        safeReadFileSync(path.join(globalThis.DATA_ROOT, '_errors', 'forbidden-by-whitelist.html')) ?? '',
+        safeReadFileSync(
+            path.join(globalThis.DATA_ROOT, '_errors', 'forbidden-by-whitelist.html'),
+        ) ?? '',
     );
 
-    const noLogPaths = [
-        '/favicon.ico',
-    ];
+    const noLogPaths = new Set(['/favicon.ico']);
 
     await addDockerHostsToWhitelist();
 
@@ -86,15 +105,16 @@ export default async function getWhitelistMiddleware() {
         }
 
         //clientIp = req.connection.remoteAddress.split(':').pop();
-        if (!isIPInWhitelist(whitelist, clientIp)
-            || (forwardedIp && !isIPInWhitelist(whitelist, forwardedIp))
+        if (
+            !isIPInWhitelist(whitelist, clientIp) ||
+            (forwardedIp && !isIPInWhitelist(whitelist, forwardedIp))
         ) {
             // Log the connection attempt with real IP address
             const ipDetails = forwardedIp
                 ? `${clientIp} (forwarded from ${forwardedIp})`
                 : clientIp;
 
-            if (!noLogPaths.includes(req.path)) {
+            if (!noLogPaths.has(req.path)) {
                 console.warn(
                     color.red(
                         `Blocked connection from ${ipDetails}; User Agent: ${userAgent}\n\tTo allow this connection, add its IP address to the whitelist or disable whitelist mode by editing config.yaml in the root directory of your SillyTavern installation.\n`,

@@ -1,12 +1,28 @@
 import { localspace } from '../lib.js';
-import { characters, event_types, eventSource, main_api, nai_settings, online_status, this_chid } from '../script.js';
+import {
+    characters,
+    event_types,
+    eventSource,
+    main_api,
+    nai_settings,
+    online_status,
+    this_chid,
+} from '../script.js';
 import { power_user, registerDebugFunction } from './power-user.js';
 import { chat_completion_sources, oai_settings } from './openai.js';
 import { groups, selected_group } from './group-chats.js';
 import { getStringHash } from './utils.js';
 import { kai_flags, kai_settings } from './kai-settings.js';
-import { textgen_types, textgenerationwebui_settings as textgen_settings, getTextGenServer, getTextGenModel } from './textgen-settings.js';
-import { getCurrentDreamGenModelTokenizer, getCurrentOpenRouterModelTokenizer } from './textgen-models.js';
+import {
+    textgen_types,
+    textgenerationwebui_settings as textgen_settings,
+    getTextGenServer,
+    getTextGenModel,
+} from './textgen-settings.js';
+import {
+    getCurrentDreamGenModelTokenizer,
+    getCurrentOpenRouterModelTokenizer,
+} from './textgen-models.js';
 
 /** @type {string} */
 let _csrfToken = '';
@@ -134,7 +150,7 @@ async function resetTokenCache() {
     try {
         console.debug('Chat Completions: resetting token cache');
         // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        Object.keys(tokenCache).forEach(key => delete tokenCache[key]);
+        Object.keys(tokenCache).forEach((key) => delete tokenCache[key]);
         await objectStore.removeItem('tokenCache');
         notyf.success('Token cache cleared. Please reload the chat to re-tokenize it.');
     } catch (e) {
@@ -155,9 +171,13 @@ async function resetTokenCache() {
  */
 export function getAvailableTokenizers() {
     const tokenizerOptions = Array.from(document.querySelectorAll('#tokenizer option'));
-    return tokenizerOptions.map(tokenizerOption => ({
+    return tokenizerOptions.map((tokenizerOption) => ({
         tokenizerId: Number((tokenizerOption as HTMLOptionElement).value),
-        tokenizerKey: Object.entries(tokenizers).find(([_, value]) => value === Number((tokenizerOption as HTMLOptionElement).value))![0].toLocaleLowerCase(),
+        tokenizerKey: Object.entries(tokenizers)
+            .find(
+                ([_, value]) => value === Number((tokenizerOption as HTMLOptionElement).value),
+            )![0]
+            .toLocaleLowerCase(),
         tokenizerName: (tokenizerOption as HTMLOptionElement).text,
     }));
 }
@@ -169,7 +189,9 @@ export function getAvailableTokenizers() {
 // @ts-expect-error TS(7006) FIXME: Parameter 'tokenizerId' implicitly has an 'any' ty... Remove this comment to see the full error message
 export function selectTokenizer(tokenizerId) {
     if (tokenizerId !== power_user.tokenizer) {
-        const tokenizer = getAvailableTokenizers().find(tokenizer => tokenizer.tokenizerId === tokenizerId);
+        const tokenizer = getAvailableTokenizers().find(
+            (tokenizer) => tokenizer.tokenizerId === tokenizerId,
+        );
         if (!tokenizer) {
             console.warn('Failed to find tokenizer with id', tokenizerId);
             return;
@@ -210,20 +232,21 @@ export function getFriendlyTokenizerName(forApi) {
                 tokenizerName = 'API (Text Completion)';
                 break;
             default:
-                tokenizerName = document.querySelector(`#tokenizer option[value="${tokenizerId}"]`)?.textContent ?? '';
+                tokenizerName =
+                    document.querySelector(`#tokenizer option[value="${tokenizerId}"]`)
+                        ?.textContent ?? '';
                 break;
         }
     }
 
-    tokenizerName = forApi == 'openai'
-        ? getTokenizerModel()
-        : tokenizerName;
+    tokenizerName = forApi == 'openai' ? getTokenizerModel() : tokenizerName;
 
-    tokenizerId = forApi == 'openai'
-        ? tokenizers.OPENAI
-        : tokenizerId;
+    tokenizerId = forApi == 'openai' ? tokenizers.OPENAI : tokenizerId;
 
-    const tokenizerKey = Object.entries(tokenizers).find(([_, value]) => value === tokenizerId)?.[0]?.toLocaleLowerCase() ?? '';
+    const tokenizerKey =
+        Object.entries(tokenizers)
+            .find(([_, value]) => value === tokenizerId)?.[0]
+            ?.toLocaleLowerCase() ?? '';
 
     return { tokenizerName, tokenizerKey, tokenizerId };
 }
@@ -259,7 +282,9 @@ export function getTokenizerBestMatch(forApi) {
         const hasValidEndpoint = sessionStorage.getItem(TOKENIZER_SUPPORTED_KEY);
         const isConnected = online_status !== 'no_connection';
         // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
-        const isTokenizerSupported = TEXTGEN_TOKENIZERS.includes(textgen_settings.type) && (textgen_settings.type !== textgen_types.OOBA || hasValidEndpoint);
+        const isTokenizerSupported =
+            TEXTGEN_TOKENIZERS.includes(textgen_settings.type) &&
+            (textgen_settings.type !== textgen_types.OOBA || hasValidEndpoint);
 
         if (!hasTokenizerError && isConnected) {
             if (forApi === 'kobold' && kai_flags.can_use_tokenization) {
@@ -269,10 +294,16 @@ export function getTokenizerBestMatch(forApi) {
             if (forApi === 'textgenerationwebui' && isTokenizerSupported) {
                 return tokenizers.API_TEXTGENERATIONWEBUI;
             }
-            if (forApi === 'textgenerationwebui' && textgen_settings.type === textgen_types.OPENROUTER) {
+            if (
+                forApi === 'textgenerationwebui' &&
+                textgen_settings.type === textgen_types.OPENROUTER
+            ) {
                 return getCurrentOpenRouterModelTokenizer();
             }
-            if (forApi === 'textgenerationwebui' && textgen_settings.type === textgen_types.DREAMGEN) {
+            if (
+                forApi === 'textgenerationwebui' &&
+                textgen_settings.type === textgen_types.DREAMGEN
+            ) {
                 return getCurrentDreamGenModelTokenizer();
             }
         }
@@ -367,7 +398,7 @@ function callTokenizer(type, str) {
  */
 // @ts-expect-error TS(7023) FIXME: 'callTokenizerAsync' implicitly has return type 'a... Remove this comment to see the full error message
 function callTokenizerAsync(type, str) {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
         if (type === tokenizers.NONE) {
             return resolve(guesstimate(str));
         }
@@ -433,7 +464,7 @@ export async function getTokenCountAsync(str, padding = undefined) {
         return cacheObject[cacheKey];
     }
 
-    const result = (await callTokenizerAsync(tokenizerType, str) as number) + (padding ?? 0);
+    const result = ((await callTokenizerAsync(tokenizerType, str)) as number) + (padding ?? 0);
 
     if (isNaN(result)) {
         console.warn('Token count calculation returned NaN');
@@ -481,7 +512,10 @@ export async function resolveTokenizerModel(source: string, model: string): Prom
         try {
             const res = await fetch('/api/tokenizers/resolve', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': await getCsrfToken() },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': await getCsrfToken(),
+                },
                 body: JSON.stringify({ source, model }),
             });
             if (res.ok) {
@@ -490,7 +524,9 @@ export async function resolveTokenizerModel(source: string, model: string): Prom
                 _tokenizerResolveCache.set(cacheKey, tokenizer);
                 return tokenizer;
             }
-        } catch { /* network error — use default */ }
+        } catch {
+            /* network error — use default */
+        }
         _tokenizerResolveCache.set(cacheKey, 'gpt-3.5-turbo');
         return 'gpt-3.5-turbo';
     })();
@@ -519,9 +555,10 @@ export function getTokenizerModel(): string {
 
     // Dynamic property access: most sources follow `oai_settings.{source}_model`
     // with two exceptions that alias to `google_model`.
-    const model = source === 'makersuite' || source === 'vertexai'
-        ? oai_settings.google_model || ''
-        : (oai_settings as unknown as Record<string, string>)[`${source}_model`] || '';
+    const model =
+        source === 'makersuite' || source === 'vertexai'
+            ? oai_settings.google_model || ''
+            : (oai_settings as unknown as Record<string, string>)[`${source}_model`] || '';
 
     if (!model) return 'gpt-3.5-turbo';
 
@@ -539,11 +576,13 @@ export function getTokenizerModel(): string {
 /** Pre-warm the tokenizer cache for the current source+model at init time. */
 function preWarmTokenizerCache(): void {
     const source = oai_settings.chat_completion_source;
-    if (source === chat_completion_sources.OPENAI || source === chat_completion_sources.CUSTOM) return;
+    if (source === chat_completion_sources.OPENAI || source === chat_completion_sources.CUSTOM)
+        return;
 
-    const model = source === 'makersuite' || source === 'vertexai'
-        ? oai_settings.google_model || ''
-        : (oai_settings as unknown as Record<string, string>)[`${source}_model`] || '';
+    const model =
+        source === 'makersuite' || source === 'vertexai'
+            ? oai_settings.google_model || ''
+            : (oai_settings as unknown as Record<string, string>)[`${source}_model`] || '';
 
     if (model) resolveTokenizerModel(source, model);
 }
@@ -589,7 +628,10 @@ export async function countTokensOpenAIAsync(messages, full = false) {
         } else {
             const response = await fetch(tokenizerEndpoint, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': await getCsrfToken() },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': await getCsrfToken(),
+                },
                 body: JSON.stringify([message]),
             });
             const data = await response.json();
@@ -614,7 +656,7 @@ function getTokenCacheObject() {
     try {
         if (selected_group) {
             // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
-            chatId = groups.find(x => x.id == selected_group)?.chat_id;
+            chatId = groups.find((x) => x.id == selected_group)?.chat_id;
         } else if (this_chid !== undefined) {
             chatId = characters[this_chid].chat;
         }
@@ -643,16 +685,14 @@ async function countTokensFromKoboldAPI(str, resolve) {
     const isAsync = typeof resolve === 'function';
     let tokenCount = 0;
 
-    const response = await fetch(
-        TOKENIZER_REMOTE_KOBOLD, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                text: str,
-                url: kai_settings.api_server,
-            }),
-        },
-    );
+    const response = await fetch(TOKENIZER_REMOTE_KOBOLD, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            text: str,
+            url: kai_settings.api_server,
+        }),
+    });
     const data = await response.json();
     if (typeof data.count === 'number') {
         tokenCount = data.count;
@@ -692,13 +732,11 @@ async function countTokensFromTextgenAPI(str, resolve) {
     const isAsync = typeof resolve === 'function';
     let tokenCount = 0;
 
-    const response = await fetch(
-        TOKENIZER_REMOTE_TEXTGEN, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(getTextgenAPITokenizationParams(str)),
-        },
-    );
+    const response = await fetch(TOKENIZER_REMOTE_TEXTGEN, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(getTextgenAPITokenizationParams(str)),
+    });
     const data = await response.json();
     if (typeof data.count === 'number') {
         tokenCount = data.count;
@@ -724,7 +762,10 @@ function apiFailureTokenCount(str) {
         const bestMatchBefore = getTokenizerBestMatch(main_api);
         sessionStorage.setItem(TOKENIZER_WARNING_KEY, String(true));
         const bestMatchAfter = getTokenizerBestMatch(main_api);
-        if ([tokenizers.API_TEXTGENERATIONWEBUI, tokenizers.API_KOBOLD].includes(bestMatchBefore) && bestMatchBefore !== bestMatchAfter) {
+        if (
+            [tokenizers.API_TEXTGENERATIONWEBUI, tokenizers.API_KOBOLD].includes(bestMatchBefore) &&
+            bestMatchBefore !== bestMatchAfter
+        ) {
             shouldTryAgain = true;
         }
     }
@@ -780,7 +821,9 @@ async function genericGetTextTokens(tokenizerName, str) {
         if (Array.isArray(data.chunks)) {
             Object.defineProperty(ids, 'chunks', { value: data.chunks });
         }
-    } catch { /* return empty */ }
+    } catch {
+        /* return empty */
+    }
     return ids;
 }
 
@@ -800,7 +843,9 @@ async function genericDecodeTokens(tokenizerName, ids) {
         const data = await response.json();
         text = data.text || '';
         chunks = data.chunks || [];
-    } catch { /* return empty */ }
+    } catch {
+        /* return empty */
+    }
     return { text, chunks };
 }
 
@@ -814,13 +859,11 @@ async function genericDecodeTokens(tokenizerName, ids) {
 async function getTextTokensFromTextgenAPI(str, resolve) {
     const isAsync = typeof resolve === 'function';
     let ids = [];
-    const response = await fetch(
-        TOKENIZER_REMOTE_TEXTGEN, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(getTextgenAPITokenizationParams(str)),
-        },
-    );
+    const response = await fetch(TOKENIZER_REMOTE_TEXTGEN, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(getTextgenAPITokenizationParams(str)),
+    });
     const data = await response.json();
     ids = data.ids;
     if (isAsync) resolve(ids);
@@ -839,16 +882,14 @@ async function getTextTokensFromKoboldAPI(str, resolve) {
     const isAsync = typeof resolve === 'function';
     let ids = [];
 
-    const response = await fetch(
-        TOKENIZER_REMOTE_KOBOLD, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                text: str,
-                url: kai_settings.api_server,
-            }),
-        },
-    );
+    const response = await fetch(TOKENIZER_REMOTE_KOBOLD, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            text: str,
+            url: kai_settings.api_server,
+        }),
+    });
     const data = await response.json();
     ids = data.ids;
     if (isAsync) resolve(ids);
@@ -905,7 +946,8 @@ async function loadTokenizerMap(): Promise<void> {
         const res = await fetch(`${TOKENIZER_BASE}/map`);
         if (!res.ok) return;
         const data = await res.json();
-        const list: { id: number; name: string; supportsEncode: boolean }[] = data?.tokenizers || [];
+        const list: { id: number; name: string; supportsEncode: boolean }[] =
+            data?.tokenizers || [];
         const nameById: Record<number, string> = {};
         for (const t of list) {
             if (t.id >= 0) nameById[t.id] = t.name;
@@ -935,12 +977,19 @@ export async function initTokenizers() {
     eventSource.on(event_types.ONLINE_STATUS_CHANGED, async () => {
         // Clear tokenizer warning when (re)connecting to an LLM backend that supports tokenization
         // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
-        if (main_api === 'textgenerationwebui' && TEXTGEN_TOKENIZERS.includes(textgen_settings.type)) {
+        if (
+            main_api === 'textgenerationwebui' &&
+            TEXTGEN_TOKENIZERS.includes(textgen_settings.type)
+        ) {
             sessionStorage.removeItem(TOKENIZER_WARNING_KEY);
         }
     });
     await loadTokenCache();
     preWarmTokenizerCache();
-    registerDebugFunction('resetTokenCache', 'Reset token cache', 'Purges the calculated token counts. Use this if you want to force a full re-tokenization of all chats or suspect the token counts are wrong.', resetTokenCache);
+    registerDebugFunction(
+        'resetTokenCache',
+        'Reset token cache',
+        'Purges the calculated token counts. Use this if you want to force a full re-tokenization of all chats or suspect the token counts are wrong.',
+        resetTokenCache,
+    );
 }
-

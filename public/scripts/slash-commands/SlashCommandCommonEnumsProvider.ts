@@ -1,4 +1,13 @@
-import { chat_metadata, characters, substituteParams, chat, extension_prompt_roles, extension_prompt_types, name2, neutralCharacterName } from '../../script.js';
+import {
+    chat_metadata,
+    characters,
+    substituteParams,
+    chat,
+    extension_prompt_roles,
+    extension_prompt_types,
+    name2,
+    neutralCharacterName,
+} from '../../script.js';
 import { extension_settings } from '../extensions.js';
 import { getGroupMembers, groups } from '../group-chats.js';
 import { power_user } from '../power-user.js';
@@ -100,10 +109,14 @@ export const enumIcons = {
     // @ts-expect-error TS(7006) FIXME: Parameter 'role' implicitly has an 'any' type.
     getRoleIcon: (role) => {
         switch (role) {
-            case extension_prompt_roles.SYSTEM: return enumIcons.system;
-            case extension_prompt_roles.USER: return enumIcons.user;
-            case extension_prompt_roles.ASSISTANT: return enumIcons.assistant;
-            default: return enumIcons.default;
+            case extension_prompt_roles.SYSTEM:
+                return enumIcons.system;
+            case extension_prompt_roles.USER:
+                return enumIcons.user;
+            case extension_prompt_roles.ASSISTANT:
+                return enumIcons.assistant;
+            default:
+                return enumIcons.default;
         }
     },
 
@@ -133,14 +146,30 @@ export const commonEnumProviders = {
      * @param {('onOff'|'onOffToggle'|'trueFalse')?} [mode] - The mode to use. Default is 'trueFalse'.
      * @returns {() => SlashCommandEnumValue[]}
      */
-    boolean: (mode = 'trueFalse') => () => {
-        switch (mode) {
-            case 'onOff': return [new SlashCommandEnumValue('on', null, 'macro', enumIcons.true), new SlashCommandEnumValue('off', null, 'macro', enumIcons.false)];
-            case 'onOffToggle': return [new SlashCommandEnumValue('on', null, 'macro', enumIcons.true), new SlashCommandEnumValue('off', null, 'macro', enumIcons.false), new SlashCommandEnumValue('toggle', null, 'macro', enumIcons.boolean)];
-            case 'trueFalse': return [new SlashCommandEnumValue('true', null, 'macro', enumIcons.true), new SlashCommandEnumValue('false', null, 'macro', enumIcons.false)];
-            default: throw new Error(`Invalid boolean enum provider mode: ${mode}`);
-        }
-    },
+    boolean:
+        (mode = 'trueFalse') =>
+        () => {
+            switch (mode) {
+                case 'onOff':
+                    return [
+                        new SlashCommandEnumValue('on', null, 'macro', enumIcons.true),
+                        new SlashCommandEnumValue('off', null, 'macro', enumIcons.false),
+                    ];
+                case 'onOffToggle':
+                    return [
+                        new SlashCommandEnumValue('on', null, 'macro', enumIcons.true),
+                        new SlashCommandEnumValue('off', null, 'macro', enumIcons.false),
+                        new SlashCommandEnumValue('toggle', null, 'macro', enumIcons.boolean),
+                    ];
+                case 'trueFalse':
+                    return [
+                        new SlashCommandEnumValue('true', null, 'macro', enumIcons.true),
+                        new SlashCommandEnumValue('false', null, 'macro', enumIcons.false),
+                    ];
+                default:
+                    throw new Error(`Invalid boolean enum provider mode: ${mode}`);
+            }
+        },
 
     /**
      * All possible variable names
@@ -150,16 +179,50 @@ export const commonEnumProviders = {
      * @returns {(executor:SlashCommandExecutor, scope:SlashCommandScope) => SlashCommandEnumValue[]}
      */
     // @ts-expect-error TS(7019) FIXME: Rest parameter 'type' implicitly has an 'any[]' ty... Remove this comment to see the full error message
-    variables: (...type) => (_, scope) => {
-        const types = type.flat();
-        const isAll = types.includes('all');
-        return [
-            // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
-            ...(isAll || types.includes('scope') ? scope.allVariableNames.map(name => new SlashCommandEnumValue(name, null, enumTypes.variable, enumIcons.scopeVariable)) : []),
-            ...(isAll || types.includes('local') ? Object.keys(chat_metadata.variables ?? []).map(name => new SlashCommandEnumValue(name, null, enumTypes.name, enumIcons.localVariable)) : []),
-            ...(isAll || types.includes('global') ? Object.keys((extension_settings.variables as Record<string, unknown>).global ?? []).map((name: string) => new SlashCommandEnumValue(name, null, enumTypes.macro, enumIcons.globalVariable)) : []),
-        ].filter((item, idx, list) => idx == list.findIndex(it => it.value == item.value));
-    },
+    variables:
+        (...type) =>
+        (_, scope) => {
+            const types = new Set(type.flat());
+            const isAll = types.has('all');
+            return [
+                // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
+                ...(isAll || types.has('scope')
+                    ? scope.allVariableNames.map(
+                          (name) =>
+                              new SlashCommandEnumValue(
+                                  name,
+                                  null,
+                                  enumTypes.variable,
+                                  enumIcons.scopeVariable,
+                              ),
+                      )
+                    : []),
+                ...(isAll || types.has('local')
+                    ? Object.keys(chat_metadata.variables ?? []).map(
+                          (name) =>
+                              new SlashCommandEnumValue(
+                                  name,
+                                  null,
+                                  enumTypes.name,
+                                  enumIcons.localVariable,
+                              ),
+                      )
+                    : []),
+                ...(isAll || types.has('global')
+                    ? Object.keys(
+                          (extension_settings.variables as Record<string, unknown>).global ?? [],
+                      ).map(
+                          (name: string) =>
+                              new SlashCommandEnumValue(
+                                  name,
+                                  null,
+                                  enumTypes.macro,
+                                  enumIcons.globalVariable,
+                              ),
+                      )
+                    : []),
+            ].filter((item, idx, list) => idx == list.findIndex((it) => it.value == item.value));
+        },
 
     /**
      * Enum values for numbers and variable names
@@ -195,20 +258,55 @@ export const commonEnumProviders = {
      * @param {('all' | 'character' | 'group')?} [mode] - Which type to return
      * @returns {() => SlashCommandEnumValue[]}
      */
-    characters: (mode = 'all') => () => {
-        return [
-            ...(['all', 'character'].includes(mode) ? characters.map(char => new SlashCommandEnumValue(char.name, null, enumTypes.name, enumIcons.character)) : []),
-            ...(['all', 'group'].includes(mode) ? groups.map(group => new SlashCommandEnumValue(group.name, null, enumTypes.qr, enumIcons.group)) : []),
-            ...(name2 === neutralCharacterName ? [new SlashCommandEnumValue(neutralCharacterName, null, enumTypes.name, '🥸')] : []),
-        ];
-    },
+    characters:
+        (mode = 'all') =>
+        () => {
+            return [
+                ...(['all', 'character'].includes(mode)
+                    ? characters.map(
+                          (char) =>
+                              new SlashCommandEnumValue(
+                                  char.name,
+                                  null,
+                                  enumTypes.name,
+                                  enumIcons.character,
+                              ),
+                      )
+                    : []),
+                ...(['all', 'group'].includes(mode)
+                    ? groups.map(
+                          (group) =>
+                              new SlashCommandEnumValue(
+                                  group.name,
+                                  null,
+                                  enumTypes.qr,
+                                  enumIcons.group,
+                              ),
+                      )
+                    : []),
+                ...(name2 === neutralCharacterName
+                    ? [new SlashCommandEnumValue(neutralCharacterName, null, enumTypes.name, '🥸')]
+                    : []),
+            ];
+        },
 
     /**
      * All group members of the given group, or default the current active one
      * @param {string?} groupId - The id of the group - pass in `undefined` to use the current active group
      * @returns {() =>SlashCommandEnumValue[]}
      */
-    groupMembers: (groupId = undefined) => () => getGroupMembers(groupId).map((character, index) => new SlashCommandEnumValue(String(index), character.name, enumTypes.enum, enumIcons.character)),
+    groupMembers:
+        (groupId = undefined) =>
+        () =>
+            getGroupMembers(groupId).map(
+                (character, index) =>
+                    new SlashCommandEnumValue(
+                        String(index),
+                        character.name,
+                        enumTypes.enum,
+                        enumIcons.character,
+                    ),
+            ),
 
     /**
      * All possible personas
@@ -216,22 +314,40 @@ export const commonEnumProviders = {
      * @param root0.allowPersonaKey
      * @returns {() => SlashCommandEnumValue[]}
      */
-    personas: ({ allowPersonaKey = false } = {}) => () => Object.entries(power_user.personas).map(([personaKey, personaName]) => {
-        const existsMultiple = Object.values(power_user.personas).filter(p => p === personaName).length > 1;
-        const returnValue = allowPersonaKey && existsMultiple ? personaKey : personaName;
-        return new SlashCommandEnumValue(returnValue as string, allowPersonaKey && existsMultiple ? personaName : null, enumTypes.name, enumIcons.persona);
-    }),
+    personas:
+        ({ allowPersonaKey = false } = {}) =>
+        () =>
+            Object.entries(power_user.personas).map(([personaKey, personaName]) => {
+                const existsMultiple =
+                    Object.values(power_user.personas).filter((p) => p === personaName).length > 1;
+                const returnValue = allowPersonaKey && existsMultiple ? personaKey : personaName;
+                return new SlashCommandEnumValue(
+                    returnValue as string,
+                    allowPersonaKey && existsMultiple ? personaName : null,
+                    enumTypes.name,
+                    enumIcons.persona,
+                );
+            }),
 
     /**
      * All possible tags, or only those that have been assigned
      * @param {('all' | 'assigned')} [mode] - Which types of tags to show
      * @returns {() => SlashCommandEnumValue[]}
      */
-    tags: (mode = 'all') => () => {
-        const assignedTags = mode === 'assigned' ? new Set(Object.values(tag_map).flat()) : new Set();
-        return tags.filter(tag => mode === 'all' || (mode === 'assigned' && assignedTags.has(tag.id)))
-            .map(tag => new SlashCommandEnumValue(tag.name, null, enumTypes.command, enumIcons.tag));
-    },
+    tags:
+        (mode = 'all') =>
+        () => {
+            const assignedTags =
+                mode === 'assigned' ? new Set(Object.values(tag_map).flat()) : new Set();
+            return tags
+                .filter(
+                    (tag) => mode === 'all' || (mode === 'assigned' && assignedTags.has(tag.id)),
+                )
+                .map(
+                    (tag) =>
+                        new SlashCommandEnumValue(tag.name, null, enumTypes.command, enumIcons.tag),
+                );
+        },
 
     /**
      * All possible tags for a given char/group entity
@@ -239,16 +355,28 @@ export const commonEnumProviders = {
      * @returns {(executor:SlashCommandExecutor, scope:SlashCommandScope) => SlashCommandEnumValue[]}
      */
     // @ts-expect-error TS(7006) FIXME: Parameter 'executor' implicitly has an 'any' type.
-    tagsForChar: (mode = 'all') => (executor, _scope) => {
-        // Try to see if we can find the char during execution to filter down the tags list some more. Otherwise take all tags.
-        // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
-        const charName = executor.namedArgumentList.find(it => it.name == 'name')?.value;
-        if (charName instanceof SlashCommandClosure) throw new Error('Argument \'name\' does not support closures');
-        const key = searchCharByName(substituteParams(charName), { suppressLogging: true });
-        const assigned = key ? getTagsList(key) : [];
-        return tags.filter(it => mode === 'all' || mode === 'existing' && assigned.includes(it) || mode === 'not-existing' && !assigned.includes(it))
-            .map(tag => new SlashCommandEnumValue(tag.name, null, enumTypes.command, enumIcons.tag));
-    },
+    tagsForChar:
+        (mode = 'all') =>
+        (executor, _scope) => {
+            // Try to see if we can find the char during execution to filter down the tags list some more. Otherwise take all tags.
+            // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
+            const charName = executor.namedArgumentList.find((it) => it.name == 'name')?.value;
+            if (charName instanceof SlashCommandClosure)
+                throw new Error("Argument 'name' does not support closures");
+            const key = searchCharByName(substituteParams(charName), { suppressLogging: true });
+            const assigned = key ? getTagsList(key) : [];
+            return tags
+                .filter(
+                    (it) =>
+                        mode === 'all' ||
+                        (mode === 'existing' && assigned.includes(it)) ||
+                        (mode === 'not-existing' && !assigned.includes(it)),
+                )
+                .map(
+                    (tag) =>
+                        new SlashCommandEnumValue(tag.name, null, enumTypes.command, enumIcons.tag),
+                );
+        },
 
     /**
      * All messages in the current chat, returning the message id
@@ -260,15 +388,43 @@ export const commonEnumProviders = {
      * @returns {(executor:SlashCommandExecutor, scope:SlashCommandScope) => SlashCommandEnumValue[]}
      */
     // @ts-expect-error TS(7006) FIXME: Parameter 'executor' implicitly has an 'any' type.
-    messages: ({ allowIdAfter = false, allowVars = false } = {}) => (executor, scope) => {
-        // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
-        const nameFilter = executor.namedArgumentList.find(it => it.name == 'name')?.value || '';
-        return [
-            ...chat.map((message: ChatMessage, index: number) => new SlashCommandEnumValue(String(index), `${message.name}: ${message.mes}`, enumTypes.number, message.is_user ? enumIcons.user : message.is_system ? enumIcons.system : enumIcons.assistant)).filter(value => !nameFilter || value.description?.startsWith(`${nameFilter}:`)),
-            ...(allowIdAfter ? [new SlashCommandEnumValue(String(chat.length), '>> After Last Message >>' as string, enumTypes.enum, '➕')] : []),
-            ...(allowVars ? commonEnumProviders.variables('all')(executor, scope) : []),
-        ];
-    },
+    messages:
+        ({ allowIdAfter = false, allowVars = false } = {}) =>
+        (executor, scope) => {
+            // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
+            const nameFilter =
+                executor.namedArgumentList.find((it) => it.name == 'name')?.value || '';
+            return [
+                ...chat
+                    .map(
+                        (message: ChatMessage, index: number) =>
+                            new SlashCommandEnumValue(
+                                String(index),
+                                `${message.name}: ${message.mes}`,
+                                enumTypes.number,
+                                message.is_user
+                                    ? enumIcons.user
+                                    : message.is_system
+                                      ? enumIcons.system
+                                      : enumIcons.assistant,
+                            ),
+                    )
+                    .filter(
+                        (value) => !nameFilter || value.description?.startsWith(`${nameFilter}:`),
+                    ),
+                ...(allowIdAfter
+                    ? [
+                          new SlashCommandEnumValue(
+                              String(chat.length),
+                              '>> After Last Message >>' as string,
+                              enumTypes.enum,
+                              '➕',
+                          ),
+                      ]
+                    : []),
+                ...(allowVars ? commonEnumProviders.variables('all')(executor, scope) : []),
+            ];
+        },
 
     /**
      * Media items attached to a specific message
@@ -277,7 +433,9 @@ export const commonEnumProviders = {
     // @ts-expect-error TS(7006) FIXME: Parameter 'executor' implicitly has an 'any' type.
     messageMedia: () => (executor, _scope) => {
         // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
-        const messageId = Number(executor.namedArgumentList.find(it => ['mesId', 'id'].includes(it.name))?.value || '');
+        const messageId = Number(
+            executor.namedArgumentList.find((it) => ['mesId', 'id'].includes(it.name))?.value || '',
+        );
         if (isNaN(messageId) || messageId === null || messageId < 0 || messageId >= chat.length) {
             return [];
         }
@@ -285,43 +443,72 @@ export const commonEnumProviders = {
         if (!Array.isArray(message?.extra?.media)) {
             return [];
         }
-        return message.extra.media.map((media: Record<string, unknown>, index: number) => new SlashCommandEnumValue(index.toString(), (media.title as string) || message.extra!.title || '[Untitled]', enumTypes.enum, (enumIcons as unknown as Record<string, string>)[media.type as string] || enumIcons.file));
+        return message.extra.media.map(
+            (media: Record<string, unknown>, index: number) =>
+                new SlashCommandEnumValue(
+                    index.toString(),
+                    (media.title as string) || message.extra!.title || '[Untitled]',
+                    enumTypes.enum,
+                    (enumIcons as unknown as Record<string, string>)[media.type as string] ||
+                        enumIcons.file,
+                ),
+        );
     },
 
     /**
      * All names used in the current chat.
      * @returns {SlashCommandEnumValue[]}
      */
-    messageNames: () => chat
-        .map(message => ({
+    messageNames: () =>
+        chat
+            .map((message) => ({
                 name: (message as ChatMessage).name,
-            icon: (message as ChatMessage).is_user ? enumIcons.user : enumIcons.assistant,
-        }))
-        .filter(onlyUniqueJson)
-        .sort((a, b) => sortIgnoreCaseAndAccents(a.name, b.name))
-        .map((name: Record<string, unknown>) => new SlashCommandEnumValue(name.name as string, null as string | null, enumTypes.enum, name.icon as string)),
+                icon: (message as ChatMessage).is_user ? enumIcons.user : enumIcons.assistant,
+            }))
+            .filter(onlyUniqueJson)
+            .toSorted((a, b) => sortIgnoreCaseAndAccents(a.name, b.name))
+            .map(
+                (name: Record<string, unknown>) =>
+                    new SlashCommandEnumValue(
+                        name.name as string,
+                        null as string | null,
+                        enumTypes.enum,
+                        name.icon as string,
+                    ),
+            ),
 
     /**
      * All existing worlds / lorebooks
      * @returns {SlashCommandEnumValue[]}
      */
     // @ts-expect-error TS(7006) FIXME: Parameter 'worldName' implicitly has an 'any' type... Remove this comment to see the full error message
-    worlds: () => wiManager.worldNames.map(worldName => new SlashCommandEnumValue(worldName, null, enumTypes.name, enumIcons.world)),
+    worlds: () =>
+        wiManager.worldNames.map(
+            (worldName) =>
+                new SlashCommandEnumValue(worldName, null, enumTypes.name, enumIcons.world),
+        ),
 
     /**
      * All existing injects for the current chat
      * @returns {SlashCommandEnumValue[]}
      */
     injects: () => {
-        if (!chat_metadata.script_injects || !Object.keys(chat_metadata.script_injects).length) return [];
-        return Object.entries(chat_metadata.script_injects)
-            .map(([id, inject]) => {
-                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-                const positionName = (Object.entries(extension_prompt_types)).find(([_, value]) => value === inject.position)?.[0] ?? 'unknown';
-                // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
-                return new SlashCommandEnumValue(id, `${enumIcons.getRoleIcon(inject.role ?? extension_prompt_roles.SYSTEM)}[Inject](${positionName}, depth: ${inject.depth}, scan: ${inject.scan ?? false}) ${inject.value}`,
-                    enumTypes.enum, '💉');
-            });
+        if (!chat_metadata.script_injects || !Object.keys(chat_metadata.script_injects).length)
+            return [];
+        return Object.entries(chat_metadata.script_injects).map(([id, inject]) => {
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+            const positionName =
+                Object.entries(extension_prompt_types).find(
+                    ([_, value]) => value === inject.position,
+                )?.[0] ?? 'unknown';
+            // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
+            return new SlashCommandEnumValue(
+                id,
+                `${enumIcons.getRoleIcon(inject.role ?? extension_prompt_roles.SYSTEM)}[Inject](${positionName}, depth: ${inject.depth}, scan: ${inject.scan ?? false}) ${inject.value}`,
+                enumTypes.enum,
+                '💉',
+            );
+        });
     },
 
     /**
@@ -344,17 +531,21 @@ export const commonEnumProviders = {
         new SlashCommandEnumValue('system', null, enumTypes.enum, enumIcons.system),
     ],
 
-    backgrounds: () => Array.from(document.querySelectorAll('.bg_example'))
-        .map(it => new SlashCommandEnumValue(it.getAttribute('bgfile')!))
-        .filter(it => it.value?.length),
+    backgrounds: () =>
+        Array.from(document.querySelectorAll('.bg_example'))
+            .map((it) => new SlashCommandEnumValue(it.getAttribute('bgfile')!))
+            .filter((it) => it.value?.length),
 
-    connectionProfiles: ({ includeNone = false } = {}) => () => [
-        ...(includeNone ? [new SlashCommandEnumValue('<None>')] : []),
-        // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
-        ...extension_settings.connectionManager.profiles.map(p => new SlashCommandEnumValue(p.name, null, enumTypes.name, enumIcons.server)),
-    ],
+    connectionProfiles:
+        ({ includeNone = false } = {}) =>
+        () => [
+            ...(includeNone ? [new SlashCommandEnumValue('<None>')] : []),
+            // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
+            ...extension_settings.connectionManager.profiles.map(
+                (p) => new SlashCommandEnumValue(p.name, null, enumTypes.name, enumIcons.server),
+            ),
+        ],
 };
-
 
 /**
  * A collection of common enum match providers

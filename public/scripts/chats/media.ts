@@ -5,7 +5,15 @@
  * for inline message media attachments.
  */
 
-import { chat, saveChatConditional, appendMediaToMessage, getMediaIndex, getMediaDisplay, eventSource, event_types } from '../../script.js';
+import {
+    chat,
+    saveChatConditional,
+    appendMediaToMessage,
+    getMediaIndex,
+    getMediaDisplay,
+    eventSource,
+    event_types,
+} from '../../script.js';
 import { Popup, POPUP_RESULT, POPUP_TYPE, callGenericPopup } from '../popup.js';
 import { t } from '../i18n.js';
 import { SCROLL_BEHAVIOR, SWIPE_DIRECTION, MEDIA_DISPLAY } from '../constants.js';
@@ -105,7 +113,11 @@ export function expandMessageMedia(messageId: number, mediaIndex: number): HTMLE
  * @param mediaIndex Media index
  * @param messageBlock Message block element
  */
-export async function deleteMessageMedia(messageId: number, mediaIndex: number, messageBlock: Element | null): Promise<void> {
+export async function deleteMessageMedia(
+    messageId: number,
+    mediaIndex: number,
+    messageBlock: Element | null,
+): Promise<void> {
     if (isNaN(messageId) || isNaN(mediaIndex)) {
         console.warn('Invalid message ID or media index');
         return;
@@ -115,20 +127,31 @@ export async function deleteMessageMedia(messageId: number, mediaIndex: number, 
     const deleteFromServerId = 'delete_media_files_checkbox';
     let deleteFromServer = true;
 
-    const value = await Popup.show.confirm(t`Delete media from message?`, t`This action can't be undone.`, {
-        okButton: t`Delete one`,
-        cancelButton: false,
-        customButtons: [
-            { text: t`Delete all`, appendAtEnd: true, result: POPUP_RESULT.CUSTOM1 },
-            { text: t`Cancel`, appendAtEnd: true, result: POPUP_RESULT.CANCELLED },
-        ],
-        customInputs: [
-            { type: 'checkbox', label: t`Also delete files from server`, id: deleteFromServerId, defaultState: true },
-        ],
-        onClose: (popup: Record<string, unknown>) => {
-            deleteFromServer = Boolean((popup.inputResults as Map<string, unknown>)?.get(deleteFromServerId) ?? false);
+    const value = await Popup.show.confirm(
+        t`Delete media from message?`,
+        t`This action can't be undone.`,
+        {
+            okButton: t`Delete one`,
+            cancelButton: false,
+            customButtons: [
+                { text: t`Delete all`, appendAtEnd: true, result: POPUP_RESULT.CUSTOM1 },
+                { text: t`Cancel`, appendAtEnd: true, result: POPUP_RESULT.CANCELLED },
+            ],
+            customInputs: [
+                {
+                    type: 'checkbox',
+                    label: t`Also delete files from server`,
+                    id: deleteFromServerId,
+                    defaultState: true,
+                },
+            ],
+            onClose: (popup: Record<string, unknown>) => {
+                deleteFromServer = Boolean(
+                    (popup.inputResults as Map<string, unknown>)?.get(deleteFromServerId) ?? false,
+                );
+            },
         },
-    });
+    );
 
     if (!value) return;
 
@@ -213,7 +236,11 @@ export async function switchMessageMediaDisplay(
  * @param element Message element
  * @param direction Swipe direction
  */
-export async function onImageSwiped(messageId: number, element: Element, direction: string): Promise<void> {
+export async function onImageSwiped(
+    messageId: number,
+    element: Element,
+    direction: string,
+): Promise<void> {
     const animationClass = 'fa-fade';
     const messageMedia = element.querySelectorAll('.mes_img, .mes_video');
 

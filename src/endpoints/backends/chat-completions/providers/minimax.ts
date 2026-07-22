@@ -1,6 +1,10 @@
 import { CHAT_COMPLETION_SOURCES, MINIMAX_ENDPOINT } from '../../../../constants.js';
 import { forwardFetchResponse, tryParse } from '../../../../util.js';
-import { postProcessPrompt, PROMPT_PROCESSING_TYPE, getPromptNames } from '../../../../prompt-converters.js';
+import {
+    postProcessPrompt,
+    PROMPT_PROCESSING_TYPE,
+    getPromptNames,
+} from '../../../../prompt-converters.js';
 import { readSecret, SECRET_KEYS } from '../../../secrets.js';
 import { createSocketAbortController } from '../../common/abort-controller.js';
 import type { ChatProvider, ModelEntry } from '../types.js';
@@ -20,7 +24,8 @@ const provider: ChatProvider = {
     },
 
     async chat(req, res): Promise<void> {
-        const apiUrl = req.body.minimax_endpoint === MINIMAX_ENDPOINT.CN ? API_MINIMAX_CN : API_MINIMAX;
+        const apiUrl =
+            req.body.minimax_endpoint === MINIMAX_ENDPOINT.CN ? API_MINIMAX_CN : API_MINIMAX;
         const apiKey = readSecret(req.user.directories, SECRET_KEYS.MINIMAX, req.body.secret_id);
         if (!apiKey) {
             console.warn('MiniMax key is missing.');
@@ -31,7 +36,11 @@ const provider: ChatProvider = {
         const { signal } = createSocketAbortController(req.socket);
 
         // MiniMax does not allow consecutive messages with the same role.
-        const messages = postProcessPrompt(req.body.messages, PROMPT_PROCESSING_TYPE.MERGE_TOOLS, getPromptNames(req));
+        const messages = postProcessPrompt(
+            req.body.messages,
+            PROMPT_PROCESSING_TYPE.MERGE_TOOLS,
+            getPromptNames(req),
+        );
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const bodyParams: Record<string, any> = {};
@@ -45,7 +54,10 @@ const provider: ChatProvider = {
             messages,
             model: req.body.model,
             temperature: req.body.temperature,
-            max_tokens: req.body.model === 'M2-her' ? Math.min(req.body.max_tokens, 2048) : req.body.max_tokens,
+            max_tokens:
+                req.body.model === 'M2-her'
+                    ? Math.min(req.body.max_tokens, 2048)
+                    : req.body.max_tokens,
             stream: req.body.stream,
             top_p: req.body.top_p,
             stop: req.body.stop,
@@ -56,7 +68,7 @@ const provider: ChatProvider = {
             method: 'POST' as const,
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + apiKey,
+                Authorization: 'Bearer ' + apiKey,
             },
             body: JSON.stringify(requestBody),
             signal,
@@ -76,22 +88,23 @@ const provider: ChatProvider = {
                 res.status(500).send(errorJson);
                 return;
             }
-            const json = await generateResponse.json() as Record<string, unknown>;
+            const json = (await generateResponse.json()) as Record<string, unknown>;
             console.debug('MiniMax response:', json);
             res.send(json);
         }
     },
 
     async listModels(req): Promise<ModelEntry[]> {
-        const apiUrl = req.body.minimax_endpoint === MINIMAX_ENDPOINT.CN ? API_MINIMAX_CN : API_MINIMAX;
+        const apiUrl =
+            req.body.minimax_endpoint === MINIMAX_ENDPOINT.CN ? API_MINIMAX_CN : API_MINIMAX;
         const apiKey = readSecret(req.user.directories, SECRET_KEYS.MINIMAX, req.body.secret_id);
         if (!apiKey) return [];
 
         const response = await globalThis.fetch(`${apiUrl}/models`, {
-            headers: { 'Authorization': 'Bearer ' + apiKey },
+            headers: { Authorization: 'Bearer ' + apiKey },
         });
         if (!response.ok) return [];
-        const data = await response.json() as Record<string, unknown>;
+        const data = (await response.json()) as Record<string, unknown>;
         return (data.data as ModelEntry[]) || [];
     },
     resolveTokenizer: () => 'gpt-3.5-turbo',

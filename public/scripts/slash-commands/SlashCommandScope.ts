@@ -11,7 +11,10 @@ export class SlashCommandScope {
     /** @type {{key:string, value:string|SlashCommandClosure}[]} */
     get macroList() {
         // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        return [...Object.keys(this.macros).map(key => ({ key, value: this.macros[key] })), ...(this.parent?.macroList ?? [])];
+        return [
+            ...Object.keys(this.macros).map((key) => ({ key, value: this.macros[key] })),
+            ...(this.parent?.macroList ?? []),
+        ];
     }
     /** @type {SlashCommandScope} */ parent;
     // @ts-expect-error TS(7008) FIXME: Member '#pipe' implicitly has an 'any' type.
@@ -22,7 +25,6 @@ export class SlashCommandScope {
     set pipe(value) {
         this.#pipe = value;
     }
-
 
     // @ts-expect-error TS(7006) FIXME: Parameter 'parent' implicitly has an 'any' type.
     constructor(parent) {
@@ -38,15 +40,13 @@ export class SlashCommandScope {
         return scope;
     }
 
-
     // @ts-expect-error TS(7006) FIXME: Parameter 'key' implicitly has an 'any' type.
     setMacro(key, value, overwrite = true) {
-        if (overwrite || !this.macroList.find(it => it.key == key)) {
+        if (overwrite || !this.macroList.find((it) => it.key == key)) {
             // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             this.macros[key] = value;
         }
     }
-
 
     // @ts-expect-error TS(7006) FIXME: Parameter 'key' implicitly has an 'any' type.
     existsVariableInScope(key) {
@@ -58,7 +58,10 @@ export class SlashCommandScope {
     }
     // @ts-expect-error TS(7006) FIXME: Parameter 'key' implicitly has an 'any' type.
     letVariable(key, value = undefined) {
-        if (this.existsVariableInScope(key)) throw new SlashCommandScopeVariableExistsError(`Variable named "${key}" already exists.`);
+        if (this.existsVariableInScope(key))
+            throw new SlashCommandScopeVariableExistsError(
+                `Variable named "${key}" already exists.`,
+            );
         // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         this.variables[key] = value;
     }
@@ -99,7 +102,11 @@ export class SlashCommandScope {
             if (index !== null && index !== undefined) {
                 // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 let v = this.variables[key];
-                try { v = JSON.parse(v); } catch { /* empty */ }
+                try {
+                    v = JSON.parse(v);
+                } catch {
+                    /* empty */
+                }
                 const numIndex = Number(index);
                 if (Number.isNaN(numIndex)) {
                     v = v[index];
@@ -111,7 +118,7 @@ export class SlashCommandScope {
             } else {
                 // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 const value = this.variables[key];
-                return (value?.trim?.() === '' || isNaN(Number(value))) ? (value || '') : Number(value);
+                return value?.trim?.() === '' || isNaN(Number(value)) ? value || '' : Number(value);
             }
         }
         if (this.parent) {
@@ -121,8 +128,6 @@ export class SlashCommandScope {
     }
 }
 
-
 export class SlashCommandScopeVariableExistsError extends Error {}
-
 
 export class SlashCommandScopeVariableNotFoundError extends Error {}

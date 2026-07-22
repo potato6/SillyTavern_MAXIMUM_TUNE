@@ -53,7 +53,9 @@ test.describe('MacroEnvBuilder', () => {
         expect(result.envChar).toBe(result.globalChar);
     });
 
-    test('does not populate character fields when replaceCharacterCard is false', async ({ page }) => {
+    test('does not populate character fields when replaceCharacterCard is false', async ({
+        page,
+    }) => {
         const keys = await page.evaluate(async () => {
             /** @type {import('../../public/scripts/macros/engine/MacroEnvBuilder.js')} */
             const { MacroEnvBuilder } = await import('./scripts/macros/engine/MacroEnvBuilder.js');
@@ -87,20 +89,22 @@ test.describe('MacroEnvBuilder', () => {
         });
 
         // We do not assert on concrete values, only that the known keys exist
-        expect(keys).toEqual(expect.arrayContaining([
-            'charPrompt',
-            'charInstruction',
-            'description',
-            'personality',
-            'scenario',
-            'persona',
-            'mesExamplesRaw',
-            'version',
-            'charDepthPrompt',
-            'creatorNotes',
-            'firstMessage',
-            'alternateGreetings',
-        ]));
+        expect(keys).toEqual(
+            expect.arrayContaining([
+                'charPrompt',
+                'charInstruction',
+                'description',
+                'personality',
+                'scenario',
+                'persona',
+                'mesExamplesRaw',
+                'version',
+                'charDepthPrompt',
+                'creatorNotes',
+                'firstMessage',
+                'alternateGreetings',
+            ]),
+        );
     });
 
     test('wraps original string into a one-shot helper function', async ({ page }) => {
@@ -211,7 +215,8 @@ test.describe('MacroEnvBuilder', () => {
         test('merges dynamicMacros properties into env.dynamicMacros', async ({ page }) => {
             const dynamicMacros = await page.evaluate(async () => {
                 /** @type {import('../../public/scripts/macros/engine/MacroEnvBuilder.js')} */
-                const { MacroEnvBuilder } = await import('./scripts/macros/engine/MacroEnvBuilder.js');
+                const { MacroEnvBuilder } =
+                    await import('./scripts/macros/engine/MacroEnvBuilder.js');
 
                 const ctx = {
                     content: '',
@@ -232,7 +237,8 @@ test.describe('MacroEnvBuilder', () => {
         test('normalizes dynamic macro keys to lowercase', async ({ page }) => {
             const result = await page.evaluate(async () => {
                 /** @type {import('../../public/scripts/macros/engine/MacroEnvBuilder.js')} */
-                const { MacroEnvBuilder } = await import('./scripts/macros/engine/MacroEnvBuilder.js');
+                const { MacroEnvBuilder } =
+                    await import('./scripts/macros/engine/MacroEnvBuilder.js');
 
                 const ctx = {
                     content: '',
@@ -265,7 +271,8 @@ test.describe('MacroEnvBuilder', () => {
         test('accepts string values for dynamic macros', async ({ page }) => {
             const result = await page.evaluate(async () => {
                 /** @type {import('../../public/scripts/macros/engine/MacroEnvBuilder.js')} */
-                const { MacroEnvBuilder } = await import('./scripts/macros/engine/MacroEnvBuilder.js');
+                const { MacroEnvBuilder } =
+                    await import('./scripts/macros/engine/MacroEnvBuilder.js');
 
                 const ctx = {
                     content: '',
@@ -288,7 +295,8 @@ test.describe('MacroEnvBuilder', () => {
         test('accepts handler functions for dynamic macros', async ({ page }) => {
             const result = await page.evaluate(async () => {
                 /** @type {import('../../public/scripts/macros/engine/MacroEnvBuilder.js')} */
-                const { MacroEnvBuilder } = await import('./scripts/macros/engine/MacroEnvBuilder.js');
+                const { MacroEnvBuilder } =
+                    await import('./scripts/macros/engine/MacroEnvBuilder.js');
 
                 const ctx = {
                     content: '',
@@ -312,7 +320,8 @@ test.describe('MacroEnvBuilder', () => {
         test('accepts MacroDefinitionOptions objects for dynamic macros', async ({ page }) => {
             const result = await page.evaluate(async () => {
                 /** @type {import('../../public/scripts/macros/engine/MacroEnvBuilder.js')} */
-                const { MacroEnvBuilder } = await import('./scripts/macros/engine/MacroEnvBuilder.js');
+                const { MacroEnvBuilder } =
+                    await import('./scripts/macros/engine/MacroEnvBuilder.js');
 
                 const ctx = {
                     content: '',
@@ -344,7 +353,8 @@ test.describe('MacroEnvBuilder', () => {
         test('supports mixed dynamic macro value types', async ({ page }) => {
             const result = await page.evaluate(async () => {
                 /** @type {import('../../public/scripts/macros/engine/MacroEnvBuilder.js')} */
-                const { MacroEnvBuilder } = await import('./scripts/macros/engine/MacroEnvBuilder.js');
+                const { MacroEnvBuilder } =
+                    await import('./scripts/macros/engine/MacroEnvBuilder.js');
 
                 const ctx = {
                     content: '',
@@ -363,7 +373,8 @@ test.describe('MacroEnvBuilder', () => {
                     stringType: typeof env.dynamicMacros['stringval'],
                     funcType: typeof env.dynamicMacros['funcval'],
                     optionsType: typeof env.dynamicMacros['optionsval'],
-                    optionsHasHandler: typeof env.dynamicMacros['optionsval']?.handler === 'function',
+                    optionsHasHandler:
+                        typeof env.dynamicMacros['optionsval']?.handler === 'function',
                 };
             });
 
@@ -376,7 +387,8 @@ test.describe('MacroEnvBuilder', () => {
         test('handles null dynamicMacros gracefully', async ({ page }) => {
             const result = await page.evaluate(async () => {
                 /** @type {import('../../public/scripts/macros/engine/MacroEnvBuilder.js')} */
-                const { MacroEnvBuilder } = await import('./scripts/macros/engine/MacroEnvBuilder.js');
+                const { MacroEnvBuilder } =
+                    await import('./scripts/macros/engine/MacroEnvBuilder.js');
 
                 const ctx = {
                     content: '',
@@ -397,7 +409,8 @@ test.describe('MacroEnvBuilder', () => {
         test('handles undefined dynamicMacros gracefully', async ({ page }) => {
             const result = await page.evaluate(async () => {
                 /** @type {import('../../public/scripts/macros/engine/MacroEnvBuilder.js')} */
-                const { MacroEnvBuilder } = await import('./scripts/macros/engine/MacroEnvBuilder.js');
+                const { MacroEnvBuilder } =
+                    await import('./scripts/macros/engine/MacroEnvBuilder.js');
 
                 const ctx = {
                     content: '',
@@ -436,7 +449,8 @@ test.describe('MacroEnvBuilder', () => {
     test('applies providers in the expected order buckets', async ({ page }) => {
         const order = await page.evaluate(async () => {
             /** @type {import('../../public/scripts/macros/engine/MacroEnvBuilder.js')} */
-            const { MacroEnvBuilder, env_provider_order } = await import('./scripts/macros/engine/MacroEnvBuilder.js');
+            const { MacroEnvBuilder, env_provider_order } =
+                await import('./scripts/macros/engine/MacroEnvBuilder.js');
 
             MacroEnvBuilder.registerProvider((env) => {
                 env.extra.order = [...(env.extra.order || []), 'EARLY'];
@@ -473,7 +487,8 @@ test.describe('MacroEnvBuilder', () => {
     test('ignores provider errors without breaking env construction', async ({ page }) => {
         const result = await page.evaluate(async () => {
             /** @type {import('../../public/scripts/macros/engine/MacroEnvBuilder.js')} */
-            const { MacroEnvBuilder, env_provider_order } = await import('./scripts/macros/engine/MacroEnvBuilder.js');
+            const { MacroEnvBuilder, env_provider_order } =
+                await import('./scripts/macros/engine/MacroEnvBuilder.js');
 
             MacroEnvBuilder.registerProvider(() => {
                 throw new Error('intentional test error');

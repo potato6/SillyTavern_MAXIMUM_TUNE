@@ -60,7 +60,13 @@ function getUrlAsync(url) {
  * @returns {Promise<string>} Rendered template
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'templateId' implicitly has an 'any' typ... Remove this comment to see the full error message
-export async function renderTemplateAsync(templateId, templateData = {}, sanitize = true, localize = true, fullPath = false) {
+export async function renderTemplateAsync(
+    templateId,
+    templateData = {},
+    sanitize = true,
+    localize = true,
+    fullPath = false,
+) {
     /**
      *
      * @param pathToTemplate
@@ -95,5 +101,3 @@ export async function renderTemplateAsync(templateId, templateData = {}, sanitiz
         notyf.error('Check the DevTools console for more information.', 'Error rendering template');
     }
 }
-
-

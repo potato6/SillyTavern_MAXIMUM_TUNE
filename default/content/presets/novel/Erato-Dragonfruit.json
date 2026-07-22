@@ -20,12 +20,5 @@
     "math1_quad": 0.07,
     "math1_quad_entropy_scale": -0.05,
     "min_p": 0.035,
-    "order": [
-        0,
-        5,
-        9,
-        10,
-        8,
-        4
-    ]
+    "order": [0, 5, 9, 10, 8, 4]
 }

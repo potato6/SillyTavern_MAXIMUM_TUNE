@@ -3,21 +3,17 @@
  * Determines which filter helper to use based on DOM context.
  */
 
-import {
-    entitiesFilter,
-    characters,
-} from '../../../script.js';
+import { entitiesFilter, characters } from '../../../script.js';
 
-import {
-    groupCandidatesFilter,
-    groupMembersFilter,
-} from '../../group-chats.js';
+import { groupCandidatesFilter, groupMembersFilter } from '../../group-chats.js';
 
 import { tag_filter_type } from '../types.js';
 
 export const CHARACTER_FILTER_SELECTOR = '#rm_characters_block .rm_tag_filter';
-export const GROUP_FILTER_SELECTOR = '#rm_group_add_members_header ~ .rm_tag_controls .rm_tag_filter';
-export const GROUP_MEMBERS_FILTER_SELECTOR = '#rm_group_members_header ~ .rm_tag_controls .rm_tag_filter';
+export const GROUP_FILTER_SELECTOR =
+    '#rm_group_add_members_header ~ .rm_tag_controls .rm_tag_filter';
+export const GROUP_MEMBERS_FILTER_SELECTOR =
+    '#rm_group_members_header ~ .rm_tag_controls .rm_tag_filter';
 
 /**
  * Gets the context information (selector and search input) for a filter helper.
@@ -25,7 +21,9 @@ export const GROUP_MEMBERS_FILTER_SELECTOR = '#rm_group_members_header ~ .rm_tag
  * @param {FilterHelper} filterHelper - The filter helper instance
  * @returns {{selector: string, searchInput: string}|null} Context info or null if unknown
  */
-export function getFilterContext(filterHelper: unknown): { selector: string; searchInput: string } | null {
+export function getFilterContext(
+    filterHelper: unknown,
+): { selector: string; searchInput: string } | null {
     if (filterHelper === entitiesFilter) {
         return {
             selector: CHARACTER_FILTER_SELECTOR,
@@ -51,7 +49,8 @@ export function getFilterContext(filterHelper: unknown): { selector: string; sea
  * @returns {FilterHelper} The appropriate filter helper instance
  */
 export function getFilterHelper(listSelector: string | HTMLElement | null): unknown {
-    const $element = typeof listSelector === 'string' ? document.querySelector(listSelector) : listSelector;
+    const $element =
+        typeof listSelector === 'string' ? document.querySelector(listSelector) : listSelector;
 
     // Check if this filter is in the group members section
     if ($element?.closest('#currentGroupMembers')) {
@@ -73,7 +72,9 @@ export function getFilterHelper(listSelector: string | HTMLElement | null): unkn
  * @returns {boolean} True if this is a group context
  */
 export function isGroupContext(type: number): boolean {
-    return [tag_filter_type.group_candidates_list, tag_filter_type.group_members_list].includes(type);
+    return [tag_filter_type.group_candidates_list, tag_filter_type.group_members_list].includes(
+        type,
+    );
 }
 
 /**
@@ -82,7 +83,10 @@ export function isGroupContext(type: number): boolean {
  * @param {object} currentGroup - The current group object
  * @returns {string[]} Array of visible character avatars
  */
-export function getVisibleAvatarsForGroupContext(type: number, currentGroup: { members: string[] } | null): string[] {
+export function getVisibleAvatarsForGroupContext(
+    type: number,
+    currentGroup: { members: string[] } | null,
+): string[] {
     if (!currentGroup || !Array.isArray(currentGroup.members)) {
         return [];
     }
@@ -92,10 +96,13 @@ export function getVisibleAvatarsForGroupContext(type: number, currentGroup: { m
             return currentGroup.members;
         case tag_filter_type.group_candidates_list:
             return characters
-                .filter(c => !currentGroup.members.includes(c.avatar))
-                .map(c => c.avatar);
+                .filter((c) => !currentGroup.members.includes(c.avatar))
+                .map((c) => c.avatar);
         default:
-            console.warn('getVisibleAvatarsForGroupContext got invalid type, expected 1 or 2, got ', type);
+            console.warn(
+                'getVisibleAvatarsForGroupContext got invalid type, expected 1 or 2, got ',
+                type,
+            );
             return [];
     }
 }

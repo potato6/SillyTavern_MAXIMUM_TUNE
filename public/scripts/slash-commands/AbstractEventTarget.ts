@@ -23,7 +23,7 @@ export class AbstractEventTarget {
             return true;
         }
         // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-        this.listeners[event.type].forEach(listener => {
+        this.listeners[event.type].forEach((listener) => {
             listener(event);
         });
         return true;

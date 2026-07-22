@@ -8,22 +8,25 @@ router.post('/caption-image', async (request, response) => {
     try {
         const mimeType = request.body.image.split(';')[0].split(':')[1];
         const base64Data = request.body.image.split(',')[1];
-        const baseUrl = request.body.reverse_proxy ? request.body.reverse_proxy : 'https://api.anthropic.com/v1';
+        const baseUrl = request.body.reverse_proxy
+            ? request.body.reverse_proxy
+            : 'https://api.anthropic.com/v1';
         const url = `${baseUrl}/messages`;
         const body = {
             model: request.body.model,
             messages: [
                 {
-                    'role': 'user', 'content': [
+                    role: 'user',
+                    content: [
                         {
-                            'type': 'image',
-                            'source': {
-                                'type': 'base64',
-                                'media_type': mimeType,
-                                'data': base64Data,
+                            type: 'image',
+                            source: {
+                                type: 'base64',
+                                media_type: mimeType,
+                                data: base64Data,
                             },
                         },
-                        { 'type': 'text', 'text': request.body.prompt },
+                        { type: 'text', text: request.body.prompt },
                     ],
                 },
             ],
@@ -38,7 +41,9 @@ router.post('/caption-image', async (request, response) => {
             headers: {
                 'Content-Type': 'application/json',
                 'anthropic-version': '2023-06-01',
-                'x-api-key': request.body.reverse_proxy ? request.body.proxy_password : readSecret(request.user.directories, SECRET_KEYS.CLAUDE),
+                'x-api-key': request.body.reverse_proxy
+                    ? request.body.proxy_password
+                    : readSecret(request.user.directories, SECRET_KEYS.CLAUDE),
             },
         });
 
@@ -49,7 +54,7 @@ router.post('/caption-image', async (request, response) => {
         }
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any -- API response shape unknown
-        const generateResponseJson = await result.json() as any;
+        const generateResponseJson = (await result.json()) as any;
         const caption = generateResponseJson.content[0].text;
         console.debug('Claude response:', generateResponseJson);
 

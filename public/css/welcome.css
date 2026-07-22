@@ -1,4 +1,4 @@
-#chat .mes[type="assistant_message"] .mes_button {
+#chat .mes[type='assistant_message'] .mes_button {
     display: none;
 }
 
@@ -207,7 +207,7 @@ body.big-avatars .welcomeRecent .recentChatList .recentChat .chatMessageContaine
 }
 
 .welcomeRecent .recentChatList .recentChat .chatStats .counterBlock::after {
-    content: "|";
+    content: '|';
     color: var(--SmartThemeBorderColor);
     font-size: calc(var(--mainFontSize) * 0.95);
 }

@@ -70,7 +70,10 @@ export function onTagFilterClick(this: HTMLElement, listElement: string | HTMLEl
     runTagFilters(listElement);
 
     // Focus the tag again we were at, if possible. To improve keyboard navigation
-    setTimeout(() => (parent?.querySelector(`.tag[id="${tagId}"]`) as HTMLElement)?.focus(), DEFAULT_PRINT_TIMEOUT + 1);
+    setTimeout(
+        () => (parent?.querySelector(`.tag[id="${tagId}"]`) as HTMLElement)?.focus(),
+        DEFAULT_PRINT_TIMEOUT + 1,
+    );
 
     updateTagFilterIndicator(listElement);
 }
@@ -90,13 +93,19 @@ type Cash = any;
  *
  * @param filterSelector
  */
-export function updateTagFilterIndicator(filterSelector: string | Element | Cash | null | undefined) {
+export function updateTagFilterIndicator(
+    filterSelector: string | Element | Cash | null | undefined,
+) {
     const selector = filterSelector || CHARACTER_FILTER_SELECTOR;
     const tagFilter = typeof selector === 'string' ? document.querySelector(selector) : selector;
     const tagFilterEl = tagFilter;
-    const showTagListButton = tagFilterEl?.closest('.rm_tag_controls')?.querySelector('.showTagList');
+    const showTagListButton = tagFilterEl
+        ?.closest('.rm_tag_controls')
+        ?.querySelector('.showTagList');
     const filterTags = tagFilterEl?.querySelectorAll('.tag:not(.actionable)');
-    const hasActiveTags = filterTags ? [...filterTags].some(el => el.matches('.selected, .excluded')) : false;
+    const hasActiveTags = filterTags
+        ? [...filterTags].some((el) => el.matches('.selected, .excluded'))
+        : false;
     showTagListButton?.classList.toggle('indicator', hasActiveTags);
 }
 
@@ -132,17 +141,38 @@ export function printTagFilters(type = tag_filter_type.character) {
 
     // Print all action tags. (Rework 'Folder' button to some kind of onboarding if no folders are enabled yet)
     let actionTags = Object.values(ACTIONABLE_TAGS);
-    (actionTags.find((x: Record<string, unknown>) => x == ACTIONABLE_TAGS.FOLDER) as Record<string, unknown>).name = power_user.bogus_folders ? 'Show only folders' : 'Enable \'Tags as Folder\'\n\nAllows characters to be grouped in folders by their assigned tags.\nTags have to be explicitly chosen as folder to show up.\n\nClick here to start';
+    (
+        actionTags.find((x: Record<string, unknown>) => x == ACTIONABLE_TAGS.FOLDER) as Record<
+            string,
+            unknown
+        >
+    ).name = power_user.bogus_folders
+        ? 'Show only folders'
+        : "Enable 'Tags as Folder'\n\nAllows characters to be grouped in folders by their assigned tags.\nTags have to be explicitly chosen as folder to show up.\n\nClick here to start";
 
     // For group contexts, filter actionable tags to only show relevant ones
     if (isGroupContext(type)) {
         actionTags = filterActionableTagsForGroupContext(actionTags) as typeof actionTags;
     }
 
-    printTagList(filterSelectorEl as HTMLElement | null, { empty: false, sort: false, tags: actionTags, tagActionSelector: (tag: Record<string, unknown>) => tag.action as ((...args: unknown[]) => unknown) | undefined, tagOptions: { isGeneralList: true } });
+    printTagList(filterSelectorEl as HTMLElement | null, {
+        empty: false,
+        sort: false,
+        tags: actionTags,
+        tagActionSelector: (tag: Record<string, unknown>) =>
+            tag.action as ((...args: unknown[]) => unknown) | undefined,
+        tagOptions: { isGeneralList: true },
+    });
 
     const inListActionTags = Object.values(InListActionable);
-    printTagList(filterSelectorEl as HTMLElement | null, { empty: false, sort: false, tags: inListActionTags as Record<string, unknown>[], tagActionSelector: (tag: Record<string, unknown>) => tag.action as ((...args: unknown[]) => unknown) | undefined, tagOptions: { isGeneralList: true } });
+    printTagList(filterSelectorEl as HTMLElement | null, {
+        empty: false,
+        sort: false,
+        tags: inListActionTags as Record<string, unknown>[],
+        tagActionSelector: (tag: Record<string, unknown>) =>
+            tag.action as ((...args: unknown[]) => unknown) | undefined,
+        tagOptions: { isGeneralList: true },
+    });
 
     // Determine which character tags to display based on context
     let tagsToDisplay: Record<string, unknown>[] = [];
@@ -152,23 +182,32 @@ export function printTagFilters(type = tag_filter_type.character) {
         // For group contexts, show all tags but mark ones without presence in current context as inactive
         // CAUTION: when called by openGroupById, the selected_group variable might not yet be updated
 
-        const currentGroup = selected_group ? groups.find(x => x.id == selected_group) : null;
-        const visibleAvatars = getVisibleAvatarsForGroupContext(type, currentGroup as { members: string[] } | null);
+        const currentGroup = selected_group ? groups.find((x) => x.id == selected_group) : null;
+        const visibleAvatars = getVisibleAvatarsForGroupContext(
+            type,
+            currentGroup as { members: string[] } | null,
+        );
 
         if (visibleAvatars.length > 0) {
             // Get tags that are assigned to at least one visible character
-            const activeCharacterTagIds = visibleAvatars
-                    .map((avatar: string) => (tag_map as Record<string, string[] | undefined>)[avatar] || [])
-                .flat()
-                .filter(onlyUnique);
+            const activeCharacterTagIds = new Set(
+                visibleAvatars
+                    .flatMap(
+                        (avatar: string) =>
+                            (tag_map as Record<string, string[] | undefined>)[avatar] || [],
+                    )
+                    .filter(onlyUnique),
+            );
 
             // Show all tags that exist in the tag_map
-            const allCharacterTagIds = Object.values(tag_map).flat().filter(onlyUnique);
-            tagsToDisplay = (tags as Record<string, unknown>[]).filter((x: Record<string, unknown>) => allCharacterTagIds.includes(x.id as string)).sort(compareTagsForSort);
+            const allCharacterTagIds = new Set(Object.values(tag_map).flat().filter(onlyUnique));
+            tagsToDisplay = (tags as Record<string, unknown>[])
+                .filter((x: Record<string, unknown>) => allCharacterTagIds.has(x.id as string))
+                .toSorted(compareTagsForSort);
 
             // Mark tags that are not in the active set as inactive
             inactiveTags = tagsToDisplay
-                .filter((x: Record<string, unknown>) => !activeCharacterTagIds.includes(x.id as string))
+                .filter((x: Record<string, unknown>) => !activeCharacterTagIds.has(x.id as string))
                 .map((x: Record<string, unknown>) => x.id as string);
         } else {
             // No group selected, show no tags
@@ -176,12 +215,18 @@ export function printTagFilters(type = tag_filter_type.character) {
         }
     } else {
         // For main character list, show all tags as before
-        const characterTagIds = Object.values(tag_map).flat();
-        tagsToDisplay = (tags as Record<string, unknown>[]).filter((x: Record<string, unknown>) => characterTagIds.includes(x.id as string)).sort(compareTagsForSort);
+        const characterTagIds = new Set(Object.values(tag_map).flat());
+        tagsToDisplay = (tags as Record<string, unknown>[])
+            .filter((x: Record<string, unknown>) => characterTagIds.has(x.id as string))
+            .toSorted(compareTagsForSort);
     }
 
-    printTagList(filterSelectorEl as HTMLElement | null, { empty: false, tags: tagsToDisplay, tagOptions: { isFilter: true, isGeneralList: true }, inactiveTags: inactiveTags });
-
+    printTagList(filterSelectorEl as HTMLElement | null, {
+        empty: false,
+        tags: tagsToDisplay,
+        tagOptions: { isFilter: true, isGeneralList: true },
+        inactiveTags: inactiveTags,
+    });
 
     // Print bogus folder navigation
     const parentEl = filterSelectorEl?.parentElement;
@@ -189,7 +234,10 @@ export function printTagFilters(type = tag_filter_type.character) {
     if (bogusDrilldownEl) bogusDrilldownEl.innerHTML = '';
     if (power_user.bogus_folders && bogusDrilldownEl) {
         const navigatedTags = getOpenBogusFolders();
-        printTagList(bogusDrilldownEl as HTMLElement | null, { tags: navigatedTags, tagOptions: { removable: true } });
+        printTagList(bogusDrilldownEl as HTMLElement | null, {
+            tags: navigatedTags,
+            tagOptions: { removable: true },
+        });
     }
 
     // Don't call runTagFilters here - it would overwrite the loaded filter states with the DOM state.
@@ -198,15 +246,22 @@ export function printTagFilters(type = tag_filter_type.character) {
 
     // Initialize the tag list visibility based on saved settings for this context
     const shouldShowTags = getTagFilterVisibility(type);
-    const showTagListButton = document.querySelector(FILTER_SELECTOR)?.closest('.rm_tag_controls')?.querySelector('.showTagList');
+    const showTagListButton = document
+        .querySelector(FILTER_SELECTOR)
+        ?.closest('.rm_tag_controls')
+        ?.querySelector('.showTagList');
 
     // Update button state to match the saved setting
     showTagListButton?.classList.toggle('selected', shouldShowTags);
 
     if (shouldShowTags) {
-        document.querySelectorAll(`${FILTER_SELECTOR} .tag:not(.actionable)`).forEach(el => (el as HTMLElement).style.display = '');
+        document
+            .querySelectorAll(`${FILTER_SELECTOR} .tag:not(.actionable)`)
+            .forEach((el) => ((el as HTMLElement).style.display = ''));
     } else {
-        document.querySelectorAll(`${FILTER_SELECTOR} .tag:not(.actionable)`).forEach(el => (el as HTMLElement).style.display = 'none');
+        document
+            .querySelectorAll(`${FILTER_SELECTOR} .tag:not(.actionable)`)
+            .forEach((el) => ((el as HTMLElement).style.display = 'none'));
     }
 
     updateTagFilterIndicator(FILTER_SELECTOR);
@@ -222,16 +277,20 @@ export function printTagFilters(type = tag_filter_type.character) {
 export function onTagListHintClick(this: HTMLElement) {
     this.classList.toggle('selected');
 
-    const siblingTags = [...(this.parentElement as HTMLElement).querySelectorAll(':scope > .tag:not(.actionable)')] as HTMLElement[];
+    const siblingTags = [
+        ...(this.parentElement as HTMLElement).querySelectorAll(':scope > .tag:not(.actionable)'),
+    ] as HTMLElement[];
 
     if (this.classList.contains('selected')) {
-        siblingTags.forEach(el => el.style.display = '');
+        siblingTags.forEach((el) => (el.style.display = ''));
     } else {
-        siblingTags.forEach(el => el.style.display = 'none');
+        siblingTags.forEach((el) => (el.style.display = 'none'));
     }
 
-    const innerSiblings = [...(this.parentElement as HTMLElement).querySelectorAll(':scope > .innerActionable')];
-    innerSiblings.forEach(el => el.classList.toggle('hidden'));
+    const innerSiblings = [
+        ...(this.parentElement as HTMLElement).querySelectorAll(':scope > .innerActionable'),
+    ];
+    innerSiblings.forEach((el) => el.classList.toggle('hidden'));
 
     // Determine which context this button belongs to and save the setting
     let filterType = tag_filter_type.character;
@@ -274,8 +333,14 @@ export function onClearAllFiltersClick(filterHelper: { selector: string; searchI
     const filterTags = document.querySelectorAll(`${context.selector} .tag`);
     for (const tag of filterTags) {
         const toggleState = tag.getAttribute('data-toggle-state');
-        if (toggleState !== undefined && !isFilterState(toggleState ?? FILTER_STATES.UNDEFINED, FILTER_STATES.UNDEFINED)) {
-            toggleTagThreeState(tag as HTMLElement, { stateOverride: FILTER_STATES.UNDEFINED.key, simulateClick: true });
+        if (
+            toggleState !== undefined &&
+            !isFilterState(toggleState ?? FILTER_STATES.UNDEFINED, FILTER_STATES.UNDEFINED)
+        ) {
+            toggleTagThreeState(tag as HTMLElement, {
+                stateOverride: FILTER_STATES.UNDEFINED.key,
+                simulateClick: true,
+            });
         }
     }
 

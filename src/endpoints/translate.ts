@@ -60,7 +60,7 @@ router.post('/libre', async (request, response) => {
             return response.sendStatus(500);
         }
 
-        const json = await result.json() as Record<string, unknown>;
+        const json = (await result.json()) as Record<string, unknown>;
         console.debug('Translated text: ' + json.translatedText);
 
         return response.send(json.translatedText);
@@ -87,7 +87,7 @@ router.post('/google', async (request, response) => {
         console.debug('Input text: ' + text);
 
         const translator = new Translator({ to: lang, requestFunction: fetch });
-        const translatedText = await translator.translate(text).then(result => result.text);
+        const translatedText = await translator.translate(text).then((result) => result.text);
 
         response.setHeader('Content-Type', 'text/plain; charset=utf-8');
         console.debug('Translated text: ' + translatedText);
@@ -128,13 +128,16 @@ router.post('/yandex', async (request, response) => {
 
         console.debug('Input text: ' + inputText);
 
-        const result = await fetch(`https://translate.yandex.net/api/v1/tr.json/translate?ucid=${ucid}&srv=android&format=text`, {
-            method: 'POST',
-            body: params,
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
+        const result = await fetch(
+            `https://translate.yandex.net/api/v1/tr.json/translate?ucid=${ucid}&srv=android&format=text`,
+            {
+                method: 'POST',
+                body: params,
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
             },
-        });
+        );
 
         if (!result.ok) {
             const error = await result.text();
@@ -142,7 +145,7 @@ router.post('/yandex', async (request, response) => {
             return response.sendStatus(500);
         }
 
-        const json = await result.json() as Record<string, unknown>;
+        const json = (await result.json()) as Record<string, unknown>;
         const text = json.text as string[];
         const translated = text.join();
         console.debug('Translated text: ' + translated);
@@ -189,7 +192,7 @@ router.post('/lingva', async (request, response) => {
             console.warn('Lingva error: ', result.statusText, error);
         }
 
-        const data = await result.json() as Record<string, unknown>;
+        const data = (await result.json()) as Record<string, unknown>;
         console.debug('Translated text: ' + data.translation);
         return response.send(data.translation);
     } catch (error) {
@@ -230,16 +233,17 @@ router.post('/deepl', async (request, response) => {
             params.append('formality', formality);
         }
 
-        const endpoint = request.body.endpoint === 'pro'
-            ? 'https://api.deepl.com/v2/translate'
-            : 'https://api-free.deepl.com/v2/translate';
+        const endpoint =
+            request.body.endpoint === 'pro'
+                ? 'https://api.deepl.com/v2/translate'
+                : 'https://api-free.deepl.com/v2/translate';
 
         const result = await fetch(endpoint, {
             method: 'POST',
             body: params,
             headers: {
-                'Accept': 'application/json',
-                'Authorization': `DeepL-Auth-Key ${key}`,
+                Accept: 'application/json',
+                Authorization: `DeepL-Auth-Key ${key}`,
                 'Content-Type': 'application/x-www-form-urlencoded',
             },
         });
@@ -250,7 +254,7 @@ router.post('/deepl', async (request, response) => {
             return response.sendStatus(500);
         }
 
-        const json = await result.json() as Record<string, unknown>;
+        const json = (await result.json()) as Record<string, unknown>;
         const translations = json.translations as Array<Record<string, string>>;
         console.debug('Translated text: ' + translations[0]!.text);
 
@@ -308,7 +312,7 @@ router.post('/onering', async (request, response) => {
             return response.sendStatus(500);
         }
 
-        const data = await result.json() as Record<string, unknown>;
+        const data = (await result.json()) as Record<string, unknown>;
         console.debug('Translated text: ' + data.result);
 
         return response.send(data.result);
@@ -353,7 +357,7 @@ router.post('/deeplx', async (request, response) => {
                 target_lang: lang,
             }),
             headers: {
-                'Accept': 'application/json',
+                Accept: 'application/json',
                 'Content-Type': 'application/json',
             },
         });
@@ -364,7 +368,7 @@ router.post('/deeplx', async (request, response) => {
             return response.sendStatus(500);
         }
 
-        const json = await result.json() as Record<string, unknown>;
+        const json = (await result.json()) as Record<string, unknown>;
         console.debug('Translated text: ' + json.data);
 
         return response.send(json.data);

@@ -121,4 +121,4 @@
  * @property {string} json_data - the full raw JSON data of the character
  * @property {boolean?} shallow - if the data is shallow (lazy-loaded)
  */
-export default 0;// now this file is a module
+export default 0; // now this file is a module

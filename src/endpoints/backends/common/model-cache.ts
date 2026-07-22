@@ -35,7 +35,7 @@ function cacheKey(source: string, baseUrl: string): string {
  */
 export function isFresh(source: string, baseUrl: string): boolean {
     const entry = store.get(cacheKey(source, baseUrl));
-    return !!entry && (Date.now() - entry.timestamp) < DEFAULT_TTL_MS;
+    return !!entry && Date.now() - entry.timestamp < DEFAULT_TTL_MS;
 }
 
 /**
@@ -46,7 +46,7 @@ export function isFresh(source: string, baseUrl: string): boolean {
 export function getCachedModels(source: string, baseUrl: string): ModelEntry[] | null {
     const entry = store.get(cacheKey(source, baseUrl));
     if (!entry) return null;
-    if ((Date.now() - entry.timestamp) >= DEFAULT_TTL_MS) {
+    if (Date.now() - entry.timestamp >= DEFAULT_TTL_MS) {
         store.delete(cacheKey(source, baseUrl));
         return null;
     }

@@ -22,13 +22,23 @@ declare const notyf: {
  * @param resolve
  * @param listSelector
  */
-export function findTag(request: { term: string }, resolve: (results: string[]) => void, listSelector: string | HTMLElement | null) {
-    const $listEl: HTMLElement | null = typeof listSelector === 'string' ? document.querySelector(listSelector) : listSelector as HTMLElement | null;
+export function findTag(
+    request: { term: string },
+    resolve: (results: string[]) => void,
+    listSelector: string | HTMLElement | null,
+) {
+    const $listEl: HTMLElement | null =
+        typeof listSelector === 'string'
+            ? document.querySelector(listSelector)
+            : (listSelector as HTMLElement | null);
     const skipIds = getTagIdsFromDOM($listEl);
-    const haystack = tags.filter((t: { id: string; name: string }) => !skipIds.includes(t.id)).sort(compareTagsForSort).map(t => t.name);
+    const haystack = tags
+        .filter((t: { id: string; name: string }) => !skipIds.includes(t.id))
+        .toSorted(compareTagsForSort)
+        .map((t) => t.name);
     const needle = request.term;
-    const hasExactMatch = haystack.findIndex(x => equalsIgnoreCaseAndAccents(x, needle)) !== -1;
-    const result = haystack.filter(x => includesIgnoreCaseAndAccents(x, needle));
+    const hasExactMatch = haystack.findIndex((x) => equalsIgnoreCaseAndAccents(x, needle)) !== -1;
+    const result = haystack.filter((x) => includesIgnoreCaseAndAccents(x, needle));
 
     if (request.term && !hasExactMatch) {
         result.unshift(request.term);
@@ -45,12 +55,16 @@ export function findTag(request: { term: string }, resolve: (results: string[]) 
  * @param {boolean} [options.suppressLogging] - Whether to suppress the toastr warning
  * @returns {string?} - The char/group key, or null if none found
  */
-export function searchCharByName(charName: string | undefined, { suppressLogging = false }: { suppressLogging?: boolean } = {}) {
+export function searchCharByName(
+    charName: string | undefined,
+    { suppressLogging = false }: { suppressLogging?: boolean } = {},
+) {
     const entity = charName
-
-        ? (findChar({ name: charName as unknown as null }) || groups.find(x => equalsIgnoreCaseAndAccents(x.name, charName as string)))
-
-        : (selected_group ? groups.find(x => x.id == selected_group) : characters[this_chid!]);
+        ? findChar({ name: charName as unknown as null }) ||
+          groups.find((x) => equalsIgnoreCaseAndAccents(x.name, charName as string))
+        : selected_group
+          ? groups.find((x) => x.id == selected_group)
+          : characters[this_chid!];
     const key = getTagKeyForEntity(entity);
     if (!key) {
         if (!suppressLogging) notyf.warning(`Character ${charName} not found.`);

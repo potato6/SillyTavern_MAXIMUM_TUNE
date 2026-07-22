@@ -1,9 +1,31 @@
 import { Fuse, localspace } from '../lib.js';
-import { characters, chat_metadata, eventSource, event_types, generateQuietPrompt, getCurrentChatId, getRequestHeaders, getThumbnailUrl, saveMetadata, saveSettingsDebounced, this_chid } from '../script.js';
+import {
+    characters,
+    chat_metadata,
+    eventSource,
+    event_types,
+    generateQuietPrompt,
+    getCurrentChatId,
+    getRequestHeaders,
+    getThumbnailUrl,
+    saveMetadata,
+    saveSettingsDebounced,
+    this_chid,
+} from '../script.js';
 import { openThirdPartyExtensionMenu, saveMetadataDebounced } from './extensions.js';
 import { SlashCommand } from './slash-commands/SlashCommand.js';
 import { SlashCommandParser } from './slash-commands/SlashCommandParser.js';
-import { createThumbnail, flashHighlight, getBase64Async, stringFormat, debounce, setupScrollToTop, saveBase64AsFile, getFileExtension, sortIgnoreCaseAndAccents } from './utils.js';
+import {
+    createThumbnail,
+    flashHighlight,
+    getBase64Async,
+    stringFormat,
+    debounce,
+    setupScrollToTop,
+    saveBase64AsFile,
+    getFileExtension,
+    sortIgnoreCaseAndAccents,
+} from './utils.js';
 import { debounce_timeout } from './constants.js';
 import { t } from './i18n.js';
 import { callGenericPopup, Popup, POPUP_TYPE } from './popup.js';
@@ -49,8 +71,11 @@ let isBackgroundSelectionMode = false;
 let thumbnailTemplate: HTMLElement | null = null;
 let folderTileTemplate: HTMLElement | null = null;
 
-const PNG_PIXEL = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
-const PNG_PIXEL_BLOB = new Blob([Uint8Array.from(atob(PNG_PIXEL), c => c.charCodeAt(0))], { type: 'image/png' });
+const PNG_PIXEL =
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
+const PNG_PIXEL_BLOB = new Blob([Uint8Array.from(atob(PNG_PIXEL), (c) => c.charCodeAt(0))], {
+    type: 'image/png',
+});
 const PLACEHOLDER_IMAGE = `url('data:image/png;base64,${PNG_PIXEL}')`;
 
 const THUMBNAIL_COLUMNS_MIN = 2;
@@ -61,7 +86,7 @@ const THUMBNAIL_COLUMNS_DEFAULT_MOBILE = 3;
 const THUMBNAIL_STORAGE = localspace.createInstance({ name: 'SillyTavern_Thumbnails' });
 const THUMBNAIL_BLOBS = new Map<string, string>();
 const THUMBNAIL_CONFIG = { width: 160, height: 90 };
-const ANIMATED_BACKGROUND_EXTENSIONS = ['mp4', 'webp', 'gif', 'apng'];
+const ANIMATED_BACKGROUND_EXTENSIONS = new Set(['mp4', 'webp', 'gif', 'apng']);
 
 const METADATA_CACHE = new Map<string, AnyObject>();
 
@@ -87,18 +112,20 @@ function sortBackgrounds(backgrounds: string[], isCustom = false): string[] {
     const sortOrder = background_settings.sortOrder || BG_SORT_OPTIONS.AZ;
 
     if (sortOrder === BG_SORT_OPTIONS.AZ || sortOrder === BG_SORT_OPTIONS.ZA) {
-        const sorted = [...backgrounds].sort(sortIgnoreCaseAndAccents);
-        return sortOrder === BG_SORT_OPTIONS.ZA ? sorted.reverse() : sorted;
+        const sorted = [...backgrounds].toSorted(sortIgnoreCaseAndAccents);
+        return sortOrder === BG_SORT_OPTIONS.ZA ? sorted.toReversed() : sorted;
     }
 
     // Schwartzian transform for timestamp sorting
-    const mapped = backgrounds.map(bg => {
+    const mapped = backgrounds.map((bg) => {
         const key = isCustom ? bg : `backgrounds/${bg}`;
         const meta = METADATA_CACHE.get(key);
         return { bg, time: (meta?.addedTimestamp as number) ?? 0 };
     });
 
-    mapped.sort((a, b) => sortOrder === BG_SORT_OPTIONS.NEWEST ? b.time - a.time : a.time - b.time);
+    mapped.sort((a, b) =>
+        sortOrder === BG_SORT_OPTIONS.NEWEST ? b.time - a.time : a.time - b.time,
+    );
 
     const result = new Array(mapped.length);
     for (let i = 0; i < mapped.length; i++) result[i] = mapped[i]!.bg;
@@ -115,7 +142,9 @@ function createThumbnailElement(imageData: ImageData): HTMLElement {
     clipper.className = 'thumbnail-clipper lazy-load-background';
     clipper.style.backgroundImage = PLACEHOLDER_IMAGE;
 
-    const metadataKey = imageData.isCustom ? imageData.filename : `backgrounds/${imageData.filename}`;
+    const metadataKey = imageData.isCustom
+        ? imageData.filename
+        : `backgrounds/${imageData.filename}`;
     const metadata = METADATA_CACHE.get(metadataKey);
 
     if (metadata) {
@@ -164,17 +193,24 @@ export function loadBackgroundSettings(settings: Record<string, unknown>): void 
 
     let columns = bgSettings.thumbnailColumns as number | undefined;
     if (!columns) {
-        columns = window.matchMedia('(max-width: 480px)').matches ? THUMBNAIL_COLUMNS_DEFAULT_MOBILE : THUMBNAIL_COLUMNS_DEFAULT_DESKTOP;
+        columns = window.matchMedia('(max-width: 480px)').matches
+            ? THUMBNAIL_COLUMNS_DEFAULT_MOBILE
+            : THUMBNAIL_COLUMNS_DEFAULT_DESKTOP;
     }
 
     applyThumbnailColumns(columns);
-    setBackground((bgSettings.name as string) || background_settings.name, (bgSettings.url as string) || background_settings.url);
+    setBackground(
+        (bgSettings.name as string) || background_settings.name,
+        (bgSettings.url as string) || background_settings.url,
+    );
     setFittingClass(background_settings.fitting);
 
     const fittingEl = document.getElementById('background_fitting') as HTMLSelectElement | null;
     if (fittingEl) fittingEl.value = background_settings.fitting;
 
-    const animEl = document.getElementById('background_thumbnails_animation') as HTMLInputElement | null;
+    const animEl = document.getElementById(
+        'background_thumbnails_animation',
+    ) as HTMLInputElement | null;
     if (animEl) animEl.checked = background_settings.animation;
 
     const sortEl = document.getElementById('bg-sort') as HTMLSelectElement | null;
@@ -245,7 +281,9 @@ function onLockBackgroundClick(event: Event | null = null): void {
         return;
     }
 
-    const urlToLock = event ? ((event.target as Element).closest('.bg_example') as HTMLElement)?.dataset.url : background_settings.url;
+    const urlToLock = event
+        ? ((event.target as Element).closest('.bg_example') as HTMLElement)?.dataset.url
+        : background_settings.url;
     saveBackgroundMetadata(urlToLock);
 
     const bg1 = document.getElementById('bg1');
@@ -344,7 +382,7 @@ async function getThumbnailFromStorage(bg: string, isCustom: boolean): Promise<s
         if (!response.ok) throw new Error('Fetch failed with status: ' + response.status);
 
         const imageBase64 = await getBase64Async(await response.blob());
-        const thumbnailBase64 = await createThumbnail(imageBase64, null, null) as string;
+        const thumbnailBase64 = (await createThumbnail(imageBase64, null, null)) as string;
         const thumbnailBlob = await (await fetch(thumbnailBase64)).blob();
 
         await THUMBNAIL_STORAGE.setItem(bg, thumbnailBlob);
@@ -359,7 +397,9 @@ async function getThumbnailFromStorage(bg: string, isCustom: boolean): Promise<s
     }
 }
 
-async function getNewBackgroundName(referenceElement: Element): Promise<{ oldBg: string; newBg: string } | undefined> {
+async function getNewBackgroundName(
+    referenceElement: Element,
+): Promise<{ oldBg: string; newBg: string } | undefined> {
     const exampleBlock = referenceElement.closest('.bg_example');
     const isCustom = exampleBlock?.getAttribute('custom') === 'true';
     const oldBg = exampleBlock?.getAttribute('bgfile');
@@ -369,7 +409,11 @@ async function getNewBackgroundName(referenceElement: Element): Promise<{ oldBg:
     const fileNameBase = isCustom ? oldBg.split('/').pop()! : oldBg;
     const oldBgExtensionless = fileNameBase.replace(`.${fileExtension}`, '');
 
-    const newBgExtensionless = await Popup.show.input(t`Enter new background name:`, null, oldBgExtensionless);
+    const newBgExtensionless = await Popup.show.input(
+        t`Enter new background name:`,
+        null,
+        oldBgExtensionless,
+    );
     if (!newBgExtensionless || oldBgExtensionless === newBgExtensionless) return;
 
     return { oldBg, newBg: `${newBgExtensionless}.${fileExtension}` };
@@ -406,15 +450,28 @@ async function onDeleteBackgroundClick(this: HTMLElement, e: Event): Promise<voi
 
     let deleteFromServer = false;
     const confirm = await Popup.show.confirm(t`Delete the background?`, null, {
-        customInputs: isCustom ? [{ type: 'checkbox', label: t`Also delete file from server`, id: 'del_server', defaultState: true }] : [],
-        onClose: (popup: AnyObject) => { if (isCustom) deleteFromServer = (popup?.inputResults as Map<string, boolean>)?.get('del_server') ?? false; },
+        customInputs: isCustom
+            ? [
+                  {
+                      type: 'checkbox',
+                      label: t`Also delete file from server`,
+                      id: 'del_server',
+                      defaultState: true,
+                  },
+              ]
+            : [],
+        onClose: (popup: AnyObject) => {
+            if (isCustom)
+                deleteFromServer =
+                    (popup?.inputResults as Map<string, boolean>)?.get('del_server') ?? false;
+        },
     });
 
     if (!confirm) return;
 
     if (!isCustom) {
         await delBackground(bg);
-        const cacheIndex = cachedSystemBackgrounds.findIndex(s => s.filename === bg);
+        const cacheIndex = cachedSystemBackgrounds.findIndex((s) => s.filename === bg);
         if (cacheIndex !== -1) cachedSystemBackgrounds.splice(cacheIndex, 1);
     } else {
         const list = (chat_metadata[LIST_METADATA_KEY] as string[]) || [];
@@ -423,13 +480,19 @@ async function onDeleteBackgroundClick(this: HTMLElement, e: Event): Promise<voi
     }
 
     if (bg === background_settings.name || url === chat_metadata[BG_METADATA_KEY]) {
-        const nextBg = bgToDelete.nextElementSibling?.matches('.bg_example') ? bgToDelete.nextElementSibling as HTMLElement : null;
-        const prevBg = bgToDelete.previousElementSibling?.matches('.bg_example') ? bgToDelete.previousElementSibling as HTMLElement : null;
+        const nextBg = bgToDelete.nextElementSibling?.matches('.bg_example')
+            ? (bgToDelete.nextElementSibling as HTMLElement)
+            : null;
+        const prevBg = bgToDelete.previousElementSibling?.matches('.bg_example')
+            ? (bgToDelete.previousElementSibling as HTMLElement)
+            : null;
 
         if (nextBg) nextBg.click();
         else if (prevBg) prevBg.click();
         else {
-            const anyOther = document.querySelector('.bg_example:not([bgfile="' + bg + '"])') as HTMLElement;
+            const anyOther = document.querySelector(
+                '.bg_example:not([bgfile="' + bg + '"])',
+            ) as HTMLElement;
             if (anyOther) anyOther.click();
         }
     }
@@ -457,16 +520,23 @@ async function onDeleteBackgroundClick(this: HTMLElement, e: Event): Promise<voi
 }
 
 async function autoBackgroundCommand(): Promise<string> {
-    const bgTitles = Array.from(document.querySelectorAll('#bg_menu_content .BGSampleTitle')) as HTMLElement[];
-    const options = bgTitles.map(x => ({ element: x, text: x.innerText.trim() })).filter(x => x.text.length > 0);
+    const bgTitles = Array.from(
+        document.querySelectorAll('#bg_menu_content .BGSampleTitle'),
+    ) as HTMLElement[];
+    const options = bgTitles
+        .map((x) => ({ element: x, text: x.innerText.trim() }))
+        .filter((x) => x.text.length > 0);
 
     if (options.length === 0) {
         notyf.warning('No backgrounds to choose from.');
         return '';
     }
 
-    const list = options.map(o => `- ${o.text}`).join('\n');
-    const prompt = stringFormat('Ignore previous instructions and choose a location ONLY from the provided list that is the most suitable for the current scene. Do not output any other text:\n{0}', list);
+    const list = options.map((o) => `- ${o.text}`).join('\n');
+    const prompt = stringFormat(
+        'Ignore previous instructions and choose a location ONLY from the provided list that is the most suitable for the current scene. Do not output any other text:\n{0}',
+        list,
+    );
     const reply = await generateQuietPrompt({ quietPrompt: prompt });
 
     const bestMatch = new Fuse(options, { keys: ['text'] }).search(reply, { limit: 1 });
@@ -492,8 +562,11 @@ function renderSystemBackgrounds(backgrounds: ImageData[]): void {
     container.innerHTML = '';
 
     if (backgrounds.length > 0) {
-        const sortedList = sortBackgrounds(backgrounds.map(bg => bg.filename), false);
-        const metadataMap = new Map(backgrounds.map(bg => [bg.filename, bg]));
+        const sortedList = sortBackgrounds(
+            backgrounds.map((bg) => bg.filename),
+            false,
+        );
+        const metadataMap = new Map(backgrounds.map((bg) => [bg.filename, bg]));
 
         for (let i = 0; i < sortedList.length; i++) {
             const bgData = metadataMap.get(sortedList[i]!);
@@ -506,7 +579,7 @@ function renderSystemBackgrounds(backgrounds: ImageData[]): void {
 }
 
 function renderChatBackgrounds(backgrounds?: string[]): void {
-    const sourceList = backgrounds ?? (chat_metadata[LIST_METADATA_KEY] as string[] || []);
+    const sourceList = backgrounds ?? ((chat_metadata[LIST_METADATA_KEY] as string[]) || []);
     const container = document.getElementById('bg_custom_content');
     if (!container) return;
 
@@ -518,11 +591,13 @@ function renderChatBackgrounds(backgrounds?: string[]): void {
         const sortedList = sortBackgrounds(sourceList, true);
         for (let i = 0; i < sortedList.length; i++) {
             const bg = sortedList[i]!;
-            container.appendChild(createThumbnailElement({
-                filename: bg,
-                isCustom: true,
-                isAnimated: isAnimatedBackgroundExtension(bg)
-            }));
+            container.appendChild(
+                createThumbnailElement({
+                    filename: bg,
+                    isCustom: true,
+                    isAnimated: isAnimatedBackgroundExtension(bg),
+                }),
+            );
         }
     }
     activateLazyLoader();
@@ -573,7 +648,11 @@ async function preloadImageMetadata(): Promise<void> {
 
 async function loadFolders(): Promise<void> {
     try {
-        const response = await fetch('/api/backgrounds/folders', { method: 'POST', headers: getRequestHeaders(), body: '{}' });
+        const response = await fetch('/api/backgrounds/folders', {
+            method: 'POST',
+            headers: getRequestHeaders(),
+            body: '{}',
+        });
         if (response.ok) {
             const data = await response.json();
             folderList = data.folders || [];
@@ -583,10 +662,15 @@ async function loadFolders(): Promise<void> {
             for (let i = 0; i < folderList.length; i++) {
                 const folder = folderList[i]!;
                 if (!folder.thumbnailFile) {
-                    const firstImage = cachedSystemBackgrounds.find(img => imageFolderMap[img.filename]?.includes(folder.id));
+                    const firstImage = cachedSystemBackgrounds.find((img) =>
+                        imageFolderMap[img.filename]?.includes(folder.id),
+                    );
                     if (firstImage) {
                         folder.thumbnailFile = firstImage.filename;
-                        thumbnailUpdates.push({ id: folder.id, thumbnailFile: firstImage.filename });
+                        thumbnailUpdates.push({
+                            id: folder.id,
+                            thumbnailFile: firstImage.filename,
+                        });
                     }
                 }
             }
@@ -617,7 +701,10 @@ function renderFolderGrid(): void {
 }
 
 function createFolderTileElement(folder: Folder): HTMLElement {
-    if (!folderTileTemplate) folderTileTemplate = document.querySelector<HTMLElement>('#bg_folder_tile_template .bg_folder_tile');
+    if (!folderTileTemplate)
+        folderTileTemplate = document.querySelector<HTMLElement>(
+            '#bg_folder_tile_template .bg_folder_tile',
+        );
 
     const tile = folderTileTemplate!.cloneNode(true) as HTMLElement;
     tile.dataset.folderId = folder.id;
@@ -625,7 +712,7 @@ function createFolderTileElement(folder: Folder): HTMLElement {
     const nameEl = tile.querySelector('.bg_folder_tile_name');
     if (nameEl) nameEl.textContent = folder.name;
 
-    getFolderCoverUrl(folder).then(coverUrl => {
+    getFolderCoverUrl(folder).then((coverUrl) => {
         if (coverUrl) {
             const coverEl = tile.querySelector('.bg_folder_tile_cover') as HTMLElement | null;
             if (coverEl) coverEl.style.backgroundImage = `url("${coverUrl}")`;
@@ -636,29 +723,37 @@ function createFolderTileElement(folder: Folder): HTMLElement {
 }
 
 async function getFolderCoverUrl(folder: Folder): Promise<string | null> {
-    const file = folder.thumbnailFile || cachedSystemBackgrounds.find(img => imageFolderMap[img.filename]?.includes(folder.id))?.filename;
+    const file =
+        folder.thumbnailFile ||
+        cachedSystemBackgrounds.find((img) => imageFolderMap[img.filename]?.includes(folder.id))
+            ?.filename;
     if (!file) return null;
-    return (isAnimatedBackgroundExtension(file) && !background_settings.animation)
+    return isAnimatedBackgroundExtension(file) && !background_settings.animation
         ? getThumbnailFromStorage(file, false)
         : getThumbnailUrl('bg', file);
 }
 
 function getFilteredImages(): ImageData[] {
     if (!activeFolderId) return cachedSystemBackgrounds;
-    return cachedSystemBackgrounds.filter(img => imageFolderMap[img.filename]?.includes(activeFolderId!));
+    return cachedSystemBackgrounds.filter((img) =>
+        imageFolderMap[img.filename]?.includes(activeFolderId!),
+    );
 }
 
 function onFolderDrillIn(folderId: string): void {
-    const folder = folderList.find(f => f.id === folderId);
+    const folder = folderList.find((f) => f.id === folderId);
     if (!folder) return;
 
     clearBackgroundGroupSelection();
     activeFolderId = folderId;
 
     document.getElementById('Backgrounds')?.classList.add('in-folder-view');
-    const grid = document.getElementById('bg_folder_grid'); if (grid) grid.style.display = 'none';
-    const crumb = document.getElementById('bg_folder_breadcrumb'); if (crumb) crumb.style.display = '';
-    const nameEl = document.getElementById('bg_current_folder_name'); if (nameEl) nameEl.textContent = folder.name;
+    const grid = document.getElementById('bg_folder_grid');
+    if (grid) grid.style.display = 'none';
+    const crumb = document.getElementById('bg_folder_breadcrumb');
+    if (crumb) crumb.style.display = '';
+    const nameEl = document.getElementById('bg_current_folder_name');
+    if (nameEl) nameEl.textContent = folder.name;
 
     renderSystemBackgrounds(getFilteredImages());
     highlightSelectedBackground();
@@ -669,9 +764,12 @@ function onBackToFolders(): void {
     activeFolderId = null;
 
     document.getElementById('Backgrounds')?.classList.remove('in-folder-view');
-    const grid = document.getElementById('bg_folder_grid'); if (grid) grid.style.display = '';
-    const crumb = document.getElementById('bg_folder_breadcrumb'); if (crumb) crumb.style.display = 'none';
-    const nameEl = document.getElementById('bg_current_folder_name'); if (nameEl) nameEl.textContent = '';
+    const grid = document.getElementById('bg_folder_grid');
+    if (grid) grid.style.display = '';
+    const crumb = document.getElementById('bg_folder_breadcrumb');
+    if (crumb) crumb.style.display = 'none';
+    const nameEl = document.getElementById('bg_current_folder_name');
+    if (nameEl) nameEl.textContent = '';
 
     renderSystemBackgrounds(getFilteredImages());
     highlightSelectedBackground();
@@ -681,10 +779,15 @@ function syncGroupSelectionUi(): void {
     const selectedCount = selectedSystemBackgroundFiles.size;
     const isGlobalTab = getActiveBackgroundTab() === BG_SOURCES.GLOBAL;
     const showAddButton = isGlobalTab && isBackgroundSelectionMode && selectedCount > 0;
-    const showRemove = isGlobalTab && Boolean(activeFolderId) && isBackgroundSelectionMode && selectedCount > 0;
+    const showRemove =
+        isGlobalTab && Boolean(activeFolderId) && isBackgroundSelectionMode && selectedCount > 0;
 
-    document.getElementById('Backgrounds')?.classList.toggle('bg-selection-mode', isBackgroundSelectionMode);
-    document.getElementById('bg_selection_mode_button')?.classList.toggle('active', isBackgroundSelectionMode);
+    document
+        .getElementById('Backgrounds')
+        ?.classList.toggle('bg-selection-mode', isBackgroundSelectionMode);
+    document
+        .getElementById('bg_selection_mode_button')
+        ?.classList.toggle('active', isBackgroundSelectionMode);
 
     const bgCount = document.getElementById('bg_group_select_count');
     if (bgCount) {
@@ -692,14 +795,21 @@ function syncGroupSelectionUi(): void {
         bgCount.style.display = selectedCount > 0 ? '' : 'none';
     }
 
-    const addBtn = document.getElementById('bg_group_add_to_folder_button'); if (addBtn) addBtn.style.display = showAddButton ? '' : 'none';
-    const remBtn = document.getElementById('bg_folder_remove_selected_button'); if (remBtn) remBtn.style.display = showRemove ? '' : 'none';
+    const addBtn = document.getElementById('bg_group_add_to_folder_button');
+    if (addBtn) addBtn.style.display = showAddButton ? '' : 'none';
+    const remBtn = document.getElementById('bg_folder_remove_selected_button');
+    if (remBtn) remBtn.style.display = showRemove ? '' : 'none';
 
-    const examples = document.getElementById('bg_menu_content')?.getElementsByClassName('bg_example');
+    const examples = document
+        .getElementById('bg_menu_content')
+        ?.getElementsByClassName('bg_example');
     if (examples) {
         for (let i = 0; i < examples.length; i++) {
             const el = examples[i] as HTMLElement;
-            el.classList.toggle('folder-group-selected', selectedSystemBackgroundFiles.has(el.getAttribute('bgfile') || ''));
+            el.classList.toggle(
+                'folder-group-selected',
+                selectedSystemBackgroundFiles.has(el.getAttribute('bgfile') || ''),
+            );
         }
     }
 }
@@ -708,7 +818,9 @@ function setBackgroundSelectionMode(enabled: boolean): void {
     isBackgroundSelectionMode = enabled;
     if (!enabled) selectedSystemBackgroundFiles.clear();
 
-    const openMenus = document.getElementById('bg_menu_content')?.getElementsByClassName('mobile-menu-open');
+    const openMenus = document
+        .getElementById('bg_menu_content')
+        ?.getElementsByClassName('mobile-menu-open');
     while (openMenus?.length) openMenus[0]!.classList.remove('mobile-menu-open');
 
     syncGroupSelectionUi();
@@ -764,7 +876,12 @@ async function selectFoldersForGroupAction(headingText: string): Promise<string[
         contentEl.appendChild(label);
     }
 
-    const result = await callGenericPopup(contentEl, POPUP_TYPE.CONFIRM, '', { okButton: t`Apply`, cancelButton: t`Cancel`, allowVerticalScrolling: true, leftAlign: true });
+    const result = await callGenericPopup(contentEl, POPUP_TYPE.CONFIRM, '', {
+        okButton: t`Apply`,
+        cancelButton: t`Cancel`,
+        allowVerticalScrolling: true,
+        leftAlign: true,
+    });
     if (!result) return null;
 
     const selectedIds: string[] = [];
@@ -775,9 +892,15 @@ async function selectFoldersForGroupAction(headingText: string): Promise<string[
     return selectedIds.length > 0 ? selectedIds : null;
 }
 
-async function updateFolderAssignments(bgFiles: string[], folderId: string, isRemove: boolean): Promise<void> {
+async function updateFolderAssignments(
+    bgFiles: string[],
+    folderId: string,
+    isRemove: boolean,
+): Promise<void> {
     const paths = bgFiles.map(getBackgroundRelativePath);
-    const endpoint = isRemove ? '/api/image-metadata/folders/unassign' : '/api/image-metadata/folders/assign';
+    const endpoint = isRemove
+        ? '/api/image-metadata/folders/unassign'
+        : '/api/image-metadata/folders/assign';
 
     const response = await fetch(endpoint, {
         method: 'POST',
@@ -819,7 +942,9 @@ async function onAddSelectedToFolder(): Promise<void> {
         let totalAdded = 0;
         for (let i = 0; i < folderIds.length; i++) {
             const folderId = folderIds[i]!;
-            const actionableBgFiles = bgFiles.filter(bg => !(imageFolderMap[bg!] || []).includes(folderId));
+            const actionableBgFiles = bgFiles.filter(
+                (bg) => !(imageFolderMap[bg!] || []).includes(folderId),
+            );
             if (actionableBgFiles.length > 0) {
                 await updateFolderAssignments(actionableBgFiles, folderId, false);
                 totalAdded += actionableBgFiles.length;
@@ -883,7 +1008,11 @@ async function onCreateFolder(): Promise<void> {
     if (!name || !name.trim()) return;
 
     try {
-        const response = await fetch('/api/image-metadata/folders/create', { method: 'POST', headers: getRequestHeaders(), body: JSON.stringify({ name: name.trim() }) });
+        const response = await fetch('/api/image-metadata/folders/create', {
+            method: 'POST',
+            headers: getRequestHeaders(),
+            body: JSON.stringify({ name: name.trim() }),
+        });
         if (response.ok) {
             const folder = await response.json();
             folderList.push(folder);
@@ -897,14 +1026,18 @@ async function onCreateFolder(): Promise<void> {
 }
 
 async function onRenameFolder(folderId: string): Promise<void> {
-    const folder = folderList.find(f => f.id === folderId);
+    const folder = folderList.find((f) => f.id === folderId);
     if (!folder) return;
 
     const newName = await Popup.show.input(t`Enter new folder name:`, null, folder.name);
     if (!newName || !newName.trim() || newName.trim() === folder.name) return;
 
     try {
-        const response = await fetch('/api/image-metadata/folders/update', { method: 'POST', headers: getRequestHeaders(), body: JSON.stringify({ id: folderId, name: newName.trim() }) });
+        const response = await fetch('/api/image-metadata/folders/update', {
+            method: 'POST',
+            headers: getRequestHeaders(),
+            body: JSON.stringify({ id: folderId, name: newName.trim() }),
+        });
         if (response.ok) {
             folder.name = newName.trim();
             renderFolderGrid();
@@ -917,16 +1050,23 @@ async function onRenameFolder(folderId: string): Promise<void> {
 }
 
 async function onDeleteFolder(folderId: string): Promise<void> {
-    const folder = folderList.find(f => f.id === folderId);
+    const folder = folderList.find((f) => f.id === folderId);
     if (!folder) return;
 
-    const confirm = await Popup.show.confirm(t`Delete folder "${folder.name}"?`, t`Images will not be deleted, only the folder grouping.`);
+    const confirm = await Popup.show.confirm(
+        t`Delete folder "${folder.name}"?`,
+        t`Images will not be deleted, only the folder grouping.`,
+    );
     if (!confirm) return;
 
     try {
-        const response = await fetch('/api/image-metadata/folders/delete', { method: 'POST', headers: getRequestHeaders(), body: JSON.stringify({ id: folderId }) });
+        const response = await fetch('/api/image-metadata/folders/delete', {
+            method: 'POST',
+            headers: getRequestHeaders(),
+            body: JSON.stringify({ id: folderId }),
+        });
         if (response.ok) {
-            folderList = folderList.filter(f => f.id !== folderId);
+            folderList = folderList.filter((f) => f.id !== folderId);
             for (const key in imageFolderMap) {
                 const arr = imageFolderMap[key];
                 if (arr) {
@@ -975,7 +1115,10 @@ async function onAssignToFolder(bgFile: string): Promise<void> {
         contentEl.appendChild(label);
     }
 
-    const result = await callGenericPopup(contentEl, POPUP_TYPE.CONFIRM, '', { okButton: t`Save`, cancelButton: t`Cancel` });
+    const result = await callGenericPopup(contentEl, POPUP_TYPE.CONFIRM, '', {
+        okButton: t`Save`,
+        cancelButton: t`Cancel`,
+    });
     if (!result) return;
 
     const toAssign: string[] = [];
@@ -991,8 +1134,10 @@ async function onAssignToFolder(bgFile: string): Promise<void> {
     }
 
     try {
-        for (let i = 0; i < toAssign.length; i++) await updateFolderAssignments([bgFile], toAssign[i]!, false);
-        for (let i = 0; i < toUnassign.length; i++) await updateFolderAssignments([bgFile], toUnassign[i]!, true);
+        for (let i = 0; i < toAssign.length; i++)
+            await updateFolderAssignments([bgFile], toAssign[i]!, false);
+        for (let i = 0; i < toUnassign.length; i++)
+            await updateFolderAssignments([bgFile], toUnassign[i]!, true);
 
         renderFolderGrid();
         if (activeFolderId) {
@@ -1010,14 +1155,20 @@ async function onSetFolderCover(bgFile: string): Promise<void> {
     if (!activeFolderId) return;
 
     try {
-        const response = await fetch('/api/image-metadata/folders/update', { method: 'POST', headers: getRequestHeaders(), body: JSON.stringify({ id: activeFolderId, thumbnailFile: bgFile }) });
+        const response = await fetch('/api/image-metadata/folders/update', {
+            method: 'POST',
+            headers: getRequestHeaders(),
+            body: JSON.stringify({ id: activeFolderId, thumbnailFile: bgFile }),
+        });
         if (response.ok) {
-            const folder = folderList.find(f => f.id === activeFolderId);
+            const folder = folderList.find((f) => f.id === activeFolderId);
             if (folder) {
                 folder.thumbnailFile = bgFile;
                 const coverUrl = await getFolderCoverUrl(folder);
                 if (coverUrl) {
-                    const coverEl = document.querySelector(`.bg_folder_tile[data-folder-id="${folder.id}"] .bg_folder_tile_cover`) as HTMLElement;
+                    const coverEl = document.querySelector(
+                        `.bg_folder_tile[data-folder-id="${folder.id}"] .bg_folder_tile_cover`,
+                    ) as HTMLElement;
                     if (coverEl) coverEl.style.backgroundImage = `url('${coverUrl}')`;
                 }
             }
@@ -1035,27 +1186,34 @@ function activateLazyLoader(): void {
         lazyLoadObserver = null;
     }
 
-    lazyLoadObserver = new IntersectionObserver((entries, observer) => {
-        for (let i = 0; i < entries.length; i++) {
-            const entry = entries[i]!;
-            if (entry.isIntersecting) {
-                const clipper = entry.target as HTMLElement;
-                const parent = clipper.closest('.bg_example');
+    lazyLoadObserver = new IntersectionObserver(
+        (entries, observer) => {
+            for (let i = 0; i < entries.length; i++) {
+                const entry = entries[i]!;
+                if (entry.isIntersecting) {
+                    const clipper = entry.target as HTMLElement;
+                    const parent = clipper.closest('.bg_example');
 
-                if (parent) {
-                    const bg = parent.getAttribute('bgfile') || '';
-                    const isCustom = parent.getAttribute('custom') === 'true';
-                    const isAnimated = parent.getAttribute('animated') === 'true';
-                    resolveImageUrl(bg, isCustom, isAnimated)
-                        .then(url => { clipper.style.backgroundImage = url; })
-                        .catch(() => { clipper.style.backgroundImage = PLACEHOLDER_IMAGE; });
+                    if (parent) {
+                        const bg = parent.getAttribute('bgfile') || '';
+                        const isCustom = parent.getAttribute('custom') === 'true';
+                        const isAnimated = parent.getAttribute('animated') === 'true';
+                        resolveImageUrl(bg, isCustom, isAnimated)
+                            .then((url) => {
+                                clipper.style.backgroundImage = url;
+                            })
+                            .catch(() => {
+                                clipper.style.backgroundImage = PLACEHOLDER_IMAGE;
+                            });
+                    }
+
+                    clipper.classList.remove('lazy-load-background');
+                    observer.unobserve(clipper);
                 }
-
-                clipper.classList.remove('lazy-load-background');
-                observer.unobserve(clipper);
             }
-        }
-    }, { rootMargin: '200px', threshold: 0.01 });
+        },
+        { rootMargin: '200px', threshold: 0.01 },
+    );
 
     const elements = document.getElementsByClassName('lazy-load-background');
     for (let i = 0; i < elements.length; i++) {
@@ -1069,12 +1227,21 @@ function generateUrlParameter(bg: string, isCustom: boolean): string {
 
 function isAnimatedBackgroundExtension(fileName: string): boolean {
     const ext = fileName.split('.').pop()?.toLowerCase() || '';
-    return ANIMATED_BACKGROUND_EXTENSIONS.includes(ext);
+    return ANIMATED_BACKGROUND_EXTENSIONS.has(ext);
 }
 
-async function resolveImageUrl(bg: string, isCustom: boolean, isAnimated: boolean | null = null): Promise<string> {
+async function resolveImageUrl(
+    bg: string,
+    isCustom: boolean,
+    isAnimated: boolean | null = null,
+): Promise<string> {
     const animated = isAnimated ?? isAnimatedBackgroundExtension(bg);
-    const url = animated && !background_settings.animation ? await getThumbnailFromStorage(bg, isCustom) : (isCustom ? bg : getThumbnailUrl('bg', bg));
+    const url =
+        animated && !background_settings.animation
+            ? await getThumbnailFromStorage(bg, isCustom)
+            : isCustom
+              ? bg
+              : getThumbnailUrl('bg', bg);
     return `url("${url}")`;
 }
 
@@ -1089,7 +1256,11 @@ async function setBackground(bg: string, url: string): Promise<void> {
 }
 
 async function delBackground(bg: string): Promise<void> {
-    await fetch('/api/backgrounds/delete', { method: 'POST', headers: getRequestHeaders(), body: JSON.stringify({ bg }) });
+    await fetch('/api/backgrounds/delete', {
+        method: 'POST',
+        headers: getRequestHeaders(),
+        body: JSON.stringify({ bg }),
+    });
     await THUMBNAIL_STORAGE.removeItem(bg);
     const blob = THUMBNAIL_BLOBS.get(bg);
     if (blob) {
@@ -1125,19 +1296,40 @@ async function convertFileIfVideo(formData: FormData): Promise<void> {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if (typeof (globalThis as any).convertVideoToAnimatedWebp !== 'function') {
-        notyf.warning(t`Click here to install the Video Background Loader extension`, t`Video background uploads require a downloadable add-on`, {
-            timeOut: 0, extendedTimeOut: 0, onclick: () => openThirdPartyExtensionMenu('https://github.com/SillyTavern/Extension-VideoBackgroundLoader')
-        });
+        notyf.warning(
+            t`Click here to install the Video Background Loader extension`,
+            t`Video background uploads require a downloadable add-on`,
+            {
+                timeOut: 0,
+                extendedTimeOut: 0,
+                onclick: () =>
+                    openThirdPartyExtensionMenu(
+                        'https://github.com/SillyTavern/Extension-VideoBackgroundLoader',
+                    ),
+            },
+        );
         return;
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const toast = notyf.info(t`Preparing video for upload. This may take several minutes.`, t`Please wait`, { timeOut: 0, extendedTimeOut: 0 }) as any;
+    const toast = notyf.info(
+        t`Preparing video for upload. This may take several minutes.`,
+        t`Please wait`,
+        { timeOut: 0, extendedTimeOut: 0 },
+    ) as any;
     try {
         const buffer = new Uint8Array(await file.arrayBuffer());
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const converted = await (globalThis as any).convertVideoToAnimatedWebp({ buffer, name: file.name });
-        formData.set('avatar', new File([new Uint8Array(converted)], file.name.replace(/\.[^/.]+$/, '.webp'), { type: 'image/webp' }));
+        const converted = await (globalThis as any).convertVideoToAnimatedWebp({
+            buffer,
+            name: file.name,
+        });
+        formData.set(
+            'avatar',
+            new File([new Uint8Array(converted)], file.name.replace(/\.[^/.]+$/, '.webp'), {
+                type: 'image/webp',
+            }),
+        );
         toast?.remove();
     } catch (error) {
         formData.delete('avatar');
@@ -1150,7 +1342,12 @@ async function convertFileIfVideo(formData: FormData): Promise<void> {
 async function uploadBackground(formData: FormData): Promise<void> {
     if (!formData.has('avatar')) return;
     try {
-        const response = await fetch('/api/backgrounds/upload', { method: 'POST', headers: getRequestHeaders({ omitContentType: true }), body: formData, cache: 'no-cache' });
+        const response = await fetch('/api/backgrounds/upload', {
+            method: 'POST',
+            headers: getRequestHeaders({ omitContentType: true }),
+            body: formData,
+            cache: 'no-cache',
+        });
         if (!response.ok) throw new Error('Failed to upload background');
 
         const bg = await response.text();
@@ -1173,9 +1370,16 @@ async function uploadChatBackground(formData: FormData): Promise<void> {
     try {
         const imageDataUri = await getBase64Async(file);
         const base64Data = (imageDataUri as string).split(',')[1];
-        const characterName = selected_group ? groups.find(g => g.id === selected_group)?.id?.toString() : characters[this_chid]?.name;
+        const characterName = selected_group
+            ? groups.find((g) => g.id === selected_group)?.id?.toString()
+            : characters[this_chid]?.name;
         const filename = `${characterName}_${humanizedDateTime()}`;
-        const imagePath = await saveBase64AsFile(base64Data, characterName, filename, getFileExtension(file));
+        const imagePath = await saveBase64AsFile(
+            base64Data,
+            characterName,
+            filename,
+            getFileExtension(file),
+        );
 
         const list = (chat_metadata[LIST_METADATA_KEY] as string[]) || [];
         list.push(imagePath);
@@ -1227,7 +1431,9 @@ function highlightSelectedBackground(): void {
 }
 
 const onBackgroundFilterInput = debounce(() => {
-    const filterValue = (document.getElementById('bg-filter') as HTMLInputElement | null)?.value.toLowerCase() || '';
+    const filterValue =
+        (document.getElementById('bg-filter') as HTMLInputElement | null)?.value.toLowerCase() ||
+        '';
     const examples = document.getElementsByClassName('bg_example');
 
     for (let i = 0; i < examples.length; i++) {
@@ -1238,13 +1444,18 @@ const onBackgroundFilterInput = debounce(() => {
     }
 
     if (!activeFolderId) {
-        const folders = document.getElementById('bg_folder_grid')?.getElementsByClassName('bg_folder_tile');
+        const folders = document
+            .getElementById('bg_folder_grid')
+            ?.getElementsByClassName('bg_folder_tile');
         if (folders) {
             for (let i = 0; i < folders.length; i++) {
                 const el = folders[i] as HTMLElement;
                 const fid = el.dataset.folderId;
-                if (!fid || !filterValue) { el.style.display = ''; continue; }
-                const f = folderList.find(x => x.id === fid);
+                if (!fid || !filterValue) {
+                    el.style.display = '';
+                    continue;
+                }
+                const f = folderList.find((x) => x.id === fid);
                 el.style.display = f && f.name.toLowerCase().includes(filterValue) ? '' : 'none';
             }
         }
@@ -1252,7 +1463,9 @@ const onBackgroundFilterInput = debounce(() => {
 }, debounce_timeout.standard);
 
 export function getActiveBackgroundTab(): number {
-    return document.getElementById('bg_tabs')?.dataset.uiTabs ? BG_SOURCES.GLOBAL : BG_SOURCES.GLOBAL;
+    return document.getElementById('bg_tabs')?.dataset.uiTabs
+        ? BG_SOURCES.GLOBAL
+        : BG_SOURCES.GLOBAL;
 }
 
 export function initBackgrounds(): void {
@@ -1272,16 +1485,17 @@ export function initBackgrounds(): void {
             if (action === 'lock') onLockBackgroundClick(event);
             else if (action === 'unlock') onUnlockBackgroundClick();
             else if (action === 'edit') onRenameBackgroundClick.call(button as HTMLElement, event);
-            else if (action === 'delete') onDeleteBackgroundClick.call(button as HTMLElement, event);
-            else if (action === 'copy') onCopyToSystemBackgroundClick.call(button as HTMLElement, event);
+            else if (action === 'delete')
+                onDeleteBackgroundClick.call(button as HTMLElement, event);
+            else if (action === 'copy')
+                onCopyToSystemBackgroundClick.call(button as HTMLElement, event);
             else if (action === 'folder') {
                 const bgEl = button.closest('.bg_example');
                 if (bgEl?.getAttribute('custom') !== 'true') {
                     const bgFile = bgEl?.getAttribute('bgfile');
                     if (bgFile) onAssignToFolder(bgFile);
                 }
-            }
-            else if (action === 'set-cover') {
+            } else if (action === 'set-cover') {
                 const bgEl = button.closest('.bg_example');
                 if (bgEl?.getAttribute('custom') !== 'true') {
                     const bgFile = bgEl?.getAttribute('bgfile');
@@ -1294,7 +1508,8 @@ export function initBackgrounds(): void {
         const mobileToggle = target.closest('.mobile-only-menu-toggle');
         if (mobileToggle) {
             event.stopPropagation();
-            const context = mobileToggle.closest('.bg_example') || mobileToggle.closest('.bg_folder_tile');
+            const context =
+                mobileToggle.closest('.bg_example') || mobileToggle.closest('.bg_folder_tile');
             const wasOpen = context?.classList.contains('mobile-menu-open');
             const opens = document.getElementsByClassName('mobile-menu-open');
             while (opens.length) opens[0]!.classList.remove('mobile-menu-open');
@@ -1308,7 +1523,9 @@ export function initBackgrounds(): void {
         const folderActionRename = target.closest('.bg_folder_tile [data-action="rename-folder"]');
         if (folderActionRename) {
             event.stopPropagation();
-            const id = folderActionRename.closest('.bg_folder_tile')?.getAttribute('data-folder-id');
+            const id = folderActionRename
+                .closest('.bg_folder_tile')
+                ?.getAttribute('data-folder-id');
             if (id) onRenameFolder(id);
             return;
         }
@@ -1332,57 +1549,112 @@ export function initBackgrounds(): void {
         if (target.closest('#bg_back_to_folders')) return onBackToFolders();
     });
 
-    document.addEventListener('blur', (event: Event) => {
-        const target = event.target as Element;
-        if (!target) return;
-        const el = target.closest('.mobile-menu-open');
-        if (el && !el.matches(':focus-within')) el.classList.remove('mobile-menu-open');
-    }, true);
+    document.addEventListener(
+        'blur',
+        (event: Event) => {
+            const target = event.target as Element;
+            if (!target) return;
+            const el = target.closest('.mobile-menu-open');
+            if (el && !el.matches(':focus-within')) el.classList.remove('mobile-menu-open');
+        },
+        true,
+    );
 
-    const bindClick = (id: string, fn: () => void) => document.getElementById(id)?.addEventListener('click', fn);
-    bindClick('bg_thumb_zoom_in', () => applyThumbnailColumns((background_settings.thumbnailColumns as number) - 1));
-    bindClick('bg_thumb_zoom_out', () => applyThumbnailColumns((background_settings.thumbnailColumns as number) + 1));
+    const bindClick = (id: string, fn: () => void) =>
+        document.getElementById(id)?.addEventListener('click', fn);
+    bindClick('bg_thumb_zoom_in', () =>
+        applyThumbnailColumns((background_settings.thumbnailColumns as number) - 1),
+    );
+    bindClick('bg_thumb_zoom_out', () =>
+        applyThumbnailColumns((background_settings.thumbnailColumns as number) + 1),
+    );
     bindClick('auto_background', autoBackgroundCommand);
-    bindClick('bg_selection_mode_button', () => setBackgroundSelectionMode(!isBackgroundSelectionMode));
+    bindClick('bg_selection_mode_button', () =>
+        setBackgroundSelectionMode(!isBackgroundSelectionMode),
+    );
     bindClick('bg_group_add_to_folder_button', onAddSelectedToFolder);
     bindClick('bg_folder_remove_selected_button', onRemoveSelectedFromCurrentFolder);
 
-    document.getElementById('add_bg_button')?.addEventListener('change', onBackgroundUploadSelected);
+    document
+        .getElementById('add_bg_button')
+        ?.addEventListener('change', onBackgroundUploadSelected);
     document.getElementById('bg-filter')?.addEventListener('input', onBackgroundFilterInput);
 
-    document.getElementById('bg-sort')?.addEventListener('change', function(this: HTMLSelectElement) {
-        background_settings.sortOrder = this.value;
-        saveSettingsDebounced();
-        renderSystemBackgrounds(getFilteredImages());
-        renderChatBackgrounds();
-        highlightSelectedBackground();
-        highlightLockedBackground();
-        onBackgroundFilterInput();
-    });
+    document
+        .getElementById('bg-sort')
+        ?.addEventListener('change', function (this: HTMLSelectElement) {
+            background_settings.sortOrder = this.value;
+            saveSettingsDebounced();
+            renderSystemBackgrounds(getFilteredImages());
+            renderChatBackgrounds();
+            highlightSelectedBackground();
+            highlightLockedBackground();
+            onBackgroundFilterInput();
+        });
 
-    document.getElementById('background_fitting')?.addEventListener('input', function(this: HTMLSelectElement) {
-        setFittingClass(this.value);
-        saveSettingsDebounced();
-    });
+    document
+        .getElementById('background_fitting')
+        ?.addEventListener('input', function (this: HTMLSelectElement) {
+            setFittingClass(this.value);
+            saveSettingsDebounced();
+        });
 
-    document.getElementById('background_thumbnails_animation')?.addEventListener('input', async function(this: HTMLInputElement) {
-        background_settings.animation = this.checked;
-        saveSettingsDebounced();
-        await getBackgrounds();
-        await onChatChanged();
-    });
+    document
+        .getElementById('background_thumbnails_animation')
+        ?.addEventListener('input', async function (this: HTMLInputElement) {
+            background_settings.animation = this.checked;
+            saveSettingsDebounced();
+            await getBackgrounds();
+            await onChatChanged();
+        });
 
-    const addCmd = (name: string, aliases: string[], callback: () => string | Promise<string>, helpString: string) => {
-        SlashCommandParser.addCommandObject(SlashCommand.fromProps({ name, aliases, callback, helpString }));
+    const addCmd = (
+        name: string,
+        aliases: string[],
+        callback: () => string | Promise<string>,
+        helpString: string,
+    ) => {
+        SlashCommandParser.addCommandObject(
+            SlashCommand.fromProps({ name, aliases, callback, helpString }),
+        );
     };
 
-    addCmd('lockbg', ['bglock'], () => { onLockBackgroundClick(); return ''; }, 'Locks a background for the currently selected chat');
-    addCmd('unlockbg', ['bgunlock'], () => { onUnlockBackgroundClick(); return ''; }, 'Unlocks a background for the currently selected chat');
-    addCmd('autobg', ['bgauto'], autoBackgroundCommand, 'Automatically changes the background based on the chat context');
+    addCmd(
+        'lockbg',
+        ['bglock'],
+        () => {
+            onLockBackgroundClick();
+            return '';
+        },
+        'Locks a background for the currently selected chat',
+    );
+    addCmd(
+        'unlockbg',
+        ['bgunlock'],
+        () => {
+            onUnlockBackgroundClick();
+            return '';
+        },
+        'Unlocks a background for the currently selected chat',
+    );
+    addCmd(
+        'autobg',
+        ['bgauto'],
+        autoBackgroundCommand,
+        'Automatically changes the background based on the chat context',
+    );
 
-    Object.values(BG_TABS).forEach(tabId => setupScrollToTop({ scrollContainerId: tabId, buttonId: 'bg-scroll-top', drawerId: 'Backgrounds' }));
+    Object.values(BG_TABS).forEach((tabId) =>
+        setupScrollToTop({
+            scrollContainerId: tabId,
+            buttonId: 'bg-scroll-top',
+            drawerId: 'Backgrounds',
+        }),
+    );
 
-    document.getElementById('bg_tabs')?.addEventListener('tabsactivate', updateGroupFolderControlsVisibility);
+    document
+        .getElementById('bg_tabs')
+        ?.addEventListener('tabsactivate', updateGroupFolderControlsVisibility);
     updateGroupFolderControlsVisibility();
     syncGroupSelectionUi();
 }

@@ -89,48 +89,66 @@ export const MacroFlagType = Object.freeze({
  * @type {Map<string, MacroFlagDefinition>}
  */
 export const MacroFlagDefinitions = new Map([
-    [MacroFlagType.IMMEDIATE, {
-        type: MacroFlagType.IMMEDIATE,
-        name: 'Immediate',
-        description: 'Resolve this macro before other macros in the same text.',
-        implemented: false,
-        affectsParser: false,
-    }],
-    [MacroFlagType.DELAYED, {
-        type: MacroFlagType.DELAYED,
-        name: 'Delayed',
-        description: 'Resolve this macro after other macros in the same text.',
-        implemented: false,
-        affectsParser: false,
-    }],
-    [MacroFlagType.REEVALUATE, {
-        type: MacroFlagType.REEVALUATE,
-        name: 'Re-evaluate',
-        description: 'Mark this macro for re-evaluation.',
-        implemented: false,
-        affectsParser: false,
-    }],
-    [MacroFlagType.FILTER, {
-        type: MacroFlagType.FILTER,
-        name: 'Filter',
-        description: 'Enable pipe-based output filters for this macro.',
-        implemented: false,
-        affectsParser: true, // Changes how `|` is parsed
-    }],
-    [MacroFlagType.CLOSING_BLOCK, {
-        type: MacroFlagType.CLOSING_BLOCK,
-        name: 'Closing Block',
-        description: 'Marks this as a closing block for a scoped macro.',
-        implemented: true,
-        affectsParser: false,
-    }],
-    [MacroFlagType.PRESERVE_WHITESPACE, {
-        type: MacroFlagType.PRESERVE_WHITESPACE,
-        name: 'Preserve Whitespace',
-        description: 'Prevent automatic trimming of scoped content (legacy # syntax).',
-        implemented: true,
-        affectsParser: false,
-    }],
+    [
+        MacroFlagType.IMMEDIATE,
+        {
+            type: MacroFlagType.IMMEDIATE,
+            name: 'Immediate',
+            description: 'Resolve this macro before other macros in the same text.',
+            implemented: false,
+            affectsParser: false,
+        },
+    ],
+    [
+        MacroFlagType.DELAYED,
+        {
+            type: MacroFlagType.DELAYED,
+            name: 'Delayed',
+            description: 'Resolve this macro after other macros in the same text.',
+            implemented: false,
+            affectsParser: false,
+        },
+    ],
+    [
+        MacroFlagType.REEVALUATE,
+        {
+            type: MacroFlagType.REEVALUATE,
+            name: 'Re-evaluate',
+            description: 'Mark this macro for re-evaluation.',
+            implemented: false,
+            affectsParser: false,
+        },
+    ],
+    [
+        MacroFlagType.FILTER,
+        {
+            type: MacroFlagType.FILTER,
+            name: 'Filter',
+            description: 'Enable pipe-based output filters for this macro.',
+            implemented: false,
+            affectsParser: true, // Changes how `|` is parsed
+        },
+    ],
+    [
+        MacroFlagType.CLOSING_BLOCK,
+        {
+            type: MacroFlagType.CLOSING_BLOCK,
+            name: 'Closing Block',
+            description: 'Marks this as a closing block for a scoped macro.',
+            implemented: true,
+            affectsParser: false,
+        },
+    ],
+    [
+        MacroFlagType.PRESERVE_WHITESPACE,
+        {
+            type: MacroFlagType.PRESERVE_WHITESPACE,
+            name: 'Preserve Whitespace',
+            description: 'Prevent automatic trimming of scoped content (legacy # syntax).',
+            implemented: true,
+            affectsParser: false,
+        },
+    ],
 ]);
 
 /**

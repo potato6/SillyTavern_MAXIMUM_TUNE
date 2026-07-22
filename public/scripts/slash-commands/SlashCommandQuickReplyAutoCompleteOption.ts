@@ -9,7 +9,6 @@ export class SlashCommandQuickReplyAutoCompleteOption extends AutoCompleteOption
         super(name);
     }
 
-
     // @ts-expect-error TS(4114) FIXME: This member must have an 'override' modifier becau... Remove this comment to see the full error message
     renderItem() {
         const li = this.makeItem(this.name, 'QR', true);
@@ -18,13 +17,14 @@ export class SlashCommandQuickReplyAutoCompleteOption extends AutoCompleteOption
         return li;
     }
 
-
     // @ts-expect-error TS(4114) FIXME: This member must have an 'override' modifier becau... Remove this comment to see the full error message
     renderDetails() {
         const frag = document.createDocumentFragment();
-        const specs = document.createElement('div'); {
+        const specs = document.createElement('div');
+        {
             specs.classList.add('specs');
-            const name = document.createElement('div'); {
+            const name = document.createElement('div');
+            {
                 name.classList.add('name');
                 name.classList.add('monospace');
                 name.textContent = this.name;
@@ -32,7 +32,8 @@ export class SlashCommandQuickReplyAutoCompleteOption extends AutoCompleteOption
             }
             frag.append(specs);
         }
-        const help = document.createElement('span'); {
+        const help = document.createElement('span');
+        {
             help.classList.add('help');
             help.textContent = 'Quick Reply';
             frag.append(help);

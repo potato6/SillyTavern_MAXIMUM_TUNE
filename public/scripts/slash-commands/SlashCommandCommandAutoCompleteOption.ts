@@ -3,12 +3,10 @@ import { AutoCompleteOption } from '../autocomplete/AutoCompleteOption.js';
 export class SlashCommandCommandAutoCompleteOption extends AutoCompleteOption {
     /**@type {SlashCommand}*/ command;
 
-
     // @ts-expect-error TS(4114) FIXME: This member must have an 'override' modifier becau... Remove this comment to see the full error message
     get value() {
         return this.command;
     }
-
 
     /**
      * @param {SlashCommand} command
@@ -20,7 +18,6 @@ export class SlashCommandCommandAutoCompleteOption extends AutoCompleteOption {
         this.command = command;
     }
 
-
     // @ts-expect-error TS(4114) FIXME: This member must have an 'override' modifier becau... Remove this comment to see the full error message
     renderItem() {
         const li = this.command.renderHelpItem(this.name);
@@ -28,7 +25,6 @@ export class SlashCommandCommandAutoCompleteOption extends AutoCompleteOption {
         li.setAttribute('data-option-type', 'command');
         return li;
     }
-
 
     // @ts-expect-error TS(4114) FIXME: This member must have an 'override' modifier becau... Remove this comment to see the full error message
     renderDetails() {

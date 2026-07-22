@@ -34,9 +34,17 @@ export function getRealOrForwardedIp(req: express.Request) {
     // @ts-expect-error TS(2345) FIXME: Argument of type 'true' is not assignable to param... Remove this comment to see the full error message
     const xRealIpEnabled = !!getConfigValue('forwardedHeaders.xRealIp', true, 'boolean');
     // @ts-expect-error TS(2345) FIXME: Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
-    const cfConnectingIpEnabled = !!getConfigValue('forwardedHeaders.cfConnectingIp', false, 'boolean');
+    const cfConnectingIpEnabled = !!getConfigValue(
+        'forwardedHeaders.cfConnectingIp',
+        false,
+        'boolean',
+    );
     // @ts-expect-error TS(2345) FIXME: Argument of type 'true' is not assignable to param... Remove this comment to see the full error message
-    const xForwardedForEnabled = !!getConfigValue('forwardedHeaders.xForwardedFor', true, 'boolean');
+    const xForwardedForEnabled = !!getConfigValue(
+        'forwardedHeaders.xForwardedFor',
+        true,
+        'boolean',
+    );
 
     // Check if X-Real-IP is available
     if (req.headers['x-real-ip'] && xRealIpEnabled) {
@@ -50,7 +58,10 @@ export function getRealOrForwardedIp(req: express.Request) {
 
     // Check for X-Forwarded-For and parse if available
     if (req.headers['x-forwarded-for'] && xForwardedForEnabled) {
-        const ipList = req.headers['x-forwarded-for'].toString().split(',').map((ip: string) => ip.trim());
+        const ipList = req.headers['x-forwarded-for']
+            .toString()
+            .split(',')
+            .map((ip: string) => ip.trim());
         return ipList[0];
     }
 
@@ -84,7 +95,10 @@ export { isFirefox } from './util.js';
  * @param {(entry: string, message: string) => string} formatLog - The function to format the warning message for invalid entries
  * @returns {string[]} The list of valid IP patterns
  */
-export function filterValidIpPatterns(entries: string[], formatLog: (entry: string, message: string) => string) {
+export function filterValidIpPatterns(
+    entries: string[],
+    formatLog: (entry: string, message: string) => string,
+) {
     const validEntries: string[] = [];
 
     if (!Array.isArray(entries)) {

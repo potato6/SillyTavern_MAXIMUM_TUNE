@@ -243,7 +243,9 @@ export class StreamingDisplay {
 
         // Append inside the topmost open dialog (same pattern as fixToastrForDialogs in popup.js).
         // Modal <dialog> elements live in the browser's top layer, so z-index alone won't work.
-        const target = Array.from(document.querySelectorAll('dialog[open]:not([closing])')).pop() ?? document.body;
+        const target =
+            Array.from(document.querySelectorAll('dialog[open]:not([closing])')).pop() ??
+            document.body;
         // @ts-expect-error TS(2345) FIXME: Argument of type 'null' is not assignable to param... Remove this comment to see the full error message
         target.appendChild(this.#element);
 
@@ -273,9 +275,15 @@ export class StreamingDisplay {
             // @ts-expect-error TS(2339) FIXME: Property 'innerHTML' does not exist on type 'never... Remove this comment to see the full error message
             this.#minimizeButton.innerHTML = this.#isMinimized ? '&#9633;' : '&#8211;'; // Square when minimized, dash when not
             // @ts-expect-error TS(2339) FIXME: Property 'setAttribute' does not exist on type 'ne... Remove this comment to see the full error message
-            this.#minimizeButton.setAttribute('title', this.#isMinimized ? t`Restore` : t`Minimize`);
+            this.#minimizeButton.setAttribute(
+                'title',
+                this.#isMinimized ? t`Restore` : t`Minimize`,
+            );
             // @ts-expect-error TS(2339) FIXME: Property 'setAttribute' does not exist on type 'ne... Remove this comment to see the full error message
-            this.#minimizeButton.setAttribute('aria-label', this.#isMinimized ? t`Restore` : t`Minimize`);
+            this.#minimizeButton.setAttribute(
+                'aria-label',
+                this.#isMinimized ? t`Restore` : t`Minimize`,
+            );
         }
 
         return this;

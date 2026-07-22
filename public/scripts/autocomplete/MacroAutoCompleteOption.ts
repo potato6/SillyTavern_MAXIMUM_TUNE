@@ -4,7 +4,6 @@ export class MacroAutoCompleteOption extends AutoCompleteOption {
     /**@type {string}*/ fullName;
     /**@type {string}*/ description;
 
-
     // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
     constructor(name, fullName, description) {
         super(name, '{}');
@@ -12,7 +11,6 @@ export class MacroAutoCompleteOption extends AutoCompleteOption {
         this.description = description;
         this.nameOffset = 2;
     }
-
 
     // @ts-expect-error TS(4114) FIXME: This member must have an 'override' modifier becau... Remove this comment to see the full error message
     renderItem() {
@@ -23,13 +21,14 @@ export class MacroAutoCompleteOption extends AutoCompleteOption {
         return li;
     }
 
-
     // @ts-expect-error TS(4114) FIXME: This member must have an 'override' modifier becau... Remove this comment to see the full error message
     renderDetails() {
         const frag = document.createDocumentFragment();
-        const specs = document.createElement('div'); {
+        const specs = document.createElement('div');
+        {
             specs.classList.add('specs');
-            const name = document.createElement('div'); {
+            const name = document.createElement('div');
+            {
                 name.classList.add('name');
                 name.classList.add('monospace');
                 name.textContent = this.fullName;
@@ -37,7 +36,8 @@ export class MacroAutoCompleteOption extends AutoCompleteOption {
             }
             frag.append(specs);
         }
-        const help = document.createElement('span'); {
+        const help = document.createElement('span');
+        {
             help.classList.add('help');
             help.innerHTML = this.description;
             frag.append(help);

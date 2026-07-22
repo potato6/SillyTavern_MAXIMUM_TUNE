@@ -51,20 +51,30 @@ function handleInputWheel() {
 
     const updateValueThrottled = throttle(updateValue, minInterval);
 
-    document.addEventListener('wheel', (e) => {
-        // Try to carefully narrow down if we even need to fire this handler
-        const input = document.activeElement instanceof HTMLInputElement ? document.activeElement : null;
-        if (input && input.type === 'number' && input.hasAttribute('step')) {
-            const parent = input.closest('.range-block-range-and-counter') ?? input.closest('div') ?? input.parentElement;
-            const slider = /** @type {HTMLInputElement} */ (parent?.querySelector('input[type="range"]'));
+    document.addEventListener(
+        'wheel',
+        (e) => {
+            // Try to carefully narrow down if we even need to fire this handler
+            const input =
+                document.activeElement instanceof HTMLInputElement ? document.activeElement : null;
+            if (input && input.type === 'number' && input.hasAttribute('step')) {
+                const parent =
+                    input.closest('.range-block-range-and-counter') ??
+                    input.closest('div') ??
+                    input.parentElement;
+                const slider = /** @type {HTMLInputElement} */ (
+                    parent?.querySelector('input[type="range"]')
+                );
 
-            // Stop propagation for either target
-            if (e.target === input || (slider && e.target === slider)) {
-                e.stopPropagation();
-                e.preventDefault();
+                // Stop propagation for either target
+                if (e.target === input || (slider && e.target === slider)) {
+                    e.stopPropagation();
+                    e.preventDefault();
 
-                updateValueThrottled(input, slider, e.deltaY);
+                    updateValueThrottled(input, slider, e.deltaY);
+                }
             }
-        }
-    }, { passive: false });
+        },
+        { passive: false },
+    );
 }

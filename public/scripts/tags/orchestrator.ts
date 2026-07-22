@@ -3,7 +3,12 @@
  * Separated to avoid circular dependencies between store and UI modules.
  */
 
-import { addTagToMap, removeTagFromMap, getInlineListSelector, markDirty } from './store/tagStore.js';
+import {
+    addTagToMap,
+    removeTagFromMap,
+    getInlineListSelector,
+    markDirty,
+} from './store/tagStore.js';
 import { printTagList } from './ui/tagList.js';
 
 /**
@@ -15,7 +20,14 @@ import { printTagList } from './ui/tagList.js';
  * @param options.tagListOptions
  * @returns {boolean} Whether at least one tag was added
  */
-export function addTagsToEntity(tag: Record<string, unknown> | Record<string, unknown>[], entityId: string | string[] | null, { tagListSelector = null, tagListOptions = {} }: { tagListSelector?: string | null; tagListOptions?: Record<string, unknown> } = {}): boolean {
+export function addTagsToEntity(
+    tag: Record<string, unknown> | Record<string, unknown>[],
+    entityId: string | string[] | null,
+    {
+        tagListSelector = null,
+        tagListOptions = {},
+    }: { tagListSelector?: string | null; tagListOptions?: Record<string, unknown> } = {},
+): boolean {
     const _tags: Record<string, unknown>[] = Array.isArray(tag) ? tag : [tag];
     const entityIds = Array.isArray(entityId) ? entityId : [entityId];
 
@@ -52,11 +64,20 @@ export function addTagsToEntity(tag: Record<string, unknown> | Record<string, un
  * @param options.tagElement
  * @returns {boolean} Whether at least one tag was removed
  */
-export function removeTagFromEntity(tag: Record<string, unknown>, entityId: string | string[] | null | undefined, { tagListSelector = null, tagElement = null }: { tagListSelector?: string | null; tagElement?: Element | null } = {}): boolean {
+export function removeTagFromEntity(
+    tag: Record<string, unknown>,
+    entityId: string | string[] | null | undefined,
+    {
+        tagListSelector = null,
+        tagElement = null,
+    }: { tagListSelector?: string | null; tagElement?: Element | null } = {},
+): boolean {
     let result = false;
     // Remove tag from the map
     if (Array.isArray(entityId)) {
-        entityId.forEach((id: string) => result = removeTagFromMap(tag.id as string, id) || result);
+        entityId.forEach(
+            (id: string) => (result = removeTagFromMap(tag.id as string, id) || result),
+        );
     } else {
         result = removeTagFromMap(tag.id as string, entityId);
     }
@@ -65,7 +86,10 @@ export function removeTagFromEntity(tag: Record<string, unknown>, entityId: stri
 
     // We don't reprint the lists, we can just remove the html elements from them.
     if (tagListSelector) {
-        const selectorEl = (typeof tagListSelector === 'string') ? document.querySelector(tagListSelector) : tagListSelector;
+        const selectorEl =
+            typeof tagListSelector === 'string'
+                ? document.querySelector(tagListSelector)
+                : tagListSelector;
         selectorEl?.querySelector(`.tag[id="${tag.id as string}"]`)?.remove();
     }
     if (tagElement) tagElement.remove();

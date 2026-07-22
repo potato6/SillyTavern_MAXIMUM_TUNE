@@ -52,10 +52,14 @@ test.describe('MacroRegistry', () => {
             expect(result.registered).toBeNull();
             expect(result.errors.length).toBeGreaterThan(0);
 
-            const registrationError = result.errors.find(e => e.text.includes('[Macro] Registration Error:'));
+            const registrationError = result.errors.find((e) =>
+                e.text.includes('[Macro] Registration Error:'),
+            );
             expect(registrationError).toBeTruthy();
             expect(registrationError?.text).toContain('Failed to register macro ""');
-            expect(registrationError?.errorMessage).toContain('Must start with a letter, followed by alphanumeric characters or hyphens.');
+            expect(registrationError?.errorMessage).toContain(
+                'Must start with a letter, followed by alphanumeric characters or hyphens.',
+            );
         });
 
         test('should reject invalid options object', async ({ page }) => {
@@ -67,7 +71,9 @@ test.describe('MacroRegistry', () => {
             expect(result.registered).toBeNull();
             expect(result.errors.length).toBeGreaterThan(0);
 
-            const registrationError = result.errors.find(e => e.text.includes('[Macro] Registration Error:'));
+            const registrationError = result.errors.find((e) =>
+                e.text.includes('[Macro] Registration Error:'),
+            );
             expect(registrationError).toBeTruthy();
             expect(registrationError?.text).toContain('Failed to register macro "invalid-options"');
             expect(registrationError?.errorMessage).toContain('options must be a non-null object');
@@ -82,7 +88,9 @@ test.describe('MacroRegistry', () => {
             expect(result.registered).toBeNull();
             expect(result.errors.length).toBeGreaterThan(0);
 
-            const registrationError = result.errors.find(e => e.text.includes('[Macro] Registration Error:'));
+            const registrationError = result.errors.find((e) =>
+                e.text.includes('[Macro] Registration Error:'),
+            );
             expect(registrationError).toBeTruthy();
             expect(registrationError?.text).toContain('Failed to register macro "no-handler"');
             expect(registrationError?.errorMessage).toContain('options.handler must be a function');
@@ -99,10 +107,14 @@ test.describe('MacroRegistry', () => {
             expect(result.registered).toBeNull();
             expect(result.errors.length).toBeGreaterThan(0);
 
-            const registrationError = result.errors.find(e => e.text.includes('[Macro] Registration Error:'));
+            const registrationError = result.errors.find((e) =>
+                e.text.includes('[Macro] Registration Error:'),
+            );
             expect(registrationError).toBeTruthy();
             expect(registrationError?.text).toContain('Failed to register macro "bad-required"');
-            expect(registrationError?.errorMessage).toContain('options.unnamedArgs must be a non-negative integer');
+            expect(registrationError?.errorMessage).toContain(
+                'options.unnamedArgs must be a non-negative integer',
+            );
         });
 
         test('should reject invalid strictArgs', async ({ page }) => {
@@ -116,10 +128,14 @@ test.describe('MacroRegistry', () => {
             expect(result.registered).toBeNull();
             expect(result.errors.length).toBeGreaterThan(0);
 
-            const registrationError = result.errors.find(e => e.text.includes('[Macro] Registration Error:'));
+            const registrationError = result.errors.find((e) =>
+                e.text.includes('[Macro] Registration Error:'),
+            );
             expect(registrationError).toBeTruthy();
             expect(registrationError?.text).toContain('Failed to register macro "bad-strict"');
-            expect(registrationError?.errorMessage).toContain('options.strictArgs must be a boolean');
+            expect(registrationError?.errorMessage).toContain(
+                'options.strictArgs must be a boolean',
+            );
         });
 
         test('should reject invalid list configuration', async ({ page }) => {
@@ -133,7 +149,9 @@ test.describe('MacroRegistry', () => {
             expect(result.registered).toBeNull();
             expect(result.errors.length).toBeGreaterThan(0);
 
-            const registrationError = result.errors.find(e => e.text.includes('[Macro] Registration Error:'));
+            const registrationError = result.errors.find((e) =>
+                e.text.includes('[Macro] Registration Error:'),
+            );
             expect(registrationError).toBeTruthy();
             expect(registrationError?.text).toContain('Failed to register macro "bad-list-type"');
             expect(registrationError?.errorMessage).toContain('options.list must be a boolean');
@@ -150,10 +168,14 @@ test.describe('MacroRegistry', () => {
             expect(result.registered).toBeNull();
             expect(result.errors.length).toBeGreaterThan(0);
 
-            const registrationError = result.errors.find(e => e.text.includes('[Macro] Registration Error:'));
+            const registrationError = result.errors.find((e) =>
+                e.text.includes('[Macro] Registration Error:'),
+            );
             expect(registrationError).toBeTruthy();
             expect(registrationError?.text).toContain('Failed to register macro "bad-list-min"');
-            expect(registrationError?.errorMessage).toContain('options.list.min must be a non-negative integer');
+            expect(registrationError?.errorMessage).toContain(
+                'options.list.min must be a non-negative integer',
+            );
         });
 
         test('should reject invalid list.max', async ({ page }) => {
@@ -167,10 +189,14 @@ test.describe('MacroRegistry', () => {
             expect(result.registered).toBeNull();
             expect(result.errors.length).toBeGreaterThan(0);
 
-            const registrationError = result.errors.find(e => e.text.includes('[Macro] Registration Error:'));
+            const registrationError = result.errors.find((e) =>
+                e.text.includes('[Macro] Registration Error:'),
+            );
             expect(registrationError).toBeTruthy();
             expect(registrationError?.text).toContain('Failed to register macro "bad-list-max"');
-            expect(registrationError?.errorMessage).toContain('options.list.max must be greater than or equal to options.list.min');
+            expect(registrationError?.errorMessage).toContain(
+                'options.list.max must be greater than or equal to options.list.min',
+            );
         });
 
         test('should reject invalid description', async ({ page }) => {
@@ -184,10 +210,14 @@ test.describe('MacroRegistry', () => {
             expect(result.registered).toBeNull();
             expect(result.errors.length).toBeGreaterThan(0);
 
-            const registrationError = result.errors.find(e => e.text.includes('[Macro] Registration Error:'));
+            const registrationError = result.errors.find((e) =>
+                e.text.includes('[Macro] Registration Error:'),
+            );
             expect(registrationError).toBeTruthy();
             expect(registrationError?.text).toContain('Failed to register macro "bad-desc"');
-            expect(registrationError?.errorMessage).toContain('options.description must be a string');
+            expect(registrationError?.errorMessage).toContain(
+                'options.description must be a string',
+            );
         });
     });
 
@@ -234,7 +264,9 @@ test.describe('MacroRegistry', () => {
                 options: {},
             });
             expect(result.registered).toBeNull();
-            const registrationError = result.errors.find(e => e.text.includes('[Macro] Registration Error:'));
+            const registrationError = result.errors.find((e) =>
+                e.text.includes('[Macro] Registration Error:'),
+            );
             expect(registrationError?.errorMessage).toContain('is invalid');
         });
 
@@ -244,7 +276,9 @@ test.describe('MacroRegistry', () => {
                 options: {},
             });
             expect(result.registered).toBeNull();
-            const registrationError = result.errors.find(e => e.text.includes('[Macro] Registration Error:'));
+            const registrationError = result.errors.find((e) =>
+                e.text.includes('[Macro] Registration Error:'),
+            );
             expect(registrationError?.errorMessage).toContain('is invalid');
         });
 
@@ -254,7 +288,9 @@ test.describe('MacroRegistry', () => {
                 options: {},
             });
             expect(result.registered).toBeNull();
-            const registrationError = result.errors.find(e => e.text.includes('[Macro] Registration Error:'));
+            const registrationError = result.errors.find((e) =>
+                e.text.includes('[Macro] Registration Error:'),
+            );
             expect(registrationError?.errorMessage).toContain('is invalid');
         });
 
@@ -264,7 +300,9 @@ test.describe('MacroRegistry', () => {
                 options: {},
             });
             expect(result.registered).toBeNull();
-            const registrationError = result.errors.find(e => e.text.includes('[Macro] Registration Error:'));
+            const registrationError = result.errors.find((e) =>
+                e.text.includes('[Macro] Registration Error:'),
+            );
             expect(registrationError?.errorMessage).toContain('is invalid');
         });
 
@@ -287,7 +325,9 @@ test.describe('MacroRegistry', () => {
                 },
             });
             expect(result.registered).toBeNull();
-            const registrationError = result.errors.find(e => e.text.includes('[Macro] Registration Error:'));
+            const registrationError = result.errors.find((e) =>
+                e.text.includes('[Macro] Registration Error:'),
+            );
             expect(registrationError?.errorMessage).toContain('is invalid');
         });
     });
@@ -297,7 +337,8 @@ test.describe('MacroRegistry', () => {
             test('should register an alias for an existing macro', async ({ page }) => {
                 const result = await page.evaluate(async () => {
                     /** @type {import('../../public/scripts/macros/engine/MacroRegistry.js')} */
-                    const { MacroRegistry } = await import('./scripts/macros/engine/MacroRegistry.js');
+                    const { MacroRegistry } =
+                        await import('./scripts/macros/engine/MacroRegistry.js');
 
                     // Clean up any existing registrations
                     MacroRegistry.unregisterMacro('alias-target');
@@ -336,7 +377,8 @@ test.describe('MacroRegistry', () => {
             test('should register alias with visible=false option', async ({ page }) => {
                 const result = await page.evaluate(async () => {
                     /** @type {import('../../public/scripts/macros/engine/MacroRegistry.js')} */
-                    const { MacroRegistry } = await import('./scripts/macros/engine/MacroRegistry.js');
+                    const { MacroRegistry } =
+                        await import('./scripts/macros/engine/MacroRegistry.js');
 
                     MacroRegistry.unregisterMacro('alias-target-hidden');
                     MacroRegistry.unregisterMacro('hidden-alias');
@@ -346,7 +388,11 @@ test.describe('MacroRegistry', () => {
                         handler: () => 'result',
                     });
 
-                    const success = MacroRegistry.registerMacroAlias('alias-target-hidden', 'hidden-alias', { visible: false });
+                    const success = MacroRegistry.registerMacroAlias(
+                        'alias-target-hidden',
+                        'hidden-alias',
+                        { visible: false },
+                    );
                     const aliasDef = MacroRegistry.getMacro('hidden-alias');
 
                     return {
@@ -362,7 +408,8 @@ test.describe('MacroRegistry', () => {
             test('should resolve alias of alias to primary definition', async ({ page }) => {
                 const result = await page.evaluate(async () => {
                     /** @type {import('../../public/scripts/macros/engine/MacroRegistry.js')} */
-                    const { MacroRegistry } = await import('./scripts/macros/engine/MacroRegistry.js');
+                    const { MacroRegistry } =
+                        await import('./scripts/macros/engine/MacroRegistry.js');
 
                     MacroRegistry.unregisterMacro('primary-macro');
                     MacroRegistry.unregisterMacro('first-alias');
@@ -396,7 +443,8 @@ test.describe('MacroRegistry', () => {
             test('should have independent source for alias', async ({ page }) => {
                 const result = await page.evaluate(async () => {
                     /** @type {import('../../public/scripts/macros/engine/MacroRegistry.js')} */
-                    const { MacroRegistry } = await import('./scripts/macros/engine/MacroRegistry.js');
+                    const { MacroRegistry } =
+                        await import('./scripts/macros/engine/MacroRegistry.js');
 
                     MacroRegistry.unregisterMacro('source-target');
                     MacroRegistry.unregisterMacro('source-alias');
@@ -428,7 +476,8 @@ test.describe('MacroRegistry', () => {
             test('should be case-insensitive for lookup', async ({ page }) => {
                 const result = await page.evaluate(async () => {
                     /** @type {import('../../public/scripts/macros/engine/MacroRegistry.js')} */
-                    const { MacroRegistry } = await import('./scripts/macros/engine/MacroRegistry.js');
+                    const { MacroRegistry } =
+                        await import('./scripts/macros/engine/MacroRegistry.js');
 
                     MacroRegistry.unregisterMacro('case-target');
                     MacroRegistry.unregisterMacro('CaseAlias');
@@ -462,7 +511,9 @@ test.describe('MacroRegistry', () => {
                 expect(result.success).toBe(false);
                 expect(result.errors.length).toBeGreaterThan(0);
 
-                const registrationError = result.errors.find(e => e.text.includes('[Macro] Registration Error:'));
+                const registrationError = result.errors.find((e) =>
+                    e.text.includes('[Macro] Registration Error:'),
+                );
                 expect(registrationError).toBeTruthy();
                 expect(registrationError?.text).toContain('Failed to register alias "123-invalid"');
                 expect(registrationError?.errorMessage).toContain('is invalid');
@@ -477,9 +528,13 @@ test.describe('MacroRegistry', () => {
                 expect(result.success).toBe(false);
                 expect(result.errors.length).toBeGreaterThan(0);
 
-                const registrationError = result.errors.find(e => e.text.includes('[Macro] Registration Error:'));
+                const registrationError = result.errors.find((e) =>
+                    e.text.includes('[Macro] Registration Error:'),
+                );
                 expect(registrationError).toBeTruthy();
-                expect(registrationError?.errorMessage).toContain('cannot be the same as the target macro name');
+                expect(registrationError?.errorMessage).toContain(
+                    'cannot be the same as the target macro name',
+                );
             });
 
             test('should reject alias for non-existent target macro', async ({ page }) => {
@@ -491,7 +546,9 @@ test.describe('MacroRegistry', () => {
                 expect(result.success).toBe(false);
                 expect(result.errors.length).toBeGreaterThan(0);
 
-                const registrationError = result.errors.find(e => e.text.includes('[Macro] Registration Error:'));
+                const registrationError = result.errors.find((e) =>
+                    e.text.includes('[Macro] Registration Error:'),
+                );
                 expect(registrationError).toBeTruthy();
                 expect(registrationError?.errorMessage).toContain('is not registered');
             });
@@ -503,7 +560,9 @@ test.describe('MacroRegistry', () => {
                 });
 
                 expect(result.success).toBe(false);
-                const registrationError = result.errors.find(e => e.text.includes('[Macro] Registration Error:'));
+                const registrationError = result.errors.find((e) =>
+                    e.text.includes('[Macro] Registration Error:'),
+                );
                 expect(registrationError?.errorMessage).toContain('is invalid');
             });
 
@@ -514,7 +573,9 @@ test.describe('MacroRegistry', () => {
                 });
 
                 expect(result.success).toBe(false);
-                const registrationError = result.errors.find(e => e.text.includes('[Macro] Registration Error:'));
+                const registrationError = result.errors.find((e) =>
+                    e.text.includes('[Macro] Registration Error:'),
+                );
                 expect(registrationError?.errorMessage).toContain('is invalid');
             });
         });
@@ -527,12 +588,13 @@ test.describe('MacroRegistry', () => {
                     const originalWarn = console.warn;
 
                     console.warn = (...args) => {
-                        warnings.push(args.map(a => String(a)).join(' '));
+                        warnings.push(args.map((a) => String(a)).join(' '));
                     };
 
                     try {
                         /** @type {import('../../public/scripts/macros/engine/MacroRegistry.js')} */
-                        const { MacroRegistry } = await import('./scripts/macros/engine/MacroRegistry.js');
+                        const { MacroRegistry } =
+                            await import('./scripts/macros/engine/MacroRegistry.js');
 
                         MacroRegistry.unregisterMacro('overwrite-target');
                         MacroRegistry.unregisterMacro('overwrite-existing');
@@ -548,7 +610,10 @@ test.describe('MacroRegistry', () => {
                         });
 
                         // Register alias that overwrites existing macro
-                        const success = MacroRegistry.registerMacroAlias('overwrite-target', 'overwrite-existing');
+                        const success = MacroRegistry.registerMacroAlias(
+                            'overwrite-target',
+                            'overwrite-existing',
+                        );
 
                         return { success, warnings };
                     } finally {
@@ -557,8 +622,10 @@ test.describe('MacroRegistry', () => {
                 });
 
                 expect(result.success).toBe(true);
-                const overwriteWarning = result.warnings.find(w =>
-                    w.includes('overwrites an existing macro') && w.includes('overwrite-existing'),
+                const overwriteWarning = result.warnings.find(
+                    (w) =>
+                        w.includes('overwrites an existing macro') &&
+                        w.includes('overwrite-existing'),
                 );
                 expect(overwriteWarning).toBeTruthy();
             });
@@ -570,12 +637,13 @@ test.describe('MacroRegistry', () => {
                     const originalWarn = console.warn;
 
                     console.warn = (...args) => {
-                        warnings.push(args.map(a => String(a)).join(' '));
+                        warnings.push(args.map((a) => String(a)).join(' '));
                     };
 
                     try {
                         /** @type {import('../../public/scripts/macros/engine/MacroRegistry.js')} */
-                        const { MacroRegistry } = await import('./scripts/macros/engine/MacroRegistry.js');
+                        const { MacroRegistry } =
+                            await import('./scripts/macros/engine/MacroRegistry.js');
 
                         MacroRegistry.unregisterMacro('alias-warn-target1');
                         MacroRegistry.unregisterMacro('alias-warn-target2');
@@ -600,8 +668,10 @@ test.describe('MacroRegistry', () => {
                     }
                 });
 
-                const overwriteWarning = result.warnings.find(w =>
-                    w.includes('overwrites an existing macro') && w.includes('shared-alias-name'),
+                const overwriteWarning = result.warnings.find(
+                    (w) =>
+                        w.includes('overwrites an existing macro') &&
+                        w.includes('shared-alias-name'),
                 );
                 expect(overwriteWarning).toBeTruthy();
             });
@@ -621,52 +691,61 @@ test.describe('MacroRegistry', () => {
  * @returns {Promise<{ registered: unknown, errors: CapturedConsoleError[] }>}
  */
 async function registerMacroAndCaptureErrors(page, { macroName, options }) {
-    const result = await page.evaluate(async ({ macroName, options }) => {
-        /** @type {CapturedConsoleError[]} */
-        const errors = [];
-        const originalError = console.error;
+    const result = await page.evaluate(
+        async ({ macroName, options }) => {
+            /** @type {CapturedConsoleError[]} */
+            const errors = [];
+            const originalError = console.error;
 
-        console.error = (...args) => {
-            const text = args
-                .map(a => (typeof a === 'string' ? a : (a instanceof Error ? `Error: ${a.message}` : '')))
-                .filter(Boolean)
-                .join(' ');
+            console.error = (...args) => {
+                const text = args
+                    .map((a) =>
+                        typeof a === 'string' ? a : a instanceof Error ? `Error: ${a.message}` : '',
+                    )
+                    .filter(Boolean)
+                    .join(' ');
 
-            /** @type {string|null} */
-            let errorMessage = null;
-            for (const a of args) {
-                if (a instanceof Error) {
-                    errorMessage ??= a.message;
-                    continue;
+                /** @type {string|null} */
+                let errorMessage = null;
+                for (const a of args) {
+                    if (a instanceof Error) {
+                        errorMessage ??= a.message;
+                        continue;
+                    }
+                    if (a && typeof a === 'object' && 'error' in a && a.error instanceof Error) {
+                        errorMessage ??= a.error.message;
+                    }
                 }
-                if (a && typeof a === 'object' && 'error' in a && a.error instanceof Error) {
-                    errorMessage ??= a.error.message;
+
+                errors.push({ text, errorMessage });
+            };
+
+            try {
+                /** @type {import('../../public/scripts/macros/engine/MacroRegistry.js')} */
+                const { MacroRegistry } = await import('./scripts/macros/engine/MacroRegistry.js');
+
+                /** @type {any} */
+                let resolvedOptions = options;
+                if (
+                    resolvedOptions &&
+                    typeof resolvedOptions === 'object' &&
+                    !('handler' in resolvedOptions)
+                ) {
+                    resolvedOptions = {
+                        ...resolvedOptions,
+                        handler: () => '',
+                    };
                 }
+
+                // Registering an invalid macro does not throw. It returns null and logs an error.
+                const registered = MacroRegistry.registerMacro(macroName, resolvedOptions);
+                return { registered, errors };
+            } finally {
+                console.error = originalError;
             }
-
-            errors.push({ text, errorMessage });
-        };
-
-        try {
-            /** @type {import('../../public/scripts/macros/engine/MacroRegistry.js')} */
-            const { MacroRegistry } = await import('./scripts/macros/engine/MacroRegistry.js');
-
-            /** @type {any} */
-            let resolvedOptions = options;
-            if (resolvedOptions && typeof resolvedOptions === 'object' && !('handler' in resolvedOptions)) {
-                resolvedOptions = {
-                    ...resolvedOptions,
-                    handler: () => '',
-                };
-            }
-
-            // Registering an invalid macro does not throw. It returns null and logs an error.
-            const registered = MacroRegistry.registerMacro(macroName, resolvedOptions);
-            return { registered, errors };
-        } finally {
-            console.error = originalError;
-        }
-    }, { macroName, options });
+        },
+        { macroName, options },
+    );
 
     return result;
 }
@@ -677,43 +756,52 @@ async function registerMacroAndCaptureErrors(page, { macroName, options }) {
  * @returns {Promise<{ success: boolean, errors: CapturedConsoleError[] }>}
  */
 async function registerAliasAndCaptureErrors(page, { targetMacroName, aliasName, options = {} }) {
-    const result = await page.evaluate(async ({ targetMacroName, aliasName, options }) => {
-        /** @type {CapturedConsoleError[]} */
-        const errors = [];
-        const originalError = console.error;
+    const result = await page.evaluate(
+        async ({ targetMacroName, aliasName, options }) => {
+            /** @type {CapturedConsoleError[]} */
+            const errors = [];
+            const originalError = console.error;
 
-        console.error = (...args) => {
-            const text = args
-                .map(a => (typeof a === 'string' ? a : (a instanceof Error ? `Error: ${a.message}` : '')))
-                .filter(Boolean)
-                .join(' ');
+            console.error = (...args) => {
+                const text = args
+                    .map((a) =>
+                        typeof a === 'string' ? a : a instanceof Error ? `Error: ${a.message}` : '',
+                    )
+                    .filter(Boolean)
+                    .join(' ');
 
-            /** @type {string|null} */
-            let errorMessage = null;
-            for (const a of args) {
-                if (a instanceof Error) {
-                    errorMessage ??= a.message;
-                    continue;
+                /** @type {string|null} */
+                let errorMessage = null;
+                for (const a of args) {
+                    if (a instanceof Error) {
+                        errorMessage ??= a.message;
+                        continue;
+                    }
+                    if (a && typeof a === 'object' && 'error' in a && a.error instanceof Error) {
+                        errorMessage ??= a.error.message;
+                    }
                 }
-                if (a && typeof a === 'object' && 'error' in a && a.error instanceof Error) {
-                    errorMessage ??= a.error.message;
-                }
+
+                errors.push({ text, errorMessage });
+            };
+
+            try {
+                /** @type {import('../../public/scripts/macros/engine/MacroRegistry.js')} */
+                const { MacroRegistry } = await import('./scripts/macros/engine/MacroRegistry.js');
+
+                // Registering an invalid alias does not throw. It returns false and logs an error.
+                const success = MacroRegistry.registerMacroAlias(
+                    targetMacroName,
+                    aliasName,
+                    options,
+                );
+                return { success, errors };
+            } finally {
+                console.error = originalError;
             }
-
-            errors.push({ text, errorMessage });
-        };
-
-        try {
-            /** @type {import('../../public/scripts/macros/engine/MacroRegistry.js')} */
-            const { MacroRegistry } = await import('./scripts/macros/engine/MacroRegistry.js');
-
-            // Registering an invalid alias does not throw. It returns false and logs an error.
-            const success = MacroRegistry.registerMacroAlias(targetMacroName, aliasName, options);
-            return { success, errors };
-        } finally {
-            console.error = originalError;
-        }
-    }, { targetMacroName, aliasName, options });
+        },
+        { targetMacroName, aliasName, options },
+    );
 
     return result;
 }

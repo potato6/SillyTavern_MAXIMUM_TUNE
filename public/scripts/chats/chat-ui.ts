@@ -32,10 +32,24 @@ import { DragAndDropHandler } from '../dragdrop.js';
 import { MEDIA_DISPLAY, SWIPE_DIRECTION } from '../constants.js';
 
 import { hideChatMessageRange } from './hide-message.js';
-import { checkForCreatorNotesStyles, openExternalMediaOverridesDialog, openGlobalStylesPreferenceDialog } from './styles.js';
+import {
+    checkForCreatorNotesStyles,
+    openExternalMediaOverridesDialog,
+    openGlobalStylesPreferenceDialog,
+} from './styles.js';
 import { openAttachmentManager } from './attachment-manager.js';
-import { deleteMessageFile, viewMessageFile, embedMessageFile, onFileAttach } from './attachment-store.js';
-import { expandMessageMedia, deleteMessageMedia, switchMessageMediaDisplay, onImageSwiped } from './media.js';
+import {
+    deleteMessageFile,
+    viewMessageFile,
+    embedMessageFile,
+    onFileAttach,
+} from './attachment-store.js';
+import {
+    expandMessageMedia,
+    deleteMessageMedia,
+    switchMessageMediaDisplay,
+    onImageSwiped,
+} from './media.js';
 import { getCurrentEntityId } from '../chats.js';
 import { mergeFilesIntoDataTransfer } from './shared.js';
 
@@ -51,7 +65,10 @@ export function preserveNeutralChat(): void {
         return;
     }
 
-    sessionStorage.setItem(NEUTRAL_CHAT_KEY, JSON.stringify({ chat: chat.slice(), chat_metadata: { ...chat_metadata } }));
+    sessionStorage.setItem(
+        NEUTRAL_CHAT_KEY,
+        JSON.stringify({ chat: chat.slice(), chat_metadata: { ...chat_metadata } }),
+    );
 }
 
 /**
@@ -113,9 +130,15 @@ export function initChatUtilities(): void {
         };
         const chatToSave = [
             chatHeader,
-            ...chat.filter((x: ChatMessage) => x?.extra?.type !== system_message_types.ASSISTANT_NOTE),
+            ...chat.filter(
+                (x: ChatMessage) => x?.extra?.type !== system_message_types.ASSISTANT_NOTE,
+            ),
         ];
-        download(chatToSave.map((m) => JSON.stringify(m)).join('\n'), `Assistant - ${humanizedDateTime()}.jsonl`, 'application/json');
+        download(
+            chatToSave.map((m) => JSON.stringify(m)).join('\n'),
+            `Assistant - ${humanizedDateTime()}.jsonl`,
+            'application/json',
+        );
     });
 
     delegateClick('.assistant_note_import', () => {
@@ -124,7 +147,7 @@ export function initChatUtilities(): void {
             if (!file) return;
 
             try {
-                const text = await getFileText(file) as string;
+                const text = (await getFileText(file)) as string;
                 const lines = text.split('\n').filter((line: string) => line.trim() !== '');
                 const messages = lines.map((line: string) => JSON.parse(line));
                 const metadata = messages.shift()?.chat_metadata || {};
@@ -182,16 +205,20 @@ export function initChatUtilities(): void {
     });
 
     // ── Click-to-edit messages ────────────────────────────────
-    delegateClick('.mes .mes_text, .mes .mes_reasoning', (el, event) => {
-        if (!power_user.click_to_edit) return;
-        if (window.getSelection()?.toString()) return;
-        if (document.querySelector('.edit_textarea')) return;
+    delegateClick(
+        '.mes .mes_text, .mes .mes_reasoning',
+        (el, event) => {
+            if (!power_user.click_to_edit) return;
+            if (window.getSelection()?.toString()) return;
+            if (document.querySelector('.edit_textarea')) return;
 
-        (el.closest('.mes')?.querySelector('.mes_edit') as HTMLElement)?.click();
-        if (el.closest('.mes_reasoning')) {
-            (document.querySelector('.reasoning_edit_textarea') as HTMLElement)?.focus();
-        }
-    }, true);
+            (el.closest('.mes')?.querySelector('.mes_edit') as HTMLElement)?.click();
+            if (el.closest('.mes_reasoning')) {
+                (document.querySelector('.reasoning_edit_textarea') as HTMLElement)?.focus();
+            }
+        },
+        true,
+    );
 
     // ── Media overrides ──────────────────────────────────────
     delegateClick('.open_media_overrides', () => openExternalMediaOverridesDialog());
@@ -203,7 +230,8 @@ export function initChatUtilities(): void {
         const entityId = getCurrentEntityId();
         if (!entityId) return;
         power_user.external_media_allowed_overrides.push(entityId);
-        power_user.external_media_forbidden_overrides = power_user.external_media_forbidden_overrides.filter((v: string) => v !== entityId);
+        power_user.external_media_forbidden_overrides =
+            power_user.external_media_forbidden_overrides.filter((v: string) => v !== entityId);
         saveSettingsDebounced();
         reloadCurrentChat();
     });
@@ -215,7 +243,8 @@ export function initChatUtilities(): void {
         const entityId = getCurrentEntityId();
         if (!entityId) return;
         power_user.external_media_forbidden_overrides.push(entityId);
-        power_user.external_media_allowed_overrides = power_user.external_media_allowed_overrides.filter((v: string) => v !== entityId);
+        power_user.external_media_allowed_overrides =
+            power_user.external_media_allowed_overrides.filter((v: string) => v !== entityId);
         saveSettingsDebounced();
         reloadCurrentChat();
     });
@@ -226,8 +255,10 @@ export function initChatUtilities(): void {
         if (!el) return;
         const entityId = getCurrentEntityId();
         if (!entityId) return;
-        power_user.external_media_allowed_overrides = power_user.external_media_allowed_overrides.filter((v: string) => v !== entityId);
-        power_user.external_media_forbidden_overrides = power_user.external_media_forbidden_overrides.filter((v: string) => v !== entityId);
+        power_user.external_media_allowed_overrides =
+            power_user.external_media_allowed_overrides.filter((v: string) => v !== entityId);
+        power_user.external_media_forbidden_overrides =
+            power_user.external_media_forbidden_overrides.filter((v: string) => v !== entityId);
         saveSettingsDebounced();
         reloadCurrentChat();
     });
@@ -269,15 +300,27 @@ export function initChatUtilities(): void {
         });
     }
 
-    onMediaClick('.mes_img', ({ messageId, mediaIndex }) => { expandMessageMedia(messageId, mediaIndex); });
-    onMediaClick('.mes_media_enlarge', ({ messageId, mediaIndex }) => { expandMessageMedia(messageId, mediaIndex); });
+    onMediaClick('.mes_img', ({ messageId, mediaIndex }) => {
+        expandMessageMedia(messageId, mediaIndex);
+    });
+    onMediaClick('.mes_media_enlarge', ({ messageId, mediaIndex }) => {
+        expandMessageMedia(messageId, mediaIndex);
+    });
     onMediaClick('.mes_media_delete', async ({ messageId, mediaIndex, messageBlock }) => {
         await deleteMessageMedia(messageId, mediaIndex, messageBlock);
     });
-    onMediaClick('.mes_media_list', ({ messageId, messageBlock }) => switchMessageMediaDisplay(messageId, messageBlock, MEDIA_DISPLAY.GALLERY));
-    onMediaClick('.mes_media_gallery', ({ messageId, messageBlock }) => switchMessageMediaDisplay(messageId, messageBlock, MEDIA_DISPLAY.LIST));
-    onMediaClick('.mes_img_swipe_left', ({ messageId, messageBlock }) => { if (messageBlock) return onImageSwiped(messageId, messageBlock, SWIPE_DIRECTION.LEFT); });
-    onMediaClick('.mes_img_swipe_right', ({ messageId, messageBlock }) => { if (messageBlock) return onImageSwiped(messageId, messageBlock, SWIPE_DIRECTION.RIGHT); });
+    onMediaClick('.mes_media_list', ({ messageId, messageBlock }) =>
+        switchMessageMediaDisplay(messageId, messageBlock, MEDIA_DISPLAY.GALLERY),
+    );
+    onMediaClick('.mes_media_gallery', ({ messageId, messageBlock }) =>
+        switchMessageMediaDisplay(messageId, messageBlock, MEDIA_DISPLAY.LIST),
+    );
+    onMediaClick('.mes_img_swipe_left', ({ messageId, messageBlock }) => {
+        if (messageBlock) return onImageSwiped(messageId, messageBlock, SWIPE_DIRECTION.LEFT);
+    });
+    onMediaClick('.mes_img_swipe_right', ({ messageId, messageBlock }) => {
+        if (messageBlock) return onImageSwiped(messageId, messageBlock, SWIPE_DIRECTION.RIGHT);
+    });
 
     // ── File form reset ──────────────────────────────────────
     document.getElementById('file_form')?.addEventListener('reset', function () {
@@ -285,14 +328,17 @@ export function initChatUtilities(): void {
     });
 
     // ── Paste handler ────────────────────────────────────────
-    document.getElementById('send_textarea')?.addEventListener('paste', async function (this: HTMLElement, event: Event) {
-        const clipboardEvent = event as ClipboardEvent;
-        if (!clipboardEvent.clipboardData || clipboardEvent.clipboardData.files.length === 0) return;
+    document
+        .getElementById('send_textarea')
+        ?.addEventListener('paste', async function (this: HTMLElement, event: Event) {
+            const clipboardEvent = event as ClipboardEvent;
+            if (!clipboardEvent.clipboardData || clipboardEvent.clipboardData.files.length === 0)
+                return;
 
-        event.preventDefault();
-        event.stopPropagation();
-        await handleFileAttach(Array.from(clipboardEvent.clipboardData.files));
-    });
+            event.preventDefault();
+            event.stopPropagation();
+            await handleFileAttach(Array.from(clipboardEvent.clipboardData.files));
+        });
 
     // ── Drag and drop ────────────────────────────────────────
     new DragAndDropHandler('#form_sheld', async (files: File[]) => {
@@ -327,9 +373,13 @@ function delegateClick(
     handler: (el: Element, event: MouseEvent) => void,
     useCapture = false,
 ): void {
-    document.addEventListener('click', function (this: void, e: Event) {
-        if (!(e.target instanceof Element)) return;
-        const el = e.target.closest(selector);
-        if (el) handler(el, e as MouseEvent);
-    }, useCapture);
+    document.addEventListener(
+        'click',
+        function (this: void, e: Event) {
+            if (!(e.target instanceof Element)) return;
+            const el = e.target.closest(selector);
+            if (el) handler(el, e as MouseEvent);
+        },
+        useCapture,
+    );
 }

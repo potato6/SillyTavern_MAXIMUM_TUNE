@@ -111,13 +111,23 @@ class SwipeService {
      */
     async goTo(messageIndex: number, swipeId: number): Promise<SwipeResult> {
         const message = chatSession.getMessage(messageIndex);
-        if (!message || !Array.isArray(message.swipes) || swipeId < 0 || swipeId >= message.swipes.length) {
+        if (
+            !message ||
+            !Array.isArray(message.swipes) ||
+            swipeId < 0 ||
+            swipeId >= message.swipes.length
+        ) {
             return { success: false, messageIndex, newSwipeId: 0, text: '' };
         }
 
         message.swipe_id = swipeId;
         await this.finalize(message, messageIndex, SWIPE_DIRECTION.RIGHT);
-        return { success: true, messageIndex, newSwipeId: swipeId, text: message.swipes[swipeId] ?? '' };
+        return {
+            success: true,
+            messageIndex,
+            newSwipeId: swipeId,
+            text: message.swipes[swipeId] ?? '',
+        };
     }
 
     // ── Mutate ────────────────────────────────────────────────
@@ -153,7 +163,12 @@ class SwipeService {
      */
     async delete(messageIndex: number, swipeId: number): Promise<SwipeResult> {
         const message = chatSession.getMessage(messageIndex);
-        if (!message || !Array.isArray(message.swipes) || swipeId < 0 || swipeId >= message.swipes.length) {
+        if (
+            !message ||
+            !Array.isArray(message.swipes) ||
+            swipeId < 0 ||
+            swipeId >= message.swipes.length
+        ) {
             return { success: false, messageIndex, newSwipeId: 0, text: '' };
         }
 
@@ -175,7 +190,11 @@ class SwipeService {
 
     // ── Helpers ───────────────────────────────────────────────
 
-    private async finalize(message: ChatMessage, messageIndex: number, direction: string): Promise<void> {
+    private async finalize(
+        message: ChatMessage,
+        messageIndex: number,
+        direction: string,
+    ): Promise<void> {
         message.mes = message.swipes?.[message.swipe_id ?? 0] ?? message.mes;
 
         await eventSource.emit(event_types.IMAGE_SWIPED, {

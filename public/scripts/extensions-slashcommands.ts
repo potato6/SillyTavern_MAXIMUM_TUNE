@@ -1,6 +1,10 @@
 import { disableExtension, enableExtension, extensionNames, findExtension } from './extensions.js';
 import { SlashCommand } from './slash-commands/SlashCommand.js';
-import { ARGUMENT_TYPE, SlashCommandArgument, SlashCommandNamedArgument } from './slash-commands/SlashCommandArgument.js';
+import {
+    ARGUMENT_TYPE,
+    SlashCommandArgument,
+    SlashCommandNamedArgument,
+} from './slash-commands/SlashCommandArgument.js';
 import { SlashCommandClosure } from './slash-commands/SlashCommandClosure.js';
 import { commonEnumProviders } from './slash-commands/SlashCommandCommonEnumsProvider.js';
 import { enumTypes, SlashCommandEnumValue } from './slash-commands/SlashCommandEnumValue.js';
@@ -16,10 +20,14 @@ import { isFalseBoolean, isTrueBoolean } from './utils.js';
 function getExtensionActionCallback(action) {
     // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
     return async (args, extensionName) => {
-        if (args?.reload instanceof SlashCommandClosure) throw new Error('\'reload\' argument cannot be a closure.');
-        if (typeof extensionName !== 'string') throw new Error('Extension name must be a string. Closures or arrays are not allowed.');
+        if (args?.reload instanceof SlashCommandClosure)
+            throw new Error("'reload' argument cannot be a closure.");
+        if (typeof extensionName !== 'string')
+            throw new Error('Extension name must be a string. Closures or arrays are not allowed.');
         if (!extensionName) {
-            notyf.warning(`Extension name must be provided as an argument to ${action} this extension.`);
+            notyf.warning(
+                `Extension name must be provided as an argument to ${action} this extension.`,
+            );
             return '';
         }
 
@@ -45,7 +53,9 @@ function getExtensionActionCallback(action) {
         }
 
         if (reload) {
-            notyf.info(`${action.charAt(0).toUpperCase() + action.slice(1)}ing extension ${extension.name} and reloading...`);
+            notyf.info(
+                `${action.charAt(0).toUpperCase() + action.slice(1)}ing extension ${extension.name} and reloading...`,
+            );
 
             // Clear input, so it doesn't stay because the command didn't "finish",
             // and wait for a bit to both show the toast and let the clear bubble through.
@@ -54,7 +64,7 @@ function getExtensionActionCallback(action) {
                 sendTextarea.value = '';
                 sendTextarea.dispatchEvent(new Event('input', { bubbles: true }));
             }
-            await new Promise(resolve => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 100));
         }
 
         if (action === 'enable') {
@@ -65,10 +75,11 @@ function getExtensionActionCallback(action) {
 
         notyf.success(`Extension ${extension.name} ${action}d.`);
 
-
         console.info(`Extension ${action}ed: ${extension.name}`);
         if (!reload) {
-            console.info('Reload not requested, so page needs to be reloaded manually for changes to take effect.');
+            console.info(
+                'Reload not requested, so page needs to be reloaded manually for changes to take effect.',
+            );
         }
 
         return extension.name;
@@ -80,42 +91,48 @@ function getExtensionActionCallback(action) {
  * Each object contains the name of the extension and a description indicating if it is a third-party extension.
  * @returns {SlashCommandEnumValue[]} An array of SlashCommandEnumValue objects
  */
-const extensionNamesEnumProvider = () => extensionNames.map(name => {
-    const isThirdParty = name.startsWith('third-party/');
-    if (isThirdParty) name = name.slice('third-party/'.length);
+const extensionNamesEnumProvider = () =>
+    extensionNames.map((name) => {
+        const isThirdParty = name.startsWith('third-party/');
+        if (isThirdParty) name = name.slice('third-party/'.length);
 
-    const description = isThirdParty ? 'third party extension' : null;
+        const description = isThirdParty ? 'third party extension' : null;
 
-    return new SlashCommandEnumValue(name, description ?? undefined, !isThirdParty ? enumTypes.name : enumTypes.enum);
-});
+        return new SlashCommandEnumValue(
+            name,
+            description ?? undefined,
+            !isThirdParty ? enumTypes.name : enumTypes.enum,
+        );
+    });
 
 /**
  *
  */
 export function registerExtensionSlashCommands() {
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'extension-enable',
-        callback: getExtensionActionCallback('enable'),
-        returns: 'The internal extension name',
-        namedArgumentList: [
-            SlashCommandNamedArgument.fromProps({
-                name: 'reload',
-                description: 'Whether to reload the page after enabling the extension',
-                typeList: [ARGUMENT_TYPE.BOOLEAN],
-                defaultValue: 'true',
-                enumList: commonEnumProviders.boolean('trueFalse')(),
-            }),
-        ],
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: 'Extension name',
-                typeList: [ARGUMENT_TYPE.STRING],
-                isRequired: true,
-                enumProvider: extensionNamesEnumProvider,
-                forceEnum: true,
-            }),
-        ],
-        helpString: `
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'extension-enable',
+            callback: getExtensionActionCallback('enable'),
+            returns: 'The internal extension name',
+            namedArgumentList: [
+                SlashCommandNamedArgument.fromProps({
+                    name: 'reload',
+                    description: 'Whether to reload the page after enabling the extension',
+                    typeList: [ARGUMENT_TYPE.BOOLEAN],
+                    defaultValue: 'true',
+                    enumList: commonEnumProviders.boolean('trueFalse')(),
+                }),
+            ],
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: 'Extension name',
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    isRequired: true,
+                    enumProvider: extensionNamesEnumProvider,
+                    forceEnum: true,
+                }),
+            ],
+            helpString: `
             <div>
                 Enables a specified extension.
             </div>
@@ -133,30 +150,32 @@ export function registerExtensionSlashCommands() {
                 </ul>
             </div>
         `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'extension-disable',
-        callback: getExtensionActionCallback('disable'),
-        returns: 'The internal extension name',
-        namedArgumentList: [
-            SlashCommandNamedArgument.fromProps({
-                name: 'reload',
-                description: 'Whether to reload the page after disabling the extension',
-                typeList: [ARGUMENT_TYPE.BOOLEAN],
-                defaultValue: 'true',
-                enumList: commonEnumProviders.boolean('trueFalse')(),
-            }),
-        ],
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: 'Extension name',
-                typeList: [ARGUMENT_TYPE.STRING],
-                isRequired: true,
-                enumProvider: extensionNamesEnumProvider,
-                forceEnum: true,
-            }),
-        ],
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'extension-disable',
+            callback: getExtensionActionCallback('disable'),
+            returns: 'The internal extension name',
+            namedArgumentList: [
+                SlashCommandNamedArgument.fromProps({
+                    name: 'reload',
+                    description: 'Whether to reload the page after disabling the extension',
+                    typeList: [ARGUMENT_TYPE.BOOLEAN],
+                    defaultValue: 'true',
+                    enumList: commonEnumProviders.boolean('trueFalse')(),
+                }),
+            ],
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: 'Extension name',
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    isRequired: true,
+                    enumProvider: extensionNamesEnumProvider,
+                    forceEnum: true,
+                }),
+            ],
+            helpString: `
             <div>
                 Disables a specified extension.
             </div>
@@ -174,46 +193,55 @@ export function registerExtensionSlashCommands() {
                 </ul>
             </div>
         `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'extension-toggle',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
-        callback: async (args, extensionName) => {
-            if (args?.state instanceof SlashCommandClosure) throw new Error('\'state\' argument cannot be a closure.');
-            if (typeof extensionName !== 'string') throw new Error('Extension name must be a string. Closures or arrays are not allowed.');
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'extension-toggle',
+            // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
+            callback: async (args, extensionName) => {
+                if (args?.state instanceof SlashCommandClosure)
+                    throw new Error("'state' argument cannot be a closure.");
+                if (typeof extensionName !== 'string')
+                    throw new Error(
+                        'Extension name must be a string. Closures or arrays are not allowed.',
+                    );
 
-            const action = isTrueBoolean(args?.state?.toString()) ? 'enable' :
-                isFalseBoolean(args?.state?.toString()) ? 'disable' :
-                    'toggle';
+                const action = isTrueBoolean(args?.state?.toString())
+                    ? 'enable'
+                    : isFalseBoolean(args?.state?.toString())
+                      ? 'disable'
+                      : 'toggle';
 
-            return await getExtensionActionCallback(action)(args, extensionName);
-        },
-        returns: 'The internal extension name',
-        namedArgumentList: [
-            SlashCommandNamedArgument.fromProps({
-                name: 'reload',
-                description: 'Whether to reload the page after toggling the extension',
-                typeList: [ARGUMENT_TYPE.BOOLEAN],
-                defaultValue: 'true',
-                enumList: commonEnumProviders.boolean('trueFalse')(),
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'state',
-                description: 'Explicitly set the state of the extension (true to enable, false to disable). If not provided, the state will be toggled to the opposite of the current state.',
-                typeList: [ARGUMENT_TYPE.BOOLEAN],
-                enumList: commonEnumProviders.boolean('trueFalse')(),
-            }),
-        ],
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: 'Extension name',
-                typeList: [ARGUMENT_TYPE.STRING],
-                isRequired: true,
-                enumProvider: extensionNamesEnumProvider,
-                forceEnum: true,
-            }),
-        ],
-        helpString: `
+                return await getExtensionActionCallback(action)(args, extensionName);
+            },
+            returns: 'The internal extension name',
+            namedArgumentList: [
+                SlashCommandNamedArgument.fromProps({
+                    name: 'reload',
+                    description: 'Whether to reload the page after toggling the extension',
+                    typeList: [ARGUMENT_TYPE.BOOLEAN],
+                    defaultValue: 'true',
+                    enumList: commonEnumProviders.boolean('trueFalse')(),
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'state',
+                    description:
+                        'Explicitly set the state of the extension (true to enable, false to disable). If not provided, the state will be toggled to the opposite of the current state.',
+                    typeList: [ARGUMENT_TYPE.BOOLEAN],
+                    enumList: commonEnumProviders.boolean('trueFalse')(),
+                }),
+            ],
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: 'Extension name',
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    isRequired: true,
+                    enumProvider: extensionNamesEnumProvider,
+                    forceEnum: true,
+                }),
+            ],
+            helpString: `
             <div>
                 Toggles the state of a specified extension.
             </div>
@@ -234,31 +262,36 @@ export function registerExtensionSlashCommands() {
                 </ul>
             </div>
         `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'extension-state',
-        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
-        callback: async (_, extensionName) => {
-            if (typeof extensionName !== 'string') throw new Error('Extension name must be a string. Closures or arrays are not allowed.');
-            const extension = findExtension(extensionName);
-            if (!extension) {
-                notyf.warning(`Extension ${extensionName} does not exist.`);
-                return '';
-            }
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'extension-state',
+            // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
+            callback: async (_, extensionName) => {
+                if (typeof extensionName !== 'string')
+                    throw new Error(
+                        'Extension name must be a string. Closures or arrays are not allowed.',
+                    );
+                const extension = findExtension(extensionName);
+                if (!extension) {
+                    notyf.warning(`Extension ${extensionName} does not exist.`);
+                    return '';
+                }
 
-            return String(extension.enabled);
-        },
-        returns: 'The state of the extension, whether it is enabled.',
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: 'Extension name',
-                typeList: [ARGUMENT_TYPE.STRING],
-                isRequired: true,
-                enumProvider: extensionNamesEnumProvider,
-                forceEnum: true,
-            }),
-        ],
-        helpString: `
+                return String(extension.enabled);
+            },
+            returns: 'The state of the extension, whether it is enabled.',
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: 'Extension name',
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    isRequired: true,
+                    enumProvider: extensionNamesEnumProvider,
+                    forceEnum: true,
+                }),
+            ],
+            helpString: `
             <div>
                 Returns the state of a specified extension (true if enabled, false if disabled).
             </div>
@@ -271,26 +304,31 @@ export function registerExtensionSlashCommands() {
                 </ul>
             </div>
         `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'extension-exists',
-        aliases: ['extension-installed'],
-        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
-        callback: async (_, extensionName) => {
-            if (typeof extensionName !== 'string') throw new Error('Extension name must be a string. Closures or arrays are not allowed.');
-            const extension = findExtension(extensionName);
-            return extension !== null ? 'true' : 'false';
-        },
-        returns: 'Whether the extension exists and is installed.',
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: 'Extension name',
-                typeList: [ARGUMENT_TYPE.STRING],
-                isRequired: true,
-                enumProvider: extensionNamesEnumProvider,
-            }),
-        ],
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'extension-exists',
+            aliases: ['extension-installed'],
+            // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
+            callback: async (_, extensionName) => {
+                if (typeof extensionName !== 'string')
+                    throw new Error(
+                        'Extension name must be a string. Closures or arrays are not allowed.',
+                    );
+                const extension = findExtension(extensionName);
+                return extension !== null ? 'true' : 'false';
+            },
+            returns: 'Whether the extension exists and is installed.',
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: 'Extension name',
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    isRequired: true,
+                    enumProvider: extensionNamesEnumProvider,
+                }),
+            ],
+            helpString: `
             <div>
                 Checks if a specified extension exists.
             </div>
@@ -303,15 +341,18 @@ export function registerExtensionSlashCommands() {
                 </ul>
             </div>
         `,
-    }));
+        }),
+    );
 
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'reload-page',
-        callback: async () => {
-            notyf.info('Reloading the page...');
-            location.reload();
-            return '';
-        },
-        helpString: 'Reloads the current page. All further commands will not be processed.',
-    }));
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'reload-page',
+            callback: async () => {
+                notyf.info('Reloading the page...');
+                location.reload();
+                return '';
+            },
+            helpString: 'Reloads the current page. All further commands will not be processed.',
+        }),
+    );
 }

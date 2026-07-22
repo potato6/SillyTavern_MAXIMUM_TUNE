@@ -1,12 +1,13 @@
-import {
-    moment,
-    DOMPurify,
-    Readability,
-    isProbablyReaderable,
-} from '../lib.js';
+import { moment, DOMPurify, Readability, isProbablyReaderable } from '../lib.js';
 
 import { getContext } from './extensions.js';
-import { characters, getRequestHeaders, processDroppedFiles, this_chid, user_avatar } from '../script.js';
+import {
+    characters,
+    getRequestHeaders,
+    processDroppedFiles,
+    this_chid,
+    user_avatar,
+} from '../script.js';
 import { isMobile } from './RossAscends-mods.js';
 import { collapseNewlines, power_user } from './power-user.js';
 import { debounce_timeout } from './constants.js';
@@ -18,9 +19,9 @@ import { getCurrentLocale, t } from './i18n.js';
 import { throttle as esThrottle } from 'es-toolkit';
 
 // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
-export const shiftUpByOne = (e, i, a) => a[i] = e + 1;
+export const shiftUpByOne = (e, i, a) => (a[i] = e + 1);
 // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
-export const shiftDownByOne = (e, i, a) => a[i] = e - 1;
+export const shiftDownByOne = (e, i, a) => (a[i] = e - 1);
 
 /**
  * Pagination status string template.
@@ -33,13 +34,21 @@ export const localizePagination = function (container) {
     const el = container instanceof HTMLElement ? container : container[0];
     if (el) {
         // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
-        el.querySelectorAll('[title="Next page"]').forEach(e => e.setAttribute('title', t`Next page`));
+        el.querySelectorAll('[title="Next page"]').forEach((e) =>
+            e.setAttribute('title', t`Next page`),
+        );
         // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
-        el.querySelectorAll('[title="Previous page"]').forEach(e => e.setAttribute('title', t`Previous page`));
+        el.querySelectorAll('[title="Previous page"]').forEach((e) =>
+            e.setAttribute('title', t`Previous page`),
+        );
         // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
-        el.querySelectorAll('[title="First page"]').forEach(e => e.setAttribute('title', t`First page`));
+        el.querySelectorAll('[title="First page"]').forEach((e) =>
+            e.setAttribute('title', t`First page`),
+        );
         // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
-        el.querySelectorAll('[title="Last page"]').forEach(e => e.setAttribute('title', t`Last page`));
+        el.querySelectorAll('[title="Last page"]').forEach((e) =>
+            e.setAttribute('title', t`Last page`),
+        );
     }
 };
 
@@ -105,9 +114,11 @@ export const paginationDropdownChangeHandler = function (event, size) {
     const container = event?.originalEvent?.currentTarget || event.delegateTarget;
     const dropdown = container.querySelector('select');
     // @ts-expect-error TS(7006) FIXME: Parameter 'el' implicitly has an 'any' type.
-    dropdown?.querySelectorAll('[selected]').forEach(el => el.removeAttribute('selected'));
+    dropdown?.querySelectorAll('[selected]').forEach((el) => el.removeAttribute('selected'));
     // @ts-expect-error TS(7006) FIXME: Parameter 'el' implicitly has an 'any' type.
-    dropdown?.querySelectorAll(`[value="${size}"]`).forEach(el => el.setAttribute('selected', ''));
+    dropdown
+        ?.querySelectorAll(`[value="${size}"]`)
+        .forEach((el) => el.setAttribute('selected', ''));
 };
 
 /**
@@ -118,20 +129,23 @@ export const paginationDropdownChangeHandler = function (event, size) {
  * @returns {{ getCurrentPage: () => number, go: (page: number) => void }}
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function createPaginator<T>(container: HTMLElement, options: {
-    dataSource: T[] | (() => T[]);
-    pageSize: number;
-    pageNumber?: number;
-    prevText?: string;
-    nextText?: string;
-    showNavigator?: boolean;
-    showSizeChanger?: boolean;
-    sizeChangerOptions?: number[];
-    callback?: (data: T[]) => void | Promise<void>;
-    onPageSizeChange?: (e: Event, size: number) => void;
-    afterPaging?: (page: number) => void;
-    afterRender?: () => void;
-}) {
+export function createPaginator<T>(
+    container: HTMLElement,
+    options: {
+        dataSource: T[] | (() => T[]);
+        pageSize: number;
+        pageNumber?: number;
+        prevText?: string;
+        nextText?: string;
+        showNavigator?: boolean;
+        showSizeChanger?: boolean;
+        sizeChangerOptions?: number[];
+        callback?: (data: T[]) => void | Promise<void>;
+        onPageSizeChange?: (e: Event, size: number) => void;
+        afterPaging?: (page: number) => void;
+        afterRender?: () => void;
+    },
+) {
     let currentPage = options.pageNumber || 1;
     let pageSize = options.pageSize;
     const prevText = options.prevText || '<';
@@ -163,7 +177,9 @@ export function createPaginator<T>(container: HTMLElement, options: {
         const pageData = data.slice(start, end);
 
         if (typeof options.callback === 'function') {
-            Promise.resolve(options.callback(pageData)).catch(e => console.error('Pagination callback error:', e));
+            Promise.resolve(options.callback(pageData)).catch((e) =>
+                console.error('Pagination callback error:', e),
+            );
         }
 
         destroyTomSelect();
@@ -179,13 +195,23 @@ export function createPaginator<T>(container: HTMLElement, options: {
         const prevBtn = document.createElement('button');
         prevBtn.textContent = prevText;
         prevBtn.disabled = currentPage <= 1;
-        prevBtn.addEventListener('click', () => { if (currentPage > 1) { currentPage--; render(); } });
+        prevBtn.addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                render();
+            }
+        });
         container.appendChild(prevBtn);
 
         const nextBtn = document.createElement('button');
         nextBtn.textContent = nextText;
         nextBtn.disabled = currentPage >= totalPages;
-        nextBtn.addEventListener('click', () => { if (currentPage < totalPages) { currentPage++; render(); } });
+        nextBtn.addEventListener('click', () => {
+            if (currentPage < totalPages) {
+                currentPage++;
+                render();
+            }
+        });
         container.appendChild(nextBtn);
 
         if (options.showSizeChanger && options.sizeChangerOptions) {
@@ -212,9 +238,19 @@ export function createPaginator<T>(container: HTMLElement, options: {
             });
             container.appendChild(sizeSelect);
             try {
-                const TomSelectCtor = (window as { TomSelect?: new (el: HTMLSelectElement, opts: Record<string, unknown>) => { destroy(): void } }).TomSelect;
+                const TomSelectCtor = (
+                    window as {
+                        TomSelect?: new (
+                            el: HTMLSelectElement,
+                            opts: Record<string, unknown>,
+                        ) => { destroy(): void };
+                    }
+                ).TomSelect;
                 if (TomSelectCtor) {
-                    tomSelectInstance = new TomSelectCtor(sizeSelect, { create: false, sortField: 'text' });
+                    tomSelectInstance = new TomSelectCtor(sizeSelect, {
+                        create: false,
+                        sortField: 'text',
+                    });
                 }
             } catch {
                 // TomSelect may not be available
@@ -234,7 +270,13 @@ export function createPaginator<T>(container: HTMLElement, options: {
 
     return {
         getCurrentPage: () => currentPage,
-        go: function (page: number | string) { currentPage = Math.max(1, Math.min(Number(page), Math.ceil(getData().length / pageSize) || 1)); render(); },
+        go: function (page: number | string) {
+            currentPage = Math.max(
+                1,
+                Math.min(Number(page), Math.ceil(getData().length / pageSize) || 1),
+            );
+            render();
+        },
         destroy: () => destroyTomSelect(),
     };
 }
@@ -255,7 +297,7 @@ export const navigation_option = {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'item' implicitly has an 'any' type.
 export function isObject(item) {
-    return (item && typeof item === 'object' && !Array.isArray(item));
+    return item && typeof item === 'object' && !Array.isArray(item);
 }
 
 /**
@@ -268,12 +310,10 @@ export function isObject(item) {
 export function deepMerge(target, source) {
     const output = Object.assign({}, target);
     if (isObject(target) && isObject(source)) {
-        Object.keys(source).forEach(key => {
+        Object.keys(source).forEach((key) => {
             if (isObject(source[key])) {
-                if (!(key in target))
-                    output[key] = source[key];
-                else
-                    output[key] = deepMerge(target[key], source[key]);
+                if (!(key in target)) output[key] = source[key];
+                else output[key] = deepMerge(target[key], source[key]);
             } else {
                 output[key] = source[key];
             }
@@ -319,7 +359,7 @@ export function escapeHtml(str) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'str' implicitly has an 'any' type.
 export function sanitizeSelector(str, replacement = '_') {
-    return String(str).replace(/[^a-z0-9_-]/ig, replacement);
+    return String(str).replace(/[^a-z0-9_-]/gi, replacement);
 }
 
 /**
@@ -343,7 +383,10 @@ export function isValidUrl(value) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'url' implicitly has an 'any' type.
 export function isExternalUrl(url) {
-    return (url.indexOf('://') > 0 || url.indexOf('//') === 0) && !url.startsWith(window.location.origin);
+    return (
+        (url.indexOf('://') > 0 || url.indexOf('//') === 0) &&
+        !url.startsWith(window.location.origin)
+    );
 }
 
 /**
@@ -438,7 +481,8 @@ export function convertValueType(value, type) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'input' implicitly has an 'any' type.
 export function stringToRange(input, min, max) {
-    let start = NaN, end = NaN;
+    let start = NaN,
+        end = NaN;
 
     if (typeof input !== 'string') {
         input = String(input);
@@ -480,7 +524,7 @@ export function onlyUnique(value, index, array) {
  */
 export function onlyUniqueJson<T>(value: T, index: number, array: T[]) {
     const stringified = JSON.stringify(value);
-    return array.findIndex(v => JSON.stringify(v) === stringified) === index;
+    return array.findIndex((v) => JSON.stringify(v) === stringified) === index;
 }
 
 /**
@@ -505,7 +549,9 @@ export function removeFromArray(array, item) {
 // @ts-expect-error TS(7006) FIXME: Parameter 'arr' implicitly has an 'any' type.
 export function normalizeArray(arr) {
     // @ts-expect-error TS(7006) FIXME: Parameter 's' implicitly has an 'any' type.
-    return [...new Set((arr ?? []).map(s => typeof s === 'string' ? s.trim() : s).filter(Boolean))];
+    return [
+        ...new Set((arr ?? []).map((s) => (typeof s === 'string' ? s.trim() : s)).filter(Boolean)),
+    ];
 }
 
 /**
@@ -536,7 +582,7 @@ export function getSortableDelay() {
 // @ts-expect-error TS(7006) FIXME: Parameter 'buffer' implicitly has an 'any' type.
 export async function bufferToBase64(buffer) {
     // use a FileReader to generate a base64 data URI:
-    const base64url = await new Promise(resolve => {
+    const base64url = await new Promise((resolve) => {
         const reader = new FileReader();
         reader.onload = () => resolve(reader.result);
         reader.readAsDataURL(new Blob([buffer]));
@@ -561,10 +607,7 @@ export function shuffle(array) {
     while (currentIndex != 0) {
         randomIndex = Math.floor(Math.random() * currentIndex);
         currentIndex--;
-        [array[currentIndex], array[randomIndex]] = [
-            array[randomIndex],
-            array[currentIndex],
-        ];
+        [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
     }
     return array;
 }
@@ -615,7 +658,12 @@ export async function urlContentToDataUri(url, params) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
 export function isSameFile(a, b) {
-    return a.lastModified === b.lastModified && a.name === b.name && a.size === b.size && a.type === b.type;
+    return (
+        a.lastModified === b.lastModified &&
+        a.name === b.name &&
+        a.size === b.size &&
+        a.type === b.type
+    );
 }
 
 /**
@@ -685,8 +733,8 @@ export async function parseJsonFile(file) {
         const fileReader = new FileReader();
         fileReader.readAsText(file);
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        fileReader.onload = event => resolve(JSON.parse(String(event.target.result)));
-        fileReader.onerror = error => reject(error);
+        fileReader.onload = (event) => resolve(JSON.parse(String(event.target.result)));
+        fileReader.onerror = (error) => reject(error);
     });
 }
 
@@ -837,7 +885,7 @@ export function throttle(func, limit = 300) {
     // @ts-expect-error TS(7019) FIXME: Rest parameter 'args' implicitly has an 'any[]' ty... Remove this comment to see the full error message
     return (...args) => {
         const now = Date.now();
-        if (lastCall === 0 || (now - lastCall) >= limit) {
+        if (lastCall === 0 || now - lastCall >= limit) {
             lastCall = now;
             // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
             func.apply(this, args);
@@ -853,7 +901,8 @@ export function throttle(func, limit = 300) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'func' implicitly has an 'any' type.
 export function debouncedThrottle(func, limit = 300) {
-    let last = 0, deferTimer: ReturnType<typeof setTimeout> | null = null;
+    let last = 0,
+        deferTimer: ReturnType<typeof setTimeout> | null = null;
     const db = debounce(func);
 
     // @ts-expect-error TS(7019) FIXME: Rest parameter 'args' implicitly has an 'any[]' ty... Remove this comment to see the full error message
@@ -894,8 +943,11 @@ export function isElementInViewport(el) {
     return (
         rect.top >= 0 &&
         rect.left >= 0 &&
-        rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) && /* or window.height() */
-        rect.right <= (window.innerWidth || document.documentElement.clientWidth) /* or window.width() */
+        rect.bottom <=
+            (window.innerHeight ||
+                document.documentElement.clientHeight) /* or window.height() */ &&
+        rect.right <=
+            (window.innerWidth || document.documentElement.clientWidth) /* or window.width() */
     );
 }
 
@@ -912,9 +964,13 @@ export function isElementInViewport(el) {
  * @returns {string|null} A unique name. Null if no unique name could be found in `maxTries`.
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'baseName' implicitly has an 'any' type.
-export function getUniqueName(baseName, exists, { nameBuilder = null, maxTries = 1000, startIndex = 1 } = {}) {
+export function getUniqueName(
+    baseName,
+    exists,
+    { nameBuilder = null, maxTries = 1000, startIndex = 1 } = {},
+) {
     // @ts-expect-error TS(2322) FIXME: Type '(baseName: any, i: any) => any' is not assig... Remove this comment to see the full error message
-    nameBuilder ??= (baseName, i) => i === 0 ? baseName : `${baseName} (${i})`;
+    nameBuilder ??= (baseName, i) => (i === 0 ? baseName : `${baseName} (${i})`);
     let i = startIndex;
     let name = '';
     while (i < maxTries + startIndex) {
@@ -946,7 +1002,7 @@ export function delay(ms) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
 export function isSubsetOf(a, b) {
-    return (Array.isArray(a) && Array.isArray(b)) ? b.every(val => a.includes(val)) : false;
+    return Array.isArray(a) && Array.isArray(b) ? b.every((val) => a.includes(val)) : false;
 }
 
 /**
@@ -978,9 +1034,7 @@ export function incrementString(str) {
 export function stringFormat(format, ...args) {
     // @ts-expect-error TS(7006) FIXME: Parameter 'match' implicitly has an 'any' type.
     return format.replace(/{(\d+)}/g, function (match, number) {
-        return typeof args[number] != 'undefined'
-            ? args[number]
-            : match;
+        return typeof args[number] != 'undefined' ? args[number] : match;
     });
 }
 
@@ -1057,7 +1111,7 @@ export function restoreCaretPosition(element, position) {
 export async function resetScrollHeight(element) {
     if (!element) return;
     element.style.height = '0px';
-    element.style.height = (element.scrollHeight + 3) + 'px';
+    element.style.height = element.scrollHeight + 3 + 'px';
 }
 
 /**
@@ -1073,7 +1127,9 @@ export async function initScrollHeight(element) {
 
     const curScrollHeight = Number(element.scrollHeight);
 
-    if (curScrollHeight < 3) { return; } //happens when the div isn't loaded yet
+    if (curScrollHeight < 3) {
+        return;
+    } //happens when the div isn't loaded yet
 
     const newHeight = curScrollHeight + 3; //the +3 here is to account for padding/line-height on text inputs
     element.style.height = '';
@@ -1128,8 +1184,28 @@ export function trimToEndSentence(input) {
     }
 
     // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
-    const isEmoji = x => /(\p{Emoji_Presentation}|\p{Extended_Pictographic})/gu.test(x);
-    const punctuation = new Set(['.', '!', '?', '*', '"', ')', '}', '`', ']', '$', '。', '！', '？', '”', '）', '】', '’', '」', '_']); // extend this as you see fit
+    const isEmoji = (x) => /(\p{Emoji_Presentation}|\p{Extended_Pictographic})/gu.test(x);
+    const punctuation = new Set([
+        '.',
+        '!',
+        '?',
+        '*',
+        '"',
+        ')',
+        '}',
+        '`',
+        ']',
+        '$',
+        '。',
+        '！',
+        '？',
+        '”',
+        '）',
+        '】',
+        '’',
+        '」',
+        '_',
+    ]); // extend this as you see fit
     let last = -1;
 
     const characters = Array.from(input);
@@ -1153,7 +1229,10 @@ export function trimToEndSentence(input) {
         return input.trimEnd();
     }
 
-    return characters.slice(0, last + 1).join('').trimEnd();
+    return characters
+        .slice(0, last + 1)
+        .join('')
+        .trimEnd();
 }
 
 /**
@@ -1172,9 +1251,16 @@ export function trimToStartSentence(input) {
     const p4 = input.indexOf('\n');
     let first = p1;
     let skip1 = false;
-    if (p2 > 0 && p2 < first) { first = p2; }
-    if (p3 > 0 && p3 < first) { first = p3; }
-    if (p4 > 0 && p4 < first) { first = p4; skip1 = true; }
+    if (p2 > 0 && p2 < first) {
+        first = p2;
+    }
+    if (p3 > 0 && p3 < first) {
+        first = p3;
+    }
+    if (p4 > 0 && p4 < first) {
+        first = p4;
+        skip1 = true;
+    }
     if (first > 0) {
         if (skip1) {
             return input.substring(first + 1);
@@ -1211,7 +1297,6 @@ export function humanFileSize(bytes, si = false, dp = 1) {
         bytes /= thresh;
         ++u;
     } while (Math.round(Math.abs(bytes) * r) / r >= thresh && u < units.length - 1);
-
 
     return bytes.toFixed(dp) + ' ' + units[u];
 }
@@ -1288,9 +1373,12 @@ export function parseStringArray(value) {
         if (!Array.isArray(parsedValue)) {
             throw new Error('Not an array');
         }
-        return parsedValue.map(x => String(x));
+        return parsedValue.map((x) => String(x));
     } catch {
-        return value.split(',').map(x => x.trim()).filter(x => x);
+        return value
+            .split(',')
+            .map((x) => x.trim())
+            .filter((x) => x);
     }
 }
 
@@ -1378,11 +1466,17 @@ function parseTimestamp(timestamp) {
     // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
     const convertFromMeridiemBased = (_, month, day, year, hour, minute, meridiem) => {
         const monthNum = moment().month(month).format('MM');
-        const hour24 = meridiem.toLowerCase() === 'pm' ? (parseInt(hour, 10) % 12) + 12 : parseInt(hour, 10) % 12;
+        const hour24 =
+            meridiem.toLowerCase() === 'pm'
+                ? (parseInt(hour, 10) % 12) + 12
+                : parseInt(hour, 10) % 12;
         return `${year}-${monthNum}-${day.padStart(2, '0')}T${hour24.toString().padStart(2, '0')}:${minute.padStart(2, '0')}:00`;
     };
     // June 19, 2023 2:20pm
-    dtFmt.push({ callback: convertFromMeridiemBased, pattern: /(\w+)\s(\d{1,2}),\s(\d{4})\s(\d{1,2}):(\d{1,2})(am|pm)/i });
+    dtFmt.push({
+        callback: convertFromMeridiemBased,
+        pattern: /(\w+)\s(\d{1,2}),\s(\d{4})\s(\d{1,2}):(\d{1,2})(am|pm)/i,
+    });
 
     // ST "humanized" format patterns
     // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
@@ -1391,11 +1485,20 @@ function parseTimestamp(timestamp) {
         return `${year.padStart(4, '0')}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${hour.padStart(2, '0')}:${min.padStart(2, '0')}:${sec.padStart(2, '0')}${ms}Z`;
     };
     // 2024-07-12@01h31m37s123ms
-    dtFmt.push({ callback: convertFromHumanized, pattern: /(\d{4})-(\d{1,2})-(\d{1,2})@(\d{1,2})h(\d{1,2})m(\d{1,2})s(\d{1,3})ms/ });
+    dtFmt.push({
+        callback: convertFromHumanized,
+        pattern: /(\d{4})-(\d{1,2})-(\d{1,2})@(\d{1,2})h(\d{1,2})m(\d{1,2})s(\d{1,3})ms/,
+    });
     // 2024-7-12@01h31m37s
-    dtFmt.push({ callback: convertFromHumanized, pattern: /(\d{4})-(\d{1,2})-(\d{1,2})@(\d{1,2})h(\d{1,2})m(\d{1,2})s/ });
+    dtFmt.push({
+        callback: convertFromHumanized,
+        pattern: /(\d{4})-(\d{1,2})-(\d{1,2})@(\d{1,2})h(\d{1,2})m(\d{1,2})s/,
+    });
     // 2024-6-5 @14h 56m 50s 682ms
-    dtFmt.push({ callback: convertFromHumanized, pattern: /(\d{4})-(\d{1,2})-(\d{1,2}) @(\d{1,2})h (\d{1,2})m (\d{1,2})s (\d{1,3})ms/ });
+    dtFmt.push({
+        callback: convertFromHumanized,
+        pattern: /(\d{4})-(\d{1,2})-(\d{1,2}) @(\d{1,2})h (\d{1,2})m (\d{1,2})s (\d{1,3})ms/,
+    });
 
     for (const x of dtFmt) {
         const rgxMatch = timestamp.match(x.pattern);
@@ -1427,7 +1530,7 @@ export function splitRecursive(input, length, delimiters = ['\n\n', '\n', ' ', '
     const parts = input.split(delim);
 
     // @ts-expect-error TS(7006) FIXME: Parameter 'p' implicitly has an 'any' type.
-    const flatParts = parts.flatMap(p => {
+    const flatParts = parts.flatMap((p) => {
         if (p.length < length) return p;
         return splitRecursive(p, length, delimiters.slice(1));
     });
@@ -1462,7 +1565,8 @@ export function splitRecursive(input, length, delimiters = ['\n\n', '\n', ' ', '
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'str' implicitly has an 'any' type.
 export function isDataURL(str) {
-    const regex = /^data:([a-z]+\/[a-z0-9-+.]+(;[a-z-]+=[a-z0-9-]+)*;?)?(base64)?,([a-z0-9!$&',()*+;=\-_%.~:@/?#]+)?$/i;
+    const regex =
+        /^data:([a-z]+\/[a-z0-9-+.]+(;[a-z-]+=[a-z0-9-]+)*;?)?(base64)?,([a-z0-9!$&',()*+;=\-_%.~:@/?#]+)?$/i;
     return typeof str === 'string' && regex.test(str);
 }
 
@@ -1513,7 +1617,12 @@ export function getVideoDurationFromDataURL(dataUrl) {
  * @returns {Promise<string>} Promise that resolves to a data URL of the video thumbnail
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'videoUrl' implicitly has an 'any' type.
-export function getVideoThumbnail(videoUrl, maxWidth = null, maxHeight = null, type = 'image/jpeg') {
+export function getVideoThumbnail(
+    videoUrl,
+    maxWidth = null,
+    maxHeight = null,
+    type = 'image/jpeg',
+) {
     const video = document.createElement('video');
     video.src = videoUrl;
     return new Promise((resolve, reject) => {
@@ -1525,7 +1634,12 @@ export function getVideoThumbnail(videoUrl, maxWidth = null, maxHeight = null, t
             // Create a canvas to draw the thumbnail
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
-            const { thumbnailWidth, thumbnailHeight } = calculateThumbnailSize(video.videoWidth, video.videoHeight, maxWidth, maxHeight);
+            const { thumbnailWidth, thumbnailHeight } = calculateThumbnailSize(
+                video.videoWidth,
+                video.videoHeight,
+                maxWidth,
+                maxHeight,
+            );
 
             canvas.width = thumbnailWidth;
             canvas.height = thumbnailHeight;
@@ -1580,7 +1694,10 @@ export function calculateThumbnailSize(width, height, maxWidth, maxHeight) {
         }
     }
 
-    return { thumbnailWidth: Math.round(thumbnailWidth), thumbnailHeight: Math.round(thumbnailHeight) };
+    return {
+        thumbnailWidth: Math.round(thumbnailWidth),
+        thumbnailHeight: Math.round(thumbnailHeight),
+    };
 }
 
 /**
@@ -1701,7 +1818,7 @@ export class Stopwatch {
      */
     // @ts-expect-error TS(7006) FIXME: Parameter 'action' implicitly has an 'any' type.
     async tick(action) {
-        const passed = (Date.now() - this.lastAction);
+        const passed = Date.now() - this.lastAction;
 
         if (passed < this.interval) {
             return;
@@ -1793,7 +1910,17 @@ export function extractDataFromPng(data, identifier = 'chara') {
     const uint32 = new Uint32Array(uint8.buffer);
 
     //check if png header is valid
-    if (!data || data[0] !== 0x89 || data[1] !== 0x50 || data[2] !== 0x4E || data[3] !== 0x47 || data[4] !== 0x0D || data[5] !== 0x0A || data[6] !== 0x1A || data[7] !== 0x0A) {
+    if (
+        !data ||
+        data[0] !== 0x89 ||
+        data[1] !== 0x50 ||
+        data[2] !== 0x4e ||
+        data[3] !== 0x47 ||
+        data[4] !== 0x0d ||
+        data[5] !== 0x0a ||
+        data[6] !== 0x1a ||
+        data[7] !== 0x0a
+    ) {
         console.log('PNG header invalid');
         return null;
     }
@@ -1820,7 +1947,7 @@ export function extractDataFromPng(data, identifier = 'chara') {
         chunk[3] = data[idx++];
 
         // Get the name in ASCII for identification.
-        const name = (
+        const name =
             // @ts-expect-error TS(2345) FIXME: Argument of type 'number | undefined' is not assig... Remove this comment to see the full error message
             String.fromCharCode(chunk[0]) +
             // @ts-expect-error TS(2345) FIXME: Argument of type 'number | undefined' is not assig... Remove this comment to see the full error message
@@ -1828,8 +1955,7 @@ export function extractDataFromPng(data, identifier = 'chara') {
             // @ts-expect-error TS(2345) FIXME: Argument of type 'number | undefined' is not assig... Remove this comment to see the full error message
             String.fromCharCode(chunk[2]) +
             // @ts-expect-error TS(2345) FIXME: Argument of type 'number | undefined' is not assig... Remove this comment to see the full error message
-            String.fromCharCode(chunk[3])
-        );
+            String.fromCharCode(chunk[3]);
 
         // The IHDR header MUST come first.
         if (!chunks.length && name !== 'IHDR') {
@@ -1859,7 +1985,6 @@ export function extractDataFromPng(data, identifier = 'chara') {
         uint8[1] = data[idx++];
         uint8[0] = data[idx++];
 
-
         // The chunk data is now copied to remove the 4 preceding
         // bytes used for the chunk name/type.
         const chunkData = new Uint8Array(chunk.buffer.slice(4));
@@ -1875,10 +2000,14 @@ export function extractDataFromPng(data, identifier = 'chara') {
     }
 
     //find the chunk with the chara name, just check first and last letter
-    const found = chunks.filter(x => (
-        x.name == 'tEXt'
-        && x.data.length > identifier.length
-        && x.data.slice(0, identifier.length).every((v, i) => String.fromCharCode(v) == identifier[i])));
+    const found = chunks.filter(
+        (x) =>
+            x.name == 'tEXt' &&
+            x.data.length > identifier.length &&
+            x.data
+                .slice(0, identifier.length)
+                .every((v, i) => String.fromCharCode(v) == identifier[i]),
+    );
 
     if (found.length == 0) {
         console.log('PNG Image contains no data');
@@ -1975,7 +2104,10 @@ export async function saveBase64AsFile(base64Data, subFolder, fileName, extensio
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'file' implicitly has an 'any' type.
 export function getFileExtension(file) {
-    return file.name.substring((file.name.lastIndexOf('.') + file.name.length) % file.name.length + 1).toLowerCase().trim();
+    return file.name
+        .substring(((file.name.lastIndexOf('.') + file.name.length) % file.name.length) + 1)
+        .toLowerCase()
+        .trim();
 }
 
 /**
@@ -2042,7 +2174,7 @@ export function loadFileToDocument(url, type) {
  * @returns {Promise<string|null>} Base64 data URL of selected image, or null if cancelled
  */
 export async function promptForAvatarFile() {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
         const input = document.createElement('input');
         input.type = 'file';
         input.accept = supportedImageMimeTypes.join(',');
@@ -2096,7 +2228,9 @@ export async function resolveAvatarData(input) {
 
     // External URLs are not supported
     if (isExternalUrl(trimmed)) {
-        notyf.warning(t`External URLs are not supported for avatars. Use a local file path or "prompt" to select a file.`);
+        notyf.warning(
+            t`External URLs are not supported for avatars. Use a local file path or "prompt" to select a file.`,
+        );
         return null;
     }
     // Local path or URL (e.g., characters/name.png) - fetch from ST server or same origin
@@ -2123,7 +2257,9 @@ export async function resolveAvatarData(input) {
             if (!blob.type.startsWith('image/')) {
                 throw new Error('File is not an image');
             }
-            const converted = await ensureImageFormatSupported(new File([blob], 'avatar.png', { type: blob.type }));
+            const converted = await ensureImageFormatSupported(
+                new File([blob], 'avatar.png', { type: blob.type }),
+            );
             return await getBase64Async(converted);
         } catch (error) {
             console.error('Error fetching local avatar:', error);
@@ -2135,7 +2271,9 @@ export async function resolveAvatarData(input) {
 
     // Unknown format
     console.warn('Unknown avatar format:', trimmed.substring(0, 50));
-    notyf.warning(t`Unknown avatar format. Use "prompt" to select a file, or provide a local file path.`);
+    notyf.warning(
+        t`Unknown avatar format. Use "prompt" to select a file, or provide a local file path.`,
+    );
     return null;
 }
 
@@ -2178,7 +2316,7 @@ export async function convertImageFile(inputFile, type = 'image/png') {
     const base64 = await getBase64Async(inputFile);
     const thumbnail = await createThumbnail(base64, null, null, type);
     // @ts-expect-error TS(2769) FIXME: No overload matches this call.
-    const blob = await fetch(thumbnail).then(res => res.blob());
+    const blob = await fetch(thumbnail).then((res) => res.blob());
     const outputFile = new File([blob], inputFile.name, { type });
     return outputFile;
 }
@@ -2204,7 +2342,12 @@ export function createThumbnail(dataUrl, maxWidth = null, maxHeight = null, type
         img.onload = () => {
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
-            const { thumbnailWidth, thumbnailHeight } = calculateThumbnailSize(img.width, img.height, maxWidth, maxHeight);
+            const { thumbnailWidth, thumbnailHeight } = calculateThumbnailSize(
+                img.width,
+                img.height,
+                maxWidth,
+                maxHeight,
+            );
 
             // Set the canvas dimensions and draw the resized image
             canvas.width = thumbnailWidth;
@@ -2274,8 +2417,8 @@ export function uuidv4() {
         return crypto.randomUUID();
     }
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-        const r = Math.random() * 16 | 0;
-        const v = c === 'x' ? r : (r & 0x3 | 0x8);
+        const r = (Math.random() * 16) | 0;
+        const v = c === 'x' ? r : (r & 0x3) | 0x8;
         return v.toString(16);
     });
 }
@@ -2308,13 +2451,20 @@ function postProcessText(text, collapse = true) {
         text = collapseNewlines(text);
         // Trim leading and trailing whitespace, and remove empty lines
         // @ts-expect-error TS(7006) FIXME: Parameter 'l' implicitly has an 'any' type.
-        text = text.split('\n').map(l => l.trim()).filter(Boolean).join('\n');
+        text = text
+            .split('\n')
+            .map((l) => l.trim())
+            .filter(Boolean)
+            .join('\n');
     } else {
         // Replace more than 4 newlines with 4 newlines
         text = text.replace(/\n{4,}/g, '\n\n\n\n');
         // Trim lines that contain nothing but whitespace
         // @ts-expect-error TS(7006) FIXME: Parameter 'l' implicitly has an 'any' type.
-        text = text.split('\n').map(l => /^\s+$/.test(l) ? '' : l).join('\n');
+        text = text
+            .split('\n')
+            .map((l) => (/^\s+$/.test(l) ? '' : l))
+            .join('\n');
     }
     // Collapse multiple spaces into one (except for newlines)
     text = text.replace(/ {2,}/g, ' ');
@@ -2339,7 +2489,9 @@ export async function getReadableText(document, textSelector = 'body') {
 
     const elements = document.querySelectorAll(textSelector);
     // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-    const rawText = Array.from(elements).map(e => e.textContent).join('\n');
+    const rawText = Array.from(elements)
+        .map((e) => e.textContent)
+        .join('\n');
     const text = postProcessText(rawText);
     return text;
 }
@@ -2363,7 +2515,7 @@ export async function extractTextFromPDF(blob) {
         const page = await pdf.getPage(i);
         const textContent = await page.getTextContent();
         // @ts-expect-error TS(7006) FIXME: Parameter 'item' implicitly has an 'any' type.
-        const text = textContent.items.map(item => item.str).join(' ');
+        const text = textContent.items.map((item) => item.str).join(' ');
         pages.push(text);
     }
     return postProcessText(pages.join('\n'));
@@ -2426,7 +2578,7 @@ export async function extractTextFromEpub(blob) {
 
     // @ts-expect-error TS(7005) FIXME: Variable 'sectionPromises' implicitly has an 'any[... Remove this comment to see the full error message
     const content = await Promise.all(sectionPromises);
-    const text = content.filter(text => text);
+    const text = content.filter((text) => text);
     return postProcessText(text.join('\n'), false);
 }
 
@@ -2456,7 +2608,9 @@ export async function extractTextFromOffice(blob) {
     const isPluginAvailable = await checkPluginAvailability();
 
     if (!isPluginAvailable) {
-        throw new Error('Importing Office documents requires a server plugin. Please refer to the documentation for more information.');
+        throw new Error(
+            'Importing Office documents requires a server plugin. Please refer to the documentation for more information.',
+        );
     }
 
     const base64 = await getBase64Async(blob);
@@ -2546,7 +2700,6 @@ export function flashHighlight(element, timespan = 2000) {
     }, timespan);
 }
 
-
 /**
  * Checks if the given control has an animation applied to it
  * @param {HTMLElement} control - The control element to check for animation
@@ -2591,8 +2744,14 @@ export function compareIgnoreCaseAndAccents(a, b, comparisonFunction) {
     if (!a || !b) return comparisonFunction(a, b); // Return the comparison result if either string is empty
 
     // Normalize and remove diacritics, then convert to lower case
-    const normalizedA = a.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-    const normalizedB = b.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    const normalizedA = a
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase();
+    const normalizedB = b
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase();
 
     // Check if the normalized strings are equal
     return comparisonFunction(normalizedA, normalizedB);
@@ -2662,13 +2821,19 @@ export function getSelect2OptionId(option) {
  * @param {object} [options.changeEventArgs] - Optional event args being passed into the "change" event when its triggered because a new options is selected
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'element' implicitly has an 'any' type.
-export function select2ModifyOptions(element, items, { select = false, changeEventArgs = null } = {}) {
+export function select2ModifyOptions(
+    element,
+    items,
+    { select = false, changeEventArgs = null } = {},
+) {
     if (!items.length) return;
     /** @type {Select2Option[]} */
     // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
-    const dataItems = items.map(x => typeof x === 'string'
-        ? { id: getSelect2OptionId(x), text: x, count: undefined }
-        : { id: x.id, text: x.text, count: x.count ?? undefined });
+    const dataItems = items.map((x) =>
+        typeof x === 'string'
+            ? { id: getSelect2OptionId(x), text: x, count: undefined }
+            : { id: x.id, text: x.text, count: x.count ?? undefined },
+    );
 
     // @ts-expect-error TS(7034) FIXME: Variable 'optionsToSelect' implicitly has type 'an... Remove this comment to see the full error message
     const optionsToSelect = [];
@@ -2676,9 +2841,9 @@ export function select2ModifyOptions(element, items, { select = false, changeEve
     const newOptions = [];
 
     // @ts-expect-error TS(7006) FIXME: Parameter 'item' implicitly has an 'any' type.
-    dataItems.forEach(item => {
+    dataItems.forEach((item) => {
         // Set the value, creating a new option if necessary
-        if (element[0].querySelector('option[value=\'' + item.id + '\']')) {
+        if (element[0].querySelector("option[value='" + item.id + "']")) {
             if (select) optionsToSelect.push(item.id);
         } else {
             // Create a DOM Option and optionally pre-select by default
@@ -2739,7 +2904,10 @@ export function dynamicSelect2DataViaAjax(dataProvider) {
 // @ts-expect-error TS(7006) FIXME: Parameter 'item' implicitly has an 'any' type.
 export function isSelect2ChoiceElement(element) {
     const $element = element;
-    return ($element.hasClass('item') && $element.closest('.ts-wrapper').length > 0) || ($element[0]?.closest('.ts-wrapper .item') !== null);
+    return (
+        ($element.hasClass('item') && $element.closest('.ts-wrapper').length > 0) ||
+        $element[0]?.closest('.ts-wrapper .item') !== null
+    );
 }
 
 /**
@@ -2752,7 +2920,11 @@ export function isSelect2ChoiceElement(element) {
  * @param {boolean} [options.openDrawer] - Whether the drawer should be opened, even if this click would normally close it
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'control' implicitly has an 'any' type.
-export function select2ChoiceClickSubscribe(control, action, { buttonStyle = false, closeDrawer = false, openDrawer = false } = {}) {
+export function select2ChoiceClickSubscribe(
+    control,
+    action,
+    { buttonStyle = false, closeDrawer = false, openDrawer = false } = {},
+) {
     // Add class for styling (hover color, changed cursor, etc)
     const el = control?.[0] ?? control;
     if (!el) return;
@@ -2769,7 +2941,7 @@ export function select2ChoiceClickSubscribe(control, action, { buttonStyle = fal
             event.preventDefault();
 
             // TomSelect still bubbles the event to open the dropdown. So we close it here and remove focus if we want that
-                        if (closeDrawer) {
+            if (closeDrawer) {
                 el?.tomSelect?.close();
                 const tsInput = tsWrapper?.querySelector('.ts-control input');
                 if (tsInput) setTimeout(() => tsInput.blur(), debounce_timeout.quick);
@@ -2793,9 +2965,19 @@ export function select2ChoiceClickSubscribe(control, action, { buttonStyle = fal
 export function highlightRegex(regexStr) {
     // Function to escape special characters for safety or readability
     // @ts-expect-error TS(7006) FIXME: Parameter 'str' implicitly has an 'any' type.
-    const escape = (str) => str.replace(/[&<>"'\x01]/g, match => ({
-        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', '\'': '&#39;', '\x01': '\\x01',
-    })[match]);
+    const escape = (str) =>
+        str.replace(
+            /[&<>"'\x01]/g,
+            (match) =>
+                ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#39;',
+                    '\x01': '\\x01',
+                })[match],
+        );
 
     // Replace special characters with their escaped forms
     regexStr = escape(regexStr);
@@ -2807,21 +2989,21 @@ export function highlightRegex(regexStr) {
     function getPatterns() {
         try {
             return {
-                brackets: new RegExp('(?<!\\\\)\\[.*?\\]', 'g'),  // Non-escaped square brackets
-                quantifiers: new RegExp('(?<!\\\\)[*+?{}]', 'g'),  // Non-escaped quantifiers
-                operators: new RegExp('(?<!\\\\)[|.^$()]', 'g'),  // Non-escaped operators like | and ()
+                brackets: new RegExp('(?<!\\\\)\\[.*?\\]', 'g'), // Non-escaped square brackets
+                quantifiers: new RegExp('(?<!\\\\)[*+?{}]', 'g'), // Non-escaped quantifiers
+                operators: new RegExp('(?<!\\\\)[|.^$()]', 'g'), // Non-escaped operators like | and ()
                 specialChars: new RegExp('\\\\.', 'g'),
-                flags: new RegExp('(?<=\\/)([gimsuy]*)$', 'g'),  // Match trailing flags
-                delimiters: new RegExp('^\\/|(?<![\\\\<])\\/', 'g'),  // Match leading or trailing delimiters
+                flags: new RegExp('(?<=\\/)([gimsuy]*)$', 'g'), // Match trailing flags
+                delimiters: new RegExp('^\\/|(?<![\\\\<])\\/', 'g'), // Match leading or trailing delimiters
             };
         } catch {
             return {
-                brackets: new RegExp('(\\\\)?\\[.*?\\]', 'g'),  // Non-escaped square brackets
-                quantifiers: new RegExp('(\\\\)?[*+?{}]', 'g'),  // Non-escaped quantifiers
-                operators: new RegExp('(\\\\)?[|.^$()]', 'g'),  // Non-escaped operators like | and ()
+                brackets: new RegExp('(\\\\)?\\[.*?\\]', 'g'), // Non-escaped square brackets
+                quantifiers: new RegExp('(\\\\)?[*+?{}]', 'g'), // Non-escaped quantifiers
+                operators: new RegExp('(\\\\)?[|.^$()]', 'g'), // Non-escaped operators like | and ()
                 specialChars: new RegExp('\\\\.', 'g'),
-                flags: new RegExp('/([gimsuy]*)$', 'g'),  // Match trailing flags
-                delimiters: new RegExp('^/|[^\\\\](/)', 'g'),  // Match leading or trailing delimiters
+                flags: new RegExp('/([gimsuy]*)$', 'g'), // Match trailing flags
+                delimiters: new RegExp('^/|[^\\\\](/)', 'g'), // Match leading or trailing delimiters
             };
         }
     }
@@ -2832,7 +3014,10 @@ export function highlightRegex(regexStr) {
     // @ts-expect-error TS(7006) FIXME: Parameter 'pattern' implicitly has an 'any' type.
     const wrapPattern = (pattern, className) => {
         // @ts-expect-error TS(7006) FIXME: Parameter 'match' implicitly has an 'any' type.
-        regexStr = regexStr.replace(pattern, match => `<span class="${className}">${match}</span>`);
+        regexStr = regexStr.replace(
+            pattern,
+            (match) => `<span class="${className}">${match}</span>`,
+        );
     };
 
     // Apply highlighting patterns
@@ -2859,20 +3044,38 @@ export function highlightRegex(regexStr) {
  * @returns {Promise<boolean>} True if the user confirmed the overwrite or there is no overwrite needed, false otherwise
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'type' implicitly has an 'any' type.
-export async function checkOverwriteExistingData(type, existingNames, name, { interactive = false, actionName = 'Overwrite', deleteAction = null } = {}) {
+export async function checkOverwriteExistingData(
+    type,
+    existingNames,
+    name,
+    { interactive = false, actionName = 'Overwrite', deleteAction = null } = {},
+) {
     // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
-    const existing = existingNames.find(x => equalsIgnoreCaseAndAccents(x, name));
+    const existing = existingNames.find((x) => equalsIgnoreCaseAndAccents(x, name));
     if (!existing) {
         return true;
     }
 
-    const overwrite = interactive && (await Popup.show.confirm(`${type} ${actionName}`, `<p>A ${type.toLowerCase()} with the same name already exists:<br />${escapeHtml(existing)}</p>Do you want to overwrite it?`));
+    const overwrite =
+        interactive &&
+        (await Popup.show.confirm(
+            `${type} ${actionName}`,
+            `<p>A ${type.toLowerCase()} with the same name already exists:<br />${escapeHtml(existing)}</p>Do you want to overwrite it?`,
+        ));
     if (!overwrite) {
-        notyf.warning(`${type} ${actionName.toLowerCase()} cancelled. A ${type.toLowerCase()} with the same name already exists:<br />${escapeHtml(existing)}`, `${type} ${actionName}`, { escapeHtml: false });
+        notyf.warning(
+            `${type} ${actionName.toLowerCase()} cancelled. A ${type.toLowerCase()} with the same name already exists:<br />${escapeHtml(existing)}`,
+            `${type} ${actionName}`,
+            { escapeHtml: false },
+        );
         return false;
     }
 
-    notyf.info(`Overwriting Existing ${type}:<br />${escapeHtml(existing)}`, `${type} ${actionName}`, { escapeHtml: false });
+    notyf.info(
+        `Overwriting Existing ${type}:<br />${escapeHtml(existing)}`,
+        `${type} ${actionName}`,
+        { escapeHtml: false },
+    );
 
     // If there is an action to delete the existing data, do it, as the name might be slightly different so file name would not be the same
     if (deleteAction) {
@@ -2901,7 +3104,6 @@ export function getFreeName(name, list, numberFormatter = (n) => ` #${n}`) {
     }
     return `${name}${numberFormatter(counter)}`;
 }
-
 
 /**
  * Toggles the visibility of a drawer by changing the display style of its content.
@@ -2968,19 +3170,23 @@ export async function fetchFaFile(name) {
     const sheet = style.sheet;
     style.remove();
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    return [...sheet.cssRules]
-        .filter(rule => (rule instanceof CSSStyleRule && rule.style?.content))
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        .map(rule => rule['selectorText'].split(/,\s*/).map(selector => selector.split('::').shift().slice(1)));
+    return (
+        [...sheet.cssRules]
+            .filter((rule) => rule instanceof CSSStyleRule && rule.style?.content)
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
+            .map((rule) =>
+                rule['selectorText']
+                    .split(/,\s*/)
+                    .map((selector) => selector.split('::').shift().slice(1)),
+            )
+    );
 }
 
 /**
  *
  */
 export async function fetchFa() {
-    return [...new Set((await Promise.all([
-        fetchFaFile('fontawesome.min.css'),
-    ])).flat())];
+    return [...new Set([await fetchFaFile('fontawesome.min.css')].flat())];
 }
 /**
  * Opens a popup with all the available Font Awesome icons and returns the selected icon's name.
@@ -2991,11 +3197,14 @@ export async function fetchFa() {
 export async function showFontAwesomePicker(customList = null) {
     const faList = customList ?? (await fetchFa());
     const fas = {};
-    const dom = document.createElement('div'); {
+    const dom = document.createElement('div');
+    {
         dom.classList.add('faPicker-container');
-        const search = document.createElement('div'); {
+        const search = document.createElement('div');
+        {
             search.classList.add('faQuery-container');
-            const qry = document.createElement('input'); {
+            const qry = document.createElement('input');
+            {
                 qry.classList.add('text_pole');
                 qry.classList.add('faQuery');
                 qry.type = 'search';
@@ -3003,9 +3212,13 @@ export async function showFontAwesomePicker(customList = null) {
                 qry.autofocus = true;
                 const qryDebounced = debounce(() => {
                     // @ts-expect-error TS(7006) FIXME: Parameter 'className' implicitly has an 'any' type... Remove this comment to see the full error message
-                    const result = faList.filter(fa => fa.find(className => className.includes(qry.value.toLowerCase())));
+                    const result = new Set(
+                        faList.filter((fa) =>
+                            fa.find((className) => className.includes(qry.value.toLowerCase())),
+                        ),
+                    );
                     for (const fa of faList) {
-                        if (!result.includes(fa)) {
+                        if (!result.has(fa)) {
                             // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                             fas[fa].classList.add('hidden');
                         } else {
@@ -3019,19 +3232,21 @@ export async function showFontAwesomePicker(customList = null) {
             }
             dom.append(search);
         }
-        const grid = document.createElement('div'); {
+        const grid = document.createElement('div');
+        {
             grid.classList.add('faPicker');
             for (const fa of faList) {
-                const opt = document.createElement('div'); {
+                const opt = document.createElement('div');
+                {
                     // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                     fas[fa] = opt;
                     opt.classList.add('menu_button');
                     opt.classList.add('fa-solid');
                     opt.classList.add(fa[0]);
                     // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
-                    opt.title = fa.map(it => it.slice(3)).join(', ');
+                    opt.title = fa.map((it) => it.slice(3)).join(', ');
                     opt.dataset.result = POPUP_RESULT.AFFIRMATIVE.toString();
-                    opt.addEventListener('click', () => value = fa[0]);
+                    opt.addEventListener('click', () => (value = fa[0]));
                     grid.append(opt);
                 }
             }
@@ -3040,7 +3255,11 @@ export async function showFontAwesomePicker(customList = null) {
     }
     let value = '';
     // @ts-expect-error TS(2345) FIXME: Argument of type 'null' is not assignable to param... Remove this comment to see the full error message
-    const picker = new Popup(dom, POPUP_TYPE.TEXT, null, { allowVerticalScrolling: true, okButton: 'No Icon', cancelButton: 'Cancel' });
+    const picker = new Popup(dom, POPUP_TYPE.TEXT, null, {
+        allowVerticalScrolling: true,
+        okButton: 'No Icon',
+        cancelButton: 'Cancel',
+    });
     await picker.show();
     if (picker.result == POPUP_RESULT.AFFIRMATIVE) {
         return value;
@@ -3061,31 +3280,46 @@ export async function showFontAwesomePicker(customList = null) {
  * @property {string} avatar - The avatar of the persona
  * @property {string} name - The name of the persona
  */
-export function findPersona({ name = null as string | null, allowAvatar = true, insensitive = true, preferCurrentPersona = true, quiet = false } = {}) {
+export function findPersona({
+    name = null as string | null,
+    allowAvatar = true,
+    insensitive = true,
+    preferCurrentPersona = true,
+    quiet = false,
+} = {}) {
     /** @type {PersonaViewModel[]} */
-    const personas = Object.entries(power_user.personas).map(([avatar, personaName]) => ({ avatar, name: personaName }));
+    const personas = Object.entries(power_user.personas).map(([avatar, personaName]) => ({
+        avatar,
+        name: personaName,
+    }));
     // @ts-expect-error TS(7006) FIXME: Parameter 'persona' implicitly has an 'any' type.
-    const matches = (/** @type {PersonaViewModel} */ persona) => !name || (allowAvatar && persona.avatar === name) || (insensitive ? equalsIgnoreCaseAndAccents(persona.name, name) : persona.name === name);
+    const matches = (/** @type {PersonaViewModel} */ persona) =>
+        !name ||
+        (allowAvatar && persona.avatar === name) ||
+        (insensitive ? equalsIgnoreCaseAndAccents(persona.name, name) : persona.name === name);
 
     // If we have a current persona and prefer it, return that if it matches
-    const currentPersona = personas.find(a => a.avatar === user_avatar);
+    const currentPersona = personas.find((a) => a.avatar === user_avatar);
     if (preferCurrentPersona && currentPersona && matches(currentPersona)) {
         return currentPersona;
     }
 
     // If allowAvatar is true, search by avatar first
     if (allowAvatar && name) {
-        const personaByAvatar = personas.find(a => a.avatar === name);
+        const personaByAvatar = personas.find((a) => a.avatar === name);
         if (personaByAvatar && matches(personaByAvatar)) {
             return personaByAvatar;
         }
     }
 
     // Search for matching personas by name
-    const matchingPersonas = personas.filter(a => matches(a));
+    const matchingPersonas = personas.filter((a) => matches(a));
     if (matchingPersonas.length > 1) {
         if (!quiet) notyf.warning(t`Multiple personas found for given conditions.`);
-        else console.warn(t`Multiple personas found for given conditions. Returning the first match.`);
+        else
+            console.warn(
+                t`Multiple personas found for given conditions. Returning the first match.`,
+            );
     }
 
     return matchingPersonas[0] || null;
@@ -3102,31 +3336,47 @@ export function findPersona({ name = null as string | null, allowAvatar = true, 
  * @param {boolean} [options.quiet] - Whether to suppress warnings
  * @returns {Character?} - The found character or null if not found
  */
-export function findChar({ name = null, allowAvatar = true, insensitive = true, filteredByTags = null, preferCurrentChar = true, quiet = false } = {}) {
+export function findChar({
+    name = null,
+    allowAvatar = true,
+    insensitive = true,
+    filteredByTags = null,
+    preferCurrentChar = true,
+    quiet = false,
+} = {}) {
     // @ts-expect-error TS(7006) FIXME: Parameter 'char' implicitly has an 'any' type.
-    const matches = (char) => !name || (allowAvatar && char.avatar === name) || (insensitive ? equalsIgnoreCaseAndAccents(char.name, name) : char.name === name);
+    const matches = (char) =>
+        !name ||
+        (allowAvatar && char.avatar === name) ||
+        (insensitive ? equalsIgnoreCaseAndAccents(char.name, name) : char.name === name);
 
     // Filter characters by tags if provided
     let filteredCharacters = characters;
     if (filteredByTags) {
-        filteredCharacters = characters.filter(char => {
+        filteredCharacters = characters.filter((char) => {
             const charTags = getTagsList(char.avatar, false);
             // @ts-expect-error TS(2339) FIXME: Property 'every' does not exist on type 'never'.
-            return filteredByTags.every(tagName => charTags.some(x => x.name == tagName));
+            return filteredByTags.every((tagName) => charTags.some((x) => x.name == tagName));
         });
     }
 
     // Get the current character(s)
     /** @type {any[]} */
-    const currentChars = selected_group ? groups.find(group => group.id === selected_group)?.members.map(member => filteredCharacters.find(char => char.avatar === member))
-        : filteredCharacters.filter(char => characters[this_chid]?.avatar === char.avatar);
+    const currentChars = selected_group
+        ? groups
+              .find((group) => group.id === selected_group)
+              ?.members.map((member) => filteredCharacters.find((char) => char.avatar === member))
+        : filteredCharacters.filter((char) => characters[this_chid]?.avatar === char.avatar);
 
     // If we have a current char and prefer it, return that if it matches
     if (preferCurrentChar) {
         const preferredCharSearch = (currentChars ?? []).filter(matches);
         if (preferredCharSearch.length > 1) {
             if (!quiet) notyf.warning(t`Multiple characters found for given conditions.`);
-            else console.warn(t`Multiple characters found for given conditions. Returning the first match.`);
+            else
+                console.warn(
+                    t`Multiple characters found for given conditions. Returning the first match.`,
+                );
         }
         if (preferredCharSearch.length) {
             return preferredCharSearch[0];
@@ -3136,7 +3386,10 @@ export function findChar({ name = null, allowAvatar = true, insensitive = true, 
     // If allowAvatar is true, search by avatar first
     if (allowAvatar && name) {
         // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
-        const characterByAvatar = filteredCharacters.find(char => char.avatar === name || (!name.endsWith('.png') && char.avatar === `${name}.png`));
+        const characterByAvatar = filteredCharacters.find(
+            (char) =>
+                char.avatar === name || (!name.endsWith('.png') && char.avatar === `${name}.png`),
+        );
         if (characterByAvatar) {
             return characterByAvatar;
         }
@@ -3146,7 +3399,10 @@ export function findChar({ name = null, allowAvatar = true, insensitive = true, 
     const matchingCharacters = name ? filteredCharacters.filter(matches) : filteredCharacters;
     if (matchingCharacters.length > 1) {
         if (!quiet) notyf.warning('Multiple characters found for given conditions.');
-        else console.warn('Multiple characters found for given conditions. Returning the first match.');
+        else
+            console.warn(
+                'Multiple characters found for given conditions. Returning the first match.',
+            );
     }
 
     return matchingCharacters[0] || null;
@@ -3161,7 +3417,7 @@ export function findChar({ name = null, allowAvatar = true, insensitive = true, 
 // @ts-expect-error TS(7006) FIXME: Parameter 'char' implicitly has an 'any' type.
 export function getCharIndex(char) {
     if (!char) throw new Error('Character is undefined');
-    const index = characters.findIndex(c => c.avatar === char.avatar);
+    const index = characters.findIndex((c) => c.avatar === char.avatar);
     if (index === -1) throw new Error(`Character not found: ${char.avatar}`);
     return index;
 }
@@ -3263,9 +3519,15 @@ export function textValueMatcher(params, data) {
     }
 
     // @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
-    const textMatch = compareIgnoreCaseAndAccents(data.text, params.term, (a, b) => a.indexOf(b) > -1);
+    const textMatch = compareIgnoreCaseAndAccents(
+        data.text,
+        params.term,
+        (a, b) => a.indexOf(b) > -1,
+    );
     // @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
-    const valueMatch = data.element instanceof HTMLOptionElement && compareIgnoreCaseAndAccents(data.element.value, params.term, (a, b) => a.indexOf(b) > -1);
+    const valueMatch =
+        data.element instanceof HTMLOptionElement &&
+        compareIgnoreCaseAndAccents(data.element.value, params.term, (a, b) => a.indexOf(b) > -1);
 
     if (textMatch || valueMatch) {
         return data;
@@ -3283,7 +3545,12 @@ export function textValueMatcher(params, data) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'srcVersion' implicitly has an 'any' typ... Remove this comment to see the full error message
 export function versionCompare(srcVersion, minVersion) {
-    return (srcVersion || '0.0.0').localeCompare(minVersion, undefined, { numeric: true, sensitivity: 'base' }) > -1;
+    return (
+        (srcVersion || '0.0.0').localeCompare(minVersion, undefined, {
+            numeric: true,
+            sensitivity: 'base',
+        }) > -1
+    );
 }
 
 /**
@@ -3330,7 +3597,12 @@ export function logSlashCommandWarn(message, args, valueObj = null) {
  * @returns {() => void} Cleanup function to remove event listeners
  */
 // @ts-expect-error TS(7031) FIXME: Binding element 'scrollContainerId' implicitly has... Remove this comment to see the full error message
-export function setupScrollToTop({ scrollContainerId, buttonId, drawerId, visibilityThreshold = 300 }) {
+export function setupScrollToTop({
+    scrollContainerId,
+    buttonId,
+    drawerId,
+    visibilityThreshold = 300,
+}) {
     const scrollContainer = document.getElementById(scrollContainerId);
     const btn = document.getElementById(buttonId);
     const drawer = document.getElementById(drawerId);
@@ -3338,16 +3610,23 @@ export function setupScrollToTop({ scrollContainerId, buttonId, drawerId, visibi
     if (!btn || !drawer) {
         // Not fatal; the drawer or button may not exist in some builds. Use debug level.
         console.debug('Scroll-to-top: button or drawer not found during setup.');
-        return () => { /* noop cleanup */ };
+        return () => {
+            /* noop cleanup */
+        };
     }
 
     if (!scrollContainer) {
         console.debug('Scroll-to-top: scroll container not found during setup.');
-        return () => { /* noop cleanup */ };
+        return () => {
+            /* noop cleanup */
+        };
     }
 
-    const updateButtonVisibility = () => btn.classList.toggle('visible', scrollContainer.scrollTop > visibilityThreshold);
-    const updateButtonVisibilityThrottled = esThrottle(updateButtonVisibility, 300, { edges: ['leading', 'trailing'] });
+    const updateButtonVisibility = () =>
+        btn.classList.toggle('visible', scrollContainer.scrollTop > visibilityThreshold);
+    const updateButtonVisibilityThrottled = esThrottle(updateButtonVisibility, 300, {
+        edges: ['leading', 'trailing'],
+    });
     const onScroll = () => updateButtonVisibilityThrottled();
     scrollContainer.addEventListener('scroll', onScroll, { passive: true });
 
@@ -3420,7 +3699,10 @@ export async function importFromExternalUrl(url, { preserveFileName = null } = {
     const data = await request.blob();
     const customContentType = request.headers.get('X-Custom-Content-Type');
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    let fileName = request.headers.get('Content-Disposition').split('filename=')[1].replace(/"/g, '');
+    let fileName = request.headers
+        .get('Content-Disposition')
+        .split('filename=')[1]
+        .replace(/"/g, '');
     const file = new File([data], fileName, { type: data.type });
 
     const extraData = new Map();
@@ -3469,11 +3751,14 @@ export function shakeElement(targetElement, distance = 10, duration = 100, easin
     // @ts-expect-error TS(2304) FIXME: Cannot find name 'jQuery'.
     if (targetElement instanceof jQuery) targetElement = targetElement[0];
 
-    return targetElement.animate([
-        { transform: 'translateX(0)' },
-        { transform: `translateX(${distance}px)` },
-        { transform: 'translateX(0)' },
-    ], { duration, easing });
+    return targetElement.animate(
+        [
+            { transform: 'translateX(0)' },
+            { transform: `translateX(${distance}px)` },
+            { transform: 'translateX(0)' },
+        ],
+        { duration, easing },
+    );
 }
 
 /**
@@ -3504,32 +3789,40 @@ export function addLongPressEvent(selector, callback, delay = 500) {
     let fired = false;
     let target: Element | null = null;
 
-    document.addEventListener('touchstart', function (event) {
-        if (!(event.target instanceof Element)) return;
-        const el = event.target.closest(selector);
-        if (!el) return;
-        target = el;
-        fired = false;
-        timer = setTimeout(() => {
-            fired = true;
-            event.preventDefault();
-            callback.call(el, event);
-        }, delay);
-    }, { passive: false });
+    document.addEventListener(
+        'touchstart',
+        function (event) {
+            if (!(event.target instanceof Element)) return;
+            const el = event.target.closest(selector);
+            if (!el) return;
+            target = el;
+            fired = false;
+            timer = setTimeout(() => {
+                fired = true;
+                event.preventDefault();
+                callback.call(el, event);
+            }, delay);
+        },
+        { passive: false },
+    );
 
     document.addEventListener('touchend', cancelTimer);
     document.addEventListener('touchmove', cancelTimer);
     document.addEventListener('touchcancel', cancelTimer);
 
-    document.addEventListener('click', function (event) {
-        // @ts-expect-error TS(7005) FIXME: Variable 'target' implicitly has an 'any' type.
-        if (fired && target && target.contains(event.target)) {
-            event.preventDefault();
-            event.stopImmediatePropagation();
-            fired = false;
-            target = null;
-        }
-    }, true);
+    document.addEventListener(
+        'click',
+        function (event) {
+            // @ts-expect-error TS(7005) FIXME: Variable 'target' implicitly has an 'any' type.
+            if (fired && target && target.contains(event.target)) {
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                fired = false;
+                target = null;
+            }
+        },
+        true,
+    );
 
     /**
      *

@@ -27,7 +27,9 @@ export class SlashCommandClosure {
     // @ts-expect-error TS(7008) FIXME: Member 'parserContext' implicitly has an 'any' typ... Remove this comment to see the full error message
     /** @type {string} */ parserContext;
     /** @type {string} */ #source = uuidv4();
-    get source() { return this.#source; }
+    get source() {
+        return this.#source;
+    }
     set source(value) {
         this.#source = value;
         for (const executor of this.executorList) {
@@ -39,7 +41,9 @@ export class SlashCommandClosure {
     /**@type {number}*/
     get commandCount() {
         // @ts-expect-error TS(2339) FIXME: Property 'commandCount' does not exist on type 'ne... Remove this comment to see the full error message
-        return this.executorList.map(executor => executor.commandCount).reduce((sum, cur) => sum + cur, 0);
+        return this.executorList
+            .map((executor) => executor.commandCount)
+            .reduce((sum, cur) => sum + cur, 0);
     }
 
     // @ts-expect-error TS(7006) FIXME: Parameter 'parent' implicitly has an 'any' type.
@@ -62,8 +66,8 @@ export class SlashCommandClosure {
     substituteWithMacroEngine(text, scope, macroList) {
         /** @type {Record<string, import('./../macros/engine/MacroEnv.types.js').DynamicMacroValue>} */
         const dynamicMacros = {
-            'pipe': () => scope.pipe,
-            'var': {
+            pipe: () => scope.pipe,
+            var: {
                 strictArgs: false,
                 list: { min: 1, max: 2 },
                 // @ts-expect-error TS(7006) FIXME: Parameter 'context' implicitly has an 'any' type.
@@ -117,13 +121,18 @@ export class SlashCommandClosure {
                     const findMacroMatch = (/** @type {{args: string[]}} */ i) => {
                         // Exact match
                         // @ts-expect-error TS(7006) FIXME: Parameter 'arg' implicitly has an 'any' type.
-                        if (i.args.length === context.list.length && i.args.every((arg, index) => arg === context.list[index])) {
+                        if (
+                            i.args.length === context.list.length &&
+                            i.args.every((arg, index) => arg === context.list[index])
+                        ) {
                             return true;
                         }
                         // Wildcard match - if any definition arg is '*', it matches any value at that position
                         if (i.args.length === context.list.length) {
                             // @ts-expect-error TS(7006) FIXME: Parameter 'arg' implicitly has an 'any' type.
-                            return i.args.every((arg, index) => arg === '*' || arg === context.list[index]);
+                            return i.args.every(
+                                (arg, index) => arg === '*' || arg === context.list[index],
+                            );
                         }
                         return false;
                     };
@@ -152,7 +161,10 @@ export class SlashCommandClosure {
         // If any closures were inserted, split the text accordingly
         if (closures.size > 0) {
             // @ts-expect-error TS(7006) FIXME: Parameter 'part' implicitly has an 'any' type.
-            const parts = substitutedText.split(CLOSURE_BOUNDARY).map(part => closures.has(part) ? closures.get(part) : part).filter(Boolean);
+            const parts = substitutedText
+                .split(CLOSURE_BOUNDARY)
+                .map((part) => (closures.has(part) ? closures.get(part) : part))
+                .filter(Boolean);
             return parts.length === 1 ? parts[0] : parts;
         }
 
@@ -174,7 +186,8 @@ export class SlashCommandClosure {
         const macroList = scope.macroList.toSorted((a, b) => {
             if (a.key.includes('*') && !b.key.includes('*')) return 1;
             if (!a.key.includes('*') && b.key.includes('*')) return -1;
-            if (a.key.includes('*') && b.key.includes('*')) return b.key.indexOf('*') - a.key.indexOf('*');
+            if (a.key.includes('*') && b.key.includes('*'))
+                return b.key.indexOf('*') - a.key.indexOf('*');
             return 0;
         });
         return this.substituteWithMacroEngine(text, scope, macroList);
@@ -212,13 +225,16 @@ export class SlashCommandClosure {
         while (!step?.done) {
             step = await gen.next(this.debugController?.testStepping(this) ?? false);
             if (!(step.value instanceof SlashCommandClosureResult) && this.debugController) {
-                this.debugController.isStepping = await this.debugController.awaitBreakPoint(step.value.closure, step.value.executor);
+                this.debugController.isStepping = await this.debugController.awaitBreakPoint(
+                    step.value.closure,
+                    step.value.executor,
+                );
             }
         }
         return step.value;
     }
 
-    async* executeDirect() {
+    async *executeDirect() {
         this.debugController?.down(this);
         // closure arguments
         for (const arg of this.argumentList) {
@@ -239,10 +255,7 @@ export class SlashCommandClosure {
             }
             // unescape value
             if (typeof v == 'string') {
-                v = v
-                    ?.replace(/\\\{/g, '{')
-                    ?.replace(/\\\}/g, '}')
-                ;
+                v = v?.replace(/\\\{/g, '{')?.replace(/\\\}/g, '}');
             }
             // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
             this.scope.letVariable(arg.name, v);
@@ -265,10 +278,7 @@ export class SlashCommandClosure {
             }
             // unescape value
             if (typeof v == 'string') {
-                v = v
-                    ?.replace(/\\\{/g, '{')
-                    ?.replace(/\\\}/g, '}')
-                ;
+                v = v?.replace(/\\\{/g, '{')?.replace(/\\\}/g, '}');
             }
             // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
             this.scope.setVariable(arg.name, v);
@@ -295,15 +305,27 @@ export class SlashCommandClosure {
                     // arguments is an immediate closure, otherwise you cannot step into the
                     // immediate closure
                     // @ts-expect-error TS(2339) FIXME: Property 'namedArgumentList' does not exist on typ... Remove this comment to see the full error message
-                    const hasImmediateClosureInNamedArgs = /**@type {SlashCommandExecutor}*/(step.value)?.namedArgumentList?.find(it => it.value instanceof SlashCommandClosure && it.value.executeNow);
+                    const hasImmediateClosureInNamedArgs = /**@type {SlashCommandExecutor}*/ (
+                        step.value
+                    )?.namedArgumentList?.find(
+                        (it) => it.value instanceof SlashCommandClosure && it.value.executeNow,
+                    );
                     // @ts-expect-error TS(2339) FIXME: Property 'unnamedArgumentList' does not exist on t... Remove this comment to see the full error message
-                    const hasImmediateClosureInUnnamedArgs = /**@type {SlashCommandExecutor}*/(step.value)?.unnamedArgumentList?.find(it => it.value instanceof SlashCommandClosure && it.value.executeNow);
+                    const hasImmediateClosureInUnnamedArgs = /**@type {SlashCommandExecutor}*/ (
+                        step.value
+                    )?.unnamedArgumentList?.find(
+                        (it) => it.value instanceof SlashCommandClosure && it.value.executeNow,
+                    );
                     if (hasImmediateClosureInNamedArgs || hasImmediateClosureInUnnamedArgs) {
                         // @ts-expect-error TS(7057) FIXME: 'yield' expression implicitly results in an 'any' ... Remove this comment to see the full error message
-                        this.debugController.isStepping = yield { closure: this, executor: step.value };
+                        this.debugController.isStepping = yield {
+                            closure: this,
+                            executor: step.value,
+                        };
                     } else {
                         this.debugController.isStepping = true;
-                        this.debugController.stepStack[this.debugController.stepStack.length - 1] = true;
+                        this.debugController.stepStack[this.debugController.stepStack.length - 1] =
+                            true;
                     }
                 }
             } else if (!step.done && this.debugController?.testStepping(this)) {
@@ -311,9 +333,17 @@ export class SlashCommandClosure {
                 // if stepping, have to yield before arguments are resolved if one of the arguments
                 // is an immediate closure, otherwise you cannot step into the immediate closure
                 // @ts-expect-error TS(2339) FIXME: Property 'namedArgumentList' does not exist on typ... Remove this comment to see the full error message
-                const hasImmediateClosureInNamedArgs = /**@type {SlashCommandExecutor}*/(step.value)?.namedArgumentList?.find(it => it.value instanceof SlashCommandClosure && it.value.executeNow);
+                const hasImmediateClosureInNamedArgs = /**@type {SlashCommandExecutor}*/ (
+                    step.value
+                )?.namedArgumentList?.find(
+                    (it) => it.value instanceof SlashCommandClosure && it.value.executeNow,
+                );
                 // @ts-expect-error TS(2339) FIXME: Property 'unnamedArgumentList' does not exist on t... Remove this comment to see the full error message
-                const hasImmediateClosureInUnnamedArgs = /**@type {SlashCommandExecutor}*/(step.value)?.unnamedArgumentList?.find(it => it.value instanceof SlashCommandClosure && it.value.executeNow);
+                const hasImmediateClosureInUnnamedArgs = /**@type {SlashCommandExecutor}*/ (
+                    step.value
+                )?.unnamedArgumentList?.find(
+                    (it) => it.value instanceof SlashCommandClosure && it.value.executeNow,
+                );
                 if (hasImmediateClosureInNamedArgs || hasImmediateClosureInUnnamedArgs) {
                     // @ts-expect-error TS(7057) FIXME: 'yield' expression implicitly results in an 'any' ... Remove this comment to see the full error message
                     this.debugController.isStepping = yield { closure: this, executor: step.value };
@@ -344,7 +374,10 @@ export class SlashCommandClosure {
             return step.value;
         }
         /**@type {SlashCommandClosureResult} */
-        const result = Object.assign(new SlashCommandClosureResult(), { pipe: this.scope.pipe, isBreak: this.breakController?.isBreak ?? false });
+        const result = Object.assign(new SlashCommandClosureResult(), {
+            pipe: this.scope.pipe,
+            isBreak: this.breakController?.isBreak ?? false,
+        });
         this.debugController?.up();
         return result;
     }
@@ -355,7 +388,7 @@ export class SlashCommandClosure {
      *  - after arguments are resolved
      *  - after execution
      */
-    async* executeStep() {
+    async *executeStep() {
         let done = 0;
         let isFirst = true;
         for (const executor of this.executorList) {
@@ -385,7 +418,7 @@ export class SlashCommandClosure {
                 done++;
                 yield executor;
                 isFirst = false;
-            // @ts-expect-error TS(2358) FIXME: The left-hand side of an 'instanceof' expression m... Remove this comment to see the full error message
+                // @ts-expect-error TS(2358) FIXME: The left-hand side of an 'instanceof' expression m... Remove this comment to see the full error message
             } else if (executor instanceof SlashCommandBreak) {
                 // /break need to resolve the unnamed arg and put it into pipe, then yield
                 // for "before exec"
@@ -411,7 +444,8 @@ export class SlashCommandClosure {
                 yield executor;
                 // followed by command execution
                 // @ts-expect-error TS(2339) FIXME: Property 'onProgress' does not exist on type 'neve... Remove this comment to see the full error message
-                executor.onProgress = (subDone, subTotal) => this.onProgress?.(done + subDone, this.commandCount);
+                executor.onProgress = (subDone, subTotal) =>
+                    this.onProgress?.(done + subDone, this.commandCount);
                 const isStepping = this.debugController?.testStepping(this);
                 if (this.debugController) {
                     this.debugController.isStepping = false || this.debugController.isSteppingInto;
@@ -421,7 +455,15 @@ export class SlashCommandClosure {
                     this.scope.pipe = await executor.command.callback(args, value ?? '');
                 } catch (ex) {
                     // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-                    throw new SlashCommandExecutionError(ex, ex.message, executor.name, executor.start, executor.end, this.fullText.slice(executor.start, executor.end), this.fullText);
+                    throw new SlashCommandExecutionError(
+                        ex,
+                        ex.message,
+                        executor.name,
+                        executor.start,
+                        executor.end,
+                        this.fullText.slice(executor.start, executor.end),
+                        this.fullText,
+                    );
                 }
                 if (this.debugController) {
                     this.debugController.namedArguments = undefined;
@@ -482,16 +524,14 @@ export class SlashCommandClosure {
             }
 
             // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
-            const definition = executor.command.namedArgumentList.find(x => x.name == name);
+            const definition = executor.command.namedArgumentList.find((x) => x.name == name);
 
             // Prefer definition name if a valid named args defintion is found
             name = definition?.name ?? name;
 
             // Unescape named argument
             if (value && typeof value == 'string') {
-                value = value
-                    .replace(/\\\{/g, '{')
-                    .replace(/\\\}/g, '}');
+                value = value.replace(/\\\{/g, '{').replace(/\\\}/g, '}');
             }
 
             // If the named argument accepts multiple values, we have to make sure to build an array correctly
@@ -509,7 +549,8 @@ export class SlashCommandClosure {
                     args[name] = [value];
                 }
             } else {
-                if (args[name] !== undefined) console.debug(`Named argument assigned multiple times: ${name}`);
+                if (args[name] !== undefined)
+                    console.debug(`Named argument assigned multiple times: ${name}`);
                 args[name] = value;
             }
         };
@@ -548,7 +589,8 @@ export class SlashCommandClosure {
         if (executor.unnamedArgumentList.length == 0) {
             if (!isFirst && executor.injectPipe) {
                 value = this.scope.pipe;
-                args._hasUnnamedArgument = this.scope.pipe !== null && this.scope.pipe !== undefined;
+                args._hasUnnamedArgument =
+                    this.scope.pipe !== null && this.scope.pipe !== undefined;
             }
         } else {
             value = [];
@@ -576,23 +618,18 @@ export class SlashCommandClosure {
             if (!executor.command.splitUnnamedArgument) {
                 if (value.length == 1) {
                     value = value[0];
-                } else if (!value.find(it => it instanceof SlashCommandClosure)) {
+                } else if (!value.find((it) => it instanceof SlashCommandClosure)) {
                     value = value.join('');
                 }
             }
         }
         // unescape unnamed argument
         if (typeof value == 'string') {
-            value = value
-                ?.replace(/\\\{/g, '{')
-                ?.replace(/\\\}/g, '}')
-            ;
+            value = value?.replace(/\\\{/g, '{')?.replace(/\\\}/g, '}');
         } else if (Array.isArray(value)) {
-            value = value.map(v => {
+            value = value.map((v) => {
                 if (typeof v == 'string') {
-                    return v
-                        ?.replace(/\\\{/g, '{')
-                        ?.replace(/\\\}/g, '}');
+                    return v?.replace(/\\\{/g, '{')?.replace(/\\\}/g, '}');
                 }
                 return v;
             });
@@ -615,10 +652,16 @@ export class SlashCommandClosure {
     // @ts-expect-error TS(7006) FIXME: Parameter 'command' implicitly has an 'any' type.
     #lintPipe(command) {
         if (this.scope.pipe === undefined || this.scope.pipe === null) {
-            console.warn(`/${command.name} returned undefined or null. Auto-fixing to empty string.`);
+            console.warn(
+                `/${command.name} returned undefined or null. Auto-fixing to empty string.`,
+            );
             this.scope.pipe = '';
-        } else if (!(typeof this.scope.pipe == 'string' || this.scope.pipe instanceof SlashCommandClosure)) {
-            console.warn(`/${command.name} returned illegal type (${typeof this.scope.pipe} - ${this.scope.pipe.constructor?.name ?? ''}). Auto-fixing to stringified JSON.`);
+        } else if (
+            !(typeof this.scope.pipe == 'string' || this.scope.pipe instanceof SlashCommandClosure)
+        ) {
+            console.warn(
+                `/${command.name} returned illegal type (${typeof this.scope.pipe} - ${this.scope.pipe.constructor?.name ?? ''}). Auto-fixing to stringified JSON.`,
+            );
             this.scope.pipe = JSON.stringify(this.scope.pipe) ?? '';
         }
     }

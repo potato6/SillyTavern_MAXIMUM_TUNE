@@ -92,7 +92,6 @@ export class DataMaidService {
         return report;
     }
 
-
     /**
      * Sanitizes a record by hashing the file name and removing sensitive information.
      * Additionally, adds metadata like size and modification time.
@@ -118,15 +117,33 @@ export class DataMaidService {
      */
     async sanitizeReport(report: DataMaidRawReport) {
         const sanitizedReport = {
-            images: await Promise.all(report.images.map((i: string) => this.#sanitizeRecord(i, true))),
-            files: await Promise.all(report.files.map((i: string) => this.#sanitizeRecord(i, false))),
-            chats: await Promise.all(report.chats.map((i: string) => this.#sanitizeRecord(i, true))),
-            groupChats: await Promise.all(report.groupChats.map((i: string) => this.#sanitizeRecord(i, false))),
-            avatarThumbnails: await Promise.all(report.avatarThumbnails.map((i: string) => this.#sanitizeRecord(i, false))),
-            backgroundThumbnails: await Promise.all(report.backgroundThumbnails.map((i: string) => this.#sanitizeRecord(i, false))),
-            personaThumbnails: await Promise.all(report.personaThumbnails.map((i: string) => this.#sanitizeRecord(i, false))),
-            chatBackups: await Promise.all(report.chatBackups.map((i: string) => this.#sanitizeRecord(i, false))),
-            settingsBackups: await Promise.all(report.settingsBackups.map((i: string) => this.#sanitizeRecord(i, false))),
+            images: await Promise.all(
+                report.images.map((i: string) => this.#sanitizeRecord(i, true)),
+            ),
+            files: await Promise.all(
+                report.files.map((i: string) => this.#sanitizeRecord(i, false)),
+            ),
+            chats: await Promise.all(
+                report.chats.map((i: string) => this.#sanitizeRecord(i, true)),
+            ),
+            groupChats: await Promise.all(
+                report.groupChats.map((i: string) => this.#sanitizeRecord(i, false)),
+            ),
+            avatarThumbnails: await Promise.all(
+                report.avatarThumbnails.map((i: string) => this.#sanitizeRecord(i, false)),
+            ),
+            backgroundThumbnails: await Promise.all(
+                report.backgroundThumbnails.map((i: string) => this.#sanitizeRecord(i, false)),
+            ),
+            personaThumbnails: await Promise.all(
+                report.personaThumbnails.map((i: string) => this.#sanitizeRecord(i, false)),
+            ),
+            chatBackups: await Promise.all(
+                report.chatBackups.map((i: string) => this.#sanitizeRecord(i, false)),
+            ),
+            settingsBackups: await Promise.all(
+                report.settingsBackups.map((i: string) => this.#sanitizeRecord(i, false)),
+            ),
         };
 
         return sanitizedReport;
@@ -142,7 +159,13 @@ export class DataMaidService {
         const result = [];
 
         try {
-            const messages = await this.#parseAllChats((x: DataMaidMessage) => !!x?.extra?.image || !!x?.extra?.video || Array.isArray(x?.extra?.image_swipes) || Array.isArray(x?.extra?.media));
+            const messages = await this.#parseAllChats(
+                (x: DataMaidMessage) =>
+                    !!x?.extra?.image ||
+                    !!x?.extra?.video ||
+                    Array.isArray(x?.extra?.image_swipes) ||
+                    Array.isArray(x?.extra?.media),
+            );
             const knownImages = new Set();
             for (const message of messages) {
                 if (message?.extra?.image) {
@@ -164,7 +187,10 @@ export class DataMaidService {
                     }
                 }
             }
-            const metadata = await this.#parseAllMetadata((x: DataMaidChatMetadata) => Array.isArray(x?.chat_backgrounds) && x.chat_backgrounds.length > 0);
+            const metadata = await this.#parseAllMetadata(
+                (x: DataMaidChatMetadata) =>
+                    Array.isArray(x?.chat_backgrounds) && x.chat_backgrounds.length > 0,
+            );
             for (const meta of metadata) {
                 if (Array.isArray(meta?.chat_backgrounds)) {
                     for (const background of meta.chat_backgrounds) {
@@ -175,21 +201,27 @@ export class DataMaidService {
                 }
             }
             const knownImageFullPaths = new Set();
-            knownImages.forEach(image => {
+            knownImages.forEach((image) => {
                 // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 if (image.startsWith('http') || image.startsWith('data:')) {
                     return; // Skip URLs and data URIs
                 }
-                knownImageFullPaths.add(path.normalize(path.join(this.directories.root, image as string)));
+                knownImageFullPaths.add(
+                    path.normalize(path.join(this.directories.root, image as string)),
+                );
             });
-            const images = await fs.promises.readdir(this.directories.userImages, { withFileTypes: true });
+            const images = await fs.promises.readdir(this.directories.userImages, {
+                withFileTypes: true,
+            });
             for (const dirent of images) {
                 const direntPath = path.join(dirent.parentPath, dirent.name);
                 if (dirent.isFile() && !knownImageFullPaths.has(direntPath)) {
                     result.push(direntPath);
                 }
                 if (dirent.isDirectory()) {
-                    const subdirFiles = await fs.promises.readdir(direntPath, { withFileTypes: true });
+                    const subdirFiles = await fs.promises.readdir(direntPath, {
+                        withFileTypes: true,
+                    });
                     for (const file of subdirFiles) {
                         const subdirFilePath = path.join(direntPath, file.name);
                         if (file.isFile() && !knownImageFullPaths.has(subdirFilePath)) {
@@ -215,7 +247,11 @@ export class DataMaidService {
         const result = [];
 
         try {
-            const messages = await this.#parseAllChats((x: DataMaidMessage) => !!x?.extra?.file?.url || (Array.isArray(x?.extra?.files) && x.extra.files.length > 0));
+            const messages = await this.#parseAllChats(
+                (x: DataMaidMessage) =>
+                    !!x?.extra?.file?.url ||
+                    (Array.isArray(x?.extra?.files) && x.extra.files.length > 0),
+            );
             const knownFiles = new Set();
             for (const message of messages) {
                 if (message?.extra?.file?.url) {
@@ -229,7 +265,10 @@ export class DataMaidService {
                     }
                 }
             }
-            const metadata = await this.#parseAllMetadata((x: DataMaidChatMetadata) => Array.isArray(x?.attachments) && x.attachments.length > 0);
+            const metadata = await this.#parseAllMetadata(
+                (x: DataMaidChatMetadata) =>
+                    Array.isArray(x?.attachments) && x.attachments.length > 0,
+            );
             for (const meta of metadata) {
                 if (Array.isArray(meta?.attachments)) {
                     for (const attachment of meta.attachments) {
@@ -252,7 +291,9 @@ export class DataMaidService {
                         }
                     }
                     if (typeof settings?.extension_settings?.character_attachments === 'object') {
-                        for (const files of Object.values(settings.extension_settings.character_attachments)) {
+                        for (const files of Object.values(
+                            settings.extension_settings.character_attachments,
+                        )) {
                             if (!Array.isArray(files)) {
                                 continue;
                             }
@@ -268,10 +309,14 @@ export class DataMaidService {
                 }
             }
             const knownFileFullPaths = new Set();
-            knownFiles.forEach(file => {
-                knownFileFullPaths.add(path.normalize(path.join(this.directories.root, file as string)));
+            knownFiles.forEach((file) => {
+                knownFileFullPaths.add(
+                    path.normalize(path.join(this.directories.root, file as string)),
+                );
             });
-            const files = await fs.promises.readdir(this.directories.files, { withFileTypes: true });
+            const files = await fs.promises.readdir(this.directories.files, {
+                withFileTypes: true,
+            });
             for (const file of files) {
                 const filePath = path.join(this.directories.files, file.name);
                 if (file.isFile() && !knownFileFullPaths.has(filePath)) {
@@ -295,16 +340,23 @@ export class DataMaidService {
 
         try {
             const knownChatFolders = new Set();
-            const characters = await fs.promises.readdir(this.directories.characters, { withFileTypes: true });
+            const characters = await fs.promises.readdir(this.directories.characters, {
+                withFileTypes: true,
+            });
             for (const file of characters) {
                 if (file.isFile() && path.parse(file.name).ext === '.png') {
                     knownChatFolders.add(file.name.replace('.png', ''));
                 }
             }
-            const chatFolders = await fs.promises.readdir(this.directories.chats, { withFileTypes: true });
+            const chatFolders = await fs.promises.readdir(this.directories.chats, {
+                withFileTypes: true,
+            });
             for (const folder of chatFolders) {
                 if (folder.isDirectory() && !knownChatFolders.has(folder.name)) {
-                    const chatFiles = await fs.promises.readdir(path.join(this.directories.chats, folder.name), { withFileTypes: true });
+                    const chatFiles = await fs.promises.readdir(
+                        path.join(this.directories.chats, folder.name),
+                        { withFileTypes: true },
+                    );
                     for (const file of chatFiles) {
                         if (file.isFile() && path.parse(file.name).ext === '.jsonl') {
                             result.push(path.join(this.directories.chats, folder.name, file.name));
@@ -328,7 +380,9 @@ export class DataMaidService {
         const result = [];
 
         try {
-            const groups = await fs.promises.readdir(this.directories.groups, { withFileTypes: true });
+            const groups = await fs.promises.readdir(this.directories.groups, {
+                withFileTypes: true,
+            });
             const knownGroupChats = new Set();
             for (const file of groups) {
                 if (file.isFile() && path.parse(file.name).ext === '.json') {
@@ -345,11 +399,16 @@ export class DataMaidService {
                             }
                         }
                     } catch (error) {
-                        console.error(`[Data Maid] Error parsing group chat file ${file.name}:`, error);
+                        console.error(
+                            `[Data Maid] Error parsing group chat file ${file.name}:`,
+                            error,
+                        );
                     }
                 }
             }
-            const groupChats = await fs.promises.readdir(this.directories.groupChats, { withFileTypes: true });
+            const groupChats = await fs.promises.readdir(this.directories.groupChats, {
+                withFileTypes: true,
+            });
             for (const file of groupChats) {
                 if (file.isFile() && path.parse(file.name).ext === '.jsonl') {
                     if (!knownGroupChats.has(path.parse(file.name).name)) {
@@ -373,13 +432,17 @@ export class DataMaidService {
 
         try {
             const knownAvatars = new Set();
-            const avatars = await fs.promises.readdir(this.directories.characters, { withFileTypes: true });
+            const avatars = await fs.promises.readdir(this.directories.characters, {
+                withFileTypes: true,
+            });
             for (const file of avatars) {
                 if (file.isFile()) {
                     knownAvatars.add(file.name);
                 }
             }
-            const avatarThumbnails = await fs.promises.readdir(this.directories.thumbnailsAvatar, { withFileTypes: true });
+            const avatarThumbnails = await fs.promises.readdir(this.directories.thumbnailsAvatar, {
+                withFileTypes: true,
+            });
             for (const file of avatarThumbnails) {
                 if (file.isFile() && !knownAvatars.has(file.name)) {
                     result.push(path.join(this.directories.thumbnailsAvatar, file.name));
@@ -401,13 +464,17 @@ export class DataMaidService {
 
         try {
             const knownBackgrounds = new Set();
-            const backgrounds = await fs.promises.readdir(this.directories.backgrounds, { withFileTypes: true });
+            const backgrounds = await fs.promises.readdir(this.directories.backgrounds, {
+                withFileTypes: true,
+            });
             for (const file of backgrounds) {
                 if (file.isFile()) {
                     knownBackgrounds.add(file.name);
                 }
             }
-            const backgroundThumbnails = await fs.promises.readdir(this.directories.thumbnailsBg, { withFileTypes: true });
+            const backgroundThumbnails = await fs.promises.readdir(this.directories.thumbnailsBg, {
+                withFileTypes: true,
+            });
             for (const file of backgroundThumbnails) {
                 if (file.isFile() && !knownBackgrounds.has(file.name)) {
                     result.push(path.join(this.directories.thumbnailsBg, file.name));
@@ -429,13 +496,18 @@ export class DataMaidService {
 
         try {
             const knownPersonas = new Set();
-            const personas = await fs.promises.readdir(this.directories.avatars, { withFileTypes: true });
+            const personas = await fs.promises.readdir(this.directories.avatars, {
+                withFileTypes: true,
+            });
             for (const file of personas) {
                 if (file.isFile()) {
                     knownPersonas.add(file.name);
                 }
             }
-            const personaThumbnails = await fs.promises.readdir(this.directories.thumbnailsPersona, { withFileTypes: true });
+            const personaThumbnails = await fs.promises.readdir(
+                this.directories.thumbnailsPersona,
+                { withFileTypes: true },
+            );
             for (const file of personaThumbnails) {
                 if (file.isFile() && !knownPersonas.has(file.name)) {
                     result.push(path.join(this.directories.thumbnailsPersona, file.name));
@@ -457,7 +529,9 @@ export class DataMaidService {
 
         try {
             const prefix = CHAT_BACKUPS_PREFIX;
-            const backups = await fs.promises.readdir(this.directories.backups, { withFileTypes: true });
+            const backups = await fs.promises.readdir(this.directories.backups, {
+                withFileTypes: true,
+            });
             for (const file of backups) {
                 if (file.isFile() && file.name.startsWith(prefix)) {
                     result.push(path.join(this.directories.backups, file.name));
@@ -479,7 +553,9 @@ export class DataMaidService {
 
         try {
             const prefix = getSettingsBackupFilePrefix(this.handle);
-            const backups = await fs.promises.readdir(this.directories.backups, { withFileTypes: true });
+            const backups = await fs.promises.readdir(this.directories.backups, {
+                withFileTypes: true,
+            });
             for (const file of backups) {
                 if (file.isFile() && file.name.startsWith(prefix)) {
                     result.push(path.join(this.directories.backups, file.name));
@@ -502,21 +578,32 @@ export class DataMaidService {
         try {
             const allChats = [];
 
-            const groupChats = await fs.promises.readdir(this.directories.groupChats, { withFileTypes: true });
+            const groupChats = await fs.promises.readdir(this.directories.groupChats, {
+                withFileTypes: true,
+            });
             for (const file of groupChats) {
                 if (file.isFile() && path.parse(file.name).ext === '.jsonl') {
-                    const chatMessages = await this.#parseChatFile(path.join(this.directories.groupChats, file.name));
+                    const chatMessages = await this.#parseChatFile(
+                        path.join(this.directories.groupChats, file.name),
+                    );
                     allChats.push(...chatMessages.filter(filterFn));
                 }
             }
 
-            const chatDirectories = await fs.promises.readdir(this.directories.chats, { withFileTypes: true });
+            const chatDirectories = await fs.promises.readdir(this.directories.chats, {
+                withFileTypes: true,
+            });
             for (const directory of chatDirectories) {
                 if (directory.isDirectory()) {
-                    const chatFiles = await fs.promises.readdir(path.join(this.directories.chats, directory.name), { withFileTypes: true });
+                    const chatFiles = await fs.promises.readdir(
+                        path.join(this.directories.chats, directory.name),
+                        { withFileTypes: true },
+                    );
                     for (const file of chatFiles) {
                         if (file.isFile() && path.parse(file.name).ext === '.jsonl') {
-                            const chatMessages = await this.#parseChatFile(path.join(this.directories.chats, directory.name, file.name));
+                            const chatMessages = await this.#parseChatFile(
+                                path.join(this.directories.chats, directory.name, file.name),
+                            );
                             allChats.push(...chatMessages.filter(filterFn));
                         }
                     }
@@ -540,7 +627,9 @@ export class DataMaidService {
         try {
             const allMetadata = [];
 
-            const groups = await fs.promises.readdir(this.directories.groups, { withFileTypes: true });
+            const groups = await fs.promises.readdir(this.directories.groups, {
+                withFileTypes: true,
+            });
             for (const file of groups) {
                 if (file.isFile() && path.parse(file.name).ext === '.json') {
                     try {
@@ -548,24 +637,37 @@ export class DataMaidService {
                         const fileContent = await fs.promises.readFile(pathToFile, 'utf-8');
                         const groupData = tryParse(fileContent);
                         if (groupData?.chat_metadata && filterFn(groupData.chat_metadata)) {
-                            console.warn('Found group chat metadata in group definition - this is deprecated behavior.');
+                            console.warn(
+                                'Found group chat metadata in group definition - this is deprecated behavior.',
+                            );
                             allMetadata.push(groupData.chat_metadata);
                         }
                         if (groupData?.past_metadata) {
-                            console.warn('Found group past chat metadata in group definition - this is deprecated behavior.');
+                            console.warn(
+                                'Found group past chat metadata in group definition - this is deprecated behavior.',
+                            );
                             // @ts-expect-error TS(2769) FIXME: No overload matches this call.
-                            allMetadata.push(...Object.values(groupData.past_metadata).filter(filterFn));
+                            allMetadata.push(
+                                ...Object.values(groupData.past_metadata).filter(filterFn),
+                            );
                         }
                     } catch (error) {
-                        console.error(`[Data Maid] Error parsing group chat file ${file.name}:`, error);
+                        console.error(
+                            `[Data Maid] Error parsing group chat file ${file.name}:`,
+                            error,
+                        );
                     }
                 }
             }
 
-            const groupChats = await fs.promises.readdir(this.directories.groupChats, { withFileTypes: true });
+            const groupChats = await fs.promises.readdir(this.directories.groupChats, {
+                withFileTypes: true,
+            });
             for (const file of groupChats) {
                 if (file.isFile() && path.parse(file.name).ext === '.jsonl') {
-                    const chatMessages = await this.#parseChatFile(path.join(this.directories.groupChats, file.name));
+                    const chatMessages = await this.#parseChatFile(
+                        path.join(this.directories.groupChats, file.name),
+                    );
                     const chatMetadata = chatMessages?.[0]?.chat_metadata;
                     if (chatMetadata && filterFn(chatMetadata)) {
                         allMetadata.push(chatMetadata);
@@ -573,13 +675,20 @@ export class DataMaidService {
                 }
             }
 
-            const chatDirectories = await fs.promises.readdir(this.directories.chats, { withFileTypes: true });
+            const chatDirectories = await fs.promises.readdir(this.directories.chats, {
+                withFileTypes: true,
+            });
             for (const directory of chatDirectories) {
                 if (directory.isDirectory()) {
-                    const chatFiles = await fs.promises.readdir(path.join(this.directories.chats, directory.name), { withFileTypes: true });
+                    const chatFiles = await fs.promises.readdir(
+                        path.join(this.directories.chats, directory.name),
+                        { withFileTypes: true },
+                    );
                     for (const file of chatFiles) {
                         if (file.isFile() && path.parse(file.name).ext === '.jsonl') {
-                            const chatMessages = await this.#parseChatFile(path.join(this.directories.chats, directory.name, file.name));
+                            const chatMessages = await this.#parseChatFile(
+                                path.join(this.directories.chats, directory.name, file.name),
+                            );
                             const chatMetadata = chatMessages?.[0]?.chat_metadata;
                             if (chatMetadata && filterFn(chatMetadata)) {
                                 allMetadata.push(chatMetadata);
@@ -631,7 +740,10 @@ export class DataMaidService {
         const token = crypto.randomBytes(32).toString('hex');
         const tokenEntry = {
             handle,
-            paths: Object.values(report).filter(v => Array.isArray(v)).flat().map(x => ({ path: x, hash: sha256(x) })),
+            paths: Object.values(report)
+                .filter((v) => Array.isArray(v))
+                .flat()
+                .map((x) => ({ path: x, hash: sha256(x) })),
         };
         this.TOKENS.set(token, tokenEntry);
         return token;
@@ -710,13 +822,18 @@ router.get('/view', async (req, res) => {
             return res.sendStatus(403);
         }
 
-        const fileEntry = tokenEntry.paths.find((entry: { path: string; hash: string }) => entry.hash === hash);
+        const fileEntry = tokenEntry.paths.find(
+            (entry: { path: string; hash: string }) => entry.hash === hash,
+        );
         if (!fileEntry) {
             return res.sendStatus(404);
         }
 
         if (!isPathUnderParent(req.user.directories.root, fileEntry.path)) {
-            console.warn('[Data Maid] Attempted access to a file outside of the user directory:', fileEntry.path);
+            console.warn(
+                '[Data Maid] Attempted access to a file outside of the user directory:',
+                fileEntry.path,
+            );
             return res.sendStatus(403);
         }
 
@@ -758,13 +875,18 @@ router.post('/delete', async (req, res) => {
         }
 
         for (const hash of hashes) {
-            const fileEntry = tokenEntry.paths.find((entry: { path: string; hash: string }) => entry.hash === hash);
+            const fileEntry = tokenEntry.paths.find(
+                (entry: { path: string; hash: string }) => entry.hash === hash,
+            );
             if (!fileEntry) {
                 continue;
             }
 
             if (!isPathUnderParent(req.user.directories.root, fileEntry.path)) {
-                console.warn('[Data Maid] Attempted deletion of a file outside of the user directory:', fileEntry.path);
+                console.warn(
+                    '[Data Maid] Attempted deletion of a file outside of the user directory:',
+                    fileEntry.path,
+                );
                 continue;
             }
 

@@ -41,16 +41,30 @@ export const CHAT_BACKUPS_PREFIX = 'chat_';
  * @param {string} data The serialized chat to save.
  * @param {string} backupPrefix The file prefix. Typically CHAT_BACKUPS_PREFIX.
  */
-function backupChat(directory: string, name: string, data: string, backupPrefix = CHAT_BACKUPS_PREFIX) {
+function backupChat(
+    directory: string,
+    name: string,
+    data: string,
+    backupPrefix = CHAT_BACKUPS_PREFIX,
+) {
     try {
-        if (!isBackupEnabled) { return; }
+        if (!isBackupEnabled) {
+            return;
+        }
         if (!fs.existsSync(directory)) {
-            console.error(`The chat couldn't be backed up because no directory exists at ${directory}!`);
+            console.error(
+                `The chat couldn't be backed up because no directory exists at ${directory}!`,
+            );
         }
         // replace non-alphanumeric characters with underscores
-        name = sanitize(name).replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        name = sanitize(name)
+            .replace(/[^a-z0-9]/gi, '_')
+            .toLowerCase();
 
-        const backupFile = path.join(directory, `${backupPrefix}${name}_${generateTimestamp()}.jsonl`);
+        const backupFile = path.join(
+            directory,
+            `${backupPrefix}${name}_${generateTimestamp()}.jsonl`,
+        );
 
         tryWriteFileSync(backupFile, data);
         removeOldBackups(directory, `${backupPrefix}${name}_`);
@@ -76,9 +90,12 @@ const backupFunctions = new Map();
  */
 function getBackupFunction(handle: string) {
     if (!backupFunctions.has(handle)) {
-        backupFunctions.set(handle, throttle(backupChat, throttleInterval, { leading: true, trailing: true }));
+        backupFunctions.set(
+            handle,
+            throttle(backupChat, throttleInterval, { leading: true, trailing: true }),
+        );
     }
-    return backupFunctions.get(handle) || (() => { });
+    return backupFunctions.get(handle) || (() => {});
 }
 
 /**
@@ -113,11 +130,13 @@ process.on('exit', () => {
  */
 function importOobaChat(userName: string, characterName: string, jsonData: object): string {
     /** @type {object[]} */
-    const chat = [{
-        chat_metadata: {},
-        user_name: 'unused',
-        character_name: 'unused',
-    }];
+    const chat = [
+        {
+            chat_metadata: {},
+            user_name: 'unused',
+            character_name: 'unused',
+        },
+    ];
 
     // @ts-expect-error TS(2339) FIXME: Property 'data_visible' does not exist on type 'ob... Remove this comment to see the full error message
     for (const arr of jsonData.data_visible) {
@@ -145,7 +164,7 @@ function importOobaChat(userName: string, characterName: string, jsonData: objec
         }
     }
 
-    return chat.map(obj => JSON.stringify(obj)).join('\n');
+    return chat.map((obj) => JSON.stringify(obj)).join('\n');
 }
 
 /**
@@ -157,11 +176,13 @@ function importOobaChat(userName: string, characterName: string, jsonData: objec
  */
 function importAgnaiChat(userName: string, characterName: string, jsonData: object): string {
     /** @type {object[]} */
-    const chat = [{
-        chat_metadata: {},
-        user_name: 'unused',
-        character_name: 'unused',
-    }];
+    const chat = [
+        {
+            chat_metadata: {},
+            user_name: 'unused',
+            character_name: 'unused',
+        },
+    ];
 
     // @ts-expect-error TS(2339) FIXME: Property 'messages' does not exist on type 'object... Remove this comment to see the full error message
     for (const message of jsonData.messages) {
@@ -176,7 +197,7 @@ function importAgnaiChat(userName: string, characterName: string, jsonData: obje
         });
     }
 
-    return chat.map(obj => JSON.stringify(obj)).join('\n');
+    return chat.map((obj) => JSON.stringify(obj)).join('\n');
 }
 
 /**
@@ -200,19 +221,27 @@ function importCAIChat(userName: string, characterName: string, jsonData: object
         };
 
         // @ts-expect-error TS(2339) FIXME: Property 'msgs' does not exist on type 'object'.
-        const historyData = history.msgs.map((msg: { src: { is_human: boolean }; text: string }) => ({
-            name: msg.src.is_human ? userName : characterName,
-            is_user: msg.src.is_human,
-            send_date: new Date().toISOString(),
-            mes: msg.text,
-            extra: {}
-        }));
+        const historyData = history.msgs.map(
+            (msg: { src: { is_human: boolean }; text: string }) => ({
+                name: msg.src.is_human ? userName : characterName,
+                is_user: msg.src.is_human,
+                send_date: new Date().toISOString(),
+                mes: msg.text,
+                extra: {},
+            }),
+        );
 
         return [starter, ...historyData];
     }
 
     // @ts-expect-error TS(2339) FIXME: Property 'histories' does not exist on type 'objec... Remove this comment to see the full error message
-    const newChats = (jsonData.histories.histories ?? []).map((history: object) => newChats.push(convert(history).map(obj => JSON.stringify(obj)).join('\n')));
+    const newChats = (jsonData.histories.histories ?? []).map((history: object) =>
+        newChats.push(
+            convert(history)
+                .map((obj) => JSON.stringify(obj))
+                .join('\n'),
+        ),
+    );
     return newChats;
 }
 
@@ -260,7 +289,7 @@ function importKoboldLiteChat(_userName: string, _characterName: string, data: o
     }
     // Combine header and messages
     const chatData = [header, ...formattedMessages];
-    return chatData.map(obj => JSON.stringify(obj)).join('\n');
+    return chatData.map((obj) => JSON.stringify(obj)).join('\n');
 }
 
 /**
@@ -295,7 +324,9 @@ function flattenChubChat(userName: string, characterName: string, lines: string[
         }
 
         if (lineData?.swipes && Array.isArray(lineData.swipes)) {
-            lineData.swipes = lineData.swipes.map((swipe: { message?: string } | string) => flattenSwipe(swipe));
+            lineData.swipes = lineData.swipes.map((swipe: { message?: string } | string) =>
+                flattenSwipe(swipe),
+            );
         }
 
         return JSON.stringify(lineData);
@@ -313,11 +344,13 @@ function flattenChubChat(userName: string, characterName: string, lines: string[
  */
 function importRisuChat(userName: string, characterName: string, jsonData: object): string {
     /** @type {object[]} */
-    const chat = [{
-        chat_metadata: {},
-        user_name: 'unused',
-        character_name: 'unused',
-    }];
+    const chat = [
+        {
+            chat_metadata: {},
+            user_name: 'unused',
+            character_name: 'unused',
+        },
+    ];
 
     // @ts-expect-error TS(2339) FIXME: Property 'data' does not exist on type 'object'.
     for (const message of jsonData.data.message) {
@@ -332,7 +365,7 @@ function importRisuChat(userName: string, characterName: string, jsonData: objec
         });
     }
 
-    return chat.map(obj => JSON.stringify(obj)).join('\n');
+    return chat.map((obj) => JSON.stringify(obj)).join('\n');
 }
 
 /**
@@ -355,7 +388,9 @@ async function checkChatIntegrity(filePath: string, integritySlug: string): Prom
 
     // If the chat has no integrity metadata, assume it's intact
     if (!chatIntegrity) {
-        console.debug(`File "${filePath}" does not have integrity metadata matching "${integritySlug}". The integrity validation has been skipped.`);
+        console.debug(
+            `File "${filePath}" does not have integrity metadata matching "${integritySlug}". The integrity validation has been skipped.`,
+        );
         return true;
     }
 
@@ -385,11 +420,16 @@ async function checkChatIntegrity(filePath: string, integritySlug: string): Prom
  * @typedef {(textArray: string[]) => boolean} ChatMatchFunction
  */
 // @ts-expect-error TS(2304) FIXME: Cannot find name 'ChatMatchFunction'.
-export async function getChatInfo(pathToFile: string, additionalData: Record<string, unknown> = {}, withMetadata = false, matcher: ChatMatchFunction | null = null) {
+export async function getChatInfo(
+    pathToFile: string,
+    additionalData: Record<string, unknown> = {},
+    withMetadata = false,
+    matcher: ChatMatchFunction | null = null,
+) {
     return new Promise(async (res) => {
         const parsedPath = path.parse(pathToFile);
         const stats = await fs.promises.stat(pathToFile);
-        const hasMatcher = (typeof matcher === 'function');
+        const hasMatcher = typeof matcher === 'function';
 
         const chatData = {
             match: false,
@@ -444,10 +484,14 @@ export async function getChatInfo(pathToFile: string, additionalData: Record<str
 
             if (lastLine) {
                 const jsonData = tryParse(lastLine);
-                if (jsonData && (jsonData.name || jsonData.character_name || jsonData.chat_metadata)) {
-                    chatData.chat_items = (itemCounter - 1);
+                if (
+                    jsonData &&
+                    (jsonData.name || jsonData.character_name || jsonData.chat_metadata)
+                ) {
+                    chatData.chat_items = itemCounter - 1;
                     chatData.mes = jsonData.mes || '[The message is empty]';
-                    chatData.last_mes = jsonData.send_date || new Date(Math.round(stats.mtimeMs)).toISOString();
+                    chatData.last_mes =
+                        jsonData.send_date || new Date(Math.round(stats.mtimeMs)).toISOString();
                     chatData.match = hasMatcher ? hasAnyMatch : true;
 
                     res(chatData);
@@ -486,14 +530,25 @@ class IntegrityMismatchError extends Error {
  * @param {string} cardName Passed to backupChat.
  * @param {string} backupDirectory Passed to backupChat.
  */
-export async function trySaveChat(chatData: { chat_metadata?: { integrity?: string } }[], filePath: string, skipIntegrityCheck = false, handle: string, cardName: string, backupDirectory: string): Promise<void> {
+export async function trySaveChat(
+    chatData: { chat_metadata?: { integrity?: string } }[],
+    filePath: string,
+    skipIntegrityCheck = false,
+    handle: string,
+    cardName: string,
+    backupDirectory: string,
+): Promise<void> {
     const jsonlData = chatData?.map((m: unknown) => JSON.stringify(m)).join('\n');
 
-    const doIntegrityCheck = (checkIntegrity && !skipIntegrityCheck);
-    const chatIntegritySlug = doIntegrityCheck ? chatData?.[0]?.chat_metadata?.integrity : undefined;
+    const doIntegrityCheck = checkIntegrity && !skipIntegrityCheck;
+    const chatIntegritySlug = doIntegrityCheck
+        ? chatData?.[0]?.chat_metadata?.integrity
+        : undefined;
 
     if (chatIntegritySlug && !(await checkChatIntegrity(filePath, chatIntegritySlug))) {
-        throw new IntegrityMismatchError(`Chat integrity check failed for "${filePath}". The expected integrity slug was "${chatIntegritySlug}".`);
+        throw new IntegrityMismatchError(
+            `Chat integrity check failed for "${filePath}". The expected integrity slug was "${chatIntegritySlug}".`,
+        );
     }
     tryWriteFileSync(filePath, jsonlData);
     getBackupFunction(handle)(backupDirectory, cardName, jsonlData);
@@ -505,16 +560,27 @@ router.post('/save', validateAvatarUrlMiddleware, async function (request, respo
         const cardName = String(request.body.avatar_url).replace('.png', '');
         const chatData = request.body.chat;
         const chatFileName = `${String(request.body.file_name)}.jsonl`;
-        const chatFilePath = path.join(request.user.directories.chats, cardName, sanitize(chatFileName));
+        const chatFilePath = path.join(
+            request.user.directories.chats,
+            cardName,
+            sanitize(chatFileName),
+        );
         if (!isPathUnderParent(request.user.directories.chats, chatFilePath)) {
             return response.sendStatus(400);
         }
 
         if (Array.isArray(chatData)) {
-            await trySaveChat(chatData, chatFilePath, request.body.force, handle, cardName, request.user.directories.backups);
+            await trySaveChat(
+                chatData,
+                chatFilePath,
+                request.body.force,
+                handle,
+                cardName,
+                request.user.directories.backups,
+            );
             return response.send({ ok: true });
         } else {
-            return response.status(400).send({ error: 'The request\'s body.chat is not an array.' });
+            return response.status(400).send({ error: "The request's body.chat is not an array." });
         }
     } catch (error) {
         if (error instanceof IntegrityMismatchError) {
@@ -522,7 +588,9 @@ router.post('/save', validateAvatarUrlMiddleware, async function (request, respo
             return response.status(400).send({ error: 'integrity' });
         }
         console.error(error);
-        return response.status(500).send({ error: 'An error has occurred, see the console logs for more information.' });
+        return response
+            .status(500)
+            .send({ error: 'An error has occurred, see the console logs for more information.' });
     }
 });
 
@@ -538,7 +606,7 @@ export function getChatData(chatFilePath: string): object[] {
     if (chatJSON.length > 0) {
         const lines = chatJSON.split('\n');
         // Iterate through the array of strings and parse each line as JSON
-        chatData = lines.map(line => tryParse(line)).filter(x => x);
+        chatData = lines.map((line) => tryParse(line)).filter((x) => x);
     } else {
         console.warn(`File not found: ${chatFilePath}. The chat does not exist or is empty.`);
     }
@@ -583,8 +651,14 @@ router.post('/rename', validateAvatarUrlMiddleware, async function (request, res
 
         const pathToFolder = request.body.is_group
             ? request.user.directories.groupChats
-            : path.join(request.user.directories.chats, String(request.body.avatar_url).replace('.png', ''));
-        if (!request.body.is_group && !isPathUnderParent(request.user.directories.chats, pathToFolder)) {
+            : path.join(
+                  request.user.directories.chats,
+                  String(request.body.avatar_url).replace('.png', ''),
+              );
+        if (
+            !request.body.is_group &&
+            !isPathUnderParent(request.user.directories.chats, pathToFolder)
+        ) {
             return response.sendStatus(400);
         }
         const pathToOriginalFile = path.join(pathToFolder, sanitize(request.body.original_file));
@@ -616,7 +690,11 @@ router.post('/delete', validateAvatarUrlMiddleware, function (request, response)
 
         const dirName = String(request.body.avatar_url).replace('.png', '');
         const chatFileName = String(request.body.chatfile);
-        const chatFilePath = path.join(request.user.directories.chats, dirName, sanitize(chatFileName));
+        const chatFilePath = path.join(
+            request.user.directories.chats,
+            dirName,
+            sanitize(chatFileName),
+        );
         if (!isPathUnderParent(request.user.directories.chats, chatFilePath)) {
             return response.sendStatus(400);
         }
@@ -639,7 +717,10 @@ router.post('/export', validateAvatarUrlMiddleware, async function (request, res
     }
     const pathToFolder = request.body.is_group
         ? request.user.directories.groupChats
-        : path.join(request.user.directories.chats, String(request.body.avatar_url).replace('.png', ''));
+        : path.join(
+              request.user.directories.chats,
+              String(request.body.avatar_url).replace('.png', ''),
+          );
     const filename = path.join(pathToFolder, sanitize(request.body.file));
     if (!request.body.is_group && !isPathUnderParent(request.user.directories.chats, filename)) {
         return response.sendStatus(400);
@@ -687,8 +768,11 @@ router.post('/export', validateAvatarUrlMiddleware, async function (request, res
             }
             if (data.mes) {
                 const name = data.name;
-                const message = (data?.extra?.display_text || data?.mes || '').replace(/\r?\n/g, '\n');
-                buffer += (`${name}: ${message}\n\n`);
+                const message = (data?.extra?.display_text || data?.mes || '').replace(
+                    /\r?\n/g,
+                    '\n',
+                );
+                buffer += `${name}: ${message}\n\n`;
             }
         });
         rl.on('close', () => {
@@ -729,7 +813,7 @@ router.post('/import', validateAvatarUrlMiddleware, function (request, response)
     if (!request.body) return response.sendStatus(400);
 
     const format = request.body.file_type;
-    const avatarUrl = (request.body.avatar_url).replace('.png', '');
+    const avatarUrl = request.body.avatar_url.replace('.png', '');
     const characterName = sanitize(request.body.character_name) || 'Character';
     const userName = sanitize(request.body.user_name) || 'User';
     const fileNames: string[] = [];
@@ -754,17 +838,23 @@ router.post('/import', validateAvatarUrlMiddleware, function (request, response)
             /** @type {function(string, string, object): string|string[]} */
             let importFunc;
 
-            if (jsonData.savedsettings !== undefined) { // Kobold Lite format
+            if (jsonData.savedsettings !== undefined) {
+                // Kobold Lite format
                 importFunc = importKoboldLiteChat;
-            } else if (jsonData.histories !== undefined) { // CAI Tools format
+            } else if (jsonData.histories !== undefined) {
+                // CAI Tools format
                 importFunc = importCAIChat;
-            } else if (Array.isArray(jsonData.data_visible)) { // oobabooga's format
+            } else if (Array.isArray(jsonData.data_visible)) {
+                // oobabooga's format
                 importFunc = importOobaChat;
-            } else if (Array.isArray(jsonData.messages)) { // Agnai's format
+            } else if (Array.isArray(jsonData.messages)) {
+                // Agnai's format
                 importFunc = importAgnaiChat;
-            } else if (jsonData.type === 'risuChat') { // RisuAI format
+            } else if (jsonData.type === 'risuChat') {
+                // RisuAI format
                 importFunc = importRisuChat;
-            } else { // Unknown format
+            } else {
+                // Unknown format
                 console.error('Incorrect chat format .json');
                 return response.send({ error: true });
             }
@@ -793,7 +883,13 @@ router.post('/import', validateAvatarUrlMiddleware, function (request, response)
 
             const jsonData: Record<string, unknown> = JSON.parse(header!);
 
-            if (!(jsonData.user_name !== undefined || jsonData.name !== undefined || jsonData.chat_metadata !== undefined)) {
+            if (
+                !(
+                    jsonData.user_name !== undefined ||
+                    jsonData.name !== undefined ||
+                    jsonData.chat_metadata !== undefined
+                )
+            ) {
                 console.error('Incorrect chat format .jsonl');
                 return response.send({ error: true });
             }
@@ -844,7 +940,10 @@ router.post('/group/info', async (request, response) => {
         }
 
         const id = request.body.id;
-        const chatFilePath = path.join(request.user.directories.groupChats, sanitize(`${id}.jsonl`));
+        const chatFilePath = path.join(
+            request.user.directories.groupChats,
+            sanitize(`${id}.jsonl`),
+        );
 
         const chatInfo = await getChatInfo(chatFilePath);
         return response.send(chatInfo);
@@ -861,7 +960,10 @@ router.post('/group/delete', (request, response) => {
         }
 
         const id = request.body.id;
-        const chatFilePath = path.join(request.user.directories.groupChats, sanitize(`${id}.jsonl`));
+        const chatFilePath = path.join(
+            request.user.directories.groupChats,
+            sanitize(`${id}.jsonl`),
+        );
 
         //Return success if the file was deleted.
         if (tryDeleteFile(chatFilePath)) {
@@ -884,14 +986,24 @@ router.post('/group/save', async function (request, response) {
 
         const id = request.body.id;
         const handle = request.user.profile.handle;
-        const chatFilePath = path.join(request.user.directories.groupChats, sanitize(`${id}.jsonl`));
+        const chatFilePath = path.join(
+            request.user.directories.groupChats,
+            sanitize(`${id}.jsonl`),
+        );
         const chatData = request.body.chat;
 
         if (Array.isArray(chatData)) {
-            await trySaveChat(chatData, chatFilePath, request.body.force, handle, String(id), request.user.directories.backups);
+            await trySaveChat(
+                chatData,
+                chatFilePath,
+                request.body.force,
+                handle,
+                String(id),
+                request.user.directories.backups,
+            );
             return response.send({ ok: true });
         } else {
-            return response.status(400).send({ error: 'The request\'s body.chat is not an array.' });
+            return response.status(400).send({ error: "The request's body.chat is not an array." });
         }
     } catch (error) {
         if (error instanceof IntegrityMismatchError) {
@@ -899,7 +1011,9 @@ router.post('/group/save', async function (request, response) {
             return response.status(400).send({ error: 'integrity' });
         }
         console.error(error);
-        return response.status(500).send({ error: 'An error has occurred, see the console logs for more information.' });
+        return response
+            .status(500)
+            .send({ error: 'An error has occurred, see the console logs for more information.' });
     }
 });
 
@@ -913,13 +1027,16 @@ router.post('/search', validateAvatarUrlMiddleware, async function (request, res
         if (group_id) {
             // Find group's chat IDs first
             const groupDir = path.join(request.user.directories.groups);
-            const groupFiles = fs.readdirSync(groupDir)
-                .filter(file => path.extname(file) === '.json');
+            const groupFiles = fs
+                .readdirSync(groupDir)
+                .filter((file) => path.extname(file) === '.json');
 
             let targetGroup;
             for (const groupFile of groupFiles) {
                 try {
-                    const groupData = JSON.parse(fs.readFileSync(path.join(groupDir, groupFile), 'utf8'));
+                    const groupData = JSON.parse(
+                        fs.readFileSync(path.join(groupDir, groupFile), 'utf8'),
+                    );
                     if (groupData.id === group_id) {
                         targetGroup = groupData;
                         break;
@@ -947,9 +1064,10 @@ router.post('/search', validateAvatarUrlMiddleware, async function (request, res
                 return response.send([]);
             }
 
-            chatFiles = fs.readdirSync(directoryPath)
-                .filter(file => path.extname(file) === '.jsonl')
-                .map(fileName => path.join(directoryPath, fileName));
+            chatFiles = fs
+                .readdirSync(directoryPath)
+                .filter((file) => path.extname(file) === '.jsonl')
+                .map((fileName) => path.join(directoryPath, fileName));
         }
 
         /**
@@ -964,14 +1082,26 @@ router.post('/search', validateAvatarUrlMiddleware, async function (request, res
         const results = [];
 
         /** @type {string[]} */
-        const fragments = query ? query.trim().toLowerCase().split(/\s+/).filter((x: string) => x) : [];
+        const fragments = query
+            ? query
+                  .trim()
+                  .toLowerCase()
+                  .split(/\s+/)
+                  .filter((x: string) => x)
+            : [];
 
         /** @type {ChatMatchFunction} */
         const hasTextMatch = (textArray: string[]): boolean => {
             if (fragments.length === 0) {
                 return true;
             }
-            return fragments.every((fragment: string) => textArray.some((text: string) => String(text ?? '').toLowerCase().includes(fragment)));
+            return fragments.every((fragment: string) =>
+                textArray.some((text: string) =>
+                    String(text ?? '')
+                        .toLowerCase()
+                        .includes(fragment),
+                ),
+            );
         };
 
         for (const chatFile of chatFiles) {
@@ -1025,8 +1155,12 @@ router.post('/recent', async function (request, response) {
         const pinnedChats = Array.isArray(request.body.pinned) ? request.body.pinned : [];
 
         const getCharacterChatFiles = async () => {
-            const pngDirents = await fs.promises.readdir(request.user.directories.characters, { withFileTypes: true });
-            const pngFiles = pngDirents.filter(e => e.isFile() && path.extname(e.name) === '.png').map(e => e.name);
+            const pngDirents = await fs.promises.readdir(request.user.directories.characters, {
+                withFileTypes: true,
+            });
+            const pngFiles = pngDirents
+                .filter((e) => e.isFile() && path.extname(e.name) === '.png')
+                .map((e) => e.name);
 
             for (const pngFile of pngFiles) {
                 const chatsDirectory = pngFile.replace('.png', '');
@@ -1037,7 +1171,7 @@ router.post('/recent', async function (request, response) {
                 const pathStats = await fs.promises.stat(pathToChats);
                 if (pathStats.isDirectory()) {
                     const chatFiles = await fs.promises.readdir(pathToChats);
-                    const jsonlFiles = chatFiles.filter(file => path.extname(file) === '.jsonl');
+                    const jsonlFiles = chatFiles.filter((file) => path.extname(file) === '.jsonl');
 
                     for (const file of jsonlFiles) {
                         const filePath = path.join(pathToChats, file);
@@ -1050,8 +1184,12 @@ router.post('/recent', async function (request, response) {
         };
 
         const getGroupChatFiles = async () => {
-            const groupDirents = await fs.promises.readdir(request.user.directories.groups, { withFileTypes: true });
-            const groups = groupDirents.filter(e => e.isFile() && path.extname(e.name) === '.json').map(e => e.name);
+            const groupDirents = await fs.promises.readdir(request.user.directories.groups, {
+                withFileTypes: true,
+            });
+            const groups = groupDirents
+                .filter((e) => e.isFile() && path.extname(e.name) === '.json')
+                .map((e) => e.name);
 
             for (const group of groups) {
                 try {
@@ -1061,13 +1199,20 @@ router.post('/recent', async function (request, response) {
 
                     if (Array.isArray(groupData.chats)) {
                         for (const chat of groupData.chats) {
-                            const filePath = path.join(request.user.directories.groupChats, `${chat}.jsonl`);
+                            const filePath = path.join(
+                                request.user.directories.groupChats,
+                                `${chat}.jsonl`,
+                            );
                             if (!fs.existsSync(filePath)) {
                                 continue;
                             }
                             const stats = await fs.promises.stat(filePath);
                             // @ts-expect-error TS(2345) FIXME: Argument of type '{ groupId: any; filePath: any; m... Remove this comment to see the full error message
-                            allChatFiles.push({ groupId: groupData.id, filePath, mtime: stats.mtimeMs });
+                            allChatFiles.push({
+                                groupId: groupData.id,
+                                filePath,
+                                mtime: stats.mtimeMs,
+                            });
                         }
                     }
                 } catch {
@@ -1078,8 +1223,12 @@ router.post('/recent', async function (request, response) {
         };
 
         const getRootChatFiles = async () => {
-            const dirents = await fs.promises.readdir(request.user.directories.chats, { withFileTypes: true });
-            const chatFiles = dirents.filter(e => e.isFile() && path.extname(e.name) === '.jsonl').map(e => e.name);
+            const dirents = await fs.promises.readdir(request.user.directories.chats, {
+                withFileTypes: true,
+            });
+            const chatFiles = dirents
+                .filter((e) => e.isFile() && path.extname(e.name) === '.jsonl')
+                .map((e) => e.name);
 
             for (const file of chatFiles) {
                 const filePath = path.join(request.user.directories.chats, file);
@@ -1089,33 +1238,46 @@ router.post('/recent', async function (request, response) {
             }
         };
 
-        await Promise.allSettled([getCharacterChatFiles(), getGroupChatFiles(), getRootChatFiles()]);
+        await Promise.allSettled([
+            getCharacterChatFiles(),
+            getGroupChatFiles(),
+            getRootChatFiles(),
+        ]);
 
         const max = parseInt(request.body.max ?? Number.MAX_SAFE_INTEGER) + pinnedChats.length;
         // @ts-expect-error TS(7006) FIXME: Parameter 'p' implicitly has an 'any' type.
-        const isPinned = (chatFile: ChatFile) => pinnedChats.some((p) => p.file_name === path.basename(chatFile.filePath) && (p.avatar === chatFile.pngFile || p.group === chatFile.groupId));
-        const recentChats = allChatFiles.sort((a, b) => {
-            const isAPinned = isPinned(a);
-            const isBPinned = isPinned(b);
+        const isPinned = (chatFile: ChatFile) =>
+            pinnedChats.some(
+                (p) =>
+                    p.file_name === path.basename(chatFile.filePath) &&
+                    (p.avatar === chatFile.pngFile || p.group === chatFile.groupId),
+            );
+        const recentChats = allChatFiles
+            .toSorted((a, b) => {
+                const isAPinned = isPinned(a);
+                const isBPinned = isPinned(b);
 
-            if (isAPinned && !isBPinned) return -1;
-            if (!isAPinned && isBPinned) return 1;
+                if (isAPinned && !isBPinned) return -1;
+                if (!isAPinned && isBPinned) return 1;
 
-            // @ts-expect-error TS(2339) FIXME: Property 'mtime' does not exist on type 'ChatFile'... Remove this comment to see the full error message
-            return b.mtime - a.mtime;
-        }).slice(0, max);
+                // @ts-expect-error TS(2339) FIXME: Property 'mtime' does not exist on type 'ChatFile'... Remove this comment to see the full error message
+                return b.mtime - a.mtime;
+            })
+            .slice(0, max);
         const jsonFilesPromise = recentChats.map((file) => {
             const withMetadata = !!request.body.metadata;
             // @ts-expect-error TS(2339) FIXME: Property 'groupId' does not exist on type 'ChatFil... Remove this comment to see the full error message
             return file.groupId
-                // @ts-expect-error TS(2339) FIXME: Property 'filePath' does not exist on type 'ChatFi... Remove this comment to see the full error message
-                ? getChatInfo(file.filePath, { group: file.groupId }, withMetadata)
-                // @ts-expect-error TS(2339) FIXME: Property 'filePath' does not exist on type 'ChatFi... Remove this comment to see the full error message
-                : getChatInfo(file.filePath, { avatar: file.pngFile }, withMetadata);
+                ? // @ts-expect-error TS(2339) FIXME: Property 'filePath' does not exist on type 'ChatFi... Remove this comment to see the full error message
+                  getChatInfo(file.filePath, { group: file.groupId }, withMetadata)
+                : // @ts-expect-error TS(2339) FIXME: Property 'filePath' does not exist on type 'ChatFi... Remove this comment to see the full error message
+                  getChatInfo(file.filePath, { avatar: file.pngFile }, withMetadata);
         });
 
-        const chatData = (await Promise.allSettled(jsonFilesPromise)).filter(x => x.status === 'fulfilled').map(x => x.value as { file_name?: string });
-        const validFiles = chatData.filter(i => i.file_name);
+        const chatData = (await Promise.allSettled(jsonFilesPromise))
+            .filter((x) => x.status === 'fulfilled')
+            .map((x) => x.value as { file_name?: string });
+        const validFiles = chatData.filter((i) => i.file_name);
 
         return response.send(validFiles);
     } catch (error) {

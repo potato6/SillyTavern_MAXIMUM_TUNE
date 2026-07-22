@@ -3,7 +3,6 @@ import { AbstractEventTarget } from './AbstractEventTarget.js';
 export class SlashCommandAbortController extends AbstractEventTarget {
     /**@type {SlashCommandAbortSignal}*/ signal;
 
-
     constructor() {
         super();
         this.signal = new SlashCommandAbortSignal();

@@ -50,10 +50,7 @@ export function qs<K extends keyof HTMLElementTagNameMap>(
     parent: ParentNode,
     selector: K,
 ): HTMLElementTagNameMap[K] | null;
-export function qs<E extends Element = Element>(
-    parent: ParentNode,
-    selector: string,
-): E | null;
+export function qs<E extends Element = Element>(parent: ParentNode, selector: string): E | null;
 export function qs(parent: ParentNode, selector: string): Element | null {
     return parent.querySelector(selector);
 }
@@ -100,10 +97,7 @@ import { getRequestHeaders, eventSource } from '../../script.js';
  * @param url
  * @param body
  */
-export async function apiPost<T = unknown>(
-    url: string,
-    body: Record<string, unknown>,
-): Promise<T> {
+export async function apiPost<T = unknown>(url: string, body: Record<string, unknown>): Promise<T> {
     const result = await fetch(url, {
         method: 'POST',
         headers: getRequestHeaders(),
@@ -123,7 +117,10 @@ export async function apiPost<T = unknown>(
  * @param url
  * @param cache
  */
-export async function apiGetText(url: string, cache: RequestCache = 'force-cache'): Promise<string> {
+export async function apiGetText(
+    url: string,
+    cache: RequestCache = 'force-cache',
+): Promise<string> {
     const result = await fetch(url, {
         method: 'GET',
         cache,

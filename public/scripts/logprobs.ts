@@ -25,8 +25,6 @@ const REROLL_BUTTON = document.getElementById('logprobsReroll');
  * @typedef {[string, number]} Candidate - (token, logprob)
  */
 
-
-
 /**
  * Logprob data for a single message
  * @typedef {object} MessageLogprobData
@@ -85,10 +83,10 @@ function renderAlternativeTokensView() {
         const noTokensMsg = !power_user.request_token_probabilities
             ? '<span>Enable <b>Request token probabilities</b> in the User Settings menu to use this feature.</span>'
             : usingSmoothStreaming
-                ? t`Token probabilities are not available when using Smooth Streaming.`
-                : is_send_press
-                    ? t`Generation in progress...`
-                    : t`No token probabilities available for the current message.`;
+              ? t`Token probabilities are not available when using Smooth Streaming.`
+              : is_send_press
+                ? t`Generation in progress...`
+                : t`No token probabilities available for the current message.`;
         emptyState.innerHTML = noTokensMsg;
         emptyState.classList.add('logprobs_empty_state');
         view?.appendChild(emptyState);
@@ -133,9 +131,10 @@ function renderAlternativeTokensView() {
             addKeyboardProps(span);
 
             tokenSpans.push(span);
-            tokenSpans.push(delimiters[i]?.includes('\n')
-                ? document.createElement('br')
-                : document.createTextNode(delimiters[i] || ' '),
+            tokenSpans.push(
+                delimiters[i]?.includes('\n')
+                    ? document.createElement('br')
+                    : document.createTextNode(delimiters[i] || ' '),
             );
 
             cumulativeOffset += word.length + (delimiters[i]?.length || 0);
@@ -163,7 +162,9 @@ function renderAlternativeTokensView() {
         const element = view.querySelector('.logprobs_output_token');
         if (element) {
             // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-            const scrollOffset = element.getBoundingClientRect().top - element.parentElement.getBoundingClientRect().top;
+            const scrollOffset =
+                element.getBoundingClientRect().top -
+                element.parentElement.getBoundingClientRect().top;
             // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             element.parentElement.scrollTop = scrollOffset;
         }
@@ -210,7 +211,7 @@ function renderTopLogprobs() {
     const nodes = [];
     const candidates = topLogprobs
         // @ts-expect-error TS(2339) FIXME: Property 'sort' does not exist on type 'never'.
-        .sort(([, logA], [, logB]) => logB - logA)
+        .toSorted(([, logA], [, logB]) => logB - logA)
         // @ts-expect-error TS(7031) FIXME: Binding element 'text' implicitly has an 'any' typ... Remove this comment to see the full error message
         .map(([text, log]) => {
             if (log <= 0) {
@@ -244,7 +245,9 @@ function renderTopLogprobs() {
         }
         addKeyboardProps(container);
         if (token !== '<others>') {
-            container.addEventListener('click', () => onAlternativeClicked(state.selectedTokenLogprobs, token.toString()));
+            container.addEventListener('click', () =>
+                onAlternativeClicked(state.selectedTokenLogprobs, token.toString()),
+            );
         } else {
             container.disabled = true;
         }
@@ -269,7 +272,9 @@ function renderTopLogprobs() {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'logprobs' implicitly has an 'any' type.
 function onSelectedTokenChanged(logprobs, span) {
-    document.querySelectorAll('.logprobs_output_token.selected').forEach((el) => el.classList.remove('selected'));
+    document
+        .querySelectorAll('.logprobs_output_token.selected')
+        .forEach((el) => el.classList.remove('selected'));
     if (state.selectedTokenLogprobs === logprobs) {
         state.selectedTokenLogprobs = null;
     } else {
@@ -302,11 +307,13 @@ function onAlternativeClicked(tokenLogprobs, alternative) {
 
     const { messageLogprobs, continueFrom } = getActiveMessageLogprobData();
     // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
-    const replaceIndex = messageLogprobs.findIndex(x => x === tokenLogprobs);
+    const replaceIndex = messageLogprobs.findIndex((x) => x === tokenLogprobs);
 
     // @ts-expect-error TS(7031) FIXME: Binding element 'token' implicitly has an 'any' ty... Remove this comment to see the full error message
     const tokens = messageLogprobs.slice(0, replaceIndex + 1).map(({ token }) => token);
-    tokens[replaceIndex] = String(alternative).replace(/^[▁Ġ]/g, ' ').replace(/Ċ/g, '\n');
+    tokens[replaceIndex] = String(alternative)
+        .replace(/^[▁Ġ]/g, ' ')
+        .replace(/Ċ/g, '\n');
 
     const prefix = continueFrom || '';
     const prompt = prefix + tokens.join('');
@@ -386,10 +393,7 @@ function onToggleLogprobsPanel() {
         logprobsViewer.style.display = 'flex';
         logprobsViewer.style.opacity = '0';
         renderAlternativeTokensView();
-        const anim = logprobsViewer.animate([
-            { opacity: '0' },
-            { opacity: '1' },
-        ], {
+        const anim = logprobsViewer.animate([{ opacity: '0' }, { opacity: '1' }], {
             duration: animation_duration,
             easing: 'ease',
         });
@@ -399,13 +403,13 @@ function onToggleLogprobsPanel() {
         };
     } else {
         logprobsViewer.classList.add('resizing');
-        const anim = logprobsViewer.animate([
-            { opacity: getComputedStyle(logprobsViewer).opacity },
-            { opacity: '0' },
-        ], {
-            duration: animation_duration,
-            easing: 'ease',
-        });
+        const anim = logprobsViewer.animate(
+            [{ opacity: getComputedStyle(logprobsViewer).opacity }, { opacity: '0' }],
+            {
+                duration: animation_duration,
+                easing: 'ease',
+            },
+        );
         anim.onfinish = async function () {
             await delay(50);
             logprobsViewer.classList.remove('resizing');
@@ -527,7 +531,10 @@ function createSwipe(messageId, prompt) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'input' implicitly has an 'any' type.
 function toVisibleWhitespace(input) {
-    return input.replace(/ /g, '·').replace(/[▁Ġ]/g, '·').replace(/[Ċ\n]/g, '↵');
+    return input
+        .replace(/ /g, '·')
+        .replace(/[▁Ġ]/g, '·')
+        .replace(/[Ċ\n]/g, '↵');
 }
 
 /**
@@ -609,7 +616,7 @@ export function saveLogprobsForActiveMessage(logprobs, continueFrom) {
 
     // Clean up old logprobs data
     const oldLogprobs = Array.from(state.messageLogprobs.values())
-        .sort((a, b) => b.created - a.created)
+        .toSorted((a, b) => b.created - a.created)
         .slice(MAX_MESSAGE_LOGPROBS);
     for (const oldData of oldLogprobs) {
         state.messageLogprobs.delete(oldData.hash);
@@ -646,7 +653,6 @@ function getActiveMessageLogprobData() {
     return state.messageLogprobs.get(hash) || null;
 }
 
-
 /**
  * convertLogprobTokenIdsToText replaces token IDs in logprobs data with text tokens,
  * for APIs that return token IDs instead of text tokens, to wit: NovelAI.
@@ -664,10 +670,14 @@ async function convertTokenIdLogprobsToText(input) {
 
     /** @type {any[]} Flatten unique token IDs across all logprobs */
     // @ts-expect-error TS(7006) FIXME: Parameter 'logprobs' implicitly has an 'any' type.
-    const tokenIds = Array.from(new Set(input.flatMap(logprobs =>
-        // @ts-expect-error TS(7031) FIXME: Binding element 'token' implicitly has an 'any' ty... Remove this comment to see the full error message
-        logprobs.topLogprobs.map(([token]) => token).concat(logprobs.token),
-    )));
+    const tokenIds = Array.from(
+        new Set(
+            input.flatMap((logprobs) =>
+                // @ts-expect-error TS(7031) FIXME: Binding element 'token' implicitly has an 'any' ty... Remove this comment to see the full error message
+                logprobs.topLogprobs.map(([token]) => token).concat(logprobs.token),
+            ),
+        ),
+    );
 
     // Submit token IDs to tokenizer to get token text, then build ID->text map
     // noinspection JSCheckFunctionSignatures - mutates input in-place
@@ -676,12 +686,13 @@ async function convertTokenIdLogprobsToText(input) {
 
     // Fixup logprobs data with token text
     // @ts-expect-error TS(7006) FIXME: Parameter 'logprobs' implicitly has an 'any' type.
-    input.forEach(logprobs => {
+    input.forEach((logprobs) => {
         logprobs.token = tokenIdText.get(logprobs.token);
         // @ts-expect-error TS(7031) FIXME: Binding element 'token' implicitly has an 'any' ty... Remove this comment to see the full error message
-        logprobs.topLogprobs = logprobs.topLogprobs.map(([token, logprob]) =>
-            [tokenIdText.get(token), logprob],
-        );
+        logprobs.topLogprobs = logprobs.topLogprobs.map(([token, logprob]) => [
+            tokenIdText.get(token),
+            logprob,
+        ]);
     });
 }
 

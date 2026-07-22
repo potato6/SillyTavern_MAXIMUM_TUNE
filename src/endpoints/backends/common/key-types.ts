@@ -38,7 +38,14 @@ export interface SecretKeyDescriptor {
     /**
      * Category for UI grouping / registry filtering.
      */
-    readonly category?: 'chat-completion' | 'textgen' | 'translation' | 'tts' | 'image' | 'search' | 'misc';
+    readonly category?:
+        | 'chat-completion'
+        | 'textgen'
+        | 'translation'
+        | 'tts'
+        | 'image'
+        | 'search'
+        | 'misc';
 }
 
 /**

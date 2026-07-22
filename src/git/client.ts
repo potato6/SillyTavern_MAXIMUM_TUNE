@@ -9,7 +9,7 @@ export const GIT_BACKENDS = {
     SYSTEM: 'system',
 } as const;
 
-export type GitBackend = typeof GIT_BACKENDS[keyof typeof GIT_BACKENDS];
+export type GitBackend = (typeof GIT_BACKENDS)[keyof typeof GIT_BACKENDS];
 
 export interface GitCloneOptions {
     /** Limit the number of commits to be fetched. */
@@ -42,7 +42,7 @@ function resolveBackend(preferredBackend?: string | null): 'system' {
 
     if (!systemGitAvailable) {
         throw new Error(
-            'System git is required by simple-git, but no git binary was found in PATH.'
+            'System git is required by simple-git, but no git binary was found in PATH.',
         );
     }
 
@@ -66,7 +66,7 @@ function normalizeCloneOptions(options: GitCloneOptions | null | undefined = {})
 
     return {
         depth: safeOptions.depth,
-        branch: safeOptions.branch
+        branch: safeOptions.branch,
     };
 }
 
@@ -106,7 +106,7 @@ class SimpleGitClient implements GitClient {
     public async clone(
         url: string | null | undefined,
         localPath: string | null | undefined,
-        options: GitCloneOptions | null | undefined = {}
+        options: GitCloneOptions | null | undefined = {},
     ): Promise<void> {
         // Validation for critical inputs
         if (!url || typeof url !== 'string' || url.trim() === '') {
@@ -141,7 +141,7 @@ class SimpleGitClient implements GitClient {
         } catch (error: unknown) {
             // Provide a graceful wrapper over core execution failures
             const errorMessage = error instanceof Error ? error.message : String(error);
-            throw new Error(`Failed to clone repository: ${errorMessage}`);
+            throw new Error(`Failed to clone repository: ${errorMessage}`, { cause: error });
         }
     }
 }

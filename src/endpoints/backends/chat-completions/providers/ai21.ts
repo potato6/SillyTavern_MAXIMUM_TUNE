@@ -19,7 +19,10 @@ const provider: ChatProvider = {
     },
 
     async chat(req, res): Promise<void> {
-        if (!req.body) { res.sendStatus(400); return; }
+        if (!req.body) {
+            res.sendStatus(400);
+            return;
+        }
 
         const apiKey = readSecret(req.user.directories, SECRET_KEYS.AI21, req.body.secret_id);
         if (!apiKey) {
@@ -67,18 +70,23 @@ const provider: ChatProvider = {
         console.debug('AI21 request:', body);
 
         try {
-            const generateResponse = await globalThis.fetch(API_AI21 + '/chat/completions', options);
+            const generateResponse = await globalThis.fetch(
+                API_AI21 + '/chat/completions',
+                options,
+            );
             if (req.body.stream) {
                 await forwardFetchResponse(generateResponse, res);
             } else {
                 if (!generateResponse.ok) {
                     const errorText = await generateResponse.text();
-                    console.warn(`AI21 API returned error: ${generateResponse.status} ${generateResponse.statusText} ${errorText}`);
+                    console.warn(
+                        `AI21 API returned error: ${generateResponse.status} ${generateResponse.statusText} ${errorText}`,
+                    );
                     const errorJson = tryParse(errorText) ?? { error: true };
                     res.status(500).send(errorJson);
                     return;
                 }
-                const json = await generateResponse.json() as Record<string, unknown>;
+                const json = (await generateResponse.json()) as Record<string, unknown>;
                 console.debug('AI21 response:', json);
                 res.send(json);
             }
@@ -96,7 +104,7 @@ const provider: ChatProvider = {
             headers: { Authorization: `Bearer ${apiKey}` },
         });
         if (!response.ok) return [];
-        const data = await response.json() as Record<string, unknown>;
+        const data = (await response.json()) as Record<string, unknown>;
         return (data.data as ModelEntry[]) || [];
     },
     resolveTokenizer: () => 'jamba',

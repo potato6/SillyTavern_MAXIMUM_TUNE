@@ -5,7 +5,16 @@ import crypto from 'node:crypto';
 import storage from 'node-persist';
 import express from 'express';
 
-import { getUserAvatar, toKey, getPasswordHash, getPasswordSalt, createBackupArchive, ensurePublicDirectoriesExist, toAvatarKey, getAccountVersion } from '../users.js';
+import {
+    getUserAvatar,
+    toKey,
+    getPasswordHash,
+    getPasswordSalt,
+    createBackupArchive,
+    ensurePublicDirectoriesExist,
+    toAvatarKey,
+    getAccountVersion,
+} from '../users.js';
 import { SETTINGS_FILE } from '../constants.js';
 import { checkForNewContent, CONTENT_TYPES } from './content-manager.js';
 import { color, Cache, getConfigValue } from '../util.js';
@@ -115,7 +124,11 @@ router.post('/change-password', async (request, response) => {
             return response.status(403).json({ error: 'User is disabled' });
         }
 
-        if (!request.user.profile.admin && user.password && user.password !== getPasswordHash(request.body.oldPassword, user.salt)) {
+        if (
+            !request.user.profile.admin &&
+            user.password &&
+            user.password !== getPasswordHash(request.body.oldPassword, user.salt)
+        ) {
             console.error('Change password failed: Incorrect password');
             return response.status(403).json({ error: 'Incorrect password' });
         }
@@ -146,7 +159,11 @@ router.post('/change-password', async (request, response) => {
 router.post('/backup', async (request, response) => {
     try {
         // @ts-expect-error TS(2345) FIXME: Argument of type 'true' is not assignable to param... Remove this comment to see the full error message
-        const allowFullDataBackup = !!getConfigValue('backups.allowFullDataBackup', true, 'boolean');
+        const allowFullDataBackup = !!getConfigValue(
+            'backups.allowFullDataBackup',
+            true,
+            'boolean',
+        );
 
         if (!allowFullDataBackup) {
             console.warn('Backup failed: Full data backup is disabled in configuration');
@@ -176,7 +193,10 @@ router.post('/reset-settings', async (request, response) => {
     try {
         const password = request.body.password;
 
-        if (request.user.profile.password && request.user.profile.password !== getPasswordHash(password, request.user.profile.salt)) {
+        if (
+            request.user.profile.password &&
+            request.user.profile.password !== getPasswordHash(password, request.user.profile.salt)
+        ) {
             console.warn('Reset settings failed: Incorrect password');
             return response.status(403).json({ error: 'Incorrect password' });
         }
@@ -226,7 +246,10 @@ router.post('/reset-step1', async (request, response) => {
     try {
         const resetCode = String(crypto.randomInt(1000, 9999));
         console.log();
-        console.log(color.magenta(`${request.user.profile.name}, your account reset code is: `) + color.red(resetCode));
+        console.log(
+            color.magenta(`${request.user.profile.name}, your account reset code is: `) +
+                color.red(resetCode),
+        );
         console.log();
         RESET_CACHE.set(request.user.profile.handle, resetCode);
         return response.sendStatus(204);
@@ -243,7 +266,11 @@ router.post('/reset-step2', async (request, response) => {
             return response.status(400).json({ error: 'Missing required fields' });
         }
 
-        if (request.user.profile.password && request.user.profile.password !== getPasswordHash(request.body.password, request.user.profile.salt)) {
+        if (
+            request.user.profile.password &&
+            request.user.profile.password !==
+                getPasswordHash(request.body.password, request.user.profile.salt)
+        ) {
             console.warn('Recover step 2 failed: Incorrect password');
             return response.status(400).json({ error: 'Incorrect password' });
         }

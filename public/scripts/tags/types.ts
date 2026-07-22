@@ -48,8 +48,22 @@ export const tag_sort_mode = {
  * The list of all possible tag folder types
  */
 export const TAG_FOLDER_TYPES = {
-    OPEN: { icon: '✔', class: 'folder_open', fa_icon: 'fa-folder-open', tooltip: 'Open Folder (Show all characters even if not selected)', color: 'green', size: '1' },
-    CLOSED: { icon: '👁', class: 'folder_closed', fa_icon: 'fa-eye-slash', tooltip: 'Closed Folder (Hide all characters unless selected)', color: 'lightgoldenrodyellow', size: '0.7' },
+    OPEN: {
+        icon: '✔',
+        class: 'folder_open',
+        fa_icon: 'fa-folder-open',
+        tooltip: 'Open Folder (Show all characters even if not selected)',
+        color: 'green',
+        size: '1',
+    },
+    CLOSED: {
+        icon: '👁',
+        class: 'folder_closed',
+        fa_icon: 'fa-eye-slash',
+        tooltip: 'Closed Folder (Hide all characters unless selected)',
+        color: 'lightgoldenrodyellow',
+        size: '0.7',
+    },
     NONE: { icon: '✕', class: 'no_folder', tooltip: 'No Folder', color: 'red', size: '1' },
 };
 

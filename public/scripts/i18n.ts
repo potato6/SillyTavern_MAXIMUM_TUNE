@@ -3,11 +3,13 @@ import { registerDebugFunction } from './power-user.js';
 const storageKey = 'language';
 const overrideLanguage = localStorage.getItem(storageKey);
 // @ts-expect-error TS(2339) FIXME: Property 'userLanguage' does not exist on type 'Na... Remove this comment to see the full error message
-const localeFile = String(overrideLanguage || navigator.language || navigator.userLanguage || 'en').toLowerCase();
+const localeFile = String(
+    overrideLanguage || navigator.language || navigator.userLanguage || 'en',
+).toLowerCase();
 // @ts-expect-error TS(7034) FIXME: Variable 'langs' implicitly has type 'any' in some... Remove this comment to see the full error message
 let langs;
 // Don't change to let/const! It will break module loading.
- 
+
 // @ts-expect-error TS(7034) FIXME: Variable 'localeData' implicitly has type 'any' in... Remove this comment to see the full error message
 let localeData;
 
@@ -47,14 +49,14 @@ export function addLocaleData(localeId, data) {
  * An observer that will check if any new i18n elements are added to the document
  * @type {MutationObserver}
  */
-const observer = new MutationObserver(mutations => {
-    mutations.forEach(mutation => {
-        mutation.addedNodes.forEach(node => {
+const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+        mutation.addedNodes.forEach((node) => {
             if (node.nodeType === Node.ELEMENT_NODE && node instanceof Element) {
                 if (node.hasAttribute('data-i18n')) {
                     translateElement(node);
                 }
-                node.querySelectorAll('[data-i18n]').forEach(element => {
+                node.querySelectorAll('[data-i18n]').forEach((element) => {
                     translateElement(element);
                 });
             }
@@ -84,7 +86,10 @@ const observer = new MutationObserver(mutations => {
 // @ts-expect-error TS(7006) FIXME: Parameter 'strings' implicitly has an 'any' type.
 export function t(strings, ...values) {
     // @ts-expect-error TS(7006) FIXME: Parameter 'result' implicitly has an 'any' type.
-    const str = strings.reduce((result, string, i) => result + string + (values[i] !== undefined ? `\${${i}}` : ''), '');
+    const str = strings.reduce(
+        (result, string, i) => result + string + (values[i] !== undefined ? `\${${i}}` : ''),
+        '',
+    );
     const translatedStr = translate(str);
 
     // Replace indexed placeholders with actual values
@@ -130,7 +135,7 @@ async function getLocaleData(language) {
         return {};
     }
 
-    const data = await fetch(`./locales/${language}.json`).then(response => {
+    const data = await fetch(`./locales/${language}.json`).then((response) => {
         console.log(`Loading locale data from ./locales/${language}.json`);
         if (!response.ok) {
             return {};
@@ -148,7 +153,7 @@ async function getLocaleData(language) {
 // @ts-expect-error TS(7006) FIXME: Parameter 'language' implicitly has an 'any' type.
 function findLang(language) {
     // @ts-expect-error TS(7005) FIXME: Variable 'langs' implicitly has an 'any' type.
-    const supportedLang = langs.find(x => x.lang === language);
+    const supportedLang = langs.find((x) => x.lang === language);
 
     const isEn = language.startsWith('en'); // includes 'en', and more specific locales like 'en-us', 'en-au', etc
     if (!supportedLang && !isEn) {
@@ -166,13 +171,15 @@ function translateElement(element) {
     const keys = element.getAttribute('data-i18n').split(';'); // Multi-key entries are ; delimited
     for (const key of keys) {
         const attributeMatch = key.match(/\[(\S+)\](.+)/); // [attribute]key
-        if (attributeMatch) { // attribute-tagged key
+        if (attributeMatch) {
+            // attribute-tagged key
             // @ts-expect-error TS(7005) FIXME: Variable 'localeData' implicitly has an 'any' type... Remove this comment to see the full error message
             const localizedValue = localeData?.[attributeMatch[2]];
             if (localizedValue || localizedValue === '') {
                 element.setAttribute(attributeMatch[1], localizedValue);
             }
-        } else { // No attribute tag, treat as 'text'
+        } else {
+            // No attribute tag, treat as 'text'
             // @ts-expect-error TS(7005) FIXME: Variable 'localeData' implicitly has an 'any' type... Remove this comment to see the full error message
             const localizedValue = localeData?.[key];
             if (localizedValue || localizedValue === '') {
@@ -201,7 +208,13 @@ async function getMissingTranslations() {
 
     // @ts-expect-error TS(7005) FIXME: Variable 'trackMissingDynamicTranslate' implicitly... Remove this comment to see the full error message
     if (trackMissingDynamicTranslate) {
-        missingData.push(...Array.from(trackMissingDynamicTranslate).map(key => ({ key, language: localeFile, value: key })));
+        missingData.push(
+            ...Array.from(trackMissingDynamicTranslate).map((key) => ({
+                key,
+                language: localeFile,
+                value: key,
+            })),
+        );
     }
 
     // Determine locales to search for untranslated strings
@@ -215,18 +228,28 @@ async function getMissingTranslations() {
             const keys = el.getAttribute('data-i18n').split(';'); // Multi-key entries are ; delimited
             for (const key of keys) {
                 const attributeMatch = key.match(/\[(\S+)\](.+)/); // [attribute]key
-                if (attributeMatch) { // attribute-tagged key
+                if (attributeMatch) {
+                    // attribute-tagged key
                     // @ts-expect-error TS(2538) FIXME: Type 'undefined' cannot be used as an index type.
                     const localizedValue = localeData?.[attributeMatch[2]];
                     if (!localizedValue) {
                         // @ts-expect-error TS(2345) FIXME: Argument of type 'string | undefined' is not assig... Remove this comment to see the full error message
-                        missingData.push({ key, language: language.lang, value: String(el.getAttribute(attributeMatch[1])) });
+                        missingData.push({
+                            key,
+                            language: language.lang,
+                            value: String(el.getAttribute(attributeMatch[1])),
+                        });
                     }
-                } else { // No attribute tag, treat as 'text'
+                } else {
+                    // No attribute tag, treat as 'text'
                     // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                     const localizedValue = localeData?.[key];
                     if (!localizedValue) {
-                        missingData.push({ key, language: language.lang, value: el.textContent?.trim() ?? '' });
+                        missingData.push({
+                            key,
+                            language: language.lang,
+                            value: el.textContent?.trim() ?? '',
+                        });
                     }
                 }
             }
@@ -238,17 +261,25 @@ async function getMissingTranslations() {
     const uniqueMissingData = [];
     for (const { key, language, value } of missingData) {
         // @ts-expect-error TS(7005) FIXME: Variable 'uniqueMissingData' implicitly has an 'an... Remove this comment to see the full error message
-        if (!uniqueMissingData.some(x => x.key === key && x.language === language && x.value === value)) {
+        if (
+            !uniqueMissingData.some(
+                (x) => x.key === key && x.language === language && x.value === value,
+            )
+        ) {
             uniqueMissingData.push({ key, language, value });
         }
     }
 
     // Sort by language, then key
     // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-    uniqueMissingData.sort((a, b) => a.language.localeCompare(b.language) || a.key.localeCompare(b.key));
+    uniqueMissingData.sort(
+        (a, b) => a.language.localeCompare(b.language) || a.key.localeCompare(b.key),
+    );
 
     // Map to { language: { key: value } }
-    const missingDataMap = Object.fromEntries(uniqueMissingData.map(({ key, value }) => [key, value]));
+    const missingDataMap = Object.fromEntries(
+        uniqueMissingData.map(({ key, value }) => [key, value]),
+    );
 
     console.log(`Missing Translations (${uniqueMissingData.length}):`);
     console.table(uniqueMissingData);
@@ -257,12 +288,18 @@ async function getMissingTranslations() {
 
     // @ts-expect-error TS(7005) FIXME: Variable 'trackMissingDynamicTranslate' implicitly... Remove this comment to see the full error message
     if (trackMissingDynamicTranslate) {
-        const trackMissingDynamicTranslateMap = Object.fromEntries(Array.from(trackMissingDynamicTranslate).map(key => [key, key]));
-        console.log(`Dynamic translations missing (${Object.keys(trackMissingDynamicTranslateMap).length}):`);
+        const trackMissingDynamicTranslateMap = Object.fromEntries(
+            Array.from(trackMissingDynamicTranslate).map((key) => [key, key]),
+        );
+        console.log(
+            `Dynamic translations missing (${Object.keys(trackMissingDynamicTranslateMap).length}):`,
+        );
         console.log(trackMissingDynamicTranslateMap);
     }
 
-    notyf.success(`Found ${uniqueMissingData.length} missing translations. See browser console for details.`);
+    notyf.success(
+        `Found ${uniqueMissingData.length} missing translations. See browser console for details.`,
+    );
 }
 
 /**
@@ -276,7 +313,8 @@ export function applyLocale(root = document) {
         return root;
     }
 
-    const rootElement = root instanceof Document ? document : new DOMParser().parseFromString(root, 'text/html');
+    const rootElement =
+        root instanceof Document ? document : new DOMParser().parseFromString(root, 'text/html');
 
     rootElement.querySelectorAll('[data-i18n]').forEach(function (el) {
         translateElement(el);
@@ -291,7 +329,9 @@ export function applyLocale(root = document) {
  *
  */
 function addLanguagesToDropdown() {
-    const uiLanguageSelects = document.querySelectorAll('#ui_language_select, #onboarding_ui_language_select');
+    const uiLanguageSelects = document.querySelectorAll(
+        '#ui_language_select, #onboarding_ui_language_select',
+    );
     // @ts-expect-error TS(7005) FIXME: Variable 'langs' implicitly has an 'any' type.
     for (const langObj of langs) {
         for (const select of uiLanguageSelects) {
@@ -315,7 +355,7 @@ function addLanguagesToDropdown() {
  *
  */
 export async function initLocales() {
-    langs = await fetch('/locales/lang.json').then(response => response.json());
+    langs = await fetch('/locales/lang.json').then((response) => response.json());
     localeData = await getLocaleData(localeFile);
     document.documentElement.lang = localeFile;
     applyLocale();
@@ -323,7 +363,9 @@ export async function initLocales() {
     const { updateSecretDisplay } = await import('./secrets.js');
     updateSecretDisplay();
 
-    for (const select of document.querySelectorAll('#ui_language_select, #onboarding_ui_language_select')) {
+    for (const select of document.querySelectorAll(
+        '#ui_language_select, #onboarding_ui_language_select',
+    )) {
         select.addEventListener('change', async function () {
             // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
             const language = String(this.value);
@@ -349,14 +391,19 @@ export async function initLocales() {
         trackMissingDynamicTranslate = new Set();
     }
 
-    registerDebugFunction('getMissingTranslations', 'Get missing translations',
+    registerDebugFunction(
+        'getMissingTranslations',
+        'Get missing translations',
         'Detects missing localization data in the current locale and dumps the data into the browser console. ' +
-        'If the current locale is English, searches all other locales.',
-        getMissingTranslations);
-    registerDebugFunction('trackDynamicTranslate', 'Track dynamic translation',
+            'If the current locale is English, searches all other locales.',
+        getMissingTranslations,
+    );
+    registerDebugFunction(
+        'trackDynamicTranslate',
+        'Track dynamic translation',
         'Toggles tracking of dynamic translations, which will be dumped into the missing translations translations too. ' +
-        'This includes things translated via the t`...` function and translate(). It will only track strings translated <b>after</b> this is toggled on, '
-        + 'and when they actually pop up, so refreshing the page and opening popups, etc, is needed. Will only track if the current locale is not English.',
+            'This includes things translated via the t`...` function and translate(). It will only track strings translated <b>after</b> this is toggled on, ' +
+            'and when they actually pop up, so refreshing the page and opening popups, etc, is needed. Will only track if the current locale is not English.',
         () => {
             const isTracking = localStorage.getItem('trackDynamicTranslate') !== 'true';
             localStorage.setItem('trackDynamicTranslate', isTracking ? 'true' : 'false');
@@ -365,11 +412,19 @@ export async function initLocales() {
                 notyf.success('Dynamic translation tracking enabled.');
             } else if (isTracking) {
                 trackMissingDynamicTranslate = null;
-                notyf.warning('Dynamic translation tracking enabled, but will not be tracked with locale English.');
+                notyf.warning(
+                    'Dynamic translation tracking enabled, but will not be tracked with locale English.',
+                );
             } else {
                 trackMissingDynamicTranslate = null;
                 notyf.info('Dynamic translation tracking disabled.');
             }
-        });
-    registerDebugFunction('applyLocale', 'Apply locale', 'Reapplies the currently selected locale to the page.', applyLocale);
+        },
+    );
+    registerDebugFunction(
+        'applyLocale',
+        'Apply locale',
+        'Reapplies the currently selected locale to the page.',
+        applyLocale,
+    );
 }

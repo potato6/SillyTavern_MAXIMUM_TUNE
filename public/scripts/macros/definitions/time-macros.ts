@@ -110,7 +110,8 @@ export function registerTimeMacros() {
                 type: 'string',
             },
         ],
-        description: 'Human-readable difference between two times. Order of times does not matter, it will return the absolute difference.',
+        description:
+            'Human-readable difference between two times. Order of times does not matter, it will return the absolute difference.',
         returns: 'Human-readable difference between two times.',
         displayOverride: '{{timeDiff::left::right}}', // Shorten this, otherwise it's too long. Full dates don't really help for understanding the macro.
         exampleUsage: ['{{ timeDiff :: 2023-01-01 12:00:00 :: 2023-01-01 15:00:00 }}'],

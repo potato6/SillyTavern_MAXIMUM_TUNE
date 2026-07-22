@@ -13,11 +13,10 @@ const base = createOAIChatProvider({
     extraHeaders: {
         'Accept-Language': 'en-US,en',
     },
-    extraBodyParams: (req) => ({
-        ...(req.body.include_reasoning !== undefined
+    extraBodyParams: (req) =>
+        req.body.include_reasoning !== undefined
             ? { thinking: { type: req.body.include_reasoning ? 'enabled' : 'disabled' } }
-            : {}),
-    }),
+            : {},
 });
 
 /**
@@ -28,17 +27,17 @@ export default {
     ...base,
 
     async chat(req: import('express').Request, res: import('express').Response) {
-        const target = req.body.reverse_proxy || (
-            req.body.zai_endpoint === ZAI_ENDPOINT.CODING ? API_ZAI_CODING : API_ZAI_COMMON
-        );
+        const target =
+            req.body.reverse_proxy ||
+            (req.body.zai_endpoint === ZAI_ENDPOINT.CODING ? API_ZAI_CODING : API_ZAI_COMMON);
         req.body.reverse_proxy = target;
         return base.chat(req, res);
     },
 
     async listModels(req: import('express').Request): Promise<ModelEntry[]> {
-        const target = req.body.reverse_proxy || (
-            req.body.zai_endpoint === ZAI_ENDPOINT.CODING ? API_ZAI_CODING : API_ZAI_COMMON
-        );
+        const target =
+            req.body.reverse_proxy ||
+            (req.body.zai_endpoint === ZAI_ENDPOINT.CODING ? API_ZAI_CODING : API_ZAI_COMMON);
         req.body.reverse_proxy = target;
         return base.listModels(req);
     },

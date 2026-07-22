@@ -45,11 +45,11 @@ function srgbToOklch(r, g, b) {
     const m_ = Math.cbrt(0.2119034982 * lr + 0.6806995451 * lg + 0.1073969566 * lb);
     const s_ = Math.cbrt(0.0883024619 * lr + 0.2817188376 * lg + 0.6299787005 * lb);
 
-    const a = 1.9779984951 * l_ - 2.4285922050 * m_ + 0.4505937099 * s_;
-    const ok_b = 0.0259040371 * l_ + 0.7827717662 * m_ - 0.8086757660 * s_;
+    const a = 1.9779984951 * l_ - 2.428592205 * m_ + 0.4505937099 * s_;
+    const ok_b = 0.0259040371 * l_ + 0.7827717662 * m_ - 0.808675766 * s_;
 
     return {
-        L: 0.2104542553 * l_ + 0.7936177850 * m_ - 0.0040720468 * s_,
+        L: 0.2104542553 * l_ + 0.793617785 * m_ - 0.0040720468 * s_,
         C: Math.sqrt(a * a + ok_b * ok_b),
         h: Math.atan2(ok_b, a),
     };
@@ -69,7 +69,7 @@ function oklchToSrgb(L, C, h) {
 
     const l_ = L + 0.3963377774 * a + 0.2158037573 * b;
     const m_ = L - 0.1055613458 * a - 0.0638541728 * b;
-    const s_ = L - 0.0894841775 * a - 1.2914855480 * b;
+    const s_ = L - 0.0894841775 * a - 1.291485548 * b;
 
     const l = l_ * l_ * l_;
     const m = m_ * m_ * m_;
@@ -78,7 +78,7 @@ function oklchToSrgb(L, C, h) {
     return {
         r: linearToSrgb(+4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s),
         g: linearToSrgb(-1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s),
-        b: linearToSrgb(-0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s),
+        b: linearToSrgb(-0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s),
     };
 }
 
@@ -132,8 +132,8 @@ export function extractDominantColor(imgEl) {
     // Sample at reduced resolution for performance
     const maxDim = 150;
     const scale = Math.min(1, maxDim / Math.max(imgEl.naturalWidth, imgEl.naturalHeight));
-    const width = canvas.width = Math.floor(imgEl.naturalWidth * scale);
-    const height = canvas.height = Math.floor(imgEl.naturalHeight * scale);
+    const width = (canvas.width = Math.floor(imgEl.naturalWidth * scale));
+    const height = (canvas.height = Math.floor(imgEl.naturalHeight * scale));
     context.drawImage(imgEl, 0, 0, width, height);
 
     let data;
@@ -149,7 +149,10 @@ export function extractDominantColor(imgEl) {
     const pixels = [];
 
     for (let i = 0; i < data.length; i += 4 * step) {
-        const pr = data[i], pg = data[i + 1], pb = data[i + 2], alpha = data[i + 3];
+        const pr = data[i],
+            pg = data[i + 1],
+            pb = data[i + 2],
+            alpha = data[i + 3];
         // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         if (alpha < 128) continue; // skip transparent pixels
 
@@ -164,7 +167,10 @@ export function extractDominantColor(imgEl) {
     // Weighted average in Oklch, weighting by chroma^2 to prioritize vivid colors
     // Average hue using circular mean (sin/cos) to handle wraparound
     let totalWeight = 0;
-    let wL = 0, wC = 0, wSinH = 0, wCosH = 0;
+    let wL = 0,
+        wC = 0,
+        wSinH = 0,
+        wCosH = 0;
 
     for (const px of pixels) {
         // Weight: chroma squared + small base so even gray images produce a result
@@ -264,28 +270,56 @@ export function generateThemePalette(dominantRgb) {
     const minContrast = 3.5;
 
     // Hue shift angles for color theory relationships (in radians)
-    const ANALOGOUS_HUE_SHIFT = Math.PI / 3;         // +60° for analogous colors
-    const COMPLEMENTARY_HUE_SHIFT = Math.PI;         // +180° for complementary colors
-    const TRIADIC_HUE_SHIFT = (2 * Math.PI / 3);     // +120° for triadic colors
+    const ANALOGOUS_HUE_SHIFT = Math.PI / 3; // +60° for analogous colors
+    const COMPLEMENTARY_HUE_SHIFT = Math.PI; // +180° for complementary colors
+    const TRIADIC_HUE_SHIFT = (2 * Math.PI) / 3; // +120° for triadic colors
 
     // Main text: near-white/near-black with a slight hue tint from the base
     const mainTextC = Math.min(base.C * 0.15, 0.03);
-    const mainText = ensureContrast(panelIsDark ? 0.85 : 0.2, mainTextC, base.h, panelBg, minContrast, panelIsDark);
+    const mainText = ensureContrast(
+        panelIsDark ? 0.85 : 0.2,
+        mainTextC,
+        base.h,
+        panelBg,
+        minContrast,
+        panelIsDark,
+    );
     const mainTextRgb = oklchToSrgb(mainText.L, mainText.C, mainText.h);
 
     // Italics: analogous hue shift (+60°), slightly softer
     const italicsC = Math.min(base.C * 0.5 + 0.02, 0.12);
-    const italics = ensureContrast(panelIsDark ? 0.78 : 0.3, italicsC, base.h + ANALOGOUS_HUE_SHIFT, panelBg, minContrast, panelIsDark);
+    const italics = ensureContrast(
+        panelIsDark ? 0.78 : 0.3,
+        italicsC,
+        base.h + ANALOGOUS_HUE_SHIFT,
+        panelBg,
+        minContrast,
+        panelIsDark,
+    );
     const italicsRgb = oklchToSrgb(italics.L, italics.C, italics.h);
 
     // Underline: complementary hue (+180°), medium saturation
-    const underlineC = Math.min(base.C * 0.4 + 0.02, 0.10);
-    const underline = ensureContrast(panelIsDark ? 0.75 : 0.32, underlineC, base.h + COMPLEMENTARY_HUE_SHIFT, panelBg, minContrast, panelIsDark);
+    const underlineC = Math.min(base.C * 0.4 + 0.02, 0.1);
+    const underline = ensureContrast(
+        panelIsDark ? 0.75 : 0.32,
+        underlineC,
+        base.h + COMPLEMENTARY_HUE_SHIFT,
+        panelBg,
+        minContrast,
+        panelIsDark,
+    );
     const underlineRgb = oklchToSrgb(underline.L, underline.C, underline.h);
 
     // Quotes: triadic hue shift (+120°), more saturated for distinctiveness
     const quoteC = Math.min(base.C * 0.6 + 0.03, 0.14);
-    const quote = ensureContrast(panelIsDark ? 0.65 : 0.38, quoteC, base.h + TRIADIC_HUE_SHIFT, panelBg, minContrast, panelIsDark);
+    const quote = ensureContrast(
+        panelIsDark ? 0.65 : 0.38,
+        quoteC,
+        base.h + TRIADIC_HUE_SHIFT,
+        panelBg,
+        minContrast,
+        panelIsDark,
+    );
     const quoteRgb = oklchToSrgb(quote.L, quote.C, quote.h);
 
     // --- Shadow & border ---
@@ -323,7 +357,9 @@ export function deriveBackgroundName(bgUrl) {
     // URL-decode
     try {
         name = decodeURIComponent(name);
-    } catch { /* use as-is */ }
+    } catch {
+        /* use as-is */
+    }
     // Remove file extension
     name = name.replace(/\.[^.]+$/, '');
     // Replace underscores/dashes with spaces, trim

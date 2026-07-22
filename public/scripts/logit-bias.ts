@@ -80,7 +80,9 @@ export function createNewLogitBiasEntry(logitBias, containerSelector) {
 function createLogitBiasListItem(entry, logitBias, containerSelector) {
     const id = entry.id;
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    const template = /** @type {HTMLElement} */(document.querySelector('#logit_bias_template .logit_bias_form')).cloneNode(true);
+    const template = /** @type {HTMLElement} */ (
+        document.querySelector('#logit_bias_template .logit_bias_form')
+    ).cloneNode(true);
     // @ts-expect-error TS(2339) FIXME: Property 'dataset' does not exist on type 'Node'.
     template.dataset.id = id;
     // @ts-expect-error TS(2339) FIXME: Property 'querySelector' does not exist on type 'N... Remove this comment to see the full error message
@@ -144,7 +146,7 @@ export function getLogitBiasListResult(biasPreset, tokenizerType, getBiasObject)
                 try {
                     const tokens = JSON.parse(text);
 
-                    if (Array.isArray(tokens) && tokens.every(t => Number.isInteger(t))) {
+                    if (Array.isArray(tokens) && tokens.every((t) => Number.isInteger(t))) {
                         result.push(getBiasObject(entry.value, tokens));
                     } else {
                         throw new Error('Not an array of integers');

@@ -15,7 +15,9 @@ import { OPENROUTER_HEADERS } from '../../../constants.js';
  * OpenRouter expects an object with `order` and `allow_fallbacks`.
  * @param body
  */
-export function normaliseProviderRouting(body: Record<string, unknown>): Record<string, unknown> | undefined {
+export function normaliseProviderRouting(
+    body: Record<string, unknown>,
+): Record<string, unknown> | undefined {
     if (Array.isArray(body.provider) && (body.provider as unknown[]).length > 0) {
         return {
             allow_fallbacks: (body.allow_fallbacks as boolean) ?? true,
@@ -33,7 +35,10 @@ export function normaliseProviderRouting(body: Record<string, unknown>): Record<
  * @param providerObj
  * @param quantizations
  */
-export function attachQuantizations(providerObj: Record<string, unknown> | undefined, quantizations: unknown): void {
+export function attachQuantizations(
+    providerObj: Record<string, unknown> | undefined,
+    quantizations: unknown,
+): void {
     if (!Array.isArray(quantizations) || (quantizations as unknown[]).length === 0) return;
     const target = providerObj ?? {};
     target.quantizations = quantizations;
@@ -51,9 +56,12 @@ export function attachQuantizations(providerObj: Record<string, unknown> | undef
  * Returns undefined when neither is set.
  * @param body
  */
-export function buildProviderConfig(body: Record<string, unknown>): Record<string, unknown> | undefined {
+export function buildProviderConfig(
+    body: Record<string, unknown>,
+): Record<string, unknown> | undefined {
     const routing = normaliseProviderRouting(body);
-    const hasQuantizations = Array.isArray(body.quantizations) && (body.quantizations as unknown[]).length > 0;
+    const hasQuantizations =
+        Array.isArray(body.quantizations) && (body.quantizations as unknown[]).length > 0;
 
     if (!routing && !hasQuantizations) return undefined;
 

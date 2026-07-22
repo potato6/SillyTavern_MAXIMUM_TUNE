@@ -48,7 +48,8 @@ export function registerVariableMacros() {
                 description: 'The value to add to the local variable.',
             },
         ],
-        description: 'Adds a value to an existing local variable (numeric or string append). If the variable does not exist, it will be created.',
+        description:
+            'Adds a value to an existing local variable (numeric or string append). If the variable does not exist, it will be created.',
         returns: '',
         exampleUsage: ['{{addvar::mystrvar::foo}}', '{{addvar::myintvar::3}}'],
         // @ts-expect-error TS(7031) FIXME: Binding element 'name' implicitly has an 'any' typ... Remove this comment to see the full error message
@@ -69,7 +70,8 @@ export function registerVariableMacros() {
                 description: 'The name of the local variable to increment.',
             },
         ],
-        description: 'Increments a local variable by 1 and returns the new value. If the variable does not exist, it will be created.',
+        description:
+            'Increments a local variable by 1 and returns the new value. If the variable does not exist, it will be created.',
         returns: 'The new value of the local variable.',
         returnType: MacroValueType.NUMBER,
         exampleUsage: ['{{incvar::myintvar}}', '{{incvar some-local-int-var}}'],
@@ -91,7 +93,8 @@ export function registerVariableMacros() {
                 description: 'The name of the local variable to decrement.',
             },
         ],
-        description: 'Decrements a local variable by 1 and returns the new value. If the variable does not exist, it will be created.',
+        description:
+            'Decrements a local variable by 1 and returns the new value. If the variable does not exist, it will be created.',
         returns: 'The new value of the local variable.',
         returnType: MacroValueType.NUMBER,
         exampleUsage: ['{{decvar::myintvar}}', '{{decvar some-local-int-var}}'],
@@ -210,7 +213,8 @@ export function registerVariableMacros() {
                 description: 'The value to add to the global variable.',
             },
         ],
-        description: 'Adds a value to an existing global variable (numeric or string append). If the variable does not exist, it will be created.',
+        description:
+            'Adds a value to an existing global variable (numeric or string append). If the variable does not exist, it will be created.',
         returns: '',
         exampleUsage: ['{{addglobalvar::mystrvar::foo}}', '{{addglobalvar::myintvar::3}}'],
         // @ts-expect-error TS(7031) FIXME: Binding element 'name' implicitly has an 'any' typ... Remove this comment to see the full error message
@@ -231,7 +235,8 @@ export function registerVariableMacros() {
                 description: 'The name of the global variable to increment.',
             },
         ],
-        description: 'Increments a global variable by 1 and returns the new value. If the variable does not exist, it will be created.',
+        description:
+            'Increments a global variable by 1 and returns the new value. If the variable does not exist, it will be created.',
         returns: 'The new value of the global variable.',
         returnType: MacroValueType.NUMBER,
         exampleUsage: ['{{incglobalvar::myintvar}}', '{{incglobalvar some-global-int-var}}'],
@@ -253,7 +258,8 @@ export function registerVariableMacros() {
                 description: 'The name of the global variable to decrement.',
             },
         ],
-        description: 'Decrements a global variable by 1 and returns the new value. If the variable does not exist, it will be created.',
+        description:
+            'Decrements a global variable by 1 and returns the new value. If the variable does not exist, it will be created.',
         returns: 'The new value of the global variable.',
         returnType: MacroValueType.NUMBER,
         exampleUsage: ['{{decglobalvar::myintvar}}', '{{decglobalvar some-global-int-var}}'],

@@ -102,7 +102,9 @@ export class ActionLoaderHandle {
         this.#onHide = onHide;
 
         if (!blocking && toastMode === ActionLoaderToastMode.NONE && !overlayContent) {
-            console.warn('[ActionLoader] Non-blocking loader created without a toast. This loader will not be visible to the user.');
+            console.warn(
+                '[ActionLoader] Non-blocking loader created without a toast. This loader will not be visible to the user.',
+            );
         }
 
         if (blocking) {
@@ -168,10 +170,18 @@ export class ActionLoaderHandle {
         }
     }
 
-    get id() { return this.#id; }
-    get slug() { return this.#slug; }
-    get isActive() { return !this.#disposed; }
-    get isBlocking() { return this.#blocking; }
+    get id() {
+        return this.#id;
+    }
+    get slug() {
+        return this.#slug;
+    }
+    get isActive() {
+        return !this.#disposed;
+    }
+    get isBlocking() {
+        return this.#blocking;
+    }
 
     async stop() {
         if (this.#disposed) return;
@@ -257,7 +267,8 @@ let preloaderYoinked = false;
 export function createDefaultLoaderOverlay() {
     const loaderElement = document.createElement('div');
     loaderElement.id = 'loader';
-    loaderElement.innerHTML = '<div id="load-spinner" class="fa-solid fa-gear fa-spin fa-3x"></div>';
+    loaderElement.innerHTML =
+        '<div id="load-spinner" class="fa-solid fa-gear fa-spin fa-3x"></div>';
     return loaderElement;
 }
 
@@ -300,7 +311,7 @@ async function hideOverlay() {
 
         await Promise.race([
             new Promise((r) => setTimeout(r, 500)),
-            new Promise((r) => loaderElement.addEventListener('transitionend', r, { once: true }))
+            new Promise((r) => loaderElement.addEventListener('transitionend', r, { once: true })),
         ]);
 
         loaderElement.remove();

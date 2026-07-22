@@ -19,13 +19,13 @@ pollinations.post('/voices', async (req, res) => {
             throw new Error('Failed to fetch Pollinations models');
         }
 
-        const data = await response.json() as Record<string, unknown>;
+        const data = (await response.json()) as Record<string, unknown>;
 
         if (!Array.isArray(data)) {
             throw new Error('Invalid data format received from Pollinations');
         }
 
-        const audioModelData = data.find(m => m.name === model);
+        const audioModelData = data.find((m) => m.name === model);
         if (!audioModelData || !Array.isArray(audioModelData.voices)) {
             throw new Error('No voices found for the specified model');
         }
@@ -55,7 +55,7 @@ pollinations.post('/generate', async (req, res) => {
         const response = await fetch('https://gen.pollinations.ai/v1/chat/completions', {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${key}`,
+                Authorization: `Bearer ${key}`,
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
@@ -67,10 +67,12 @@ pollinations.post('/generate', async (req, res) => {
                     format: 'mp3',
                     voice: voice,
                 },
-                messages: [{
-                    role: 'user',
-                    content: text,
-                }],
+                messages: [
+                    {
+                        role: 'user',
+                        content: text,
+                    },
+                ],
             }),
         });
 
@@ -120,7 +122,7 @@ elevenlabs.post('/voices', async (req, res) => {
             return res.sendStatus(500);
         }
 
-        const responseJson = await response.json() as Record<string, unknown>;
+        const responseJson = (await response.json()) as Record<string, unknown>;
         return res.json(responseJson);
     } catch (error) {
         console.error(error);
@@ -144,10 +146,12 @@ elevenlabs.post('/voice-settings', async (req, res) => {
 
         if (!response.ok) {
             const text = await response.text();
-            console.warn(`ElevenLabs voice settings fetch failed: HTTP ${response.status} - ${text}`);
+            console.warn(
+                `ElevenLabs voice settings fetch failed: HTTP ${response.status} - ${text}`,
+            );
             return res.sendStatus(500);
         }
-        const responseJson = await response.json() as Record<string, unknown>;
+        const responseJson = (await response.json()) as Record<string, unknown>;
         return res.json(responseJson);
     } catch (error) {
         console.error(error);
@@ -215,7 +219,7 @@ elevenlabs.post('/history', async (req, res) => {
             return res.sendStatus(500);
         }
 
-        const responseJson = await response.json() as Record<string, unknown>;
+        const responseJson = (await response.json()) as Record<string, unknown>;
         return res.json(responseJson);
     } catch (error) {
         console.error(error);
@@ -239,15 +243,20 @@ elevenlabs.post('/history-audio', async (req, res) => {
 
         console.debug('ElevenLabs history audio request for ID:', historyItemId);
 
-        const response = await fetch(`https://api.elevenlabs.io/v1/history/${historyItemId}/audio`, {
-            headers: {
-                'xi-api-key': apiKey,
+        const response = await fetch(
+            `https://api.elevenlabs.io/v1/history/${historyItemId}/audio`,
+            {
+                headers: {
+                    'xi-api-key': apiKey,
+                },
             },
-        });
+        );
 
         if (!response.ok) {
             const text = await response.text();
-            console.warn(`ElevenLabs history audio fetch failed: HTTP ${response.status} - ${text}`);
+            console.warn(
+                `ElevenLabs history audio fetch failed: HTTP ${response.status} - ${text}`,
+            );
             return res.sendStatus(500);
         }
 
@@ -274,17 +283,26 @@ elevenlabs.post('/voices/add', async (req, res) => {
         formData.append('description', description || 'Uploaded via SillyTavern');
         formData.append('labels', labels || '');
 
-        for (const fileData of (files || [])) {
+        for (const fileData of files || []) {
             const [mimeType, base64Data] = /^data:(.+);base64,(.+)$/.exec(fileData)?.slice(1) || [];
             if (!mimeType || !base64Data) {
                 console.warn('Invalid audio file data provided for ElevenLabs voice upload');
                 continue;
             }
             const buffer = Buffer.from(base64Data, 'base64');
-            formData.append('files', new Blob([buffer], { type: mimeType }), `audio.${mime.extension(mimeType) || 'wav'}`);
+            formData.append(
+                'files',
+                new Blob([buffer], { type: mimeType }),
+                `audio.${mime.extension(mimeType) || 'wav'}`,
+            );
         }
 
-        console.debug('ElevenLabs voice upload request:', { name, description, labels, files: files?.length || 0 });
+        console.debug('ElevenLabs voice upload request:', {
+            name,
+            description,
+            labels,
+            files: files?.length || 0,
+        });
 
         const response = await fetch('https://api.elevenlabs.io/v1/voices/add', {
             method: 'POST',
@@ -300,7 +318,7 @@ elevenlabs.post('/voices/add', async (req, res) => {
             return res.sendStatus(500);
         }
 
-        const responseJson = await response.json() as Record<string, unknown>;
+        const responseJson = (await response.json()) as Record<string, unknown>;
         return res.json(responseJson);
     } catch (error) {
         console.error(error);
@@ -342,7 +360,7 @@ elevenlabs.post('/recognize', async (req, res) => {
         }
 
         fs.unlinkSync(req.file.path);
-        const responseJson = await response.json() as Record<string, unknown>;
+        const responseJson = (await response.json()) as Record<string, unknown>;
         console.debug('ElevenLabs speech recognition response:', responseJson);
         return res.json(responseJson);
     } catch (error) {

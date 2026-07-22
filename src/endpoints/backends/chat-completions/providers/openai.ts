@@ -5,10 +5,7 @@ import {
     OPENAI_FIXED_REASONING_EFFORT,
     OPENAI_VERBOSITY_MODELS,
 } from '../../../../constants.js';
-import {
-    getConfigValue,
-    uuidv4,
-} from '../../../../util.js';
+import { getConfigValue, uuidv4 } from '../../../../util.js';
 import { readSecret, SECRET_KEYS } from '../../../secrets.js';
 import { embedOpenRouterMedia } from '../../../../prompt-converters.js';
 import { proxyRequest } from '../../common/proxy.js';
@@ -44,9 +41,14 @@ const provider: ChatProvider = {
 
         const { signal } = createSocketAbortController(req.socket);
 
-        const isTextCompletion = Boolean(req.body.model && (
-            (await import('../../../text-completion-models.js')).TEXT_COMPLETION_MODELS as string[]
-        ).includes(req.body.model)) || typeof req.body.messages === 'string';
+        const isTextCompletion =
+            Boolean(
+                req.body.model &&
+                (
+                    (await import('../../../text-completion-models.js'))
+                        .TEXT_COMPLETION_MODELS as string[]
+                ).includes(req.body.model),
+            ) || typeof req.body.messages === 'string';
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const bodyParams: Record<string, any> = {
@@ -69,9 +71,14 @@ const provider: ChatProvider = {
         embedOpenRouterMedia(req.body.messages, { audio: true, video: false } as any);
 
         if (req.body.reasoning_effort && OPENAI_REASONING_EFFORT_MODELS.includes(req.body.model)) {
-            bodyParams.reasoning_effort = OPENAI_FIXED_REASONING_EFFORT[req.body.model as keyof typeof OPENAI_FIXED_REASONING_EFFORT]
-                ?? OPENAI_REASONING_EFFORT_MAP[req.body.reasoning_effort as keyof typeof OPENAI_REASONING_EFFORT_MAP]
-                ?? req.body.reasoning_effort;
+            bodyParams.reasoning_effort =
+                OPENAI_FIXED_REASONING_EFFORT[
+                    req.body.model as keyof typeof OPENAI_FIXED_REASONING_EFFORT
+                ] ??
+                OPENAI_REASONING_EFFORT_MAP[
+                    req.body.reasoning_effort as keyof typeof OPENAI_REASONING_EFFORT_MAP
+                ] ??
+                req.body.reasoning_effort;
         }
 
         if (req.body.verbosity && OPENAI_VERBOSITY_MODELS.test(req.body.model)) {
@@ -113,14 +120,16 @@ const provider: ChatProvider = {
             };
         }
 
-        const endpointUrl = isTextCompletion ? `${apiUrl}/completions` : `${apiUrl}/chat/completions`;
+        const endpointUrl = isTextCompletion
+            ? `${apiUrl}/completions`
+            : `${apiUrl}/chat/completions`;
 
         await proxyRequest({
             request: req,
             response: res,
             url: endpointUrl,
             body: JSON.stringify(requestBody),
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
             signal,
             stream: req.body.stream,
         });
@@ -134,10 +143,10 @@ const provider: ChatProvider = {
         if (!apiKey && !req.body.reverse_proxy) return [];
 
         const response = await globalThis.fetch(`${apiUrl}/models`, {
-            headers: { 'Authorization': `Bearer ${apiKey}` },
+            headers: { Authorization: `Bearer ${apiKey}` },
         });
         if (!response.ok) return [];
-        const data = await response.json() as Record<string, unknown>;
+        const data = (await response.json()) as Record<string, unknown>;
         return (data.data as ModelEntry[]) || [];
     },
 };

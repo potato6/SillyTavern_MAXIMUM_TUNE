@@ -117,9 +117,7 @@ class MessageService {
      */
     async add(message: ChatMessage, options?: AddMessageOptions): Promise<MessageResult> {
         const msgs = chatSession.messages;
-        const index = options?.insertAfter !== undefined
-            ? options.insertAfter + 1
-            : msgs.length;
+        const index = options?.insertAfter !== undefined ? options.insertAfter + 1 : msgs.length;
 
         msgs.splice(index, 0, message);
 

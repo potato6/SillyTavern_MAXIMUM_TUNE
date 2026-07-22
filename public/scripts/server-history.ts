@@ -18,8 +18,12 @@ function findServers(request, resolve, serverLabel) {
 
     const needle = request.term.toLowerCase();
     // @ts-expect-error TS(2339) FIXME: Property 'label' does not exist on type 'never'.
-    const result = power_user.servers.filter(x => x.label == serverLabel).sort((a, b) => b.lastConnection - a.lastConnection).map(x => x.url).slice(0, 5);
-    const hasExactMatch = result.findIndex(x => x.toLowerCase() == needle) !== -1;
+    const result = power_user.servers
+        .filter((x) => x.label == serverLabel)
+        .toSorted((a, b) => b.lastConnection - a.lastConnection)
+        .map((x) => x.url)
+        .slice(0, 5);
+    const hasExactMatch = result.findIndex((x) => x.toLowerCase() == needle) !== -1;
 
     if (request.term && !hasExactMatch) {
         result.unshift(request.term);
@@ -59,7 +63,7 @@ function selectServer(event, ui, serverLabel) {
  */
 function createServerAutocomplete() {
     // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-     
+
     const serverLabel = this.dataset.serverHistory;
     // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
     // eslint-disable-next-line @typescript-eslint/no-this-alias
@@ -82,12 +86,17 @@ function createServerAutocomplete() {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     .filter((x: any) => x.label == serverLabel)
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    .sort((a: any, b: any) => b.lastConnection - a.lastConnection)
+                    .toSorted((a: any, b: any) => b.lastConnection - a.lastConnection)
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     .map((x: any) => ({ url: x.url }))
                     .slice(0, 5);
-                const hasExactMatch = result.findIndex((// eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    x: any) => x.url.toLowerCase() == needle) !== -1;
+                const hasExactMatch =
+                    result.findIndex(
+                        (
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            x: any,
+                        ) => x.url.toLowerCase() == needle,
+                    ) !== -1;
                 if (query && !hasExactMatch) {
                     result.unshift({ url: query });
                 }
@@ -109,8 +118,7 @@ function createServerAutocomplete() {
  *
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-function onInputFocus() {
-}
+function onInputFocus() {}
 
 /**
  *
@@ -119,14 +127,16 @@ function onServerConnectClick() {
     // @ts-expect-error TS(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
     const serverLabels = String(this.dataset.serverConnect).split(',');
 
-    serverLabels.forEach(serverLabel => {
+    serverLabels.forEach((serverLabel) => {
         if (!power_user.servers) {
             power_user.servers = [];
         }
 
         const input = document.querySelector(`[data-server-history="${serverLabel}"]`);
         // @ts-expect-error TS(2339) FIXME: Property 'value' does not exist on type 'Element'.
-        const value = String(input ? input.value : '').toLowerCase().trim();
+        const value = String(input ? input.value : '')
+            .toLowerCase()
+            .trim();
 
         // Don't save empty values or invalid URLs
         if (!value || !isValidUrl(value)) {
@@ -134,7 +144,7 @@ function onServerConnectClick() {
         }
 
         // @ts-expect-error TS(2339) FIXME: Property 'url' does not exist on type 'never'.
-        const server = power_user.servers.find(x => x.url === value && x.label === serverLabel);
+        const server = power_user.servers.find((x) => x.url === value && x.label === serverLabel);
 
         if (!server) {
             // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'never'.
@@ -152,7 +162,9 @@ function onServerConnectClick() {
  *
  */
 export function initServerHistory() {
-    document.querySelectorAll('[data-server-history]').forEach(el => createServerAutocomplete.call(el));
+    document
+        .querySelectorAll('[data-server-history]')
+        .forEach((el) => createServerAutocomplete.call(el));
     document.addEventListener('click', function (event) {
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         const target = event.target.closest('[data-server-connect]');

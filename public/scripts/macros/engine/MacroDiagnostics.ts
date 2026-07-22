@@ -120,16 +120,31 @@ export function logMacroSyntaxWarning({ phase, input, errors }) {
         const hasOwnLine = typeof err.line === 'number';
         const hasOwnColumn = typeof err.column === 'number';
 
-        const token = /** @type {{ startLine?: number, startColumn?: number, startOffset?: number, endOffset?: number }|undefined} */ (err.token);
+        const token =
+            /** @type {{ startLine?: number, startColumn?: number, startOffset?: number, endOffset?: number }|undefined} */ (
+                err.token
+            );
 
-        const line = hasOwnLine ? err.line : (token && typeof token.startLine === 'number' ? token.startLine : null);
-        const column = hasOwnColumn ? err.column : (token && typeof token.startColumn === 'number' ? token.startColumn : null);
+        const line = hasOwnLine
+            ? err.line
+            : token && typeof token.startLine === 'number'
+              ? token.startLine
+              : null;
+        const column = hasOwnColumn
+            ? err.column
+            : token && typeof token.startColumn === 'number'
+              ? token.startColumn
+              : null;
 
         /** @type {number|null} */
         let length = null;
         if (typeof err.length === 'number') {
             length = err.length;
-        } else if (token && typeof token.startOffset === 'number' && typeof token.endOffset === 'number') {
+        } else if (
+            token &&
+            typeof token.startOffset === 'number' &&
+            typeof token.endOffset === 'number'
+        ) {
             length = token.endOffset - token.startOffset + 1;
         }
 

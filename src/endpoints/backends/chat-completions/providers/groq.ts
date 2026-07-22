@@ -17,7 +17,8 @@ export default createOAIChatProvider({
     supportsTools: true,
     supportsReasoning: false,
     extraBodyParams: (req) => ({
-        tools: Array.isArray(req.body.tools) && req.body.tools.length > 0 ? req.body.tools : undefined,
+        tools:
+            Array.isArray(req.body.tools) && req.body.tools.length > 0 ? req.body.tools : undefined,
         tool_choice: req.body.tool_choice || undefined,
     }),
     tokenizer: (model) => {

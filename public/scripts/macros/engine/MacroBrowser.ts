@@ -86,8 +86,9 @@ export class MacroBrowser {
      * @returns {string[]}
      */
     #getSortedCategories() {
-        return Array.from(this.macrosByCategory.keys())
-            .sort((a, b) => getCategoryConfig(a).order - getCategoryConfig(b).order);
+        return Array.from(this.macrosByCategory.keys()).toSorted(
+            (a, b) => getCategoryConfig(a).order - getCategoryConfig(b).order,
+        );
     }
 
     /**
@@ -142,7 +143,8 @@ export class MacroBrowser {
         // Details panel
         const detailsPanel = document.createElement('div');
         detailsPanel.classList.add('macro-details-panel');
-        detailsPanel.innerHTML = '<div class="macro-details-placeholder">Select a macro to view details</div>';
+        detailsPanel.innerHTML =
+            '<div class="macro-details-placeholder">Select a macro to view details</div>';
         this.detailsPanel = detailsPanel;
         container.appendChild(detailsPanel);
 
@@ -191,7 +193,9 @@ export class MacroBrowser {
     #showDetails(macro, item) {
         // Clear previous selection
         // @ts-expect-error TS(7006) FIXME: Parameter 'el' implicitly has an 'any' type.
-        this.dom.querySelectorAll('.macro-item.selected').forEach(el => el.classList.remove('selected'));
+        this.dom
+            .querySelectorAll('.macro-item.selected')
+            .forEach((el) => el.classList.remove('selected'));
         item.classList.add('selected');
 
         // Render details
@@ -208,9 +212,12 @@ export class MacroBrowser {
         query = query.trim();
 
         // Clear details on search
-        this.detailsPanel.innerHTML = '<div class="macro-details-placeholder">Select a macro to view details</div>';
+        this.detailsPanel.innerHTML =
+            '<div class="macro-details-placeholder">Select a macro to view details</div>';
         // @ts-expect-error TS(7006) FIXME: Parameter 'el' implicitly has an 'any' type.
-        this.dom.querySelectorAll('.macro-item.selected').forEach(el => el.classList.remove('selected'));
+        this.dom
+            .querySelectorAll('.macro-item.selected')
+            .forEach((el) => el.classList.remove('selected'));
 
         // If empty query, show all
         if (!query) {
@@ -218,7 +225,9 @@ export class MacroBrowser {
                 item.classList.remove('isFiltered');
             }
             // @ts-expect-error TS(7006) FIXME: Parameter 'h' implicitly has an 'any' type.
-            this.dom.querySelectorAll('.macro-category-header').forEach(h => h.classList.remove('isFiltered'));
+            this.dom
+                .querySelectorAll('.macro-category-header')
+                .forEach((h) => h.classList.remove('isFiltered'));
             return;
         }
 
@@ -228,16 +237,16 @@ export class MacroBrowser {
         // Build searchable data array from all macros
         const allMacros = MacroRegistry.getAllMacros();
         // @ts-expect-error TS(7006) FIXME: Parameter 'macro' implicitly has an 'any' type.
-        const searchData = allMacros.map(macro => ({
+        const searchData = allMacros.map((macro) => ({
             name: macro.name,
             // @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
-            aliases: macro.aliases?.map(a => a.alias).join(' '),
+            aliases: macro.aliases?.map((a) => a.alias).join(' '),
             description: macro.description || '',
             category: getCategoryConfig(macro.category).label,
             // @ts-expect-error TS(7006) FIXME: Parameter 'd' implicitly has an 'any' type.
-            argNames: macro.unnamedArgDefs.map(d => d.name).join(' '),
+            argNames: macro.unnamedArgDefs.map((d) => d.name).join(' '),
             // @ts-expect-error TS(7006) FIXME: Parameter 'd' implicitly has an 'any' type.
-            argDescriptions: macro.unnamedArgDefs.map(d => d.description || '').join(' '),
+            argDescriptions: macro.unnamedArgDefs.map((d) => d.description || '').join(' '),
         }));
 
         // Fuzzy search with weighted keys
@@ -252,7 +261,7 @@ export class MacroBrowser {
 
         const results = performFuzzySearch('macro-browser', searchData, keys, query);
         // @ts-expect-error TS(7006) FIXME: Parameter 'r' implicitly has an 'any' type.
-        const matchedNames = new Set(results.map(r => r.item.name));
+        const matchedNames = new Set(results.map((r) => r.item.name));
 
         // Filter items based on fuzzy results
         for (const [name, item] of this.itemMap) {
@@ -261,12 +270,12 @@ export class MacroBrowser {
 
         // Hide empty category headers
         // @ts-expect-error TS(7006) FIXME: Parameter 'header' implicitly has an 'any' type.
-        this.dom.querySelectorAll('.macro-category-header').forEach(header => {
+        this.dom.querySelectorAll('.macro-category-header').forEach((header) => {
             if (!(header instanceof HTMLElement)) return;
             const category = header.dataset.category;
             const hasVisible = Array.from(this.itemMap.values())
-                .filter(item => item.dataset.macroName)
-                .some(item => {
+                .filter((item) => item.dataset.macroName)
+                .some((item) => {
                     const macro = MacroRegistry.getMacro(item.dataset.macroName);
                     return macro?.category === category && !item.classList.contains('isFiltered');
                 });
@@ -353,7 +362,10 @@ export function formatMacroSignature(macro) {
         if (macro.aliasOf) {
             // Replace all occurrences of the macro name with the alias for this list
             const escapedMainName = escapeRegex(macro.aliasOf);
-            return macro.displayOverride.replace(new RegExp(`(?<=[\\b{\\s])${escapedMainName}(?=[\\b}:\\s])`, 'g'), `${macro.name}`);
+            return macro.displayOverride.replace(
+                new RegExp(`(?<=[\\b{\\s])${escapedMainName}(?=[\\b}:\\s])`, 'g'),
+                `${macro.name}`,
+            );
         }
         return macro.displayOverride;
     }
@@ -405,7 +417,7 @@ export function createSourceIndicator(macro) {
 
     const titleParts = [
         macro.source.isExtension ? 'Extension' : 'Core',
-        macro.source.isThirdParty ? 'Third Party' : (macro.source.isExtension ? 'Built-in' : null),
+        macro.source.isThirdParty ? 'Third Party' : macro.source.isExtension ? 'Built-in' : null,
         macro.source.name,
     ].filter(Boolean);
     src.title = titleParts.join('\n');
@@ -568,7 +580,9 @@ export function renderMacroDetails(macro, options = {}) {
             argItem.appendChild(createTypeBadge(argDef.type ?? 'string'));
 
             const argRequiredLabel = document.createElement('span');
-            argRequiredLabel.classList.add(argDef?.optional ? 'macro-arg-optional' : 'macro-arg-required');
+            argRequiredLabel.classList.add(
+                argDef?.optional ? 'macro-arg-optional' : 'macro-arg-required',
+            );
             if (argDef?.optional && argDef.defaultValue !== undefined) {
                 argRequiredLabel.textContent = `(optional, default: ${argDef.defaultValue === '' ? '<empty string>' : argDef.defaultValue})`;
             } else {
@@ -699,7 +713,8 @@ export function renderMacroDetails(macro, options = {}) {
                 const hiddenBadge = document.createElement('span');
                 hiddenBadge.classList.add('macro-alias-hidden-badge');
                 hiddenBadge.textContent = '(deprecated)';
-                hiddenBadge.title = 'This alias is deprecated and will not be shown in documentation or autocomplete';
+                hiddenBadge.title =
+                    'This alias is deprecated and will not be shown in documentation or autocomplete';
                 li.appendChild(hiddenBadge);
             }
 

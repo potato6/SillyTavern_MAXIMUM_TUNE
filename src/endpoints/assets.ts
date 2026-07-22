@@ -21,12 +21,12 @@ export function validateAssetFileName(inputFilename: string) {
     if (!/^[a-zA-Z0-9_\-.]+$/.test(inputFilename)) {
         return {
             error: true,
-            message: 'Illegal character in filename; only alphanumeric, \'_\', \'-\' are accepted.',
+            message: "Illegal character in filename; only alphanumeric, '_', '-' are accepted.",
         };
     }
 
     const inputExtension = path.extname(inputFilename).toLowerCase();
-    if (UNSAFE_EXTENSIONS.some(ext => ext === inputExtension)) {
+    if (UNSAFE_EXTENSIONS.some((ext) => ext === inputExtension)) {
         return {
             error: true,
             message: 'Forbidden file extension.',
@@ -36,7 +36,7 @@ export function validateAssetFileName(inputFilename: string) {
     if (inputFilename.startsWith('.')) {
         return {
             error: true,
-            message: 'Filename cannot start with \'.\'',
+            message: "Filename cannot start with '.'",
         };
     }
 
@@ -110,12 +110,12 @@ router.post('/get', async (request, response) => {
         if (fs.existsSync(folderPath) && fs.statSync(folderPath).isDirectory()) {
             ensureFoldersExist(request.user.directories);
 
-            const folders = fs.readdirSync(folderPath, { withFileTypes: true })
-                .filter(file => file.isDirectory());
+            const folders = fs
+                .readdirSync(folderPath, { withFileTypes: true })
+                .filter((file) => file.isDirectory());
 
             for (const { name: folder } of folders) {
-                if (folder == 'temp')
-                    continue;
+                if (folder == 'temp') continue;
 
                 // Live2d assets
                 if (folder == 'live2d') {
@@ -128,7 +128,9 @@ router.post('/get', async (request, response) => {
                         if (file.includes('model') && file.endsWith('.json')) {
                             //console.debug("Asset live2d model found:",file)
                             // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                            output[folder].push(clientRelativePath(request.user.directories.root, file));
+                            output[folder].push(
+                                clientRelativePath(request.user.directories.root, file),
+                            );
                         }
                     }
                     continue;
@@ -137,7 +139,7 @@ router.post('/get', async (request, response) => {
                 // VRM assets
                 if (folder == 'vrm') {
                     // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                    output[folder] = { 'model': [], 'animation': [] };
+                    output[folder] = { model: [], animation: [] };
                     // Extract models
                     const vrm_model_folder = path.normalize(path.join(folderPath, 'vrm', 'model'));
                     let files = getFiles(vrm_model_folder);
@@ -146,29 +148,34 @@ router.post('/get', async (request, response) => {
                         if (!file.endsWith('.placeholder')) {
                             //console.debug("Asset VRM model found:",file)
                             // @ts-expect-error TS(2339) FIXME: Property 'vrm' does not exist on type '{}'.
-                            output.vrm.model.push(clientRelativePath(request.user.directories.root, file));
+                            output.vrm.model.push(
+                                clientRelativePath(request.user.directories.root, file),
+                            );
                         }
                     }
 
                     // Extract models
-                    const vrm_animation_folder = path.normalize(path.join(folderPath, 'vrm', 'animation'));
+                    const vrm_animation_folder = path.normalize(
+                        path.join(folderPath, 'vrm', 'animation'),
+                    );
                     files = getFiles(vrm_animation_folder);
                     //console.debug("FILE FOUND:",files)
                     for (const file of files) {
                         if (!file.endsWith('.placeholder')) {
                             //console.debug("Asset VRM animation found:",file)
                             // @ts-expect-error TS(2339) FIXME: Property 'vrm' does not exist on type '{}'.
-                            output.vrm.animation.push(clientRelativePath(request.user.directories.root, file));
+                            output.vrm.animation.push(
+                                clientRelativePath(request.user.directories.root, file),
+                            );
                         }
                     }
                     continue;
                 }
 
                 // Other assets (bgm/ambient/blip)
-                const files = fs.readdirSync(path.join(folderPath, folder))
-                    .filter(filename => {
-                        return filename != '.placeholder';
-                    });
+                const files = fs.readdirSync(path.join(folderPath, folder)).filter((filename) => {
+                    return filename != '.placeholder';
+                });
                 // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 output[folder] = [];
                 for (const file of files) {
@@ -201,15 +208,15 @@ router.post('/download', async (request, response) => {
 
         const host = getHostFromUrl(url);
         if (!isHostWhitelisted(host)) {
-            console.error(`Received an import for "${host}", but site is not whitelisted. This domain must be added to the config key "whitelistImportDomains" to allow import from this source.`);
+            console.error(
+                `Received an import for "${host}", but site is not whitelisted. This domain must be added to the config key "whitelistImportDomains" to allow import from this source.`,
+            );
             return response.sendStatus(404);
         }
 
         // Check category
         let category = null;
-        for (const i of VALID_CATEGORIES)
-            if (i == inputCategory)
-                category = i;
+        for (const i of VALID_CATEGORIES) if (i == inputCategory) category = i;
 
         if (category === null) {
             console.error('Bad request: unsupported asset category.');
@@ -219,11 +226,14 @@ router.post('/download', async (request, response) => {
         // Validate filename
         ensureFoldersExist(request.user.directories);
         const validation = validateAssetFileName(request.body.filename);
-        if (validation.error)
-            return response.status(400).send(validation.message);
+        if (validation.error) return response.status(400).send(validation.message);
 
         const temp_path = path.join(request.user.directories.assets, 'temp', request.body.filename);
-        const file_path = path.join(request.user.directories.assets, category, request.body.filename);
+        const file_path = path.join(
+            request.user.directories.assets,
+            category,
+            request.body.filename,
+        );
         console.info('Request received to download', url, 'to', file_path);
 
         // Download to temp
@@ -237,7 +247,11 @@ router.post('/download', async (request, response) => {
             await fs.promises.unlink(temp_path);
         }
         const fileStream = fs.createWriteStream(destination, { flags: 'wx' });
-        await finished(Readable.fromWeb(res.body as unknown as import('node:stream/web').ReadableStream<Uint8Array>).pipe(fileStream));
+        await finished(
+            Readable.fromWeb(
+                res.body as unknown as import('node:stream/web').ReadableStream<Uint8Array>,
+            ).pipe(fileStream),
+        );
 
         if (category === 'character') {
             const fileContent = fs.readFileSync(temp_path);
@@ -270,9 +284,7 @@ router.post('/delete', async (request, response) => {
 
     // Check category
     let category = null;
-    for (const i of VALID_CATEGORIES)
-        if (i == inputCategory)
-            category = i;
+    for (const i of VALID_CATEGORIES) if (i == inputCategory) category = i;
 
     if (category === null) {
         console.error('Bad request: unsupported asset category.');
@@ -281,8 +293,7 @@ router.post('/delete', async (request, response) => {
 
     // Validate filename
     const validation = validateAssetFileName(request.body.filename);
-    if (validation.error)
-        return response.status(400).send(validation.message);
+    if (validation.error) return response.status(400).send(validation.message);
 
     const file_path = path.join(request.user.directories.assets, category, request.body.filename);
     console.info('Request received to delete', category, file_path);
@@ -318,9 +329,7 @@ router.post('/character', async (request, response) => {
 
     // Check category
     let category = null;
-    for (const i of VALID_CATEGORIES)
-        if (i == inputCategory)
-            category = i;
+    for (const i of VALID_CATEGORIES) if (i == inputCategory) category = i;
 
     if (category === null) {
         console.error('Bad request: unsupported asset category.');
@@ -350,13 +359,11 @@ router.post('/character', async (request, response) => {
             }
 
             // Other assets
-            const files = fs.readdirSync(folderPath)
-                .filter(filename => {
-                    return filename != '.placeholder';
-                });
+            const files = fs.readdirSync(folderPath).filter((filename) => {
+                return filename != '.placeholder';
+            });
 
-            for (const i of files)
-                output.push(`/characters/${name}/${category}/${i}`);
+            for (const i of files) output.push(`/characters/${name}/${category}/${i}`);
         }
         return response.send(output);
     } catch (err) {

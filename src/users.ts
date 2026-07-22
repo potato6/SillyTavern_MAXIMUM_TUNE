@@ -14,8 +14,22 @@ import { sync as writeFileAtomicSync } from 'write-file-atomic';
 import sanitize from 'sanitize-filename';
 import ipMatching from 'ip-matching';
 
-import { USER_DIRECTORY_TEMPLATE, DEFAULT_USER, PUBLIC_DIRECTORIES, SETTINGS_FILE, UPLOADS_DIRECTORY } from './constants.js';
-import { getConfigValue, color, delay, generateTimestamp, invalidateFirefoxCache, isPathUnderParent, setPermissionsSync } from './util.js';
+import {
+    USER_DIRECTORY_TEMPLATE,
+    DEFAULT_USER,
+    PUBLIC_DIRECTORIES,
+    SETTINGS_FILE,
+    UPLOADS_DIRECTORY,
+} from './constants.js';
+import {
+    getConfigValue,
+    color,
+    delay,
+    generateTimestamp,
+    invalidateFirefoxCache,
+    isPathUnderParent,
+    setPermissionsSync,
+} from './util.js';
 
 import { serverDirectory } from './server-directory.js';
 import { filterValidIpPatterns, getIpFromRequest } from './express-common.js';
@@ -34,7 +48,11 @@ const AUTHENTIK_AUTH = getConfigValue('sso.authentikAuth', false, 'boolean');
 const PER_USER_BASIC_AUTH = getConfigValue('perUserBasicAuth', false, 'boolean');
 const ANON_CSRF_SECRET = crypto.randomBytes(64).toString('base64');
 // @ts-expect-error TS(2345) FIXME: Argument of type 'string[]' is not assignable to p... Remove this comment to see the full error message
-const TRUSTED_PROXIES = filterValidIpPatterns(getConfigValue('sso.trustedProxies', ['127.0.0.1', '::1']) ?? [], (entry: string, message: string) => `${color.red('Warning')}: Ignoring invalid sso.trustedProxies entry ${color.yellow(entry)} - ${message}`);
+const TRUSTED_PROXIES = filterValidIpPatterns(
+    getConfigValue('sso.trustedProxies', ['127.0.0.1', '::1']) ?? [],
+    (entry: string, message: string) =>
+        `${color.red('Warning')}: Ignoring invalid sso.trustedProxies entry ${color.yellow(entry)} - ${message}`,
+);
 
 /**
  * Cache for user directories.
@@ -116,7 +134,7 @@ export async function ensurePublicDirectoriesExist() {
     }
 
     const userHandles = await getAllUserHandles();
-    const directoriesList = userHandles.map(handle => getUserDirectories(handle));
+    const directoriesList = userHandles.map((handle) => getUserDirectories(handle));
     for (const userDirectories of directoriesList) {
         for (const dir of Object.values(userDirectories) as string[]) {
             if (!fs.existsSync(dir)) {
@@ -138,7 +156,11 @@ function logSecurityAlert(message: string) {
     console.error(color.red(message));
     // @ts-expect-error TS(2345) FIXME: Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
     if (getConfigValue('securityOverride', false, 'boolean')) {
-        console.warn(color.red('Security has been overridden. If it\'s not a trusted network, change the settings.'));
+        console.warn(
+            color.red(
+                "Security has been overridden. If it's not a trusted network, change the settings.",
+            ),
+        );
         return;
     }
     process.exit(1);
@@ -157,22 +179,32 @@ export async function verifySecuritySettings() {
     }
 
     if (!ENABLE_ACCOUNTS) {
-        logSecurityAlert('Your current SillyTavern configuration is insecure (listening to non-localhost). Enable whitelisting, basic authentication or user accounts.');
+        logSecurityAlert(
+            'Your current SillyTavern configuration is insecure (listening to non-localhost). Enable whitelisting, basic authentication or user accounts.',
+        );
     }
 
     const users = await getAllEnabledUsers();
-    const unprotectedUsers = users.filter(x => !x.password);
-    const unprotectedAdminUsers = unprotectedUsers.filter(x => x.admin);
+    const unprotectedUsers = users.filter((x) => !x.password);
+    const unprotectedAdminUsers = unprotectedUsers.filter((x) => x.admin);
 
     if (unprotectedUsers.length > 0) {
-        console.warn(color.blue('A friendly reminder that the following users are not password protected:'));
-        unprotectedUsers.map(x => `${color.yellow(x.handle)} ${color.red(x.admin ? '(admin)' : '')}`).forEach(x => console.warn(x));
+        console.warn(
+            color.blue('A friendly reminder that the following users are not password protected:'),
+        );
+        unprotectedUsers
+            .map((x) => `${color.yellow(x.handle)} ${color.red(x.admin ? '(admin)' : '')}`)
+            .forEach((x) => console.warn(x));
         console.log();
-        console.warn(`Consider setting a password in the admin panel or by using the ${color.blue('recover.js')} script.`);
+        console.warn(
+            `Consider setting a password in the admin panel or by using the ${color.blue('recover.js')} script.`,
+        );
         console.log();
 
         if (unprotectedAdminUsers.length > 0) {
-            logSecurityAlert('If you are not using basic authentication or whitelisting, you should set a password for all admin users.');
+            logSecurityAlert(
+                'If you are not using basic authentication or whitelisting, you should set a password for all admin users.',
+            );
         }
     }
 
@@ -180,18 +212,22 @@ export async function verifySecuritySettings() {
         // @ts-expect-error TS(2345) FIXME: Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
         const perUserBasicAuth = getConfigValue('perUserBasicAuth', false, 'boolean');
         if (perUserBasicAuth && !ENABLE_ACCOUNTS) {
-            console.error(color.red(
-                'Per-user basic authentication is enabled, but user accounts are disabled. This configuration may be insecure.',
-            ));
+            console.error(
+                color.red(
+                    'Per-user basic authentication is enabled, but user accounts are disabled. This configuration may be insecure.',
+                ),
+            );
         } else if (!perUserBasicAuth) {
             // @ts-expect-error TS(2345) FIXME: Argument of type '""' is not assignable to paramet... Remove this comment to see the full error message
             const basicAuthUserName = getConfigValue('basicAuthUser.username', '');
             // @ts-expect-error TS(2345) FIXME: Argument of type '""' is not assignable to paramet... Remove this comment to see the full error message
             const basicAuthUserPassword = getConfigValue('basicAuthUser.password', '');
             if (!basicAuthUserName || !basicAuthUserPassword) {
-                console.warn(color.yellow(
-                    'Basic Authentication is enabled, but username or password is not set or empty!',
-                ));
+                console.warn(
+                    color.yellow(
+                        'Basic Authentication is enabled, but username or password is not set or empty!',
+                    ),
+                );
             }
         }
     }
@@ -211,7 +247,7 @@ export function cleanUploads() {
             }
 
             console.debug(`Cleaning uploads folder (${uploads.length} files)`);
-            uploads.forEach(file => {
+            uploads.forEach((file) => {
                 const pathToFile = path.join(uploadsPath, file);
                 fs.unlinkSync(pathToFile);
             });
@@ -227,7 +263,7 @@ export function cleanUploads() {
  */
 export async function getUserDirectoriesList() {
     const userHandles = await getAllUserHandles();
-    const directoriesList = userHandles.map(handle => getUserDirectories(handle));
+    const directoriesList = userHandles.map((handle) => getUserDirectories(handle));
     return directoriesList;
 }
 
@@ -384,7 +420,12 @@ export async function migrateUserData() {
     ];
 
     const currentDate = new Date().toISOString().split('T')[0]!;
-    const backupDirectory = path.join(process.cwd(), PUBLIC_DIRECTORIES.backups, '_migration', currentDate);
+    const backupDirectory = path.join(
+        process.cwd(),
+        PUBLIC_DIRECTORIES.backups,
+        '_migration',
+        currentDate,
+    );
 
     if (!fs.existsSync(backupDirectory)) {
         fs.mkdirSync(backupDirectory, { recursive: true });
@@ -397,7 +438,9 @@ export async function migrateUserData() {
 
         try {
             if (!fs.existsSync(migration.old)) {
-                console.log(color.yellow(`Skipping migration of ${migration.old} as it does not exist.`));
+                console.log(
+                    color.yellow(`Skipping migration of ${migration.old} as it does not exist.`),
+                );
                 continue;
             }
 
@@ -405,33 +448,36 @@ export async function migrateUserData() {
                 // Copy the file to the new location
                 fs.cpSync(migration.old, migration.new, { force: true });
                 // Move the file to the backup location
-                fs.cpSync(
-                    migration.old,
-                    path.join(backupDirectory, path.basename(migration.old)),
-                    { recursive: true, force: true },
-                );
+                fs.cpSync(migration.old, path.join(backupDirectory, path.basename(migration.old)), {
+                    recursive: true,
+                    force: true,
+                });
                 fs.rmSync(migration.old, { recursive: true, force: true });
             } else {
                 // Copy the directory to the new location
                 fs.cpSync(migration.old, migration.new, { recursive: true, force: true });
                 // Move the directory to the backup location
-                fs.cpSync(
-                    migration.old,
-                    path.join(backupDirectory, path.basename(migration.old)),
-                    { recursive: true, force: true },
-                );
+                fs.cpSync(migration.old, path.join(backupDirectory, path.basename(migration.old)), {
+                    recursive: true,
+                    force: true,
+                });
                 fs.rmSync(migration.old, { recursive: true, force: true });
             }
         } catch (error) {
             // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-            console.error(color.red(`Error migrating ${migration.old} to ${migration.new}:`), error.message);
+            console.error(
+                color.red(`Error migrating ${migration.old} to ${migration.new}:`),
+                error.message,
+            );
             errors.push(migration.old);
         }
     }
 
     if (errors.length > 0) {
-        console.log(color.red('Migration completed with errors. Move the following files manually:'));
-        errors.forEach(error => console.error(error));
+        console.log(
+            color.red('Migration completed with errors. Move the following files manually:'),
+        );
+        errors.forEach((error) => console.error(error));
     }
 
     console.log(color.green('Migration completed!'));
@@ -474,7 +520,10 @@ export async function migrateSystemPrompts() {
                     if ('system_prompt' in instructData && 'name' in instructData) {
                         const backupPath = path.join(backupsPath, `${instructData.name}.json`);
                         fs.cpSync(instructPath, backupPath, { force: true });
-                        const syspromptData = { name: instructData.name, content: instructData.system_prompt };
+                        const syspromptData = {
+                            name: instructData.name,
+                            content: instructData.system_prompt,
+                        };
                         migratedPrompts.push(syspromptData);
                         delete instructData.system_prompt;
                         writeFileAtomicSync(instructPath, JSON.stringify(instructData, null, 4));
@@ -482,14 +531,18 @@ export async function migrateSystemPrompts() {
                 }
             }
             // Only leave unique contents
-            migratedPrompts = uniqBy(migratedPrompts, item => item.content);
+            migratedPrompts = uniqBy(migratedPrompts, (item) => item.content);
             // Only leave contents that are not in the default prompts
-            migratedPrompts = migratedPrompts.filter(x => !defaultPrompts.some((y: { content: string }) => y.content === x.content));
+            migratedPrompts = migratedPrompts.filter(
+                (x) => !defaultPrompts.some((y: { content: string }) => y.content === x.content),
+            );
             for (const sysPromptData of migratedPrompts) {
                 sysPromptData.name = `[Migrated] ${sysPromptData.name}`;
                 const syspromptPath = path.join(directory.sysprompt, `${sysPromptData.name}.json`);
                 writeFileAtomicSync(syspromptPath, JSON.stringify(sysPromptData, null, 4));
-                console.log(`Migrated system prompt ${sysPromptData.name} for ${directory.root.split(path.sep).pop()}`);
+                console.log(
+                    `Migrated system prompt ${sysPromptData.name} for ${directory.root.split(path.sep).pop()}`,
+                );
             }
             writeFileAtomicSync(migrateMarker, '');
         } catch (error) {
@@ -689,8 +742,8 @@ export async function getCsrfSecret(request: import('express').Request) {
  * @returns {Promise<string[]>} - The list of user handles
  */
 export async function getAllUserHandles() {
-    const keys = await storage.keys(x => x.key.startsWith(KEY_PREFIX));
-    const handles = keys.map(x => x.replace(KEY_PREFIX, ''));
+    const keys = await storage.keys((x) => x.key.startsWith(KEY_PREFIX));
+    const handles = keys.map((x) => x.replace(KEY_PREFIX, ''));
     return handles;
 }
 
@@ -734,7 +787,9 @@ export async function getUserAvatar(handle: string) {
         // Fallback to reading from files if custom avatar is not set
         const directory = getUserDirectories(handle);
         const pathToSettings = path.join(directory.root, SETTINGS_FILE);
-        const settings = fs.existsSync(pathToSettings) ? JSON.parse(fs.readFileSync(pathToSettings, 'utf8')) : {};
+        const settings = fs.existsSync(pathToSettings)
+            ? JSON.parse(fs.readFileSync(pathToSettings, 'utf8'))
+            : {};
         const avatarFile = settings?.power_user?.default_persona || settings?.user_avatar;
         if (!avatarFile) {
             return PUBLIC_USER_AVATAR;
@@ -844,13 +899,21 @@ async function authentikUserLogin(request: import('express').Request) {
  */
 function isRequestFromTrustedProxy(ip: string) {
     if (!Array.isArray(TRUSTED_PROXIES)) {
-        console.warn(color.yellow('sso.trustedProxies is not an array. Please check your config.yaml. SSO auto-login will not work.'));
+        console.warn(
+            color.yellow(
+                'sso.trustedProxies is not an array. Please check your config.yaml. SSO auto-login will not work.',
+            ),
+        );
         return false;
     }
 
     // Bypass magic value check if the user explicitly configured
     if (TRUSTED_PROXIES.length === 1 && TRUSTED_PROXIES[0] === '*') {
-        console.warn(color.yellow('sso.trustedProxies is set to accept all IPs. This is not recommended for production environments.'));
+        console.warn(
+            color.yellow(
+                'sso.trustedProxies is set to accept all IPs. This is not recommended for production environments.',
+            ),
+        );
         return true;
     }
 
@@ -895,7 +958,11 @@ async function headerUserLogin(request: import('express').Request, header = 'Rem
     const ip = getIpFromRequest(request);
     const isTrusted = isRequestFromTrustedProxy(ip);
     if (!isTrusted) {
-        console.warn(color.yellow(`Received ${header} header from untrusted IP ${ip}. Ignoring for auto-login.`));
+        console.warn(
+            color.yellow(
+                `Received ${header} header from untrusted IP ${ip}. Ignoring for auto-login.`,
+            ),
+        );
         return false;
     }
 
@@ -945,7 +1012,12 @@ async function basicUserLogin(request: import('express').Request) {
         if (username === userHandle) {
             const user = await storage.getItem(toKey(userHandle));
             // Verify pass again here just to be sure
-            if (user && user.enabled && user.password && user.password === getPasswordHash(password, user.salt)) {
+            if (
+                user &&
+                user.enabled &&
+                user.password &&
+                user.password === getPasswordHash(password, user.salt)
+            ) {
                 request.session.handle = userHandle;
                 request.session.version = getAccountVersion(user);
                 return true;
@@ -963,7 +1035,8 @@ async function basicUserLogin(request: import('express').Request) {
  */
 // @ts-expect-error TS(2304) FIXME: Cannot find name 'User'.
 export function getAccountVersion(user: User) {
-    return crypto.createHash('shake256', { outputLength: 8 })
+    return crypto
+        .createHash('shake256', { outputLength: 8 })
         .update(JSON.stringify([user.handle, user.password, user.salt]))
         .digest('hex');
 }
@@ -975,11 +1048,15 @@ export function getAccountVersion(user: User) {
  * @param {import('express').NextFunction} next Next function
  * @returns {Promise<void>}
  */
-export async function setUserDataMiddleware(request: express.Request, response: express.Response, next: express.NextFunction) {
+export async function setUserDataMiddleware(
+    request: express.Request,
+    response: express.Response,
+    next: express.NextFunction,
+) {
     // If user accounts are disabled, use the default user
     if (!ENABLE_ACCOUNTS) {
         const handle = DEFAULT_USER.handle;
-    const directories = getUserDirectories(handle as string);
+        const directories = getUserDirectories(handle as string);
         request.user = {
             profile: DEFAULT_USER,
             directories: directories,
@@ -1015,7 +1092,10 @@ export async function setUserDataMiddleware(request: express.Request, response: 
 
     if (Object.hasOwn(request.session, 'version')) {
         if (request.session.version !== getAccountVersion(user)) {
-            console.warn('User data has changed since the session was created. Invalidating session for user:', handle);
+            console.warn(
+                'User data has changed since the session was created. Invalidating session for user:',
+                handle,
+            );
             request.session.handle = null;
             request.session.csrfToken = null;
             request.session.version = null;
@@ -1048,7 +1128,11 @@ export async function setUserDataMiddleware(request: express.Request, response: 
  * @param {import('express').NextFunction} next Next function
  * @returns {void}
  */
-export function requireLoginMiddleware(request: express.Request, response: express.Response, next: express.NextFunction) {
+export function requireLoginMiddleware(
+    request: express.Request,
+    response: express.Response,
+    next: express.NextFunction,
+) {
     if (!request.user) {
         return response.sendStatus(403);
     }
@@ -1091,7 +1175,11 @@ function createRouteHandler(directoryFn: (req: express.Request) => string) {
     return async (req: express.Request, res: express.Response) => {
         try {
             const directory = directoryFn(req);
-            const filePath = path.join(...(Array.isArray(req.params.filePath) ? req.params.filePath : [req.params.filePath ?? '']));
+            const filePath = path.join(
+                ...(Array.isArray(req.params.filePath)
+                    ? req.params.filePath
+                    : [req.params.filePath ?? '']),
+            );
             const fullPath = path.join(directory, filePath);
             if (!isPathUnderParent(directory, path.resolve(fullPath))) {
                 return res.sendStatus(403);
@@ -1118,7 +1206,11 @@ function createExtensionsRouteHandler(directoryFn: (req: express.Request) => str
     return async (req: express.Request, res: express.Response) => {
         try {
             const directory = directoryFn(req);
-            const filePath = path.join(...(Array.isArray(req.params.filePath) ? req.params.filePath : [req.params.filePath ?? '']));
+            const filePath = path.join(
+                ...(Array.isArray(req.params.filePath)
+                    ? req.params.filePath
+                    : [req.params.filePath ?? '']),
+            );
             const localPath = path.join(directory, filePath);
             if (!isPathUnderParent(directory, path.resolve(localPath))) {
                 return res.sendStatus(403);
@@ -1151,7 +1243,11 @@ function createExtensionsRouteHandler(directoryFn: (req: express.Request) => str
  * @param {import('express').NextFunction} next Next function
  * @returns {void}
  */
-export function requireAdminMiddleware(request: express.Request, response: express.Response, next: express.NextFunction) {
+export function requireAdminMiddleware(
+    request: express.Request,
+    response: express.Response,
+    next: express.NextFunction,
+) {
     if (!request.user) {
         return response.sendStatus(403);
     }
@@ -1229,17 +1325,39 @@ async function getAllUsers() {
  */
 export async function getAllEnabledUsers() {
     const users = await getAllUsers();
-    return users.filter(x => x.enabled);
+    return users.filter((x) => x.enabled);
 }
 
 /**
  * Express router for serving files from the user's directories.
  */
 export const router = express.Router();
-router.use('/backgrounds/*filePath', createRouteHandler((req: express.Request) => req.user.directories.backgrounds));
-router.use('/characters/*filePath', createRouteHandler((req: express.Request) => req.user.directories.characters));
-router.use('/User%20Avatars/*filePath', createRouteHandler((req: express.Request) => req.user.directories.avatars));
-router.use('/assets/*filePath', createRouteHandler((req: express.Request) => req.user.directories.assets));
-router.use('/user/images/*filePath', createRouteHandler((req: express.Request) => req.user.directories.userImages));
-router.use('/user/files/*filePath', createRouteHandler((req: express.Request) => req.user.directories.files));
-router.use('/scripts/extensions/third-party/*filePath', extensionsEnabledFeatureGuard, createExtensionsRouteHandler((req: express.Request) => req.user.directories.extensions));
+router.use(
+    '/backgrounds/*filePath',
+    createRouteHandler((req: express.Request) => req.user.directories.backgrounds),
+);
+router.use(
+    '/characters/*filePath',
+    createRouteHandler((req: express.Request) => req.user.directories.characters),
+);
+router.use(
+    '/User%20Avatars/*filePath',
+    createRouteHandler((req: express.Request) => req.user.directories.avatars),
+);
+router.use(
+    '/assets/*filePath',
+    createRouteHandler((req: express.Request) => req.user.directories.assets),
+);
+router.use(
+    '/user/images/*filePath',
+    createRouteHandler((req: express.Request) => req.user.directories.userImages),
+);
+router.use(
+    '/user/files/*filePath',
+    createRouteHandler((req: express.Request) => req.user.directories.files),
+);
+router.use(
+    '/scripts/extensions/third-party/*filePath',
+    extensionsEnabledFeatureGuard,
+    createExtensionsRouteHandler((req: express.Request) => req.user.directories.extensions),
+);

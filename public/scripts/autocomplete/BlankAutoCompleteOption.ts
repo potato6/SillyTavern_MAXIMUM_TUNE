@@ -11,19 +11,20 @@ export class BlankAutoCompleteOption extends AutoCompleteOption {
     }
 
     // @ts-expect-error TS(4114) FIXME: This member must have an 'override' modifier becau... Remove this comment to see the full error message
-    get value() { return null; }
-
+    get value() {
+        return null;
+    }
 
     // @ts-expect-error TS(4114) FIXME: This member must have an 'override' modifier becau... Remove this comment to see the full error message
     renderItem() {
-        const li = document.createElement('li'); {
+        const li = document.createElement('li');
+        {
             li.classList.add('item');
             li.classList.add('blank');
             li.textContent = this.name;
         }
         return li;
     }
-
 
     // @ts-expect-error TS(4114) FIXME: This member must have an 'override' modifier becau... Remove this comment to see the full error message
     renderDetails() {

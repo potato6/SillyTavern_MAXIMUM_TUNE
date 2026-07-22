@@ -7,12 +7,16 @@ let dynamicExtensionStyleSheet: CSSStyleSheet | null = null;
  * An observer that will check if any new stylesheets are added to the head
  * @type {MutationObserver}
  */
-const observer = new MutationObserver(mutations => {
-    mutations.forEach(mutation => {
+const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
         if (mutation.type !== 'childList') return;
 
-        mutation.addedNodes.forEach(node => {
-            if (node instanceof HTMLLinkElement && node.tagName === 'LINK' && node.rel === 'stylesheet') {
+        mutation.addedNodes.forEach((node) => {
+            if (
+                node instanceof HTMLLinkElement &&
+                node.tagName === 'LINK' &&
+                node.rel === 'stylesheet'
+            ) {
                 node.addEventListener('load', () => {
                     try {
                         applyDynamicFocusStyles(node.sheet);
@@ -51,7 +55,7 @@ function applyDynamicFocusStyles(styleSheet, { fromExtension = false } = {}) {
     // @ts-expect-error TS(7006) FIXME: Parameter 'wrappers' implicitly has an 'any' type.
     function wrapperSignature(wrappers) {
         // @ts-expect-error TS(7006) FIXME: Parameter 'w' implicitly has an 'any' type.
-        return wrappers.map(w => `${w.type}:${w.conditionText}`).join(';');
+        return wrappers.map((w) => `${w.type}:${w.conditionText}`).join(';');
     }
 
     /**
@@ -61,21 +65,25 @@ function applyDynamicFocusStyles(styleSheet, { fromExtension = false } = {}) {
      */
     // @ts-expect-error TS(7006) FIXME: Parameter 'rules' implicitly has an 'any' type.
     function processRules(rules, wrappers = []) {
-        Array.from(rules).forEach(rule => {
+        Array.from(rules).forEach((rule) => {
             if (rule instanceof CSSImportRule) {
                 // Make sure that @import rules are processed recursively
                 // If the @import has media conditions, treat them as wrappers as well
                 /** @type {WrapperCond[]} */
-                const extra = (rule.media && rule.media.mediaText) ? [{ type: 'media', conditionText: rule.media.mediaText }] : [];
+                const extra =
+                    rule.media && rule.media.mediaText
+                        ? [{ type: 'media', conditionText: rule.media.mediaText }]
+                        : [];
                 // @ts-expect-error TS(2345) FIXME: Argument of type '{ type: string; conditionText: s... Remove this comment to see the full error message
                 processImportedStylesheet(rule.styleSheet, [...wrappers, ...extra]);
             } else if (rule instanceof CSSStyleRule) {
                 // Separate multiple selectors on a rule
-                const selectors = rule.selectorText.split(',').map(s => s.trim());
+                const selectors = rule.selectorText.split(',').map((s) => s.trim());
 
                 // We collect all hover and focus rules to be able to later decide which hover rules don't have a matching focus rule
-                selectors.forEach(selector => {
-                    const isHover = selector.includes(':hover'), isFocus = selector.includes(':focus');
+                selectors.forEach((selector) => {
+                    const isHover = selector.includes(':hover'),
+                        isFocus = selector.includes(':focus');
                     if (isHover && isFocus) {
                         // We currently do nothing here. Rules containing both hover and focus are very specific and should never be automatically touched
                     } else if (isHover) {
@@ -83,24 +91,35 @@ function applyDynamicFocusStyles(styleSheet, { fromExtension = false } = {}) {
                         hoverRules.push({ baseSelector, rule, wrappers: [...wrappers] });
                     } else if (isFocus) {
                         // We need to make sure that we remember all existing :focus, :focus-within and :focus-visible rules
-                        const baseSelector = selector.replace(/:focus(-within|-visible)?/g, PLACEHOLDER).trim();
+                        const baseSelector = selector
+                            .replace(/:focus(-within|-visible)?/g, PLACEHOLDER)
+                            .trim();
                         focusRules.add(`${baseSelector}|${wrapperSignature(wrappers)}`);
                     }
                 });
             } else if (rule instanceof CSSMediaRule) {
                 // Recursively process nested @media rules
                 // @ts-expect-error TS(2322) FIXME: Type '{ type: string; conditionText: string; }' is... Remove this comment to see the full error message
-                processRules(rule.cssRules, [...wrappers, { type: 'media', conditionText: rule.conditionText }]);
+                processRules(rule.cssRules, [
+                    ...wrappers,
+                    { type: 'media', conditionText: rule.conditionText },
+                ]);
             } else if (rule instanceof CSSSupportsRule) {
                 // Recursively process nested @supports rules
                 // @ts-expect-error TS(2322) FIXME: Type '{ type: string; conditionText: string; }' is... Remove this comment to see the full error message
-                processRules(rule.cssRules, [...wrappers, { type: 'supports', conditionText: rule.conditionText }]);
+                processRules(rule.cssRules, [
+                    ...wrappers,
+                    { type: 'supports', conditionText: rule.conditionText },
+                ]);
             } else if (rule instanceof window.CSSContainerRule) {
                 // Recursively process nested @container rules (if supported by the browser)
                 // Note: conditionText contains the query like "(min-width: 300px)" or "style(color)"
                 // Using 'container' as the type ensures uniqueness separate from @media/@supports
                 // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-                processRules(rule.cssRules, [...wrappers, { type: 'container', conditionText: rule.conditionText }]);
+                processRules(rule.cssRules, [
+                    ...wrappers,
+                    { type: 'container', conditionText: rule.conditionText },
+                ]);
             }
         });
     }
@@ -203,9 +222,11 @@ export function initDynamicStyles() {
     });
 
     // Process all stylesheets on initial load
-    Array.from(document.styleSheets).forEach(sheet => {
+    Array.from(document.styleSheets).forEach((sheet) => {
         try {
-            applyDynamicFocusStyles(sheet, { fromExtension: sheet.href?.toLowerCase().includes('scripts/extensions') == true });
+            applyDynamicFocusStyles(sheet, {
+                fromExtension: sheet.href?.toLowerCase().includes('scripts/extensions') == true,
+            });
         } catch (e) {
             console.warn('Failed to process stylesheet on initial load:', e);
         }

@@ -43,13 +43,13 @@ SillyTavern (или сокращенно ST) - это локально уста�
 ### Сервер в Discord
 
 | [![][discord-shield-badge]][discord-link] | [Вступайте в наше Discord-сообщество!](https://discord.gg/sillytavern) Получайте поддержку, делитесь любимыми персонажами и промптами. |
-| :---------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------- |
+| :---------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------- |
 
 Или свяжитесь с разработчиками напрямую:
 
-* Discord: cohee, rossascends, wolfsblvt
-* Reddit: [/u/RossAscends](https://www.reddit.com/user/RossAscends/), [/u/sillylossy](https://www.reddit.com/user/sillylossy/), [u/Wolfsblvt](https://www.reddit.com/user/Wolfsblvt/)
-* [Опубликовать issue на GitHub](https://github.com/SillyTavern/SillyTavern/issues)
+- Discord: cohee, rossascends, wolfsblvt
+- Reddit: [/u/RossAscends](https://www.reddit.com/user/RossAscends/), [/u/sillylossy](https://www.reddit.com/user/sillylossy/), [u/Wolfsblvt](https://www.reddit.com/user/Wolfsblvt/)
+- [Опубликовать issue на GitHub](https://github.com/SillyTavern/SillyTavern/issues)
 
 ### Мне нравится ваш проект! Как я могу внести свой вклад?
 
@@ -66,29 +66,30 @@ SillyTavern (или сокращенно ST) - это локально уста�
 
 Для получения подробных инструкций по установке, пожалуйста, посетите нашу документацию:
 
-* **[Руководство по установке для Windows](https://docs.sillytavern.app/installation/windows/)**
-* **[Руководство по установке для MacOS/Linux](https://docs.sillytavern.app/installation/linuxmacos/)**
-* **[Руководство по установке для Android (Termux)](https://docs.sillytavern.app/installation/android-(termux)/)**
-* **[Руководство по установке Docker](https://docs.sillytavern.app/installation/docker/)**
+- **[Руководство по установке для Windows](https://docs.sillytavern.app/installation/windows/)**
+- **[Руководство по установке для MacOS/Linux](https://docs.sillytavern.app/installation/linuxmacos/)**
+- **[Руководство по установке для Android (Termux)](<https://docs.sillytavern.app/installation/android-(termux)/>)**
+- **[Руководство по установке Docker](https://docs.sillytavern.app/installation/docker/)**
 
 ## Лицензия и благодарности
 
 **Эта программа распространяется в надежде, что она будет полезна, но БЕЗ КАКИХ-ЛИБО ГАРАНТИЙ; даже без подразумеваемой гарантии ТОВАРНОЙ ПРИГОДНОСТИ или ПРИГОДНОСТИ ДЛЯ ОПРЕДЕЛЕННОЙ ЦЕЛИ. Смотрите GNU Affero General Public License для получения более подробной информации.**
 
-* [TavernAI](https://github.com/TavernAI/TavernAI) 1.2.8 от Humi: лицензия MIT
-* Части мода CncAnon TavernAITurbo используются с разрешения
-* Режим визуальной новеллы вдохновлен работой PepperTaco (<https://github.com/peppertaco/Tavern/>)
-* Шрифт Noto Sans от Google (лицензия OFL)
-* Тема иконок от Font Awesome <https://fontawesome.com> (Иконки: CC BY 4.0, Шрифты: SIL OFL 1.1, Код: лицензия MIT)
-* Стандартный контент от @OtisAlejandro (персонаж Seraphina и лорбук) и @kallmeflocc (фон в честь 10 тысяч пользователей Discord)
-* Руководство по Docker от [@mrguymiah](https://github.com/mrguymiah) и [@Bronya-Rand](https://github.com/Bronya-Rand)
-* Библиотека kokoro-js от [@hexgrad](https://github.com/hexgrad) (лицензия Apache-2.0)
+- [TavernAI](https://github.com/TavernAI/TavernAI) 1.2.8 от Humi: лицензия MIT
+- Части мода CncAnon TavernAITurbo используются с разрешения
+- Режим визуальной новеллы вдохновлен работой PepperTaco (<https://github.com/peppertaco/Tavern/>)
+- Шрифт Noto Sans от Google (лицензия OFL)
+- Тема иконок от Font Awesome <https://fontawesome.com> (Иконки: CC BY 4.0, Шрифты: SIL OFL 1.1, Код: лицензия MIT)
+- Стандартный контент от @OtisAlejandro (персонаж Seraphina и лорбук) и @kallmeflocc (фон в честь 10 тысяч пользователей Discord)
+- Руководство по Docker от [@mrguymiah](https://github.com/mrguymiah) и [@Bronya-Rand](https://github.com/Bronya-Rand)
+- Библиотека kokoro-js от [@hexgrad](https://github.com/hexgrad) (лицензия Apache-2.0)
 
 ## Ведущие контрибьюторы
 
 [![Contributors](https://contrib.rocks/image?repo=SillyTavern/SillyTavern)](https://github.com/SillyTavern/SillyTavern/graphs/contributors)
 
 <!-- LINK GROUP -->
+
 [cover]: https://github.com/user-attachments/assets/01a6ae9a-16aa-45f2-8bff-32b5dc587e44
 [discord-link]: https://discord.gg/sillytavern
 [discord-shield-badge]: https://img.shields.io/discord/1100685673633153084?color=5865F2&label=discord&labelColor=black&logo=discord&logoColor=white&style=for-the-badge

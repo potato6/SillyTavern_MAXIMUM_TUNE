@@ -19,10 +19,9 @@ export class SlashCommandAutoCompleteNameResult extends AutoCompleteNameResult {
             executor.name,
             executor.start,
             // @ts-expect-error TS(2345) FIXME: Argument of type 'SlashCommandCommandAutoCompleteO... Remove this comment to see the full error message
-            Object
-                .keys(commands)
-                .map(key => new SlashCommandCommandAutoCompleteOption(commands[key], key))
-            ,
+            Object.keys(commands).map(
+                (key) => new SlashCommandCommandAutoCompleteOption(commands[key], key),
+            ),
             false,
             () => `No matching slash commands for "/${this.name}"`,
             () => 'No slash commands found!',
@@ -68,7 +67,9 @@ export class SlashCommandAutoCompleteNameResult extends AutoCompleteNameResult {
             return null;
         }
         // @ts-expect-error TS(7006) FIXME: Parameter 'arg' implicitly has an 'any' type.
-        const notProvidedNamedArguments = this.executor.command.namedArgumentList.filter(arg => !this.executor.namedArgumentList.find(it => it.name == arg.name));
+        const notProvidedNamedArguments = this.executor.command.namedArgumentList.filter(
+            (arg) => !this.executor.namedArgumentList.find((it) => it.name == arg.name),
+        );
         let name;
         // @ts-expect-error TS(7034) FIXME: Variable 'value' implicitly has type 'any' in some... Remove this comment to see the full error message
         let value;
@@ -78,28 +79,46 @@ export class SlashCommandAutoCompleteNameResult extends AutoCompleteNameResult {
         let argAssign;
         const unamedArgLength = this.executor.endUnnamedArgs - this.executor.startUnnamedArgs;
         const namedArgsFollowedBySpace = text[this.executor.endNamedArgs] == ' ';
-        if (this.executor.startNamedArgs <= index && this.executor.endNamedArgs + (namedArgsFollowedBySpace ? 1 : 0) >= index) {
+        if (
+            this.executor.startNamedArgs <= index &&
+            this.executor.endNamedArgs + (namedArgsFollowedBySpace ? 1 : 0) >= index
+        ) {
             // cursor is somewhere within the named arguments (including final space)
             // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
-            argAssign = this.executor.namedArgumentList.find(it => it.start <= index && it.end >= index);
+            argAssign = this.executor.namedArgumentList.find(
+                (it) => it.start <= index && it.end >= index,
+            );
             if (argAssign) {
                 const [argName, ...v] = text.slice(argAssign.start, index).split(getSplitRegex());
                 name = argName;
                 value = v.join('');
                 start = argAssign.start;
                 // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
-                cmdArg = this.executor.command.namedArgumentList.find(it => [it.name, `${it.name}=`].includes(argAssign.name));
+                cmdArg = this.executor.command.namedArgumentList.find((it) =>
+                    [it.name, `${it.name}=`].includes(argAssign.name),
+                );
                 if (cmdArg) notProvidedNamedArguments.push(cmdArg);
             } else {
                 name = '';
                 start = index;
             }
-        } else if (unamedArgLength > 0 && index >= this.executor.startUnnamedArgs && index <= this.executor.endUnnamedArgs) {
+        } else if (
+            unamedArgLength > 0 &&
+            index >= this.executor.startUnnamedArgs &&
+            index <= this.executor.endUnnamedArgs
+        ) {
             // cursor is somewhere within the unnamed arguments
             // if index is in first array item and that is a string, treat it as an unfinished named arg
             if (typeof this.executor.unnamedArgumentList[0]?.value == 'string') {
-                if (index <= this.executor.startUnnamedArgs + this.executor.unnamedArgumentList[0].value.length) {
-                    name = this.executor.unnamedArgumentList[0].value.slice(0, index - this.executor.startUnnamedArgs);
+                if (
+                    index <=
+                    this.executor.startUnnamedArgs +
+                        this.executor.unnamedArgumentList[0].value.length
+                ) {
+                    name = this.executor.unnamedArgumentList[0].value.slice(
+                        0,
+                        index - this.executor.startUnnamedArgs,
+                    );
                     start = this.executor.startUnnamedArgs;
                 } else {
                     return null;
@@ -116,14 +135,21 @@ export class SlashCommandAutoCompleteNameResult extends AutoCompleteNameResult {
             const enumList = cmdArg?.enumProvider?.(this.executor, this.scope) ?? cmdArg?.enumList;
             if (cmdArg && enumList?.length) {
                 // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
-                if (isSelect && enumList.find(it => it.value == value) && argAssign && argAssign.end == index) {
+                if (
+                    isSelect &&
+                    enumList.find((it) => it.value == value) &&
+                    argAssign &&
+                    argAssign.end == index
+                ) {
                     return null;
                 }
                 const result = new AutoCompleteSecondaryNameResult(
                     value,
                     start + name.length,
                     // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
-                    enumList.map(it => SlashCommandEnumAutoCompleteOption.from(this.executor.command, it)),
+                    enumList.map((it) =>
+                        SlashCommandEnumAutoCompleteOption.from(this.executor.command, it),
+                    ),
                     true,
                 );
                 result.isRequired = true;
@@ -137,11 +163,14 @@ export class SlashCommandAutoCompleteNameResult extends AutoCompleteNameResult {
                 name,
                 start,
                 // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
-                notProvidedNamedArguments.map(it => new SlashCommandNamedArgumentAutoCompleteOption(it, this.executor.command)),
+                notProvidedNamedArguments.map(
+                    (it) =>
+                        new SlashCommandNamedArgumentAutoCompleteOption(it, this.executor.command),
+                ),
                 false,
             );
             // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
-            result.isRequired = notProvidedNamedArguments.find(it => it.isRequired) != null;
+            result.isRequired = notProvidedNamedArguments.find((it) => it.isRequired) != null;
             return result;
         }
 
@@ -154,7 +183,9 @@ export class SlashCommandAutoCompleteNameResult extends AutoCompleteNameResult {
             return null;
         }
         const lastArgIsBlank = this.executor.unnamedArgumentList.slice(-1)[0]?.value == '';
-        const notProvidedArguments = this.executor.command.unnamedArgumentList.slice(this.executor.unnamedArgumentList.length - (lastArgIsBlank ? 1 : 0));
+        const notProvidedArguments = this.executor.command.unnamedArgumentList.slice(
+            this.executor.unnamedArgumentList.length - (lastArgIsBlank ? 1 : 0),
+        );
         let value;
         let start;
         let cmdArg;
@@ -162,14 +193,20 @@ export class SlashCommandAutoCompleteNameResult extends AutoCompleteNameResult {
         if (this.executor.startUnnamedArgs <= index && this.executor.endUnnamedArgs + 1 >= index) {
             // cursor is somwehere in the unnamed args
             // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
-            const idx = this.executor.unnamedArgumentList.findIndex(it => it.start <= index && it.end >= index);
+            const idx = this.executor.unnamedArgumentList.findIndex(
+                (it) => it.start <= index && it.end >= index,
+            );
             if (idx > -1) {
                 argAssign = this.executor.unnamedArgumentList[idx];
                 cmdArg = this.executor.command.unnamedArgumentList[idx];
-                if (cmdArg === undefined && this.executor.command.unnamedArgumentList.slice(-1)[0]?.acceptsMultiple) {
+                if (
+                    cmdArg === undefined &&
+                    this.executor.command.unnamedArgumentList.slice(-1)[0]?.acceptsMultiple
+                ) {
                     cmdArg = this.executor.command.unnamedArgumentList.slice(-1)[0];
                 }
-                const enumList = cmdArg?.enumProvider?.(this.executor, this.scope) ?? cmdArg?.enumList;
+                const enumList =
+                    cmdArg?.enumProvider?.(this.executor, this.scope) ?? cmdArg?.enumList;
                 if (cmdArg && enumList.length > 0) {
                     value = argAssign.value.toString().slice(0, index - argAssign.start);
                     start = argAssign.start;
@@ -180,7 +217,10 @@ export class SlashCommandAutoCompleteNameResult extends AutoCompleteNameResult {
                 value = '';
                 start = index;
                 cmdArg = notProvidedArguments[0];
-                if (cmdArg === undefined && this.executor.command.unnamedArgumentList.slice(-1)[0]?.acceptsMultiple) {
+                if (
+                    cmdArg === undefined &&
+                    this.executor.command.unnamedArgumentList.slice(-1)[0]?.acceptsMultiple
+                ) {
                     cmdArg = this.executor.command.unnamedArgumentList.slice(-1)[0];
                 }
             }
@@ -195,11 +235,13 @@ export class SlashCommandAutoCompleteNameResult extends AutoCompleteNameResult {
             value,
             start,
             // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
-            enumList.map(it => SlashCommandEnumAutoCompleteOption.from(this.executor.command, it)),
+            enumList.map((it) =>
+                SlashCommandEnumAutoCompleteOption.from(this.executor.command, it),
+            ),
             false,
         );
         // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
-        const isCompleteValue = enumList.find(it => it.value == value);
+        const isCompleteValue = enumList.find((it) => it.value == value);
         const isSelectedValue = isSelect && isCompleteValue;
         result.isRequired = cmdArg.isRequired && !isSelectedValue;
         result.forceMatch = cmdArg.forceEnum;

@@ -15,7 +15,10 @@ const hostWhitelistScan = !!getConfigValue('hostWhitelist.scan', false, 'boolean
 
 const validationMiddleware = hostValidationMiddleware({
     allowedHosts: hostWhitelist,
-    generateErrorMessage: () => safeReadFileSync(path.join(globalThis.DATA_ROOT, '_errors', 'host-not-allowed.html'))?.toString() ?? '',
+    generateErrorMessage: () =>
+        safeReadFileSync(
+            path.join(globalThis.DATA_ROOT, '_errors', 'host-not-allowed.html'),
+        )?.toString() ?? '',
     errorResponseContentType: 'text/html',
 });
 
@@ -29,15 +32,26 @@ const validationMiddleware = hostValidationMiddleware({
  */
 export default function hostWhitelistMiddleware(req: Request, res: Response, next: NextFunction) {
     const hostValue = req.headers.host;
-    if (hostWhitelistScan && !isHostAllowed(hostValue, hostWhitelist) && !knownHosts.has(hostValue) && knownHosts.size < maxKnownHosts) {
+    if (
+        hostWhitelistScan &&
+        !isHostAllowed(hostValue, hostWhitelist) &&
+        !knownHosts.has(hostValue) &&
+        knownHosts.size < maxKnownHosts
+    ) {
         const isFirstWarning = knownHosts.size === 0;
         console.warn(color.red('Request from untrusted host:'), hostValue);
-        console.warn(`If you trust this host, you can add it to ${color.yellow('hostWhitelist.hosts')} in config.yaml`);
+        console.warn(
+            `If you trust this host, you can add it to ${color.yellow('hostWhitelist.hosts')} in config.yaml`,
+        );
         if (!hostWhitelistEnabled && isFirstWarning) {
-            console.warn(`To protect against host spoofing, consider setting ${color.yellow('hostWhitelist.enabled')} to true`);
+            console.warn(
+                `To protect against host spoofing, consider setting ${color.yellow('hostWhitelist.enabled')} to true`,
+            );
         }
         if (isFirstWarning) {
-            console.warn(`To disable this warning, set ${color.yellow('hostWhitelist.scan')} to false`);
+            console.warn(
+                `To disable this warning, set ${color.yellow('hostWhitelist.scan')} to false`,
+            );
         }
         knownHosts.add(hostValue);
     }

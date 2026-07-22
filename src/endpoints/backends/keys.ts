@@ -45,7 +45,7 @@ router.get('/', async (_req: express.Request, res: express.Response) => {
         // Deduplicate by id (providers shared across chat + text registries
         // like OPENROUTER should only appear once).
         const seen = new Set<string>();
-        const unique = descriptors.filter(d => {
+        const unique = descriptors.filter((d) => {
             if (seen.has(d.id)) return false;
             seen.add(d.id);
             return true;

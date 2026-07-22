@@ -1,4 +1,10 @@
-import { CHAT_COMPLETION_SOURCES, AZURE_OPENAI_KEYS, OPENAI_REASONING_EFFORT_MAP, OPENAI_REASONING_EFFORT_MODELS, OPENAI_FIXED_REASONING_EFFORT } from '../../../../constants.js';
+import {
+    CHAT_COMPLETION_SOURCES,
+    AZURE_OPENAI_KEYS,
+    OPENAI_REASONING_EFFORT_MAP,
+    OPENAI_REASONING_EFFORT_MODELS,
+    OPENAI_FIXED_REASONING_EFFORT,
+} from '../../../../constants.js';
 import { forwardFetchResponse, color, tryParse } from '../../../../util.js';
 import { readSecret, SECRET_KEYS } from '../../../secrets.js';
 import type { ChatProvider, ModelEntry } from '../types.js';
@@ -18,7 +24,11 @@ const provider: ChatProvider = {
 
     async chat(req, res): Promise<void> {
         const { azure_base_url, azure_deployment_name, azure_api_version } = req.body;
-        const apiKey = readSecret(req.user.directories, SECRET_KEYS.AZURE_OPENAI, req.body.secret_id);
+        const apiKey = readSecret(
+            req.user.directories,
+            SECRET_KEYS.AZURE_OPENAI,
+            req.body.secret_id,
+        );
         if (!azure_base_url || !azure_deployment_name || !azure_api_version || !apiKey) {
             res.status(400).send({
                 error: { message: 'Azure OpenAI configuration is incomplete.' },
@@ -26,7 +36,10 @@ const provider: ChatProvider = {
             return;
         }
 
-        const url = new URL(`/openai/deployments/${azure_deployment_name}/chat/completions`, azure_base_url);
+        const url = new URL(
+            `/openai/deployments/${azure_deployment_name}/chat/completions`,
+            azure_base_url,
+        );
         url.searchParams.set('api-version', azure_api_version);
         const endpointUrl = url.toString();
 
@@ -53,9 +66,13 @@ const provider: ChatProvider = {
         }
 
         apiRequestBody.reasoning_effort = OPENAI_REASONING_EFFORT_MODELS.includes(req.body.model)
-            ? OPENAI_FIXED_REASONING_EFFORT[req.body.model as keyof typeof OPENAI_FIXED_REASONING_EFFORT]
-                ?? OPENAI_REASONING_EFFORT_MAP[req.body.reasoning_effort as keyof typeof OPENAI_REASONING_EFFORT_MAP]
-                ?? req.body.reasoning_effort
+            ? (OPENAI_FIXED_REASONING_EFFORT[
+                  req.body.model as keyof typeof OPENAI_FIXED_REASONING_EFFORT
+              ] ??
+              OPENAI_REASONING_EFFORT_MAP[
+                  req.body.reasoning_effort as keyof typeof OPENAI_REASONING_EFFORT_MAP
+              ] ??
+              req.body.reasoning_effort)
             : undefined;
 
         const controller = new AbortController();
@@ -81,29 +98,36 @@ const provider: ChatProvider = {
             }
 
             if (fetchResponse.ok) {
-                const json = await fetchResponse.json() as Record<string, unknown>;
+                const json = (await fetchResponse.json()) as Record<string, unknown>;
                 console.debug('Azure OpenAI response:', json);
                 res.send(json);
                 return;
             }
 
             const text = await fetchResponse.text();
-            const data = tryParse(text) || { error: { message: fetchResponse.statusText || 'Unknown error' } };
+            const data = tryParse(text) || {
+                error: { message: fetchResponse.statusText || 'Unknown error' },
+            };
             res.status(500).send(data);
             return;
         } catch (error: unknown) {
             const err = error as Error;
-            const message = err.name === 'AbortError'
-                ? 'Request was aborted by the client.'
-                : (err.message || 'An unknown network error occurred.');
-            res.status(500).send({ error: { message, ...error as Record<string, unknown> } });
+            const message =
+                err.name === 'AbortError'
+                    ? 'Request was aborted by the client.'
+                    : err.message || 'An unknown network error occurred.';
+            res.status(500).send({ error: { message, ...(error as Record<string, unknown>) } });
             return;
         }
     },
 
     async listModels(req): Promise<ModelEntry[]> {
         const { azure_base_url, azure_deployment_name, azure_api_version } = req.body;
-        const apiKey = readSecret(req.user.directories, SECRET_KEYS.AZURE_OPENAI, req.body.secret_id);
+        const apiKey = readSecret(
+            req.user.directories,
+            SECRET_KEYS.AZURE_OPENAI,
+            req.body.secret_id,
+        );
         if (!apiKey || !azure_base_url || !azure_deployment_name || !azure_api_version) return [];
 
         const azureStatusErrorMap: Record<number, string> = {
@@ -119,7 +143,7 @@ const provider: ChatProvider = {
 
             const apiConfigTest = await globalThis.fetch(modelsUrl, {
                 method: 'GET',
-                headers: { 'api-key': apiKey, 'Accept': 'application/json' },
+                headers: { 'api-key': apiKey, Accept: 'application/json' },
             });
 
             if (!apiConfigTest.ok) {
@@ -129,7 +153,10 @@ const provider: ChatProvider = {
                 return [];
             }
 
-            const chatUrl = new URL(`/openai/deployments/${azure_deployment_name}/chat/completions`, azure_base_url);
+            const chatUrl = new URL(
+                `/openai/deployments/${azure_deployment_name}/chat/completions`,
+                azure_base_url,
+            );
             chatUrl.searchParams.set('api-version', azure_api_version);
 
             const modelPayload = {
@@ -145,7 +172,11 @@ const provider: ChatProvider = {
             });
 
             let modelResponse: Record<string, unknown>;
-                try { modelResponse = await modelRequest.json() as Record<string, unknown>; } catch { modelResponse = {}; }
+            try {
+                modelResponse = (await modelRequest.json()) as Record<string, unknown>;
+            } catch {
+                modelResponse = {};
+            }
 
             const modelId = modelResponse?.model as string;
             if (!modelId) {
@@ -153,7 +184,10 @@ const provider: ChatProvider = {
                 return [];
             }
 
-            console.info(color.green('Azure OpenAI connection successful. Detected model:'), modelId);
+            console.info(
+                color.green('Azure OpenAI connection successful. Detected model:'),
+                modelId,
+            );
             return [{ id: modelId }];
         } catch (error) {
             console.error('Azure OpenAI status check error:', error);

@@ -8,7 +8,12 @@ import { SECRET_KEYS, readSecret } from '../endpoints/secrets.js';
  * @param {string} model - The model to use for the embedding
  * @returns {Promise<number[][]>} - The array of vectors for the texts
  */
-export async function getBatchVector(texts: string[], isQuery: boolean, directories: import('../users.js').UserDirectoryList, model: string) {
+export async function getBatchVector(
+    texts: string[],
+    isQuery: boolean,
+    directories: import('../users.js').UserDirectoryList,
+    model: string,
+) {
     const key = readSecret(directories, SECRET_KEYS.COHERE);
 
     if (!key) {
@@ -37,7 +42,9 @@ export async function getBatchVector(texts: string[], isQuery: boolean, director
         throw new Error('API request failed');
     }
 
-    const data: { embeddings: { float: number[][] } } = await response.json() as { embeddings: { float: number[][] } };
+    const data: { embeddings: { float: number[][] } } = (await response.json()) as {
+        embeddings: { float: number[][] };
+    };
     if (!Array.isArray(data?.embeddings?.float)) {
         console.warn('API response was not an array');
         throw new Error('API response was not an array');
@@ -54,8 +61,12 @@ export async function getBatchVector(texts: string[], isQuery: boolean, director
  * @param {string} model - The model to use for the embedding
  * @returns {Promise<number[]>} - The vector for the text
  */
-export async function getVector(text: string, isQuery: boolean, directories: import('../users.js').UserDirectoryList, model: string) {
+export async function getVector(
+    text: string,
+    isQuery: boolean,
+    directories: import('../users.js').UserDirectoryList,
+    model: string,
+) {
     const vectors = await getBatchVector([text], isQuery, directories, model);
     return vectors[0];
 }
-

@@ -108,7 +108,7 @@ export class EntityStore<T extends { id: string | number }> {
     constructor(
         protected dbName: string,
         protected storeName: string,
-        protected dbVersion: number = 1
+        protected dbVersion: number = 1,
     ) {
         // Pre-initialize everything in fixed order
         this.db = null;
@@ -162,7 +162,12 @@ export class EntityStore<T extends { id: string | number }> {
             };
 
             request.onsuccess = (event) => resolve((event.target as IDBOpenDBRequest).result);
-            request.onerror = (event) => reject(new Error(`IndexedDB Init Error: ${(event.target as IDBOpenDBRequest).error?.message}`));
+            request.onerror = (event) =>
+                reject(
+                    new Error(
+                        `IndexedDB Init Error: ${(event.target as IDBOpenDBRequest).error?.message}`,
+                    ),
+                );
         });
 
         this.emit('loaded', null);
@@ -170,9 +175,9 @@ export class EntityStore<T extends { id: string | number }> {
 
     protected async execute<R>(
         mode: IDBTransactionMode,
-        fn: (store: IDBObjectStore) => IDBRequest<R>
+        fn: (store: IDBObjectStore) => IDBRequest<R>,
     ): Promise<R> {
-        if (!this.db) throw new Error("Database not initialized");
+        if (!this.db) throw new Error('Database not initialized');
 
         if (this.currentTxn) {
             const store = this.currentTxn.objectStore(this.storeName);
@@ -207,22 +212,22 @@ export class EntityStore<T extends { id: string | number }> {
     // ── CRUD Operations ──────────────────────────────────────────────────
 
     public async get(id: string | number): Promise<T | undefined> {
-        return this.execute<T | undefined>('readonly', store => store.get(id));
+        return this.execute<T | undefined>('readonly', (store) => store.get(id));
     }
 
     public async has(id: string | number): Promise<boolean> {
-        const count = await this.execute<number>('readonly', store => store.count(id));
+        const count = await this.execute<number>('readonly', (store) => store.count(id));
         return count > 0;
     }
 
     public async getAll(): Promise<T[]> {
-        return this.execute<T[]>('readonly', store => store.getAll());
+        return this.execute<T[]>('readonly', (store) => store.getAll());
     }
 
     public async add(item: T): Promise<void> {
         if (item.id == null) throw new Error("Entity requires 'id'");
 
-        await this.execute('readwrite', store => store.add(item));
+        await this.execute('readwrite', (store) => store.add(item));
         this.recordHistory({ type: 'add', item, oldItem: null });
         this.emit('added', item);
     }
@@ -231,7 +236,7 @@ export class EntityStore<T extends { id: string | number }> {
         const item = await this.get(id);
         if (!item) return false;
 
-        await this.execute('readwrite', store => store.delete(id));
+        await this.execute('readwrite', (store) => store.delete(id));
         this.recordHistory({ type: 'remove', item, oldItem: null });
         this.emit('removed', item);
         return true;
@@ -242,7 +247,7 @@ export class EntityStore<T extends { id: string | number }> {
         if (!oldItem) return false;
 
         const newItem = { ...oldItem, ...patch, id };
-        await this.execute('readwrite', store => store.put(newItem));
+        await this.execute('readwrite', (store) => store.put(newItem));
 
         this.recordHistory({ type: 'update', item: newItem, oldItem });
         this.emit('changed', newItem);
@@ -250,7 +255,7 @@ export class EntityStore<T extends { id: string | number }> {
     }
 
     public async clear(): Promise<void> {
-        await this.execute('readwrite', store => store.clear());
+        await this.execute('readwrite', (store) => store.clear());
 
         // Re-assign empty arrays instead of mutating to preserve PACKED status
         this.undoStack = [];
@@ -294,15 +299,15 @@ export class EntityStore<T extends { id: string | number }> {
     // ── Indexing & Highly Optimized Querying ─────────────────────────────
 
     public async size(): Promise<number> {
-        return this.execute<number>('readonly', store => store.count());
+        return this.execute<number>('readonly', (store) => store.count());
     }
 
     public async by(indexName: string, value: string | number): Promise<T[]> {
-        return this.execute<T[]>('readonly', store => store.index(indexName).getAll(value));
+        return this.execute<T[]>('readonly', (store) => store.index(indexName).getAll(value));
     }
 
     public async query(opts: QueryOptions<T> = {}): Promise<T[]> {
-        if (!this.db) throw new Error("Database not initialized");
+        if (!this.db) throw new Error('Database not initialized');
 
         // Resolve variables upfront. Passing missing properties into V8 loops
         // triggers deoptimization (undefined vs value).
@@ -312,8 +317,8 @@ export class EntityStore<T extends { id: string | number }> {
 
         // FAST-PATH: Native implementation
         if (where === null && sort === null) {
-            return this.execute<T[]>('readonly', store =>
-                store.getAll(undefined, limit === Infinity ? undefined : limit)
+            return this.execute<T[]>('readonly', (store) =>
+                store.getAll(undefined, limit === Infinity ? undefined : limit),
             );
         }
 
@@ -351,7 +356,7 @@ export class EntityStore<T extends { id: string | number }> {
     // ── Transaction Management ───────────────────────────────────────────
 
     public async transaction(fn: () => Promise<void> | void): Promise<void> {
-        if (!this.db) throw new Error("Database not initialized");
+        if (!this.db) throw new Error('Database not initialized');
 
         if (this.currentTxn) {
             await fn();
@@ -386,7 +391,7 @@ export class EntityStore<T extends { id: string | number }> {
             };
 
             txn.onerror = () => rejectTransaction(txn.error);
-            txn.onabort = () => rejectTransaction(new Error("Transaction aborted"));
+            txn.onabort = () => rejectTransaction(new Error('Transaction aborted'));
 
             const rejectTransaction = (error: unknown) => {
                 console.error(`[EntityStore:${this.storeName}] Transaction Failed:`, error);
@@ -530,7 +535,10 @@ export class EntityStore<T extends { id: string | number }> {
             try {
                 cb(data);
             } catch (error) {
-                console.error(`[EntityStore:${this.storeName}] Event "${event}" handler crashed:`, error);
+                console.error(
+                    `[EntityStore:${this.storeName}] Event "${event}" handler crashed:`,
+                    error,
+                );
             }
         }
     }

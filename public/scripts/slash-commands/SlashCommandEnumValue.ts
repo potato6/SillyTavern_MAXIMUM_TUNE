@@ -1,4 +1,12 @@
-type EnumType = 'enum' | 'command' | 'namedArgument' | 'variable' | 'qr' | 'macro' | 'number' | 'name';
+type EnumType =
+    | 'enum'
+    | 'command'
+    | 'namedArgument'
+    | 'variable'
+    | 'qr'
+    | 'macro'
+    | 'number'
+    | 'name';
 
 /**
  * Collection of the enum types that can be used with `SlashCommandEnumValue`
@@ -49,7 +57,15 @@ export class SlashCommandEnumValue {
      * @param {(input:string)=>string?} valueProvider - A function returning a value to be used in autocomplete instead of the enum value. "input" is the part of the text that is getting auto completed. By default, values with a valueProvider will not be selectable in the autocomplete (with tab/enter).
      * @param {boolean?} makeSelectable - Set to true to make the value selectable (through tab/enter) even though a valueProvider exists.
      */
-    constructor(value: string, description: string | null = null, type: EnumType = 'enum', typeIcon: string = '◊', matchProvider: ((input: string) => boolean | SlashCommandEnumValue[]) | null = null, valueProvider: ((input: string) => string) | null = null, makeSelectable: boolean = false) {
+    constructor(
+        value: string,
+        description: string | null = null,
+        type: EnumType = 'enum',
+        typeIcon: string = '◊',
+        matchProvider: ((input: string) => boolean | SlashCommandEnumValue[]) | null = null,
+        valueProvider: ((input: string) => string) | null = null,
+        makeSelectable: boolean = false,
+    ) {
         this.value = value;
         this.description = description;
         this.type = type ?? 'enum';

@@ -3,7 +3,17 @@
  */
 
 import { escapeRegex, getCharaFilename, getStringHash } from '../utils.js';
-import { chat_metadata, characters, eventSource, event_types, extension_prompt_roles, getExtensionPromptByName, getRequestHeaders, substituteParams, this_chid } from '../../script.js';
+import {
+    chat_metadata,
+    characters,
+    eventSource,
+    event_types,
+    extension_prompt_roles,
+    getExtensionPromptByName,
+    getRequestHeaders,
+    substituteParams,
+    this_chid,
+} from '../../script.js';
 import { extension_settings, getContext } from '../extensions.js';
 import { shouldWIAddPrompt, NOTE_MODULE_NAME, metadata_keys } from '../authors-note.js';
 import { getTokenCountAsync } from '../tokenizers.js';
@@ -55,8 +65,11 @@ export function parseRegexFromString(input: string): RegExp | null {
     let pattern = rawPattern!;
     if (pattern.match(/(^|[^\\])\//)) return null;
     pattern = pattern.replace('\\/', '/');
-    try { return new RegExp(pattern, flags!); }
-    catch { return null; }
+    try {
+        return new RegExp(pattern, flags!);
+    } catch {
+        return null;
+    }
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -100,8 +113,14 @@ export class WorldInfoBuffer {
     get(entry: WIScanEntry, scanState: number): string {
         let depth = entry.scanDepth ?? this.getDepth();
         if (depth <= this.#startDepth) return '';
-        if (depth < 0) { console.error(`[WI] Invalid depth ${depth}`); return ''; }
-        if (depth > MAX_SCAN_DEPTH) { console.warn(`[WI] Truncating depth to ${MAX_SCAN_DEPTH}`); depth = MAX_SCAN_DEPTH; }
+        if (depth < 0) {
+            console.error(`[WI] Invalid depth ${depth}`);
+            return '';
+        }
+        if (depth > MAX_SCAN_DEPTH) {
+            console.warn(`[WI] Truncating depth to ${MAX_SCAN_DEPTH}`);
+            depth = MAX_SCAN_DEPTH;
+        }
 
         const SEP = '\x01';
         const J = '\n' + SEP;
@@ -109,13 +128,17 @@ export class WorldInfoBuffer {
 
         const gs = this.#globalScanData;
         if (entry.matchPersonaDescription && gs?.personaDescription) r += J + gs.personaDescription;
-        if (entry.matchCharacterDescription && gs?.characterDescription) r += J + gs.characterDescription;
-        if (entry.matchCharacterPersonality && gs?.characterPersonality) r += J + gs.characterPersonality;
-        if (entry.matchCharacterDepthPrompt && gs?.characterDepthPrompt) r += J + gs.characterDepthPrompt;
+        if (entry.matchCharacterDescription && gs?.characterDescription)
+            r += J + gs.characterDescription;
+        if (entry.matchCharacterPersonality && gs?.characterPersonality)
+            r += J + gs.characterPersonality;
+        if (entry.matchCharacterDepthPrompt && gs?.characterDepthPrompt)
+            r += J + gs.characterDepthPrompt;
         if (entry.matchScenario && gs?.scenario) r += J + gs.scenario;
         if (entry.matchCreatorNotes && gs?.creatorNotes) r += J + gs.creatorNotes;
         if (this.#injectBuffer.length > 0) r += J + this.#injectBuffer.join(J);
-        if (this.#recurseBuffer.length > 0 && scanState !== scan_state.MIN_ACTIVATIONS) r += J + this.#recurseBuffer.join(J);
+        if (this.#recurseBuffer.length > 0 && scanState !== scan_state.MIN_ACTIVATIONS)
+            r += J + this.#recurseBuffer.join(J);
         return r;
     }
 
@@ -135,20 +158,35 @@ export class WorldInfoBuffer {
         return haystack.includes(ns);
     }
 
-    addRecurse(m: string) { this.#recurseBuffer.push(m); }
-    addInject(m: string) { this.#injectBuffer.push(m); }
-    hasRecurse(): boolean { return this.#recurseBuffer.length > 0; }
-    advanceScan() { this.#skew++; }
-    getDepth(): number { return this.#depthSetting + this.#skew; }
+    addRecurse(m: string) {
+        this.#recurseBuffer.push(m);
+    }
+    addInject(m: string) {
+        this.#injectBuffer.push(m);
+    }
+    hasRecurse(): boolean {
+        return this.#recurseBuffer.length > 0;
+    }
+    advanceScan() {
+        this.#skew++;
+    }
+    getDepth(): number {
+        return this.#depthSetting + this.#skew;
+    }
 
     getExternallyActivated(entry: WIScanEntry): object | undefined {
         return WorldInfoBuffer.externalActivations.get(`${entry.world}.${entry.uid}`);
     }
-    resetExternalEffects() { WorldInfoBuffer.externalActivations = new Map(); }
+    resetExternalEffects() {
+        WorldInfoBuffer.externalActivations = new Map();
+    }
 
     getScore(entry: WIScanEntry, scanState_: number): number {
         const buf = this.get(entry, scanState_);
-        let n1 = 0, n2 = 0, s1 = 0, s2 = 0;
+        let n1 = 0,
+            n2 = 0,
+            s1 = 0,
+            s2 = 0;
 
         if (Array.isArray(entry.key)) {
             n1 = entry.key.length;
@@ -199,7 +237,10 @@ export class WorldInfoTimedEffects {
     #ensureMeta() {
         if (!chat_metadata.timedWorldInfo) chat_metadata.timedWorldInfo = {};
         for (const t of ['sticky', 'cooldown'] as const) {
-            if (!chat_metadata.timedWorldInfo[t] || typeof chat_metadata.timedWorldInfo[t] !== 'object')
+            if (
+                !chat_metadata.timedWorldInfo[t] ||
+                typeof chat_metadata.timedWorldInfo[t] !== 'object'
+            )
                 chat_metadata.timedWorldInfo[t] = {};
             Object.entries(chat_metadata.timedWorldInfo[t]).forEach(([k, v]) => {
                 if (!v || typeof v !== 'object') delete chat_metadata.timedWorldInfo[t][k];
@@ -207,27 +248,57 @@ export class WorldInfoTimedEffects {
         }
     }
 
-    #hash(e: WIScanEntry): number { return e.hash ?? 0; }
-    #ekey(e: WIScanEntry): string { return `${e.world}.${e.uid}`; }
+    #hash(e: WIScanEntry): number {
+        return e.hash ?? 0;
+    }
+    #ekey(e: WIScanEntry): string {
+        return `${e.world}.${e.uid}`;
+    }
     #mkEffect(t: string, e: WIScanEntry, p: boolean): WITimedEffect {
-        return { hash: this.#hash(e), start: this.#chat.length, end: this.#chat.length + Number((e as Record<string, unknown>)[t]), protected: p };
+        return {
+            hash: this.#hash(e),
+            start: this.#chat.length,
+            end: this.#chat.length + Number((e as Record<string, unknown>)[t]),
+            protected: p,
+        };
     }
 
     #checkType(type: string, buf: WIScanEntry[], onEnded: (e: WIScanEntry) => void) {
-        const effects = Object.entries(chat_metadata.timedWorldInfo[type] ?? {}) as [string, WITimedEffect][];
+        const effects = Object.entries(chat_metadata.timedWorldInfo[type] ?? {}) as [
+            string,
+            WITimedEffect,
+        ][];
         for (const [key, val] of effects) {
-            const entry = this.#entries.find(x => String(this.#hash(x)) === String(val.hash));
-            if (this.#chat.length <= Number(val.start) && !val.protected) { delete chat_metadata.timedWorldInfo[type][key]; continue; }
-            if (!entry) { if (this.#chat.length >= Number(val.end)) delete chat_metadata.timedWorldInfo[type][key]; continue; }
-            if (!(entry as Record<string, unknown>)[type]) { delete chat_metadata.timedWorldInfo[type][key]; continue; }
-            if (this.#chat.length >= Number(val.end)) { delete chat_metadata.timedWorldInfo[type][key]; onEnded(entry); continue; }
+            const entry = this.#entries.find((x) => String(this.#hash(x)) === String(val.hash));
+            if (this.#chat.length <= Number(val.start) && !val.protected) {
+                delete chat_metadata.timedWorldInfo[type][key];
+                continue;
+            }
+            if (!entry) {
+                if (this.#chat.length >= Number(val.end))
+                    delete chat_metadata.timedWorldInfo[type][key];
+                continue;
+            }
+            if (!(entry as Record<string, unknown>)[type]) {
+                delete chat_metadata.timedWorldInfo[type][key];
+                continue;
+            }
+            if (this.#chat.length >= Number(val.end)) {
+                delete chat_metadata.timedWorldInfo[type][key];
+                onEnded(entry);
+                continue;
+            }
             buf.push(entry);
         }
     }
 
     #checkDelay(buf: WIScanEntry[]) {
         for (const e of this.#entries) {
-            if ((e as Record<string, unknown>).delay && this.#chat.length < Number((e as Record<string, unknown>).delay)) buf.push(e);
+            if (
+                (e as Record<string, unknown>).delay &&
+                this.#chat.length < Number((e as Record<string, unknown>).delay)
+            )
+                buf.push(e);
         }
     }
 
@@ -260,17 +331,22 @@ export class WorldInfoTimedEffects {
         if (!this.isValidType(type)) return;
         if (this.#isDryRun && type !== 'delay') return;
         delete chat_metadata.timedWorldInfo[type][this.#ekey(e)];
-        if (state) chat_metadata.timedWorldInfo[type][this.#ekey(e)] = this.#mkEffect(type, e, false);
+        if (state)
+            chat_metadata.timedWorldInfo[type][this.#ekey(e)] = this.#mkEffect(type, e, false);
     }
 
-    isValidType(type: string): boolean { return ['sticky', 'cooldown', 'delay'].includes(type.trim().toLowerCase()); }
+    isValidType(type: string): boolean {
+        return ['sticky', 'cooldown', 'delay'].includes(type.trim().toLowerCase());
+    }
 
     isEffectActive(type: string, e: WIScanEntry): boolean {
         if (!this.isValidType(type)) return false;
-        return this.#buffer[type]?.some(x => this.#hash(x) === this.#hash(e)) ?? false;
+        return this.#buffer[type]?.some((x) => this.#hash(x) === this.#hash(e)) ?? false;
     }
 
-    cleanUp() { for (const b of Object.values(this.#buffer)) b.splice(0, b.length); }
+    cleanUp() {
+        for (const b of Object.values(this.#buffer)) b.splice(0, b.length);
+    }
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -305,7 +381,10 @@ export function filterByInclusionGroups(
     }
     if (!Object.keys(grouped).length) return;
 
-    const remove = (e: WIScanEntry) => { const i = newEntries.indexOf(e); if (i !== -1) newEntries.splice(i, 1); };
+    const remove = (e: WIScanEntry) => {
+        const i = newEntries.indexOf(e);
+        if (i !== -1) newEntries.splice(i, 1);
+    };
     const removeAllBut = (grp: WIScanEntry[], chosen: WIScanEntry | null) => {
         for (const e of grp) if (e !== chosen) remove(e);
     };
@@ -314,44 +393,75 @@ export function filterByInclusionGroups(
     const stickyMap = new Map<string, boolean>();
     for (const [gName, grp] of Object.entries(grouped)) {
         stickyMap.set(gName, false);
-        const sticky = grp.filter(x => timedEffects.isEffectActive('sticky', x));
+        const sticky = grp.filter((x) => timedEffects.isEffectActive('sticky', x));
         if (sticky.length) {
             for (const e of grp) if (!sticky.includes(e)) remove(e);
             stickyMap.set(gName, true);
         }
         for (const e of grp) {
-            if (timedEffects.isEffectActive('cooldown', e) || timedEffects.isEffectActive('delay', e)) remove(e);
+            if (
+                timedEffects.isEffectActive('cooldown', e) ||
+                timedEffects.isEffectActive('delay', e)
+            )
+                remove(e);
         }
     }
 
     // Scoring filter
     for (const [gName, grp] of Object.entries(grouped)) {
-        if (!useGroupScoring && !grp.some(x => x.useGroupScoring)) continue;
+        if (!useGroupScoring && !grp.some((x) => x.useGroupScoring)) continue;
         if (stickyMap.get(gName)) continue;
-        const scores = grp.map(e => buffer.getScore(e, scanState_));
+        const scores = grp.map((e) => buffer.getScore(e, scanState_));
         const max = Math.max(...scores);
         for (let i = 0; i < grp.length; i++) {
             if (!(grp[i]!.useGroupScoring ?? useGroupScoring)) continue;
-            if (scores[i]! < max) { remove(grp[i]!); grp.splice(i, 1); scores.splice(i, 1); i--; }
+            if (scores[i]! < max) {
+                remove(grp[i]!);
+                grp.splice(i, 1);
+                scores.splice(i, 1);
+                i--;
+            }
         }
     }
 
     // Final selection per group
     for (const [gName, grp] of Object.entries(grouped)) {
         if (stickyMap.get(gName)) continue;
-        if (Array.from(allActivatedEntries.values()).some(x => (x as Record<string, unknown>).group === gName)) { removeAllBut(grp, null); continue; }
+        if (
+            Array.from(allActivatedEntries.values()).some(
+                (x) => (x as Record<string, unknown>).group === gName,
+            )
+        ) {
+            removeAllBut(grp, null);
+            continue;
+        }
         if (grp.length <= 1) continue;
 
-        const prios = grp.filter(x => Boolean((x as Record<string, unknown>).groupOverride)).sort((a, b) => Number((b as Record<string, unknown>).order) - Number((a as Record<string, unknown>).order));
-        if (prios.length) { removeAllBut(grp, prios[0]!); continue; }
+        const prios = grp
+            .filter((x) => Boolean((x as Record<string, unknown>).groupOverride))
+            .toSorted(
+                (a, b) =>
+                    Number((b as Record<string, unknown>).order) -
+                    Number((a as Record<string, unknown>).order),
+            );
+        if (prios.length) {
+            removeAllBut(grp, prios[0]!);
+            continue;
+        }
 
-        const totalW = grp.reduce((a, e) => a + (Number((e as Record<string, unknown>).groupWeight) || DEFAULT_WEIGHT), 0);
+        const totalW = grp.reduce(
+            (a, e) => a + (Number((e as Record<string, unknown>).groupWeight) || DEFAULT_WEIGHT),
+            0,
+        );
         const roll = Math.random() * totalW;
         let acc = 0;
         let winner: WIScanEntry | null = null;
         for (const e of grp) {
-            acc += (Number((e as Record<string, unknown>).groupWeight) || DEFAULT_WEIGHT);
-            if (roll <= acc) { winner = e; break; }
+            acc += Number((e as Record<string, unknown>).groupWeight) || DEFAULT_WEIGHT;
+            if (roll <= acc) {
+                winner = e;
+                break;
+            }
         }
         if (winner) removeAllBut(grp, winner);
     }
@@ -383,14 +493,20 @@ export const worldInfoCache = new StructuredCloneMap({ cloneOnGet: true, cloneOn
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'chat' implicitly has an 'any' type.
 export async function getWorldInfoPrompt(chat, maxContext, isDryRun, globalScanData) {
-    let worldInfoString = '', worldInfoBefore = '', worldInfoAfter = '';
+    let worldInfoString = '',
+        worldInfoBefore = '',
+        worldInfoAfter = '';
 
     const activatedWorldInfo = await checkWorldInfo(chat, maxContext, isDryRun, globalScanData);
     worldInfoBefore = activatedWorldInfo.worldInfoBefore;
     worldInfoAfter = activatedWorldInfo.worldInfoAfter;
     worldInfoString = worldInfoBefore + worldInfoAfter;
 
-    if (!isDryRun && activatedWorldInfo.allActivatedEntries && activatedWorldInfo.allActivatedEntries.size > 0) {
+    if (
+        !isDryRun &&
+        activatedWorldInfo.allActivatedEntries &&
+        activatedWorldInfo.allActivatedEntries.size > 0
+    ) {
         const arg = Array.from(activatedWorldInfo.allActivatedEntries.values());
         await eventSource.emit(event_types.WORLD_INFO_ACTIVATED, arg);
     }
@@ -452,7 +568,7 @@ async function loadLoreEntries(worldNames: string[]): Promise<object[]> {
         const data = await loadWorldInfo(worldName);
         if (data?.entries) {
             for (const [uid, entry] of Object.entries(data.entries)) {
-                entries.push({ uid: Number(uid), world: worldName, ...entry as object });
+                entries.push({ uid: Number(uid), world: worldName, ...(entry as object) });
             }
         }
     }
@@ -475,7 +591,9 @@ async function getCharacterLore() {
 
     // TODO: Maybe make the utility function not use the window context?
     const fileName = getCharaFilename(this_chid);
-    const extraCharLore = (wiManager.info.charLore as Array<{ name: string; extraBooks: string[] }> | undefined)?.find((e) => e.name === fileName);
+    const extraCharLore = (
+        wiManager.info.charLore as Array<{ name: string; extraBooks: string[] }> | undefined
+    )?.find((e) => e.name === fileName);
     if (extraCharLore) {
         worldsToSearch = new Set([...worldsToSearch, ...extraCharLore.extraBooks]);
     }
@@ -489,17 +607,23 @@ async function getCharacterLore() {
     for (const worldName of worldsToSearch) {
         // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa...
         if (wiManager.selectedWorlds.includes(worldName)) {
-            console.debug(`[WI] Character ${name}'s world ${worldName} is already activated in global world info! Skipping...`);
+            console.debug(
+                `[WI] Character ${name}'s world ${worldName} is already activated in global world info! Skipping...`,
+            );
             continue;
         }
 
         if (chat_metadata[METADATA_KEY] === worldName) {
-            console.debug(`[WI] Character ${name}'s world ${worldName} is already activated in chat lore! Skipping...`);
+            console.debug(
+                `[WI] Character ${name}'s world ${worldName} is already activated in chat lore! Skipping...`,
+            );
             continue;
         }
 
         if (power_user.persona_description_lorebook === worldName) {
-            console.debug(`[WI] Character ${name}'s world ${worldName} is already activated in persona lore! Skipping...`);
+            console.debug(
+                `[WI] Character ${name}'s world ${worldName} is already activated in persona lore! Skipping...`,
+            );
             continue;
         }
 
@@ -507,11 +631,15 @@ async function getCharacterLore() {
         entries = entries.concat(await loadLoreEntries([worldName]));
 
         if (!entries.length) {
-            console.debug(`[WI] Character ${name}'s world ${worldName} could not be found or is empty`);
+            console.debug(
+                `[WI] Character ${name}'s world ${worldName} could not be found or is empty`,
+            );
         }
     }
 
-    console.debug(`[WI] Character ${name}'s lore has ${entries.length} world info entries`, [...worldsToSearch]);
+    console.debug(`[WI] Character ${name}'s lore has ${entries.length} world info entries`, [
+        ...worldsToSearch,
+    ]);
     return entries;
 }
 
@@ -541,7 +669,9 @@ async function getChatLore() {
     }
 
     if (wiManager.selectedWorlds.includes(chatWorld)) {
-        console.debug(`[WI] Chat world ${chatWorld} is already activated in global world info! Skipping...`);
+        console.debug(
+            `[WI] Chat world ${chatWorld} is already activated in global world info! Skipping...`,
+        );
         return [];
     }
 
@@ -564,12 +694,16 @@ async function getPersonaLore() {
     }
 
     if (chatWorld === personaWorld) {
-        console.debug(`[WI] Persona world ${personaWorld} is already activated in chat world! Skipping...`);
+        console.debug(
+            `[WI] Persona world ${personaWorld} is already activated in chat world! Skipping...`,
+        );
         return [];
     }
 
     if (wiManager.selectedWorlds.includes(personaWorld)) {
-        console.debug(`[WI] Persona world ${personaWorld} is already activated in global world info! Skipping...`);
+        console.debug(
+            `[WI] Persona world ${personaWorld} is already activated in global world info! Skipping...`,
+        );
         return [];
     }
 
@@ -585,51 +719,76 @@ async function getPersonaLore() {
  */
 export async function getSortedEntries() {
     try {
-        const [
-            globalLore,
-            characterLore,
-            chatLore,
-            personaLore,
-        ] = await Promise.all([
+        const [globalLore, characterLore, chatLore, personaLore] = await Promise.all([
             getGlobalLore(),
             getCharacterLore(),
             getChatLore(),
             getPersonaLore(),
         ]);
 
-        await eventSource.emit(event_types.WORLDINFO_ENTRIES_LOADED, { globalLore, characterLore, chatLore, personaLore });
+        await eventSource.emit(event_types.WORLDINFO_ENTRIES_LOADED, {
+            globalLore,
+            characterLore,
+            chatLore,
+            personaLore,
+        });
 
         let entries;
 
         switch (Number(wiManager.characterStrategy)) {
             case world_info_insertion_strategy.evenly:
-                entries = [...globalLore, ...characterLore].sort(wiManager.sortFn as (a: object, b: object) => number);
+                entries = [...globalLore, ...characterLore].toSorted(
+                    wiManager.sortFn as (a: object, b: object) => number,
+                );
                 break;
             case world_info_insertion_strategy.character_first:
-                entries = [...characterLore.sort(wiManager.sortFn as (a: object, b: object) => number), ...globalLore.sort(wiManager.sortFn as (a: object, b: object) => number)];
+                entries = [
+                    ...characterLore.toSorted(wiManager.sortFn as (a: object, b: object) => number),
+                    ...globalLore.toSorted(wiManager.sortFn as (a: object, b: object) => number),
+                ];
                 break;
             case world_info_insertion_strategy.global_first:
-                entries = [...globalLore.sort(wiManager.sortFn as (a: object, b: object) => number), ...characterLore.sort(wiManager.sortFn as (a: object, b: object) => number)];
+                entries = [
+                    ...globalLore.toSorted(wiManager.sortFn as (a: object, b: object) => number),
+                    ...characterLore.toSorted(wiManager.sortFn as (a: object, b: object) => number),
+                ];
                 break;
             default:
-                console.error('[WI] Unknown WI insertion strategy:', wiManager.characterStrategy, 'defaulting to evenly');
-                entries = [...globalLore, ...characterLore].sort(wiManager.sortFn as (a: object, b: object) => number);
+                console.error(
+                    '[WI] Unknown WI insertion strategy:',
+                    wiManager.characterStrategy,
+                    'defaulting to evenly',
+                );
+                entries = [...globalLore, ...characterLore].toSorted(
+                    wiManager.sortFn as (a: object, b: object) => number,
+                );
                 break;
         }
 
         // Chat lore always goes first, then persona lore, then the rest
-        entries = [...chatLore.sort(wiManager.sortFn as (a: object, b: object) => number), ...personaLore.sort(wiManager.sortFn as (a: object, b: object) => number), ...entries];
+        entries = [
+            ...chatLore.toSorted(wiManager.sortFn as (a: object, b: object) => number),
+            ...personaLore.toSorted(wiManager.sortFn as (a: object, b: object) => number),
+            ...entries,
+        ];
 
         // Calculate hash and parse decorators. Split maps to preserve old hashes.
-        entries = entries.map((entry) => {
-            const [decorators, content] = parseDecorators(entry.content || '');
-            return { ...entry, decorators, content };
-        }).map((entry) => {
-            const hash = getStringHash(JSON.stringify(entry));
-            return { ...entry, hash };
-        });
+        entries = entries
+            .map((entry) => {
+                const [decorators, content] = parseDecorators(entry.content || '');
+                return { ...entry, decorators, content };
+            })
+            .map((entry) => {
+                const hash = getStringHash(JSON.stringify(entry));
+                return { ...entry, hash };
+            });
 
-        console.debug(`[WI] Found ${entries.length} world lore entries. Sorted by strategy`, Object.entries(world_info_insertion_strategy).find((x) => x[1] === wiManager.characterStrategy));
+        console.debug(
+            `[WI] Found ${entries.length} world lore entries. Sorted by strategy`,
+            Object.entries(world_info_insertion_strategy).find(
+                (x) => x[1] === wiManager.characterStrategy,
+            ),
+        );
 
         // Need to deep clone the entries to avoid modifying the cached data
         return structuredClone(entries);
@@ -638,7 +797,6 @@ export async function getSortedEntries() {
         return [];
     }
 }
-
 
 /**
  * Parse decorators from worldinfo content
@@ -679,7 +837,9 @@ function parseDecorators(content) {
                 }
 
                 if (isKnownDecorator(splited[i])) {
-                    decorators.push(splited[i].startsWith('@@@') ? splited[i].substring(1) : splited[i]);
+                    decorators.push(
+                        splited[i].startsWith('@@@') ? splited[i].substring(1) : splited[i],
+                    );
                     fallbacked = false;
                 } else {
                     fallbacked = true;
@@ -705,11 +865,18 @@ function parseDecorators(content) {
  */
 //MARK: checkWorldInfo
 // @ts-expect-error TS(7006) FIXME: Parameter 'chat' implicitly has an 'any' type.
-export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData = defaultGlobalScanData) {
+export async function checkWorldInfo(
+    chat,
+    maxContext,
+    isDryRun,
+    globalScanData = defaultGlobalScanData,
+) {
     const context = getContext();
     const buffer = new WorldInfoBuffer(chat, globalScanData);
 
-    console.debug(`[WI] --- START WI SCAN (on ${chat.length} messages, trigger = ${globalScanData.trigger})${isDryRun ? ' (DRY RUN)' : ''} ---`);
+    console.debug(
+        `[WI] --- START WI SCAN (on ${chat.length} messages, trigger = ${globalScanData.trigger})${isDryRun ? ' (DRY RUN)' : ''} ---`,
+    );
 
     // Combine the chat
 
@@ -733,32 +900,53 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
     const failedProbabilityChecks = new Set();
     let allActivatedText = '';
 
-    let budget = Math.round(wiManager.budget * maxContext / 100) || 1;
+    let budget = Math.round((wiManager.budget * maxContext) / 100) || 1;
 
     if (wiManager.budgetCap > 0 && budget > wiManager.budgetCap) {
         console.debug(`[WI] Budget ${budget} exceeds cap ${wiManager.budgetCap}, using cap`);
         budget = wiManager.budgetCap;
     }
 
-    console.debug(`[WI] Context size: ${maxContext}; WI budget: ${budget} (max% = ${wiManager.budget}%, cap = ${wiManager.budgetCap})`);
+    console.debug(
+        `[WI] Context size: ${maxContext}; WI budget: ${budget} (max% = ${wiManager.budget}%, cap = ${wiManager.budgetCap})`,
+    );
     const sortedEntries = await getSortedEntries();
     const timedEffects = new WorldInfoTimedEffects(chat, sortedEntries, isDryRun);
 
     timedEffects.checkTimedEffects();
 
     if (sortedEntries.length === 0) {
-        return { worldInfoBefore: '', worldInfoAfter: '', WIDepthEntries: [], EMEntries: [], ANBeforeEntries: [], ANAfterEntries: [], outletEntries: {}, allActivatedEntries: new Set() };
+        return {
+            worldInfoBefore: '',
+            worldInfoAfter: '',
+            WIDepthEntries: [],
+            EMEntries: [],
+            ANBeforeEntries: [],
+            ANAfterEntries: [],
+            outletEntries: {},
+            allActivatedEntries: new Set(),
+        };
     }
 
     /** @type {number[]} Represents the delay levels for entries that are delayed until recursion */
-    const availableRecursionDelayLevels = [...new Set(sortedEntries
-        .filter(entry => entry.delayUntilRecursion)
-        .map(entry => entry.delayUntilRecursion === true ? 1 : entry.delayUntilRecursion),
-    )].sort((a, b) => a - b);
+    const availableRecursionDelayLevels = [
+        ...new Set(
+            sortedEntries
+                .filter((entry) => entry.delayUntilRecursion)
+                .map((entry) =>
+                    entry.delayUntilRecursion === true ? 1 : entry.delayUntilRecursion,
+                ),
+        ),
+    ].toSorted((a, b) => a - b);
     // Already preset with the first level
     let currentRecursionDelayLevel = availableRecursionDelayLevels.shift() ?? 0;
     if (currentRecursionDelayLevel > 0 && availableRecursionDelayLevels.length) {
-        console.debug('[WI] Preparing first delayed recursion level', currentRecursionDelayLevel, '. Still delayed:', availableRecursionDelayLevels);
+        console.debug(
+            '[WI] Preparing first delayed recursion level',
+            currentRecursionDelayLevel,
+            '. Still delayed:',
+            availableRecursionDelayLevels,
+        );
     }
 
     console.debug(`[WI] --- SEARCHING ENTRIES (on ${sortedEntries.length} entries) ---`);
@@ -766,7 +954,10 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
     while (scanState) {
         //if world_info_max_recursion_steps is non-zero min activations are disabled, and vice versa
         if (wiManager.maxRecursionSteps && wiManager.maxRecursionSteps <= count) {
-            console.debug('[WI] Search stopped by reaching max recursion steps', wiManager.maxRecursionSteps);
+            console.debug(
+                '[WI] Search stopped by reaching max recursion steps',
+                wiManager.maxRecursionSteps,
+            );
             break;
         }
 
@@ -774,7 +965,10 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
         count++;
 
         console.debug(`[WI] --- LOOP #${count} START ---`);
-        console.debug('[WI] Scan state', Object.entries(scan_state).find(x => x[1] === scanState));
+        console.debug(
+            '[WI] Scan state',
+            Object.entries(scan_state).find((x) => x[1] === scanState),
+        );
 
         // Until decided otherwise, we set the loop to stop scanning after this
         let nextScanState: number = scan_state.NONE;
@@ -792,14 +986,21 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
             // @ts-expect-error TS(7019) FIXME: Rest parameter 'args' implicitly has an 'any[]' ty... Remove this comment to see the full error message
             function log(...args) {
                 if (!headerLogged) {
-                    console.debug(`[WI] Entry ${entry.uid}`, `from '${entry.world}' processing`, entry);
+                    console.debug(
+                        `[WI] Entry ${entry.uid}`,
+                        `from '${entry.world}' processing`,
+                        entry,
+                    );
                     headerLogged = true;
                 }
                 console.debug(`[WI] Entry ${entry.uid}`, ...args);
             }
 
             // Already processed, considered and then skipped entries should still be skipped
-            if (failedProbabilityChecks.has(entry) || allActivatedEntries.has(`${entry.world}.${entry.uid}`)) {
+            if (
+                failedProbabilityChecks.has(entry) ||
+                allActivatedEntries.has(`${entry.world}.${entry.uid}`)
+            ) {
                 continue;
             }
 
@@ -812,7 +1013,9 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
             if (Array.isArray(entry.triggers) && entry.triggers.length > 0) {
                 const isTriggered = entry.triggers.includes(globalScanData.trigger);
                 if (!isTriggered) {
-                    log(`skipped by generation type trigger filter (${globalScanData.trigger} ∉ ${entry.triggers})`);
+                    log(
+                        `skipped by generation type trigger filter (${globalScanData.trigger} ∉ ${entry.triggers})`,
+                    );
                     continue;
                 }
             }
@@ -837,8 +1040,12 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
 
                     if (Array.isArray(tagMapEntry)) {
                         // If tag map intersects with the tag exclusion list, skip
-                        const includesTag = tagMapEntry.some((tag) => entry.characterFilter.tags.includes(tag));
-                        const filtered = entry.characterFilter.isExclude ? includesTag : !includesTag;
+                        const includesTag = tagMapEntry.some((tag) =>
+                            entry.characterFilter.tags.includes(tag),
+                        );
+                        const filtered = entry.characterFilter.isExclude
+                            ? includesTag
+                            : !includesTag;
 
                         if (filtered) {
                             log('filtered out by tag');
@@ -868,12 +1075,27 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
                 continue;
             }
 
-            if (scanState === scan_state.RECURSION && entry.delayUntilRecursion && entry.delayUntilRecursion > currentRecursionDelayLevel && !isSticky) {
-                log('suppressed by delay until recursion level', entry.delayUntilRecursion, '. Currently', currentRecursionDelayLevel);
+            if (
+                scanState === scan_state.RECURSION &&
+                entry.delayUntilRecursion &&
+                entry.delayUntilRecursion > currentRecursionDelayLevel &&
+                !isSticky
+            ) {
+                log(
+                    'suppressed by delay until recursion level',
+                    entry.delayUntilRecursion,
+                    '. Currently',
+                    currentRecursionDelayLevel,
+                );
                 continue;
             }
 
-            if (scanState === scan_state.RECURSION && wiManager.recursive && entry.excludeRecursion && !isSticky) {
+            if (
+                scanState === scan_state.RECURSION &&
+                wiManager.recursive &&
+                entry.excludeRecursion &&
+                !isSticky
+            ) {
                 log('suppressed by exclude recursion');
                 continue;
             }
@@ -918,7 +1140,7 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
 
             // PRIMARY KEYWORDS
             // @ts-expect-error TS(7006) FIXME: Parameter 'key' implicitly has an 'any' type.
-            const primaryKeyMatch = entry.key.find(key => {
+            const primaryKeyMatch = entry.key.find((key) => {
                 const substituted = substituteParams(key);
                 return substituted && buffer.matchKeys(textToScan, substituted.trim(), entry);
             });
@@ -928,11 +1150,10 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
                 continue;
             }
 
-            const hasSecondaryKeywords = (
+            const hasSecondaryKeywords =
                 entry.selective && //all entries are selective now
                 Array.isArray(entry.keysecondary) && //always true
-                entry.keysecondary.length //ignore empties
-            );
+                entry.keysecondary.length; //ignore empties
 
             if (!hasSecondaryKeywords) {
                 // Handle cases where secondary is empty
@@ -941,10 +1162,14 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
                 continue;
             }
 
-
             // SECONDARY KEYWORDS
             const selectiveLogic = entry.selectiveLogic ?? 0; // If selectiveLogic isn't found, assume it's AND, only do this once per entry
-            log('Entry with primary key match', primaryKeyMatch, 'has secondary keywords. Checking with logic logic', Object.entries(world_info_logic).find(x => x[1] === entry.selectiveLogic));
+            log(
+                'Entry with primary key match',
+                primaryKeyMatch,
+                'has secondary keywords. Checking with logic logic',
+                Object.entries(world_info_logic).find((x) => x[1] === entry.selectiveLogic),
+            );
 
             /** @type {() => boolean} */
             function matchSecondaryKeys() {
@@ -952,7 +1177,9 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
                 let hasAllMatch = true;
                 for (const keysecondary of entry.keysecondary) {
                     const secondarySubstituted = substituteParams(keysecondary);
-                    const hasSecondaryMatch = secondarySubstituted && buffer.matchKeys(textToScan, secondarySubstituted.trim(), entry);
+                    const hasSecondaryMatch =
+                        secondarySubstituted &&
+                        buffer.matchKeys(textToScan, secondarySubstituted.trim(), entry);
 
                     if (hasSecondaryMatch) hasAnyMatch = true;
                     if (!hasSecondaryMatch) hasAllMatch = false;
@@ -960,11 +1187,17 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
                     // Simplified AND ANY / NOT ALL if statement. (Proper fix for PR#1356 by Bronya)
                     // If AND ANY logic and the main checks pass OR if NOT ALL logic and the main checks do not pass
                     if (selectiveLogic === world_info_logic.AND_ANY && hasSecondaryMatch) {
-                        log('activated. (AND ANY) Found match secondary keyword', secondarySubstituted);
+                        log(
+                            'activated. (AND ANY) Found match secondary keyword',
+                            secondarySubstituted,
+                        );
                         return true;
                     }
                     if (selectiveLogic === world_info_logic.NOT_ALL && !hasSecondaryMatch) {
-                        log('activated. (NOT ALL) Found not matching secondary keyword', secondarySubstituted);
+                        log(
+                            'activated. (NOT ALL) Found not matching secondary keyword',
+                            secondarySubstituted,
+                        );
                         return true;
                     }
                 }
@@ -998,26 +1231,30 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
         console.debug(`[WI] Search done. Found ${activatedNow.size} possible entries.`);
 
         // Sort the entries for the probability and the budget limit checks
-        const newEntries = [...activatedNow]
-            .sort((a, b) => {
-                const isASticky = timedEffects.isEffectActive('sticky', a as WIScanEntry) ? 1 : 0;
-                const isBSticky = timedEffects.isEffectActive('sticky', b as WIScanEntry) ? 1 : 0;
-                return isBSticky - isASticky || sortedEntries.indexOf(a) - sortedEntries.indexOf(b);
-            });
-
+        const newEntries = [...activatedNow].toSorted((a, b) => {
+            const isASticky = timedEffects.isEffectActive('sticky', a as WIScanEntry) ? 1 : 0;
+            const isBSticky = timedEffects.isEffectActive('sticky', b as WIScanEntry) ? 1 : 0;
+            return isBSticky - isASticky || sortedEntries.indexOf(a) - sortedEntries.indexOf(b);
+        });
 
         let newContent = '';
         const textToScanTokens = await getTokenCountAsync(allActivatedText);
 
-        filterByInclusionGroups(newEntries as WIScanEntry[], allActivatedEntries, buffer, scanState, timedEffects);
+        filterByInclusionGroups(
+            newEntries as WIScanEntry[],
+            allActivatedEntries,
+            buffer,
+            scanState,
+            timedEffects,
+        );
 
         console.debug('[WI] --- PROBABILITY CHECKS ---');
         if (!newEntries.length) console.debug('[WI] No probability checks to do');
 
-        let ignoresBudget = newEntries.filter(e => e.ignoreBudget).length;
+        let ignoresBudget = newEntries.filter((e) => e.ignoreBudget).length;
 
         for (const entry of newEntries) {
-            ignoresBudget -= (entry.ignoreBudget ? 1 : 0);
+            ignoresBudget -= entry.ignoreBudget ? 1 : 0;
             if (token_budget_overflowed && !entry.ignoreBudget) {
                 if (ignoresBudget > 0) {
                     continue;
@@ -1037,13 +1274,17 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
 
                 const isSticky = timedEffects.isEffectActive('sticky', entry);
                 if (isSticky) {
-                    console.debug(`WI entry ${entry.uid} is sticky, does not need to re-roll probability`);
+                    console.debug(
+                        `WI entry ${entry.uid} is sticky, does not need to re-roll probability`,
+                    );
                     return true;
                 }
 
                 const rollValue = Math.random() * 100;
                 if (rollValue <= (entry.probability as number)) {
-                    console.debug(`WI entry ${entry.uid} passed probability check of ${entry.probability}%`);
+                    console.debug(
+                        `WI entry ${entry.uid} passed probability check of ${entry.probability}%`,
+                    );
                     return true;
                 }
 
@@ -1053,7 +1294,10 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
 
             const success = verifyProbability();
             if (!success) {
-                console.debug(`WI entry ${entry.uid} failed probability check, removing from activated entries`, entry);
+                console.debug(
+                    `WI entry ${entry.uid} failed probability check, removing from activated entries`,
+                    entry,
+                );
                 continue;
             }
 
@@ -1061,14 +1305,24 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
             entry.content = substituteParams(entry.content);
             newContent += `${entry.content}\n`;
 
-            if (!entry.ignoreBudget && (textToScanTokens + (await getTokenCountAsync(newContent))) >= budget) {
+            if (
+                !entry.ignoreBudget &&
+                textToScanTokens + (await getTokenCountAsync(newContent)) >= budget
+            ) {
                 if (!token_budget_overflowed) {
                     console.debug('[WI] --- BUDGET OVERFLOW CHECK ---');
                     if (wiManager.overflowAlert) {
-                        console.warn(`[WI] budget of ${budget} reached, stopping after ${allActivatedEntries.size} entries`);
-                        notyf.warning(`World info budget reached after ${allActivatedEntries.size} entries.`, 'World Info');
+                        console.warn(
+                            `[WI] budget of ${budget} reached, stopping after ${allActivatedEntries.size} entries`,
+                        );
+                        notyf.warning(
+                            `World info budget reached after ${allActivatedEntries.size} entries.`,
+                            'World Info',
+                        );
                     } else {
-                        console.debug(`[WI] budget of ${budget} reached, stopping after ${allActivatedEntries.size} entries`);
+                        console.debug(
+                            `[WI] budget of ${budget} reached, stopping after ${allActivatedEntries.size} entries`,
+                        );
                     }
                     token_budget_overflowed = true;
                 }
@@ -1079,16 +1333,23 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
             console.debug(`[WI] Entry ${entry.uid} activation successful, adding to prompt`, entry);
         }
 
-        const successfulNewEntries = newEntries.filter(x => !failedProbabilityChecks.has(x));
-        const successfulNewEntriesForRecursion = successfulNewEntries.filter(x => !x.preventRecursion);
+        const successfulNewEntries = newEntries.filter((x) => !failedProbabilityChecks.has(x));
+        const successfulNewEntriesForRecursion = successfulNewEntries.filter(
+            (x) => !x.preventRecursion,
+        );
 
         console.debug(`[WI] --- LOOP #${count} RESULT ---`);
         if (!newEntries.length) {
             console.debug('[WI] No new entries activated.');
         } else if (!successfulNewEntries.length) {
-            console.debug('[WI] Probability checks failed for all activated entries. No new entries activated.');
+            console.debug(
+                '[WI] Probability checks failed for all activated entries. No new entries activated.',
+            );
         } else {
-            console.debug(`[WI] Successfully activated ${successfulNewEntries.length} new entries to prompt. ${allActivatedEntries.size} total entries activated.`, successfulNewEntries);
+            console.debug(
+                `[WI] Successfully activated ${successfulNewEntries.length} new entries to prompt. ${allActivatedEntries.size} total entries activated.`,
+                successfulNewEntries,
+            );
         }
 
         /**
@@ -1098,38 +1359,61 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
         // @ts-expect-error TS(7019) FIXME: Rest parameter 'args' implicitly has an 'any[]' ty... Remove this comment to see the full error message
         function logNextState(...args) {
             if (args.length) console.debug(args.shift(), ...args);
-            console.debug('[WI] Setting scan state', Object.entries(scan_state).find(x => x[1] === scanState));
+            console.debug(
+                '[WI] Setting scan state',
+                Object.entries(scan_state).find((x) => x[1] === scanState),
+            );
         }
 
         // After processing and rolling entries is done, see if we should continue with normal recursion
-        if (wiManager.recursive && !token_budget_overflowed && successfulNewEntriesForRecursion.length) {
+        if (
+            wiManager.recursive &&
+            !token_budget_overflowed &&
+            successfulNewEntriesForRecursion.length
+        ) {
             nextScanState = scan_state.RECURSION;
-            logNextState('[WI] Found', successfulNewEntriesForRecursion.length, 'new entries for recursion');
+            logNextState(
+                '[WI] Found',
+                successfulNewEntriesForRecursion.length,
+                'new entries for recursion',
+            );
         }
 
         // If we are inside min activations scan, and we have recursive buffer, we should do a recursive scan before increasing the buffer again
         // There might be recurse-trigger-able entries that match the buffer, so we need to check that
-        if (wiManager.recursive && !token_budget_overflowed && scanState === scan_state.MIN_ACTIVATIONS && buffer.hasRecurse()) {
+        if (
+            wiManager.recursive &&
+            !token_budget_overflowed &&
+            scanState === scan_state.MIN_ACTIVATIONS &&
+            buffer.hasRecurse()
+        ) {
             nextScanState = scan_state.RECURSION;
-            logNextState('[WI] Min Activations run done, whill will always be followed by a recursive scan');
+            logNextState(
+                '[WI] Min Activations run done, whill will always be followed by a recursive scan',
+            );
         }
 
         // If scanning is planned to stop, but min activations is set and not satisfied, check if we should continue
-        const minActivationsNotSatisfied = wiManager.minActivations > 0 && (allActivatedEntries.size < wiManager.minActivations);
+        const minActivationsNotSatisfied =
+            wiManager.minActivations > 0 && allActivatedEntries.size < wiManager.minActivations;
         if (!nextScanState && !token_budget_overflowed && minActivationsNotSatisfied) {
             console.debug('[WI] --- MIN ACTIVATIONS CHECK ---');
 
-            const over_max = (
-                wiManager.minActivationsDepthMax > 0 &&
-                buffer.getDepth() > wiManager.minActivationsDepthMax
-            ) || (buffer.getDepth() > chat.length);
+            const over_max =
+                (wiManager.minActivationsDepthMax > 0 &&
+                    buffer.getDepth() > wiManager.minActivationsDepthMax) ||
+                buffer.getDepth() > chat.length;
 
             if (!over_max) {
                 nextScanState = scan_state.MIN_ACTIVATIONS; // loop
-                logNextState(`[WI] Min activations not reached (${allActivatedEntries.size}/${wiManager.minActivations}), advancing depth to ${buffer.getDepth() + 1}, starting another scan`);
+                logNextState(
+                    `[WI] Min activations not reached (${allActivatedEntries.size}/${wiManager.minActivations}), advancing depth to ${buffer.getDepth() + 1}, starting another scan`,
+                );
                 buffer.advanceScan();
             } else {
-                console.debug(`[WI] Min activations not reached (${allActivatedEntries.size}/${wiManager.minActivations}), but reached on of depth. Stopping`);
+                console.debug(
+                    `[WI] Min activations not reached (${allActivatedEntries.size}/${wiManager.minActivations}), but reached on of depth. Stopping`,
+                );
             }
         }
 
@@ -1137,18 +1421,22 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
         if (nextScanState === scan_state.NONE && availableRecursionDelayLevels.length) {
             nextScanState = scan_state.RECURSION;
             currentRecursionDelayLevel = availableRecursionDelayLevels.shift();
-            logNextState('[WI] Open delayed recursion levels left. Preparing next delayed recursion level', currentRecursionDelayLevel, '. Still delayed:', availableRecursionDelayLevels);
+            logNextState(
+                '[WI] Open delayed recursion levels left. Preparing next delayed recursion level',
+                currentRecursionDelayLevel,
+                '. Still delayed:',
+                availableRecursionDelayLevels,
+            );
         }
 
         // Final check if we should really continue scan, and extend the current WI recurse buffer
         const curScanState = scanState;
         scanState = nextScanState;
         if (scanState) {
-            const text = successfulNewEntriesForRecursion
-                .map(x => x.content).join('\n');
+            const text = successfulNewEntriesForRecursion.map((x) => x.content).join('\n');
             if (text) {
                 buffer.addRecurse(text);
-                allActivatedText = (text + '\n' + allActivatedText);
+                allActivatedText = text + '\n' + allActivatedText;
             }
         } else {
             logNextState('[WI] Scan done. No new entries to prompt. Stopping.');
@@ -1215,12 +1503,21 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
 
     // Appends from insertion order 999 to 1. Use unshift for this purpose
     // TODO (kingbri): Change to use WI Anchor positioning instead of separate top/bottom arrays
-    [...allActivatedEntries.values()].sort(wiManager.sortFn).forEach((entry) => {
-        const regexDepth = entry.position === world_info_position.atDepth ? (entry.depth ?? DEFAULT_DEPTH) : null;
-        const content = getRegexedString(entry.content, regex_placement.WORLD_INFO, { depth: regexDepth, isMarkdown: false, isPrompt: true });
+    [...allActivatedEntries.values()].toSorted(wiManager.sortFn).forEach((entry) => {
+        const regexDepth =
+            entry.position === world_info_position.atDepth ? (entry.depth ?? DEFAULT_DEPTH) : null;
+        const content = getRegexedString(entry.content, regex_placement.WORLD_INFO, {
+            depth: regexDepth,
+            isMarkdown: false,
+            isPrompt: true,
+        });
 
         if (!content) {
-            console.debug(`[WI] Entry ${entry.uid}`, 'skipped adding to prompt due to empty content', entry);
+            console.debug(
+                `[WI] Entry ${entry.uid}`,
+                'skipped adding to prompt due to empty content',
+                entry,
+            );
             return;
         }
 
@@ -1232,14 +1529,10 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
                 WIAfterEntries.unshift(content);
                 break;
             case world_info_position.EMTop:
-                EMEntries.unshift(
-                    { position: wi_anchor_position.before, content: content },
-                );
+                EMEntries.unshift({ position: wi_anchor_position.before, content: content });
                 break;
             case world_info_position.EMBottom:
-                EMEntries.unshift(
-                    { position: wi_anchor_position.after, content: content },
-                );
+                EMEntries.unshift({ position: wi_anchor_position.after, content: content });
                 break;
             case world_info_position.ANTop:
                 ANTopEntries.unshift(content);
@@ -1249,7 +1542,11 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
                 break;
             case world_info_position.atDepth: {
                 // @ts-expect-error TS(7005) FIXME: Variable 'WIDepthEntries' implicitly has an 'any[]... Remove this comment to see the full error message
-                const existingDepthIndex = WIDepthEntries.findIndex((e) => e.depth === (entry.depth ?? DEFAULT_DEPTH) && e.role === (entry.role ?? extension_prompt_roles.SYSTEM));
+                const existingDepthIndex = WIDepthEntries.findIndex(
+                    (e) =>
+                        e.depth === (entry.depth ?? DEFAULT_DEPTH) &&
+                        e.role === (entry.role ?? extension_prompt_roles.SYSTEM),
+                );
                 if (existingDepthIndex !== -1) {
                     // @ts-expect-error TS(7005) FIXME: Variable 'WIDepthEntries' implicitly has an 'any[]... Remove this comment to see the full error message
                     WIDepthEntries[existingDepthIndex].entries.unshift(content);
@@ -1264,7 +1561,9 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
             }
             case world_info_position.outlet: {
                 if (!entry.outletName) {
-                    console.warn(`[WI] Entry ${entry.uid} has position 'outlet' but no outlet name. Skipping.`);
+                    console.warn(
+                        `[WI] Entry ${entry.uid} has position 'outlet' but no outlet name. Skipping.`,
+                    );
                     break;
                 }
                 // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
@@ -1291,18 +1590,41 @@ export async function checkWorldInfo(chat, maxContext, isDryRun, globalScanData 
         // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         const originalAN = context.extensionPrompts[NOTE_MODULE_NAME].value;
         // @ts-expect-error TS(7005) FIXME: Variable 'ANTopEntries' implicitly has an 'any[]' ... Remove this comment to see the full error message
-        const ANWithWI = `${ANTopEntries.join('\n')}\n${originalAN}\n${ANBottomEntries.join('\n')}`.replace(/(^\n)|(\n$)/g, '');
+        const ANWithWI =
+            `${ANTopEntries.join('\n')}\n${originalAN}\n${ANBottomEntries.join('\n')}`.replace(
+                /(^\n)|(\n$)/g,
+                '',
+            );
         // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        context.setExtensionPrompt(NOTE_MODULE_NAME, ANWithWI, chat_metadata[metadata_keys.position], chat_metadata[metadata_keys.depth], extension_settings.note.allowWIScan, chat_metadata[metadata_keys.role]);
+        context.setExtensionPrompt(
+            NOTE_MODULE_NAME,
+            ANWithWI,
+            chat_metadata[metadata_keys.position],
+            chat_metadata[metadata_keys.depth],
+            extension_settings.note.allowWIScan,
+            chat_metadata[metadata_keys.role],
+        );
     }
 
     timedEffects.setTimedEffects(Array.from(allActivatedEntries.values()));
     buffer.resetExternalEffects();
     timedEffects.cleanUp();
 
-    console.log(`[WI] ${isDryRun ? 'Hypothetically adding' : 'Adding'} ${allActivatedEntries.size} entries to prompt`, Array.from(allActivatedEntries.values()));
+    console.log(
+        `[WI] ${isDryRun ? 'Hypothetically adding' : 'Adding'} ${allActivatedEntries.size} entries to prompt`,
+        Array.from(allActivatedEntries.values()),
+    );
     console.debug(`[WI] --- DONE${isDryRun ? ' (DRY RUN)' : ''} ---`);
 
     // @ts-expect-error TS(7005) FIXME: Variable 'EMEntries' implicitly has an 'any[]' typ... Remove this comment to see the full error message
-    return { worldInfoBefore, worldInfoAfter, EMEntries, WIDepthEntries, ANBeforeEntries: ANTopEntries, ANAfterEntries: ANBottomEntries, outletEntries: WIOutletEntries, allActivatedEntries: new Set(allActivatedEntries.values()) };
+    return {
+        worldInfoBefore,
+        worldInfoAfter,
+        EMEntries,
+        WIDepthEntries,
+        ANBeforeEntries: ANTopEntries,
+        ANAfterEntries: ANBottomEntries,
+        outletEntries: WIOutletEntries,
+        allActivatedEntries: new Set(allActivatedEntries.values()),
+    };
 }

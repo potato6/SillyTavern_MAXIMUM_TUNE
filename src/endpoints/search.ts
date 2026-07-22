@@ -10,15 +10,16 @@ export const router = express.Router();
 
 // Cosplay as Chrome
 const visitHeaders = {
-    'Accept': 'text/html',
-    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
+    Accept: 'text/html',
+    'User-Agent':
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
     'Accept-Language': 'en-US,en;q=0.5',
     'Accept-Encoding': 'gzip, deflate, br',
-    'Connection': 'keep-alive',
+    Connection: 'keep-alive',
     'Cache-Control': 'no-cache',
-    'Pragma': 'no-cache',
-    'TE': 'trailers',
-    'DNT': '1',
+    Pragma: 'no-cache',
+    TE: 'trailers',
+    DNT: '1',
     'Sec-Fetch-Dest': 'document',
     'Sec-Fetch-Mode': 'navigate',
     'Sec-Fetch-Site': 'none',
@@ -62,11 +63,22 @@ async function extractTranscript(videoPageBody: string, lang: string) {
         throw new Error('Transcript not available');
     }
 
-    if (lang && !captions.captionTracks.some((track: { languageCode: string }) => track.languageCode === lang)) {
+    if (
+        lang &&
+        !captions.captionTracks.some(
+            (track: { languageCode: string }) => track.languageCode === lang,
+        )
+    ) {
         throw new Error('Transcript not available in this language');
     }
 
-    const transcriptURL = (lang ? captions.captionTracks.find((track: { languageCode: string }) => track.languageCode === lang) : captions.captionTracks[0]).baseUrl;
+    const transcriptURL = (
+        lang
+            ? captions.captionTracks.find(
+                  (track: { languageCode: string }) => track.languageCode === lang,
+              )
+            : captions.captionTracks[0]
+    ).baseUrl;
     const transcriptResponse = await fetch(transcriptURL, {
         headers: {
             ...(lang && { 'Accept-Language': lang }),
@@ -103,7 +115,9 @@ router.post('/serpapi', async (request, response) => {
         }
 
         const { query } = request.body;
-        const result = await fetch(`https://serpapi.com/search.json?q=${encodeURIComponent(query)}&api_key=${key}`);
+        const result = await fetch(
+            `https://serpapi.com/search.json?q=${encodeURIComponent(query)}&api_key=${key}`,
+        );
 
         console.debug('SerpApi query', query);
 
@@ -366,7 +380,7 @@ router.post('/zai', async (request, response) => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${key}`,
+                Authorization: `Bearer ${key}`,
             },
             body: JSON.stringify({
                 // TODO: There's only one engine option for now
@@ -419,7 +433,10 @@ router.post('/visit', async (request, response) => {
             }
 
             // Reject IP addresses
-            if (ipRegex.v4({ exact: true }).test(urlObj.hostname) || ipRegex.v6({ exact: true }).test(urlObj.hostname)) {
+            if (
+                ipRegex.v4({ exact: true }).test(urlObj.hostname) ||
+                ipRegex.v6({ exact: true }).test(urlObj.hostname)
+            ) {
                 throw new Error('Invalid hostname');
             }
         } catch {

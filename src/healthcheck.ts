@@ -29,7 +29,9 @@ try {
     const diff = now - lastModified;
 
     if (diff > threshold) {
-        console.error(`Server is unresponsive. Last heartbeat was ${Math.round(diff / 1000)} seconds ago.`);
+        console.error(
+            `Server is unresponsive. Last heartbeat was ${Math.round(diff / 1000)} seconds ago.`,
+        );
         process.exit(1);
     }
 

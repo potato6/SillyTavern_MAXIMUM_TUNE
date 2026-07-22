@@ -3,7 +3,6 @@ const { createToken, Lexer } = chevrotain;
 
 /** @typedef {import('chevrotain').TokenType} TokenType */
 
-
 /** Regex for lexer token matching (no anchors). */
 const IDENTIFIER_LEXER_PATTERN = /[a-zA-Z][\w-_]*/;
 
@@ -44,8 +43,12 @@ const modes = Object.freeze({
  * @readonly
  */
 const Tokens = Object.freeze({
-/** General capture-all plaintext without macros. Consumes any character that is not the first '{' of a macro opener '{{'. */
-    Plaintext: createToken({ name: 'Plaintext', pattern: /(?:[^{]|\{(?!\{))+/u, line_breaks: true }),
+    /** General capture-all plaintext without macros. Consumes any character that is not the first '{' of a macro opener '{{'. */
+    Plaintext: createToken({
+        name: 'Plaintext',
+        pattern: /(?:[^{]|\{(?!\{))+/u,
+        line_breaks: true,
+    }),
     /** Single literal '{' that appears immediately before a macro opener '{{' */
     PlaintextOpenBrace: createToken({ name: 'Plaintext.OpenBrace', pattern: /\{(?=\{\{)/ }),
 
@@ -73,8 +76,16 @@ const Tokens = Object.freeze({
          */
         Identifier: createToken({ name: 'Macro.Identifier', pattern: IDENTIFIER_LEXER_PATTERN }),
         /** At the end of an identifier, there has to be whitspace, or must be directly followed by colon/double-colon separator, output modifier or closing braces */
-        EndOfIdentifier: createToken({ name: 'Macro.EndOfIdentifier', pattern: /(?:\s+|(?=:{1,2})|(?=[|}]))/, group: Lexer.SKIPPED }),
-        BeforeEnd: createToken({ name: 'Macro.BeforeEnd', pattern: /(?=\}\})/, group: Lexer.SKIPPED }),
+        EndOfIdentifier: createToken({
+            name: 'Macro.EndOfIdentifier',
+            pattern: /(?:\s+|(?=:{1,2})|(?=[|}]))/,
+            group: Lexer.SKIPPED,
+        }),
+        BeforeEnd: createToken({
+            name: 'Macro.BeforeEnd',
+            pattern: /(?=\}\})/,
+            group: Lexer.SKIPPED,
+        }),
         End: createToken({ name: 'Macro.End', pattern: /\}\}/ }),
     },
 
@@ -91,7 +102,11 @@ const Tokens = Object.freeze({
         Pipe: createToken({ name: 'Filter.Pipe', pattern: /\|/ }),
         Identifier: createToken({ name: 'Filter.Identifier', pattern: IDENTIFIER_LEXER_PATTERN }),
         /** At the end of an identifier, there has to be whitspace, or must be directly followed by colon/double-colon separator, output modifier or closing braces */
-        EndOfIdentifier: createToken({ name: 'Filter.EndOfIdentifier', pattern: /(?:\s+|(?=:{1,2})|(?=[|}]))/, group: Lexer.SKIPPED }),
+        EndOfIdentifier: createToken({
+            name: 'Filter.EndOfIdentifier',
+            pattern: /(?:\s+|(?=:{1,2})|(?=[|}]))/,
+            group: Lexer.SKIPPED,
+        }),
     },
 
     // All tokens that can be captured inside a macro
@@ -110,7 +125,10 @@ const Tokens = Object.freeze({
          * Examples: myVar, my-var, my_var, myVar123, my-long-var-name
          * Invalid: my-, my--, -var
          */
-        Identifier: createToken({ name: 'Var.Identifier', pattern: MACRO_VARIABLE_SHORTHAND_PATTERN }),
+        Identifier: createToken({
+            name: 'Var.Identifier',
+            pattern: MACRO_VARIABLE_SHORTHAND_PATTERN,
+        }),
 
         /** All tokens that are valid operators inside a variable shorthand expression */
         Operators: {
@@ -119,7 +137,10 @@ const Tokens = Object.freeze({
             /** Decrement operator (`--`) */
             Decrement: createToken({ name: 'Var.Decrement', pattern: /--/ }),
             /** Nullish coalescing assignment operator (`??=`) - sets var if undefined, must come before NullishCoalescing */
-            NullishCoalescingEquals: createToken({ name: 'Var.NullishCoalescingEquals', pattern: /\?\?=/ }),
+            NullishCoalescingEquals: createToken({
+                name: 'Var.NullishCoalescingEquals',
+                pattern: /\?\?=/,
+            }),
             /** Nullish coalescing operator (`??`) - returns default if var undefined */
             NullishCoalescing: createToken({ name: 'Var.NullishCoalescing', pattern: /\?\?/ }),
             /** Logical OR assignment operator (`||=`) - sets var if falsy, must come before LogicalOr */
@@ -161,7 +182,12 @@ const Tokens = Object.freeze({
      * Can be used in modes that don't have a "defined" end really, like when capturing a single argument, argument list, etc.
      * Has to ALWAYS be the last token.
      */
-    ModePopper: createToken({ name: 'ModePopper', pattern: () => [''], line_breaks: false, group: Lexer.SKIPPED }),
+    ModePopper: createToken({
+        name: 'ModePopper',
+        pattern: () => [''],
+        line_breaks: false,
+        group: Lexer.SKIPPED,
+    }),
 });
 
 /** @type {Map<string,string>} Saves all token definitions that are marked as entering modes */
@@ -209,7 +235,9 @@ const Def = {
             // Valid options after a macro identifier: whitespace, colon/double-colon (captured), macro end braces, or output modifier pipe.
             exits(Tokens.Macro.BeforeEnd, modes.macro_identifier_end),
             // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'undefined... Remove this comment to see the full error message
-            enter(Tokens.Macro.EndOfIdentifier, modes.macro_args, { andExits: modes.macro_identifier_end }),
+            enter(Tokens.Macro.EndOfIdentifier, modes.macro_args, {
+                andExits: modes.macro_identifier_end,
+            }),
         ],
         [modes.macro_args]: [
             // Macro args allow nested macros
@@ -239,7 +267,9 @@ const Def = {
             using(Tokens.WhiteSpace),
 
             // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'undefined... Remove this comment to see the full error message
-            enter(Tokens.Filter.Identifier, modes.macro_filter_modifier_end, { andExits: modes.macro_filter_modifer }),
+            enter(Tokens.Filter.Identifier, modes.macro_filter_modifier_end, {
+                andExits: modes.macro_filter_modifer,
+            }),
         ],
         [modes.macro_filter_modifier_end]: [
             // Valid options after a filter itenfier: whitespace, colon/double-colon (captured), macro end braces, or output modifier pipe.
@@ -252,7 +282,9 @@ const Def = {
             using(Tokens.WhiteSpace),
             // Consume the variable identifier and move to operator detection
             // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'undefined... Remove this comment to see the full error message
-            enter(Tokens.Var.Identifier, modes.var_after_identifier, { andExits: modes.var_identifier }),
+            enter(Tokens.Var.Identifier, modes.var_after_identifier, {
+                andExits: modes.var_identifier,
+            }),
             // If no valid identifier found, exit back (will result in parser error)
             exits(Tokens.ModePopper, modes.var_identifier),
         ],
@@ -263,31 +295,57 @@ const Def = {
             using(Tokens.Var.Operators.Increment),
             using(Tokens.Var.Operators.Decrement),
             // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'undefined... Remove this comment to see the full error message
-            enter(Tokens.Var.Operators.NullishCoalescingEquals, modes.var_value, { andExits: modes.var_after_identifier }),
+            enter(Tokens.Var.Operators.NullishCoalescingEquals, modes.var_value, {
+                andExits: modes.var_after_identifier,
+            }),
             // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'undefined... Remove this comment to see the full error message
-            enter(Tokens.Var.Operators.NullishCoalescing, modes.var_value, { andExits: modes.var_after_identifier }),
+            enter(Tokens.Var.Operators.NullishCoalescing, modes.var_value, {
+                andExits: modes.var_after_identifier,
+            }),
             // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'undefined... Remove this comment to see the full error message
-            enter(Tokens.Var.Operators.LogicalOrEquals, modes.var_value, { andExits: modes.var_after_identifier }),
+            enter(Tokens.Var.Operators.LogicalOrEquals, modes.var_value, {
+                andExits: modes.var_after_identifier,
+            }),
             // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'undefined... Remove this comment to see the full error message
-            enter(Tokens.Var.Operators.LogicalOr, modes.var_value, { andExits: modes.var_after_identifier }),
+            enter(Tokens.Var.Operators.LogicalOr, modes.var_value, {
+                andExits: modes.var_after_identifier,
+            }),
             // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'undefined... Remove this comment to see the full error message
-            enter(Tokens.Var.Operators.MinusEquals, modes.var_value, { andExits: modes.var_after_identifier }),
+            enter(Tokens.Var.Operators.MinusEquals, modes.var_value, {
+                andExits: modes.var_after_identifier,
+            }),
             // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'undefined... Remove this comment to see the full error message
-            enter(Tokens.Var.Operators.DoubleEquals, modes.var_value, { andExits: modes.var_after_identifier }),
+            enter(Tokens.Var.Operators.DoubleEquals, modes.var_value, {
+                andExits: modes.var_after_identifier,
+            }),
             // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'undefined... Remove this comment to see the full error message
-            enter(Tokens.Var.Operators.NotEquals, modes.var_value, { andExits: modes.var_after_identifier }),
+            enter(Tokens.Var.Operators.NotEquals, modes.var_value, {
+                andExits: modes.var_after_identifier,
+            }),
             // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'undefined... Remove this comment to see the full error message
-            enter(Tokens.Var.Operators.GreaterThanOrEqual, modes.var_value, { andExits: modes.var_after_identifier }),
+            enter(Tokens.Var.Operators.GreaterThanOrEqual, modes.var_value, {
+                andExits: modes.var_after_identifier,
+            }),
             // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'undefined... Remove this comment to see the full error message
-            enter(Tokens.Var.Operators.GreaterThan, modes.var_value, { andExits: modes.var_after_identifier }),
+            enter(Tokens.Var.Operators.GreaterThan, modes.var_value, {
+                andExits: modes.var_after_identifier,
+            }),
             // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'undefined... Remove this comment to see the full error message
-            enter(Tokens.Var.Operators.LessThanOrEqual, modes.var_value, { andExits: modes.var_after_identifier }),
+            enter(Tokens.Var.Operators.LessThanOrEqual, modes.var_value, {
+                andExits: modes.var_after_identifier,
+            }),
             // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'undefined... Remove this comment to see the full error message
-            enter(Tokens.Var.Operators.LessThan, modes.var_value, { andExits: modes.var_after_identifier }),
+            enter(Tokens.Var.Operators.LessThan, modes.var_value, {
+                andExits: modes.var_after_identifier,
+            }),
             // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'undefined... Remove this comment to see the full error message
-            enter(Tokens.Var.Operators.PlusEquals, modes.var_value, { andExits: modes.var_after_identifier }),
+            enter(Tokens.Var.Operators.PlusEquals, modes.var_value, {
+                andExits: modes.var_after_identifier,
+            }),
             // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'undefined... Remove this comment to see the full error message
-            enter(Tokens.Var.Operators.Equals, modes.var_value, { andExits: modes.var_after_identifier }),
+            enter(Tokens.Var.Operators.Equals, modes.var_value, {
+                andExits: modes.var_after_identifier,
+            }),
             // If we see the end, exit
             exits(Tokens.Macro.BeforeEnd, modes.var_after_identifier),
             // Fallback exit
@@ -316,7 +374,9 @@ const Def = {
 class MacroLexer extends Lexer {
     // @ts-expect-error TS(7008) FIXME: Member '#instance' implicitly has an 'any' type.
     /** @type {MacroLexer} */ static #instance;
-    /** @type {MacroLexer} */ static get instance() { return MacroLexer.#instance ?? (MacroLexer.#instance = new MacroLexer()); }
+    /** @type {MacroLexer} */ static get instance() {
+        return MacroLexer.#instance ?? (MacroLexer.#instance = new MacroLexer());
+    }
 
     // Define the tokens
     /** @readonly */ static tokens = Tokens;
@@ -340,7 +400,11 @@ class MacroLexer extends Lexer {
             errors: result.errors,
             groups: result.groups,
             // @ts-expect-error TS(7031) FIXME: Binding element 'tokenType' implicitly has an 'any... Remove this comment to see the full error message
-            tokens: result.tokens.map(({ tokenType, ...rest }) => ({ type: tokenType.name, ...rest, tokenType: tokenType })),
+            tokens: result.tokens.map(({ tokenType, ...rest }) => ({
+                type: tokenType.name,
+                ...rest,
+                tokenType: tokenType,
+            })),
         };
     }
 }
@@ -366,7 +430,9 @@ export { instance as MacroLexer };
 function enter(token, mode, { andExits = undefined } = {}) {
     if (!token) throw new Error('Token must not be undefined');
     if (enterModesMap.has(token.name) && enterModesMap.get(token.name) !== mode) {
-        throw new Error(`Token ${token.name} already is set to enter mode ${enterModesMap.get(token.name)}. The token definition are global, so they cannot be used to lead to different modes.`);
+        throw new Error(
+            `Token ${token.name} already is set to enter mode ${enterModesMap.get(token.name)}. The token definition are global, so they cannot be used to lead to different modes.`,
+        );
     }
 
     if (andExits) exits(token, andExits);
@@ -405,7 +471,9 @@ function exits(token, mode) {
 function using(token) {
     if (!token) throw new Error('Token must not be undefined');
     if (enterModesMap.has(token.name)) {
-        throw new Error(`Token ${token.name} is already marked to enter a mode (${enterModesMap.get(token.name)}). The token definition are global, so they cannot be used to lead or stay differently.`);
+        throw new Error(
+            `Token ${token.name} is already marked to enter a mode (${enterModesMap.get(token.name)}). The token definition are global, so they cannot be used to lead or stay differently.`,
+        );
     }
     return token;
 }

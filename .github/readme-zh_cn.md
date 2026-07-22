@@ -47,9 +47,9 @@ SillyTavern 于 2023 年 2 月作为 TavernAI 1.2.8 的一个分支开始，如�
 
 或者直接与开发人员联系：
 
-* Discord: cohee, rossascends, wolfsblvt
-* Reddit: [/u/RossAscends](https://www.reddit.com/user/RossAscends/), [/u/sillylossy](https://www.reddit.com/user/sillylossy/), [u/Wolfsblvt](https://www.reddit.com/user/Wolfsblvt/)
-* [提交 GitHub 问题](https://github.com/SillyTavern/SillyTavern/issues)
+- Discord: cohee, rossascends, wolfsblvt
+- Reddit: [/u/RossAscends](https://www.reddit.com/user/RossAscends/), [/u/sillylossy](https://www.reddit.com/user/sillylossy/), [u/Wolfsblvt](https://www.reddit.com/user/Wolfsblvt/)
+- [提交 GitHub 问题](https://github.com/SillyTavern/SillyTavern/issues)
 
 ### 我喜欢你的项目！我该如何贡献自己的力量？
 
@@ -66,29 +66,30 @@ SillyTavern 于 2023 年 2 月作为 TavernAI 1.2.8 的一个分支开始，如�
 
 有关详细的安装说明，请访问我们的文档：
 
-* **[Windows 安装指南](https://docs.sillytavern.app/installation/windows/)**
-* **[MacOS/Linux 安装指南](https://docs.sillytavern.app/installation/linuxmacos/)**
-* **[Android (Termux) 安装指南](https://docs.sillytavern.app/installation/android-(termux)/)**
-* **[Docker 安装指南](https://docs.sillytavern.app/installation/docker/)**
+- **[Windows 安装指南](https://docs.sillytavern.app/installation/windows/)**
+- **[MacOS/Linux 安装指南](https://docs.sillytavern.app/installation/linuxmacos/)**
+- **[Android (Termux) 安装指南](<https://docs.sillytavern.app/installation/android-(termux)/>)**
+- **[Docker 安装指南](https://docs.sillytavern.app/installation/docker/)**
 
 ## 许可证和致谢
 
 **本程序的分发是希望它能有用，但不提供任何保证；甚至没有对适销性或特定用途适用性的默示保证。有关更多详细信息，请参阅 GNU Affero 通用公共许可证。**
 
-* [TavernAI](https://github.com/TavernAI/TavernAI) 1.2.8 by Humi: MIT 许可证
-* CncAnon 的 TavernAITurbo mod 的部分内容经许可使用
-* 视觉小说模式的灵感来自 PepperTaco 的工作 (<https://github.com/peppertaco/Tavern/>)
-* Noto Sans 字体 by Google (OFL 许可证)
-* 图标主题 by Font Awesome <https://fontawesome.com> (图标: CC BY 4.0, 字体: SIL OFL 1.1, 代码: MIT 许可证)
-* 默认内容由 @OtisAlejandro (Seraphina 角色和世界书) 和 @kallmeflocc (10K Discord 用户庆祝背景) 提供
-* Docker 指南由 [@mrguymiah](https://github.com/mrguymiah) 和 [@Bronya-Rand](https://github.com/Bronya-Rand) 提供
-* kokoro-js 库由 [@hexgrad](https://github.com/hexgrad) 提供 (Apache-2.0 许可证)
+- [TavernAI](https://github.com/TavernAI/TavernAI) 1.2.8 by Humi: MIT 许可证
+- CncAnon 的 TavernAITurbo mod 的部分内容经许可使用
+- 视觉小说模式的灵感来自 PepperTaco 的工作 (<https://github.com/peppertaco/Tavern/>)
+- Noto Sans 字体 by Google (OFL 许可证)
+- 图标主题 by Font Awesome <https://fontawesome.com> (图标: CC BY 4.0, 字体: SIL OFL 1.1, 代码: MIT 许可证)
+- 默认内容由 @OtisAlejandro (Seraphina 角色和世界书) 和 @kallmeflocc (10K Discord 用户庆祝背景) 提供
+- Docker 指南由 [@mrguymiah](https://github.com/mrguymiah) 和 [@Bronya-Rand](https://github.com/Bronya-Rand) 提供
+- kokoro-js 库由 [@hexgrad](https://github.com/hexgrad) 提供 (Apache-2.0 许可证)
 
 ## 主要贡献者
 
 [![Contributors](https://contrib.rocks/image?repo=SillyTavern/SillyTavern)](https://github.com/SillyTavern/SillyTavern/graphs/contributors)
 
 <!-- LINK GROUP -->
+
 [cover]: https://github.com/user-attachments/assets/01a6ae9a-16aa-45f2-8bff-32b5dc587e44
 [discord-link]: https://discord.gg/sillytavern
 [discord-shield-badge]: https://img.shields.io/discord/1100685673633153084?color=5865F2&label=discord&labelColor=black&logo=discord&logoColor=white&style=for-the-badge

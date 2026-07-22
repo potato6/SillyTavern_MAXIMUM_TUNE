@@ -35,7 +35,6 @@ import {
     setAnimationDuration,
     ANIMATION_DURATION_DEFAULT,
     entitiesFilter,
-
     online_status,
     messageFormatting,
     extension_prompt_types,
@@ -43,9 +42,7 @@ import {
     settingsReady,
 } from '../script.js';
 import { isMobile, initMovingUI, favsToHotswap } from './RossAscends-mods.js';
-import {
-    groups,
-} from './group-chats.js';
+import { groups } from './group-chats.js';
 import {
     instruct_presets,
     loadInstructMode,
@@ -62,10 +59,28 @@ import { renderTemplateAsync } from './templates.js';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 declare const TomSelect: unknown;
 
-import { countOccurrences, debounce, delay, download, getFileText, getSanitizedFilename, getStringHash, isOdd, onlyUnique, resetScrollHeight, shuffle, sortMoments, timestampToMoment } from './utils.js';
+import {
+    countOccurrences,
+    debounce,
+    delay,
+    download,
+    getFileText,
+    getSanitizedFilename,
+    getStringHash,
+    isOdd,
+    onlyUnique,
+    resetScrollHeight,
+    shuffle,
+    sortMoments,
+    timestampToMoment,
+} from './utils.js';
 import { FILTER_TYPES } from './filters.js';
 import { PARSER_FLAG } from './slash-commands/SlashCommandParser.js';
-import { AUTOCOMPLETE_SELECT_KEY, AUTOCOMPLETE_STATE, AUTOCOMPLETE_WIDTH } from './autocomplete/AutoComplete.js';
+import {
+    AUTOCOMPLETE_SELECT_KEY,
+    AUTOCOMPLETE_STATE,
+    AUTOCOMPLETE_WIDTH,
+} from './autocomplete/AutoComplete.js';
 import { POPUP_TYPE, callGenericPopup } from './popup.js';
 import { loadSystemPrompts } from './sysprompt.js';
 import { fuzzySearchCategories } from './filters.js';
@@ -78,14 +93,12 @@ import { t } from './i18n.js';
 
 import { persona_description_positions as _persona_description_positions } from './personas.js';
 
-
 interface noUiSliderInstance {
     get(): string | string[];
     set(value: number | string | (number | string)[]): void;
     on(event: string, handler: (...args: unknown[]) => void): void;
     destroy(): void;
 }
-
 
 interface noUiSliderElement {
     noUiSlider?: noUiSliderInstance;
@@ -108,7 +121,8 @@ const unlockedMaxContextStep = 512;
 const maxContextMin = 512;
 const maxContextStep = 64;
 
-const defaultStoryString = '{{#if system}}{{system}}\n{{/if}}{{#if description}}{{description}}\n{{/if}}{{#if personality}}{{char}}\'s personality: {{personality}}\n{{/if}}{{#if scenario}}Scenario: {{scenario}}\n{{/if}}{{#if persona}}{{persona}}\n{{/if}}';
+const defaultStoryString =
+    "{{#if system}}{{system}}\n{{/if}}{{#if description}}{{description}}\n{{/if}}{{#if personality}}{{char}}'s personality: {{personality}}\n{{/if}}{{#if scenario}}Scenario: {{scenario}}\n{{/if}}{{#if persona}}{{persona}}\n{{/if}}";
 const defaultExampleSeparator = '***';
 const defaultChatStart = '***';
 const defaultToastPosition = 'toast-top-center';
@@ -290,7 +304,7 @@ export const power_user = {
     sysprompt: {
         enabled: true,
         name: 'Neutral - Chat',
-        content: 'Write {{char}}\'s next reply in a fictional chat between {{char}} and {{user}}.',
+        content: "Write {{char}}'s next reply in a fictional chat between {{char}} and {{user}}.",
         post_history: '',
     },
 
@@ -368,7 +382,6 @@ export const power_user = {
     import_card_tags: undefined as boolean | undefined,
     persona_allow_multi_connections: false,
     persona_auto_lock: false,
-
 };
 
 interface Theme {
@@ -443,19 +456,78 @@ const storage_keys = {
 
 const contextControls = [
     // Power user context scoped settings
-    { id: 'context_story_string', property: 'story_string', isCheckbox: false, isGlobalSetting: false },
-    { id: 'context_example_separator', property: 'example_separator', isCheckbox: false, isGlobalSetting: false },
+    {
+        id: 'context_story_string',
+        property: 'story_string',
+        isCheckbox: false,
+        isGlobalSetting: false,
+    },
+    {
+        id: 'context_example_separator',
+        property: 'example_separator',
+        isCheckbox: false,
+        isGlobalSetting: false,
+    },
     { id: 'context_chat_start', property: 'chat_start', isCheckbox: false, isGlobalSetting: false },
-    { id: 'context_use_stop_strings', property: 'use_stop_strings', isCheckbox: true, isGlobalSetting: false, defaultValue: false },
-    { id: 'context_names_as_stop_strings', property: 'names_as_stop_strings', isCheckbox: true, isGlobalSetting: false, defaultValue: true },
-    { id: 'context_story_string_position', property: 'story_string_position', isCheckbox: false, isGlobalSetting: false, defaultValue: extension_prompt_types.IN_PROMPT, trigger: true },
-    { id: 'context_story_string_depth', property: 'story_string_depth', isCheckbox: false, isGlobalSetting: false, defaultValue: 1 },
-    { id: 'context_story_string_role', property: 'story_string_role', isCheckbox: false, isGlobalSetting: false, defaultValue: extension_prompt_roles.SYSTEM },
+    {
+        id: 'context_use_stop_strings',
+        property: 'use_stop_strings',
+        isCheckbox: true,
+        isGlobalSetting: false,
+        defaultValue: false,
+    },
+    {
+        id: 'context_names_as_stop_strings',
+        property: 'names_as_stop_strings',
+        isCheckbox: true,
+        isGlobalSetting: false,
+        defaultValue: true,
+    },
+    {
+        id: 'context_story_string_position',
+        property: 'story_string_position',
+        isCheckbox: false,
+        isGlobalSetting: false,
+        defaultValue: extension_prompt_types.IN_PROMPT,
+        trigger: true,
+    },
+    {
+        id: 'context_story_string_depth',
+        property: 'story_string_depth',
+        isCheckbox: false,
+        isGlobalSetting: false,
+        defaultValue: 1,
+    },
+    {
+        id: 'context_story_string_role',
+        property: 'story_string_role',
+        isCheckbox: false,
+        isGlobalSetting: false,
+        defaultValue: extension_prompt_roles.SYSTEM,
+    },
 
     // Existing power user settings
-    { id: 'always-force-name2-checkbox', property: 'always_force_name2', isCheckbox: true, isGlobalSetting: true, defaultValue: true },
-    { id: 'trim_sentences_checkbox', property: 'trim_sentences', isCheckbox: true, isGlobalSetting: true, defaultValue: false },
-    { id: 'single_line', property: 'single_line', isCheckbox: true, isGlobalSetting: true, defaultValue: false },
+    {
+        id: 'always-force-name2-checkbox',
+        property: 'always_force_name2',
+        isCheckbox: true,
+        isGlobalSetting: true,
+        defaultValue: true,
+    },
+    {
+        id: 'trim_sentences_checkbox',
+        property: 'trim_sentences',
+        isCheckbox: true,
+        isGlobalSetting: true,
+        defaultValue: false,
+    },
+    {
+        id: 'single_line',
+        property: 'single_line',
+        isCheckbox: true,
+        isGlobalSetting: true,
+        defaultValue: false,
+    },
 ];
 
 const browser_has_focus = true;
@@ -470,9 +542,7 @@ const setHotswapsDebounced = debounce(favsToHotswap);
  * @param {boolean} [param.force] Whether to force play the sound.
  * @returns {void}
  */
-export function playMessageSound({
-    force
-}: { force?: boolean } = {}) {
+export function playMessageSound({ force }: { force?: boolean } = {}) {
     if (!power_user.play_message_sound && !force) {
         return;
     }
@@ -532,8 +602,14 @@ export function fixMarkdown(text: string, forDisplay: boolean) {
     for (let i = matches.length - 1; i >= 0; i--) {
         const match = matches[i]!;
         const matchText = match[0]!;
-        const replacementText = matchText.replace(/(\*|_)([\t \u00a0\u1680\u2000-\u200a\u202f\u205f\u3000\ufeff]+)|([\t \u00a0\u1680\u2000-\u200a\u202f\u205f\u3000\ufeff]+)(\*|_)/g, '$1$4');
-        newText = newText.slice(0, match.index) + replacementText + newText.slice(match.index + matchText.length);
+        const replacementText = matchText.replace(
+            /(\*|_)([\t \u00a0\u1680\u2000-\u200a\u202f\u205f\u3000\ufeff]+)|([\t \u00a0\u1680\u2000-\u200a\u202f\u205f\u3000\ufeff]+)(\*|_)/g,
+            '$1$4',
+        );
+        newText =
+            newText.slice(0, match.index) +
+            replacementText +
+            newText.slice(match.index + matchText.length);
     }
 
     // Don't auto-fix asterisks if this is a message clean-up procedure.
@@ -630,7 +706,9 @@ function switchMessageActions() {
     document.body.classList.toggle('expandMessageActions', power_user.expand_message_actions);
     const el = document.getElementById('expandMessageActions') as HTMLInputElement | null;
     if (el) el.checked = power_user.expand_message_actions;
-    document.querySelectorAll('.extraMesButtons, .extraMesButtonsHint').forEach(el => el.removeAttribute('style'));
+    document
+        .querySelectorAll('.extraMesButtons, .extraMesButtonsHint')
+        .forEach((el) => el.removeAttribute('style'));
 }
 
 /**
@@ -647,7 +725,11 @@ function switchReducedMotion() {
     const rmEl = document.getElementById('reduced_motion') as HTMLInputElement | null;
     if (rmEl) rmEl.checked = power_user.reduced_motion;
     if (rmEl) rmEl.disabled = osReduced;
-        document.getElementById('reduced_motion')?.closest('label')?.setAttribute('title',
+    document
+        .getElementById('reduced_motion')
+        ?.closest('label')
+        ?.setAttribute(
+            'title',
             osReduced
                 ? t`Controlled by your operating system's reduced motion setting`
                 : t`Disable animations and transitions`,
@@ -659,7 +741,9 @@ function switchReducedMotion() {
  *
  */
 function switchCompactInputArea() {
-    document.getElementById('send_form')?.classList.toggle('compact', power_user.compact_input_area);
+    document
+        .getElementById('send_form')
+        ?.classList.toggle('compact', power_user.compact_input_area);
     const el = document.getElementById('compact_input_area') as HTMLInputElement | null;
     if (el) el.checked = power_user.compact_input_area;
 }
@@ -673,7 +757,12 @@ function switchSwipeNumAllMessages() {
     document.body.classList.toggle('swipeAllMessages', !!power_user.show_swipe_num_all_messages);
 }
 
-const originalSliderValues: { id: string; min: string | null; max: string | null; step: string | null }[] = [];
+const originalSliderValues: {
+    id: string;
+    min: string | null;
+    max: string | null;
+    step: string | null;
+}[] = [];
 
 /**
  *
@@ -712,9 +801,17 @@ async function switchLabMode({ noReset = false }: { noReset?: boolean } = {}) {
         //$("#advanced-ai-config-block input[type='range']").style.display = 'none'
 
         const agcEl = document.getElementById('amount_gen_counter');
-        if (agcEl) { agcEl.setAttribute('min', '1'); agcEl.setAttribute('max', '99999'); agcEl.setAttribute('step', '1'); }
+        if (agcEl) {
+            agcEl.setAttribute('min', '1');
+            agcEl.setAttribute('max', '99999');
+            agcEl.setAttribute('step', '1');
+        }
         const agEl = document.getElementById('amount_gen');
-        if (agEl) { agEl.setAttribute('min', '1'); agEl.setAttribute('max', '99999'); agEl.setAttribute('step', '1'); }
+        if (agEl) {
+            agEl.setAttribute('min', '1');
+            agEl.setAttribute('max', '99999');
+            agEl.setAttribute('step', '1');
+        }
     } else if (!noReset) {
         //re apply the original sliders values to each input
         originalSliderValues.forEach(function (slider) {
@@ -726,7 +823,9 @@ async function switchLabMode({ noReset = false }: { noReset?: boolean } = {}) {
                 el.dispatchEvent(new Event('input', { bubbles: true }));
             }
         });
-        document.querySelectorAll("#advanced-ai-config-block input[type='range']").forEach((el: Element) => (el as HTMLElement).style.display = '');
+        document
+            .querySelectorAll("#advanced-ai-config-block input[type='range']")
+            .forEach((el: Element) => ((el as HTMLElement).style.display = ''));
         document.getElementById('labModeWarning')?.classList.add('displayNone');
 
         // To set the correct amount_gen back, we just call the function calculating it correctly
@@ -746,21 +845,30 @@ async function switchZenSliders() {
     if (power_user.enableZenSliders) {
         const clickSlidersTips = document.getElementById('clickSlidersTips');
         if (clickSlidersTips) clickSlidersTips.style.display = 'none';
-        document.querySelectorAll("#pro-settings-block input[type=number]").forEach((el: Element) => (el as HTMLElement).style.display = 'none');
+        document
+            .querySelectorAll('#pro-settings-block input[type=number]')
+            .forEach((el: Element) => ((el as HTMLElement).style.display = 'none'));
         //hide number inputs that are not 'seed' inputs
-        document.querySelectorAll(`#textgenerationwebui_api-settings input[type=number]:not([id^='seed']):not([id^='n_']),
-            #kobold_api-settings input[type=number]:not([id^='seed'])`).forEach((el: Element) => (el as HTMLElement).style.display = 'none');
+        document
+            .querySelectorAll(`#textgenerationwebui_api-settings input[type=number]:not([id^='seed']):not([id^='n_']),
+            #kobold_api-settings input[type=number]:not([id^='seed'])`)
+            .forEach((el: Element) => ((el as HTMLElement).style.display = 'none'));
         //hide original sliders
-        document.querySelectorAll(`#textgenerationwebui_api-settings input[type='range'],
+        document
+            .querySelectorAll(`#textgenerationwebui_api-settings input[type='range'],
             #kobold_api-settings input[type='range'],
-            #pro-settings-block input[type='range']:not(#max_context)`).forEach((el: Element) => {
-            (el as HTMLElement).style.display = 'none';
-            CreateZenSliders(el);
-        });
+            #pro-settings-block input[type='range']:not(#max_context)`)
+            .forEach((el: Element) => {
+                (el as HTMLElement).style.display = 'none';
+                CreateZenSliders(el);
+            });
         //this is for when zensliders is toggled after pageload
         switchMaxContextSize();
     } else {
-        { const el = document.getElementById('clickSlidersTips'); if (el) el.style.display = ''; }
+        {
+            const el = document.getElementById('clickSlidersTips');
+            if (el) el.style.display = '';
+        }
         revertOriginalSliders();
     }
 
@@ -768,16 +876,25 @@ async function switchZenSliders() {
      *
      */
     function revertOriginalSliders() {
-        document.querySelectorAll("#pro-settings-block input[type=number]").forEach((el: Element) => (el as HTMLElement).style.display = '');
-        document.querySelectorAll(`#textgenerationwebui_api-settings input[type='number'],
-            #kobold_api-settings input[type='number']`).forEach((el: Element) => (el as HTMLElement).style.display = '');
-        document.querySelectorAll(`#textgenerationwebui_api-settings input[type='range'],
+        document
+            .querySelectorAll('#pro-settings-block input[type=number]')
+            .forEach((el: Element) => ((el as HTMLElement).style.display = ''));
+        document
+            .querySelectorAll(`#textgenerationwebui_api-settings input[type='number'],
+            #kobold_api-settings input[type='number']`)
+            .forEach((el: Element) => ((el as HTMLElement).style.display = ''));
+        document
+            .querySelectorAll(`#textgenerationwebui_api-settings input[type='range'],
             #kobold_api-settings input[type='range'],
-            #pro-settings-block input[type='range']`).forEach((el: Element) => {
-            (el as HTMLElement).style.display = '';
-        });
+            #pro-settings-block input[type='range']`)
+            .forEach((el: Element) => {
+                (el as HTMLElement).style.display = '';
+            });
         document.querySelectorAll('div[id$="_zenslider"]').forEach((el: Element) => {
-            if ((el as HTMLElement & { noUiSlider?: { destroy: () => void } }).noUiSlider) (el as HTMLElement & { noUiSlider?: { destroy: () => void } }).noUiSlider!.destroy();
+            if ((el as HTMLElement & { noUiSlider?: { destroy: () => void } }).noUiSlider)
+                (
+                    el as HTMLElement & { noUiSlider?: { destroy: () => void } }
+                ).noUiSlider!.destroy();
             el.remove();
         });
     }
@@ -807,11 +924,15 @@ async function CreateZenSliders(elmnt: Element) {
         stepScale = 1;
         numSteps = 10;
         sliderValue = steps.indexOf(Number(sliderValue));
-        if (sliderValue === -1) { sliderValue = 4; } // default to '200' if origSlider has value we can't use
+        if (sliderValue === -1) {
+            sliderValue = 4;
+        } // default to '200' if origSlider has value we can't use
     }
     if (sliderID == 'rep_pen_range_textgenerationwebui') {
         if (power_user.max_context_unlocked) {
-            steps = [0, 256, 512, 768, 1024, 2048, 4096, 8192, 16355, 24576, 32768, 49152, 65536, -1];
+            steps = [
+                0, 256, 512, 768, 1024, 2048, 4096, 8192, 16355, 24576, 32768, 49152, 65536, -1,
+            ];
             numSteps = 13;
             allVal = 13;
         } else {
@@ -825,10 +946,13 @@ async function CreateZenSliders(elmnt: Element) {
         sliderMax = steps.length - 1;
         stepScale = 1;
         sliderValue = steps.indexOf(Number(sliderValue));
-        if (sliderValue === -1) { sliderValue = allVal; } // default to allValue if origSlider has value we can't use
+        if (sliderValue === -1) {
+            sliderValue = allVal;
+        } // default to allValue if origSlider has value we can't use
     }
     //customize decimals
-    if (sliderID == 'max_context' ||
+    if (
+        sliderID == 'max_context' ||
         sliderID == 'mirostat_mode_textgenerationwebui' ||
         sliderID == 'mirostat_tau_textgenerationwebui' ||
         sliderID == 'top_k_textgenerationwebui' ||
@@ -841,19 +965,24 @@ async function CreateZenSliders(elmnt: Element) {
         sliderID == 'dry_allowed_length_textgenerationwebui' ||
         sliderID == 'rep_pen_decay_textgenerationwebui' ||
         sliderID == 'dry_penalty_last_n_textgenerationwebui' ||
-        sliderID == 'max_tokens_second_textgenerationwebui') {
+        sliderID == 'max_tokens_second_textgenerationwebui'
+    ) {
         decimals = 0;
     }
-    if (sliderID == 'min_temp_textgenerationwebui' ||
+    if (
+        sliderID == 'min_temp_textgenerationwebui' ||
         sliderID == 'max_temp_textgenerationwebui' ||
         sliderID == 'smoothing_curve_textgenerationwebui' ||
         sliderID == 'smoothing_factor_textgenerationwebui' ||
         sliderID == 'dry_multiplier_textgenerationwebui' ||
-        sliderID == 'dry_base_textgenerationwebui') {
+        sliderID == 'dry_base_textgenerationwebui'
+    ) {
         decimals = 2;
     }
-    if (sliderID == 'eta_cutoff_textgenerationwebui' ||
-        sliderID == 'epsilon_cutoff_textgenerationwebui') {
+    if (
+        sliderID == 'eta_cutoff_textgenerationwebui' ||
+        sliderID == 'epsilon_cutoff_textgenerationwebui'
+    ) {
         numSteps = 50;
         decimals = 1;
     }
@@ -862,8 +991,7 @@ async function CreateZenSliders(elmnt: Element) {
         decimals = 1;
     }
     //customize steps
-    if (sliderID == 'mirostat_mode_textgenerationwebui' ||
-        sliderID == 'mirostat_mode_kobold') {
+    if (sliderID == 'mirostat_mode_textgenerationwebui' || sliderID == 'mirostat_mode_kobold') {
         numSteps = 2;
     }
     if (sliderID == 'encoder_rep_pen_textgenerationwebui') {
@@ -872,7 +1000,8 @@ async function CreateZenSliders(elmnt: Element) {
     if (sliderID == 'max_context') {
         numSteps = 15;
     }
-    if (sliderID == 'mirostat_tau_textgenerationwebui' ||
+    if (
+        sliderID == 'mirostat_tau_textgenerationwebui' ||
         sliderID == 'top_k_textgenerationwebui' ||
         sliderID == 'num_beams_textgenerationwebui' ||
         sliderID == 'no_repeat_ngram_size_textgenerationwebui' ||
@@ -880,18 +1009,22 @@ async function CreateZenSliders(elmnt: Element) {
         sliderID == 'tfs_textgenerationwebui' ||
         sliderID == 'min_p_textgenerationwebui' ||
         sliderID == 'temp_textgenerationwebui' ||
-        sliderID == 'temp') {
+        sliderID == 'temp'
+    ) {
         numSteps = 20;
     }
-    if (sliderID == 'mirostat_eta_textgenerationwebui' ||
+    if (
+        sliderID == 'mirostat_eta_textgenerationwebui' ||
         sliderID == 'penalty_alpha_textgenerationwebui' ||
         sliderID == 'length_penalty_textgenerationwebui' ||
         sliderID == 'min_temp_textgenerationwebui' ||
-        sliderID == 'max_temp_textgenerationwebui') {
+        sliderID == 'max_temp_textgenerationwebui'
+    ) {
         numSteps = 50;
     }
     //customize off values
-    if (sliderID == 'presence_pen_textgenerationwebui' ||
+    if (
+        sliderID == 'presence_pen_textgenerationwebui' ||
         sliderID == 'freq_pen_textgenerationwebui' ||
         sliderID == 'mirostat_mode_textgenerationwebui' ||
         sliderID == 'mirostat_mode_kobold' ||
@@ -917,10 +1050,12 @@ async function CreateZenSliders(elmnt: Element) {
         sliderID == 'smoothing_curve_textgenerationwebui' ||
         sliderID == 'skew_textgenerationwebui' ||
         sliderID == 'dry_multiplier_textgenerationwebui' ||
-        sliderID == 'min_length_textgenerationwebui') {
+        sliderID == 'min_length_textgenerationwebui'
+    ) {
         offVal = 0;
     }
-    if (sliderID == 'rep_pen_textgenerationwebui' ||
+    if (
+        sliderID == 'rep_pen_textgenerationwebui' ||
         sliderID == 'rep_pen' ||
         sliderID == 'tfs_textgenerationwebui' ||
         sliderID == 'tfs' ||
@@ -936,7 +1071,8 @@ async function CreateZenSliders(elmnt: Element) {
         sliderID == 'dynatemp_exponent_textgenerationwebui' ||
         sliderID == 'guidance_scale_textgenerationwebui' ||
         sliderID == 'rep_pen_slope_textgenerationwebui' ||
-        sliderID == 'guidance_scale') {
+        sliderID == 'guidance_scale'
+    ) {
         offVal = 1;
     }
     if (sliderID == 'guidance_scale_textgenerationwebui') {
@@ -962,18 +1098,22 @@ async function CreateZenSliders(elmnt: Element) {
         start: [sliderValue],
         step: stepScale,
         range: {
-            'min': sliderMin,
-            'max': sliderMax,
+            min: sliderMin,
+            max: sliderMax,
         },
         tooltips: {
             to: function (value: number) {
                 const stepNumber = Math.round((value - sliderMin) / stepScale);
                 if (sliderID === 'amount_gen') {
-                    return steps ? String(steps[stepNumber] ?? steps[steps.length - 1]) : String(Math.round(value));
+                    return steps
+                        ? String(steps[stepNumber] ?? steps[steps.length - 1])
+                        : String(Math.round(value));
                 } else if (sliderID === 'rep_pen_range_textgenerationwebui') {
                     if (offVal !== undefined && value === offVal) return 'Off';
                     if (allVal !== undefined && value === allVal) return 'All';
-                    return steps ? String(steps[stepNumber] ?? steps[steps.length - 1]) : String(Math.round(value));
+                    return steps
+                        ? String(steps[stepNumber] ?? steps[steps.length - 1])
+                        : String(Math.round(value));
                 } else {
                     const numStr = Number(value).toFixed(decimals);
                     if (offVal !== undefined && value === offVal) {
@@ -1007,7 +1147,9 @@ async function CreateZenSliders(elmnt: Element) {
 
             tooltip.addEventListener('mousedown', function (this: HTMLElement, e: MouseEvent) {
                 e.stopPropagation();
-                valueBeforeManualInput = parseFloat((newSlider as unknown as noUiSliderElement).noUiSlider!.get() as string);
+                valueBeforeManualInput = parseFloat(
+                    (newSlider as unknown as noUiSliderElement).noUiSlider!.get() as string,
+                );
                 const range = document.createRange();
                 range.selectNodeContents(this);
                 const selection = window.getSelection();
@@ -1026,14 +1168,20 @@ async function CreateZenSliders(elmnt: Element) {
             });
 
             tooltip.addEventListener('blur', function (this: HTMLElement) {
-                const manualInput = parseFloat(parseFloat(this.textContent ?? '0').toFixed(decimals));
+                const manualInput = parseFloat(
+                    parseFloat(this.textContent ?? '0').toFixed(decimals),
+                );
                 if (isManualInput) {
                     if (manualInput >= sliderMin && manualInput <= sliderMax) {
                         (newSlider as unknown as noUiSliderElement).noUiSlider!.set(manualInput);
                         valueBeforeManualInput = manualInput;
                     } else {
-                        notyf.warning(`Invalid value. Must be between ${sliderMin} and ${sliderMax}`);
-                        (newSlider as unknown as noUiSliderElement).noUiSlider!.set(valueBeforeManualInput);
+                        notyf.warning(
+                            `Invalid value. Must be between ${sliderMin} and ${sliderMax}`,
+                        );
+                        (newSlider as unknown as noUiSliderElement).noUiSlider!.set(
+                            valueBeforeManualInput,
+                        );
                     }
                 }
                 isManualInput = false;
@@ -1045,25 +1193,28 @@ async function CreateZenSliders(elmnt: Element) {
     originalSlider.style.display = 'none';
 
     // Sync hidden input on slider changes
-    (newSlider as unknown as noUiSliderElement).noUiSlider!.on('update', function (values: unknown, handle: unknown) {
-        const rawValue = parseFloat((values as string[])[handle as number]!);
-        const stepNumber = Math.round((rawValue - sliderMin) / stepScale);
-        let numVal: number;
+    (newSlider as unknown as noUiSliderElement).noUiSlider!.on(
+        'update',
+        function (values: unknown, handle: unknown) {
+            const rawValue = parseFloat((values as string[])[handle as number]!);
+            const stepNumber = Math.round((rawValue - sliderMin) / stepScale);
+            let numVal: number;
 
-        if (sliderID === 'amount_gen') {
-            const idx = Math.min(stepNumber, (steps ?? []).length - 1);
-            numVal = (steps ?? [])[idx]!;
-        } else if (sliderID === 'rep_pen_range_textgenerationwebui') {
-            const idx = Math.min(stepNumber, (steps ?? []).length - 1);
-            numVal = (steps ?? [])[idx]!;
-        } else {
-            numVal = rawValue;
-        }
+            if (sliderID === 'amount_gen') {
+                const idx = Math.min(stepNumber, (steps ?? []).length - 1);
+                numVal = (steps ?? [])[idx]!;
+            } else if (sliderID === 'rep_pen_range_textgenerationwebui') {
+                const idx = Math.min(stepNumber, (steps ?? []).length - 1);
+                numVal = (steps ?? [])[idx]!;
+            } else {
+                numVal = rawValue;
+            }
 
-        originalSlider.value = String(numVal);
-        originalSlider.dispatchEvent(new Event('input', { bubbles: true }));
-        originalSlider.dispatchEvent(new Event('change', { bubbles: true }));
-    });
+            originalSlider.value = String(numVal);
+            originalSlider.dispatchEvent(new Event('input', { bubbles: true }));
+            originalSlider.dispatchEvent(new Event('change', { bubbles: true }));
+        },
+    );
 }
 /**
  *
@@ -1100,15 +1251,33 @@ function switchWaifuMode() {
  */
 function switchSpoilerMode() {
     if (power_user.spoiler_free_mode) {
-        { const el = document.getElementById('descriptionWrapper'); if (el) el.style.display = 'none'; }
-        { const el = document.getElementById('firstMessageWrapper'); if (el) el.style.display = 'none'; }
+        {
+            const el = document.getElementById('descriptionWrapper');
+            if (el) el.style.display = 'none';
+        }
+        {
+            const el = document.getElementById('firstMessageWrapper');
+            if (el) el.style.display = 'none';
+        }
         document.getElementById('spoiler_free_desc')?.classList.add('flex1');
-        { const el = document.getElementById('creators_note_desc_hidden'); if (el) el.style.display = ''; }
+        {
+            const el = document.getElementById('creators_note_desc_hidden');
+            if (el) el.style.display = '';
+        }
     } else {
-        { const el = document.getElementById('descriptionWrapper'); if (el) el.style.display = ''; }
-        { const el = document.getElementById('firstMessageWrapper'); if (el) el.style.display = ''; }
+        {
+            const el = document.getElementById('descriptionWrapper');
+            if (el) el.style.display = '';
+        }
+        {
+            const el = document.getElementById('firstMessageWrapper');
+            if (el) el.style.display = '';
+        }
         document.getElementById('spoiler_free_desc')?.classList.remove('flex1');
-        { const el = document.getElementById('creators_note_desc_hidden'); if (el) el.style.display = 'none'; }
+        {
+            const el = document.getElementById('creators_note_desc_hidden');
+            if (el) el.style.display = 'none';
+        }
     }
 }
 
@@ -1116,7 +1285,10 @@ function switchSpoilerMode() {
  *
  */
 function peekSpoilerMode() {
-    const toggleEl = (id: string) => { const el = document.getElementById(id); if (el) el.style.display = el.style.display === 'none' ? '' : 'none'; };
+    const toggleEl = (id: string) => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = el.style.display === 'none' ? '' : 'none';
+    };
     toggleEl('descriptionWrapper');
     toggleEl('firstMessageWrapper');
     toggleEl('creators_note_desc_hidden');
@@ -1170,11 +1342,22 @@ function applyNoShadows() {
  *
  */
 function applyAvatarStyle() {
-    document.body.classList.toggle('big-avatars', power_user.avatar_style === avatar_styles.RECTANGULAR);
-    document.body.classList.toggle('square-avatars', power_user.avatar_style === avatar_styles.SQUARE);
-    document.body.classList.toggle('rounded-avatars', power_user.avatar_style === avatar_styles.ROUNDED);
+    document.body.classList.toggle(
+        'big-avatars',
+        power_user.avatar_style === avatar_styles.RECTANGULAR,
+    );
+    document.body.classList.toggle(
+        'square-avatars',
+        power_user.avatar_style === avatar_styles.SQUARE,
+    );
+    document.body.classList.toggle(
+        'rounded-avatars',
+        power_user.avatar_style === avatar_styles.ROUNDED,
+    );
     const avEl = document.getElementById('avatar_style') as HTMLSelectElement | null;
-    if (avEl) { avEl.value = String(power_user.avatar_style); }
+    if (avEl) {
+        avEl.value = String(power_user.avatar_style);
+    }
 }
 /**
  *
@@ -1186,7 +1369,9 @@ function applyChatDisplay() {
     }
     console.debug(`poweruser.chat_display ${power_user.chat_display}`);
     const cdEl = document.getElementById('chat_display') as HTMLSelectElement | null;
-    if (cdEl) { cdEl.value = String(power_user.chat_display); }
+    if (cdEl) {
+        cdEl.value = String(power_user.chat_display);
+    }
 
     switch (power_user.chat_display) {
         case 0: {
@@ -1216,11 +1401,13 @@ function applyChatDisplay() {
 function applyToastrPosition() {
     if (!toastPositionClasses.includes(power_user.toastr_position)) {
         power_user.toastr_position = defaultToastPosition;
-        console.warn(`applyToastrPosition: invalid toastr position, defaulting to ${defaultToastPosition}`);
+        console.warn(
+            `applyToastrPosition: invalid toastr position, defaulting to ${defaultToastPosition}`,
+        );
     }
 
     // Update notyf position dynamically
-    const _posMap: Record<string, {x: string; y: string}> = {
+    const _posMap: Record<string, { x: string; y: string }> = {
         'toast-top-center': { x: 'center', y: 'top' },
         'toast-top-left': { x: 'left', y: 'top' },
         'toast-top-right': { x: 'right', y: 'top' },
@@ -1233,7 +1420,9 @@ function applyToastrPosition() {
     }
     const tpEl = document.getElementById('toastr_position') as HTMLSelectElement | null;
     if (tpEl) tpEl.value = power_user.toastr_position;
-    const tpOpt = document.querySelector(`#toastr_position option[value="${power_user.toastr_position}"]`) as HTMLOptionElement | null;
+    const tpOpt = document.querySelector(
+        `#toastr_position option[value="${power_user.toastr_position}"]`,
+    ) as HTMLOptionElement | null;
     if (tpOpt) tpOpt.selected = true;
 }
 
@@ -1256,12 +1445,18 @@ function applyChatWidth(type: string) {
                 // This is a hack for Firefox to let it render before applying the block width.
                 // Otherwise it takes the incorrect slider position with the new value AFTER the resizing.
                 await delay(1);
-                document.documentElement.style.setProperty('--sheldWidth', `${power_user.chat_width}vw`);
+                document.documentElement.style.setProperty(
+                    '--sheldWidth',
+                    `${power_user.chat_width}vw`,
+                );
                 await delay(1);
             });
             chatWidthSlider.addEventListener('touchend', async () => {
                 await delay(1);
-                document.documentElement.style.setProperty('--sheldWidth', `${power_user.chat_width}vw`);
+                document.documentElement.style.setProperty(
+                    '--sheldWidth',
+                    `${power_user.chat_width}vw`,
+                );
                 await delay(1);
             });
         }
@@ -1277,7 +1472,10 @@ function applyChatWidth(type: string) {
  */
 function applyThemeColor(type: string) {
     if (type === 'main') {
-        document.documentElement.style.setProperty('--SmartThemeBodyColor', power_user.main_text_color);
+        document.documentElement.style.setProperty(
+            '--SmartThemeBodyColor',
+            power_user.main_text_color,
+        );
         const color = power_user.main_text_color.split('(')[1]!.split(')')[0]!.split(',');
         document.documentElement.style.setProperty('--SmartThemeCheckboxBgColorR', color[0] ?? '');
         document.documentElement.style.setProperty('--SmartThemeCheckboxBgColorG', color[1] ?? '');
@@ -1285,36 +1483,63 @@ function applyThemeColor(type: string) {
         document.documentElement.style.setProperty('--SmartThemeCheckboxBgColorA', color[3] ?? '');
     }
     if (type === 'italics') {
-        document.documentElement.style.setProperty('--SmartThemeEmColor', power_user.italics_text_color);
+        document.documentElement.style.setProperty(
+            '--SmartThemeEmColor',
+            power_user.italics_text_color,
+        );
     }
     if (type === 'underline') {
-        document.documentElement.style.setProperty('--SmartThemeUnderlineColor', power_user.underline_text_color);
+        document.documentElement.style.setProperty(
+            '--SmartThemeUnderlineColor',
+            power_user.underline_text_color,
+        );
     }
     if (type === 'quote') {
-        document.documentElement.style.setProperty('--SmartThemeQuoteColor', power_user.quote_text_color);
+        document.documentElement.style.setProperty(
+            '--SmartThemeQuoteColor',
+            power_user.quote_text_color,
+        );
     }
     /*     if (type === 'fastUIBG') {
             document.documentElement.style.setProperty('--SmartThemeFastUIBGColor', power_user.fastui_bg_color);
         } */
     if (type === 'blurTint') {
         const metaThemeColor = document.querySelector('meta[name=theme-color]');
-            document.documentElement.style.setProperty('--SmartThemeBlurTintColor', power_user.blur_tint_color);
-            if (metaThemeColor) metaThemeColor.setAttribute('content', power_user.blur_tint_color);
+        document.documentElement.style.setProperty(
+            '--SmartThemeBlurTintColor',
+            power_user.blur_tint_color,
+        );
+        if (metaThemeColor) metaThemeColor.setAttribute('content', power_user.blur_tint_color);
     }
     if (type === 'chatTint') {
-        document.documentElement.style.setProperty('--SmartThemeChatTintColor', power_user.chat_tint_color);
+        document.documentElement.style.setProperty(
+            '--SmartThemeChatTintColor',
+            power_user.chat_tint_color,
+        );
     }
     if (type === 'userMesBlurTint') {
-        document.documentElement.style.setProperty('--SmartThemeUserMesBlurTintColor', power_user.user_mes_blur_tint_color);
+        document.documentElement.style.setProperty(
+            '--SmartThemeUserMesBlurTintColor',
+            power_user.user_mes_blur_tint_color,
+        );
     }
     if (type === 'botMesBlurTint') {
-        document.documentElement.style.setProperty('--SmartThemeBotMesBlurTintColor', power_user.bot_mes_blur_tint_color);
+        document.documentElement.style.setProperty(
+            '--SmartThemeBotMesBlurTintColor',
+            power_user.bot_mes_blur_tint_color,
+        );
     }
     if (type === 'shadow') {
-        document.documentElement.style.setProperty('--SmartThemeShadowColor', power_user.shadow_color);
+        document.documentElement.style.setProperty(
+            '--SmartThemeShadowColor',
+            power_user.shadow_color,
+        );
     }
     if (type === 'border') {
-        document.documentElement.style.setProperty('--SmartThemeBorderColor', power_user.border_color);
+        document.documentElement.style.setProperty(
+            '--SmartThemeBorderColor',
+            power_user.border_color,
+        );
     }
 }
 
@@ -1370,10 +1595,16 @@ function applyFontScale(type: string) {
         const fontScaleSlider = document.getElementById('font_scale');
         if (fontScaleSlider) {
             fontScaleSlider.addEventListener('mouseup', () => {
-                document.documentElement.style.setProperty('--fontScale', String(power_user.font_scale));
+                document.documentElement.style.setProperty(
+                    '--fontScale',
+                    String(power_user.font_scale),
+                );
             });
             fontScaleSlider.addEventListener('touchend', () => {
-                document.documentElement.style.setProperty('--fontScale', String(power_user.font_scale));
+                document.documentElement.style.setProperty(
+                    '--fontScale',
+                    String(power_user.font_scale),
+                );
             });
         }
     }
@@ -1396,12 +1627,15 @@ function isMediaDisplayReloadNeeded() {
     }
 
     const firstDisplayedIndex = getFirstDisplayedMessageId();
-    const hasUnprocessedMediaMessages = (chat as { extra?: { media?: unknown[]; media_display?: unknown } }[]).some((message, index) => {
+    const hasUnprocessedMediaMessages = (
+        chat as { extra?: { media?: unknown[]; media_display?: unknown } }[]
+    ).some((message, index) => {
         // Skip messages that are not currently displayed
         if (index < firstDisplayedIndex) {
             return false;
         }
-        const hasMediaAttachments = Array.isArray(message?.extra?.media) && message.extra.media.length > 0;
+        const hasMediaAttachments =
+            Array.isArray(message?.extra?.media) && message.extra.media.length > 0;
         const lacksMediaDisplay = !message?.extra?.media_display;
         return hasMediaAttachments && lacksMediaDisplay;
     });
@@ -1429,7 +1663,7 @@ function showMediaDisplayReloadPrompt() {
  * @param name
  */
 function applyTheme(name: string) {
-    const theme = themes.find(x => x.name == name);
+    const theme = themes.find((x) => x.name == name);
 
     if (!theme) {
         return;
@@ -1442,8 +1676,16 @@ function applyTheme(name: string) {
         { key: 'quote_text_color', selector: '#quote-color-picker', type: 'quote' },
         { key: 'blur_tint_color', selector: '#blur-tint-color-picker', type: 'blurTint' },
         { key: 'chat_tint_color', selector: '#chat-tint-color-picker', type: 'chatTint' },
-        { key: 'user_mes_blur_tint_color', selector: '#user-mes-blur-tint-color-picker', type: 'userMesBlurTint' },
-        { key: 'bot_mes_blur_tint_color', selector: '#bot-mes-blur-tint-color-picker', type: 'botMesBlurTint' },
+        {
+            key: 'user_mes_blur_tint_color',
+            selector: '#user-mes-blur-tint-color-picker',
+            type: 'userMesBlurTint',
+        },
+        {
+            key: 'bot_mes_blur_tint_color',
+            selector: '#bot-mes-blur-tint-color-picker',
+            type: 'botMesBlurTint',
+        },
         { key: 'shadow_color', selector: '#shadow-color-picker', type: 'shadow' },
         { key: 'border_color', selector: '#border-color-picker', type: 'border' },
         {
@@ -1583,47 +1825,51 @@ function applyTheme(name: string) {
                 if (el) el.checked = power_user.bogus_folders;
                 printCharactersDebounced();
             },
-            },
-            {
+        },
+        {
             key: 'zoomed_avatar_magnification',
             action: () => {
-                const el = document.getElementById('zoomed_avatar_magnification') as HTMLInputElement | null;
+                const el = document.getElementById(
+                    'zoomed_avatar_magnification',
+                ) as HTMLInputElement | null;
                 if (el) el.checked = power_user.zoomed_avatar_magnification;
                 printCharactersDebounced();
             },
-            },
-            {
+        },
+        {
             key: 'reduced_motion',
             action: () => {
                 const el = document.getElementById('reduced_motion') as HTMLInputElement | null;
                 if (el) el.checked = power_user.reduced_motion;
                 switchReducedMotion();
             },
-            },
-            {
+        },
+        {
             key: 'compact_input_area',
             action: () => {
                 const el = document.getElementById('compact_input_area') as HTMLInputElement | null;
                 if (el) el.checked = power_user.compact_input_area;
                 switchCompactInputArea();
             },
-            },
-            {
+        },
+        {
             key: 'show_swipe_num_all_messages',
             action: () => {
-                const el = document.getElementById('show_swipe_num_all_messages') as HTMLInputElement | null;
+                const el = document.getElementById(
+                    'show_swipe_num_all_messages',
+                ) as HTMLInputElement | null;
                 if (el) el.checked = power_user.show_swipe_num_all_messages;
                 switchSwipeNumAllMessages();
             },
-            },
-            {
+        },
+        {
             key: 'click_to_edit',
             action: () => {
                 const el = document.getElementById('click_to_edit') as HTMLInputElement | null;
                 if (el) el.checked = power_user.click_to_edit;
             },
-            },
-            {
+        },
+        {
             key: 'media_display',
             action: (oldValue: unknown, newValue: unknown) => {
                 const el = document.getElementById('media_display') as HTMLSelectElement | null;
@@ -1685,14 +1931,13 @@ function registerThemeChangeHandler() {
  */
 async function applyMovingUIPreset(name: string) {
     await resetMovablePanels('quiet');
-    const movingUIPreset = movingUIPresets.find(x => x.name == name);
+    const movingUIPreset = movingUIPresets.find((x) => x.name == name);
 
     if (!movingUIPreset) {
         return;
     }
 
     power_user.movingUIState = movingUIPreset.movingUIState;
-
 
     console.log('MovingUI Preset applied: ' + name);
     loadMovingUIState();
@@ -1706,7 +1951,12 @@ async function applyMovingUIPreset(name: string) {
  * @param {string} description Description of the function.
  * @param {function} func Function to be executed.
  */
-export function registerDebugFunction(functionId: string, name: string, description: string, func: () => void) {
+export function registerDebugFunction(
+    functionId: string,
+    name: string,
+    description: string,
+    func: () => void,
+) {
     debug_functions.push({ functionId, name, description, func });
 }
 
@@ -1715,7 +1965,11 @@ export function registerDebugFunction(functionId: string, name: string, descript
  */
 async function showDebugMenu() {
     const template = await renderTemplateAsync('debug', { functions: debug_functions });
-    callGenericPopup(template, POPUP_TYPE.TEXT, '', { wide: true, large: true, allowVerticalScrolling: true });
+    callGenericPopup(template, POPUP_TYPE.TEXT, '', {
+        wide: true,
+        large: true,
+        allowVerticalScrolling: true,
+    });
 }
 
 /**
@@ -1776,7 +2030,15 @@ export function applyStylePins() {
             return;
         }
 
-        const formattedMessage = messageFormatting((firstMessage as Record<string, unknown>).mes as string, (firstMessage as Record<string, unknown>).name as string, (firstMessage as Record<string, unknown>).is_system as boolean, (firstMessage as Record<string, unknown>).is_user as boolean, 0, {}, false);
+        const formattedMessage = messageFormatting(
+            (firstMessage as Record<string, unknown>).mes as string,
+            (firstMessage as Record<string, unknown>).name as string,
+            (firstMessage as Record<string, unknown>).is_system as boolean,
+            (firstMessage as Record<string, unknown>).is_user as boolean,
+            0,
+            {},
+            false,
+        );
         const htmlElement = document.createElement('div');
         htmlElement.innerHTML = formattedMessage;
 
@@ -1815,7 +2077,10 @@ function getExampleMessagesBehavior() {
  * @param settings
  * @param data
  */
-export async function loadPowerUserSettings(settings: Record<string, unknown>, data: Record<string, unknown>) {
+export async function loadPowerUserSettings(
+    settings: Record<string, unknown>,
+    data: Record<string, unknown>,
+) {
     const defaultStscript = JSON.parse(JSON.stringify(power_user.stscript));
     // Load from settings.json
     const pu = settings.power_user as Record<string, unknown> | undefined;
@@ -1825,7 +2090,9 @@ export async function loadPowerUserSettings(settings: Record<string, unknown>, d
             pu.click_to_edit = true;
         }
         if (Object.hasOwn(pu, 'auto_sort_tags') && !Object.hasOwn(pu, 'tag_sort_mode')) {
-            pu.tag_sort_mode = pu.auto_sort_tags ? tag_sort_mode.ALPHABETICAL : tag_sort_mode.MANUAL;
+            pu.tag_sort_mode = pu.auto_sort_tags
+                ? tag_sort_mode.ALPHABETICAL
+                : tag_sort_mode.MANUAL;
             delete pu.auto_sort_tags;
         }
         Object.assign(power_user, pu);
@@ -1847,13 +2114,16 @@ export async function loadPowerUserSettings(settings: Record<string, unknown>, d
                 power_user.stscript.autocomplete.font = defaultStscript.autocomplete.font;
             }
             if (power_user.stscript.autocomplete.style === undefined) {
-                power_user.stscript.autocomplete.style = (power_user.stscript as Record<string, unknown>).autocomplete_style as string || defaultStscript.autocomplete.style;
+                power_user.stscript.autocomplete.style =
+                    ((power_user.stscript as Record<string, unknown>)
+                        .autocomplete_style as string) || defaultStscript.autocomplete.style;
             }
             if (power_user.stscript.autocomplete.select === undefined) {
                 power_user.stscript.autocomplete.select = defaultStscript.autocomplete.select;
             }
             if (power_user.stscript.autocomplete.showInAllMacroFields === undefined) {
-                power_user.stscript.autocomplete.showInAllMacroFields = defaultStscript.autocomplete.showInAllMacroFields;
+                power_user.stscript.autocomplete.showInAllMacroFields =
+                    defaultStscript.autocomplete.showInAllMacroFields;
             }
         }
         if (power_user.stscript.parser === undefined) {
@@ -1873,7 +2143,6 @@ export async function loadPowerUserSettings(settings: Record<string, unknown>, d
     if (data.movingUIPresets !== undefined) {
         movingUIPresets = data.movingUIPresets as MovingUIPreset[];
     }
-
 
     if (data.context !== undefined) {
         context_presets = data.context as ContextSettings[];
@@ -1897,7 +2166,9 @@ export async function loadPowerUserSettings(settings: Record<string, unknown>, d
 
     // Clean up old/legacy settings
     if (power_user.import_card_tags !== undefined) {
-        power_user.tag_import_setting = power_user.import_card_tags ? tag_import_setting.ASK : tag_import_setting.NONE;
+        power_user.tag_import_setting = power_user.import_card_tags
+            ? tag_import_setting.ASK
+            : tag_import_setting.NONE;
         delete power_user.import_card_tags;
     }
 
@@ -1913,11 +2184,18 @@ export async function loadPowerUserSettings(settings: Record<string, unknown>, d
     if (singleLineEl) singleLineEl.checked = power_user.single_line;
     const relaxedApiUrlsEl = document.getElementById('relaxed_api_urls') as HTMLInputElement | null;
     if (relaxedApiUrlsEl) relaxedApiUrlsEl.checked = power_user.relaxed_api_urls;
-    const worldImportDialogEl = document.getElementById('world_import_dialog') as HTMLInputElement | null;
+    const worldImportDialogEl = document.getElementById(
+        'world_import_dialog',
+    ) as HTMLInputElement | null;
     if (worldImportDialogEl) worldImportDialogEl.checked = power_user.world_import_dialog;
-    const enableAutoSelectInputEl = document.getElementById('enable_auto_select_input') as HTMLInputElement | null;
-    if (enableAutoSelectInputEl) enableAutoSelectInputEl.checked = power_user.enable_auto_select_input;
-    const enableMdHotkeysEl = document.getElementById('enable_md_hotkeys') as HTMLInputElement | null;
+    const enableAutoSelectInputEl = document.getElementById(
+        'enable_auto_select_input',
+    ) as HTMLInputElement | null;
+    if (enableAutoSelectInputEl)
+        enableAutoSelectInputEl.checked = power_user.enable_auto_select_input;
+    const enableMdHotkeysEl = document.getElementById(
+        'enable_md_hotkeys',
+    ) as HTMLInputElement | null;
     if (enableMdHotkeysEl) enableMdHotkeysEl.checked = power_user.enable_md_hotkeys;
     const trimSpacesEl = document.getElementById('trim_spaces') as HTMLInputElement | null;
     if (trimSpacesEl) trimSpacesEl.checked = power_user.trim_spaces;
@@ -1925,72 +2203,148 @@ export async function loadPowerUserSettings(settings: Record<string, unknown>, d
     if (continueOnSendEl) continueOnSendEl.checked = power_user.continue_on_send;
     const quickContinueEl = document.getElementById('quick_continue') as HTMLInputElement | null;
     if (quickContinueEl) quickContinueEl.checked = power_user.quick_continue;
-    const quickImpersonateEl = document.getElementById('quick_impersonate') as HTMLInputElement | null;
+    const quickImpersonateEl = document.getElementById(
+        'quick_impersonate',
+    ) as HTMLInputElement | null;
     if (quickImpersonateEl) quickImpersonateEl.checked = power_user.quick_continue;
     const mcEl = document.getElementById('mes_continue');
     if (mcEl) mcEl.style.display = power_user.quick_continue ? '' : 'none';
     const miEl = document.getElementById('mes_impersonate');
     if (miEl) miEl.style.display = power_user.quick_impersonate ? '' : 'none';
-    const gesturesCheckboxEl = document.getElementById('gestures-checkbox') as HTMLInputElement | null;
+    const gesturesCheckboxEl = document.getElementById(
+        'gestures-checkbox',
+    ) as HTMLInputElement | null;
     if (gesturesCheckboxEl) gesturesCheckboxEl.checked = power_user.gestures;
     const autoSwipeEl = document.getElementById('auto_swipe') as HTMLInputElement | null;
     if (autoSwipeEl) autoSwipeEl.checked = power_user.auto_swipe;
-    (document.getElementById('auto_swipe_minimum_length') as HTMLInputElement).value = String(power_user.auto_swipe_minimum_length);
-    (document.getElementById('auto_swipe_blacklist') as HTMLInputElement).value = power_user.auto_swipe_blacklist.join(', ');
-    (document.getElementById('auto_swipe_blacklist_threshold') as HTMLInputElement).value = String(power_user.auto_swipe_blacklist_threshold);
-    (document.getElementById('custom_stopping_strings') as HTMLTextAreaElement).textContent = power_user.custom_stopping_strings;
-    const customStoppingStringsMacroEl = document.getElementById('custom_stopping_strings_macro') as HTMLInputElement | null;
-    if (customStoppingStringsMacroEl) customStoppingStringsMacroEl.checked = power_user.custom_stopping_strings_macro;
-    const fuzzySearchCheckboxEl = document.getElementById('fuzzy_search_checkbox') as HTMLInputElement | null;
+    (document.getElementById('auto_swipe_minimum_length') as HTMLInputElement).value = String(
+        power_user.auto_swipe_minimum_length,
+    );
+    (document.getElementById('auto_swipe_blacklist') as HTMLInputElement).value =
+        power_user.auto_swipe_blacklist.join(', ');
+    (document.getElementById('auto_swipe_blacklist_threshold') as HTMLInputElement).value = String(
+        power_user.auto_swipe_blacklist_threshold,
+    );
+    (document.getElementById('custom_stopping_strings') as HTMLTextAreaElement).textContent =
+        power_user.custom_stopping_strings;
+    const customStoppingStringsMacroEl = document.getElementById(
+        'custom_stopping_strings_macro',
+    ) as HTMLInputElement | null;
+    if (customStoppingStringsMacroEl)
+        customStoppingStringsMacroEl.checked = power_user.custom_stopping_strings_macro;
+    const fuzzySearchCheckboxEl = document.getElementById(
+        'fuzzy_search_checkbox',
+    ) as HTMLInputElement | null;
     if (fuzzySearchCheckboxEl) fuzzySearchCheckboxEl.checked = power_user.fuzzy_search;
-    const personaShowNotificationsEl = document.getElementById('persona_show_notifications') as HTMLInputElement | null;
-    if (personaShowNotificationsEl) personaShowNotificationsEl.checked = power_user.persona_show_notifications;
-    const personaAllowMultiConnectionsEl = document.getElementById('persona_allow_multi_connections') as HTMLInputElement | null;
-    if (personaAllowMultiConnectionsEl) personaAllowMultiConnectionsEl.checked = power_user.persona_allow_multi_connections;
-    const personaAutoLockEl = document.getElementById('persona_auto_lock') as HTMLInputElement | null;
+    const personaShowNotificationsEl = document.getElementById(
+        'persona_show_notifications',
+    ) as HTMLInputElement | null;
+    if (personaShowNotificationsEl)
+        personaShowNotificationsEl.checked = power_user.persona_show_notifications;
+    const personaAllowMultiConnectionsEl = document.getElementById(
+        'persona_allow_multi_connections',
+    ) as HTMLInputElement | null;
+    if (personaAllowMultiConnectionsEl)
+        personaAllowMultiConnectionsEl.checked = power_user.persona_allow_multi_connections;
+    const personaAutoLockEl = document.getElementById(
+        'persona_auto_lock',
+    ) as HTMLInputElement | null;
     if (personaAutoLockEl) personaAutoLockEl.checked = power_user.persona_auto_lock;
     const encodeTagsEl = document.getElementById('encode_tags') as HTMLInputElement | null;
     if (encodeTagsEl) encodeTagsEl.checked = power_user.encode_tags;
-    const experimentalMacroEngineEl = document.getElementById('experimental_macro_engine') as HTMLInputElement | null;
-    if (experimentalMacroEngineEl) experimentalMacroEngineEl.checked = power_user.experimental_macro_engine;
-    (document.getElementById('example_messages_behavior') as HTMLSelectElement).value = getExampleMessagesBehavior();
-    const embOpt = document.querySelector(`#example_messages_behavior option[value="${getExampleMessagesBehavior()}"]`) as HTMLOptionElement | null;
+    const experimentalMacroEngineEl = document.getElementById(
+        'experimental_macro_engine',
+    ) as HTMLInputElement | null;
+    if (experimentalMacroEngineEl)
+        experimentalMacroEngineEl.checked = power_user.experimental_macro_engine;
+    (document.getElementById('example_messages_behavior') as HTMLSelectElement).value =
+        getExampleMessagesBehavior();
+    const embOpt = document.querySelector(
+        `#example_messages_behavior option[value="${getExampleMessagesBehavior()}"]`,
+    ) as HTMLOptionElement | null;
     if (embOpt) embOpt.selected = true;
-    document.getElementById('instruct_derived')?.parentElement?.querySelector('i')?.classList.toggle('toggleEnabled', !!power_user.instruct_derived);
-    document.getElementById('context_derived')?.parentElement?.querySelector('i')?.classList.toggle('toggleEnabled', !!power_user.context_derived);
-    const contextSizeDerivedEl = document.getElementById('context_size_derived') as HTMLInputElement | null;
+    document
+        .getElementById('instruct_derived')
+        ?.parentElement?.querySelector('i')
+        ?.classList.toggle('toggleEnabled', !!power_user.instruct_derived);
+    document
+        .getElementById('context_derived')
+        ?.parentElement?.querySelector('i')
+        ?.classList.toggle('toggleEnabled', !!power_user.context_derived);
+    const contextSizeDerivedEl = document.getElementById(
+        'context_size_derived',
+    ) as HTMLInputElement | null;
     if (contextSizeDerivedEl) contextSizeDerivedEl.checked = !!power_user.context_size_derived;
-    const consoleLogPromptsEl = document.getElementById('console_log_prompts') as HTMLInputElement | null;
+    const consoleLogPromptsEl = document.getElementById(
+        'console_log_prompts',
+    ) as HTMLInputElement | null;
     if (consoleLogPromptsEl) consoleLogPromptsEl.checked = power_user.console_log_prompts;
-    const requestTokenProbabilitiesEl = document.getElementById('request_token_probabilities') as HTMLInputElement | null;
-    if (requestTokenProbabilitiesEl) requestTokenProbabilitiesEl.checked = power_user.request_token_probabilities;
-    const showGroupChatQueueEl = document.getElementById('show_group_chat_queue') as HTMLInputElement | null;
+    const requestTokenProbabilitiesEl = document.getElementById(
+        'request_token_probabilities',
+    ) as HTMLInputElement | null;
+    if (requestTokenProbabilitiesEl)
+        requestTokenProbabilitiesEl.checked = power_user.request_token_probabilities;
+    const showGroupChatQueueEl = document.getElementById(
+        'show_group_chat_queue',
+    ) as HTMLInputElement | null;
     if (showGroupChatQueueEl) showGroupChatQueueEl.checked = power_user.show_group_chat_queue;
-    const autoFixGeneratedMarkdownEl = document.getElementById('auto_fix_generated_markdown') as HTMLInputElement | null;
-    if (autoFixGeneratedMarkdownEl) autoFixGeneratedMarkdownEl.checked = power_user.auto_fix_generated_markdown;
-    const autoScrollChatToBottomEl = document.getElementById('auto_scroll_chat_to_bottom') as HTMLInputElement | null;
-    if (autoScrollChatToBottomEl) autoScrollChatToBottomEl.checked = power_user.auto_scroll_chat_to_bottom;
+    const autoFixGeneratedMarkdownEl = document.getElementById(
+        'auto_fix_generated_markdown',
+    ) as HTMLInputElement | null;
+    if (autoFixGeneratedMarkdownEl)
+        autoFixGeneratedMarkdownEl.checked = power_user.auto_fix_generated_markdown;
+    const autoScrollChatToBottomEl = document.getElementById(
+        'auto_scroll_chat_to_bottom',
+    ) as HTMLInputElement | null;
+    if (autoScrollChatToBottomEl)
+        autoScrollChatToBottomEl.checked = power_user.auto_scroll_chat_to_bottom;
     const bogusFoldersEl = document.getElementById('bogus_folders') as HTMLInputElement | null;
     if (bogusFoldersEl) bogusFoldersEl.checked = power_user.bogus_folders;
-    const zoomedAvatarMagnificationEl = document.getElementById('zoomed_avatar_magnification') as HTMLInputElement | null;
-    if (zoomedAvatarMagnificationEl) zoomedAvatarMagnificationEl.checked = power_user.zoomed_avatar_magnification;
-    const tokOpt = document.querySelector(`#tokenizer option[value="${power_user.tokenizer}"]`) as HTMLOptionElement | null;
+    const zoomedAvatarMagnificationEl = document.getElementById(
+        'zoomed_avatar_magnification',
+    ) as HTMLInputElement | null;
+    if (zoomedAvatarMagnificationEl)
+        zoomedAvatarMagnificationEl.checked = power_user.zoomed_avatar_magnification;
+    const tokOpt = document.querySelector(
+        `#tokenizer option[value="${power_user.tokenizer}"]`,
+    ) as HTMLOptionElement | null;
     if (tokOpt) tokOpt.selected = true;
-    const sendOpt = document.querySelector(`#send_on_enter option[value="${power_user.send_on_enter}"]`) as HTMLOptionElement | null;
+    const sendOpt = document.querySelector(
+        `#send_on_enter option[value="${power_user.send_on_enter}"]`,
+    ) as HTMLOptionElement | null;
     if (sendOpt) sendOpt.selected = true;
-    const confirmMessageDeleteEl = document.getElementById('confirm_message_delete') as HTMLInputElement | null;
-    if (confirmMessageDeleteEl) confirmMessageDeleteEl.checked = power_user.confirm_message_delete !== undefined ? !!power_user.confirm_message_delete : true;
-    const spoilerFreeModeEl = document.getElementById('spoiler_free_mode') as HTMLInputElement | null;
+    const confirmMessageDeleteEl = document.getElementById(
+        'confirm_message_delete',
+    ) as HTMLInputElement | null;
+    if (confirmMessageDeleteEl)
+        confirmMessageDeleteEl.checked =
+            power_user.confirm_message_delete !== undefined
+                ? !!power_user.confirm_message_delete
+                : true;
+    const spoilerFreeModeEl = document.getElementById(
+        'spoiler_free_mode',
+    ) as HTMLInputElement | null;
     if (spoilerFreeModeEl) spoilerFreeModeEl.checked = power_user.spoiler_free_mode;
-    const collapseNewlinesCheckboxEl = document.getElementById('collapse-newlines-checkbox') as HTMLInputElement | null;
-    if (collapseNewlinesCheckboxEl) collapseNewlinesCheckboxEl.checked = power_user.collapse_newlines;
-    const alwaysForceName2CheckboxEl = document.getElementById('always-force-name2-checkbox') as HTMLInputElement | null;
-    if (alwaysForceName2CheckboxEl) alwaysForceName2CheckboxEl.checked = power_user.always_force_name2;
-    const trimSentencesCheckboxEl = document.getElementById('trim_sentences_checkbox') as HTMLInputElement | null;
+    const collapseNewlinesCheckboxEl = document.getElementById(
+        'collapse-newlines-checkbox',
+    ) as HTMLInputElement | null;
+    if (collapseNewlinesCheckboxEl)
+        collapseNewlinesCheckboxEl.checked = power_user.collapse_newlines;
+    const alwaysForceName2CheckboxEl = document.getElementById(
+        'always-force-name2-checkbox',
+    ) as HTMLInputElement | null;
+    if (alwaysForceName2CheckboxEl)
+        alwaysForceName2CheckboxEl.checked = power_user.always_force_name2;
+    const trimSentencesCheckboxEl = document.getElementById(
+        'trim_sentences_checkbox',
+    ) as HTMLInputElement | null;
     if (trimSentencesCheckboxEl) trimSentencesCheckboxEl.checked = power_user.trim_sentences;
-    const disableGroupTrimmingEl = document.getElementById('disable_group_trimming') as HTMLInputElement | null;
+    const disableGroupTrimmingEl = document.getElementById(
+        'disable_group_trimming',
+    ) as HTMLInputElement | null;
     if (disableGroupTrimmingEl) disableGroupTrimmingEl.checked = power_user.disable_group_trimming;
-    (document.getElementById('markdown_escape_strings') as HTMLInputElement).value = power_user.markdown_escape_strings;
+    (document.getElementById('markdown_escape_strings') as HTMLInputElement).value =
+        power_user.markdown_escape_strings;
     const fastUiModeEl = document.getElementById('fast_ui_mode') as HTMLInputElement | null;
     if (fastUiModeEl) fastUiModeEl.checked = power_user.fast_ui_mode;
     const waifuModeEl = document.getElementById('waifuMode') as HTMLInputElement | null;
@@ -1999,134 +2353,301 @@ export async function loadPowerUserSettings(settings: Record<string, unknown>, d
     if (movingUImodeEl) movingUImodeEl.checked = power_user.movingUI;
     const noShadowsmodeEl = document.getElementById('noShadowsmode') as HTMLInputElement | null;
     if (noShadowsmodeEl) noShadowsmodeEl.checked = power_user.noShadows;
-    (document.getElementById('start_reply_with') as HTMLTextAreaElement).textContent = power_user.user_prompt_bias;
-    const chatShowReplyPrefixCheckboxEl = document.getElementById('chat-show-reply-prefix-checkbox') as HTMLInputElement | null;
-    if (chatShowReplyPrefixCheckboxEl) chatShowReplyPrefixCheckboxEl.checked = power_user.show_user_prompt_bias;
-    const autoContinueEnabledEl = document.getElementById('auto_continue_enabled') as HTMLInputElement | null;
+    (document.getElementById('start_reply_with') as HTMLTextAreaElement).textContent =
+        power_user.user_prompt_bias;
+    const chatShowReplyPrefixCheckboxEl = document.getElementById(
+        'chat-show-reply-prefix-checkbox',
+    ) as HTMLInputElement | null;
+    if (chatShowReplyPrefixCheckboxEl)
+        chatShowReplyPrefixCheckboxEl.checked = power_user.show_user_prompt_bias;
+    const autoContinueEnabledEl = document.getElementById(
+        'auto_continue_enabled',
+    ) as HTMLInputElement | null;
     if (autoContinueEnabledEl) autoContinueEnabledEl.checked = power_user.auto_continue.enabled;
-    const autoContinueAllowChatCompletionsEl = document.getElementById('auto_continue_allow_chat_completions') as HTMLInputElement | null;
-    if (autoContinueAllowChatCompletionsEl) autoContinueAllowChatCompletionsEl.checked = power_user.auto_continue.allow_chat_completions;
-    (document.getElementById('auto_continue_target_length') as HTMLInputElement).value = String(power_user.auto_continue.target_length);
-    const playMessageSoundEl = document.getElementById('play_message_sound') as HTMLInputElement | null;
+    const autoContinueAllowChatCompletionsEl = document.getElementById(
+        'auto_continue_allow_chat_completions',
+    ) as HTMLInputElement | null;
+    if (autoContinueAllowChatCompletionsEl)
+        autoContinueAllowChatCompletionsEl.checked =
+            power_user.auto_continue.allow_chat_completions;
+    (document.getElementById('auto_continue_target_length') as HTMLInputElement).value = String(
+        power_user.auto_continue.target_length,
+    );
+    const playMessageSoundEl = document.getElementById(
+        'play_message_sound',
+    ) as HTMLInputElement | null;
     if (playMessageSoundEl) playMessageSoundEl.checked = power_user.play_message_sound;
-    const playSoundUnfocusedEl = document.getElementById('play_sound_unfocused') as HTMLInputElement | null;
+    const playSoundUnfocusedEl = document.getElementById(
+        'play_sound_unfocused',
+    ) as HTMLInputElement | null;
     if (playSoundUnfocusedEl) playSoundUnfocusedEl.checked = power_user.play_sound_unfocused;
-    const neverResizeAvatarsEl = document.getElementById('never_resize_avatars') as HTMLInputElement | null;
+    const neverResizeAvatarsEl = document.getElementById(
+        'never_resize_avatars',
+    ) as HTMLInputElement | null;
     if (neverResizeAvatarsEl) neverResizeAvatarsEl.checked = power_user.never_resize_avatars;
-    const showCardAvatarUrlsEl = document.getElementById('show_card_avatar_urls') as HTMLInputElement | null;
+    const showCardAvatarUrlsEl = document.getElementById(
+        'show_card_avatar_urls',
+    ) as HTMLInputElement | null;
     if (showCardAvatarUrlsEl) showCardAvatarUrlsEl.checked = power_user.show_card_avatar_urls;
-    const autoSaveMsgEditsEl = document.getElementById('auto_save_msg_edits') as HTMLInputElement | null;
+    const autoSaveMsgEditsEl = document.getElementById(
+        'auto_save_msg_edits',
+    ) as HTMLInputElement | null;
     if (autoSaveMsgEditsEl) autoSaveMsgEditsEl.checked = power_user.auto_save_msg_edits;
-    const allowName1DisplayEl = document.getElementById('allow_name1_display') as HTMLInputElement | null;
+    const allowName1DisplayEl = document.getElementById(
+        'allow_name1_display',
+    ) as HTMLInputElement | null;
     if (allowName1DisplayEl) allowName1DisplayEl.checked = power_user.allow_name1_display;
-    const allowName2DisplayEl = document.getElementById('allow_name2_display') as HTMLInputElement | null;
+    const allowName2DisplayEl = document.getElementById(
+        'allow_name2_display',
+    ) as HTMLInputElement | null;
     if (allowName2DisplayEl) allowName2DisplayEl.checked = power_user.allow_name2_display;
     //document.getElementById('removeXML')?.checked = power_user.removeXML;
     const hotswapEnabledEl = document.getElementById('hotswapEnabled') as HTMLInputElement | null;
     if (hotswapEnabledEl) hotswapEnabledEl.checked = power_user.hotswap_enabled;
-    const messageTimerEnabledEl = document.getElementById('messageTimerEnabled') as HTMLInputElement | null;
+    const messageTimerEnabledEl = document.getElementById(
+        'messageTimerEnabled',
+    ) as HTMLInputElement | null;
     if (messageTimerEnabledEl) messageTimerEnabledEl.checked = power_user.timer_enabled;
-    const messageTimestampsEnabledEl = document.getElementById('messageTimestampsEnabled') as HTMLInputElement | null;
-    if (messageTimestampsEnabledEl) messageTimestampsEnabledEl.checked = power_user.timestamps_enabled;
-    const messageModelIconEnabledEl = document.getElementById('messageModelIconEnabled') as HTMLInputElement | null;
-    if (messageModelIconEnabledEl) messageModelIconEnabledEl.checked = power_user.timestamp_model_icon;
-    const mesIDDisplayEnabledEl = document.getElementById('mesIDDisplayEnabled') as HTMLInputElement | null;
+    const messageTimestampsEnabledEl = document.getElementById(
+        'messageTimestampsEnabled',
+    ) as HTMLInputElement | null;
+    if (messageTimestampsEnabledEl)
+        messageTimestampsEnabledEl.checked = power_user.timestamps_enabled;
+    const messageModelIconEnabledEl = document.getElementById(
+        'messageModelIconEnabled',
+    ) as HTMLInputElement | null;
+    if (messageModelIconEnabledEl)
+        messageModelIconEnabledEl.checked = power_user.timestamp_model_icon;
+    const mesIDDisplayEnabledEl = document.getElementById(
+        'mesIDDisplayEnabled',
+    ) as HTMLInputElement | null;
     if (mesIDDisplayEnabledEl) mesIDDisplayEnabledEl.checked = power_user.mesIDDisplay_enabled;
-    const hideChatAvatarsEnabledEl = document.getElementById('hideChatAvatarsEnabled') as HTMLInputElement | null;
-    if (hideChatAvatarsEnabledEl) hideChatAvatarsEnabledEl.checked = power_user.hideChatAvatars_enabled;
-    const preferCharacterPromptEl = document.getElementById('prefer_character_prompt') as HTMLInputElement | null;
-    if (preferCharacterPromptEl) preferCharacterPromptEl.checked = power_user.prefer_character_prompt;
-    const preferCharacterJailbreakEl = document.getElementById('prefer_character_jailbreak') as HTMLInputElement | null;
-    if (preferCharacterJailbreakEl) preferCharacterJailbreakEl.checked = power_user.prefer_character_jailbreak;
-    const enableZenSlidersEl = document.getElementById('enableZenSliders') as HTMLInputElement | null;
+    const hideChatAvatarsEnabledEl = document.getElementById(
+        'hideChatAvatarsEnabled',
+    ) as HTMLInputElement | null;
+    if (hideChatAvatarsEnabledEl)
+        hideChatAvatarsEnabledEl.checked = power_user.hideChatAvatars_enabled;
+    const preferCharacterPromptEl = document.getElementById(
+        'prefer_character_prompt',
+    ) as HTMLInputElement | null;
+    if (preferCharacterPromptEl)
+        preferCharacterPromptEl.checked = power_user.prefer_character_prompt;
+    const preferCharacterJailbreakEl = document.getElementById(
+        'prefer_character_jailbreak',
+    ) as HTMLInputElement | null;
+    if (preferCharacterJailbreakEl)
+        preferCharacterJailbreakEl.checked = power_user.prefer_character_jailbreak;
+    const enableZenSlidersEl = document.getElementById(
+        'enableZenSliders',
+    ) as HTMLInputElement | null;
     if (enableZenSlidersEl) enableZenSlidersEl.checked = power_user.enableZenSliders;
-    (document.getElementById('enableZenSliders') as HTMLInputElement | null)?.dispatchEvent(new Event('input', { bubbles: true }));
+    (document.getElementById('enableZenSliders') as HTMLInputElement | null)?.dispatchEvent(
+        new Event('input', { bubbles: true }),
+    );
     const enableLabModeEl = document.getElementById('enableLabMode') as HTMLInputElement | null;
     if (enableLabModeEl) enableLabModeEl.checked = power_user.enableLabMode;
-    (document.getElementById('enableLabMode') as HTMLInputElement | null)?.dispatchEvent(new Event('input', { bubbles: true }));
-    const avStyle = document.querySelector(`input[name="avatar_style"][value="${power_user.avatar_style}"]`) as HTMLInputElement | null;
+    (document.getElementById('enableLabMode') as HTMLInputElement | null)?.dispatchEvent(
+        new Event('input', { bubbles: true }),
+    );
+    const avStyle = document.querySelector(
+        `input[name="avatar_style"][value="${power_user.avatar_style}"]`,
+    ) as HTMLInputElement | null;
     if (avStyle) avStyle.checked = true;
-    const cdOpt = document.querySelector(`#chat_display option[value="${power_user.chat_display}"]`) as HTMLOptionElement | null;
-    if (cdOpt) { cdOpt.selected = true; cdOpt.dispatchEvent(new Event('change', { bubbles: true })); }
-    const tpOpt2 = document.querySelector(`#toastr_position option[value="${power_user.toastr_position}"]`) as HTMLOptionElement | null;
-    if (tpOpt2) { tpOpt2.selected = true; tpOpt2.dispatchEvent(new Event('change', { bubbles: true })); }
-    (document.getElementById('chat_width_slider') as HTMLInputElement).value = String(power_user.chat_width);
-    (document.getElementById('token_padding') as HTMLInputElement).value = String(power_user.token_padding);
+    const cdOpt = document.querySelector(
+        `#chat_display option[value="${power_user.chat_display}"]`,
+    ) as HTMLOptionElement | null;
+    if (cdOpt) {
+        cdOpt.selected = true;
+        cdOpt.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+    const tpOpt2 = document.querySelector(
+        `#toastr_position option[value="${power_user.toastr_position}"]`,
+    ) as HTMLOptionElement | null;
+    if (tpOpt2) {
+        tpOpt2.selected = true;
+        tpOpt2.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+    (document.getElementById('chat_width_slider') as HTMLInputElement).value = String(
+        power_user.chat_width,
+    );
+    (document.getElementById('token_padding') as HTMLInputElement).value = String(
+        power_user.token_padding,
+    );
     (document.getElementById('aux_field') as HTMLInputElement).value = power_user.aux_field;
-    (document.getElementById('tag_import_setting') as HTMLSelectElement).value = String(power_user.tag_import_setting);
-    (document.getElementById('stscript_autocomplete_state') as HTMLInputElement).value = String(power_user.stscript.autocomplete.state);
-    (document.getElementById('stscript_autocomplete_state') as HTMLInputElement | null)?.dispatchEvent(new Event('input', { bubbles: true }));
-    const stscriptAutocompleteAutoHideEl = document.getElementById('stscript_autocomplete_autoHide') as HTMLInputElement | null;
-    if (stscriptAutocompleteAutoHideEl) stscriptAutocompleteAutoHideEl.checked = power_user.stscript.autocomplete.autoHide ?? false;
-    (document.getElementById('stscript_autocomplete_autoHide') as HTMLInputElement | null)?.dispatchEvent(new Event('input', { bubbles: true }));
-    const stscriptAutocompleteShowInAllMacroFieldsEl = document.getElementById('stscript_autocomplete_showInAllMacroFields') as HTMLInputElement | null;
-    if (stscriptAutocompleteShowInAllMacroFieldsEl) stscriptAutocompleteShowInAllMacroFieldsEl.checked = power_user.stscript.autocomplete.showInAllMacroFields ?? false;
-    (document.getElementById('stscript_autocomplete_showInAllMacroFields') as HTMLInputElement | null)?.dispatchEvent(new Event('input', { bubbles: true }));
-    (document.getElementById('stscript_matching') as HTMLSelectElement).value = String(power_user.stscript.matching ?? 'fuzzy');
-    (document.getElementById('stscript_autocomplete_style') as HTMLSelectElement).value = String(power_user.stscript.autocomplete.style ?? 'theme');
+    (document.getElementById('tag_import_setting') as HTMLSelectElement).value = String(
+        power_user.tag_import_setting,
+    );
+    (document.getElementById('stscript_autocomplete_state') as HTMLInputElement).value = String(
+        power_user.stscript.autocomplete.state,
+    );
+    (
+        document.getElementById('stscript_autocomplete_state') as HTMLInputElement | null
+    )?.dispatchEvent(new Event('input', { bubbles: true }));
+    const stscriptAutocompleteAutoHideEl = document.getElementById(
+        'stscript_autocomplete_autoHide',
+    ) as HTMLInputElement | null;
+    if (stscriptAutocompleteAutoHideEl)
+        stscriptAutocompleteAutoHideEl.checked = power_user.stscript.autocomplete.autoHide ?? false;
+    (
+        document.getElementById('stscript_autocomplete_autoHide') as HTMLInputElement | null
+    )?.dispatchEvent(new Event('input', { bubbles: true }));
+    const stscriptAutocompleteShowInAllMacroFieldsEl = document.getElementById(
+        'stscript_autocomplete_showInAllMacroFields',
+    ) as HTMLInputElement | null;
+    if (stscriptAutocompleteShowInAllMacroFieldsEl)
+        stscriptAutocompleteShowInAllMacroFieldsEl.checked =
+            power_user.stscript.autocomplete.showInAllMacroFields ?? false;
+    (
+        document.getElementById(
+            'stscript_autocomplete_showInAllMacroFields',
+        ) as HTMLInputElement | null
+    )?.dispatchEvent(new Event('input', { bubbles: true }));
+    (document.getElementById('stscript_matching') as HTMLSelectElement).value = String(
+        power_user.stscript.matching ?? 'fuzzy',
+    );
+    (document.getElementById('stscript_autocomplete_style') as HTMLSelectElement).value = String(
+        power_user.stscript.autocomplete.style ?? 'theme',
+    );
     document.body.setAttribute('data-stscript-style', power_user.stscript.autocomplete.style);
-    (document.getElementById('stscript_autocomplete_select') as HTMLSelectElement).value = String(power_user.stscript.autocomplete.select ?? (AUTOCOMPLETE_SELECT_KEY.TAB + AUTOCOMPLETE_SELECT_KEY.ENTER));
-    const stscriptParserFlagStrictEscapingEl = document.getElementById('stscript_parser_flag_strict_escaping') as HTMLInputElement | null;
-    if (stscriptParserFlagStrictEscapingEl) stscriptParserFlagStrictEscapingEl.checked = power_user.stscript.parser.flags[PARSER_FLAG.STRICT_ESCAPING] ?? false;
-    const stscriptParserFlagReplaceGetvarEl = document.getElementById('stscript_parser_flag_replace_getvar') as HTMLInputElement | null;
-    if (stscriptParserFlagReplaceGetvarEl) stscriptParserFlagReplaceGetvarEl.checked = power_user.stscript.parser.flags[PARSER_FLAG.REPLACE_GETVAR] ?? false;
-    const fontScale = power_user.stscript.autocomplete.font.scale ?? defaultStscript.autocomplete.font.scale;
-    (document.getElementById('stscript_autocomplete_font_scale') as HTMLInputElement).value = String(fontScale);
-    (document.getElementById('stscript_autocomplete_font_scale_counter') as HTMLInputElement).value = String(fontScale);
+    (document.getElementById('stscript_autocomplete_select') as HTMLSelectElement).value = String(
+        power_user.stscript.autocomplete.select ??
+            AUTOCOMPLETE_SELECT_KEY.TAB + AUTOCOMPLETE_SELECT_KEY.ENTER,
+    );
+    const stscriptParserFlagStrictEscapingEl = document.getElementById(
+        'stscript_parser_flag_strict_escaping',
+    ) as HTMLInputElement | null;
+    if (stscriptParserFlagStrictEscapingEl)
+        stscriptParserFlagStrictEscapingEl.checked =
+            power_user.stscript.parser.flags[PARSER_FLAG.STRICT_ESCAPING] ?? false;
+    const stscriptParserFlagReplaceGetvarEl = document.getElementById(
+        'stscript_parser_flag_replace_getvar',
+    ) as HTMLInputElement | null;
+    if (stscriptParserFlagReplaceGetvarEl)
+        stscriptParserFlagReplaceGetvarEl.checked =
+            power_user.stscript.parser.flags[PARSER_FLAG.REPLACE_GETVAR] ?? false;
+    const fontScale =
+        power_user.stscript.autocomplete.font.scale ?? defaultStscript.autocomplete.font.scale;
+    (document.getElementById('stscript_autocomplete_font_scale') as HTMLInputElement).value =
+        String(fontScale);
+    (
+        document.getElementById('stscript_autocomplete_font_scale_counter') as HTMLInputElement
+    ).value = String(fontScale);
     document.body.style.setProperty('--ac-font-scale', String(fontScale));
-    (document.getElementById('stscript_autocomplete_width_left') as HTMLInputElement).value = String(power_user.stscript.autocomplete.width.left ?? AUTOCOMPLETE_WIDTH.CHAT);
-    document.querySelector('#stscript_autocomplete_width_left')?.dispatchEvent(new Event('input', { bubbles: true }));
-    (document.getElementById('stscript_autocomplete_width_right') as HTMLInputElement).value = String(power_user.stscript.autocomplete.width.right ?? AUTOCOMPLETE_WIDTH.CHAT);
-    document.querySelector('#stscript_autocomplete_width_right')?.dispatchEvent(new Event('input', { bubbles: true }));
+    (document.getElementById('stscript_autocomplete_width_left') as HTMLInputElement).value =
+        String(power_user.stscript.autocomplete.width.left ?? AUTOCOMPLETE_WIDTH.CHAT);
+    document
+        .querySelector('#stscript_autocomplete_width_left')
+        ?.dispatchEvent(new Event('input', { bubbles: true }));
+    (document.getElementById('stscript_autocomplete_width_right') as HTMLInputElement).value =
+        String(power_user.stscript.autocomplete.width.right ?? AUTOCOMPLETE_WIDTH.CHAT);
+    document
+        .querySelector('#stscript_autocomplete_width_right')
+        ?.dispatchEvent(new Event('input', { bubbles: true }));
 
-    const restoreUserInputEl = document.getElementById('restore_user_input') as HTMLInputElement | null;
+    const restoreUserInputEl = document.getElementById(
+        'restore_user_input',
+    ) as HTMLInputElement | null;
     if (restoreUserInputEl) restoreUserInputEl.checked = power_user.restore_user_input;
-    (document.getElementById('chat_truncation') as HTMLInputElement).value = String(power_user.chat_truncation);
-    (document.getElementById('chat_truncation_counter') as HTMLInputElement).value = String(power_user.chat_truncation);
-    (document.getElementById('streaming_fps') as HTMLInputElement).value = String(power_user.streaming_fps);
-    (document.getElementById('streaming_fps_counter') as HTMLInputElement).value = String(power_user.streaming_fps);
-    const smoothStreamingEl = document.getElementById('smooth_streaming') as HTMLInputElement | null;
+    (document.getElementById('chat_truncation') as HTMLInputElement).value = String(
+        power_user.chat_truncation,
+    );
+    (document.getElementById('chat_truncation_counter') as HTMLInputElement).value = String(
+        power_user.chat_truncation,
+    );
+    (document.getElementById('streaming_fps') as HTMLInputElement).value = String(
+        power_user.streaming_fps,
+    );
+    (document.getElementById('streaming_fps_counter') as HTMLInputElement).value = String(
+        power_user.streaming_fps,
+    );
+    const smoothStreamingEl = document.getElementById(
+        'smooth_streaming',
+    ) as HTMLInputElement | null;
     if (smoothStreamingEl) smoothStreamingEl.checked = power_user.smooth_streaming;
-    const smoothStreamingNoThinkEl = document.getElementById('smooth_streaming_no_think') as HTMLInputElement | null;
-    if (smoothStreamingNoThinkEl) smoothStreamingNoThinkEl.checked = power_user.smooth_streaming_no_think;
-    (document.getElementById('smooth_streaming_speed') as HTMLInputElement).value = String(power_user.smooth_streaming_speed);
+    const smoothStreamingNoThinkEl = document.getElementById(
+        'smooth_streaming_no_think',
+    ) as HTMLInputElement | null;
+    if (smoothStreamingNoThinkEl)
+        smoothStreamingNoThinkEl.checked = power_user.smooth_streaming_no_think;
+    (document.getElementById('smooth_streaming_speed') as HTMLInputElement).value = String(
+        power_user.smooth_streaming_speed,
+    );
     const streamFadeInEl = document.getElementById('stream_fade_in') as HTMLInputElement | null;
     if (streamFadeInEl) streamFadeInEl.checked = power_user.stream_fade_in;
-    const enableCodeExecutionEl = document.getElementById('enable_code_execution') as HTMLInputElement | null;
+    const enableCodeExecutionEl = document.getElementById(
+        'enable_code_execution',
+    ) as HTMLInputElement | null;
     if (enableCodeExecutionEl) enableCodeExecutionEl.checked = power_user.enable_code_execution;
     const autoRunCodeEl = document.getElementById('auto_run_code') as HTMLInputElement | null;
     if (autoRunCodeEl) autoRunCodeEl.checked = power_user.auto_run_code;
-    (document.getElementById('font_scale') as HTMLInputElement).value = String(power_user.font_scale);
-    (document.getElementById('font_scale_counter') as HTMLInputElement).value = String(power_user.font_scale);
-    (document.getElementById('blur_strength') as HTMLInputElement).value = String(power_user.blur_strength);
-    (document.getElementById('blur_strength_counter') as HTMLInputElement).value = String(power_user.blur_strength);
-    (document.getElementById('shadow_width') as HTMLInputElement).value = String(power_user.shadow_width);
-    (document.getElementById('shadow_width_counter') as HTMLInputElement).value = String(power_user.shadow_width);
-    const pickerIds = ['main-text-color-picker', 'italics-color-picker', 'underline-color-picker', 'quote-color-picker',
-        'blur-tint-color-picker', 'chat-tint-color-picker', 'user-mes-blur-tint-color-picker',
-        'bot-mes-blur-tint-color-picker', 'shadow-color-picker', 'border-color-picker'];
-    const pickerValues = [power_user.main_text_color, power_user.italics_text_color, power_user.underline_text_color,
-        power_user.quote_text_color, power_user.blur_tint_color, power_user.chat_tint_color,
-        power_user.user_mes_blur_tint_color, power_user.bot_mes_blur_tint_color, power_user.shadow_color,
-        power_user.border_color];
+    (document.getElementById('font_scale') as HTMLInputElement).value = String(
+        power_user.font_scale,
+    );
+    (document.getElementById('font_scale_counter') as HTMLInputElement).value = String(
+        power_user.font_scale,
+    );
+    (document.getElementById('blur_strength') as HTMLInputElement).value = String(
+        power_user.blur_strength,
+    );
+    (document.getElementById('blur_strength_counter') as HTMLInputElement).value = String(
+        power_user.blur_strength,
+    );
+    (document.getElementById('shadow_width') as HTMLInputElement).value = String(
+        power_user.shadow_width,
+    );
+    (document.getElementById('shadow_width_counter') as HTMLInputElement).value = String(
+        power_user.shadow_width,
+    );
+    const pickerIds = [
+        'main-text-color-picker',
+        'italics-color-picker',
+        'underline-color-picker',
+        'quote-color-picker',
+        'blur-tint-color-picker',
+        'chat-tint-color-picker',
+        'user-mes-blur-tint-color-picker',
+        'bot-mes-blur-tint-color-picker',
+        'shadow-color-picker',
+        'border-color-picker',
+    ];
+    const pickerValues = [
+        power_user.main_text_color,
+        power_user.italics_text_color,
+        power_user.underline_text_color,
+        power_user.quote_text_color,
+        power_user.blur_tint_color,
+        power_user.chat_tint_color,
+        power_user.user_mes_blur_tint_color,
+        power_user.bot_mes_blur_tint_color,
+        power_user.shadow_color,
+        power_user.border_color,
+    ];
     pickerIds.forEach((id, i) => {
         const el = document.getElementById(id);
         if (el && pickerValues[i] !== undefined) el.setAttribute('color', pickerValues[i]!);
     });
     const reducedMotionEl = document.getElementById('reduced_motion') as HTMLInputElement | null;
     if (reducedMotionEl) reducedMotionEl.checked = power_user.reduced_motion;
-    const autoConnectCheckboxEl = document.getElementById('auto-connect-checkbox') as HTMLInputElement | null;
+    const autoConnectCheckboxEl = document.getElementById(
+        'auto-connect-checkbox',
+    ) as HTMLInputElement | null;
     if (autoConnectCheckboxEl) autoConnectCheckboxEl.checked = power_user.auto_connect;
-    const autoLoadChatCheckboxEl = document.getElementById('auto-load-chat-checkbox') as HTMLInputElement | null;
+    const autoLoadChatCheckboxEl = document.getElementById(
+        'auto-load-chat-checkbox',
+    ) as HTMLInputElement | null;
     if (autoLoadChatCheckboxEl) autoLoadChatCheckboxEl.checked = power_user.auto_load_chat;
-    const forbidExternalMediaEl = document.getElementById('forbid_external_media') as HTMLInputElement | null;
+    const forbidExternalMediaEl = document.getElementById(
+        'forbid_external_media',
+    ) as HTMLInputElement | null;
     if (forbidExternalMediaEl) forbidExternalMediaEl.checked = power_user.forbid_external_media;
     const pinStylesEl = document.getElementById('pin_styles') as HTMLInputElement | null;
     if (pinStylesEl) pinStylesEl.checked = power_user.pin_styles;
     const clickToEditEl = document.getElementById('click_to_edit') as HTMLInputElement | null;
     if (clickToEditEl) clickToEditEl.checked = power_user.click_to_edit;
-    (document.getElementById('media_display') as HTMLSelectElement).value = power_user.media_display;
-    (document.getElementById('image_overswipe') as HTMLSelectElement).value = power_user.image_overswipe;
+    (document.getElementById('media_display') as HTMLSelectElement).value =
+        power_user.media_display;
+    (document.getElementById('image_overswipe') as HTMLSelectElement).value =
+        power_user.image_overswipe;
 
     for (const theme of themes) {
         const option = document.createElement('option');
@@ -2144,8 +2665,9 @@ export async function loadPowerUserSettings(settings: Record<string, unknown>, d
         document.getElementById('movingUIPresets')?.appendChild(option);
     }
 
-
-    const sortOpt = document.querySelector(`#character_sort_order option[data-order="${power_user.sort_order}"][data-field="${power_user.sort_field}"]`) as HTMLOptionElement | null;
+    const sortOpt = document.querySelector(
+        `#character_sort_order option[data-order="${power_user.sort_order}"][data-field="${power_user.sort_field}"]`,
+    ) as HTMLOptionElement | null;
     if (sortOpt) sortOpt.selected = true;
     switchReducedMotion();
     switchCompactInputArea();
@@ -2173,10 +2695,13 @@ export async function loadPowerUserSettings(settings: Record<string, unknown>, d
 function toggleMDHotkeyIconDisplay() {
     if (power_user.enable_md_hotkeys) {
         document.querySelectorAll('.mdhotkey_location').forEach(function (el: Element) {
-            (el.parentElement ?? el).insertAdjacentHTML('beforeend', '<i class="fa-brands fa-markdown mdhotkey_icon"></i>');
+            (el.parentElement ?? el).insertAdjacentHTML(
+                'beforeend',
+                '<i class="fa-brands fa-markdown mdhotkey_icon"></i>',
+            );
         });
     } else {
-        document.querySelectorAll('.mdhotkey_icon').forEach(el => el.remove());
+        document.querySelectorAll('.mdhotkey_icon').forEach((el) => el.remove());
     }
 }
 
@@ -2191,19 +2716,19 @@ function loadCharListState() {
  *
  */
 export function loadMovingUIState() {
-    if (!isMobile()
-        && power_user.movingUIState
-        && power_user.movingUI === true) {
+    if (!isMobile() && power_user.movingUIState && power_user.movingUI === true) {
         console.debug('loading movingUI state');
         for (const elmntName of Object.keys(power_user.movingUIState)) {
-                const elmntState = (power_user.movingUIState as Record<string, Record<string, string>>)[elmntName]!;
-                try {
-                    const elmnt = document.getElementById(elmntName);
-                    if (elmnt) {
-                        console.debug(`loading state for ${elmntName}`);
-                        for (const [prop, value] of Object.entries(elmntState)) {
-                            (elmnt as HTMLElement).style.setProperty(prop, value, 'important');
-                        }
+            const elmntState = (power_user.movingUIState as Record<string, Record<string, string>>)[
+                elmntName
+            ]!;
+            try {
+                const elmnt = document.getElementById(elmntName);
+                if (elmnt) {
+                    console.debug(`loading state for ${elmntName}`);
+                    for (const [prop, value] of Object.entries(elmntState)) {
+                        (elmnt as HTMLElement).style.setProperty(prop, value, 'important');
+                    }
                 } else {
                     console.debug(`skipping ${elmntName} because it doesn't exist in the DOM`);
                 }
@@ -2221,7 +2746,9 @@ export function loadMovingUIState() {
  *
  */
 function loadMaxContextUnlocked() {
-    const maxContextUnlocked = document.getElementById('max_context_unlocked') as HTMLInputElement | null;
+    const maxContextUnlocked = document.getElementById(
+        'max_context_unlocked',
+    ) as HTMLInputElement | null;
     if (maxContextUnlocked) {
         maxContextUnlocked.checked = power_user.max_context_unlocked;
         maxContextUnlocked.addEventListener('change', function (this: HTMLInputElement) {
@@ -2273,7 +2800,9 @@ function switchMaxContextSize() {
         }
     }
 
-    const maxAmountGen = power_user.max_context_unlocked ? MAX_RESPONSE_UNLOCKED : MAX_RESPONSE_DEFAULT;
+    const maxAmountGen = power_user.max_context_unlocked
+        ? MAX_RESPONSE_UNLOCKED
+        : MAX_RESPONSE_DEFAULT;
     document.getElementById('amount_gen')?.setAttribute('max', String(maxAmountGen));
     document.getElementById('amount_gen_counter')?.setAttribute('max', String(maxAmountGen));
 
@@ -2292,7 +2821,11 @@ function switchMaxContextSize() {
         ];
         for (const id of zensToRecreate) {
             const z = document.getElementById(`${id}_zenslider`) as HTMLElement | null;
-            if (z) { if ((z as unknown as noUiSliderElement).noUiSlider) (z as unknown as noUiSliderElement).noUiSlider!.destroy(); z.remove(); }
+            if (z) {
+                if ((z as unknown as noUiSliderElement).noUiSlider)
+                    (z as unknown as noUiSliderElement).noUiSlider!.destroy();
+                z.remove();
+            }
             const orig = document.getElementById(id);
             if (orig) CreateZenSliders(orig);
         }
@@ -2349,15 +2882,26 @@ async function loadContextSettings() {
                 return;
             }
 
-            console.warn(`[Story String Validation] Story String is missing a field: ${field}. Adding it at the ${position}.`);
+            console.warn(
+                `[Story String Validation] Story String is missing a field: ${field}. Adding it at the ${position}.`,
+            );
             const fieldTemplate = `{{#if ${field}}}{{${field}}}\n{{/if}}`;
             const firstCurlyPosition = storyString.includes('{{') ? storyString.indexOf('{{') : 0;
-            const lastCurlyPosition = storyString.includes('}}') ? storyString.lastIndexOf('}}') + '}}'.length : storyString.length;
-            const lastTrimPosition = storyString.includes('{{trim}}') ? storyString.lastIndexOf('{{trim}}') : storyString.length;
+            const lastCurlyPosition = storyString.includes('}}')
+                ? storyString.lastIndexOf('}}') + '}}'.length
+                : storyString.length;
+            const lastTrimPosition = storyString.includes('{{trim}}')
+                ? storyString.lastIndexOf('{{trim}}')
+                : storyString.length;
             const endPosition = Math.min(lastTrimPosition, lastCurlyPosition);
-            storyString = position === 'start'
-                ? storyString.substring(0, firstCurlyPosition) + fieldTemplate + storyString.substring(firstCurlyPosition)
-                : storyString.substring(0, endPosition) + fieldTemplate + storyString.substring(endPosition);
+            storyString =
+                position === 'start'
+                    ? storyString.substring(0, firstCurlyPosition) +
+                      fieldTemplate +
+                      storyString.substring(firstCurlyPosition)
+                    : storyString.substring(0, endPosition) +
+                      fieldTemplate +
+                      storyString.substring(endPosition);
         }
 
         autoFixMissingField('anchorBefore', 'start');
@@ -2369,8 +2913,12 @@ async function loadContextSettings() {
     // Migrate story string to add missing fields
     autoFixStoryString(power_user.context as unknown as Record<string, unknown>);
 
-    contextControls.forEach(control => {
-        const element = document.getElementById(control.id) as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement | null;
+    contextControls.forEach((control) => {
+        const element = document.getElementById(control.id) as
+            | HTMLInputElement
+            | HTMLSelectElement
+            | HTMLTextAreaElement
+            | null;
 
         if (control.isGlobalSetting) {
             return;
@@ -2384,27 +2932,34 @@ async function loadContextSettings() {
         if (control.isCheckbox) {
             if (element) (element as HTMLInputElement).checked = ctx[control.property] as boolean;
         } else if (element) {
-            (element as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement).value = String(ctx[control.property] ?? '');
+            (element as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement).value = String(
+                ctx[control.property] ?? '',
+            );
         }
         console.debug(`Setting ${element?.id} to ${ctx[control.property]}`);
 
         if (element) {
-            element.addEventListener('input', async function (this: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement) {
-                let value: string | boolean | number = control.isCheckbox ? !!(this as HTMLInputElement).checked : (this as HTMLInputElement).value;
-                if (typeof control.defaultValue === 'number') {
-                    value = Number(value);
-                }
-                if (control.isGlobalSetting) {
-                    (power_user as Record<string, unknown>)[control.property] = value;
-                } else {
-                    (power_user.context as Record<string, unknown>)[control.property] = value;
-                }
-                console.debug(`Setting ${this.id} to ${value}`);
-                if (!CSS.supports('field-sizing', 'content') && this.matches('textarea')) {
-                    await resetScrollHeight(this);
-                }
-                saveSettingsDebounced();
-            });
+            element.addEventListener(
+                'input',
+                async function (this: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement) {
+                    let value: string | boolean | number = control.isCheckbox
+                        ? !!(this as HTMLInputElement).checked
+                        : (this as HTMLInputElement).value;
+                    if (typeof control.defaultValue === 'number') {
+                        value = Number(value);
+                    }
+                    if (control.isGlobalSetting) {
+                        (power_user as Record<string, unknown>)[control.property] = value;
+                    } else {
+                        (power_user.context as Record<string, unknown>)[control.property] = value;
+                    }
+                    console.debug(`Setting ${this.id} to ${value}`);
+                    if (!CSS.supports('field-sizing', 'content') && this.matches('textarea')) {
+                        await resetScrollHeight(this);
+                    }
+                    saveSettingsDebounced();
+                },
+            );
 
             if (control.trigger) {
                 element.dispatchEvent(new Event('input', { bubbles: true }));
@@ -2421,62 +2976,92 @@ async function loadContextSettings() {
         document.getElementById('context_presets')?.appendChild(option);
     });
 
-    document.getElementById('context_presets')?.addEventListener('change', function (this: HTMLSelectElement) {
-        const name = String((this as HTMLSelectElement).options[(this as HTMLSelectElement).selectedIndex]?.textContent || '');
-        const preset = context_presets.find((x: Record<string, unknown>) => x.name === name) as Record<string, unknown> | undefined;
+    document
+        .getElementById('context_presets')
+        ?.addEventListener('change', function (this: HTMLSelectElement) {
+            const name = String(
+                (this as HTMLSelectElement).options[(this as HTMLSelectElement).selectedIndex]
+                    ?.textContent || '',
+            );
+            const preset = context_presets.find((x: Record<string, unknown>) => x.name === name) as
+                | Record<string, unknown>
+                | undefined;
 
-        if (!preset) {
-            return;
-        }
+            if (!preset) {
+                return;
+            }
 
-        // Migrate story string to add missing fields
-        autoFixStoryString(preset);
+            // Migrate story string to add missing fields
+            autoFixStoryString(preset);
 
-        power_user.context.preset = name;
+            power_user.context.preset = name;
 
-        contextControls.forEach(control => {
-            const presetValue = (preset as Record<string, unknown>)[control.property] ?? control.defaultValue;
+            contextControls.forEach((control) => {
+                const presetValue =
+                    (preset as Record<string, unknown>)[control.property] ?? control.defaultValue;
 
-            if (presetValue !== undefined) {
-                if (control.isGlobalSetting) {
-                    (power_user as Record<string, unknown>)[control.property] = presetValue;
-                } else {
-                    (power_user.context as Record<string, unknown>)[control.property] = presetValue;
+                if (presetValue !== undefined) {
+                    if (control.isGlobalSetting) {
+                        (power_user as Record<string, unknown>)[control.property] = presetValue;
+                    } else {
+                        (power_user.context as Record<string, unknown>)[control.property] =
+                            presetValue;
+                    }
+
+                    const element = document.getElementById(control.id) as
+                        | HTMLInputElement
+                        | HTMLSelectElement
+                        | HTMLTextAreaElement
+                        | null;
+
+                    if (control.isCheckbox) {
+                        if (element)
+                            (element as HTMLInputElement).checked = control.isGlobalSetting
+                                ? ((power_user as Record<string, unknown>)[
+                                      control.property
+                                  ] as boolean)
+                                : ((power_user.context as Record<string, unknown>)[
+                                      control.property
+                                  ] as boolean);
+                        element?.dispatchEvent(new Event('input', { bubbles: true }));
+                    } else {
+                        if (element)
+                            (
+                                element as
+                                    | HTMLInputElement
+                                    | HTMLSelectElement
+                                    | HTMLTextAreaElement
+                            ).value = String(
+                                control.isGlobalSetting
+                                    ? (power_user as Record<string, unknown>)[control.property]
+                                    : ((power_user.context as Record<string, unknown>)[
+                                          control.property
+                                      ] ?? ''),
+                            );
+                        element?.dispatchEvent(new Event('input', { bubbles: true }));
+                    }
                 }
+            });
 
-                const element = document.getElementById(control.id) as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement | null;
-
-                if (control.isCheckbox) {
-                    if (element) (element as HTMLInputElement).checked = control.isGlobalSetting
-                        ? (power_user as Record<string, unknown>)[control.property] as boolean
-                        : (power_user.context as Record<string, unknown>)[control.property] as boolean;
-                    element?.dispatchEvent(new Event('input', { bubbles: true }));
-                } else {
-                    if (element) (element as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement).value = String(control.isGlobalSetting
-                        ? (power_user as Record<string, unknown>)[control.property]
-                        : (power_user.context as Record<string, unknown>)[control.property] ?? '');
-                    element?.dispatchEvent(new Event('input', { bubbles: true }));
+            if (power_user.instruct.bind_to_context) {
+                // Select matching instruct preset
+                for (const instruct_preset of instruct_presets) {
+                    // If instruct preset matches the context template
+                    if ((instruct_preset as Record<string, unknown>).name === name) {
+                        selectInstructPreset(
+                            (instruct_preset as Record<string, unknown>).name as string,
+                            { isAuto: true },
+                        );
+                        break;
+                    }
                 }
             }
+
+            updateBindModelTemplatesState();
+
+            saveSettingsDebounced();
         });
-
-        if (power_user.instruct.bind_to_context) {
-            // Select matching instruct preset
-            for (const instruct_preset of instruct_presets) {
-                // If instruct preset matches the context template
-                if ((instruct_preset as Record<string, unknown>).name === name) {
-                    selectInstructPreset((instruct_preset as Record<string, unknown>).name as string, { isAuto: true });
-                    break;
-                }
-            }
-        }
-
-        updateBindModelTemplatesState();
-
-        saveSettingsDebounced();
-    });
 }
-
 
 /**
  * Common function to perform fuzzy search with optional caching
@@ -2488,7 +3073,13 @@ async function loadContextSettings() {
  * @param {Object.<string, { resultMap: Map<string, any> }>} [fuzzySearchCaches] - Optional fuzzy search caches
  * @returns {import('fuse.js').FuseResult<T>[]} Results as items with their score
  */
-export function performFuzzySearch(type: string, data: unknown[], keys: { name: string; weight: number; getFn?: (...args: unknown[]) => string }[], searchValue: string, fuzzySearchCaches: Record<string, { resultMap: Map<string, unknown> }> | null = null) {
+export function performFuzzySearch(
+    type: string,
+    data: unknown[],
+    keys: { name: string; weight: number; getFn?: (...args: unknown[]) => string }[],
+    searchValue: string,
+    fuzzySearchCaches: Record<string, { resultMap: Map<string, unknown> }> | null = null,
+) {
     // Check cache if provided
     if (fuzzySearchCaches) {
         const cache = fuzzySearchCaches[type]!;
@@ -2520,10 +3111,24 @@ export function performFuzzySearch(type: string, data: unknown[], keys: { name: 
  * @param {Object.<string, { resultMap: Map<string, any> }>} [fuzzySearchCaches] - Optional fuzzy search caches
  * @returns {import('fuse.js').FuseResult<any>[]} Results as items with their score
  */
-export function fuzzySearchCharacters(searchValue: string, fuzzySearchCaches: Record<string, { resultMap: Map<string, unknown> }> | null = null) {
+export function fuzzySearchCharacters(
+    searchValue: string,
+    fuzzySearchCaches: Record<string, { resultMap: Map<string, unknown> }> | null = null,
+) {
     const keys = [
         { name: 'data.name', weight: 20 },
-        { name: '#tags', weight: 10, getFn: (character: Record<string, unknown>) => (getTagsList(String((character as Record<string, unknown>).avatar ?? '')) as unknown as { name: string }[]).map((x: { name: string }) => x.name).join('||') },
+        {
+            name: '#tags',
+            weight: 10,
+            getFn: (character: Record<string, unknown>) =>
+                (
+                    getTagsList(
+                        String((character as Record<string, unknown>).avatar ?? ''),
+                    ) as unknown as { name: string }[]
+                )
+                    .map((x: { name: string }) => x.name)
+                    .join('||'),
+        },
         { name: 'data.description', weight: 3 },
         { name: 'data.mes_example', weight: 3 },
         { name: 'data.scenario', weight: 2 },
@@ -2535,7 +3140,13 @@ export function fuzzySearchCharacters(searchValue: string, fuzzySearchCaches: Re
         { name: 'data.alternate_greetings', weight: 1 },
     ];
 
-    return performFuzzySearch(fuzzySearchCategories.characters, characters, keys as { name: string; weight: number; getFn?: (...args: unknown[]) => string }[], searchValue, fuzzySearchCaches);
+    return performFuzzySearch(
+        fuzzySearchCategories.characters,
+        characters,
+        keys as { name: string; weight: number; getFn?: (...args: unknown[]) => string }[],
+        searchValue,
+        fuzzySearchCaches,
+    );
 }
 
 /**
@@ -2545,7 +3156,11 @@ export function fuzzySearchCharacters(searchValue: string, fuzzySearchCaches: Re
  * @param {Object.<string, { resultMap: Map<string, any> }>} [fuzzySearchCaches] - Optional fuzzy search caches
  * @returns {import('fuse.js').FuseResult<any>[]} Results as items with their score
  */
-export function fuzzySearchWorldInfo(data: unknown[], searchValue: string, fuzzySearchCaches: Record<string, { resultMap: Map<string, unknown> }> | null = null) {
+export function fuzzySearchWorldInfo(
+    data: unknown[],
+    searchValue: string,
+    fuzzySearchCaches: Record<string, { resultMap: Map<string, unknown> }> | null = null,
+) {
     const keys = [
         { name: 'key', weight: 20 },
         { name: 'group', weight: 15 },
@@ -2556,7 +3171,13 @@ export function fuzzySearchWorldInfo(data: unknown[], searchValue: string, fuzzy
         { name: 'automationId', weight: 1 },
     ];
 
-    return performFuzzySearch(fuzzySearchCategories.worldInfo, data, keys as { name: string; weight: number; getFn?: (...args: unknown[]) => string }[], searchValue, fuzzySearchCaches);
+    return performFuzzySearch(
+        fuzzySearchCategories.worldInfo,
+        data,
+        keys as { name: string; weight: number; getFn?: (...args: unknown[]) => string }[],
+        searchValue,
+        fuzzySearchCaches,
+    );
 }
 
 /**
@@ -2566,11 +3187,17 @@ export function fuzzySearchWorldInfo(data: unknown[], searchValue: string, fuzzy
  * @param {Object.<string, { resultMap: Map<string, any> }>} [fuzzySearchCaches] - Optional fuzzy search caches
  * @returns {import('fuse.js').FuseResult<any>[]} Results as items with their score
  */
-export function fuzzySearchPersonas(data: string[], searchValue: string, fuzzySearchCaches: Record<string, { resultMap: Map<string, unknown> }> | null = null) {
+export function fuzzySearchPersonas(
+    data: string[],
+    searchValue: string,
+    fuzzySearchCaches: Record<string, { resultMap: Map<string, unknown> }> | null = null,
+) {
     const mappedData = data.map((x: string) => ({
         key: x,
         name: (power_user.personas as Record<string, string>)[x] ?? '',
-        description: ((power_user.persona_descriptions as Record<string, Record<string, unknown>>)[x]?.description as string) ?? '',
+        description:
+            ((power_user.persona_descriptions as Record<string, Record<string, unknown>>)[x]
+                ?.description as string) ?? '',
     }));
 
     const keys = [
@@ -2578,7 +3205,13 @@ export function fuzzySearchPersonas(data: string[], searchValue: string, fuzzySe
         { name: 'description', weight: 3 },
     ];
 
-    return performFuzzySearch(fuzzySearchCategories.personas, mappedData, keys as { name: string; weight: number; getFn?: (...args: unknown[]) => string }[], searchValue, fuzzySearchCaches);
+    return performFuzzySearch(
+        fuzzySearchCategories.personas,
+        mappedData,
+        keys as { name: string; weight: number; getFn?: (...args: unknown[]) => string }[],
+        searchValue,
+        fuzzySearchCaches,
+    );
 }
 
 /**
@@ -2587,12 +3220,19 @@ export function fuzzySearchPersonas(data: string[], searchValue: string, fuzzySe
  * @param {Object.<string, { resultMap: Map<string, any> }>} [fuzzySearchCaches] - Optional fuzzy search caches
  * @returns {import('fuse.js').FuseResult<any>[]} Results as items with their score
  */
-export function fuzzySearchTags(searchValue: string, fuzzySearchCaches: Record<string, { resultMap: Map<string, unknown> }> | null = null) {
-    const keys = [
-        { name: 'name', weight: 1 },
-    ];
+export function fuzzySearchTags(
+    searchValue: string,
+    fuzzySearchCaches: Record<string, { resultMap: Map<string, unknown> }> | null = null,
+) {
+    const keys = [{ name: 'name', weight: 1 }];
 
-    return performFuzzySearch(fuzzySearchCategories.tags, tags, keys as { name: string; weight: number; getFn?: (...args: unknown[]) => string }[], searchValue, fuzzySearchCaches);
+    return performFuzzySearch(
+        fuzzySearchCategories.tags,
+        tags,
+        keys as { name: string; weight: number; getFn?: (...args: unknown[]) => string }[],
+        searchValue,
+        fuzzySearchCaches,
+    );
 }
 
 /**
@@ -2601,15 +3241,31 @@ export function fuzzySearchTags(searchValue: string, fuzzySearchCaches: Record<s
  * @param {Object.<string, { resultMap: Map<string, any> }>} [fuzzySearchCaches] - Optional fuzzy search caches
  * @returns {import('fuse.js').FuseResult<any>[]} Results as items with their score
  */
-export function fuzzySearchGroups(searchValue: string, fuzzySearchCaches: Record<string, { resultMap: Map<string, unknown> }> | null = null) {
+export function fuzzySearchGroups(
+    searchValue: string,
+    fuzzySearchCaches: Record<string, { resultMap: Map<string, unknown> }> | null = null,
+) {
     const keys = [
         { name: 'name', weight: 20 },
         { name: 'members', weight: 15 },
-        { name: '#tags', weight: 10, getFn: (group: Record<string, unknown>) => (getTagsList(String(group.id ?? '')) as unknown as { name: string }[]).map((x: { name: string }) => x.name).join('||') },
+        {
+            name: '#tags',
+            weight: 10,
+            getFn: (group: Record<string, unknown>) =>
+                (getTagsList(String(group.id ?? '')) as unknown as { name: string }[])
+                    .map((x: { name: string }) => x.name)
+                    .join('||'),
+        },
         { name: 'id', weight: 1 },
     ];
 
-    return performFuzzySearch(fuzzySearchCategories.groups, groups, keys as { name: string; weight: number; getFn?: (...args: unknown[]) => string }[], searchValue, fuzzySearchCaches);
+    return performFuzzySearch(
+        fuzzySearchCategories.groups,
+        groups,
+        keys as { name: string; weight: number; getFn?: (...args: unknown[]) => string }[],
+        searchValue,
+        fuzzySearchCaches,
+    );
 }
 
 /**
@@ -2621,12 +3277,24 @@ export function fuzzySearchGroups(searchValue: string, fuzzySearchCaches: Record
  * @param {ContextSettings} [options.customContextSettings] Custom context settings.
  * @returns {string} The rendered story string.
  */
-export function renderStoryString(params: Record<string, unknown>, { customStoryString = null, customInstructSettings = null, customContextSettings = null }: { customStoryString?: string | null; customInstructSettings?: Record<string, unknown> | null; customContextSettings?: Record<string, unknown> | null } = {}) {
+export function renderStoryString(
+    params: Record<string, unknown>,
+    {
+        customStoryString = null,
+        customInstructSettings = null,
+        customContextSettings = null,
+    }: {
+        customStoryString?: string | null;
+        customInstructSettings?: Record<string, unknown> | null;
+        customContextSettings?: Record<string, unknown> | null;
+    } = {},
+) {
     try {
         const instructSettings = structuredClone(customInstructSettings ?? power_user.instruct);
         const contextSettings = structuredClone(customContextSettings ?? power_user.context);
         const storyString = customStoryString ?? (contextSettings.story_string as string);
-        const storyStringPosition = (contextSettings.story_string_position as number) ?? extension_prompt_types.IN_PROMPT;
+        const storyStringPosition =
+            (contextSettings.story_string_position as number) ?? extension_prompt_types.IN_PROMPT;
 
         // Validate and log possible warnings/errors
         validateStoryString(storyString, params);
@@ -2638,14 +3306,24 @@ export function renderStoryString(params: Record<string, unknown>, { customStory
         let output = compiledTemplate(params);
 
         // substitute {{macro}} params that are not defined in the story string
-        output = substituteParams(output, { user: params.user as string, char: params.char as string } as unknown as string);
+        output = substituteParams(output, {
+            user: params.user as string,
+            char: params.char as string,
+        } as unknown as string);
 
         // remove leading newlines
         output = output.replace(/^\n+/, '');
 
         // add a newline to the end of the story string if it doesn't have one
-        if (output.length > 0 && !output.endsWith('\n') && storyStringPosition !== extension_prompt_types.IN_CHAT) {
-            if (!instructSettings.enabled || (instructSettings.wrap && !instructSettings.story_string_suffix)) {
+        if (
+            output.length > 0 &&
+            !output.endsWith('\n') &&
+            storyStringPosition !== extension_prompt_types.IN_CHAT
+        ) {
+            if (
+                !instructSettings.enabled ||
+                (instructSettings.wrap && !instructSettings.story_string_suffix)
+            ) {
                 output += '\n';
             }
         }
@@ -2664,7 +3342,10 @@ export function renderStoryString(params: Record<string, unknown>, { customStory
  * @param {object} params - The story string parameters
  */
 function validateStoryString(storyString: string, params: Record<string, unknown>) {
-    const cache: { hashCache: Record<string, { fieldsWarned: Record<string, boolean> }> } = JSON.parse(accountStorage.getItem(storage_keys.storyStringValidationCache) ?? 'null') ?? { hashCache: {} };
+    const cache: { hashCache: Record<string, { fieldsWarned: Record<string, boolean> }> } =
+        JSON.parse(accountStorage.getItem(storage_keys.storyStringValidationCache) ?? 'null') ?? {
+            hashCache: {},
+        };
 
     const hash = getStringHash(storyString);
 
@@ -2682,14 +3363,19 @@ function validateStoryString(storyString: string, params: Record<string, unknown
      * @param fallbackLegacyField
      */
     function validateMissingField(field: string, fallbackLegacyField: string | null = null) {
-        const contains = storyString.includes(`{{${field}}}`) || (!!fallbackLegacyField && storyString.includes(`{{${fallbackLegacyField}}}`));
+        const contains =
+            storyString.includes(`{{${field}}}`) ||
+            (!!fallbackLegacyField && storyString.includes(`{{${fallbackLegacyField}}}`));
         if (!contains && params[field]) {
             const wasLogged = currentCache.fieldsWarned[field];
             if (!wasLogged) {
                 fieldsToWarn.push(field);
                 currentCache.fieldsWarned[field] = true;
             }
-            console.warn(`The story string does not contain {{${field}}}, but it would contain content:\n`, params[field]);
+            console.warn(
+                `The story string does not contain {{${field}}}, but it would contain content:\n`,
+                params[field],
+            );
         }
     }
 
@@ -2702,15 +3388,18 @@ function validateStoryString(storyString: string, params: Record<string, unknown
     validateMissingField('wiAfter', 'loreAfter');
 
     if (fieldsToWarn.length > 0) {
-        const fieldsList = fieldsToWarn.map(field => `{{${field}}}`).join(', ');
-        notyf.warning(`The story string does not contain the following fields, but they would contain content: ${fieldsList}`, 'Story String Validation');
+        const fieldsList = fieldsToWarn.map((field) => `{{${field}}}`).join(', ');
+        notyf.warning(
+            `The story string does not contain the following fields, but they would contain content: ${fieldsList}`,
+            'Story String Validation',
+        );
     }
 
     accountStorage.setItem(storage_keys.storyStringValidationCache, JSON.stringify(cache));
 }
 
-
-const sortFunc = (a: Record<string, unknown>, b: Record<string, unknown>) => power_user.sort_order == 'asc' ? compareFunc(a, b) : compareFunc(b, a);
+const sortFunc = (a: Record<string, unknown>, b: Record<string, unknown>) =>
+    power_user.sort_order == 'asc' ? compareFunc(a, b) : compareFunc(b, a);
 const compareFunc = (first: Record<string, unknown>, second: Record<string, unknown>) => {
     const a = first[power_user.sort_field];
     const b = second[power_user.sort_field];
@@ -2721,12 +3410,12 @@ const compareFunc = (first: Record<string, unknown>, second: Record<string, unkn
 
     switch (power_user.sort_rule) {
         case 'boolean':
-            if (a === true || a === 'true') return 1;  // Prioritize 'true' or true
+            if (a === true || a === 'true') return 1; // Prioritize 'true' or true
             if (b === true || b === 'true') return -1; // Prioritize 'true' or true
-            if (a && !b) return -1;        // Move truthy values to the end
-            if (!a && b) return 1;         // Move falsy values to the beginning
-            if (a === b) return 0;         // Sort equal values normally
-            return (a as number) < (b as number) ? -1 : 1;         // Sort non-boolean values normally
+            if (a && !b) return -1; // Move truthy values to the end
+            if (!a && b) return 1; // Move falsy values to the beginning
+            if (a === b) return 0; // Sort equal values normally
+            return (a as number) < (b as number) ? -1 : 1; // Sort non-boolean values normally
         default:
             return typeof a == 'string'
                 ? (a as string).localeCompare(b as string)
@@ -2740,13 +3429,26 @@ const compareFunc = (first: Record<string, unknown>, second: Record<string, unkn
  * @param {boolean} forceSearch Whether to force search sorting
  * @param {import('./filters.js').FilterHelper} [filterHelper] Filter helper to use
  */
-export function sortEntitiesList(entities: { type?: string; id?: string; item?: Record<string, unknown> }[], forceSearch: boolean, filterHelper: { getScore: (type: string, id: string | number) => number | undefined } | null = null) {
+export function sortEntitiesList(
+    entities: { type?: string; id?: string; item?: Record<string, unknown> }[],
+    forceSearch: boolean,
+    filterHelper: {
+        getScore: (type: string, id: string | number) => number | undefined;
+    } | null = null,
+) {
     filterHelper = filterHelper ?? entitiesFilter;
     if (power_user.sort_field == undefined || entities.length === 0) {
         return;
     }
 
-    const isSearch = forceSearch || document.querySelector('#character_sort_order option[data-field="search"]') ? (document.querySelector('#character_sort_order option[data-field="search"]') as HTMLOptionElement)?.selected : false;
+    const isSearch =
+        forceSearch || document.querySelector('#character_sort_order option[data-field="search"]')
+            ? (
+                  document.querySelector(
+                      '#character_sort_order option[data-field="search"]',
+                  ) as HTMLOptionElement
+              )?.selected
+            : false;
 
     if (!isSearch && power_user.sort_order === 'random') {
         shuffle(entities);
@@ -2809,7 +3511,7 @@ async function deleteTheme() {
         return;
     }
 
-    const themeIndex = themes.findIndex(x => x.name == themeName);
+    const themeIndex = themes.findIndex((x) => x.name == themeName);
 
     if (themeIndex !== -1) {
         themes.splice(themeIndex, 1);
@@ -2854,7 +3556,10 @@ async function importTheme(file: File | undefined) {
         throw new Error('Theme with that name already exists');
     }
 
-    if (typeof (parsed as Record<string, unknown>).custom_css === 'string' && ((parsed as Record<string, unknown>).custom_css as string).includes('@import')) {
+    if (
+        typeof (parsed as Record<string, unknown>).custom_css === 'string' &&
+        ((parsed as Record<string, unknown>).custom_css as string).includes('@import')
+    ) {
         const template = document.createElement('div');
         template.innerHTML = await renderTemplateAsync('themeImportWarning');
         const confirm = await callGenericPopup(template, POPUP_TYPE.CONFIRM);
@@ -2881,11 +3586,18 @@ async function importTheme(file: File | undefined) {
  * @param themeArg
  * @returns {Promise<object>} A promise that resolves when the theme is saved.
  */
-async function saveTheme(name: string | undefined = undefined, themeArg?: Theme): Promise<Theme | undefined> {
+async function saveTheme(
+    name: string | undefined = undefined,
+    themeArg?: Theme,
+): Promise<Theme | undefined> {
     let theme = themeArg;
     let themeName: string;
     if (typeof name !== 'string') {
-        const newName = await callGenericPopup('Enter a theme preset name:', POPUP_TYPE.INPUT, power_user.theme);
+        const newName = await callGenericPopup(
+            'Enter a theme preset name:',
+            POPUP_TYPE.INPUT,
+            power_user.theme,
+        );
 
         if (!newName) {
             return undefined;
@@ -2909,12 +3621,15 @@ async function saveTheme(name: string | undefined = undefined, themeArg?: Theme)
     });
 
     if (!response.ok) {
-        notyf.error('Check the server connection and reload the page to prevent data loss.', 'Theme could not be saved');
+        notyf.error(
+            'Check the server connection and reload the page to prevent data loss.',
+            'Theme could not be saved',
+        );
         console.error('Theme could not be saved', response);
         throw new Error('Theme could not be saved');
     }
 
-    const themeIndex = themes.findIndex(x => x.name == themeName);
+    const themeIndex = themes.findIndex((x) => x.name == themeName);
 
     if (themeIndex == -1) {
         themes.push(theme!);
@@ -2925,7 +3640,9 @@ async function saveTheme(name: string | undefined = undefined, themeArg?: Theme)
         document.getElementById('themes')?.appendChild(option);
     } else {
         themes[themeIndex] = theme!;
-        const themeOpt = document.querySelector(`#themes option[value="${themeName}"]`) as HTMLOptionElement | null;
+        const themeOpt = document.querySelector(
+            `#themes option[value="${themeName}"]`,
+        ) as HTMLOptionElement | null;
         if (themeOpt) themeOpt.selected = true;
     }
 
@@ -3003,7 +3720,10 @@ function getNewTheme(parsed: Record<string, unknown>) {
  *
  */
 async function saveMovingUI() {
-    const popupResult = await callGenericPopup('Enter a name for the MovingUI Preset:', POPUP_TYPE.INPUT);
+    const popupResult = await callGenericPopup(
+        'Enter a name for the MovingUI Preset:',
+        POPUP_TYPE.INPUT,
+    );
 
     if (!popupResult) {
         return;
@@ -3024,7 +3744,9 @@ async function saveMovingUI() {
     });
 
     if (response.ok) {
-        const movingUIPresetIndex = movingUIPresets.findIndex((x: MovingUIPreset) => x.name == name);
+        const movingUIPresetIndex = movingUIPresets.findIndex(
+            (x: MovingUIPreset) => x.name == name,
+        );
 
         if (movingUIPresetIndex == -1) {
             movingUIPresets.push(movingUIPreset);
@@ -3035,7 +3757,9 @@ async function saveMovingUI() {
             document.getElementById('movingUIPresets')?.appendChild(option);
         } else {
             movingUIPresets[movingUIPresetIndex] = movingUIPreset;
-            const muiOpt = document.querySelector(`#movingUIPresets option[value="${name}"]`) as HTMLOptionElement | null;
+            const muiOpt = document.querySelector(
+                `#movingUIPresets option[value="${name}"]`,
+            ) as HTMLOptionElement | null;
             if (muiOpt) muiOpt.selected = true;
         }
 
@@ -3086,8 +3810,13 @@ async function resetMovablePanels(type: string) {
     /**
      * @type {HTMLElement[]} Generic panels that don't have a known ID
      */
-    const draggedElements = Array.from(document.querySelectorAll('[data-dragged]')) as HTMLElement[];
-    const allDraggable = (panelIds.map(id => document.getElementById(id)).concat(draggedElements)).filter(onlyUnique) as HTMLElement[];
+    const draggedElements = Array.from(
+        document.querySelectorAll('[data-dragged]'),
+    ) as HTMLElement[];
+    const allDraggable = panelIds
+        .map((id) => document.getElementById(id))
+        .concat(draggedElements)
+        .filter(onlyUnique) as HTMLElement[];
 
     const panelStyles: string[] = ['top', 'left', 'right', 'bottom', 'height', 'width', 'margin'];
     allDraggable.forEach((panel) => {
@@ -3112,7 +3841,9 @@ async function resetMovablePanels(type: string) {
         });
     }
 
-    document.querySelectorAll('[data-dragged="true"]').forEach(el => el.removeAttribute('data-dragged'));
+    document
+        .querySelectorAll('[data-dragged="true"]')
+        .forEach((el) => el.removeAttribute('data-dragged'));
     await delay(50);
 
     power_user.movingUIState = {};
@@ -3120,7 +3851,9 @@ async function resetMovablePanels(type: string) {
     //if user manually resets panels, deselect the current preset
     if (type !== 'quiet' && type !== 'resize') {
         power_user.movingUIPreset = 'Default';
-        const defOpt = document.querySelector('#movingUIPresets option[value="Default"]') as HTMLOptionElement | null;
+        const defOpt = document.querySelector(
+            '#movingUIPresets option[value="Default"]',
+        ) as HTMLOptionElement | null;
         if (defOpt) defOpt.selected = true;
     }
 
@@ -3128,7 +3861,7 @@ async function resetMovablePanels(type: string) {
     await eventSource.emit(event_types.MOVABLE_PANELS_RESET);
 
     eventSource.once(event_types.SETTINGS_UPDATED, () => {
-        document.querySelectorAll('.resizing').forEach(el => el.classList.remove('resizing'));
+        document.querySelectorAll('.resizing').forEach((el) => el.classList.remove('resizing'));
         //if happening as part of preset application, do it quietly.
         if (type === 'quiet') {
             return;
@@ -3207,7 +3940,13 @@ export function generatedTextFiltered(text: string) {
             }
         }
         if (power_user.auto_swipe_blacklist.length && power_user.auto_swipe_blacklist_threshold) {
-            if (containsBlacklistedWords(text, power_user.auto_swipe_blacklist, power_user.auto_swipe_blacklist_threshold)) {
+            if (
+                containsBlacklistedWords(
+                    text,
+                    power_user.auto_swipe_blacklist,
+                    power_user.auto_swipe_blacklist_threshold,
+                )
+            ) {
                 console.log('Generated text has blacklisted words');
                 return true;
             }
@@ -3242,7 +3981,9 @@ export function getCustomStoppingStrings(limit = undefined) {
             }
 
             // Make sure all the elements are strings and non-empty.
-            let strings: string[] = parsed.filter((s: unknown) => typeof s === 'string' && (s as string).length > 0);
+            let strings: string[] = parsed.filter(
+                (s: unknown) => typeof s === 'string' && (s as string).length > 0,
+            );
 
             // Substitute params if necessary
             if (power_user.custom_stopping_strings_macro) {
@@ -3292,28 +4033,34 @@ function registerSettingsPanelHandlers() {
     };
 
     const h = (id: string) => document.getElementById(id);
-    const guardEl = (id: string): HTMLElement | null => { const el = h(id); return el && guard(el) ? el : null; };
+    const guardEl = (id: string): HTMLElement | null => {
+        const el = h(id);
+        return el && guard(el) ? el : null;
+    };
 
     // Collapse newlines
     const collapseEl = guardEl('collapse-newlines-checkbox');
-    if (collapseEl) collapseEl.addEventListener('change', function () {
-        power_user.collapse_newlines = !!(this instanceof HTMLInputElement && this.checked);
-        saveSettingsDebounced();
-    });
+    if (collapseEl)
+        collapseEl.addEventListener('change', function () {
+            power_user.collapse_newlines = !!(this instanceof HTMLInputElement && this.checked);
+            saveSettingsDebounced();
+        });
 
     // Trim sentences
     const trimEl = guardEl('trim_sentences_checkbox');
-    if (trimEl) trimEl.addEventListener('change', function () {
-        power_user.trim_sentences = !!(this instanceof HTMLInputElement && this.checked);
-        saveSettingsDebounced();
-    });
+    if (trimEl)
+        trimEl.addEventListener('change', function () {
+            power_user.trim_sentences = !!(this instanceof HTMLInputElement && this.checked);
+            saveSettingsDebounced();
+        });
 
     // Single line
     const singleEl = guardEl('single_line');
-    if (singleEl) singleEl.addEventListener('input', function () {
-        power_user.single_line = !!(this instanceof HTMLInputElement && this.checked);
-        saveSettingsDebounced();
-    });
+    if (singleEl)
+        singleEl.addEventListener('input', function () {
+            power_user.single_line = !!(this instanceof HTMLInputElement && this.checked);
+            saveSettingsDebounced();
+        });
 
     // Context derived
     const ctxDerivedEl = guardEl('context_derived');
@@ -3323,7 +4070,9 @@ function registerSettingsPanelHandlers() {
             saveSettingsDebounced();
         });
         ctxDerivedEl.addEventListener('change', function () {
-            this.parentElement?.querySelector('i')?.classList.toggle('toggleEnabled', !!power_user.context_derived);
+            this.parentElement
+                ?.querySelector('i')
+                ?.classList.toggle('toggleEnabled', !!power_user.context_derived);
         });
     }
 
@@ -3335,7 +4084,9 @@ function registerSettingsPanelHandlers() {
             saveSettingsDebounced();
         });
         instDerivedEl.addEventListener('change', function () {
-            this.parentElement?.querySelector('i')?.classList.toggle('toggleEnabled', !!power_user.instruct_derived);
+            this.parentElement
+                ?.querySelector('i')
+                ?.classList.toggle('toggleEnabled', !!power_user.instruct_derived);
         });
     }
 
@@ -3354,10 +4105,13 @@ function registerSettingsPanelHandlers() {
 
     // Context story string position
     const ctxStoryPosEl = guardEl('context_story_string_position');
-    if (ctxStoryPosEl) ctxStoryPosEl.addEventListener('input', function () {
-        const value = Number((this instanceof HTMLInputElement && this.value) || 0);
-        document.getElementById('context_story_string_inject_settings')?.toggleAttribute('hidden', value !== extension_prompt_types.IN_CHAT);
-    });
+    if (ctxStoryPosEl)
+        ctxStoryPosEl.addEventListener('input', function () {
+            const value = Number((this instanceof HTMLInputElement && this.value) || 0);
+            document
+                .getElementById('context_story_string_inject_settings')
+                ?.toggleAttribute('hidden', value !== extension_prompt_types.IN_CHAT);
+        });
 
     // Bind model templates
     const bindEl = guardEl('bind_model_templates');
@@ -3371,103 +4125,133 @@ function registerSettingsPanelHandlers() {
 
     // Always force name2
     const forceName2El = guardEl('always-force-name2-checkbox');
-    if (forceName2El) forceName2El.addEventListener('change', function () {
-        power_user.always_force_name2 = !!(this instanceof HTMLInputElement && this.checked);
-        saveSettingsDebounced();
-    });
+    if (forceName2El)
+        forceName2El.addEventListener('change', function () {
+            power_user.always_force_name2 = !!(this instanceof HTMLInputElement && this.checked);
+            saveSettingsDebounced();
+        });
 
     // Markdown escape strings
     const mdEscapeEl = guardEl('markdown_escape_strings');
-    if (mdEscapeEl) mdEscapeEl.addEventListener('input', function () {
-        power_user.markdown_escape_strings = String((this instanceof HTMLInputElement && this.value) || '');
-        saveSettingsDebounced();
-        reloadMarkdownProcessor();
-    });
+    if (mdEscapeEl)
+        mdEscapeEl.addEventListener('input', function () {
+            power_user.markdown_escape_strings = String(
+                (this instanceof HTMLInputElement && this.value) || '',
+            );
+            saveSettingsDebounced();
+            reloadMarkdownProcessor();
+        });
 
     // Start reply with
     const startReplyEl = guardEl('start_reply_with');
-    if (startReplyEl) startReplyEl.addEventListener('input', function () {
-        power_user.user_prompt_bias = String((this instanceof HTMLInputElement && this.value) || '');
-        saveSettingsDebounced();
-    });
+    if (startReplyEl)
+        startReplyEl.addEventListener('input', function () {
+            power_user.user_prompt_bias = String(
+                (this instanceof HTMLInputElement && this.value) || '',
+            );
+            saveSettingsDebounced();
+        });
 
     // Chat show reply prefix
     const showPrefixEl = guardEl('chat-show-reply-prefix-checkbox');
-    if (showPrefixEl) showPrefixEl.addEventListener('change', function () {
-        power_user.show_user_prompt_bias = !!(this instanceof HTMLInputElement && this.checked);
-        reloadCurrentChat();
-        saveSettingsDebounced();
-    });
+    if (showPrefixEl)
+        showPrefixEl.addEventListener('change', function () {
+            power_user.show_user_prompt_bias = !!(this instanceof HTMLInputElement && this.checked);
+            reloadCurrentChat();
+            saveSettingsDebounced();
+        });
 
     // Auto continue
     const autoContEl = guardEl('auto_continue_enabled');
-    if (autoContEl) autoContEl.addEventListener('change', function () {
-        power_user.auto_continue.enabled = this instanceof HTMLInputElement && this.checked;
-        saveSettingsDebounced();
-    });
+    if (autoContEl)
+        autoContEl.addEventListener('change', function () {
+            power_user.auto_continue.enabled = this instanceof HTMLInputElement && this.checked;
+            saveSettingsDebounced();
+        });
     const autoContAllowEl = guardEl('auto_continue_allow_chat_completions');
-    if (autoContAllowEl) autoContAllowEl.addEventListener('change', function () {
-        power_user.auto_continue.allow_chat_completions = !!(this instanceof HTMLInputElement && this.checked);
-        saveSettingsDebounced();
-    });
+    if (autoContAllowEl)
+        autoContAllowEl.addEventListener('change', function () {
+            power_user.auto_continue.allow_chat_completions = !!(
+                this instanceof HTMLInputElement && this.checked
+            );
+            saveSettingsDebounced();
+        });
     const autoContTargetEl = guardEl('auto_continue_target_length');
-    if (autoContTargetEl) autoContTargetEl.addEventListener('input', function () {
-        power_user.auto_continue.target_length = Number((this instanceof HTMLInputElement && this.value) || 0);
-        saveSettingsDebounced();
-    });
+    if (autoContTargetEl)
+        autoContTargetEl.addEventListener('input', function () {
+            power_user.auto_continue.target_length = Number(
+                (this instanceof HTMLInputElement && this.value) || 0,
+            );
+            saveSettingsDebounced();
+        });
 
     // Example messages behavior
     const exampleBehaviorEl = guardEl('example_messages_behavior');
-    if (exampleBehaviorEl) exampleBehaviorEl.addEventListener('change', function () {
-        const selectedOption = String((this instanceof HTMLInputElement && this.value) || '');
-        switch (selectedOption) {
-            case 'normal': power_user.pin_examples = false; power_user.strip_examples = false; break;
-            case 'keep':   power_user.pin_examples = true;  power_user.strip_examples = false; break;
-            case 'strip':  power_user.pin_examples = false; power_user.strip_examples = true;  break;
-        }
-        saveSettingsDebounced();
-    });
+    if (exampleBehaviorEl)
+        exampleBehaviorEl.addEventListener('change', function () {
+            const selectedOption = String((this instanceof HTMLInputElement && this.value) || '');
+            switch (selectedOption) {
+                case 'normal':
+                    power_user.pin_examples = false;
+                    power_user.strip_examples = false;
+                    break;
+                case 'keep':
+                    power_user.pin_examples = true;
+                    power_user.strip_examples = false;
+                    break;
+                case 'strip':
+                    power_user.pin_examples = false;
+                    power_user.strip_examples = true;
+                    break;
+            }
+            saveSettingsDebounced();
+        });
 
     // Fast UI mode
     const fastUiEl = guardEl('fast_ui_mode');
-    if (fastUiEl) fastUiEl.addEventListener('change', function () {
-        power_user.fast_ui_mode = this instanceof HTMLInputElement && this.checked;
-        switchUiMode();
-        saveSettingsDebounced();
-    });
+    if (fastUiEl)
+        fastUiEl.addEventListener('change', function () {
+            power_user.fast_ui_mode = this instanceof HTMLInputElement && this.checked;
+            switchUiMode();
+            saveSettingsDebounced();
+        });
 
     // Waifu mode
     const waifuEl = guardEl('waifuMode');
-    if (waifuEl) waifuEl.addEventListener('change', () => {
-        const wfEl = h('waifuMode') as HTMLInputElement | null;
-        power_user.waifuMode = !!(wfEl?.checked);
-        switchWaifuMode();
-        saveSettingsDebounced();
-    });
+    if (waifuEl)
+        waifuEl.addEventListener('change', () => {
+            const wfEl = h('waifuMode') as HTMLInputElement | null;
+            power_user.waifuMode = !!wfEl?.checked;
+            switchWaifuMode();
+            saveSettingsDebounced();
+        });
 
     // Custom CSS
     const cssEl = guardEl('customCSS') as HTMLTextAreaElement | null;
-    if (cssEl) cssEl.addEventListener('input', () => {
-        power_user.custom_css = cssEl.value;
-        saveSettingsDebounced();
-        applyCustomCSS();
-    });
+    if (cssEl)
+        cssEl.addEventListener('input', () => {
+            power_user.custom_css = cssEl.value;
+            saveSettingsDebounced();
+            applyCustomCSS();
+        });
 
     // Moving UI mode
     const muiEl = guardEl('movingUImode');
-    if (muiEl) muiEl.addEventListener('change', function () {
-        power_user.movingUI = this instanceof HTMLInputElement && this.checked;
-        switchMovingUI();
-        saveSettingsDebounced();
-    });
+    if (muiEl)
+        muiEl.addEventListener('change', function () {
+            power_user.movingUI = this instanceof HTMLInputElement && this.checked;
+            switchMovingUI();
+            saveSettingsDebounced();
+        });
 
     // No shadows (no blur)
     const nsEl = guardEl('noShadowsmode');
-    if (nsEl) nsEl.addEventListener('change', function () {
-        power_user.noShadows = this instanceof HTMLInputElement && this.checked;
-        applyNoShadows();
-        saveSettingsDebounced();
-    });
+    if (nsEl)
+        nsEl.addEventListener('change', function () {
+            power_user.noShadows = this instanceof HTMLInputElement && this.checked;
+            applyNoShadows();
+            saveSettingsDebounced();
+        });
 
     // Moving UI reset
     const muiResetEl = guardEl('movingUIreset');
@@ -3475,108 +4259,128 @@ function registerSettingsPanelHandlers() {
 
     // Avatar style
     const avatarStyleEl = guardEl('avatar_style');
-    if (avatarStyleEl) avatarStyleEl.addEventListener('change', function () {
-        power_user.avatar_style = Number((this instanceof HTMLInputElement && this.value) || 0);
-        applyAvatarStyle();
-        saveSettingsDebounced();
-    });
+    if (avatarStyleEl)
+        avatarStyleEl.addEventListener('change', function () {
+            power_user.avatar_style = Number((this instanceof HTMLInputElement && this.value) || 0);
+            applyAvatarStyle();
+            saveSettingsDebounced();
+        });
 
     // Chat display
     const chatDisplayEl = guardEl('chat_display');
-    if (chatDisplayEl) chatDisplayEl.addEventListener('change', function () {
-        power_user.chat_display = Number((this instanceof HTMLInputElement && this.value) || 0);
-        applyChatDisplay();
-        saveSettingsDebounced();
-    });
+    if (chatDisplayEl)
+        chatDisplayEl.addEventListener('change', function () {
+            power_user.chat_display = Number((this instanceof HTMLInputElement && this.value) || 0);
+            applyChatDisplay();
+            saveSettingsDebounced();
+        });
 
     // Toastr position
     const toastrEl = guardEl('toastr_position');
-    if (toastrEl) toastrEl.addEventListener('change', function () {
-        power_user.toastr_position = String((this instanceof HTMLInputElement && this.value) || '');
-        applyToastrPosition();
-        saveSettingsDebounced();
-    });
+    if (toastrEl)
+        toastrEl.addEventListener('change', function () {
+            power_user.toastr_position = String(
+                (this instanceof HTMLInputElement && this.value) || '',
+            );
+            applyToastrPosition();
+            saveSettingsDebounced();
+        });
 
     // Chat width slider
     const chatWidthEl = guardEl('chat_width_slider');
-    if (chatWidthEl) chatWidthEl.addEventListener('input', function (e: Event) {
-        const applyMode = (e as unknown as Record<string, boolean>).forced ? 'forced' : 'normal';
-        power_user.chat_width = Number((this instanceof HTMLInputElement && this.value) || 0);
-        applyChatWidth(applyMode);
-        saveSettingsDebounced();
-        setHotswapsDebounced();
-    });
+    if (chatWidthEl)
+        chatWidthEl.addEventListener('input', function (e: Event) {
+            const applyMode = (e as unknown as Record<string, boolean>).forced
+                ? 'forced'
+                : 'normal';
+            power_user.chat_width = Number((this instanceof HTMLInputElement && this.value) || 0);
+            applyChatWidth(applyMode);
+            saveSettingsDebounced();
+            setHotswapsDebounced();
+        });
 
     // Chat truncation
     const chatTruncEl = guardEl('chat_truncation');
-    if (chatTruncEl) chatTruncEl.addEventListener('input', function () {
-        const ctEl = h('chat_truncation') as HTMLInputElement | null;
-        power_user.chat_truncation = Number(ctEl?.value || 0);
-        const counter = h('chat_truncation_counter') as HTMLInputElement | null;
-        if (counter) counter.value = String(power_user.chat_truncation);
-        saveSettingsDebounced();
-    });
+    if (chatTruncEl)
+        chatTruncEl.addEventListener('input', function () {
+            const ctEl = h('chat_truncation') as HTMLInputElement | null;
+            power_user.chat_truncation = Number(ctEl?.value || 0);
+            const counter = h('chat_truncation_counter') as HTMLInputElement | null;
+            if (counter) counter.value = String(power_user.chat_truncation);
+            saveSettingsDebounced();
+        });
 
     // Streaming FPS
     const fpsEl = guardEl('streaming_fps');
-    if (fpsEl) fpsEl.addEventListener('input', function () {
-        const sfEl = h('streaming_fps') as HTMLInputElement | null;
-        power_user.streaming_fps = Number(sfEl?.value || 0);
-        const counter = h('streaming_fps_counter') as HTMLInputElement | null;
-        if (counter) counter.value = String(power_user.streaming_fps);
-        saveSettingsDebounced();
-    });
+    if (fpsEl)
+        fpsEl.addEventListener('input', function () {
+            const sfEl = h('streaming_fps') as HTMLInputElement | null;
+            power_user.streaming_fps = Number(sfEl?.value || 0);
+            const counter = h('streaming_fps_counter') as HTMLInputElement | null;
+            if (counter) counter.value = String(power_user.streaming_fps);
+            saveSettingsDebounced();
+        });
 
     // Smooth streaming
     const smoothEl = guardEl('smooth_streaming');
-    if (smoothEl) smoothEl.addEventListener('input', function () {
-        power_user.smooth_streaming = !!(this instanceof HTMLInputElement && this.checked);
-        saveSettingsDebounced();
-    });
+    if (smoothEl)
+        smoothEl.addEventListener('input', function () {
+            power_user.smooth_streaming = !!(this instanceof HTMLInputElement && this.checked);
+            saveSettingsDebounced();
+        });
 
     // Smooth streaming no think
     const smoothNoThinkEl = guardEl('smooth_streaming_no_think');
-    if (smoothNoThinkEl) smoothNoThinkEl.addEventListener('input', function () {
-        power_user.smooth_streaming_no_think = !!(this instanceof HTMLInputElement && this.checked);
-        saveSettingsDebounced();
-    });
+    if (smoothNoThinkEl)
+        smoothNoThinkEl.addEventListener('input', function () {
+            power_user.smooth_streaming_no_think = !!(
+                this instanceof HTMLInputElement && this.checked
+            );
+            saveSettingsDebounced();
+        });
 
     // Smooth streaming speed
     const smoothSpeedEl = guardEl('smooth_streaming_speed');
-    if (smoothSpeedEl) smoothSpeedEl.addEventListener('input', function () {
-        const sssEl = h('smooth_streaming_speed') as HTMLInputElement | null;
-        power_user.smooth_streaming_speed = Number(sssEl?.value || 0);
-        saveSettingsDebounced();
-    });
+    if (smoothSpeedEl)
+        smoothSpeedEl.addEventListener('input', function () {
+            const sssEl = h('smooth_streaming_speed') as HTMLInputElement | null;
+            power_user.smooth_streaming_speed = Number(sssEl?.value || 0);
+            saveSettingsDebounced();
+        });
 
     // Stream fade in
     const fadeInEl = guardEl('stream_fade_in');
-    if (fadeInEl) fadeInEl.addEventListener('input', function () {
-        power_user.stream_fade_in = !!(this instanceof HTMLInputElement && this.checked);
-    });
+    if (fadeInEl)
+        fadeInEl.addEventListener('input', function () {
+            power_user.stream_fade_in = !!(this instanceof HTMLInputElement && this.checked);
+        });
     const enableCodeExecutionEl = guardEl('enable_code_execution') as HTMLInputElement | null;
-    if (enableCodeExecutionEl) enableCodeExecutionEl.addEventListener('change', async function (this: HTMLElement) {
-        power_user.enable_code_execution = !!(this instanceof HTMLInputElement && this.checked);
-        saveSettingsDebounced();
-        // Dynamically update code-runner buttons without page reload
-        const codeRunner = await import('../scripts/code-runner.js');
-        if (power_user.enable_code_execution) {
-            codeRunner.addExecuteButtonToCodeBlocks();
-        } else {
-            codeRunner.removeExecuteButtons();
-        }
-    });
+    if (enableCodeExecutionEl)
+        enableCodeExecutionEl.addEventListener('change', async function (this: HTMLElement) {
+            power_user.enable_code_execution = !!(this instanceof HTMLInputElement && this.checked);
+            saveSettingsDebounced();
+            // Dynamically update code-runner buttons without page reload
+            const codeRunner = await import('../scripts/code-runner.js');
+            if (power_user.enable_code_execution) {
+                codeRunner.addExecuteButtonToCodeBlocks();
+            } else {
+                codeRunner.removeExecuteButtons();
+            }
+        });
     const autoRunCodeEl = guardEl('auto_run_code') as HTMLInputElement | null;
-    if (autoRunCodeEl) autoRunCodeEl.addEventListener('change', function (this: HTMLElement) {
-        power_user.auto_run_code = !!(this instanceof HTMLInputElement && this.checked);
-        saveSettingsDebounced();
-    });
+    if (autoRunCodeEl)
+        autoRunCodeEl.addEventListener('change', function (this: HTMLElement) {
+            power_user.auto_run_code = !!(this instanceof HTMLInputElement && this.checked);
+            saveSettingsDebounced();
+        });
 
     // Font scale
     const fontScaleEl = document.querySelector('input[name="font_scale"]') as HTMLElement | null;
     if (fontScaleEl && guard(fontScaleEl)) {
         fontScaleEl.addEventListener('input', async function (this: HTMLInputElement, e: Event) {
-            const applyMode = (e as unknown as Record<string, boolean>).forced ? 'forced' : 'normal';
+            const applyMode = (e as unknown as Record<string, boolean>).forced
+                ? 'forced'
+                : 'normal';
             power_user.font_scale = Number(this.value || 0);
             const counter = h('font_scale_counter');
             if (counter instanceof HTMLInputElement) counter.value = String(power_user.font_scale);
@@ -3591,7 +4395,8 @@ function registerSettingsPanelHandlers() {
         blurEl.addEventListener('input', async function (this: HTMLInputElement) {
             power_user.blur_strength = Number(this.value || 0);
             const counter = h('blur_strength_counter');
-            if (counter instanceof HTMLInputElement) counter.value = String(power_user.blur_strength);
+            if (counter instanceof HTMLInputElement)
+                counter.value = String(power_user.blur_strength);
             applyBlurStrength();
             saveSettingsDebounced();
         });
@@ -3603,7 +4408,8 @@ function registerSettingsPanelHandlers() {
         shadowEl.addEventListener('input', async function (this: HTMLInputElement) {
             power_user.shadow_width = Number(this.value || 0);
             const counter = h('shadow_width_counter');
-            if (counter instanceof HTMLInputElement) counter.value = String(power_user.shadow_width);
+            if (counter instanceof HTMLInputElement)
+                counter.value = String(power_user.shadow_width);
             applyShadowWidth();
             saveSettingsDebounced();
         });
@@ -3612,11 +4418,14 @@ function registerSettingsPanelHandlers() {
     // Color pickers
     const cp = (id: string, key: string, themeType: string) => {
         const el = guardEl(id);
-        if (el) el.addEventListener('change', (evt: Event) => {
-            (power_user as Record<string, unknown>)[key] = (evt as unknown as { detail: { rgba: string } }).detail.rgba;
-            applyThemeColor(themeType);
-            saveSettingsDebounced();
-        });
+        if (el)
+            el.addEventListener('change', (evt: Event) => {
+                (power_user as Record<string, unknown>)[key] = (
+                    evt as unknown as { detail: { rgba: string } }
+                ).detail.rgba;
+                applyThemeColor(themeType);
+                saveSettingsDebounced();
+            });
     };
     cp('main-text-color-picker', 'main_text_color', 'main');
     cp('italics-color-picker', 'italics_text_color', 'italics');
@@ -3631,37 +4440,43 @@ function registerSettingsPanelHandlers() {
 
     // Reduced motion
     const rmEl = guardEl('reduced_motion');
-    if (rmEl) rmEl.addEventListener('input', function () {
-        power_user.reduced_motion = !!(this instanceof HTMLInputElement && this.checked);
-        switchReducedMotion();
-        saveSettingsDebounced();
-    });
+    if (rmEl)
+        rmEl.addEventListener('input', function () {
+            power_user.reduced_motion = !!(this instanceof HTMLInputElement && this.checked);
+            switchReducedMotion();
+            saveSettingsDebounced();
+        });
 
     // Auto-connect to last server
     const autoConnectEl = guardEl('auto-connect-checkbox');
-    if (autoConnectEl) autoConnectEl.addEventListener('input', function () {
-        power_user.auto_connect = !!(this instanceof HTMLInputElement && this.checked);
-        saveSettingsDebounced();
-    });
+    if (autoConnectEl)
+        autoConnectEl.addEventListener('input', function () {
+            power_user.auto_connect = !!(this instanceof HTMLInputElement && this.checked);
+            saveSettingsDebounced();
+        });
 
     // Theme selector
     const themesEl = guardEl('themes');
-    if (themesEl) themesEl.addEventListener('change', function () {
-        const themeSelected = String((this instanceof HTMLInputElement && this.value) || '');
-        power_user.theme = themeSelected;
-        applyTheme(themeSelected);
-        saveSettingsDebounced();
-    });
+    if (themesEl)
+        themesEl.addEventListener('change', function () {
+            const themeSelected = String((this instanceof HTMLInputElement && this.value) || '');
+            power_user.theme = themeSelected;
+            applyTheme(themeSelected);
+            saveSettingsDebounced();
+        });
 
     // Moving UI presets
     const muiPresetsEl = guardEl('movingUIPresets');
-    if (muiPresetsEl) muiPresetsEl.addEventListener('change', async function () {
-        console.log('saw MUI preset change');
-        const movingUIPresetSelected = String((this instanceof HTMLInputElement && this.value) || '');
-        power_user.movingUIPreset = movingUIPresetSelected;
-        applyMovingUIPreset(movingUIPresetSelected);
-        saveSettingsDebounced();
-    });
+    if (muiPresetsEl)
+        muiPresetsEl.addEventListener('change', async function () {
+            console.log('saw MUI preset change');
+            const movingUIPresetSelected = String(
+                (this instanceof HTMLInputElement && this.value) || '',
+            );
+            power_user.movingUIPreset = movingUIPresetSelected;
+            applyMovingUIPreset(movingUIPresetSelected);
+            saveSettingsDebounced();
+        });
 
     // UI preset buttons
     const uiSaveEl = guardEl('ui-preset-save-button');
@@ -3677,725 +4492,855 @@ function registerSettingsPanelHandlers() {
 
     // Never resize avatars
     const neverResizeEl = guardEl('never_resize_avatars');
-    if (neverResizeEl) neverResizeEl.addEventListener('input', function () {
-        power_user.never_resize_avatars = !!(this instanceof HTMLInputElement && this.checked);
-        saveSettingsDebounced();
-    });
+    if (neverResizeEl)
+        neverResizeEl.addEventListener('input', function () {
+            power_user.never_resize_avatars = !!(this instanceof HTMLInputElement && this.checked);
+            saveSettingsDebounced();
+        });
 
     // Show card avatar URLs
     const showAvatarUrlsEl = guardEl('show_card_avatar_urls');
-    if (showAvatarUrlsEl) showAvatarUrlsEl.addEventListener('input', function () {
-        power_user.show_card_avatar_urls = !!(this instanceof HTMLInputElement && this.checked);
-        printCharactersDebounced();
-        saveSettingsDebounced();
-    });
+    if (showAvatarUrlsEl)
+        showAvatarUrlsEl.addEventListener('input', function () {
+            power_user.show_card_avatar_urls = !!(this instanceof HTMLInputElement && this.checked);
+            printCharactersDebounced();
+            saveSettingsDebounced();
+        });
 
     // Play message sound
     const playSoundEl = guardEl('play_message_sound');
-    if (playSoundEl) playSoundEl.addEventListener('input', function () {
-        power_user.play_message_sound = !!(this instanceof HTMLInputElement && this.checked);
-        saveSettingsDebounced();
-    });
+    if (playSoundEl)
+        playSoundEl.addEventListener('input', function () {
+            power_user.play_message_sound = !!(this instanceof HTMLInputElement && this.checked);
+            saveSettingsDebounced();
+        });
 
     // Play sound unfocused
     const playSoundUnfocusedEl = guardEl('play_sound_unfocused');
-    if (playSoundUnfocusedEl) playSoundUnfocusedEl.addEventListener('input', function () {
-        power_user.play_sound_unfocused = !!(this instanceof HTMLInputElement && this.checked);
-        saveSettingsDebounced();
-    });
+    if (playSoundUnfocusedEl)
+        playSoundUnfocusedEl.addEventListener('input', function () {
+            power_user.play_sound_unfocused = !!(this instanceof HTMLInputElement && this.checked);
+            saveSettingsDebounced();
+        });
 
     // Auto-save message edits
     const autoSaveEditsEl = guardEl('auto_save_msg_edits');
-    if (autoSaveEditsEl) autoSaveEditsEl.addEventListener('input', function () {
-        power_user.auto_save_msg_edits = !!(this instanceof HTMLInputElement && this.checked);
-        saveSettingsDebounced();
-    });
+    if (autoSaveEditsEl)
+        autoSaveEditsEl.addEventListener('input', function () {
+            power_user.auto_save_msg_edits = !!(this instanceof HTMLInputElement && this.checked);
+            saveSettingsDebounced();
+        });
 
     // Character sort order
     const sortOrderEl = guardEl('character_sort_order');
-    if (sortOrderEl) sortOrderEl.addEventListener('change', function () {
-        if (this instanceof HTMLSelectElement) {
-            const selectedOption = this.options[this.selectedIndex];
-            if (!selectedOption) return;
-            const field = String(selectedOption.dataset.field ?? '');
-            if (field !== 'search') {
-                power_user.sort_field = field;
-                power_user.sort_order = selectedOption.dataset.order ?? '';
-                power_user.sort_rule = selectedOption.dataset.rule ?? '';
+    if (sortOrderEl)
+        sortOrderEl.addEventListener('change', function () {
+            if (this instanceof HTMLSelectElement) {
+                const selectedOption = this.options[this.selectedIndex];
+                if (!selectedOption) return;
+                const field = String(selectedOption.dataset.field ?? '');
+                if (field !== 'search') {
+                    power_user.sort_field = field;
+                    power_user.sort_order = selectedOption.dataset.order ?? '';
+                    power_user.sort_rule = selectedOption.dataset.rule ?? '';
+                }
             }
-        }
-        printCharactersDebounced();
-        saveSettingsDebounced();
-    });
+            printCharactersDebounced();
+            saveSettingsDebounced();
+        });
 
     // Gestures checkbox
     const gesturesEl = guardEl('gestures-checkbox');
-    if (gesturesEl) gesturesEl.addEventListener('change', function () {
-        const gEl = h('gestures-checkbox') as HTMLInputElement | null;
-        power_user.gestures = !!(gEl?.checked);
-        saveSettingsDebounced();
-    });
+    if (gesturesEl)
+        gesturesEl.addEventListener('change', function () {
+            const gEl = h('gestures-checkbox') as HTMLInputElement | null;
+            power_user.gestures = !!gEl?.checked;
+            saveSettingsDebounced();
+        });
 
     // Auto swipe
     const autoSwipeEl = guardEl('auto_swipe');
-    if (autoSwipeEl) autoSwipeEl.addEventListener('input', function () {
-        power_user.auto_swipe = !!(this instanceof HTMLInputElement && this.checked);
-        saveSettingsDebounced();
-    });
+    if (autoSwipeEl)
+        autoSwipeEl.addEventListener('input', function () {
+            power_user.auto_swipe = !!(this instanceof HTMLInputElement && this.checked);
+            saveSettingsDebounced();
+        });
 
     // Auto swipe blacklist
     const autoSwipeBlacklistEl = guardEl('auto_swipe_blacklist');
-    if (autoSwipeBlacklistEl) autoSwipeBlacklistEl.addEventListener('input', function () {
-        power_user.auto_swipe_blacklist = String((this instanceof HTMLInputElement && this.value) || '')
-            .split(',')
-            .map(str => str.trim())
-            .filter(str => str);
-        saveSettingsDebounced();
-    });
+    if (autoSwipeBlacklistEl)
+        autoSwipeBlacklistEl.addEventListener('input', function () {
+            power_user.auto_swipe_blacklist = String(
+                (this instanceof HTMLInputElement && this.value) || '',
+            )
+                .split(',')
+                .map((str) => str.trim())
+                .filter((str) => str);
+            saveSettingsDebounced();
+        });
 
     // Auto swipe minimum length
     const autoSwipeMinLenEl = guardEl('auto_swipe_minimum_length');
-    if (autoSwipeMinLenEl) autoSwipeMinLenEl.addEventListener('input', function () {
-        const number = Number((this instanceof HTMLInputElement && this.value) || 0);
-        if (!isNaN(number)) {
-            power_user.auto_swipe_minimum_length = number;
-            saveSettingsDebounced();
-        }
-    });
+    if (autoSwipeMinLenEl)
+        autoSwipeMinLenEl.addEventListener('input', function () {
+            const number = Number((this instanceof HTMLInputElement && this.value) || 0);
+            if (!isNaN(number)) {
+                power_user.auto_swipe_minimum_length = number;
+                saveSettingsDebounced();
+            }
+        });
 
     // Auto swipe blacklist threshold
     const autoSwipeBlacklistThreshEl = guardEl('auto_swipe_blacklist_threshold');
-    if (autoSwipeBlacklistThreshEl) autoSwipeBlacklistThreshEl.addEventListener('input', function () {
-        const number = Number((this instanceof HTMLInputElement && this.value) || 0);
-        if (!isNaN(number)) {
-            power_user.auto_swipe_blacklist_threshold = number;
-            saveSettingsDebounced();
-        }
-    });
+    if (autoSwipeBlacklistThreshEl)
+        autoSwipeBlacklistThreshEl.addEventListener('input', function () {
+            const number = Number((this instanceof HTMLInputElement && this.value) || 0);
+            if (!isNaN(number)) {
+                power_user.auto_swipe_blacklist_threshold = number;
+                saveSettingsDebounced();
+            }
+        });
 
     // Auto-fix generated markdown
     const autoFixMdEl = guardEl('auto_fix_generated_markdown');
-    if (autoFixMdEl) autoFixMdEl.addEventListener('input', function () {
-        power_user.auto_fix_generated_markdown = !!(this instanceof HTMLInputElement && this.checked);
-        reloadCurrentChat();
-        saveSettingsDebounced();
-    });
+    if (autoFixMdEl)
+        autoFixMdEl.addEventListener('input', function () {
+            power_user.auto_fix_generated_markdown = !!(
+                this instanceof HTMLInputElement && this.checked
+            );
+            reloadCurrentChat();
+            saveSettingsDebounced();
+        });
 
     // Console log prompts
     const consoleLogEl = guardEl('console_log_prompts');
-    if (consoleLogEl) consoleLogEl.addEventListener('input', function () {
-        power_user.console_log_prompts = !!(this instanceof HTMLInputElement && this.checked);
-        saveSettingsDebounced();
-    });
+    if (consoleLogEl)
+        consoleLogEl.addEventListener('input', function () {
+            power_user.console_log_prompts = !!(this instanceof HTMLInputElement && this.checked);
+            saveSettingsDebounced();
+        });
 
     // Request token probabilities
     const reqTokenProbsEl = guardEl('request_token_probabilities');
-    if (reqTokenProbsEl) reqTokenProbsEl.addEventListener('input', function () {
-        power_user.request_token_probabilities = !!(this instanceof HTMLInputElement && this.checked);
-        saveSettingsDebounced();
-    });
+    if (reqTokenProbsEl)
+        reqTokenProbsEl.addEventListener('input', function () {
+            power_user.request_token_probabilities = !!(
+                this instanceof HTMLInputElement && this.checked
+            );
+            saveSettingsDebounced();
+        });
 
     // Show group chat queue
     const showGroupQueueEl = guardEl('show_group_chat_queue');
-    if (showGroupQueueEl) showGroupQueueEl.addEventListener('input', function () {
-        power_user.show_group_chat_queue = !!(this instanceof HTMLInputElement && this.checked);
-        saveSettingsDebounced();
-    });
+    if (showGroupQueueEl)
+        showGroupQueueEl.addEventListener('input', function () {
+            power_user.show_group_chat_queue = !!(this instanceof HTMLInputElement && this.checked);
+            saveSettingsDebounced();
+        });
 
     // Auto-scroll chat to bottom
     const autoScrollEl = guardEl('auto_scroll_chat_to_bottom');
-    if (autoScrollEl) autoScrollEl.addEventListener('input', function () {
-        power_user.auto_scroll_chat_to_bottom = !!(this instanceof HTMLInputElement && this.checked);
-        saveSettingsDebounced();
-    });
+    if (autoScrollEl)
+        autoScrollEl.addEventListener('input', function () {
+            power_user.auto_scroll_chat_to_bottom = !!(
+                this instanceof HTMLInputElement && this.checked
+            );
+            saveSettingsDebounced();
+        });
 
     // Tokenizer
     const tokenizerEl = guardEl('tokenizer');
-    if (tokenizerEl) tokenizerEl.addEventListener('change', function () {
-        const value = Number((this instanceof HTMLInputElement && this.value) || 0);
-        power_user.tokenizer = value;
-        BIAS_CACHE.clear();
-        saveSettingsDebounced();
-        forceCharacterEditorTokenize();
-    });
+    if (tokenizerEl)
+        tokenizerEl.addEventListener('change', function () {
+            const value = Number((this instanceof HTMLInputElement && this.value) || 0);
+            power_user.tokenizer = value;
+            BIAS_CACHE.clear();
+            saveSettingsDebounced();
+            forceCharacterEditorTokenize();
+        });
 
     // Send on enter
     const sendOnEnterEl = guardEl('send_on_enter');
-    if (sendOnEnterEl) sendOnEnterEl.addEventListener('change', function () {
-        const value = Number((this instanceof HTMLInputElement && this.value) || 0);
-        power_user.send_on_enter = value;
-        saveSettingsDebounced();
-    });
+    if (sendOnEnterEl)
+        sendOnEnterEl.addEventListener('change', function () {
+            const value = Number((this instanceof HTMLInputElement && this.value) || 0);
+            power_user.send_on_enter = value;
+            saveSettingsDebounced();
+        });
 
     // Confirm message delete
     const confirmDelEl = guardEl('confirm_message_delete');
-    if (confirmDelEl) confirmDelEl.addEventListener('input', function () {
-        power_user.confirm_message_delete = !!(this instanceof HTMLInputElement && this.checked);
-        saveSettingsDebounced();
-    });
+    if (confirmDelEl)
+        confirmDelEl.addEventListener('input', function () {
+            power_user.confirm_message_delete = !!(
+                this instanceof HTMLInputElement && this.checked
+            );
+            saveSettingsDebounced();
+        });
 
     // Reload chat button
     const reloadChatEl = guardEl('reload_chat');
-    if (reloadChatEl) reloadChatEl.addEventListener('click', async function () {
-        const currentChatId = getCurrentChatId();
-        if (currentChatId !== undefined && currentChatId !== null) {
-            await saveSettings();
-            await saveChatConditional();
-            await reloadCurrentChat();
-        }
-    });
+    if (reloadChatEl)
+        reloadChatEl.addEventListener('click', async function () {
+            const currentChatId = getCurrentChatId();
+            if (currentChatId !== undefined && currentChatId !== null) {
+                await saveSettings();
+                await saveChatConditional();
+                await reloadCurrentChat();
+            }
+        });
 
     // Allow name1 display
     const allowName1El = guardEl('allow_name1_display');
-    if (allowName1El) allowName1El.addEventListener('input', function () {
-        power_user.allow_name1_display = !!(this instanceof HTMLInputElement && this.checked);
-        reloadCurrentChat();
-        saveSettingsDebounced();
-    });
+    if (allowName1El)
+        allowName1El.addEventListener('input', function () {
+            power_user.allow_name1_display = !!(this instanceof HTMLInputElement && this.checked);
+            reloadCurrentChat();
+            saveSettingsDebounced();
+        });
 
     // Allow name2 display
     const allowName2El = guardEl('allow_name2_display');
-    if (allowName2El) allowName2El.addEventListener('input', function () {
-        power_user.allow_name2_display = !!(this instanceof HTMLInputElement && this.checked);
-        reloadCurrentChat();
-        saveSettingsDebounced();
-    });
+    if (allowName2El)
+        allowName2El.addEventListener('input', function () {
+            power_user.allow_name2_display = !!(this instanceof HTMLInputElement && this.checked);
+            reloadCurrentChat();
+            saveSettingsDebounced();
+        });
 
     // Token padding
     const tokenPaddingEl = guardEl('token_padding');
-    if (tokenPaddingEl) tokenPaddingEl.addEventListener('input', function () {
-        power_user.token_padding = Number((this instanceof HTMLInputElement && this.value) || 0);
-        saveSettingsDebounced();
-    });
+    if (tokenPaddingEl)
+        tokenPaddingEl.addEventListener('input', function () {
+            power_user.token_padding = Number(
+                (this instanceof HTMLInputElement && this.value) || 0,
+            );
+            saveSettingsDebounced();
+        });
 
     // Message timer
     const msgTimerEl = guardEl('messageTimerEnabled');
-    if (msgTimerEl) msgTimerEl.addEventListener('input', function () {
-        const value = !!(this instanceof HTMLInputElement && this.checked);
-        power_user.timer_enabled = value;
-        switchTimer();
-        saveSettingsDebounced();
-    });
+    if (msgTimerEl)
+        msgTimerEl.addEventListener('input', function () {
+            const value = !!(this instanceof HTMLInputElement && this.checked);
+            power_user.timer_enabled = value;
+            switchTimer();
+            saveSettingsDebounced();
+        });
 
     // Message timestamps
     const msgTimestampsEl = guardEl('messageTimestampsEnabled');
-    if (msgTimestampsEl) msgTimestampsEl.addEventListener('input', function () {
-        const value = !!(this instanceof HTMLInputElement && this.checked);
-        power_user.timestamps_enabled = value;
-        switchTimestamps();
-        saveSettingsDebounced();
-    });
+    if (msgTimestampsEl)
+        msgTimestampsEl.addEventListener('input', function () {
+            const value = !!(this instanceof HTMLInputElement && this.checked);
+            power_user.timestamps_enabled = value;
+            switchTimestamps();
+            saveSettingsDebounced();
+        });
 
     // Message model icon
     const msgModelIconEl = guardEl('messageModelIconEnabled');
-    if (msgModelIconEl) msgModelIconEl.addEventListener('input', function () {
-        const value = !!(this instanceof HTMLInputElement && this.checked);
-        power_user.timestamp_model_icon = value;
-        switchIcons();
-        saveSettingsDebounced();
-    });
+    if (msgModelIconEl)
+        msgModelIconEl.addEventListener('input', function () {
+            const value = !!(this instanceof HTMLInputElement && this.checked);
+            power_user.timestamp_model_icon = value;
+            switchIcons();
+            saveSettingsDebounced();
+        });
 
     // Message tokens
     const msgTokensEl = guardEl('messageTokensEnabled');
-    if (msgTokensEl) msgTokensEl.addEventListener('input', function () {
-        const value = !!(this instanceof HTMLInputElement && this.checked);
-        power_user.message_token_count_enabled = value;
-        switchTokenCount();
-        saveSettingsDebounced();
-    });
+    if (msgTokensEl)
+        msgTokensEl.addEventListener('input', function () {
+            const value = !!(this instanceof HTMLInputElement && this.checked);
+            power_user.message_token_count_enabled = value;
+            switchTokenCount();
+            saveSettingsDebounced();
+        });
 
     // Expand message actions
     const expandMsgActionsEl = guardEl('expandMessageActions');
-    if (expandMsgActionsEl) expandMsgActionsEl.addEventListener('input', function () {
-        const value = !!(this instanceof HTMLInputElement && this.checked);
-        power_user.expand_message_actions = value;
-        switchMessageActions();
-        saveSettingsDebounced();
-    });
+    if (expandMsgActionsEl)
+        expandMsgActionsEl.addEventListener('input', function () {
+            const value = !!(this instanceof HTMLInputElement && this.checked);
+            power_user.expand_message_actions = value;
+            switchMessageActions();
+            saveSettingsDebounced();
+        });
 
     // Enable Zen Sliders
     const zenSlidersEl = guardEl('enableZenSliders');
-    if (zenSlidersEl) zenSlidersEl.addEventListener('input', function () {
-        const value = !!(this instanceof HTMLInputElement && this.checked);
-        if (power_user.enableLabMode === true && value === true) {
-            notyf.warning('Disable Mad Lab Mode before enabling Zen Sliders');
-            if (this instanceof HTMLInputElement) this.checked = false;
-            this.dispatchEvent(new Event('input'));
-            return;
-        }
-        power_user.enableZenSliders = value;
-        switchZenSliders();
-        saveSettingsDebounced();
-    });
+    if (zenSlidersEl)
+        zenSlidersEl.addEventListener('input', function () {
+            const value = !!(this instanceof HTMLInputElement && this.checked);
+            if (power_user.enableLabMode === true && value === true) {
+                notyf.warning('Disable Mad Lab Mode before enabling Zen Sliders');
+                if (this instanceof HTMLInputElement) this.checked = false;
+                this.dispatchEvent(new Event('input'));
+                return;
+            }
+            power_user.enableZenSliders = value;
+            switchZenSliders();
+            saveSettingsDebounced();
+        });
 
     // Enable Lab Mode
     const labModeEl = guardEl('enableLabMode');
-    if (labModeEl) labModeEl.addEventListener('input', function (event) {
-        const value = !!(this instanceof HTMLInputElement && this.checked);
-        if (power_user.enableZenSliders === true && value === true) {
-            notyf.warning('Disable Zen Sliders before enabling Mad Lab Mode');
-            if (this instanceof HTMLInputElement) this.checked = false;
-            this.dispatchEvent(new Event('input'));
-            return;
-        }
-        power_user.enableLabMode = value;
-        switchLabMode({ noReset: false });
-        saveSettingsDebounced();
-    });
+    if (labModeEl)
+        labModeEl.addEventListener('input', function (event) {
+            const value = !!(this instanceof HTMLInputElement && this.checked);
+            if (power_user.enableZenSliders === true && value === true) {
+                notyf.warning('Disable Zen Sliders before enabling Mad Lab Mode');
+                if (this instanceof HTMLInputElement) this.checked = false;
+                this.dispatchEvent(new Event('input'));
+                return;
+            }
+            power_user.enableLabMode = value;
+            switchLabMode({ noReset: false });
+            saveSettingsDebounced();
+        });
 
     // Message ID display
     const mesIDDisplayEl = guardEl('mesIDDisplayEnabled');
-    if (mesIDDisplayEl) mesIDDisplayEl.addEventListener('input', function () {
-        const value = !!(this instanceof HTMLInputElement && this.checked);
-        power_user.mesIDDisplay_enabled = value;
-        switchMesIDDisplay();
-        saveSettingsDebounced();
-    });
+    if (mesIDDisplayEl)
+        mesIDDisplayEl.addEventListener('input', function () {
+            const value = !!(this instanceof HTMLInputElement && this.checked);
+            power_user.mesIDDisplay_enabled = value;
+            switchMesIDDisplay();
+            saveSettingsDebounced();
+        });
 
     // Hide chat avatars
     const hideChatAvatarsEl = guardEl('hideChatAvatarsEnabled');
-    if (hideChatAvatarsEl) hideChatAvatarsEl.addEventListener('input', function () {
-        const value = !!(this instanceof HTMLInputElement && this.checked);
-        power_user.hideChatAvatars_enabled = value;
-        switchHideChatAvatars();
-        saveSettingsDebounced();
-    });
+    if (hideChatAvatarsEl)
+        hideChatAvatarsEl.addEventListener('input', function () {
+            const value = !!(this instanceof HTMLInputElement && this.checked);
+            power_user.hideChatAvatars_enabled = value;
+            switchHideChatAvatars();
+            saveSettingsDebounced();
+        });
 
     // Hotswap enabled
     const hotswapEl = guardEl('hotswapEnabled');
-    if (hotswapEl) hotswapEl.addEventListener('input', function () {
-        const value = !!(this instanceof HTMLInputElement && this.checked);
-        power_user.hotswap_enabled = value;
-        switchHotswap();
-        saveSettingsDebounced();
-    });
+    if (hotswapEl)
+        hotswapEl.addEventListener('input', function () {
+            const value = !!(this instanceof HTMLInputElement && this.checked);
+            power_user.hotswap_enabled = value;
+            switchHotswap();
+            saveSettingsDebounced();
+        });
 
     // Prefer character prompt
     const prefCharPromptEl = guardEl('prefer_character_prompt');
-    if (prefCharPromptEl) prefCharPromptEl.addEventListener('input', function () {
-        const value = !!(this instanceof HTMLInputElement && this.checked);
-        power_user.prefer_character_prompt = value;
-        saveSettingsDebounced();
-    });
+    if (prefCharPromptEl)
+        prefCharPromptEl.addEventListener('input', function () {
+            const value = !!(this instanceof HTMLInputElement && this.checked);
+            power_user.prefer_character_prompt = value;
+            saveSettingsDebounced();
+        });
 
     // Prefer character jailbreak
     const prefCharJailbreakEl = guardEl('prefer_character_jailbreak');
-    if (prefCharJailbreakEl) prefCharJailbreakEl.addEventListener('input', function () {
-        const value = !!(this instanceof HTMLInputElement && this.checked);
-        power_user.prefer_character_jailbreak = value;
-        saveSettingsDebounced();
-    });
+    if (prefCharJailbreakEl)
+        prefCharJailbreakEl.addEventListener('input', function () {
+            const value = !!(this instanceof HTMLInputElement && this.checked);
+            power_user.prefer_character_jailbreak = value;
+            saveSettingsDebounced();
+        });
 
     // Continue on send
     const continueOnSendEl = guardEl('continue_on_send');
-    if (continueOnSendEl) continueOnSendEl.addEventListener('input', function () {
-        const value = !!(this instanceof HTMLInputElement && this.checked);
-        power_user.continue_on_send = value;
-        saveSettingsDebounced();
-    });
+    if (continueOnSendEl)
+        continueOnSendEl.addEventListener('input', function () {
+            const value = !!(this instanceof HTMLInputElement && this.checked);
+            power_user.continue_on_send = value;
+            saveSettingsDebounced();
+        });
 
     // Quick continue
     const quickContinueEl = guardEl('quick_continue');
-    if (quickContinueEl) quickContinueEl.addEventListener('input', function () {
-        const value = !!(this instanceof HTMLInputElement && this.checked);
-        power_user.quick_continue = value;
-        const mesContinue = h('mes_continue');
-        if (mesContinue) mesContinue.style.display = value ? '' : 'none';
-        saveSettingsDebounced();
-    });
+    if (quickContinueEl)
+        quickContinueEl.addEventListener('input', function () {
+            const value = !!(this instanceof HTMLInputElement && this.checked);
+            power_user.quick_continue = value;
+            const mesContinue = h('mes_continue');
+            if (mesContinue) mesContinue.style.display = value ? '' : 'none';
+            saveSettingsDebounced();
+        });
 
     // Quick impersonate
     const quickImpersonateEl = guardEl('quick_impersonate');
-    if (quickImpersonateEl) quickImpersonateEl.addEventListener('input', function () {
-        const value = !!(this instanceof HTMLInputElement && this.checked);
-        power_user.quick_impersonate = value;
-        const mesImpersonate = h('mes_impersonate');
-        if (mesImpersonate) mesImpersonate.style.display = value ? '' : 'none';
-        saveSettingsDebounced();
-    });
+    if (quickImpersonateEl)
+        quickImpersonateEl.addEventListener('input', function () {
+            const value = !!(this instanceof HTMLInputElement && this.checked);
+            power_user.quick_impersonate = value;
+            const mesImpersonate = h('mes_impersonate');
+            if (mesImpersonate) mesImpersonate.style.display = value ? '' : 'none';
+            saveSettingsDebounced();
+        });
 
     // Trim spaces
     const trimSpacesEl = guardEl('trim_spaces');
-    if (trimSpacesEl) trimSpacesEl.addEventListener('input', function () {
-        const value = !!(this instanceof HTMLInputElement && this.checked);
-        power_user.trim_spaces = value;
-        saveSettingsDebounced();
-    });
+    if (trimSpacesEl)
+        trimSpacesEl.addEventListener('input', function () {
+            const value = !!(this instanceof HTMLInputElement && this.checked);
+            power_user.trim_spaces = value;
+            saveSettingsDebounced();
+        });
 
     // Relaxed API URLs
     const relaxedApiEl = guardEl('relaxed_api_urls');
-    if (relaxedApiEl) relaxedApiEl.addEventListener('input', function () {
-        const value = !!(this instanceof HTMLInputElement && this.checked);
-        power_user.relaxed_api_urls = value;
-        saveSettingsDebounced();
-    });
+    if (relaxedApiEl)
+        relaxedApiEl.addEventListener('input', function () {
+            const value = !!(this instanceof HTMLInputElement && this.checked);
+            power_user.relaxed_api_urls = value;
+            saveSettingsDebounced();
+        });
 
     // World import dialog
     const worldImportEl = guardEl('world_import_dialog');
-    if (worldImportEl) worldImportEl.addEventListener('input', function () {
-        const value = !!(this instanceof HTMLInputElement && this.checked);
-        power_user.world_import_dialog = value;
-        saveSettingsDebounced();
-    });
+    if (worldImportEl)
+        worldImportEl.addEventListener('input', function () {
+            const value = !!(this instanceof HTMLInputElement && this.checked);
+            power_user.world_import_dialog = value;
+            saveSettingsDebounced();
+        });
 
     // Enable auto-select input
     const autoSelectInputEl = guardEl('enable_auto_select_input');
-    if (autoSelectInputEl) autoSelectInputEl.addEventListener('input', function () {
-        const value = !!(this instanceof HTMLInputElement && this.checked);
-        power_user.enable_auto_select_input = value;
-        saveSettingsDebounced();
-    });
+    if (autoSelectInputEl)
+        autoSelectInputEl.addEventListener('input', function () {
+            const value = !!(this instanceof HTMLInputElement && this.checked);
+            power_user.enable_auto_select_input = value;
+            saveSettingsDebounced();
+        });
 
     // Enable MD hotkeys
     const mdHotkeysEl = guardEl('enable_md_hotkeys');
-    if (mdHotkeysEl) mdHotkeysEl.addEventListener('input', function () {
-        const value = !!(this instanceof HTMLInputElement && this.checked);
-        power_user.enable_md_hotkeys = value;
-        toggleMDHotkeyIconDisplay();
-        saveSettingsDebounced();
-    });
+    if (mdHotkeysEl)
+        mdHotkeysEl.addEventListener('input', function () {
+            const value = !!(this instanceof HTMLInputElement && this.checked);
+            power_user.enable_md_hotkeys = value;
+            toggleMDHotkeyIconDisplay();
+            saveSettingsDebounced();
+        });
 
     // Spoiler-free mode
     const spoilerFreeEl = guardEl('spoiler_free_mode');
-    if (spoilerFreeEl) spoilerFreeEl.addEventListener('input', function () {
-        power_user.spoiler_free_mode = !!(this instanceof HTMLInputElement && this.checked);
-        switchSpoilerMode();
-        saveSettingsDebounced();
-    });
+    if (spoilerFreeEl)
+        spoilerFreeEl.addEventListener('input', function () {
+            power_user.spoiler_free_mode = !!(this instanceof HTMLInputElement && this.checked);
+            switchSpoilerMode();
+            saveSettingsDebounced();
+        });
 
     // Spoiler-free description button
     const spoilerDescBtnEl = guardEl('spoiler_free_desc_button');
-    if (spoilerDescBtnEl) spoilerDescBtnEl.addEventListener('click', function (e) {
-        e.stopPropagation();
-        peekSpoilerMode();
-        this.classList.toggle('fa-eye');
-        this.classList.toggle('fa-eye-slash');
-    });
+    if (spoilerDescBtnEl)
+        spoilerDescBtnEl.addEventListener('click', function (e) {
+            e.stopPropagation();
+            peekSpoilerMode();
+            this.classList.toggle('fa-eye');
+            this.classList.toggle('fa-eye-slash');
+        });
 
     // Custom stopping strings
     const customStopStringsEl = guardEl('custom_stopping_strings');
-    if (customStopStringsEl) customStopStringsEl.addEventListener('input', function () {
-        power_user.custom_stopping_strings = String((this instanceof HTMLInputElement && this.value) || '').trim();
-        saveSettingsDebounced();
-    });
+    if (customStopStringsEl)
+        customStopStringsEl.addEventListener('input', function () {
+            power_user.custom_stopping_strings = String(
+                (this instanceof HTMLInputElement && this.value) || '',
+            ).trim();
+            saveSettingsDebounced();
+        });
 
     // Custom stopping strings macro
     const customStopMacroEl = guardEl('custom_stopping_strings_macro');
-    if (customStopMacroEl) customStopMacroEl.addEventListener('change', function () {
-        power_user.custom_stopping_strings_macro = !!(this instanceof HTMLInputElement && this.checked);
-        saveSettingsDebounced();
-    });
+    if (customStopMacroEl)
+        customStopMacroEl.addEventListener('change', function () {
+            power_user.custom_stopping_strings_macro = !!(
+                this instanceof HTMLInputElement && this.checked
+            );
+            saveSettingsDebounced();
+        });
 
     // Fuzzy search
     const fuzzySearchEl = guardEl('fuzzy_search_checkbox');
-    if (fuzzySearchEl) fuzzySearchEl.addEventListener('input', function () {
-        power_user.fuzzy_search = !!(this instanceof HTMLInputElement && this.checked);
-        saveSettingsDebounced();
-    });
+    if (fuzzySearchEl)
+        fuzzySearchEl.addEventListener('input', function () {
+            power_user.fuzzy_search = !!(this instanceof HTMLInputElement && this.checked);
+            saveSettingsDebounced();
+        });
 
     // Persona show notifications
     const personaNotifEl = guardEl('persona_show_notifications');
-    if (personaNotifEl) personaNotifEl.addEventListener('input', function () {
-        power_user.persona_show_notifications = !!(this instanceof HTMLInputElement && this.checked);
-        saveSettingsDebounced();
-    });
+    if (personaNotifEl)
+        personaNotifEl.addEventListener('input', function () {
+            power_user.persona_show_notifications = !!(
+                this instanceof HTMLInputElement && this.checked
+            );
+            saveSettingsDebounced();
+        });
 
     // Persona allow multi connections
     const personaMultiConnEl = guardEl('persona_allow_multi_connections');
-    if (personaMultiConnEl) personaMultiConnEl.addEventListener('input', function () {
-        power_user.persona_allow_multi_connections = !!(this instanceof HTMLInputElement && this.checked);
-        saveSettingsDebounced();
-    });
+    if (personaMultiConnEl)
+        personaMultiConnEl.addEventListener('input', function () {
+            power_user.persona_allow_multi_connections = !!(
+                this instanceof HTMLInputElement && this.checked
+            );
+            saveSettingsDebounced();
+        });
 
     // Persona auto lock
     const personaAutoLockEl = guardEl('persona_auto_lock');
-    if (personaAutoLockEl) personaAutoLockEl.addEventListener('input', function () {
-        power_user.persona_auto_lock = !!(this instanceof HTMLInputElement && this.checked);
-        saveSettingsDebounced();
-    });
+    if (personaAutoLockEl)
+        personaAutoLockEl.addEventListener('input', function () {
+            power_user.persona_auto_lock = !!(this instanceof HTMLInputElement && this.checked);
+            saveSettingsDebounced();
+        });
 
     // Encode tags
     const encodeTagsEl = guardEl('encode_tags');
-    if (encodeTagsEl) encodeTagsEl.addEventListener('input', async function () {
-        power_user.encode_tags = !!(this instanceof HTMLInputElement && this.checked);
-        await reloadCurrentChat();
-        saveSettingsDebounced();
-    });
+    if (encodeTagsEl)
+        encodeTagsEl.addEventListener('input', async function () {
+            power_user.encode_tags = !!(this instanceof HTMLInputElement && this.checked);
+            await reloadCurrentChat();
+            saveSettingsDebounced();
+        });
 
     // Experimental macro engine
     const expMacroEl = guardEl('experimental_macro_engine');
-    if (expMacroEl) expMacroEl.addEventListener('input', function () {
-        power_user.experimental_macro_engine = !!(this instanceof HTMLInputElement && this.checked);
-        saveSettingsDebounced();
-        if (!settingsReady) return;
-        eventSource.once(event_types.SETTINGS_UPDATED, function () {
-            notyf.warning(
-                'Click here to reload.',
-                'Toggling the Experimental Macro Engine requires a reload.',
-                {
-                    onclick: () => window.location.reload(),
-                    timeOut: 10000,
-                    preventDuplicates: true,
-                },
+    if (expMacroEl)
+        expMacroEl.addEventListener('input', function () {
+            power_user.experimental_macro_engine = !!(
+                this instanceof HTMLInputElement && this.checked
             );
+            saveSettingsDebounced();
+            if (!settingsReady) return;
+            eventSource.once(event_types.SETTINGS_UPDATED, function () {
+                notyf.warning(
+                    'Click here to reload.',
+                    'Toggling the Experimental Macro Engine requires a reload.',
+                    {
+                        onclick: () => window.location.reload(),
+                        timeOut: 10000,
+                        preventDuplicates: true,
+                    },
+                );
+            });
         });
-    });
 
     // Disable group trimming
     const disableGroupTrimEl = guardEl('disable_group_trimming');
-    if (disableGroupTrimEl) disableGroupTrimEl.addEventListener('input', function () {
-        power_user.disable_group_trimming = !!(this instanceof HTMLInputElement && this.checked);
-        saveSettingsDebounced();
-    });
+    if (disableGroupTrimEl)
+        disableGroupTrimEl.addEventListener('input', function () {
+            power_user.disable_group_trimming = !!(
+                this instanceof HTMLInputElement && this.checked
+            );
+            saveSettingsDebounced();
+        });
 
     // Debug menu
     const debugMenuEl = guardEl('debug_menu');
-    if (debugMenuEl) debugMenuEl.addEventListener('click', function () {
-        showDebugMenu();
-    });
+    if (debugMenuEl)
+        debugMenuEl.addEventListener('click', function () {
+            showDebugMenu();
+        });
 
     // Bogus folders
     const bogusFoldersEl = guardEl('bogus_folders');
-    if (bogusFoldersEl) bogusFoldersEl.addEventListener('input', function () {
-        power_user.bogus_folders = !!(this instanceof HTMLInputElement && this.checked);
-        printCharactersDebounced();
-        saveSettingsDebounced();
-    });
+    if (bogusFoldersEl)
+        bogusFoldersEl.addEventListener('input', function () {
+            power_user.bogus_folders = !!(this instanceof HTMLInputElement && this.checked);
+            printCharactersDebounced();
+            saveSettingsDebounced();
+        });
 
     // Zoomed avatar magnification
     const zoomedAvatarEl = guardEl('zoomed_avatar_magnification');
-    if (zoomedAvatarEl) zoomedAvatarEl.addEventListener('input', function () {
-        power_user.zoomed_avatar_magnification = !!(this instanceof HTMLInputElement && this.checked);
-        printCharactersDebounced();
-        saveSettingsDebounced();
-    });
+    if (zoomedAvatarEl)
+        zoomedAvatarEl.addEventListener('input', function () {
+            power_user.zoomed_avatar_magnification = !!(
+                this instanceof HTMLInputElement && this.checked
+            );
+            printCharactersDebounced();
+            saveSettingsDebounced();
+        });
 
     // Aux field
     const auxFieldEl = guardEl('aux_field');
-    if (auxFieldEl) auxFieldEl.addEventListener('change', function () {
-        const value = String((this instanceof HTMLInputElement && this.value) || '');
-        power_user.aux_field = value;
-        printCharactersDebounced();
-        saveSettingsDebounced();
-    });
+    if (auxFieldEl)
+        auxFieldEl.addEventListener('change', function () {
+            const value = String((this instanceof HTMLInputElement && this.value) || '');
+            power_user.aux_field = value;
+            printCharactersDebounced();
+            saveSettingsDebounced();
+        });
 
     // Tag import setting
     const tagImportEl = guardEl('tag_import_setting');
-    if (tagImportEl) tagImportEl.addEventListener('change', function () {
-        const value = Number((this instanceof HTMLInputElement && this.value) || 0);
-        power_user.tag_import_setting = value;
-        saveSettingsDebounced();
-    });
+    if (tagImportEl)
+        tagImportEl.addEventListener('change', function () {
+            const value = Number((this instanceof HTMLInputElement && this.value) || 0);
+            power_user.tag_import_setting = value;
+            saveSettingsDebounced();
+        });
 
     // STscript autocomplete state
     const stsAutoStateEl = guardEl('stscript_autocomplete_state');
-    if (stsAutoStateEl) stsAutoStateEl.addEventListener('input', function () {
-        power_user.stscript.autocomplete.state = Number((this instanceof HTMLInputElement && this.value) || 0);
-        saveSettingsDebounced();
-    });
+    if (stsAutoStateEl)
+        stsAutoStateEl.addEventListener('input', function () {
+            power_user.stscript.autocomplete.state = Number(
+                (this instanceof HTMLInputElement && this.value) || 0,
+            );
+            saveSettingsDebounced();
+        });
 
     // STscript autocomplete auto-hide
     const stsAutoHideEl = guardEl('stscript_autocomplete_autoHide');
-    if (stsAutoHideEl) stsAutoHideEl.addEventListener('input', function () {
-        power_user.stscript.autocomplete.autoHide = !!(this instanceof HTMLInputElement && this.checked);
-        saveSettingsDebounced();
-    });
+    if (stsAutoHideEl)
+        stsAutoHideEl.addEventListener('input', function () {
+            power_user.stscript.autocomplete.autoHide = !!(
+                this instanceof HTMLInputElement && this.checked
+            );
+            saveSettingsDebounced();
+        });
 
     // STscript autocomplete show in all macro fields
     const stsAutoShowAllEl = guardEl('stscript_autocomplete_showInAllMacroFields');
-    if (stsAutoShowAllEl) stsAutoShowAllEl.addEventListener('input', function () {
-        power_user.stscript.autocomplete.showInAllMacroFields = !!(this instanceof HTMLInputElement && this.checked);
-        saveSettingsDebounced();
-    });
+    if (stsAutoShowAllEl)
+        stsAutoShowAllEl.addEventListener('input', function () {
+            power_user.stscript.autocomplete.showInAllMacroFields = !!(
+                this instanceof HTMLInputElement && this.checked
+            );
+            saveSettingsDebounced();
+        });
 
     // STscript matching
     const stsMatchingEl = guardEl('stscript_matching');
-    if (stsMatchingEl) stsMatchingEl.addEventListener('change', function () {
-        const value = String((this instanceof HTMLInputElement && this.value) || '');
-        power_user.stscript.matching = value;
-        saveSettingsDebounced();
-    });
+    if (stsMatchingEl)
+        stsMatchingEl.addEventListener('change', function () {
+            const value = String((this instanceof HTMLInputElement && this.value) || '');
+            power_user.stscript.matching = value;
+            saveSettingsDebounced();
+        });
 
     // STscript autocomplete style
     const stsAutoStyleEl = guardEl('stscript_autocomplete_style');
-    if (stsAutoStyleEl) stsAutoStyleEl.addEventListener('change', function () {
-        const value = String((this instanceof HTMLInputElement && this.value) || '');
-        power_user.stscript.autocomplete.style = value;
-        document.body.setAttribute('data-stscript-style', power_user.stscript.autocomplete.style);
-        saveSettingsDebounced();
-    });
+    if (stsAutoStyleEl)
+        stsAutoStyleEl.addEventListener('change', function () {
+            const value = String((this instanceof HTMLInputElement && this.value) || '');
+            power_user.stscript.autocomplete.style = value;
+            document.body.setAttribute(
+                'data-stscript-style',
+                power_user.stscript.autocomplete.style,
+            );
+            saveSettingsDebounced();
+        });
 
     // STscript autocomplete select
     const stsAutoSelectEl = guardEl('stscript_autocomplete_select');
-    if (stsAutoSelectEl) stsAutoSelectEl.addEventListener('change', function () {
-        const value = String((this instanceof HTMLInputElement && this.value) || '');
-        power_user.stscript.autocomplete.select = parseInt(value);
-        saveSettingsDebounced();
-    });
+    if (stsAutoSelectEl)
+        stsAutoSelectEl.addEventListener('change', function () {
+            const value = String((this instanceof HTMLInputElement && this.value) || '');
+            power_user.stscript.autocomplete.select = parseInt(value);
+            saveSettingsDebounced();
+        });
 
     // STscript autocomplete font scale
     const stsAutoFontScaleEl = guardEl('stscript_autocomplete_font_scale');
-    if (stsAutoFontScaleEl) stsAutoFontScaleEl.addEventListener('input', function () {
-        const value = String((this instanceof HTMLInputElement && this.value) || '');
-        const counter = h('stscript_autocomplete_font_scale_counter');
-        if (counter instanceof HTMLInputElement) counter.value = value;
-        power_user.stscript.autocomplete.font.scale = Number(value);
-        document.body.style.setProperty('--ac-font-scale', value.toString());
-        window.dispatchEvent(new Event('resize', { bubbles: true }));
-        saveSettingsDebounced();
-    });
+    if (stsAutoFontScaleEl)
+        stsAutoFontScaleEl.addEventListener('input', function () {
+            const value = String((this instanceof HTMLInputElement && this.value) || '');
+            const counter = h('stscript_autocomplete_font_scale_counter');
+            if (counter instanceof HTMLInputElement) counter.value = value;
+            power_user.stscript.autocomplete.font.scale = Number(value);
+            document.body.style.setProperty('--ac-font-scale', value.toString());
+            window.dispatchEvent(new Event('resize', { bubbles: true }));
+            saveSettingsDebounced();
+        });
 
     // STscript autocomplete font scale counter
     const stsAutoFontScaleCounterEl = guardEl('stscript_autocomplete_font_scale_counter');
-    if (stsAutoFontScaleCounterEl) stsAutoFontScaleCounterEl.addEventListener('input', function () {
-        const value = String((this instanceof HTMLInputElement && this.value) || '');
-        const slider = h('stscript_autocomplete_font_scale');
-        if (slider instanceof HTMLInputElement) slider.value = value;
-        power_user.stscript.autocomplete.font.scale = Number(value);
-        document.body.style.setProperty('--ac-font-scale', value.toString());
-        window.dispatchEvent(new Event('resize', { bubbles: true }));
-        saveSettingsDebounced();
-    });
+    if (stsAutoFontScaleCounterEl)
+        stsAutoFontScaleCounterEl.addEventListener('input', function () {
+            const value = String((this instanceof HTMLInputElement && this.value) || '');
+            const slider = h('stscript_autocomplete_font_scale');
+            if (slider instanceof HTMLInputElement) slider.value = value;
+            power_user.stscript.autocomplete.font.scale = Number(value);
+            document.body.style.setProperty('--ac-font-scale', value.toString());
+            window.dispatchEvent(new Event('resize', { bubbles: true }));
+            saveSettingsDebounced();
+        });
 
     // STscript autocomplete width left
     const stsAutoWidthLeftEl = guardEl('stscript_autocomplete_width_left');
-    if (stsAutoWidthLeftEl) stsAutoWidthLeftEl.addEventListener('input', function () {
-        const value = Number((this instanceof HTMLInputElement && this.value) || 0);
-        power_user.stscript.autocomplete.width.left = value;
-        const container = this.closest('.doubleRangeInputContainer');
-        if (container instanceof HTMLElement) container.style.setProperty('--value', value.toString());
-        window.dispatchEvent(new Event('resize', { bubbles: true }));
-        saveSettingsDebounced();
-    });
+    if (stsAutoWidthLeftEl)
+        stsAutoWidthLeftEl.addEventListener('input', function () {
+            const value = Number((this instanceof HTMLInputElement && this.value) || 0);
+            power_user.stscript.autocomplete.width.left = value;
+            const container = this.closest('.doubleRangeInputContainer');
+            if (container instanceof HTMLElement)
+                container.style.setProperty('--value', value.toString());
+            window.dispatchEvent(new Event('resize', { bubbles: true }));
+            saveSettingsDebounced();
+        });
 
     // STscript autocomplete width right
     const stsAutoWidthRightEl = guardEl('stscript_autocomplete_width_right');
-    if (stsAutoWidthRightEl) stsAutoWidthRightEl.addEventListener('input', function () {
-        const value = Number((this instanceof HTMLInputElement && this.value) || 0);
-        power_user.stscript.autocomplete.width.right = value;
-        const container = this.closest('.doubleRangeInputContainer');
-        if (container instanceof HTMLElement) container.style.setProperty('--value', value.toString());
-        window.dispatchEvent(new Event('resize', { bubbles: true }));
-        saveSettingsDebounced();
-    });
+    if (stsAutoWidthRightEl)
+        stsAutoWidthRightEl.addEventListener('input', function () {
+            const value = Number((this instanceof HTMLInputElement && this.value) || 0);
+            power_user.stscript.autocomplete.width.right = value;
+            const container = this.closest('.doubleRangeInputContainer');
+            if (container instanceof HTMLElement)
+                container.style.setProperty('--value', value.toString());
+            window.dispatchEvent(new Event('resize', { bubbles: true }));
+            saveSettingsDebounced();
+        });
 
     // STscript parser flag strict escaping
     const stsStrictEscEl = guardEl('stscript_parser_flag_strict_escaping');
-    if (stsStrictEscEl) stsStrictEscEl.addEventListener('click', function () {
-        const value = this instanceof HTMLInputElement && this.checked;
-        power_user.stscript.parser.flags[PARSER_FLAG.STRICT_ESCAPING] = value;
-        saveSettingsDebounced();
-    });
+    if (stsStrictEscEl)
+        stsStrictEscEl.addEventListener('click', function () {
+            const value = this instanceof HTMLInputElement && this.checked;
+            power_user.stscript.parser.flags[PARSER_FLAG.STRICT_ESCAPING] = value;
+            saveSettingsDebounced();
+        });
 
     // STscript parser flag replace getvar
     const stsReplaceGetvarEl = guardEl('stscript_parser_flag_replace_getvar');
-    if (stsReplaceGetvarEl) stsReplaceGetvarEl.addEventListener('click', function () {
-        const value = this instanceof HTMLInputElement && this.checked;
-        power_user.stscript.parser.flags[PARSER_FLAG.REPLACE_GETVAR] = value;
-        saveSettingsDebounced();
-    });
+    if (stsReplaceGetvarEl)
+        stsReplaceGetvarEl.addEventListener('click', function () {
+            const value = this instanceof HTMLInputElement && this.checked;
+            power_user.stscript.parser.flags[PARSER_FLAG.REPLACE_GETVAR] = value;
+            saveSettingsDebounced();
+        });
 
     // Restore user input
     const restoreUserInputEl = guardEl('restore_user_input');
-    if (restoreUserInputEl) restoreUserInputEl.addEventListener('input', function () {
-        power_user.restore_user_input = !!(this instanceof HTMLInputElement && this.checked);
-        saveSettingsDebounced();
-    });
+    if (restoreUserInputEl)
+        restoreUserInputEl.addEventListener('input', function () {
+            power_user.restore_user_input = !!(this instanceof HTMLInputElement && this.checked);
+            saveSettingsDebounced();
+        });
 
     // Compact input area
     const compactInputAreaEl = guardEl('compact_input_area');
-    if (compactInputAreaEl) compactInputAreaEl.addEventListener('input', function () {
-        power_user.compact_input_area = !!(this instanceof HTMLInputElement && this.checked);
-        switchCompactInputArea();
-        saveSettingsDebounced();
-    });
+    if (compactInputAreaEl)
+        compactInputAreaEl.addEventListener('input', function () {
+            power_user.compact_input_area = !!(this instanceof HTMLInputElement && this.checked);
+            switchCompactInputArea();
+            saveSettingsDebounced();
+        });
 
     // Show swipe number for all messages
     const showSwipeNumEl = guardEl('show_swipe_num_all_messages');
-    if (showSwipeNumEl) showSwipeNumEl.addEventListener('input', function () {
-        power_user.show_swipe_num_all_messages = !!(this instanceof HTMLInputElement && this.checked);
-        switchSwipeNumAllMessages();
-        saveSettingsDebounced();
-    });
+    if (showSwipeNumEl)
+        showSwipeNumEl.addEventListener('input', function () {
+            power_user.show_swipe_num_all_messages = !!(
+                this instanceof HTMLInputElement && this.checked
+            );
+            switchSwipeNumAllMessages();
+            saveSettingsDebounced();
+        });
 
     // Auto-load last chat
     const autoLoadChatEl = guardEl('auto-load-chat-checkbox');
-    if (autoLoadChatEl) autoLoadChatEl.addEventListener('input', function () {
-        power_user.auto_load_chat = !!(this instanceof HTMLInputElement && this.checked);
-        saveSettingsDebounced();
-    });
+    if (autoLoadChatEl)
+        autoLoadChatEl.addEventListener('input', function () {
+            power_user.auto_load_chat = !!(this instanceof HTMLInputElement && this.checked);
+            saveSettingsDebounced();
+        });
 
     // Forbid external media
     const forbidExtMediaEl = guardEl('forbid_external_media');
-    if (forbidExtMediaEl) forbidExtMediaEl.addEventListener('input', function () {
-        power_user.forbid_external_media = !!(this instanceof HTMLInputElement && this.checked);
-        saveSettingsDebounced();
-        reloadCurrentChat();
-    });
+    if (forbidExtMediaEl)
+        forbidExtMediaEl.addEventListener('input', function () {
+            power_user.forbid_external_media = !!(this instanceof HTMLInputElement && this.checked);
+            saveSettingsDebounced();
+            reloadCurrentChat();
+        });
 
     // Pin styles
     const pinStylesEl = guardEl('pin_styles');
-    if (pinStylesEl) pinStylesEl.addEventListener('input', function () {
-        power_user.pin_styles = !!(this instanceof HTMLInputElement && this.checked);
-        saveSettingsDebounced();
-        applyStylePins();
-    });
+    if (pinStylesEl)
+        pinStylesEl.addEventListener('input', function () {
+            power_user.pin_styles = !!(this instanceof HTMLInputElement && this.checked);
+            saveSettingsDebounced();
+            applyStylePins();
+        });
 
     // Click to edit
     const clickToEditEl = guardEl('click_to_edit');
-    if (clickToEditEl) clickToEditEl.addEventListener('input', function () {
-        power_user.click_to_edit = !!(this instanceof HTMLInputElement && this.checked);
-        saveSettingsDebounced();
-    });
+    if (clickToEditEl)
+        clickToEditEl.addEventListener('input', function () {
+            power_user.click_to_edit = !!(this instanceof HTMLInputElement && this.checked);
+            saveSettingsDebounced();
+        });
 
     // UI preset import button
     const uiImportBtnEl = guardEl('ui_preset_import_button');
-    if (uiImportBtnEl) uiImportBtnEl.addEventListener('click', function () {
-        h('ui_preset_import_file')?.click();
-    });
+    if (uiImportBtnEl)
+        uiImportBtnEl.addEventListener('click', function () {
+            h('ui_preset_import_file')?.click();
+        });
 
     // UI preset import file
     const uiImportFileEl = guardEl('ui_preset_import_file');
-    if (uiImportFileEl) uiImportFileEl.addEventListener('change', async function () {
-        try {
-            const file = (this instanceof HTMLInputElement && this.files?.[0]) || undefined;
-            await importTheme(file);
-        } catch (error) {
-            console.error('Error importing UI theme', error);
-            notyf.error(String(error), 'Failed to import UI theme');
-        } finally {
-            if (this instanceof HTMLInputElement) this.value = '';
-        }
-    });
+    if (uiImportFileEl)
+        uiImportFileEl.addEventListener('change', async function () {
+            try {
+                const file = (this instanceof HTMLInputElement && this.files?.[0]) || undefined;
+                await importTheme(file);
+            } catch (error) {
+                console.error('Error importing UI theme', error);
+                notyf.error(String(error), 'Failed to import UI theme');
+            } finally {
+                if (this instanceof HTMLInputElement) this.value = '';
+            }
+        });
 
     // UI preset export button
     const uiExportBtnEl = guardEl('ui_preset_export_button');
-    if (uiExportBtnEl) uiExportBtnEl.addEventListener('click', async function () {
-        await exportTheme();
-    });
+    if (uiExportBtnEl)
+        uiExportBtnEl.addEventListener('click', async function () {
+            await exportTheme();
+        });
 
     // Media display
     const mediaDisplayEl = guardEl('media_display');
-    if (mediaDisplayEl) mediaDisplayEl.addEventListener('input', async function () {
-        power_user.media_display = String((this instanceof HTMLInputElement && this.value) || '');
-        saveSettingsDebounced();
-        if (isMediaDisplayReloadNeeded()) {
-            await reloadCurrentChat();
-        }
-    });
+    if (mediaDisplayEl)
+        mediaDisplayEl.addEventListener('input', async function () {
+            power_user.media_display = String(
+                (this instanceof HTMLInputElement && this.value) || '',
+            );
+            saveSettingsDebounced();
+            if (isMediaDisplayReloadNeeded()) {
+                await reloadCurrentChat();
+            }
+        });
 
     // Image overswipe
     const imageOverswipeEl = guardEl('image_overswipe');
-    if (imageOverswipeEl) imageOverswipeEl.addEventListener('input', function () {
-        power_user.image_overswipe = String((this instanceof HTMLInputElement && this.value) || '');
-        saveSettingsDebounced();
-    });
+    if (imageOverswipeEl)
+        imageOverswipeEl.addEventListener('input', function () {
+            power_user.image_overswipe = String(
+                (this instanceof HTMLInputElement && this.value) || '',
+            );
+            saveSettingsDebounced();
+        });
 }
 
 document.addEventListener('DOMContentLoaded', () => {
     registerSettingsPanelHandlers();
-    document.getElementById('rm_ch_create_block')?.dispatchEvent(new Event('input', { bubbles: true }));
-    document.getElementById('character_popup')?.dispatchEvent(new Event('input', { bubbles: true }));
+    document
+        .getElementById('rm_ch_create_block')
+        ?.dispatchEvent(new Event('input', { bubbles: true }));
+    document
+        .getElementById('character_popup')
+        ?.dispatchEvent(new Event('input', { bubbles: true }));
 });
 
 /**
@@ -4439,8 +5384,12 @@ onDomReady(() => {
         const winHeight = window.innerHeight;
         const originalWidth = winWidth * zoomLevel;
         const originalHeight = winHeight * zoomLevel;
-        console.debug(`Window resize: ${coreTruthWinWidth}x${coreTruthWinHeight} -> ${window.innerWidth}x${window.innerHeight}`);
-        console.debug(`Zoom: ${zoomLevel}, X:${winWidth}, Y:${winHeight}, original: ${originalWidth}x${originalHeight} `);
+        console.debug(
+            `Window resize: ${coreTruthWinWidth}x${coreTruthWinHeight} -> ${window.innerWidth}x${window.innerHeight}`,
+        );
+        console.debug(
+            `Zoom: ${zoomLevel}, X:${winWidth}, Y:${winHeight}, original: ${originalWidth}x${originalHeight} `,
+        );
         return zoomLevel;
     });
 
@@ -4481,10 +5430,13 @@ onDomReady(() => {
                 try {
                     const elmnt = document.getElementById(elmntName);
                     if (elmnt) {
-                        console.log(`scaling ${elmntName} by ${scaleX}x${scaleY} to ${newWidth}x${newHeight}`);
+                        console.log(
+                            `scaling ${elmntName} by ${scaleX}x${scaleY} to ${newWidth}x${newHeight}`,
+                        );
                         (elmnt as HTMLElement).style.height = newHeight;
                         (elmnt as HTMLElement).style.width = newWidth;
-                        (elmnt as HTMLElement).style.inset = `${newTop}px ${newRight}px ${newBottom}px ${newLeft}px`;
+                        (elmnt as HTMLElement).style.inset =
+                            `${newTop}px ${newRight}px ${newBottom}px ${newLeft}px`;
                         movingUIStateRec[elmntName]!.height = newHeight;
                         movingUIStateRec[elmntName]!.width = newWidth;
                         movingUIStateRec[elmntName]!.top = newTop;
@@ -4505,6 +5457,4 @@ onDomReady(() => {
         coreTruthWinWidth = window.innerWidth;
         coreTruthWinHeight = window.innerHeight;
     });
-
-
 });

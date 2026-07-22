@@ -13,14 +13,15 @@ import {
 import { MAX_CONTEXT_DEFAULT, MAX_RESPONSE_DEFAULT, power_user } from './power-user.js';
 import { getTextTokens, tokenizers } from './tokenizers.js';
 import { getEventSourceStream } from './sse-stream.js';
-import {
-    getSortableDelay,
-    getStringHash,
-    onlyUnique,
-} from './utils.js';
+import { getSortableDelay, getStringHash, onlyUnique } from './utils.js';
 
 declare const Sortable: new (el: HTMLElement, options: Record<string, unknown>) => unknown;
-import { BIAS_CACHE, createNewLogitBiasEntry, displayLogitBias, getLogitBiasListResult } from './logit-bias.js';
+import {
+    BIAS_CACHE,
+    createNewLogitBiasEntry,
+    displayLogitBias,
+    getLogitBiasListResult,
+} from './logit-bias.js';
 import { SECRET_KEYS, secret_state, writeSecret } from './secrets.js';
 
 const default_preamble = '[ Style: chat, complex, sensory, visceral ]';
@@ -132,7 +133,13 @@ export function getNovelMaxResponseTokens() {
  * @param data
  */
 export function convertNovelPreset(data: Record<string, unknown>) {
-    if (!data || typeof data !== 'object' || (data as Record<string, unknown>).presetVersion !== 3 || !(data as Record<string, unknown>).parameters || typeof (data as Record<string, unknown>).parameters !== 'object') {
+    if (
+        !data ||
+        typeof data !== 'object' ||
+        (data as Record<string, unknown>).presetVersion !== 3 ||
+        !(data as Record<string, unknown>).parameters ||
+        typeof (data as Record<string, unknown>).parameters !== 'object'
+    ) {
         return data;
     }
 
@@ -159,7 +166,11 @@ export function convertNovelPreset(data: Record<string, unknown>) {
         math1_quad: params.math1_quad,
         math1_quad_entropy_scale: params.math1_quad_entropy_scale,
         min_p: params.min_p,
-        order: Array.isArray(params.order) ? (params.order as { enabled: boolean; id: string }[]).filter(s => s.enabled && Object.keys(samplers).includes(s.id)).map(s => (samplers as Record<string, number>)[s.id]) : default_order,
+        order: Array.isArray(params.order)
+            ? (params.order as { enabled: boolean; id: string }[])
+                  .filter((s) => s.enabled && Object.keys(samplers).includes(s.id))
+                  .map((s) => (samplers as Record<string, number>)[s.id])
+            : default_order,
         extensions: {},
     };
 }
@@ -175,14 +186,20 @@ export function getNovelTier() {
  *
  */
 export function getNovelAnlas() {
-    return ((novel_data as Record<string, unknown>)?.trainingStepsLeft as Record<string, unknown>)?.fixedTrainingStepsLeft ?? 0;
+    return (
+        ((novel_data as Record<string, unknown>)?.trainingStepsLeft as Record<string, unknown>)
+            ?.fixedTrainingStepsLeft ?? 0
+    );
 }
 
 /**
  *
  */
 export function getNovelUnlimitedImageGeneration() {
-    return ((novel_data as Record<string, unknown>)?.perks as Record<string, unknown>)?.unlimitedImageGeneration ?? false;
+    return (
+        ((novel_data as Record<string, unknown>)?.perks as Record<string, unknown>)
+            ?.unlimitedImageGeneration ?? false
+    );
 }
 
 /**
@@ -244,13 +261,17 @@ interface NovelAIPreset {
  */
 export function loadNovelPreset(preset: NovelAIPreset) {
     if (preset.genamt === undefined) {
-        const needsUnlock = (preset.max_context ?? 0) > MAX_CONTEXT_DEFAULT || (preset.max_length ?? 0) > MAX_RESPONSE_DEFAULT;
+        const needsUnlock =
+            (preset.max_context ?? 0) > MAX_CONTEXT_DEFAULT ||
+            (preset.max_length ?? 0) > MAX_RESPONSE_DEFAULT;
         const amountGen = document.getElementById('amount_gen') as HTMLInputElement | null;
         if (amountGen) {
             amountGen.value = String(preset.max_length);
             amountGen.dispatchEvent(new Event('input'));
         }
-        const maxContextUnlocked = document.getElementById('max_context_unlocked') as HTMLInputElement | null;
+        const maxContextUnlocked = document.getElementById(
+            'max_context_unlocked',
+        ) as HTMLInputElement | null;
         if (maxContextUnlocked) {
             maxContextUnlocked.checked = needsUnlock;
             maxContextUnlocked.dispatchEvent(new Event('change'));
@@ -297,7 +318,10 @@ export function loadNovelPreset(preset: NovelAIPreset) {
  * @param data
  * @param settings
  */
-export function loadNovelSettings(data: Record<string, unknown>, settings: Record<string, unknown>) {
+export function loadNovelSettings(
+    data: Record<string, unknown>,
+    settings: Record<string, unknown>,
+) {
     novelai_setting_names = data.novelai_setting_names as unknown as Record<string, number>;
     novelai_settings = data.novelai_settings as unknown[];
     novelai_settings.forEach(function (item: unknown, i: number) {
@@ -315,8 +339,11 @@ export function loadNovelSettings(data: Record<string, unknown>, settings: Recor
 
     //load the rest of the Novel settings without any checks
     nai_settings.model_novel = settings.model_novel as string;
-    (document.getElementById('model_novel_select') as HTMLSelectElement | null)!.value = nai_settings.model_novel;
-        const selectedOption = document.querySelector(`#model_novel_select option[value="${nai_settings.model_novel}"]`);
+    (document.getElementById('model_novel_select') as HTMLSelectElement | null)!.value =
+        nai_settings.model_novel;
+    const selectedOption = document.querySelector(
+        `#model_novel_select option[value="${nai_settings.model_novel}"]`,
+    );
     if (selectedOption instanceof HTMLOptionElement) selectedOption.selected = true;
 
     if (settings.nai_preamble !== undefined) {
@@ -328,8 +355,10 @@ export function loadNovelSettings(data: Record<string, unknown>, settings: Recor
     nai_settings.repetition_penalty = (settings.repetition_penalty ?? 0) as number;
     nai_settings.repetition_penalty_range = (settings.repetition_penalty_range ?? 0) as number;
     nai_settings.repetition_penalty_slope = (settings.repetition_penalty_slope ?? 0) as number;
-    nai_settings.repetition_penalty_frequency = (settings.repetition_penalty_frequency ?? 0) as number;
-    nai_settings.repetition_penalty_presence = (settings.repetition_penalty_presence ?? 0) as number;
+    nai_settings.repetition_penalty_frequency = (settings.repetition_penalty_frequency ??
+        0) as number;
+    nai_settings.repetition_penalty_presence = (settings.repetition_penalty_presence ??
+        0) as number;
     nai_settings.tail_free_sampling = (settings.tail_free_sampling ?? 0) as number;
     nai_settings.top_k = (settings.top_k ?? 0) as number;
     nai_settings.top_p = (settings.top_p ?? 0) as number;
@@ -371,11 +400,20 @@ function loadNovelSettingsUi(ui_settings: Record<string, unknown>) {
     setVal('rep_pen_slope_novel', ui_settings.repetition_penalty_slope);
     setVal('rep_pen_slope_counter_novel', Number(ui_settings.repetition_penalty_slope).toFixed(2));
     setVal('rep_pen_freq_novel', ui_settings.repetition_penalty_frequency);
-    setVal('rep_pen_freq_counter_novel', Number(ui_settings.repetition_penalty_frequency ?? 0).toFixed(3));
+    setVal(
+        'rep_pen_freq_counter_novel',
+        Number(ui_settings.repetition_penalty_frequency ?? 0).toFixed(3),
+    );
     setVal('rep_pen_presence_novel', ui_settings.repetition_penalty_presence);
-    setVal('rep_pen_presence_counter_novel', Number(ui_settings.repetition_penalty_presence ?? 0).toFixed(3));
+    setVal(
+        'rep_pen_presence_counter_novel',
+        Number(ui_settings.repetition_penalty_presence ?? 0).toFixed(3),
+    );
     setVal('tail_free_sampling_novel', ui_settings.tail_free_sampling);
-    setVal('tail_free_sampling_counter_novel', Number(ui_settings.tail_free_sampling ?? 0).toFixed(3));
+    setVal(
+        'tail_free_sampling_counter_novel',
+        Number(ui_settings.tail_free_sampling ?? 0).toFixed(3),
+    );
     setVal('top_k_novel', ui_settings.top_k);
     setVal('top_k_counter_novel', Number(ui_settings.top_k ?? 0).toFixed(0));
     setVal('top_p_novel', ui_settings.top_p);
@@ -401,12 +439,18 @@ function loadNovelSettingsUi(ui_settings: Record<string, unknown>) {
     setVal('math1_quad_novel', ui_settings.math1_quad);
     setVal('math1_quad_counter_novel', Number(Number(ui_settings.math1_quad).toFixed(2)));
     setVal('math1_quad_entropy_scale_novel', ui_settings.math1_quad_entropy_scale);
-    setVal('math1_quad_entropy_scale_counter_novel', Number(Number(ui_settings.math1_quad_entropy_scale).toFixed(2)));
-        const selectedPresetOption = document.querySelector(`#settings_preset_novel option[value="${(novelai_setting_names as Record<string, number>)[nai_settings.preset_settings_novel]}"]`);
+    setVal(
+        'math1_quad_entropy_scale_counter_novel',
+        Number(Number(ui_settings.math1_quad_entropy_scale).toFixed(2)),
+    );
+    const selectedPresetOption = document.querySelector(
+        `#settings_preset_novel option[value="${(novelai_setting_names as Record<string, number>)[nai_settings.preset_settings_novel]}"]`,
+    );
     if (selectedPresetOption instanceof HTMLOptionElement) selectedPresetOption.selected = true;
 
     const streamingNovelEl = document.getElementById('streaming_novel');
-    if (streamingNovelEl) (streamingNovelEl as HTMLInputElement).checked = !!ui_settings.streaming_novel;
+    if (streamingNovelEl)
+        (streamingNovelEl as HTMLInputElement).checked = !!ui_settings.streaming_novel;
     sortItemsByOrder(ui_settings.order as number[]);
     displayLogitBias(ui_settings.logit_bias as unknown[], BIAS_KEY);
 }
@@ -423,115 +467,153 @@ const sliders: SliderDef[] = [
         sliderId: '#temp_novel',
         counterId: '#temp_counter_novel',
         format: (val: unknown) => Number(val).toFixed(2),
-        setValue: (val: unknown) => { nai_settings.temperature = Number(val); },
+        setValue: (val: unknown) => {
+            nai_settings.temperature = Number(val);
+        },
     },
     {
         sliderId: '#rep_pen_novel',
         counterId: '#rep_pen_counter_novel',
         format: (val: unknown) => Number(val).toFixed(3),
-        setValue: (val: unknown) => { nai_settings.repetition_penalty = Number(val); },
+        setValue: (val: unknown) => {
+            nai_settings.repetition_penalty = Number(val);
+        },
     },
     {
         sliderId: '#rep_pen_size_novel',
         counterId: '#rep_pen_size_counter_novel',
         format: (val: unknown) => `${val}`,
-        setValue: (val: unknown) => { nai_settings.repetition_penalty_range = Number(val); },
+        setValue: (val: unknown) => {
+            nai_settings.repetition_penalty_range = Number(val);
+        },
     },
     {
         sliderId: '#rep_pen_slope_novel',
         counterId: '#rep_pen_slope_counter_novel',
         format: (val: unknown) => `${val}`,
-        setValue: (val: unknown) => { nai_settings.repetition_penalty_slope = Number(val); },
+        setValue: (val: unknown) => {
+            nai_settings.repetition_penalty_slope = Number(val);
+        },
     },
     {
         sliderId: '#rep_pen_freq_novel',
         counterId: '#rep_pen_freq_counter_novel',
         format: (val: unknown) => Number(val).toFixed(2),
-        setValue: (val: unknown) => { nai_settings.repetition_penalty_frequency = Number(val); },
+        setValue: (val: unknown) => {
+            nai_settings.repetition_penalty_frequency = Number(val);
+        },
     },
     {
         sliderId: '#rep_pen_presence_novel',
         counterId: '#rep_pen_presence_counter_novel',
         format: (val: unknown) => `${val}`,
-        setValue: (val: unknown) => { nai_settings.repetition_penalty_presence = Number(val); },
+        setValue: (val: unknown) => {
+            nai_settings.repetition_penalty_presence = Number(val);
+        },
     },
     {
         sliderId: '#tail_free_sampling_novel',
         counterId: '#tail_free_sampling_counter_novel',
         format: (val: unknown) => `${val}`,
-        setValue: (val: unknown) => { nai_settings.tail_free_sampling = Number(val); },
+        setValue: (val: unknown) => {
+            nai_settings.tail_free_sampling = Number(val);
+        },
     },
     {
         sliderId: '#top_k_novel',
         counterId: '#top_k_counter_novel',
         format: (val: unknown) => `${val}`,
-        setValue: (val: unknown) => { nai_settings.top_k = Number(val); },
+        setValue: (val: unknown) => {
+            nai_settings.top_k = Number(val);
+        },
     },
     {
         sliderId: '#top_p_novel',
         counterId: '#top_p_counter_novel',
         format: (val: unknown) => Number(val).toFixed(3),
-        setValue: (val: unknown) => { nai_settings.top_p = Number(val); },
+        setValue: (val: unknown) => {
+            nai_settings.top_p = Number(val);
+        },
     },
     {
         sliderId: '#top_a_novel',
         counterId: '#top_a_counter_novel',
         format: (val: unknown) => Number(val).toFixed(2),
-        setValue: (val: unknown) => { nai_settings.top_a = Number(val); },
+        setValue: (val: unknown) => {
+            nai_settings.top_a = Number(val);
+        },
     },
     {
         sliderId: '#typical_p_novel',
         counterId: '#typical_p_counter_novel',
         format: (val: unknown) => Number(val).toFixed(3),
-        setValue: (val: unknown) => { nai_settings.typical_p = Number(val); },
+        setValue: (val: unknown) => {
+            nai_settings.typical_p = Number(val);
+        },
     },
     {
         sliderId: '#mirostat_tau_novel',
         counterId: '#mirostat_tau_counter_novel',
         format: (val: unknown) => Number(val).toFixed(2),
-        setValue: (val: unknown) => { (nai_settings as Record<string, unknown>).mirostat_tau = Number(val); },
+        setValue: (val: unknown) => {
+            (nai_settings as Record<string, unknown>).mirostat_tau = Number(val);
+        },
     },
     {
         sliderId: '#mirostat_lr_novel',
         counterId: '#mirostat_lr_counter_novel',
         format: (val: unknown) => Number(val).toFixed(2),
-        setValue: (val: unknown) => { (nai_settings as Record<string, unknown>).mirostat_lr = Number(val); },
+        setValue: (val: unknown) => {
+            (nai_settings as Record<string, unknown>).mirostat_lr = Number(val);
+        },
     },
     {
         sliderId: '#min_length_novel',
         counterId: '#min_length_counter_novel',
         format: (val: unknown) => `${val}`,
-        setValue: (val: unknown) => { nai_settings.min_length = Number(val); },
+        setValue: (val: unknown) => {
+            nai_settings.min_length = Number(val);
+        },
     },
     {
         sliderId: '#nai_banned_tokens',
         counterId: '#nai_banned_tokens_counter',
         format: (val: unknown) => String(val),
-        setValue: (val: unknown) => { nai_settings.banned_tokens = String(val); },
+        setValue: (val: unknown) => {
+            nai_settings.banned_tokens = String(val);
+        },
     },
     {
         sliderId: '#min_p_novel',
         counterId: '#min_p_counter_novel',
         format: (val: unknown) => Number(val).toFixed(3),
-        setValue: (val: unknown) => { nai_settings.min_p = Number(val); },
+        setValue: (val: unknown) => {
+            nai_settings.min_p = Number(val);
+        },
     },
     {
         sliderId: '#math1_temp_novel',
         counterId: '#math1_temp_counter_novel',
         format: (val: unknown) => Number(val).toFixed(2),
-        setValue: (val: unknown) => { nai_settings.math1_temp = Number(val); },
+        setValue: (val: unknown) => {
+            nai_settings.math1_temp = Number(val);
+        },
     },
     {
         sliderId: '#math1_quad_novel',
         counterId: '#math1_quad_counter_novel',
         format: (val: unknown) => Number(val).toFixed(2),
-        setValue: (val: unknown) => { nai_settings.math1_quad = Number(val); },
+        setValue: (val: unknown) => {
+            nai_settings.math1_quad = Number(val);
+        },
     },
     {
         sliderId: '#math1_quad_entropy_scale_novel',
         counterId: '#math1_quad_entropy_scale_counter_novel',
         format: (val: unknown) => Number(val).toFixed(2),
-        setValue: (val: unknown) => { nai_settings.math1_quad_entropy_scale = Number(val); },
+        setValue: (val: unknown) => {
+            nai_settings.math1_quad_entropy_scale = Number(val);
+        },
     },
 ];
 
@@ -572,7 +654,7 @@ function getBadWordIds(banned_tokens: string, tokenizerType: number) {
             try {
                 const tokens = JSON.parse(trimmed);
 
-                if (Array.isArray(tokens) && tokens.every(t => Number.isInteger(t))) {
+                if (Array.isArray(tokens) && tokens.every((t) => Number.isInteger(t))) {
                     result.push(tokens);
                 } else {
                     throw new Error('Not an array of integers');
@@ -582,7 +664,9 @@ function getBadWordIds(banned_tokens: string, tokenizerType: number) {
             }
         } else {
             // Apply permutations
-            const permutations = getBadWordPermutations(trimmed).map(t => getTextTokens(tokenizerType, t));
+            const permutations = getBadWordPermutations(trimmed).map((t) =>
+                getTextTokens(tokenizerType, t),
+            );
             result.push(...permutations);
         }
     }
@@ -635,7 +719,15 @@ function getBadWordPermutations(text: string): string[] {
  * @param _cfgValues
  * @param type
  */
-export function getNovelGenerationData(finalPrompt: string, settings: Record<string, unknown>, maxLength: number, isImpersonate: boolean, isContinue: boolean, _cfgValues: unknown, type: string) {
+export function getNovelGenerationData(
+    finalPrompt: string,
+    settings: Record<string, unknown>,
+    maxLength: number,
+    isImpersonate: boolean,
+    isContinue: boolean,
+    _cfgValues: unknown,
+    type: string,
+) {
     console.debug('NovelAI generation data for', type);
     const isKayra = nai_settings.model_novel.includes('kayra');
     const isErato = nai_settings.model_novel.includes('erato');
@@ -666,18 +758,26 @@ export function getNovelGenerationData(finalPrompt: string, settings: Record<str
     }
 
     const MAX_STOP_SEQUENCES = 1024;
-    const stopSequences = (tokenizerType !== tokenizers.NONE)
-        ? stoppingStrings.slice(0, MAX_STOP_SEQUENCES).map(t => getTextTokens(tokenizerType, t))
-        : undefined;
+    const stopSequences =
+        tokenizerType !== tokenizers.NONE
+            ? stoppingStrings
+                  .slice(0, MAX_STOP_SEQUENCES)
+                  .map((t) => getTextTokens(tokenizerType, t))
+            : undefined;
 
-    const badWordIds = (tokenizerType !== tokenizers.NONE)
-        ? getBadWordIds(nai_settings.banned_tokens, tokenizerType)
-        : undefined;
+    const badWordIds =
+        tokenizerType !== tokenizers.NONE
+            ? getBadWordIds(nai_settings.banned_tokens, tokenizerType)
+            : undefined;
 
     const prefix = selectPrefix(nai_settings.prefix, finalPrompt);
 
     let logitBias = [];
-    if (tokenizerType !== tokenizers.NONE && Array.isArray(nai_settings.logit_bias) && nai_settings.logit_bias.length) {
+    if (
+        tokenizerType !== tokenizers.NONE &&
+        Array.isArray(nai_settings.logit_bias) &&
+        nai_settings.logit_bias.length
+    ) {
         logitBias = BIAS_CACHE.get(BIAS_KEY) || calculateLogitBias();
         BIAS_CACHE.set(BIAS_KEY, logitBias);
     }
@@ -686,46 +786,46 @@ export function getNovelGenerationData(finalPrompt: string, settings: Record<str
         console.log(finalPrompt);
     }
 
-
     if (isErato) {
         finalPrompt = '<|startoftext|><|reserved_special_token81|>' + finalPrompt;
     }
 
-    const adjustedMaxLength = (isKayra || isErato) ? getNovelMaxResponseTokens() : maximum_output_length;
+    const adjustedMaxLength =
+        isKayra || isErato ? getNovelMaxResponseTokens() : maximum_output_length;
 
     return {
-        'input': finalPrompt,
-        'model': nai_settings.model_novel,
-        'use_string': true,
-        'temperature': Number(nai_settings.temperature),
-        'max_length': maxLength < adjustedMaxLength ? maxLength : adjustedMaxLength,
-        'min_length': Number(nai_settings.min_length),
-        'tail_free_sampling': Number(nai_settings.tail_free_sampling),
-        'repetition_penalty': Number(nai_settings.repetition_penalty),
-        'repetition_penalty_range': Number(nai_settings.repetition_penalty_range),
-        'repetition_penalty_slope': Number(nai_settings.repetition_penalty_slope),
-        'repetition_penalty_frequency': Number(nai_settings.repetition_penalty_frequency),
-        'repetition_penalty_presence': Number(nai_settings.repetition_penalty_presence),
-        'top_a': Number(nai_settings.top_a),
-        'top_p': Number(nai_settings.top_p),
-        'top_k': Number(nai_settings.top_k),
-        'min_p': Number(nai_settings.min_p),
-        'math1_temp': Number(nai_settings.math1_temp),
-        'math1_quad': Number(nai_settings.math1_quad),
-        'math1_quad_entropy_scale': Number(nai_settings.math1_quad_entropy_scale),
-        'typical_p': Number(nai_settings.typical_p),
-        'mirostat_lr': Number((nai_settings as Record<string, unknown>).mirostat_lr ?? 0),
-        'mirostat_tau': Number((nai_settings as Record<string, unknown>).mirostat_tau ?? 0),
-        'phrase_rep_pen': (nai_settings as Record<string, unknown>).phrase_rep_pen ?? 'off',
-        'stop_sequences': stopSequences,
-        'bad_words_ids': badWordIds,
-        'logit_bias_exp': logitBias,
-        'generate_until_sentence': true,
-        'use_cache': false,
-        'return_full_text': false,
-        'prefix': prefix,
-        'order': nai_settings.order || settings.order || default_order,
-        'num_logprobs': power_user.request_token_probabilities ? 10 : undefined,
+        input: finalPrompt,
+        model: nai_settings.model_novel,
+        use_string: true,
+        temperature: Number(nai_settings.temperature),
+        max_length: maxLength < adjustedMaxLength ? maxLength : adjustedMaxLength,
+        min_length: Number(nai_settings.min_length),
+        tail_free_sampling: Number(nai_settings.tail_free_sampling),
+        repetition_penalty: Number(nai_settings.repetition_penalty),
+        repetition_penalty_range: Number(nai_settings.repetition_penalty_range),
+        repetition_penalty_slope: Number(nai_settings.repetition_penalty_slope),
+        repetition_penalty_frequency: Number(nai_settings.repetition_penalty_frequency),
+        repetition_penalty_presence: Number(nai_settings.repetition_penalty_presence),
+        top_a: Number(nai_settings.top_a),
+        top_p: Number(nai_settings.top_p),
+        top_k: Number(nai_settings.top_k),
+        min_p: Number(nai_settings.min_p),
+        math1_temp: Number(nai_settings.math1_temp),
+        math1_quad: Number(nai_settings.math1_quad),
+        math1_quad_entropy_scale: Number(nai_settings.math1_quad_entropy_scale),
+        typical_p: Number(nai_settings.typical_p),
+        mirostat_lr: Number((nai_settings as Record<string, unknown>).mirostat_lr ?? 0),
+        mirostat_tau: Number((nai_settings as Record<string, unknown>).mirostat_tau ?? 0),
+        phrase_rep_pen: (nai_settings as Record<string, unknown>).phrase_rep_pen ?? 'off',
+        stop_sequences: stopSequences,
+        bad_words_ids: badWordIds,
+        logit_bias_exp: logitBias,
+        generate_until_sentence: true,
+        use_cache: false,
+        return_full_text: false,
+        prefix: prefix,
+        order: nai_settings.order || settings.order || default_order,
+        num_logprobs: power_user.request_token_probabilities ? 10 : undefined,
     };
 }
 
@@ -884,7 +984,10 @@ function tryParseStreamingError(response: Response, decoded: string) {
  * @param generate_data
  * @param signal
  */
-export async function generateNovelWithStreaming(generate_data: Record<string, unknown>, signal: AbortSignal) {
+export async function generateNovelWithStreaming(
+    generate_data: Record<string, unknown>,
+    signal: AbortSignal,
+) {
     generate_data.streaming = nai_settings.streaming_novel;
 
     const response = await fetch('/api/novelai/generate', {
@@ -913,7 +1016,13 @@ export async function generateNovelWithStreaming(generate_data: Record<string, u
                 text += data.token;
             }
 
-            yield { text, swipes: [], logprobs: parseNovelAILogprobs(data.logprobs), toolCalls: [], state: {} };
+            yield {
+                text,
+                swipes: [],
+                logprobs: parseNovelAILogprobs(data.logprobs),
+                toolCalls: [],
+                state: {},
+            };
         }
     };
 }
@@ -946,16 +1055,24 @@ export async function generateNovelWithStreaming(generate_data: Record<string, u
  * @param {NAITokenLogprobs} data - NAI logprobs object for one token
  * @returns {import('./logprobs.js').TokenLogprobs | null} converted logprobs
  */
-export function parseNovelAILogprobs(data: {
-    before: [[number], [number, number]][];
-    after: [[number], [number, number]][];
-    chosen: [[number], [number, number]][];
-} | null) {
+export function parseNovelAILogprobs(
+    data: {
+        before: [[number], [number, number]][];
+        after: [[number], [number, number]][];
+        chosen: [[number], [number, number]][];
+    } | null,
+) {
     if (!data) {
         return null;
     }
-    const befores: [number, number][] = data.before.map(([[tokenId], [before, _]]) => [tokenId, before]);
-    const afters: [number, number][] = data.after.map(([[tokenId], [_, after]]) => [tokenId, after]);
+    const befores: [number, number][] = data.before.map(([[tokenId], [before, _]]) => [
+        tokenId,
+        before,
+    ]);
+    const afters: [number, number][] = data.after.map(([[tokenId], [_, after]]) => [
+        tokenId,
+        after,
+    ]);
 
     // Find any tokens in `befores` that are missing from `afters`. Then add
     // them with a logprob of -Infinity (0% probability)
@@ -966,7 +1083,7 @@ export function parseNovelAILogprobs(data: {
 
     // Add the chosen token to `merged` if it's not already there. This can
     // happen if the chosen token was not among the top 10 most likely ones.
-     
+
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [[chosenId], [_, chosenAfter]] = data.chosen[0]!;
     if (!merged.some(([id]) => id === chosenId)) {
@@ -981,10 +1098,12 @@ export function parseNovelAILogprobs(data: {
     return { token: chosenId, topLogprobs: merged };
 }
 
-document.getElementById('nai_preamble_textarea')?.addEventListener('input', function (this: HTMLTextAreaElement) {
-    nai_settings.preamble = String(this.value);
-    saveSettingsDebounced();
-});
+document
+    .getElementById('nai_preamble_textarea')
+    ?.addEventListener('input', function (this: HTMLTextAreaElement) {
+        nai_settings.preamble = String(this.value);
+        saveSettingsDebounced();
+    });
 
 document.getElementById('nai_preamble_restore')?.addEventListener('click', function () {
     nai_settings.preamble = default_preamble;
@@ -1016,7 +1135,7 @@ export async function getStatusNovel() {
  *
  */
 export function initNovelAISettings() {
-    sliders.forEach(slider => {
+    sliders.forEach((slider) => {
         document.addEventListener('input', function (event) {
             if (!(event.target instanceof Element)) return;
             const el = event.target.closest(slider.sliderId);
@@ -1030,63 +1149,94 @@ export function initNovelAISettings() {
         });
     });
 
-    document.getElementById('api_button_novel')?.addEventListener('click', async function (e: Event) {
-        e.stopPropagation();
-        const api_key_novel = String((document.getElementById('api_key_novel') as HTMLInputElement | null)?.value).trim();
+    document
+        .getElementById('api_button_novel')
+        ?.addEventListener('click', async function (e: Event) {
+            e.stopPropagation();
+            const api_key_novel = String(
+                (document.getElementById('api_key_novel') as HTMLInputElement | null)?.value,
+            ).trim();
 
-        if (api_key_novel.length) {
-            await writeSecret(SECRET_KEYS.NOVEL!, api_key_novel, '', undefined);
-        }
+            if (api_key_novel.length) {
+                await writeSecret(SECRET_KEYS.NOVEL!, api_key_novel, '', undefined);
+            }
 
-        if (!(secret_state as Record<string, unknown>)[SECRET_KEYS.NOVEL as string]) {
-            console.log('No secret key saved for NovelAI');
-            return;
-        }
+            if (!(secret_state as Record<string, unknown>)[SECRET_KEYS.NOVEL as string]) {
+                console.log('No secret key saved for NovelAI');
+                return;
+            }
 
-        startStatusLoading();
-        await getStatusNovel();
-    });
+            startStatusLoading();
+            await getStatusNovel();
+        });
 
-    document.getElementById('settings_preset_novel')?.addEventListener('change', async function (this: HTMLSelectElement) {
-        nai_settings.preset_settings_novel = this.options[this.selectedIndex]!.text;
-        const preset = novelai_settings[novelai_setting_names[nai_settings.preset_settings_novel] ?? 0] as unknown as NovelAIPreset;
-        loadNovelPreset(preset);
-        saveSettingsDebounced();
-        await eventSource.emit(event_types.PRESET_CHANGED, { apiId: 'novel', name: nai_settings.preset_settings_novel });
-    });
+    document
+        .getElementById('settings_preset_novel')
+        ?.addEventListener('change', async function (this: HTMLSelectElement) {
+            nai_settings.preset_settings_novel = this.options[this.selectedIndex]!.text;
+            const preset = novelai_settings[
+                novelai_setting_names[nai_settings.preset_settings_novel] ?? 0
+            ] as unknown as NovelAIPreset;
+            loadNovelPreset(preset);
+            saveSettingsDebounced();
+            await eventSource.emit(event_types.PRESET_CHANGED, {
+                apiId: 'novel',
+                name: nai_settings.preset_settings_novel,
+            });
+        });
 
-    document.getElementById('streaming_novel')?.addEventListener('input', function (this: HTMLInputElement) {
-        const value = !!(this).checked;
-        nai_settings.streaming_novel = value;
-        saveSettingsDebounced();
-    });
+    document
+        .getElementById('streaming_novel')
+        ?.addEventListener('input', function (this: HTMLInputElement) {
+            const value = !!this.checked;
+            nai_settings.streaming_novel = value;
+            saveSettingsDebounced();
+        });
 
-    document.getElementById('model_novel_select')?.addEventListener('change', function (this: HTMLSelectElement) {
-        nai_settings.model_novel = String(this.options[this.selectedIndex]!.value);
-        saveSettingsDebounced();
+    document
+        .getElementById('model_novel_select')
+        ?.addEventListener('change', function (this: HTMLSelectElement) {
+            nai_settings.model_novel = String(this.options[this.selectedIndex]!.value);
+            saveSettingsDebounced();
 
-        // Update the selected preset to something appropriate
-        const default_preset = (default_presets as Record<string, string>)[nai_settings.model_novel];
-        const settingsPresetNovel = document.getElementById('settings_preset_novel') as HTMLSelectElement | null;
-        if (settingsPresetNovel && default_preset) {
-            settingsPresetNovel.value = String((novelai_setting_names as Record<string, number>)[default_preset]);
-        }
-        document.querySelector(`#settings_preset_novel option[value="${novelai_setting_names[default_preset ?? '']}"]`)?.setAttribute('selected', 'true');
-        document.getElementById('settings_preset_novel')?.dispatchEvent(new Event('change'));
-    });
+            // Update the selected preset to something appropriate
+            const default_preset = (default_presets as Record<string, string>)[
+                nai_settings.model_novel
+            ];
+            const settingsPresetNovel = document.getElementById(
+                'settings_preset_novel',
+            ) as HTMLSelectElement | null;
+            if (settingsPresetNovel && default_preset) {
+                settingsPresetNovel.value = String(
+                    (novelai_setting_names as Record<string, number>)[default_preset],
+                );
+            }
+            document
+                .querySelector(
+                    `#settings_preset_novel option[value="${novelai_setting_names[default_preset ?? '']}"]`,
+                )
+                ?.setAttribute('selected', 'true');
+            document.getElementById('settings_preset_novel')?.dispatchEvent(new Event('change'));
+        });
 
-    document.getElementById('nai_prefix')?.addEventListener('change', function (this: HTMLSelectElement) {
-        nai_settings.prefix = String(this.options[this.selectedIndex]!.value);
-        saveSettingsDebounced();
-    });
+    document
+        .getElementById('nai_prefix')
+        ?.addEventListener('change', function (this: HTMLSelectElement) {
+            nai_settings.prefix = String(this.options[this.selectedIndex]!.value);
+            saveSettingsDebounced();
+        });
 
     document.getElementById('phrase_rep_pen_novel')?.addEventListener('change', function () {
         const el = document.getElementById('phrase_rep_pen_novel') as HTMLSelectElement | null;
-        (nai_settings as Record<string, unknown>).phrase_rep_pen = String(el?.options[el?.selectedIndex ?? 0]?.value ?? '');
+        (nai_settings as Record<string, unknown>).phrase_rep_pen = String(
+            el?.options[el?.selectedIndex ?? 0]?.value ?? '',
+        );
         saveSettingsDebounced();
     });
 
-    const novelOrderEl = document.getElementById('novel_order') as HTMLElement & { sortableInstance?: unknown };
+    const novelOrderEl = document.getElementById('novel_order') as HTMLElement & {
+        sortableInstance?: unknown;
+    };
     if (novelOrderEl) {
         novelOrderEl.sortableInstance = new Sortable(novelOrderEl, {
             delay: getSortableDelay(),
@@ -1106,5 +1256,9 @@ export function initNovelAISettings() {
         saveSamplingOrder();
     });
 
-    document.getElementById('novelai_logit_bias_new_entry')?.addEventListener('click', () => createNewLogitBiasEntry(nai_settings.logit_bias, BIAS_KEY));
+    document
+        .getElementById('novelai_logit_bias_new_entry')
+        ?.addEventListener('click', () =>
+            createNewLogitBiasEntry(nai_settings.logit_bias, BIAS_KEY),
+        );
 }

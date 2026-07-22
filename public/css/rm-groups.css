@@ -16,7 +16,6 @@
     margin-bottom: auto;
     color: rgb(188, 193, 200, 1);
     border: 1px solid var(--SmartThemeBorderColor);
-    ;
     background-color: rgba(0, 0, 0, 0.3);
     padding: 6px;
     border-radius: 10px;
@@ -35,7 +34,7 @@
     margin-bottom: 5px;
 }
 
-#rm_group_buttons>div {
+#rm_group_buttons > div {
     display: flex;
     flex-direction: column;
 }
@@ -48,13 +47,12 @@
     display: inline-block;
 }
 
-#rm_group_buttons>input {
-
+#rm_group_buttons > input {
     cursor: pointer;
     user-select: none;
 }
 
-#rm_group_buttons>input:disabled {
+#rm_group_buttons > input:disabled {
     filter: brightness(0.3);
     cursor: unset;
 }
@@ -169,34 +167,33 @@
     align-items: center;
 }
 
-#rm_group_members .right_menu_button[data-action="speak"],
-#rm_group_members .group_member:not(.disabled) .right_menu_button[data-action="disable"] {
+#rm_group_members .right_menu_button[data-action='speak'],
+#rm_group_members .group_member:not(.disabled) .right_menu_button[data-action='disable'] {
     opacity: 0.4;
     filter: brightness(0.5);
     transition: all var(--animation-duration-2x) ease-in-out;
 }
 
 /* #rm_group_members .right_menu_button[data-action="speak"]:hover, */
-#rm_group_members .group_member:not(.disabled) .right_menu_button[data-action="disable"]:hover {
+#rm_group_members .group_member:not(.disabled) .right_menu_button[data-action='disable']:hover {
     opacity: inherit;
     filter: drop-shadow(0px 0px 5px rgb(243, 166, 65));
 }
 
-#rm_group_members .group_member.disabled .right_menu_button[data-action="enable"] {
+#rm_group_members .group_member.disabled .right_menu_button[data-action='enable'] {
     filter: drop-shadow(0px 0px 5px rgb(243, 166, 65));
 }
 
-
-#rm_group_members .right_menu_button[data-action="speak"]:hover {
+#rm_group_members .right_menu_button[data-action='speak']:hover {
     opacity: inherit;
     filter: drop-shadow(0px 0px 5px rgb(153, 255, 153));
 }
 
 /* Rules for icon display */
-#rm_group_add_members .right_menu_button:not([data-action="add"], [data-action="view"]),
-#rm_group_members .right_menu_button[data-action="add"],
-#rm_group_members .group_member.disabled .right_menu_button[data-action="disable"],
-#rm_group_members .group_member:not(.disabled) .right_menu_button[data-action="enable"] {
+#rm_group_add_members .right_menu_button:not([data-action='add'], [data-action='view']),
+#rm_group_members .right_menu_button[data-action='add'],
+#rm_group_members .group_member.disabled .right_menu_button[data-action='disable'],
+#rm_group_members .group_member:not(.disabled) .right_menu_button[data-action='enable'] {
     display: none;
 }
 

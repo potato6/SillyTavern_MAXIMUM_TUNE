@@ -6,11 +6,11 @@ export const router = express.Router();
 // Audio format MIME type mapping
 const getAudioMimeType = (format: string) => {
     const mimeTypes = {
-        'mp3': 'audio/mpeg',
-        'wav': 'audio/wav',
-        'pcm': 'audio/pcm',
-        'flac': 'audio/flac',
-        'aac': 'audio/aac',
+        mp3: 'audio/mpeg',
+        wav: 'audio/wav',
+        pcm: 'audio/pcm',
+        flac: 'audio/flac',
+        aac: 'audio/aac',
     };
     // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     return mimeTypes[format] || 'audio/mpeg';
@@ -38,7 +38,11 @@ router.post('/generate-voice', async (request, response) => {
         // Validate required parameters
         if (!text || !voiceId || !apiKey || !groupId) {
             console.warn('MiniMax TTS: Missing required parameters');
-            return response.status(400).json({ error: 'Missing required parameters: text, voiceId, apiKey, and groupId are required' });
+            return response
+                .status(400)
+                .json({
+                    error: 'Missing required parameters: text, voiceId, apiKey, and groupId are required',
+                });
         }
 
         const requestBody = {
@@ -69,13 +73,16 @@ router.post('/generate-voice', async (request, response) => {
 
         console.debug('MiniMax TTS Request:', {
             url: apiUrl,
-            body: { ...requestBody, voice_setting: { ...requestBody.voice_setting, voice_id: '[REDACTED]' } },
+            body: {
+                ...requestBody,
+                voice_setting: { ...requestBody.voice_setting, voice_id: '[REDACTED]' },
+            },
         });
 
         const apiResponse = await fetch(apiUrl, {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${apiKey}`,
+                Authorization: `Bearer ${apiKey}`,
                 'Content-Type': 'application/json',
                 'MM-API-Source': 'SillyTavern-TTS',
             },
@@ -95,12 +102,17 @@ router.post('/generate-voice', async (request, response) => {
                 const baseResp = errorData?.base_resp;
                 if (baseResp && baseResp.status_code !== 0) {
                     if (baseResp.status_code === 1004) {
-                        errorMessage = 'Authentication failed - Please check your API key and API host';
+                        errorMessage =
+                            'Authentication failed - Please check your API key and API host';
                     } else {
                         errorMessage = `API Error: ${baseResp.status_msg}`;
                     }
                 } else {
-                    errorMessage = errorData.error?.message || errorData.message || errorData.detail || `HTTP ${apiResponse.status}`;
+                    errorMessage =
+                        errorData.error?.message ||
+                        errorData.message ||
+                        errorData.detail ||
+                        `HTTP ${apiResponse.status}`;
                 }
             } catch {
                 // If not JSON, try to read text
@@ -175,14 +187,16 @@ router.post('/generate-voice', async (request, response) => {
                     console.error('MiniMax TTS: Failed to parse hex string');
                     return response.status(500).json({ error: 'Invalid hex string format' });
                 }
-                const audioBytes = new Uint8Array(hexMatches.map(byte => parseInt(byte, 16)));
+                const audioBytes = new Uint8Array(hexMatches.map((byte) => parseInt(byte, 16)));
 
                 if (audioBytes.length === 0) {
                     console.error('MiniMax TTS: Audio conversion resulted in empty array');
                     return response.status(500).json({ error: 'Audio data conversion failed' });
                 }
 
-                console.debug(`MiniMax TTS: Converted ${paddedHex.length} hex characters to ${audioBytes.length} bytes`);
+                console.debug(
+                    `MiniMax TTS: Converted ${paddedHex.length} hex characters to ${audioBytes.length} bytes`,
+                );
 
                 // Set appropriate headers and send audio data
                 const mimeType = getAudioMimeType(format);
@@ -193,7 +207,9 @@ router.post('/generate-voice', async (request, response) => {
             } catch (conversionError) {
                 console.error('MiniMax TTS: Audio conversion error:', conversionError);
                 // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-                return response.status(500).json({ error: `Audio data conversion failed: ${conversionError.message}` });
+                return response
+                    .status(500)
+                    .json({ error: `Audio data conversion failed: ${conversionError.message}` });
             }
         } else if (responseData.data && responseData.data.url) {
             // Handle URL-based audio response
@@ -202,8 +218,13 @@ router.post('/generate-voice', async (request, response) => {
             try {
                 const audioResponse = await fetch(responseData.data.url);
                 if (!audioResponse.ok) {
-                    console.error('MiniMax TTS: Failed to fetch audio from URL:', audioResponse.status);
-                    return response.status(500).json({ error: `Failed to fetch audio from URL: ${audioResponse.status}` });
+                    console.error(
+                        'MiniMax TTS: Failed to fetch audio from URL:',
+                        audioResponse.status,
+                    );
+                    return response
+                        .status(500)
+                        .json({ error: `Failed to fetch audio from URL: ${audioResponse.status}` });
                 }
 
                 const audioBuffer = await audioResponse.arrayBuffer();
@@ -216,11 +237,16 @@ router.post('/generate-voice', async (request, response) => {
             } catch (urlError) {
                 console.error('MiniMax TTS: Error fetching audio from URL:', urlError);
                 // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-                return response.status(500).json({ error: `Failed to fetch audio: ${urlError.message}` });
+                return response
+                    .status(500)
+                    .json({ error: `Failed to fetch audio: ${urlError.message}` });
             }
         } else {
             // Handle error response
-            const errorMessage = responseData.base_resp?.status_msg || responseData.error?.message || 'Unknown error';
+            const errorMessage =
+                responseData.base_resp?.status_msg ||
+                responseData.error?.message ||
+                'Unknown error';
             console.error('MiniMax TTS: No valid audio data in response:', responseData);
             return response.status(500).json({ error: `API Error: ${errorMessage}` });
         }

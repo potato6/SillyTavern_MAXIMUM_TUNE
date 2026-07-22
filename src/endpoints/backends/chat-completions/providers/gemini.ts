@@ -1,7 +1,11 @@
 import util from 'node:util';
 import { CHAT_COMPLETION_SOURCES, GEMINI_SAFETY, VERTEX_SAFETY } from '../../../../constants.js';
 import { getConfigValue, forwardFetchResponse, tryParse } from '../../../../util.js';
-import { convertGooglePrompt, getPromptNames, calculateGoogleBudgetTokens } from '../../../../prompt-converters.js';
+import {
+    convertGooglePrompt,
+    getPromptNames,
+    calculateGoogleBudgetTokens,
+} from '../../../../prompt-converters.js';
 import { readSecret, SECRET_KEYS } from '../../../secrets.js';
 import { getVertexAIAuth, getProjectIdFromServiceAccount } from '../../../google.js';
 import { createSocketAbortController } from '../../common/abort-controller.js';
@@ -68,8 +72,11 @@ const provider: ChatProvider = {
         const isGemma3 = /gemma-3/.test(model);
         const isLearnLM = model.includes('learnlm');
 
-        const responseMimeType = req.body.responseMimeType ?? (req.body.json_schema ? 'application/json' : undefined);
-        const responseSchema = req.body.responseSchema ?? (req.body.json_schema ? req.body.json_schema.value : undefined);
+        const responseMimeType =
+            req.body.responseMimeType ?? (req.body.json_schema ? 'application/json' : undefined);
+        const responseSchema =
+            req.body.responseSchema ??
+            (req.body.json_schema ? req.body.json_schema.value : undefined);
 
         const generationConfig: Record<string, any> = {
             stopSequences: req.body.stop,
@@ -84,15 +91,29 @@ const provider: ChatProvider = {
         };
 
         const imageGenerationModels = [
-            'gemini-2.0-flash-exp', 'gemini-2.0-flash-exp-image-generation',
-            'gemini-2.0-flash-preview-image-generation', 'gemini-2.5-flash-image-preview',
-            'gemini-2.5-flash-image', 'gemini-3-pro-image-preview', 'gemini-3.1-flash-image-preview',
+            'gemini-2.0-flash-exp',
+            'gemini-2.0-flash-exp-image-generation',
+            'gemini-2.0-flash-preview-image-generation',
+            'gemini-2.5-flash-image-preview',
+            'gemini-2.5-flash-image',
+            'gemini-3-pro-image-preview',
+            'gemini-3.1-flash-image-preview',
         ];
-        const isThinkingConfigModel = (m: string) => (/^gemini-2.5-(flash|pro)/.test(m) && !/-image(-preview)?$/.test(m)) || (/^gemini-3[.\d]*-(flash|pro)/.test(m));
-        const isImageSizeModel = (m: string) => /^gemini-3/.test(m);
-        const noSearchModels = ['gemini-2.0-flash-lite', 'gemini-2.0-flash-lite-001', 'gemini-2.0-flash-lite-preview-02-05', 'gemini-robotics-er-1.5-preview'];
+        const isThinkingConfigModel = (m: string) =>
+            (/^gemini-2.5-(flash|pro)/.test(m) && !/-image(-preview)?$/.test(m)) ||
+            /^gemini-3[.\d]*-(flash|pro)/.test(m);
+        const isImageSizeModel = (m: string) => m.startsWith('gemini-3');
+        const noSearchModels = [
+            'gemini-2.0-flash-lite',
+            'gemini-2.0-flash-lite-001',
+            'gemini-2.0-flash-lite-preview-02-05',
+            'gemini-robotics-er-1.5-preview',
+        ];
 
-        if (!Array.isArray(generationConfig.stopSequences) || !generationConfig.stopSequences.length) {
+        if (
+            !Array.isArray(generationConfig.stopSequences) ||
+            !generationConfig.stopSequences.length
+        ) {
             delete generationConfig.stopSequences;
         }
 
@@ -101,23 +122,37 @@ const provider: ChatProvider = {
             generationConfig.responseModalities = ['text', 'image'];
             if (aspectRatio || imageSize) {
                 generationConfig.imageConfig = {};
-                if (imageSize && isImageSizeModel(model)) generationConfig.imageConfig.imageSize = imageSize;
+                if (imageSize && isImageSizeModel(model))
+                    generationConfig.imageConfig.imageSize = imageSize;
                 if (aspectRatio) generationConfig.imageConfig.aspectRatio = aspectRatio;
             }
         }
 
         const useSystemPrompt = !enableImageModality && !isGemma3 && req.body.use_sysprompt;
         const tools: any[] = [];
-        const prompt = convertGooglePrompt(req.body.messages, model, useSystemPrompt, getPromptNames(req));
+        const prompt = convertGooglePrompt(
+            req.body.messages,
+            model,
+            useSystemPrompt,
+            getPromptNames(req),
+        );
         const safetySettings = [...GEMINI_SAFETY, ...(useVertexAi ? VERTEX_SAFETY : [])];
 
-        if (Array.isArray(req.body.tools) && req.body.tools.length > 0 && !enableImageModality && !isGemma3) {
+        if (
+            Array.isArray(req.body.tools) &&
+            req.body.tools.length > 0 &&
+            !enableImageModality &&
+            !isGemma3
+        ) {
             const functionDeclarations: any[] = [];
             const customTools: any[] = [];
             for (const tool of req.body.tools) {
                 if (tool.type === 'function') {
                     if (tool.function.parameters?.$schema) delete tool.function.parameters.$schema;
-                    if (tool.function.parameters?.properties && Object.keys(tool.function.parameters.properties).length === 0) {
+                    if (
+                        tool.function.parameters?.properties &&
+                        Object.keys(tool.function.parameters.properties).length === 0
+                    ) {
                         delete tool.function.parameters;
                     }
                     functionDeclarations.push(tool.function);
@@ -125,19 +160,33 @@ const provider: ChatProvider = {
                     customTools.push({ [tool.type]: tool[tool.type] });
                 }
             }
-            if (functionDeclarations.length > 0) tools.push({ function_declarations: functionDeclarations });
-            if (functionDeclarations.length === 0 && customTools.length > 0) tools.push(...customTools);
+            if (functionDeclarations.length > 0)
+                tools.push({ function_declarations: functionDeclarations });
+            if (functionDeclarations.length === 0 && customTools.length > 0)
+                tools.push(...customTools);
         }
 
-        if (enableWebSearch && !enableImageModality && !isGemma3 && !isLearnLM && !noSearchModels.includes(model)) {
+        if (
+            enableWebSearch &&
+            !enableImageModality &&
+            !isGemma3 &&
+            !isLearnLM &&
+            !noSearchModels.includes(model)
+        ) {
             if (!tools.some((t: any) => t.function_declarations)) tools.push({ google_search: {} });
         }
 
         if (isThinkingConfigModel(model)) {
             const thinkingConfig: Record<string, any> = { includeThoughts: includeReasoning };
-            const thinkingBudget = calculateGoogleBudgetTokens(generationConfig.maxOutputTokens, reasoningEffort, model);
-            if (typeof thinkingBudget === 'number' && Number.isInteger(thinkingBudget)) thinkingConfig.thinkingBudget = thinkingBudget;
-            if (typeof thinkingBudget === 'string' && thinkingBudget.length > 0) thinkingConfig.thinkingLevel = thinkingBudget;
+            const thinkingBudget = calculateGoogleBudgetTokens(
+                generationConfig.maxOutputTokens,
+                reasoningEffort,
+                model,
+            );
+            if (typeof thinkingBudget === 'number' && Number.isInteger(thinkingBudget))
+                thinkingConfig.thinkingBudget = thinkingBudget;
+            if (typeof thinkingBudget === 'string' && thinkingBudget.length > 0)
+                thinkingConfig.thinkingLevel = thinkingBudget;
             if (useVertexAi && thinkingBudget === 0 && thinkingConfig.includeThoughts) {
                 console.info('Thinking budget is 0 but includeThoughts is true.');
                 thinkingConfig.includeThoughts = false;
@@ -151,7 +200,11 @@ const provider: ChatProvider = {
             generationConfig,
         };
 
-        if (useSystemPrompt && Array.isArray(prompt.system_instruction.parts) && prompt.system_instruction.parts.length) {
+        if (
+            useSystemPrompt &&
+            Array.isArray(prompt.system_instruction.parts) &&
+            prompt.system_instruction.parts.length
+        ) {
             body.systemInstruction = prompt.system_instruction;
         }
 
@@ -161,12 +214,21 @@ const provider: ChatProvider = {
             let functionCallingConfig: any;
             if (typeof toolChoice === 'string') {
                 switch (toolChoice) {
-                    case 'none': functionCallingConfig = { mode: 'NONE' }; break;
-                    case 'required': functionCallingConfig = { mode: 'ANY' }; break;
-                    case 'auto': functionCallingConfig = { mode: 'AUTO' }; break;
+                    case 'none':
+                        functionCallingConfig = { mode: 'NONE' };
+                        break;
+                    case 'required':
+                        functionCallingConfig = { mode: 'ANY' };
+                        break;
+                    case 'auto':
+                        functionCallingConfig = { mode: 'AUTO' };
+                        break;
                 }
             } else if (typeof toolChoice === 'object' && toolChoice?.function?.name) {
-                functionCallingConfig = { mode: 'ANY', allowedFunctionNames: [toolChoice.function.name] };
+                functionCallingConfig = {
+                    mode: 'ANY',
+                    allowedFunctionNames: [toolChoice.function.name],
+                };
             }
             if (functionCallingConfig) body.toolConfig = { functionCallingConfig };
         }
@@ -176,8 +238,11 @@ const provider: ChatProvider = {
         try {
             const { signal } = createSocketAbortController(req.socket);
 
-             
-            const apiVersion: any = getConfigValue('gemini.apiVersion', 'v1beta' as any, 'string' as any);
+            const apiVersion: any = getConfigValue(
+                'gemini.apiVersion',
+                'v1beta' as any,
+                'string' as any,
+            );
             const responseType = stream ? 'streamGenerateContent' : 'generateContent';
 
             let url: string;
@@ -192,7 +257,11 @@ const provider: ChatProvider = {
                         ? `https://aiplatform.googleapis.com/v1/projects/${projectId}/locations/${region}/publishers/google/models/${model}:${responseType}?key=${keyParam}${stream ? '&alt=sse' : ''}`
                         : `https://${region}-aiplatform.googleapis.com/v1/publishers/google/models/${model}:${responseType}?key=${keyParam}${stream ? '&alt=sse' : ''}`;
                 } else if (authType === 'full') {
-                    const serviceAccountJson = readSecret(req.user.directories, SECRET_KEYS.VERTEXAI_SERVICE_ACCOUNT, req.body.secret_id);
+                    const serviceAccountJson = readSecret(
+                        req.user.directories,
+                        SECRET_KEYS.VERTEXAI_SERVICE_ACCOUNT,
+                        req.body.secret_id,
+                    );
                     if (!serviceAccountJson) {
                         console.warn('Vertex AI Service Account JSON is missing.');
                         res.status(400).send({ error: true });
@@ -233,30 +302,44 @@ const provider: ChatProvider = {
             } else {
                 if (!generateResponse.ok) {
                     const errorText = await generateResponse.text();
-                    console.warn(`${apiName} API returned error: ${generateResponse.status} ${generateResponse.statusText} ${errorText}`);
+                    console.warn(
+                        `${apiName} API returned error: ${generateResponse.status} ${generateResponse.statusText} ${errorText}`,
+                    );
                     const errorJson = tryParse(errorText) ?? { error: true };
                     res.status(500).send(errorJson);
                     return;
                 }
 
-                const json = await generateResponse.json() as any;
+                const json = (await generateResponse.json()) as any;
                 const candidates = json?.candidates;
                 if (!candidates || candidates.length === 0) {
                     let msg = `${apiName} API returned no candidate`;
                     console.warn(msg, json);
-                    if (json?.promptFeedback?.blockReason) msg += `\nPrompt was blocked due to: ${json.promptFeedback.blockReason}`;
+                    if (json?.promptFeedback?.blockReason)
+                        msg += `\nPrompt was blocked due to: ${json.promptFeedback.blockReason}`;
                     res.send({ error: { message: msg } });
                     return;
                 }
 
                 const responseContent = candidates[0].content ?? candidates[0].output;
-                const functionCall = (candidates[0]?.content?.parts ?? []).some((p: any) => p.functionCall);
-                const inlineData = (candidates[0]?.content?.parts ?? []).some((p: any) => p.inlineData);
-                console.debug(`${apiName} response:`, util.inspect(json, { depth: 5, colors: true }));
+                const functionCall = (candidates[0]?.content?.parts ?? []).some(
+                    (p: any) => p.functionCall,
+                );
+                const inlineData = (candidates[0]?.content?.parts ?? []).some(
+                    (p: any) => p.inlineData,
+                );
+                console.debug(
+                    `${apiName} response:`,
+                    util.inspect(json, { depth: 5, colors: true }),
+                );
 
-                const responseText = typeof responseContent === 'string'
-                    ? responseContent
-                    : responseContent?.parts?.filter((p: any) => !p.thought)?.map((p: any) => p.text)?.join('\n\n');
+                const responseText =
+                    typeof responseContent === 'string'
+                        ? responseContent
+                        : responseContent?.parts
+                              ?.filter((p: any) => !p.thought)
+                              ?.map((p: any) => p.text)
+                              ?.join('\n\n');
 
                 if (!responseText && !functionCall && !inlineData) {
                     console.warn(`${apiName} Candidate text empty`, json);
@@ -290,20 +373,31 @@ const provider: ChatProvider = {
         if (!apiKey && !req.body.reverse_proxy) return [];
 
         const apiUrl = req.body.reverse_proxy || API_MAKERSUITE;
-         
-        const apiVersion: any = getConfigValue('gemini.apiVersion', 'v1beta' as any, 'string' as any);
-        const modelsUrl = !apiKey && req.body.reverse_proxy
-            ? `${apiUrl}/${apiVersion}/models`
-            : `${apiUrl}/${apiVersion}/models?key=${apiKey}`;
+
+        const apiVersion: any = getConfigValue(
+            'gemini.apiVersion',
+            'v1beta' as any,
+            'string' as any,
+        );
+        const modelsUrl =
+            !apiKey && req.body.reverse_proxy
+                ? `${apiUrl}/${apiVersion}/models`
+                : `${apiUrl}/${apiVersion}/models?key=${apiKey}`;
 
         try {
             const response = await globalThis.fetch(modelsUrl);
             if (!response.ok) return [];
-            const data = await response.json() as any;
-            const models = (data.models as any[])
-                ?.filter((m: any) => (m.supportedGenerationMethods as string[])?.includes('generateContent'))
-                ?.map((m: any) => ({ ...m, id: m.name.replace('models/', '') })) || [];
-            console.info('Available Google AI Studio models:', models.map((m: any) => m.id));
+            const data = (await response.json()) as any;
+            const models =
+                (data.models as any[])
+                    ?.filter((m: any) =>
+                        (m.supportedGenerationMethods as string[])?.includes('generateContent'),
+                    )
+                    ?.map((m: any) => ({ ...m, id: m.name.replace('models/', '') })) || [];
+            console.info(
+                'Available Google AI Studio models:',
+                models.map((m: any) => m.id),
+            );
             return models;
         } catch {
             return [];

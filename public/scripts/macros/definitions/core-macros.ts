@@ -1,5 +1,13 @@
 import { seedrandom, droll } from '../../../lib.js';
-import { chat_metadata, main_api, getMaxPromptTokens, getMaxContextTokens, getMaxResponseTokens, extension_prompts, getCurrentChatId } from '../../../script.js';
+import {
+    chat_metadata,
+    main_api,
+    getMaxPromptTokens,
+    getMaxContextTokens,
+    getMaxResponseTokens,
+    extension_prompts,
+    getCurrentChatId,
+} from '../../../script.js';
 import { getStringHash, isFalseBoolean } from '../../utils.js';
 import { textgenerationwebui_banned_in_macros } from '../../textgen-settings.js';
 import { inject_ids } from '../../constants.js';
@@ -39,7 +47,8 @@ export function registerCoreMacros() {
                 description: 'Number of spaces to insert.',
             },
         ],
-        description: 'Returns one or more spaces. One space by default, more if the count argument is specified.',
+        description:
+            'Returns one or more spaces. One space by default, more if the count argument is specified.',
         returns: 'One or more spaces.',
         exampleUsage: ['{{space}}', '{{space::4}}'],
         // @ts-expect-error TS(7031) FIXME: Binding element 'count' implicitly has an 'any' ty... Remove this comment to see the full error message
@@ -58,7 +67,8 @@ export function registerCoreMacros() {
                 description: 'Number of newlines to insert.',
             },
         ],
-        description: 'Inserts one or more newlines. One newline by default, more if the count argument is specified.',
+        description:
+            'Inserts one or more newlines. One newline by default, more if the count argument is specified.',
         returns: 'One or more \\n.',
         exampleUsage: ['{{newline}}', '{{newline::2}}'],
         // @ts-expect-error TS(7031) FIXME: Binding element 'count' implicitly has an 'any' ty... Remove this comment to see the full error message
@@ -77,7 +87,8 @@ export function registerCoreMacros() {
     // Scoped: {{trim}}content{{/trim}} -> trims whitespace from content (handled by engine auto-trim)
     MacroRegistry.registerMacro('trim', {
         category: MacroCategory.UTILITY,
-        description: 'Trims whitespace. Non-scoped: trims newlines around the macro (post-processing). Scoped: returns the content (auto-trimmed by the engine).',
+        description:
+            'Trims whitespace. Non-scoped: trims newlines around the macro (post-processing). Scoped: returns the content (auto-trimmed by the engine).',
         unnamedArgs: [
             {
                 name: 'content',
@@ -106,7 +117,9 @@ export function registerCoreMacros() {
     function splitOnTopLevelElse(content) {
         const { cst } = MacroParser.parseDocument(content);
         // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-        const macroNodes = /** @type {import('chevrotain').CstNode[]} */ (cst?.children?.macro || []);
+        const macroNodes = /** @type {import('chevrotain').CstNode[]} */ (
+            cst?.children?.macro || []
+        );
 
         let depth = 0;
         for (const macroNode of macroNodes) {
@@ -136,15 +149,18 @@ export function registerCoreMacros() {
     // Condition can be a macro name (resolved automatically), variable shorthand (.var or $var), or any value
     MacroRegistry.registerMacro('if', {
         category: MacroCategory.UTILITY,
-        description: 'Conditional macro. Returns the content if the condition is truthy, otherwise returns nothing (or the else branch if present). Prefix the condition with ! to invert. If the condition is a registered macro name (without braces), it will be resolved first. Variable shorthands (.varname for local, $varname for global) are also supported.',
+        description:
+            'Conditional macro. Returns the content if the condition is truthy, otherwise returns nothing (or the else branch if present). Prefix the condition with ! to invert. If the condition is a registered macro name (without braces), it will be resolved first. Variable shorthands (.varname for local, $varname for global) are also supported.',
         unnamedArgs: [
             {
                 name: 'condition',
-                description: 'The condition to evaluate. Prefix with ! to invert. Can be a macro name (auto-resolved), variable shorthand (.var or $var), or a value. Falsy: empty string, "false", "off", "0".',
+                description:
+                    'The condition to evaluate. Prefix with ! to invert. Can be a macro name (auto-resolved), variable shorthand (.var or $var), or a value. Falsy: empty string, "false", "off", "0".',
             },
             {
                 name: 'content',
-                description: 'The content to return if condition is truthy (typically provided as scoped content). May contain {{else}} to define an else branch.',
+                description:
+                    'The content to return if condition is truthy (typically provided as scoped content). May contain {{else}} to define an else branch.',
             },
         ],
         displayOverride: '{{if condition}}then{{else}}other{{/if}}',
@@ -177,7 +193,9 @@ export function registerCoreMacros() {
 
             // Check if condition is a variable shorthand (.varname or $varname)
             // If so, resolve it using the appropriate variable macro
-            const varShorthandRegex = new RegExp(`^([.$])(${MACRO_VARIABLE_SHORTHAND_PATTERN.source})$`);
+            const varShorthandRegex = new RegExp(
+                `^([.$])(${MACRO_VARIABLE_SHORTHAND_PATTERN.source})$`,
+            );
             const varShorthandMatch = condition.match(varShorthandRegex);
             if (varShorthandMatch) {
                 const [, prefix, varName] = varShorthandMatch;
@@ -220,10 +238,9 @@ export function registerCoreMacros() {
     // Only meaningful inside a scoped {{if}} macro
     MacroRegistry.registerMacro('else', {
         category: MacroCategory.UTILITY,
-        description: 'Marks the else branch inside a scoped {{if}} block. Only works inside {{if}}...{{/if}}. If used outside, returns an invisible marker.',
-        exampleUsage: [
-            '{{if condition}}true branch{{else}}false branch{{/if}}',
-        ],
+        description:
+            'Marks the else branch inside a scoped {{if}} block. Only works inside {{if}}...{{/if}}. If used outside, returns an invisible marker.',
+        exampleUsage: ['{{if condition}}true branch{{else}}false branch{{/if}}'],
         returns: 'Invisible marker (consumed by the enclosing {{if}} macro).',
         handler: () => ELSE_MARKER,
     });
@@ -234,7 +251,9 @@ export function registerCoreMacros() {
         description: 'Current text from the send textarea.',
         returns: 'Current text from the send textarea.',
         // @ts-expect-error TS(2339) FIXME: Property 'value' does not exist on type 'Element'.
-        handler: () => (/** @type {HTMLTextAreaElement} */(document.querySelector('#send_textarea')))?.value ?? '',
+        handler: () =>
+            /** @type {HTMLTextAreaElement} */ (document.querySelector('#send_textarea'))?.value ??
+            '',
     });
 
     // {{maxPrompt}} -> max context size (context minus response)
@@ -281,7 +300,7 @@ export function registerCoreMacros() {
         returns: 'Reversed string.',
         exampleUsage: ['{{reverse::I am Lana}}'],
         // @ts-expect-error TS(7031) FIXME: Binding element 'value' implicitly has an 'any' ty... Remove this comment to see the full error message
-        handler: ({ unnamedArgs: [value] }) => Array.from(value).reverse().join(''),
+        handler: ({ unnamedArgs: [value] }) => Array.from(value).toReversed().join(''),
     });
 
     // Comment macro: {{// ...}} -> '' (consumes any arguments)
@@ -292,12 +311,14 @@ export function registerCoreMacros() {
             {
                 name: 'comment',
                 type: MacroValueType.STRING,
-                description: 'Any kind of text as comment. If you want multiline comments, consider using a scoped macro like {{//}}First\nSecond{{///}}.',
+                description:
+                    'Any kind of text as comment. If you want multiline comments, consider using a scoped macro like {{//}}First\nSecond{{///}}.',
             },
         ],
-        list: true,         // We consume any arguments as if this is a list, but we'll ignore them in the handler anyway
-        strictArgs: false,  // and we also always remove it, even if the parsing might say it's invalid
-        description: 'Comment macro that produces an empty string. Can be used for writing into prompt definitions, without being passed to the context.',
+        list: true, // We consume any arguments as if this is a list, but we'll ignore them in the handler anyway
+        strictArgs: false, // and we also always remove it, even if the parsing might say it's invalid
+        description:
+            'Comment macro that produces an empty string. Can be used for writing into prompt definitions, without being passed to the context.',
         returns: '',
         displayOverride: '{{// ...}}',
         exampleUsage: ['{{// This is a comment}}'],
@@ -319,11 +340,7 @@ export function registerCoreMacros() {
         description: 'Rolls dice using droll syntax (e.g. {{roll 1d20}}).',
         returns: 'Dice roll result.',
         returnType: MacroValueType.INTEGER,
-        exampleUsage: [
-            '{{roll::1d20}}',
-            '{{roll::6}}',
-            '{{roll::3d6+4}}',
-        ],
+        exampleUsage: ['{{roll::1d20}}', '{{roll::6}}', '{{roll::3d6+4}}'],
         // @ts-expect-error TS(7031) FIXME: Binding element 'formula' implicitly has an 'any' ... Remove this comment to see the full error message
         handler: ({ unnamedArgs: [formula], warn }) => {
             // If only digits were provided, treat it as `1dX`.
@@ -347,7 +364,8 @@ export function registerCoreMacros() {
     MacroRegistry.registerMacro('random', {
         category: MacroCategory.RANDOM,
         list: true,
-        description: 'Picks a random item from a list. Will be re-rolled every time macros are resolved.',
+        description:
+            'Picks a random item from a list. Will be re-rolled every time macros are resolved.',
         returns: 'Randomly selected item from the list.',
         exampleUsage: ['{{random::blonde::brown::red::black::blue}}'],
         // @ts-expect-error TS(7031) FIXME: Binding element 'list' implicitly has an 'any' typ... Remove this comment to see the full error message
@@ -371,7 +389,8 @@ export function registerCoreMacros() {
     MacroRegistry.registerMacro('pick', {
         category: MacroCategory.RANDOM,
         list: true,
-        description: 'Picks a random item from a list, but keeps the choice stable for a given chat and macro position. Can be rerolled via /reroll-pick slash command.',
+        description:
+            'Picks a random item from a list, but keeps the choice stable for a given chat and macro position. Can be rerolled via /reroll-pick slash command.',
         // TODO: add expanded documentation once HTML details are supported
         // descriptionDetails: `
         //     <p>Picks a random item from a list, but keeps the choice stable for a given chat and macro position.</p>
@@ -407,7 +426,9 @@ export function registerCoreMacros() {
             // Reroll seed allows users to reset all picks in the chat via /reroll-pick command
             const rerollSeed = chat_metadata.pick_reroll_seed || null;
 
-            const combinedSeedString = [chatIdHash, rawContentHash, offset, rerollSeed].filter(it => it !== null).join('-');
+            const combinedSeedString = [chatIdHash, rawContentHash, offset, rerollSeed]
+                .filter((it) => it !== null)
+                .join('-');
             const finalSeed = getStringHash(combinedSeedString);
             const rng = seedrandom(String(finalSeed));
             const randomIndex = Math.floor(rng() * list.length);
@@ -426,11 +447,13 @@ export function registerCoreMacros() {
             return listString.split('::').map((/** @type {string} */ item) => item.trim());
         }
         // Otherwise, we fall back and split by commas that may be present
-        return listString
-            .replace(/\\,/g, '##�COMMA�##')
-            .split(',')
-            // @ts-expect-error TS(7006) FIXME: Parameter 'item' implicitly has an 'any' type.
-            .map((/** @type {string} */ item) => item.trim().replace(/##�COMMA�##/g, ','));
+        return (
+            listString
+                .replace(/\\,/g, '##�COMMA�##')
+                .split(',')
+                // @ts-expect-error TS(7006) FIXME: Parameter 'item' implicitly has an 'any' type.
+                .map((/** @type {string} */ item) => item.trim().replace(/##�COMMA�##/g, ','))
+        );
     }
 
     // Banned words macro: {{banned "word"}}
@@ -444,7 +467,8 @@ export function registerCoreMacros() {
                 type: 'string',
             },
         ],
-        description: 'Bans a word for Text Completion backend. (Strips quotes surrounding the banned word, if present)',
+        description:
+            'Bans a word for Text Completion backend. (Strips quotes surrounding the banned word, if present)',
         returns: '',
         exampleUsage: ['{{banned::delve}}'],
         // @ts-expect-error TS(7031) FIXME: Binding element 'bannedWord' implicitly has an 'an... Remove this comment to see the full error message

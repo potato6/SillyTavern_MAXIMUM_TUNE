@@ -462,7 +462,7 @@
 
 /* Third-party source indicator */
 .autoComplete > .item.macro-ac-item > .macro-source.isThirdParty {
-    color: #F89406;
+    color: #f89406;
 }
 
 /* Arity warning banner in details */
@@ -472,11 +472,11 @@
     gap: 0.5em;
     padding: 0.5em 0.75em;
     background: linear-gradient(90deg, rgba(248, 148, 6, 0.2), transparent);
-    border-left: 3px solid #F89406;
+    border-left: 3px solid #f89406;
     border-radius: 0 4px 4px 0;
     margin-bottom: 0.5em;
     font-size: 0.9em;
-    color: #F89406;
+    color: #f89406;
 }
 
 .macro-ac-warning i {
@@ -490,11 +490,11 @@
     gap: 0.5em;
     padding: 0.5em 0.75em;
     background: linear-gradient(90deg, rgba(91, 192, 222, 0.2), transparent);
-    border-left: 3px solid #5BC0DE;
+    border-left: 3px solid #5bc0de;
     border-radius: 0 4px 4px 0;
     margin-bottom: 0.5em;
     font-size: 0.9em;
-    color: #5BC0DE;
+    color: #5bc0de;
 }
 
 .macro-ac-scoped-info i {
@@ -554,7 +554,11 @@
     align-items: baseline;
     gap: 0.5em;
     padding: 0.5em 0.75em;
-    background: linear-gradient(90deg, var(--ac-color-selectedBackground, var(--SmartThemeQuoteColor)), transparent);
+    background: linear-gradient(
+        90deg,
+        var(--ac-color-selectedBackground, var(--SmartThemeQuoteColor)),
+        transparent
+    );
     border-left: 3px solid var(--ac-color-matchedText, var(--SmartThemeBorderColor));
     border-radius: 0 4px 4px 0;
     margin-bottom: 0.5em;

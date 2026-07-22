@@ -17,14 +17,16 @@ const registry: Record<string, () => Promise<unknown>> = {
     siliconflow: () => import('../vectors/openai-vectors.js'),
     workers_ai: () => import('../vectors/openai-vectors.js'),
     extras: () => import('../vectors/extras-vectors.js'),
-    palm: () => import('../vectors/google-vectors.js').then(m => ({
-        getVector: m.getMakerSuiteVector,
-        getBatchVector: m.getMakerSuiteBatchVector,
-    })),
-    vertexai: () => import('../vectors/google-vectors.js').then(m => ({
-        getVector: m.getVertexVector,
-        getBatchVector: m.getVertexBatchVector,
-    })),
+    palm: () =>
+        import('../vectors/google-vectors.js').then((m) => ({
+            getVector: m.getMakerSuiteVector,
+            getBatchVector: m.getMakerSuiteBatchVector,
+        })),
+    vertexai: () =>
+        import('../vectors/google-vectors.js').then((m) => ({
+            getVector: m.getVertexVector,
+            getBatchVector: m.getVertexBatchVector,
+        })),
     cohere: () => import('../vectors/cohere-vectors.js'),
     llamacpp: () => import('../vectors/llamacpp-vectors.js'),
     vllm: () => import('../vectors/vllm-vectors.js'),
@@ -74,7 +76,13 @@ interface SourceSettings {
  * @param {import('../users.js').UserDirectoryList} directories - The directories object for the user
  * @returns {Promise<number[]>} - The vector for the text
  */
-async function getVector(source: string, sourceSettings: SourceSettings, text: string, isQuery: boolean, directories: import('../users.js').UserDirectoryList) {
+async function getVector(
+    source: string,
+    sourceSettings: SourceSettings,
+    text: string,
+    isQuery: boolean,
+    directories: import('../users.js').UserDirectoryList,
+) {
     if (source === 'webllm' || source === 'koboldcpp') {
         // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         return sourceSettings.embeddings[text];
@@ -101,7 +109,13 @@ async function getVector(source: string, sourceSettings: SourceSettings, text: s
         case 'siliconflow':
         case 'workers_ai':
             // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-            return provider.getVector(text, source, directories, sourceSettings.model, sourceSettings.urlOverride);
+            return provider.getVector(
+                text,
+                source,
+                directories,
+                sourceSettings.model,
+                sourceSettings.urlOverride,
+            );
         case 'extras':
             // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             return provider.getVector(text, sourceSettings.extrasUrl, sourceSettings.extrasKey);
@@ -119,10 +133,21 @@ async function getVector(source: string, sourceSettings: SourceSettings, text: s
             return provider.getVector(text, sourceSettings.apiUrl, directories);
         case 'vllm':
             // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-            return provider.getVector(text, sourceSettings.apiUrl, sourceSettings.model, directories);
+            return provider.getVector(
+                text,
+                sourceSettings.apiUrl,
+                sourceSettings.model,
+                directories,
+            );
         case 'ollama':
             // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-            return provider.getVector(text, sourceSettings.apiUrl, sourceSettings.model, sourceSettings.keep, directories);
+            return provider.getVector(
+                text,
+                sourceSettings.apiUrl,
+                sourceSettings.model,
+                sourceSettings.keep,
+                directories,
+            );
     }
 
     throw new Error(`Unknown vector source ${source}`);
@@ -137,9 +162,17 @@ async function getVector(source: string, sourceSettings: SourceSettings, text: s
  * @param {import('../users.js').UserDirectoryList} directories - The directories object for the user
  * @returns {Promise<number[][]>} - The array of vectors for the texts
  */
-async function getBatchVector(source: string, sourceSettings: SourceSettings, texts: string[], isQuery: boolean, directories: import('../users.js').UserDirectoryList) {
+async function getBatchVector(
+    source: string,
+    sourceSettings: SourceSettings,
+    texts: string[],
+    isQuery: boolean,
+    directories: import('../users.js').UserDirectoryList,
+) {
     const batchSize = 10;
-    const batches = Array(Math.ceil(texts.length / batchSize)).fill(undefined).map((_, i) => texts.slice(i * batchSize, i * batchSize + batchSize));
+    const batches = Array(Math.ceil(texts.length / batchSize))
+        .fill(undefined)
+        .map((_, i) => texts.slice(i * batchSize, i * batchSize + batchSize));
 
     const results = [];
     for (const batch of batches) {
@@ -172,35 +205,85 @@ async function getBatchVector(source: string, sourceSettings: SourceSettings, te
             case 'siliconflow':
             case 'workers_ai':
                 // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-                results.push(...(await provider.getBatchVector(batch, source, directories, sourceSettings.model, sourceSettings.urlOverride)));
+                results.push(
+                    ...(await provider.getBatchVector(
+                        batch,
+                        source,
+                        directories,
+                        sourceSettings.model,
+                        sourceSettings.urlOverride,
+                    )),
+                );
                 break;
             case 'extras':
                 // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-                results.push(...(await provider.getBatchVector(batch, sourceSettings.extrasUrl, sourceSettings.extrasKey)));
+                results.push(
+                    ...(await provider.getBatchVector(
+                        batch,
+                        sourceSettings.extrasUrl,
+                        sourceSettings.extrasKey,
+                    )),
+                );
                 break;
             case 'palm':
                 // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-                results.push(...(await provider.getBatchVector(batch, sourceSettings.model, sourceSettings.request)));
+                results.push(
+                    ...(await provider.getBatchVector(
+                        batch,
+                        sourceSettings.model,
+                        sourceSettings.request,
+                    )),
+                );
                 break;
             case 'vertexai':
                 // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-                results.push(...(await provider.getBatchVector(batch, sourceSettings.model, sourceSettings.request)));
+                results.push(
+                    ...(await provider.getBatchVector(
+                        batch,
+                        sourceSettings.model,
+                        sourceSettings.request,
+                    )),
+                );
                 break;
             case 'cohere':
                 // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-                results.push(...(await provider.getBatchVector(batch, isQuery, directories, sourceSettings.model)));
+                results.push(
+                    ...(await provider.getBatchVector(
+                        batch,
+                        isQuery,
+                        directories,
+                        sourceSettings.model,
+                    )),
+                );
                 break;
             case 'llamacpp':
                 // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-                results.push(...(await provider.getBatchVector(batch, sourceSettings.apiUrl, directories)));
+                results.push(
+                    ...(await provider.getBatchVector(batch, sourceSettings.apiUrl, directories)),
+                );
                 break;
             case 'vllm':
                 // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-                results.push(...(await provider.getBatchVector(batch, sourceSettings.apiUrl, sourceSettings.model, directories)));
+                results.push(
+                    ...(await provider.getBatchVector(
+                        batch,
+                        sourceSettings.apiUrl,
+                        sourceSettings.model,
+                        directories,
+                    )),
+                );
                 break;
             case 'ollama':
                 // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-                results.push(...(await provider.getBatchVector(batch, sourceSettings.apiUrl, sourceSettings.model, sourceSettings.keep, directories)));
+                results.push(
+                    ...(await provider.getBatchVector(
+                        batch,
+                        sourceSettings.apiUrl,
+                        sourceSettings.model,
+                        sourceSettings.keep,
+                        directories,
+                    )),
+                );
                 break;
             default:
                 throw new Error(`Unknown vector source ${source}`);
@@ -293,8 +376,10 @@ function getSourceSettings(source: string, request: express.Request): SourceSett
         case 'siliconflow':
             return {
                 model: String(request.body.model || 'Qwen/Qwen3-Embedding-0.6B'),
-                urlOverride: request.body.siliconflow_endpoint === 'cn'
-                    ? 'https://api.siliconflow.cn/v1' : null,
+                urlOverride:
+                    request.body.siliconflow_endpoint === 'cn'
+                        ? 'https://api.siliconflow.cn/v1'
+                        : null,
             };
         case 'workers_ai': {
             const accountId = String(request.body.workers_ai_account_id || '').trim();
@@ -316,7 +401,7 @@ function getSourceSettings(source: string, request: express.Request): SourceSett
  * @returns {string} The model scope for the source
  */
 function getModelScope(sourceSettings: SourceSettings) {
-    return (sourceSettings?.model || '');
+    return sourceSettings?.model || '';
 }
 
 /**
@@ -327,9 +412,19 @@ function getModelScope(sourceSettings: SourceSettings) {
  * @param {object} sourceSettings - The model for the source
  * @returns {Promise<vectra.LocalIndex>} - The index for the collection
  */
-async function getIndex(directories: import('../users.js').UserDirectoryList, collectionId: string, source: string, sourceSettings: SourceSettings) {
+async function getIndex(
+    directories: import('../users.js').UserDirectoryList,
+    collectionId: string,
+    source: string,
+    sourceSettings: SourceSettings,
+) {
     const model = getModelScope(sourceSettings);
-    const pathToFile = path.join(directories.vectors, sanitize(source), sanitize(collectionId), sanitize(model));
+    const pathToFile = path.join(
+        directories.vectors,
+        sanitize(source),
+        sanitize(collectionId),
+        sanitize(model),
+    );
     const store = new vectra.LocalIndex(pathToFile);
 
     if (!(await store.isIndexCreated())) {
@@ -347,18 +442,33 @@ async function getIndex(directories: import('../users.js').UserDirectoryList, co
  * @param {object} sourceSettings - Settings for the source, if it needs any
  * @param {{ hash: number; text: string; index: number; }[]} items - The items to insert
  */
-async function insertVectorItems(directories: import('../users.js').UserDirectoryList, collectionId: string, source: string, sourceSettings: SourceSettings, items: { hash: number; text: string; index: number }[]) {
+async function insertVectorItems(
+    directories: import('../users.js').UserDirectoryList,
+    collectionId: string,
+    source: string,
+    sourceSettings: SourceSettings,
+    items: { hash: number; text: string; index: number }[],
+) {
     const store = await getIndex(directories, collectionId, source, sourceSettings);
 
     await store.beginUpdate();
 
-    const vectors = await getBatchVector(source, sourceSettings, items.map((x) => x.text), false, directories);
+    const vectors = await getBatchVector(
+        source,
+        sourceSettings,
+        items.map((x) => x.text),
+        false,
+        directories,
+    );
 
     for (let i = 0; i < items.length; i++) {
         const item = items[i];
         const vector = vectors[i];
         // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-        await store.upsertItem({ vector: vector, metadata: { hash: item.hash, text: item.text, index: item.index } });
+        await store.upsertItem({
+            vector: vector,
+            metadata: { hash: item.hash, text: item.text, index: item.index },
+        });
     }
 
     await store.endUpdate();
@@ -372,11 +482,16 @@ async function insertVectorItems(directories: import('../users.js').UserDirector
  * @param {object} sourceSettings - Settings for the source, if it needs any
  * @returns {Promise<number[]>} - The hashes of the items in the collection
  */
-async function getSavedHashes(directories: import('../users.js').UserDirectoryList, collectionId: string, source: string, sourceSettings: SourceSettings) {
+async function getSavedHashes(
+    directories: import('../users.js').UserDirectoryList,
+    collectionId: string,
+    source: string,
+    sourceSettings: SourceSettings,
+) {
     const store = await getIndex(directories, collectionId, source, sourceSettings);
 
     const items = await store.listItems();
-    const hashes = items.map(x => Number(x.metadata.hash));
+    const hashes = items.map((x) => Number(x.metadata.hash));
 
     return hashes;
 }
@@ -389,9 +504,15 @@ async function getSavedHashes(directories: import('../users.js').UserDirectoryLi
  * @param {object} sourceSettings - Settings for the source, if it needs any
  * @param {number[]} hashes - The hashes of the items to delete
  */
-async function deleteVectorItems(directories: import('../users.js').UserDirectoryList, collectionId: string, source: string, sourceSettings: SourceSettings, hashes: number[]) {
+async function deleteVectorItems(
+    directories: import('../users.js').UserDirectoryList,
+    collectionId: string,
+    source: string,
+    sourceSettings: SourceSettings,
+    hashes: number[],
+) {
     const store = await getIndex(directories, collectionId, source, sourceSettings);
-    const items = await store.listItemsByMetadata({ hash: { '$in': hashes } });
+    const items = await store.listItemsByMetadata({ hash: { $in: hashes } });
 
     await store.beginUpdate();
 
@@ -413,13 +534,21 @@ async function deleteVectorItems(directories: import('../users.js').UserDirector
  * @param {number} threshold - The threshold for the search
  * @returns {Promise<{hashes: number[], metadata: object[]}>} - The metadata of the items that match the search text
  */
-async function queryCollection(directories: import('../users.js').UserDirectoryList, collectionId: string, source: string, sourceSettings: SourceSettings, searchText: string, topK: number, threshold: number) {
+async function queryCollection(
+    directories: import('../users.js').UserDirectoryList,
+    collectionId: string,
+    source: string,
+    sourceSettings: SourceSettings,
+    searchText: string,
+    topK: number,
+    threshold: number,
+) {
     const store = await getIndex(directories, collectionId, source, sourceSettings);
     const vector = await getVector(source, sourceSettings, searchText, true, directories);
 
     const result = await store.queryItems(vector, '', topK);
-    const metadata = result.filter(x => x.score >= threshold).map(x => x.item.metadata);
-    const hashes = result.map(x => Number(x.item.metadata.hash));
+    const metadata = result.filter((x) => x.score >= threshold).map((x) => x.item.metadata);
+    const hashes = result.map((x) => Number(x.item.metadata.hash));
     return { metadata, hashes };
 }
 
@@ -434,20 +563,28 @@ async function queryCollection(directories: import('../users.js').UserDirectoryL
  * @param {number} threshold - The threshold for the search
  * @returns {Promise<Record<string, { hashes: number[], metadata: object[] }>>} - The top K results from each collection
  */
-async function multiQueryCollection(directories: import('../users.js').UserDirectoryList, collectionIds: string[], source: string, sourceSettings: SourceSettings, searchText: string, topK: number, threshold: number) {
+async function multiQueryCollection(
+    directories: import('../users.js').UserDirectoryList,
+    collectionIds: string[],
+    source: string,
+    sourceSettings: SourceSettings,
+    searchText: string,
+    topK: number,
+    threshold: number,
+) {
     const vector = await getVector(source, sourceSettings, searchText, true, directories);
     const results = [];
 
     for (const collectionId of collectionIds) {
         const store = await getIndex(directories, collectionId, source, sourceSettings);
         const result = await store.queryItems(vector, '', topK);
-        results.push(...result.map(result => ({ collectionId, result })));
+        results.push(...result.map((result) => ({ collectionId, result })));
     }
 
     // Sort results by descending similarity, apply threshold, and take top K
     const sortedResults = results
-        .sort((a, b) => b.result.score - a.result.score)
-        .filter(x => x.result.score >= threshold)
+        .toSorted((a, b) => b.result.score - a.result.score)
+        .filter((x) => x.result.score >= threshold)
         .slice(0, topK);
 
     /**
@@ -478,14 +615,23 @@ async function multiQueryCollection(directories: import('../users.js').UserDirec
  * @param {Error} error Error object
  * @returns {Promise<import('express').Response>} Promise
  */
-async function regenerateCorruptedIndexErrorHandler(req: express.Request, res: express.Response, error: unknown) {
+async function regenerateCorruptedIndexErrorHandler(
+    req: express.Request,
+    res: express.Response,
+    error: unknown,
+) {
     if (error instanceof SyntaxError && !req.query.regenerated) {
         const collectionId = String(req.body.collectionId);
         const source = String(req.body.source) || 'openai';
         const sourceSettings = getSourceSettings(source, req);
 
         if (collectionId && source) {
-            const index = await getIndex(req.user.directories, collectionId, source, sourceSettings);
+            const index = await getIndex(
+                req.user.directories,
+                collectionId,
+                source,
+                sourceSettings,
+            );
             const exists = await index.isIndexCreated();
 
             if (exists) {
@@ -516,7 +662,15 @@ router.post('/query', async (req, res) => {
         const source = String(req.body.source) || 'openai';
         const sourceSettings = getSourceSettings(source, req);
 
-        const results = await queryCollection(req.user.directories, collectionId, source, sourceSettings, searchText, topK, threshold);
+        const results = await queryCollection(
+            req.user.directories,
+            collectionId,
+            source,
+            sourceSettings,
+            searchText,
+            topK,
+            threshold,
+        );
         return res.json(results);
     } catch (error) {
         return regenerateCorruptedIndexErrorHandler(req, res, error);
@@ -536,7 +690,15 @@ router.post('/query-multi', async (req, res) => {
         const source = String(req.body.source) || 'openai';
         const sourceSettings = getSourceSettings(source, req);
 
-        const results = await multiQueryCollection(req.user.directories, collectionIds, source, sourceSettings, searchText, topK, threshold);
+        const results = await multiQueryCollection(
+            req.user.directories,
+            collectionIds,
+            source,
+            sourceSettings,
+            searchText,
+            topK,
+            threshold,
+        );
         return res.json(results);
     } catch (error) {
         return regenerateCorruptedIndexErrorHandler(req, res, error);
@@ -553,7 +715,7 @@ router.post('/insert', async (req, res) => {
         const items = req.body.items.map((x: { hash: unknown; text: unknown; index: unknown }) => ({
             hash: x.hash,
             text: x.text,
-            index: x.index
+            index: x.index,
         }));
         const source = String(req.body.source) || 'openai';
         const sourceSettings = getSourceSettings(source, req);
@@ -575,7 +737,12 @@ router.post('/list', async (req, res) => {
         const source = String(req.body.source) || 'openai';
         const sourceSettings = getSourceSettings(source, req);
 
-        const hashes = await getSavedHashes(req.user.directories, collectionId, source, sourceSettings);
+        const hashes = await getSavedHashes(
+            req.user.directories,
+            collectionId,
+            source,
+            sourceSettings,
+        );
         return res.json(hashes);
     } catch (error) {
         return regenerateCorruptedIndexErrorHandler(req, res, error);
@@ -627,7 +794,11 @@ router.post('/purge', async (req, res) => {
         const collectionId = String(req.body.collectionId);
 
         for (const source of SOURCES) {
-            const sourcePath = path.join(req.user.directories.vectors, sanitize(source), sanitize(collectionId));
+            const sourcePath = path.join(
+                req.user.directories.vectors,
+                sanitize(source),
+                sanitize(collectionId),
+            );
             if (!fs.existsSync(sourcePath)) {
                 continue;
             }

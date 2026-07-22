@@ -3,12 +3,7 @@
  * Pure data management. No UI code.
  */
 
-import {
-    characters,
-    saveSettings,
-    this_chid,
-    menu_type,
-} from '../../../script.js';
+import { characters, saveSettings, this_chid, menu_type } from '../../../script.js';
 import { selected_group } from '../../group-chats.js';
 import { onlyUnique, uuidv4, equalsIgnoreCaseAndAccents, escapeHtml } from '../../utils.js';
 import { TAG_FOLDER_TYPES, TAG_FOLDER_DEFAULT_TYPE } from '../types.js';
@@ -42,7 +37,21 @@ const DEFAULT_TAGS = [
  * An list of all tags that are available
  * @type {Tag[]}
  */
-export let tags: { id: string; name: string; folder_type?: string; filter_state?: string; sort_order?: number; is_hidden_on_character_card?: boolean; color?: string; color2?: string; create_date?: number; action?: (...args: unknown[]) => unknown; class?: string; icon?: string; title?: string }[] = [];
+export let tags: {
+    id: string;
+    name: string;
+    folder_type?: string;
+    filter_state?: string;
+    sort_order?: number;
+    is_hidden_on_character_card?: boolean;
+    color?: string;
+    color2?: string;
+    create_date?: number;
+    action?: (...args: unknown[]) => unknown;
+    class?: string;
+    icon?: string;
+    title?: string;
+}[] = [];
 
 /**
  * A map representing the key of an entity with a corresponding array of tags.
@@ -84,7 +93,8 @@ export function renameTagKey(oldKey: string, newKey: string) {
  * @param key
  */
 export function createTagMapFromList(listElement: string | HTMLElement | null, key: string) {
-    const $listEl = typeof listElement === 'string' ? document.querySelector(listElement) : listElement;
+    const $listEl =
+        typeof listElement === 'string' ? document.querySelector(listElement) : listElement;
     const tagIds = getTagIdsFromDOM($listEl as HTMLElement | null);
     (tag_map as Record<string, string[]>)[key] = tagIds;
     markDirty();
@@ -133,8 +143,9 @@ export function getTagKeyForEntity(entityOrKey: unknown) {
 
     let character: unknown;
     if (!character && characters.indexOf(x as unknown as Character) >= 0) character = x;
-    if (!character && !isNaN(parseInt(entityOrKey as string))) character = characters[x as unknown as number];
-    if (!character) character = characters.find(y => y.avatar === x);
+    if (!character && !isNaN(parseInt(entityOrKey as string)))
+        character = characters[x as unknown as number];
+    if (!character) character = characters.find((y) => y.avatar === x);
 
     if (character) {
         x = (character as Record<string, unknown>).avatar;
@@ -160,9 +171,12 @@ type Cash = any;
  * @param element
  */
 export function getTagKeyForEntityElement(element: string | HTMLElement | Cash | null | undefined) {
-    let el = typeof element === 'string'
-        ? document.querySelector(element)
-        : (element?.[0] instanceof Node ? element[0] : element);
+    let el =
+        typeof element === 'string'
+            ? document.querySelector(element)
+            : element?.[0] instanceof Node
+              ? element[0]
+              : element;
     while (el instanceof Element && el.getAttribute) {
         const grid = el.getAttribute('data-grid');
         const chid = el.getAttribute('data-chid');
@@ -192,9 +206,9 @@ export function getTagsList(key: string | null | undefined, sort = true) {
         typedMap[key] = [];
         return [];
     }
-    const list = (typedMap[key]!)
-        .map(x => getTagById(x))
-        .filter((x): x is NonNullable<typeof x> => x !== undefined);
+    const list = typedMap[key]!.map((x) => getTagById(x)).filter(
+        (x): x is NonNullable<typeof x> => x !== undefined,
+    );
     if (sort) list.sort(compareTagsForSort);
     return list;
 }
@@ -205,8 +219,12 @@ export function getTagsList(key: string | null | undefined, sort = true) {
  * @param root0
  * @param root0.createNew
  */
-export function getTag(tagName: string, { createNew = false }: { createNew?: boolean } = {}): Record<string, unknown> | undefined {
-    let tag: Record<string, unknown> | undefined = tags.find(t => equalsIgnoreCaseAndAccents(t.name, tagName)) ?? undefined;
+export function getTag(
+    tagName: string,
+    { createNew = false }: { createNew?: boolean } = {},
+): Record<string, unknown> | undefined {
+    let tag: Record<string, unknown> | undefined =
+        tags.find((t) => equalsIgnoreCaseAndAccents(t.name, tagName)) ?? undefined;
     if (!tag && createNew) {
         tag = createNewTag(tagName);
     }
@@ -223,7 +241,11 @@ export function newTag(tagName: string): Record<string, unknown> {
         name: tagName,
         folder_type: TAG_FOLDER_DEFAULT_TYPE,
         filter_state: DEFAULT_FILTER_STATE,
-        sort_order: Math.max(0, ...tags.map((t: Record<string, unknown>) => t.sort_order as number || 0)) + 1,
+        sort_order:
+            Math.max(
+                0,
+                ...tags.map((t: Record<string, unknown>) => (t.sort_order as number) || 0),
+            ) + 1,
         is_hidden_on_character_card: false,
         color: '',
         color2: '',
@@ -238,11 +260,15 @@ export function newTag(tagName: string): Record<string, unknown> {
 export function createNewTag(tagName: string): Record<string, unknown> {
     const existing = getTag(tagName);
     if (existing) {
-        notyf.warning(`Cannot create new tag. A tag with the name already exists:<br />${escapeHtml(existing.name as string)}`, 'Creating Tag', { escapeHtml: false });
+        notyf.warning(
+            `Cannot create new tag. A tag with the name already exists:<br />${escapeHtml(existing.name as string)}`,
+            'Creating Tag',
+            { escapeHtml: false },
+        );
         return existing;
     }
     const tag = newTag(tagName);
-    tags.push(tag as typeof tags[number]);
+    tags.push(tag as (typeof tags)[number]);
     console.debug('Created new tag', tag.name, 'with id', tag.id);
     return tag;
 }
@@ -272,7 +298,10 @@ export function getExistingTags(newTags: string[]): Record<string, unknown>[] {
  * @param characterId
  */
 export function addTagToMap(tagId: string, characterId: string | null = null) {
-    const key = characterId !== null && characterId !== undefined ? getTagKeyForEntity(characterId) : getTagKey();
+    const key =
+        characterId !== null && characterId !== undefined
+            ? getTagKeyForEntity(characterId)
+            : getTagKey();
     if (!key) {
         return false;
     }
@@ -294,7 +323,10 @@ export function addTagToMap(tagId: string, characterId: string | null = null) {
  * @param characterId
  */
 export function removeTagFromMap(tagId: string, characterId: string | null = null) {
-    const key = characterId !== null && characterId !== undefined ? getTagKeyForEntity(characterId) : getTagKey();
+    const key =
+        characterId !== null && characterId !== undefined
+            ? getTagKeyForEntity(characterId)
+            : getTagKey();
     if (!key) {
         return false;
     }
@@ -332,7 +364,7 @@ export function copyTags(data: { oldAvatar: string; newAvatar: string }) {
  * @returns {Tag|undefined} The tag or undefined
  */
 export function getTagById(id: string) {
-    return tags.find(t => t.id === id);
+    return tags.find((t) => t.id === id);
 }
 
 /**
@@ -351,7 +383,9 @@ export function getTagIdsForKey(key: string): string[] {
  * @param {string|HTMLElement|null} selector - String selector or element
  * @returns {HTMLElement|null} The resolved element
  */
-export function resolveElement(selector: string | HTMLElement | null | undefined): HTMLElement | null {
+export function resolveElement(
+    selector: string | HTMLElement | null | undefined,
+): HTMLElement | null {
     if (!selector) return null;
     if (typeof selector === 'string') return document.querySelector(selector);
     return selector;
@@ -372,15 +406,22 @@ const tagListeners = new Map<TagStoreEvent, Set<(...args: unknown[]) => void>>()
 export const tagStoreEvents = {
     on(event: TagStoreEvent, callback: (...args: unknown[]) => void) {
         let set = tagListeners.get(event);
-        if (!set) { set = new Set(); tagListeners.set(event, set); }
+        if (!set) {
+            set = new Set();
+            tagListeners.set(event, set);
+        }
         set.add(callback);
     },
     off(event: TagStoreEvent, callback: (...args: unknown[]) => void) {
         tagListeners.get(event)?.delete(callback);
     },
     emit(event: TagStoreEvent, data: unknown) {
-        tagListeners.get(event)?.forEach(cb => {
-            try { cb(data); } catch(e) { console.error('TagStore event error:', e); }
+        tagListeners.get(event)?.forEach((cb) => {
+            try {
+                cb(data);
+            } catch (e) {
+                console.error('TagStore event error:', e);
+            }
         });
     },
 };
@@ -395,9 +436,14 @@ export const tagStoreEvents = {
  * @param {string} selector - CSS selector for tag elements
  * @returns {string[]} Array of tag ID strings
  */
-export function getTagIdsFromDOM(container: string | HTMLElement | null | undefined, selector = '.tag'): string[] {
+export function getTagIdsFromDOM(
+    container: string | HTMLElement | null | undefined,
+    selector = '.tag',
+): string[] {
     const el = resolveElement(container);
-    return Array.from(el?.querySelectorAll(selector) ?? [], (x: Element) => x.getAttribute('id')).filter((x): x is string => x !== null);
+    return Array.from(el?.querySelectorAll(selector) ?? [], (x: Element) =>
+        x.getAttribute('id'),
+    ).filter((x): x is string => x !== null);
 }
 
 /**
@@ -406,7 +452,10 @@ export function getTagIdsFromDOM(container: string | HTMLElement | null | undefi
  * @param {string} ancestorSelector - CSS selector for the ancestor (default: '.tag_view_item')
  * @returns {{id: string, tag: Tag}|null} The tag ID and tag object, or null
  */
-export function getTagFromEvent(eventOrElement: Event | HTMLElement, ancestorSelector = '.tag_view_item'): { id: string; tag: Record<string, unknown> } | null {
+export function getTagFromEvent(
+    eventOrElement: Event | HTMLElement,
+    ancestorSelector = '.tag_view_item',
+): { id: string; tag: Record<string, unknown> } | null {
     const el = eventOrElement instanceof Event ? eventOrElement.target : eventOrElement;
     const ancestor = (el as Element | null)?.closest?.(ancestorSelector);
     const id = ancestor?.getAttribute?.('id');
@@ -421,7 +470,17 @@ export function getTagFromEvent(eventOrElement: Event | HTMLElement, ancestorSel
  * @returns {object} The folder type config
  */
 export function getFolderType(tag: Record<string, unknown> | undefined) {
-    const typedTypes = TAG_FOLDER_TYPES as Record<string, { icon: string; class: string; fa_icon?: string; tooltip?: string; color?: string; size?: string }>;
+    const typedTypes = TAG_FOLDER_TYPES as Record<
+        string,
+        {
+            icon: string;
+            class: string;
+            fa_icon?: string;
+            tooltip?: string;
+            color?: string;
+            size?: string;
+        }
+    >;
     return typedTypes[tag?.folder_type as string] || typedTypes[TAG_FOLDER_DEFAULT_TYPE];
 }
 

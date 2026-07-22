@@ -31,7 +31,8 @@ export default createOAIChatProvider({
     tokenizer: (model) => {
         const m = model.toLowerCase();
         if (m.includes('deepseek') || m.includes('mai-ds')) return 'deepseek';
-        if (m.includes('qwen') || m.includes('qwq') || m.includes('tongyi') || m.includes('kimi')) return 'qwen2';
+        if (m.includes('qwen') || m.includes('qwq') || m.includes('tongyi') || m.includes('kimi'))
+            return 'qwen2';
         if (m.includes('llama') || m.includes('longcat') || m.includes('hermes')) return 'llama3';
         if (m.includes('gemma')) return 'gemma';
         if (m.includes('nemo')) return 'nemo';

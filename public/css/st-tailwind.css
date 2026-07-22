@@ -206,7 +206,6 @@
     margin-right: 10px;
 }
 
-
 .success {
     color: green;
 }
@@ -246,19 +245,19 @@
 }
 
 .flexBasis50p {
-    flex-basis: 50%
+    flex-basis: 50%;
 }
 
 .flexBasis25p {
-    flex-basis: 25%
+    flex-basis: 25%;
 }
 
 .flexBasis200px {
-    flex-basis: 200px
+    flex-basis: 200px;
 }
 
 .flexBasis48p {
-    flex-basis: 48%
+    flex-basis: 48%;
 }
 
 .flexBasis30p {
@@ -280,7 +279,7 @@
 }
 
 .flexShrink {
-    flex-shrink: 1
+    flex-shrink: 1;
 }
 
 .flexWrap {
@@ -565,7 +564,7 @@ textarea:disabled {
 }
 
 .opacity50p {
-    opacity: 0.5
+    opacity: 0.5;
 }
 
 .grayscale {

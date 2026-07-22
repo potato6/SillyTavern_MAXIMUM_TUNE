@@ -42,10 +42,7 @@
  * import/exporter.ts        — chat export
  */
 
-import {
-    characters,
-    this_chid,
-} from '../script.js';
+import { characters, this_chid } from '../script.js';
 import { selected_group } from './group-chats.js';
 import { power_user } from './power-user.js';
 
@@ -79,7 +76,15 @@ export function isExternalMediaAllowed(): boolean {
 }
 
 // ── Re-export types ──────────────────────────────────────────
-export type { FileAttachment, MediaAttachment, AttachmentSource, ChatEntity, CreateChatOptions, DuplicateChatOptions, ChatSnapshot } from './chats/types.js';
+export type {
+    FileAttachment,
+    MediaAttachment,
+    AttachmentSource,
+    ChatEntity,
+    CreateChatOptions,
+    DuplicateChatOptions,
+    ChatSnapshot,
+} from './chats/types.js';
 export { ATTACHMENT_SOURCE } from './chats/types.js';
 
 // ── Re-export store & service ────────────────────────────────
@@ -149,18 +154,10 @@ export {
 } from './chats/converter.js';
 
 // ── Re-export hide-message functions ─────────────────────────
-export {
-    hideChatMessageRange,
-    hideChatMessage,
-    unhideChatMessage,
-} from './chats/hide-message.js';
+export { hideChatMessageRange, hideChatMessage, unhideChatMessage } from './chats/hide-message.js';
 
 // ── Re-export UI functions ───────────────────────────────────
-export {
-    initChatUtilities,
-    preserveNeutralChat,
-    restoreNeutralChat,
-} from './chats/chat-ui.js';
+export { initChatUtilities, preserveNeutralChat, restoreNeutralChat } from './chats/chat-ui.js';
 
 // ── Re-export attachment manager ─────────────────────────────
 export { openAttachmentManager } from './chats/attachment-manager.js';

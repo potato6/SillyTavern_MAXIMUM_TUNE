@@ -13,7 +13,11 @@
 
 import { power_user } from '../power-user.js';
 import { AutoComplete, AUTOCOMPLETE_STATE } from './AutoComplete.js';
-import { findMacroAtCursor, findUnclosedScopes, getMacroAutoCompleteAt } from './MacroAutoCompleteHelper.js';
+import {
+    findMacroAtCursor,
+    findUnclosedScopes,
+    getMacroAutoCompleteAt,
+} from './MacroAutoCompleteHelper.js';
 
 /** Custom attribute name used to mark elements that support macro autocomplete */
 export const MACRO_AUTOCOMPLETE_ATTRIBUTE = 'data-macros';
@@ -67,7 +71,14 @@ const elementAutoCompleteMap = new WeakMap();
  * @param {MACRO_AUTOCOMPLETE_MODE} [options.autocompleteMode] - The autocomplete mode.
  * @returns {boolean}
  */
-function shouldActivateMacroAutocomplete(text: string, cursorPos: number, { isForced = false, autocompleteMode = MACRO_AUTOCOMPLETE_MODE.DEFAULT }: { isForced?: boolean; autocompleteMode?: string } = {}) {
+function shouldActivateMacroAutocomplete(
+    text: string,
+    cursorPos: number,
+    {
+        isForced = false,
+        autocompleteMode = MACRO_AUTOCOMPLETE_MODE.DEFAULT,
+    }: { isForced?: boolean; autocompleteMode?: string } = {},
+) {
     // If mode is 'hide', never show autocomplete
     if (autocompleteMode === MACRO_AUTOCOMPLETE_MODE.HIDE) {
         return false;
@@ -81,11 +92,13 @@ function shouldActivateMacroAutocomplete(text: string, cursorPos: number, { isFo
     // Determine if we should show normally based on mode and settings
     // ALWAYS mode: always show, DEFAULT mode: respect global setting
     const alwaysShow = autocompleteMode === MACRO_AUTOCOMPLETE_MODE.ALWAYS;
-    const shouldShowNormally = isForced || alwaysShow || power_user.stscript.autocomplete.showInAllMacroFields;
+    const shouldShowNormally =
+        isForced || alwaysShow || power_user.stscript.autocomplete.showInAllMacroFields;
 
     // Whether setting says autocomplete should only activate after typing {{ and two characters after that
     // Ctrl+Space (isForced) overrides this restriction
-    const onlyAfter2 = !isForced && power_user.stscript.autocomplete.state === AUTOCOMPLETE_STATE.MIN_LENGTH;
+    const onlyAfter2 =
+        !isForced && power_user.stscript.autocomplete.state === AUTOCOMPLETE_STATE.MIN_LENGTH;
 
     // Check if we're right after {{ (just typed the second brace)
     if (cursorPos >= 2 && text.slice(cursorPos - 2, cursorPos) === '{{') {
@@ -96,7 +109,7 @@ function shouldActivateMacroAutocomplete(text: string, cursorPos: number, { isFo
     const macro = findMacroAtCursor(text, cursorPos);
     if (macro !== null) {
         if (!shouldShowNormally) return false;
-        return !onlyAfter2 || (macro.content.trim()).length >= 2;
+        return !onlyAfter2 || macro.content.trim().length >= 2;
     }
 
     // Check if we're in scoped content of an unclosed scoped macro
@@ -115,10 +128,20 @@ function shouldActivateMacroAutocomplete(text: string, cursorPos: number, { isFo
  * @returns {AutoComplete} The autocomplete instance.
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'textarea' implicitly has an 'any' type.
-export function setMacroAutoComplete(textarea, { autocompleteMode = MACRO_AUTOCOMPLETE_MODE.DEFAULT, autocompleteStyle = MACRO_AUTOCOMPLETE_STYLE.SMALL } = {}) {
+export function setMacroAutoComplete(
+    textarea,
+    {
+        autocompleteMode = MACRO_AUTOCOMPLETE_MODE.DEFAULT,
+        autocompleteStyle = MACRO_AUTOCOMPLETE_STYLE.SMALL,
+    } = {},
+) {
     const ac = new AutoComplete(
         textarea,
-        () => shouldActivateMacroAutocomplete(ac.text, textarea.selectionStart, { isForced: ac.isShowForced, autocompleteMode }),
+        () =>
+            shouldActivateMacroAutocomplete(ac.text, textarea.selectionStart, {
+                isForced: ac.isShowForced,
+                autocompleteMode,
+            }),
         // @ts-expect-error TS(7006) FIXME: Parameter 'text' implicitly has an 'any' type.
         (text, index) => getMacroAutoCompleteAt(text, index, { isForced: ac.isShowForced }),
         true, // isFloating - always use floating mode for free text macro autocomplete
@@ -223,7 +246,10 @@ function handleNodeChange(node) {
     // Check child elements - select all elements with the attribute (any value or no value)
     const children = node.querySelectorAll(`[${MACRO_AUTOCOMPLETE_ATTRIBUTE}]`);
     for (const child of children) {
-        if (hasMacroAttribute(child) && (child instanceof HTMLTextAreaElement || child instanceof HTMLInputElement)) {
+        if (
+            hasMacroAttribute(child) &&
+            (child instanceof HTMLTextAreaElement || child instanceof HTMLInputElement)
+        ) {
             initializeElement(child);
         }
     }
@@ -233,7 +259,7 @@ function handleNodeChange(node) {
  * MutationObserver to watch for dynamically added elements with macro autocomplete attribute.
  * @type {MutationObserver}
  */
-const observer = new MutationObserver(mutations => {
+const observer = new MutationObserver((mutations) => {
     for (const mutation of mutations) {
         if (mutation.type === 'childList') {
             for (const node of mutation.addedNodes) {
@@ -242,9 +268,10 @@ const observer = new MutationObserver(mutations => {
         }
         if (mutation.type === 'attributes') {
             const target = mutation.target;
-            const isRelevantAttr = mutation.attributeName === MACRO_AUTOCOMPLETE_ATTRIBUTE ||
-                                   mutation.attributeName === MACRO_AUTOCOMPLETE_MODE_ATTRIBUTE ||
-                                   mutation.attributeName === MACRO_AUTOCOMPLETE_STYLE_ATTRIBUTE;
+            const isRelevantAttr =
+                mutation.attributeName === MACRO_AUTOCOMPLETE_ATTRIBUTE ||
+                mutation.attributeName === MACRO_AUTOCOMPLETE_MODE_ATTRIBUTE ||
+                mutation.attributeName === MACRO_AUTOCOMPLETE_STYLE_ATTRIBUTE;
             if (isRelevantAttr && target instanceof Element) {
                 handleNodeChange(target);
             }
@@ -278,7 +305,11 @@ export function initMacroAutoComplete() {
         childList: true,
         subtree: true,
         attributes: true,
-        attributeFilter: [MACRO_AUTOCOMPLETE_ATTRIBUTE, MACRO_AUTOCOMPLETE_MODE_ATTRIBUTE, MACRO_AUTOCOMPLETE_STYLE_ATTRIBUTE],
+        attributeFilter: [
+            MACRO_AUTOCOMPLETE_ATTRIBUTE,
+            MACRO_AUTOCOMPLETE_MODE_ATTRIBUTE,
+            MACRO_AUTOCOMPLETE_STYLE_ATTRIBUTE,
+        ],
     });
 
     return instances;
@@ -296,7 +327,10 @@ export function enableMacroAutoCompleteById(elementId) {
         document.getElementById(elementId)
     );
 
-    if (!element || !(element instanceof HTMLTextAreaElement || element instanceof HTMLInputElement)) {
+    if (
+        !element ||
+        !(element instanceof HTMLTextAreaElement || element instanceof HTMLInputElement)
+    ) {
         console.warn(`[MacroAutoComplete] Element not found or invalid: ${elementId}`);
         return null;
     }

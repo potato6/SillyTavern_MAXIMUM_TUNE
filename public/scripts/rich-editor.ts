@@ -139,7 +139,11 @@ async function openToastPopup(
                     text(node: { literal?: string }) {
                         const text = node?.literal;
                         if (typeof text !== 'string') return [{ type: 'text', content: '' }];
-                        if (!text.includes('"') && !text.includes('\u201C') && !text.includes('\u201D')) {
+                        if (
+                            !text.includes('"') &&
+                            !text.includes('\u201C') &&
+                            !text.includes('\u201D')
+                        ) {
                             return [{ type: 'text', content: text }];
                         }
                         try {
@@ -193,7 +197,8 @@ async function openToastPopup(
             `;
             container.appendChild(themeStyle);
 
-            const LQ = '\u201C', RQ = '\u201D';
+            const LQ = '\u201C',
+                RQ = '\u201D';
             const doInlineQuote = () => {
                 editor.focus();
                 const cm = editor.getCurrentModeEditor();
@@ -201,7 +206,11 @@ async function openToastPopup(
                 if (!sel) return;
 
                 // Toggle: unwrap if already quoted
-                if ((sel.startsWith('"') || sel.startsWith(LQ)) && (sel.endsWith('"') || sel.endsWith(RQ)) && sel.length >= 2) {
+                if (
+                    (sel.startsWith('"') || sel.startsWith(LQ)) &&
+                    (sel.endsWith('"') || sel.endsWith(RQ)) &&
+                    sel.length >= 2
+                ) {
                     cm.replaceSelection(sel.slice(1, -1));
                     return;
                 }
@@ -227,7 +236,8 @@ async function openToastPopup(
                 btn.className = 'toastui-editor-toolbar-icons';
                 btn.title = 'Inline quote';
                 btn.innerHTML = '\u201C';
-                btn.style.cssText = 'font-size:19px; font-weight:bold; color:var(--SmartThemeQuoteColor,#e18a24); line-height:1; padding:0 6px;';
+                btn.style.cssText =
+                    'font-size:19px; font-weight:bold; color:var(--SmartThemeQuoteColor,#e18a24); line-height:1; padding:0 6px;';
                 btn.addEventListener('click', doInlineQuote);
                 group.appendChild(btn);
                 toolbarEl.prepend(group);
@@ -250,9 +260,7 @@ async function openToastPopup(
             if (!editor) return;
 
             try {
-                const result = useMarkdown
-                    ? editor.getMarkdown()
-                    : editor.getHTML();
+                const result = useMarkdown ? editor.getMarkdown() : editor.getHTML();
                 setRawValue(broEl, contentEditable, result);
             } finally {
                 editor.destroy();

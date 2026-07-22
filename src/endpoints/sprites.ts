@@ -14,7 +14,11 @@ import { getImageBuffers } from '../util.js';
  * @param {boolean} isSubfolder - Whether the name contains a subfolder
  * @returns {string | null} The path to the sprites folder. Null if the name is invalid.
  */
-function getSpritesPath(directories: import('../users.js').UserDirectoryList, name: string, isSubfolder: boolean) {
+function getSpritesPath(
+    directories: import('../users.js').UserDirectoryList,
+    name: string,
+    isSubfolder: boolean,
+) {
     if (isSubfolder) {
         const nameParts = name.split('/');
         const characterName = sanitize(nameParts[0]!);
@@ -44,7 +48,10 @@ function getSpritesPath(directories: import('../users.js').UserDirectoryList, na
  * @param {object} data RisuAI character data
  * @returns {void}
  */
-export function importRisuSprites(directories: import('../users.js').UserDirectoryList, data: Record<string, unknown>) {
+export function importRisuSprites(
+    directories: import('../users.js').UserDirectoryList,
+    data: Record<string, unknown>,
+) {
     try {
         // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         const name = data?.data?.name;
@@ -96,7 +103,9 @@ export function importRisuSprites(directories: import('../users.js').UserDirecto
             // Remove existing sprite with the same label
             for (const file of files) {
                 if (path.parse(file).name === label) {
-                    console.warn(`RisuAI: The sprite ${label} for ${name} already exists. Skipping.`);
+                    console.warn(
+                        `RisuAI: The sprite ${label} for ${name} already exists. Skipping.`,
+                    );
                     continue outer;
                 }
             }
@@ -126,14 +135,19 @@ router.get('/get', function (request, response) {
 
     try {
         if (spritesPath && fs.existsSync(spritesPath) && fs.statSync(spritesPath).isDirectory()) {
-            sprites = fs.readdirSync(spritesPath)
-                .filter(file => {
+            sprites = fs
+                .readdirSync(spritesPath)
+                .filter((file) => {
                     const mimeType = Bun.file(file).type;
                     return mimeType && mimeType.startsWith('image/');
                 })
                 .map((file) => {
                     const pathToSprite = path.join(spritesPath, file);
-                    const mtime = fs.statSync(pathToSprite).mtime?.toISOString().replace(/[^0-9]/g, '').slice(0, 14);
+                    const mtime = fs
+                        .statSync(pathToSprite)
+                        .mtime?.toISOString()
+                        .replace(/[^0-9]/g, '')
+                        .slice(0, 14);
 
                     const fileName = path.parse(pathToSprite).name.toLowerCase();
                     // Extract the label from the filename via regex, which can be suffixed with a sub-name, either connected with a dash or a dot.
@@ -166,7 +180,11 @@ router.post('/delete', async (request, response) => {
         const spritesPath = getSpritesPath(request.user.directories, name, isSubfolder);
 
         // No sprites folder exists, or not a directory
-        if (!spritesPath || !fs.existsSync(spritesPath) || !fs.statSync(spritesPath).isDirectory()) {
+        if (
+            !spritesPath ||
+            !fs.existsSync(spritesPath) ||
+            !fs.statSync(spritesPath).isDirectory()
+        ) {
             return response.sendStatus(404);
         }
 
@@ -219,7 +237,9 @@ router.post('/upload-zip', async (request, response) => {
 
         for (const [filename, buffer] of sprites) {
             // Remove existing sprite with the same label
-            const existingFile = files.find(file => path.parse(file).name === path.parse(filename).name);
+            const existingFile = files.find(
+                (file) => path.parse(file).name === path.parse(filename).name,
+            );
 
             if (existingFile) {
                 fs.unlinkSync(path.join(spritesPath, existingFile));

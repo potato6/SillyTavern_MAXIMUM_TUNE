@@ -46,7 +46,10 @@ const provider: ChatProvider = {
             stream: req.body.stream,
             safe_prompt: req.body.safe_prompt,
             random_seed: req.body.seed === -1 ? undefined : req.body.seed,
-            stop: Array.isArray(req.body.stop) && req.body.stop.length > 0 ? req.body.stop : undefined,
+            stop:
+                Array.isArray(req.body.stop) && req.body.stop.length > 0
+                    ? req.body.stop
+                    : undefined,
         };
 
         if (Array.isArray(req.body.tools) && req.body.tools.length > 0) {
@@ -73,7 +76,7 @@ const provider: ChatProvider = {
             response: res,
             url: apiUrl + '/chat/completions',
             body: JSON.stringify(requestBody),
-            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey },
+            headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + apiKey },
             signal,
             stream: req.body.stream,
         });
@@ -87,13 +90,14 @@ const provider: ChatProvider = {
         if (!apiKey) return [];
 
         const response = await globalThis.fetch(`${apiUrl}/models`, {
-            headers: { 'Authorization': 'Bearer ' + apiKey },
+            headers: { Authorization: 'Bearer ' + apiKey },
         });
         if (!response.ok) return [];
-        const data = await response.json() as Record<string, unknown>;
+        const data = (await response.json()) as Record<string, unknown>;
         return (data.data || []) as ModelEntry[];
     },
-    resolveTokenizer: (model) => model.includes('nemo') || model.includes('pixtral') ? 'nemo' : 'mistral',
+    resolveTokenizer: (model) =>
+        model.includes('nemo') || model.includes('pixtral') ? 'nemo' : 'mistral',
 };
 
 export default provider;

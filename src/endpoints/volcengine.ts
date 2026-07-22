@@ -5,7 +5,6 @@ import { readSecret, SECRET_KEYS } from './secrets.js';
 
 export const router = Router();
 
-
 router.post('/generate-voice', async (req, res) => {
     try {
         let provider_endpoint = req.body.provider_endpoint;
@@ -18,7 +17,9 @@ router.post('/generate-voice', async (req, res) => {
         const accessKey = readSecret(req.user.directories, SECRET_KEYS.VOLCENGINE_ACCESS_KEY);
 
         if (!appId || !accessKey) {
-            console.warn('Volcengine generate-voice request missing required parameters appId or accessKey');
+            console.warn(
+                'Volcengine generate-voice request missing required parameters appId or accessKey',
+            );
             return res.sendStatus(403);
         }
 
@@ -27,7 +28,9 @@ router.post('/generate-voice', async (req, res) => {
         const voice_speaker = req.body.voice_speaker;
 
         if (!resourceId || !text || !voice_speaker) {
-            console.warn('Volcengine generate-voice request missing required parameters resourceId or text or voice_speaker');
+            console.warn(
+                'Volcengine generate-voice request missing required parameters resourceId or text or voice_speaker',
+            );
             return res.sendStatus(400);
         }
 
@@ -40,22 +43,22 @@ router.post('/generate-voice', async (req, res) => {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                'req_params': {
-                    'text': text,
-                    'speaker': voice_speaker,
-                    'audio_params': {
-                        'format': 'mp3',
-                        'speech_rate': Number.parseInt(req.body.speed || '0'),
+                req_params: {
+                    text: text,
+                    speaker: voice_speaker,
+                    audio_params: {
+                        format: 'mp3',
+                        speech_rate: Number.parseInt(req.body.speed || '0'),
                     },
-                    'additions': JSON.stringify({
-                        'mute_cut_threshold': '400',
-                        'mute_cut_remain_ms': '1',
-                        'explicit_language': 'crosslingual',
-                        'enable_language_detector': true,
-                        'disable_markdown_filter': true,
-                        'cache_config': {
-                            'use_cache': true,
-                            'text_type': 1,
+                    additions: JSON.stringify({
+                        mute_cut_threshold: '400',
+                        mute_cut_remain_ms: '1',
+                        explicit_language: 'crosslingual',
+                        enable_language_detector: true,
+                        disable_markdown_filter: true,
+                        cache_config: {
+                            use_cache: true,
+                            text_type: 1,
                         },
                     }),
                 },
@@ -65,14 +68,19 @@ router.post('/generate-voice', async (req, res) => {
         if (!response.ok) {
             const logid = response.headers.get('X-Tt-Logid') || '';
             console.warn('Volcengine Request failed', response.status, response.statusText, logid);
-            return res.header('X-Tt-Logid', logid).status(500).send(`TTS Generation Failed: ${response.statusText}`);
+            return res
+                .header('X-Tt-Logid', logid)
+                .status(500)
+                .send(`TTS Generation Failed: ${response.statusText}`);
         }
         const decoder = new TextDecoder();
 
         const result = await new Promise((resolve, reject) => {
             const audioChunks_: Buffer[] = [];
             let buffer = '';
-            const bodyStream = Readable.fromWeb(response.body as unknown as import('node:stream/web').ReadableStream<Uint8Array>);
+            const bodyStream = Readable.fromWeb(
+                response.body as unknown as import('node:stream/web').ReadableStream<Uint8Array>,
+            );
             bodyStream.on('data', (chunk) => {
                 buffer += decoder.decode(chunk, { stream: true });
 

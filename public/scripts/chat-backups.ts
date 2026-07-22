@@ -49,7 +49,7 @@ class BackupsBrowser {
             // @ts-expect-error TS(7034) FIXME: Variable 'parsedLines' implicitly has type 'any[]'... Remove this comment to see the full error message
             const parsedLines = [];
             const fileText = await response.text();
-            fileText.split('\n').forEach(line => {
+            fileText.split('\n').forEach((line) => {
                 try {
                     /** @type {ChatMessage} */
                     const lineData = JSON.parse(line);
@@ -61,11 +61,23 @@ class BackupsBrowser {
                 }
             });
             const textArea = document.createElement('textarea');
-            textArea.classList.add('text_pole', 'monospace', 'textarea_compact', 'margin0', 'height100p');
+            textArea.classList.add(
+                'text_pole',
+                'monospace',
+                'textarea_compact',
+                'margin0',
+                'height100p',
+            );
             textArea.readOnly = true;
             // @ts-expect-error TS(7005) FIXME: Variable 'parsedLines' implicitly has an 'any[]' t... Remove this comment to see the full error message
-            textArea.value = parsedLines.map(l => `${l.name} [${timestampToMoment(l.send_date).format('lll')}]\n${l.mes}`).join('\n\n\n');
-            await callGenericPopup(textArea, POPUP_TYPE.TEXT, '', { allowVerticalScrolling: true, large: true, wide: true });
+            textArea.value = parsedLines
+                .map((l) => `${l.name} [${timestampToMoment(l.send_date).format('lll')}]\n${l.mes}`)
+                .join('\n\n\n');
+            await callGenericPopup(textArea, POPUP_TYPE.TEXT, '', {
+                allowVerticalScrolling: true,
+                large: true,
+                wide: true,
+            });
         } catch (error) {
             console.error('Failed to parse chat backup content:', error);
             notyf.error(t`Failed to parse backup content.`);
@@ -184,7 +196,9 @@ class BackupsBrowser {
         const backupsList = await response.json();
 
         // @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
-        for (const backup of backupsList.sort((a, b) => sortMoments(timestampToMoment(a.last_mes), timestampToMoment(b.last_mes)))) {
+        for (const backup of backupsList.toSorted((a, b) =>
+            sortMoments(timestampToMoment(a.last_mes), timestampToMoment(b.last_mes)),
+        )) {
             const listItem = document.createElement('div');
             listItem.classList.add('chatBackupsListItem');
 

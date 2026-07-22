@@ -11,8 +11,10 @@ export const router = express.Router();
 
 // Pre-warm all providers to avoid cold-start import compilation.
 Promise.all(
-    getRegisteredTypes().map(type =>
-        getProvider(type).catch(() => { /* provider may not be available */ }),
+    getRegisteredTypes().map((type) =>
+        getProvider(type).catch(() => {
+            /* provider may not be available */
+        }),
     ),
 );
 
@@ -30,7 +32,11 @@ async function abortKoboldCppRequest(request: import('express').Request, url: st
         setAdditionalHeaders(request, args, url);
         const abortResponse = await globalThis.fetch(`${url}/api/extra/abort`, args);
         if (!abortResponse.ok) {
-            console.error('Error sending abort request to Kobold:', abortResponse.status, abortResponse.statusText);
+            console.error(
+                'Error sending abort request to Kobold:',
+                abortResponse.status,
+                abortResponse.statusText,
+            );
         }
     } catch (error) {
         console.error(error);
@@ -57,7 +63,9 @@ router.post('/status', async function (request, response) {
         // URL from centralised config — no switch.
         const endpoints = PROVIDER_ENDPOINTS[apiType];
         if (!endpoints) {
-            return response.status(400).send({ result: 'no_connection', response: `Unknown API type: ${apiType}` });
+            return response
+                .status(400)
+                .send({ result: 'no_connection', response: `Unknown API type: ${apiType}` });
         }
         const url = baseUrl + endpoints.status;
 
@@ -73,7 +81,7 @@ router.post('/status', async function (request, response) {
         }
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic API shape
-        let data = await modelsReply.json() as any;
+        let data = (await modelsReply.json()) as any;
 
         // Let the provider rewrap the status response (TogetherAI, Ollama, HuggingFace…).
         const provider = await getProvider(apiType);
@@ -133,17 +141,23 @@ router.post('/props', async function (request, response) {
         let propsUrl = baseUrl + '/props';
         if (apiType === TEXTGEN_TYPES.LLAMACPP && request.body.model) {
             propsUrl += `?model=${encodeURIComponent(request.body.model)}`;
-            console.debug(`Querying llama-server props with model parameter: ${request.body.model}`);
+            console.debug(
+                `Querying llama-server props with model parameter: ${request.body.model}`,
+            );
         }
 
         const propsReply = await globalThis.fetch(propsUrl, args);
         if (!propsReply.ok) return response.sendStatus(400);
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const props = await propsReply.json() as any;
+        const props = (await propsReply.json()) as any;
 
         // TEMPORARY: llama.cpp's /props endpoint has a bug — trailing \0.
-        if (apiType === TEXTGEN_TYPES.LLAMACPP && props.chat_template && props.chat_template.endsWith('\u0000')) {
+        if (
+            apiType === TEXTGEN_TYPES.LLAMACPP &&
+            props.chat_template &&
+            props.chat_template.endsWith('\u0000')
+        ) {
             props.chat_template = props.chat_template.slice(0, -1) + '\n';
         }
 
@@ -185,12 +199,16 @@ router.post('/generate', async function (request, response) {
         // URL from centralised config — no switch.
         const endpoints = PROVIDER_ENDPOINTS[apiType];
         if (!endpoints) {
-            return response.status(400).send({ error: true, status: 'UNKNOWN', response: `Unknown API type: ${apiType}` });
+            return response
+                .status(400)
+                .send({ error: true, status: 'UNKNOWN', response: `Unknown API type: ${apiType}` });
         }
 
         const url = trimV1(baseUrl) + endpoints.generate;
         const provider = await getProvider(apiType);
-        const body = provider.buildGenerateBody ? provider.buildGenerateBody(request.body) : { ...request.body };
+        const body = provider.buildGenerateBody
+            ? provider.buildGenerateBody(request.body)
+            : { ...request.body };
 
         // Single proxy call — handles fetch, streaming, error mapping, response transforms.
         await proxyRequest({
@@ -207,7 +225,11 @@ router.post('/generate', async function (request, response) {
         // @ts-expect-error TS(2571) — unknown catch
         const status = error?.status ?? error?.code ?? 'UNKNOWN';
         // @ts-expect-error TS(2571) — unknown catch
-        const text = error?.error ?? error?.statusText ?? error?.message ?? 'Unknown error on /generate endpoint';
+        const text =
+            error?.error ??
+            error?.statusText ??
+            error?.message ??
+            'Unknown error on /generate endpoint';
         const value = { error: true, status, response: text };
         console.error('Endpoint error:', error);
 
@@ -241,7 +263,7 @@ ollama.post('/download', async function (request, response) {
         }
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        console.debug('Ollama pull response:', await fetchResponse.json() as any);
+        console.debug('Ollama pull response:', (await fetchResponse.json()) as any);
         return response.send({ ok: true });
     } catch (error) {
         console.error(error);
@@ -271,12 +293,17 @@ ollama.post('/caption-image', async function (request, response) {
 
         if (!fetchResponse.ok) {
             const errorText = await fetchResponse.text();
-            console.error('Ollama caption error:', fetchResponse.status, fetchResponse.statusText, errorText);
+            console.error(
+                'Ollama caption error:',
+                fetchResponse.status,
+                fetchResponse.statusText,
+                errorText,
+            );
             return response.status(500).send({ error: true });
         }
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const data = await fetchResponse.json() as any;
+        const data = (await fetchResponse.json()) as any;
         console.debug('Ollama caption response:', data);
 
         const caption = data?.response || '';
@@ -308,7 +335,7 @@ llamacpp.post('/props', async function (request, response) {
             return response.status(500).send({ error: true });
         }
 
-        const data = await fetchResponse.json() as Record<string, unknown>;
+        const data = (await fetchResponse.json()) as Record<string, unknown>;
         console.debug('LlamaCpp props response:', data);
         return response.send(data);
     } catch (error) {
@@ -320,7 +347,8 @@ llamacpp.post('/props', async function (request, response) {
 llamacpp.post('/slots', async function (request, response) {
     try {
         if (!request.body.server_url) return response.sendStatus(400);
-        if (!/^(erase|info|restore|save)$/.test(request.body.action)) return response.sendStatus(400);
+        if (!/^(erase|info|restore|save)$/.test(request.body.action))
+            return response.sendStatus(400);
 
         console.debug('LlamaCpp slots request:', request.body);
         const baseUrl = trimV1(request.body.server_url);
@@ -330,15 +358,22 @@ llamacpp.post('/slots', async function (request, response) {
             fetchResponse = await globalThis.fetch(`${baseUrl}/slots`, { method: 'GET' });
         } else {
             if (!/^\d+$/.test(request.body.id_slot)) return response.sendStatus(400);
-            if (request.body.action !== 'erase' && !request.body.filename) return response.sendStatus(400);
+            if (request.body.action !== 'erase' && !request.body.filename)
+                return response.sendStatus(400);
 
-            fetchResponse = await globalThis.fetch(`${baseUrl}/slots/${request.body.id_slot}?action=${request.body.action}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    filename: request.body.action !== 'erase' ? `${request.body.filename}` : undefined,
-                }),
-            });
+            fetchResponse = await globalThis.fetch(
+                `${baseUrl}/slots/${request.body.id_slot}?action=${request.body.action}`,
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        filename:
+                            request.body.action !== 'erase'
+                                ? `${request.body.filename}`
+                                : undefined,
+                    }),
+                },
+            );
         }
 
         if (!fetchResponse.ok) {
@@ -346,7 +381,7 @@ llamacpp.post('/slots', async function (request, response) {
             return response.status(500).send({ error: true });
         }
 
-        const data = await fetchResponse.json() as Record<string, unknown>;
+        const data = (await fetchResponse.json()) as Record<string, unknown>;
         console.debug('LlamaCpp slots response:', data);
         return response.send(data);
     } catch (error) {
@@ -375,12 +410,16 @@ tabby.post('/download', async function (request, response) {
 
         if (permissionResponse.ok) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const permissionJson = await permissionResponse.json() as any;
+            const permissionJson = (await permissionResponse.json()) as any;
             if (permissionJson.permission !== 'admin') {
                 return response.status(403).send({ error: true });
             }
         } else {
-            console.error('API Permission error:', permissionResponse.status, permissionResponse.statusText);
+            console.error(
+                'API Permission error:',
+                permissionResponse.status,
+                permissionResponse.statusText,
+            );
             return response.status(500).send({ error: true });
         }
 

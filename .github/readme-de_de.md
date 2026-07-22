@@ -43,13 +43,13 @@ Die Hardwareanforderungen sind minimal: Es läuft auf allem, was NodeJS 20 oder 
 ### Discord-Server
 
 | [![][discord-shield-badge]][discord-link] | [Tritt unserer Discord-Community bei!](https://discord.gg/sillytavern) Erhalte Unterstützung, teile deine Lieblingscharaktere und Prompts. |
-| :---------------------------------------- | :----------------------------------------------------------------------------------------------------------------- |
+| :---------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------- |
 
 Oder nimm direkt Kontakt mit den Entwicklern auf:
 
-* Discord: cohee, rossascends, wolfsblvt
-* Reddit: [/u/RossAscends](https://www.reddit.com/user/RossAscends/), [/u/sillylossy](https://www.reddit.com/user/sillylossy/), [u/Wolfsblvt](https://www.reddit.com/user/Wolfsblvt/)
-* [Erstelle ein GitHub-Issue](https://github.com/SillyTavern/SillyTavern/issues)
+- Discord: cohee, rossascends, wolfsblvt
+- Reddit: [/u/RossAscends](https://www.reddit.com/user/RossAscends/), [/u/sillylossy](https://www.reddit.com/user/sillylossy/), [u/Wolfsblvt](https://www.reddit.com/user/Wolfsblvt/)
+- [Erstelle ein GitHub-Issue](https://github.com/SillyTavern/SillyTavern/issues)
 
 ### Ich mag dieses Projekt! Wie kann ich beitragen?
 
@@ -66,29 +66,30 @@ Oder nimm direkt Kontakt mit den Entwicklern auf:
 
 Für detaillierte Installationsanweisungen besuche bitte unsere Dokumentation:
 
-* **[Windows Installationsanleitung](https://docs.sillytavern.app/installation/windows/)**
-* **[MacOS/Linux Installationsanleitung](https://docs.sillytavern.app/installation/linuxmacos/)**
-* **[Android (Termux) Installationsanleitung](https://docs.sillytavern.app/installation/android-(termux)/)**
-* **[Docker Installationsanleitung](https://docs.sillytavern.app/installation/docker/)**
+- **[Windows Installationsanleitung](https://docs.sillytavern.app/installation/windows/)**
+- **[MacOS/Linux Installationsanleitung](https://docs.sillytavern.app/installation/linuxmacos/)**
+- **[Android (Termux) Installationsanleitung](<https://docs.sillytavern.app/installation/android-(termux)/>)**
+- **[Docker Installationsanleitung](https://docs.sillytavern.app/installation/docker/)**
 
 ## Lizenz und Danksagungen
 
 **Dieses Programm wird in der Hoffnung verbreitet, dass es nützlich ist, aber OHNE JEGLICHE GARANTIE; nicht einmal die stillschweigende Garantie der MARKTFÄHIGKEIT oder EIGNUNG FÜR EINEN BESTIMMTEN ZWECK. Siehe die GNU Affero General Public License für weitere Details.**
 
-* [TavernAI](https://github.com/TavernAI/TavernAI) 1.2.8 von Humi: MIT-Lizenz
-* Teile von CncAnons TavernAITurbo-Mod werden mit Genehmigung verwendet
-* Visual Novel-Modus inspiriert von der Arbeit von PepperTaco (<https://github.com/peppertaco/Tavern/>)
-* Noto Sans-Schriftart von Google (OFL-Lizenz)
-* Symboldesign von Font Awesome <https://fontawesome.com> (Symbole: CC BY 4.0, Schriftarten: SIL OFL 1.1, Code: MIT-Lizenz)
-* Standardinhalt von @OtisAlejandro (Seraphina-Charakter und Lorebook) und @kallmeflocc (10.000 Discord-Benutzer-Feierhintergrund)
-* Docker-Anleitung von [@mrguymiah](https://github.com/mrguymiah) und [@Bronya-Rand](https://github.com/Bronya-Rand)
-* kokoro-js library by [@hexgrad](https://github.com/hexgrad) (Apache-2.0 License)
+- [TavernAI](https://github.com/TavernAI/TavernAI) 1.2.8 von Humi: MIT-Lizenz
+- Teile von CncAnons TavernAITurbo-Mod werden mit Genehmigung verwendet
+- Visual Novel-Modus inspiriert von der Arbeit von PepperTaco (<https://github.com/peppertaco/Tavern/>)
+- Noto Sans-Schriftart von Google (OFL-Lizenz)
+- Symboldesign von Font Awesome <https://fontawesome.com> (Symbole: CC BY 4.0, Schriftarten: SIL OFL 1.1, Code: MIT-Lizenz)
+- Standardinhalt von @OtisAlejandro (Seraphina-Charakter und Lorebook) und @kallmeflocc (10.000 Discord-Benutzer-Feierhintergrund)
+- Docker-Anleitung von [@mrguymiah](https://github.com/mrguymiah) und [@Bronya-Rand](https://github.com/Bronya-Rand)
+- kokoro-js library by [@hexgrad](https://github.com/hexgrad) (Apache-2.0 License)
 
 ## Top Contributors
 
 [![Contributors](https://contrib.rocks/image?repo=SillyTavern/SillyTavern)](https://github.com/SillyTavern/SillyTavern/graphs/contributors)
 
 <!-- LINK GROUP -->
+
 [cover]: https://github.com/user-attachments/assets/01a6ae9a-16aa-45f2-8bff-32b5dc587e44
 [discord-link]: https://discord.gg/sillytavern
 [discord-shield-badge]: https://img.shields.io/discord/1100685673633153084?color=5865F2&label=discord&labelColor=black&logo=discord&logoColor=white&style=for-the-badge

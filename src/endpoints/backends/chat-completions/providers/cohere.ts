@@ -73,7 +73,7 @@ const provider: ChatProvider = {
             method: 'POST' as const,
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + apiKey,
+                Authorization: 'Bearer ' + apiKey,
             },
             body: JSON.stringify(requestBody),
             signal,
@@ -88,12 +88,14 @@ const provider: ChatProvider = {
             const generateResponse = await globalThis.fetch(apiUrl, config);
             if (!generateResponse.ok) {
                 const errorText = await generateResponse.text();
-                console.warn(`Cohere API returned error: ${generateResponse.status} ${generateResponse.statusText} ${errorText}`);
+                console.warn(
+                    `Cohere API returned error: ${generateResponse.status} ${generateResponse.statusText} ${errorText}`,
+                );
                 const errorJson = tryParse(errorText) ?? { error: true };
                 res.status(500).send(errorJson);
                 return;
             }
-            const json = await generateResponse.json() as Record<string, unknown>;
+            const json = (await generateResponse.json()) as Record<string, unknown>;
             console.debug('Cohere response:', json);
             res.send(json);
         }
@@ -104,16 +106,19 @@ const provider: ChatProvider = {
         if (!apiKey) return [];
 
         const response = await globalThis.fetch('https://api.cohere.ai/v1/models', {
-            headers: { 'Authorization': 'Bearer ' + apiKey },
+            headers: { Authorization: 'Bearer ' + apiKey },
         });
         if (!response.ok) return [];
-        const data = await response.json() as Record<string, unknown>;
+        const data = (await response.json()) as Record<string, unknown>;
         if (Array.isArray(data?.models)) {
-            return data.models.map((m: Record<string, unknown>) => ({ id: m.name as string, ...m })) as ModelEntry[];
+            return data.models.map((m: Record<string, unknown>) => ({
+                id: m.name as string,
+                ...m,
+            })) as ModelEntry[];
         }
         return [];
     },
-    resolveTokenizer: (model) => model.includes('command-a') ? 'command-a' : 'command-r',
+    resolveTokenizer: (model) => (model.includes('command-a') ? 'command-a' : 'command-r'),
 };
 
 export default provider;

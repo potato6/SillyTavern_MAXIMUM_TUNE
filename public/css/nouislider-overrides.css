@@ -51,7 +51,7 @@
 }
 
 /* Make the tooltip contenteditable cursor visible */
-.noUi-handle [contenteditable="true"] {
+.noUi-handle [contenteditable='true'] {
     cursor: text;
     user-select: text;
     position: absolute;

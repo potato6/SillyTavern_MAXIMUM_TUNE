@@ -2,7 +2,11 @@ import { getRequestHeaders } from '../script.js';
 import { renderExtensionTemplateAsync } from './extensions.js';
 import { POPUP_RESULT, POPUP_TYPE, callGenericPopup } from './popup.js';
 import { SlashCommand } from './slash-commands/SlashCommand.js';
-import { ARGUMENT_TYPE, SlashCommandArgument, SlashCommandNamedArgument } from './slash-commands/SlashCommandArgument.js';
+import {
+    ARGUMENT_TYPE,
+    SlashCommandArgument,
+    SlashCommandNamedArgument,
+} from './slash-commands/SlashCommandArgument.js';
 import { SlashCommandParser } from './slash-commands/SlashCommandParser.js';
 import { isValidUrl } from './utils.js';
 
@@ -40,7 +44,7 @@ export class ScraperManager {
     // @ts-expect-error TS(7006) FIXME: Parameter 'scraper' implicitly has an 'any' type.
     static async registerDataBankScraper(scraper) {
         // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
-        if (ScraperManager.#scrapers.some(s => s.id === scraper.id)) {
+        if (ScraperManager.#scrapers.some((s) => s.id === scraper.id)) {
             console.warn(`Scraper with ID ${scraper.id} already registered`);
             return;
         }
@@ -59,7 +63,13 @@ export class ScraperManager {
      */
     static getDataBankScrapers() {
         // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
-        return ScraperManager.#scrapers.map(s => ({ id: s.id, name: s.name, description: s.description, iconClass: s.iconClass, iconAvailable: s.iconAvailable }));
+        return ScraperManager.#scrapers.map((s) => ({
+            id: s.id,
+            name: s.name,
+            description: s.description,
+            iconClass: s.iconClass,
+            iconAvailable: s.iconAvailable,
+        }));
     }
 
     /**
@@ -70,7 +80,7 @@ export class ScraperManager {
     // @ts-expect-error TS(7006) FIXME: Parameter 'scraperId' implicitly has an 'any' type... Remove this comment to see the full error message
     static runDataBankScraper(scraperId) {
         // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
-        const scraper = ScraperManager.#scrapers.find(s => s.id === scraperId);
+        const scraper = ScraperManager.#scrapers.find((s) => s.id === scraperId);
         if (!scraper) {
             console.warn(`Scraper with ID ${scraperId} not found`);
             return;
@@ -87,7 +97,7 @@ export class ScraperManager {
     // @ts-expect-error TS(7006) FIXME: Parameter 'scraperId' implicitly has an 'any' type... Remove this comment to see the full error message
     static isScraperAvailable(scraperId) {
         // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
-        const scraper = ScraperManager.#scrapers.find(s => s.id === scraperId);
+        const scraper = ScraperManager.#scrapers.find((s) => s.id === scraperId);
         if (!scraper) {
             console.warn(`Scraper with ID ${scraperId} not found`);
             return;
@@ -147,7 +157,12 @@ class Notepad {
             });
         }
 
-        const result = await callGenericPopup(container, POPUP_TYPE.CONFIRM, '', { wide: true, large: true, okButton: 'Save', cancelButton: 'Cancel' });
+        const result = await callGenericPopup(container, POPUP_TYPE.CONFIRM, '', {
+            wide: true,
+            large: true,
+            okButton: 'Save',
+            cancelButton: 'Cancel',
+        });
 
         if (!result || text === '') {
             return;
@@ -204,13 +219,23 @@ class WebScraper {
         const templateHtml = await renderExtensionTemplateAsync('attachments', 'web-scrape', {});
         const container = document.createElement('div');
         container.innerHTML = templateHtml;
-        const linksString = await callGenericPopup(container, POPUP_TYPE.INPUT, '', { wide: false, large: false, okButton: 'Scrape', cancelButton: 'Cancel', rows: 4 });
+        const linksString = await callGenericPopup(container, POPUP_TYPE.INPUT, '', {
+            wide: false,
+            large: false,
+            okButton: 'Scrape',
+            cancelButton: 'Cancel',
+            rows: 4,
+        });
 
         if (!linksString) {
             return;
         }
 
-        const links = String(linksString).split('\n').map(l => l.trim()).filter(l => l).filter(l => isValidUrl(l));
+        const links = String(linksString)
+            .split('\n')
+            .map((l) => l.trim())
+            .filter((l) => l)
+            .filter((l) => isValidUrl(l));
 
         if (links.length === 0) {
             notyf.error('Invalid URL');
@@ -232,7 +257,9 @@ class WebScraper {
             const domain = new URL(link).hostname;
             const timestamp = Date.now();
             const title = (await this.getTitleFromHtmlBlob(blob)) || 'webpage';
-            const file = new File([blob], `${title} - ${domain} - ${timestamp}.html`, { type: 'text/html' });
+            const file = new File([blob], `${title} - ${domain} - ${timestamp}.html`, {
+                type: 'text/html',
+            });
             files.push(file);
         }
 
@@ -272,7 +299,7 @@ class FileScraper {
      * @returns {Promise<File[]>} File attachments scraped from the files
      */
     async scrape() {
-        return new Promise(resolve => {
+        return new Promise((resolve) => {
             const fileInput = document.createElement('input');
             fileInput.type = 'file';
             fileInput.accept = '*/*';
@@ -317,7 +344,11 @@ class MediaWikiScraper {
         let filter = '';
         let output = 'single';
 
-        const templateHtml = await renderExtensionTemplateAsync('attachments', 'mediawiki-scrape', {});
+        const templateHtml = await renderExtensionTemplateAsync(
+            'attachments',
+            'mediawiki-scrape',
+            {},
+        );
         const container = document.createElement('div');
         container.innerHTML = templateHtml;
         const urlInput = container.querySelector('input[name="scrapeInput"]');
@@ -339,7 +370,12 @@ class MediaWikiScraper {
             });
         }
 
-        const confirm = await callGenericPopup(container, POPUP_TYPE.CONFIRM, '', { wide: false, large: false, okButton: 'Scrape', cancelButton: 'Cancel' });
+        const confirm = await callGenericPopup(container, POPUP_TYPE.CONFIRM, '', {
+            wide: false,
+            large: false,
+            okButton: 'Scrape',
+            cancelButton: 'Cancel',
+        });
 
         if (confirm !== POPUP_RESULT.AFFIRMATIVE) {
             return;
@@ -369,7 +405,11 @@ class MediaWikiScraper {
         if (output === 'multi') {
             const files = [];
             for (const attachment of data) {
-                const file = new File([String(attachment.content).trim()], `${String(attachment.title).trim()}.txt`, { type: 'text/plain' });
+                const file = new File(
+                    [String(attachment.content).trim()],
+                    `${String(attachment.title).trim()}.txt`,
+                    { type: 'text/plain' },
+                );
                 files.push(file);
             }
             return files;
@@ -377,7 +417,9 @@ class MediaWikiScraper {
 
         if (output === 'single') {
             // @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
-            const combinedContent = data.map((a) => String(a.title).trim() + '\n\n' + String(a.content).trim()).join('\n\n\n\n');
+            const combinedContent = data
+                .map((a) => String(a.title).trim() + '\n\n' + String(a.content).trim())
+                .join('\n\n\n\n');
             const file = new File([combinedContent], `${url}.txt`, { type: 'text/plain' });
             return [file];
         }
@@ -464,7 +506,12 @@ class FandomScraper {
             });
         }
 
-        const confirm = await callGenericPopup(container, POPUP_TYPE.CONFIRM, '', { wide: false, large: false, okButton: 'Scrape', cancelButton: 'Cancel' });
+        const confirm = await callGenericPopup(container, POPUP_TYPE.CONFIRM, '', {
+            wide: false,
+            large: false,
+            okButton: 'Scrape',
+            cancelButton: 'Cancel',
+        });
 
         if (confirm !== POPUP_RESULT.AFFIRMATIVE) {
             return;
@@ -494,7 +541,11 @@ class FandomScraper {
         if (output === 'multi') {
             const files = [];
             for (const attachment of data) {
-                const file = new File([String(attachment.content).trim()], `${String(attachment.title).trim()}.txt`, { type: 'text/plain' });
+                const file = new File(
+                    [String(attachment.content).trim()],
+                    `${String(attachment.title).trim()}.txt`,
+                    { type: 'text/plain' },
+                );
                 files.push(file);
             }
             return files;
@@ -502,7 +553,9 @@ class FandomScraper {
 
         if (output === 'single') {
             // @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
-            const combinedContent = data.map((a) => String(a.title).trim() + '\n\n' + String(a.content).trim()).join('\n\n\n\n');
+            const combinedContent = data
+                .map((a) => String(a.title).trim() + '\n\n' + String(a.content).trim())
+                .join('\n\n\n\n');
             const file = new File([combinedContent], `${fandom}.txt`, { type: 'text/plain' });
             return [file];
         }
@@ -512,22 +565,191 @@ class FandomScraper {
 }
 
 const iso6391Codes = [
-    'aa', 'ab', 'ae', 'af', 'ak', 'am', 'an', 'ar', 'as', 'av', 'ay', 'az',
-    'ba', 'be', 'bg', 'bh', 'bi', 'bm', 'bn', 'bo', 'br', 'bs', 'ca', 'ce',
-    'ch', 'co', 'cr', 'cs', 'cu', 'cv', 'cy', 'da', 'de', 'dv', 'dz', 'ee',
-    'el', 'en', 'eo', 'es', 'et', 'eu', 'fa', 'ff', 'fi', 'fj', 'fo', 'fr',
-    'fy', 'ga', 'gd', 'gl', 'gn', 'gu', 'gv', 'ha', 'he', 'hi', 'ho', 'hr',
-    'ht', 'hu', 'hy', 'hz', 'ia', 'id', 'ie', 'ig', 'ii', 'ik', 'io', 'is',
-    'it', 'iu', 'ja', 'jv', 'ka', 'kg', 'ki', 'kj', 'kk', 'kl', 'km', 'kn',
-    'ko', 'kr', 'ks', 'ku', 'kv', 'kw', 'ky', 'la', 'lb', 'lg', 'li', 'ln',
-    'lo', 'lt', 'lu', 'lv', 'mg', 'mh', 'mi', 'mk', 'ml', 'mn', 'mr', 'ms',
-    'mt', 'my', 'na', 'nb', 'nd', 'ne', 'ng', 'nl', 'nn', 'no', 'nr', 'nv',
-    'ny', 'oc', 'oj', 'om', 'or', 'os', 'pa', 'pi', 'pl', 'ps', 'pt', 'qu',
-    'rm', 'rn', 'ro', 'ru', 'rw', 'sa', 'sc', 'sd', 'se', 'sg', 'si', 'sk',
-    'sl', 'sm', 'sn', 'so', 'sq', 'sr', 'ss', 'st', 'su', 'sv', 'sw', 'ta',
-    'te', 'tg', 'th', 'ti', 'tk', 'tl', 'tn', 'to', 'tr', 'ts', 'tt', 'tw',
-    'ty', 'ug', 'uk', 'ur', 'uz', 've', 'vi', 'vo', 'wa', 'wo', 'xh', 'yi',
-    'yo', 'za', 'zh', 'zu'];
+    'aa',
+    'ab',
+    'ae',
+    'af',
+    'ak',
+    'am',
+    'an',
+    'ar',
+    'as',
+    'av',
+    'ay',
+    'az',
+    'ba',
+    'be',
+    'bg',
+    'bh',
+    'bi',
+    'bm',
+    'bn',
+    'bo',
+    'br',
+    'bs',
+    'ca',
+    'ce',
+    'ch',
+    'co',
+    'cr',
+    'cs',
+    'cu',
+    'cv',
+    'cy',
+    'da',
+    'de',
+    'dv',
+    'dz',
+    'ee',
+    'el',
+    'en',
+    'eo',
+    'es',
+    'et',
+    'eu',
+    'fa',
+    'ff',
+    'fi',
+    'fj',
+    'fo',
+    'fr',
+    'fy',
+    'ga',
+    'gd',
+    'gl',
+    'gn',
+    'gu',
+    'gv',
+    'ha',
+    'he',
+    'hi',
+    'ho',
+    'hr',
+    'ht',
+    'hu',
+    'hy',
+    'hz',
+    'ia',
+    'id',
+    'ie',
+    'ig',
+    'ii',
+    'ik',
+    'io',
+    'is',
+    'it',
+    'iu',
+    'ja',
+    'jv',
+    'ka',
+    'kg',
+    'ki',
+    'kj',
+    'kk',
+    'kl',
+    'km',
+    'kn',
+    'ko',
+    'kr',
+    'ks',
+    'ku',
+    'kv',
+    'kw',
+    'ky',
+    'la',
+    'lb',
+    'lg',
+    'li',
+    'ln',
+    'lo',
+    'lt',
+    'lu',
+    'lv',
+    'mg',
+    'mh',
+    'mi',
+    'mk',
+    'ml',
+    'mn',
+    'mr',
+    'ms',
+    'mt',
+    'my',
+    'na',
+    'nb',
+    'nd',
+    'ne',
+    'ng',
+    'nl',
+    'nn',
+    'no',
+    'nr',
+    'nv',
+    'ny',
+    'oc',
+    'oj',
+    'om',
+    'or',
+    'os',
+    'pa',
+    'pi',
+    'pl',
+    'ps',
+    'pt',
+    'qu',
+    'rm',
+    'rn',
+    'ro',
+    'ru',
+    'rw',
+    'sa',
+    'sc',
+    'sd',
+    'se',
+    'sg',
+    'si',
+    'sk',
+    'sl',
+    'sm',
+    'sn',
+    'so',
+    'sq',
+    'sr',
+    'ss',
+    'st',
+    'su',
+    'sv',
+    'sw',
+    'ta',
+    'te',
+    'tg',
+    'th',
+    'ti',
+    'tk',
+    'tl',
+    'tn',
+    'to',
+    'tr',
+    'ts',
+    'tt',
+    'tw',
+    'ty',
+    'ug',
+    'uk',
+    'ur',
+    'uz',
+    've',
+    'vi',
+    'vo',
+    'wa',
+    'wo',
+    'xh',
+    'yi',
+    'yo',
+    'za',
+    'zh',
+    'zu',
+];
 
 /**
  * Scrape transcript from a YouTube video.
@@ -548,34 +770,49 @@ class YouTubeScraper {
     }
 
     async init() {
-        SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-            name: 'yt-script',
-            // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
-            callback: async (args, url) => {
-                try {
-                    if (!url) {
-                        throw new Error('URL or ID of the YouTube video is required');
-                    }
+        SlashCommandParser.addCommandObject(
+            SlashCommand.fromProps({
+                name: 'yt-script',
+                // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
+                callback: async (args, url) => {
+                    try {
+                        if (!url) {
+                            throw new Error('URL or ID of the YouTube video is required');
+                        }
 
-                    const lang = String(args?.lang || '');
-                    const { transcript } = await this.getScript(String(url).trim(), lang);
-                    return transcript;
-                } catch (error) {
-                    // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
-                    notyf.error(error.message);
-                    return '';
-                }
-            },
-            helpString: 'Scrape a transcript from a YouTube video by ID or URL.',
-            returns: ARGUMENT_TYPE.STRING,
-            namedArgumentList: [
-                // @ts-expect-error TS(2345) FIXME: Argument of type '""' is not assignable to paramet... Remove this comment to see the full error message
-                new SlashCommandNamedArgument('lang', 'ISO 639-1 language code of the transcript, e.g. "en"', ARGUMENT_TYPE.STRING, false, false, '', iso6391Codes),
-            ],
-            unnamedArgumentList: [
-                new SlashCommandArgument('URL or ID of the YouTube video', ARGUMENT_TYPE.STRING, true, false),
-            ],
-        }));
+                        const lang = String(args?.lang || '');
+                        const { transcript } = await this.getScript(String(url).trim(), lang);
+                        return transcript;
+                    } catch (error) {
+                        // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
+                        notyf.error(error.message);
+                        return '';
+                    }
+                },
+                helpString: 'Scrape a transcript from a YouTube video by ID or URL.',
+                returns: ARGUMENT_TYPE.STRING,
+                namedArgumentList: [
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '""' is not assignable to paramet... Remove this comment to see the full error message
+                    new SlashCommandNamedArgument(
+                        'lang',
+                        'ISO 639-1 language code of the transcript, e.g. "en"',
+                        ARGUMENT_TYPE.STRING,
+                        false,
+                        false,
+                        '',
+                        iso6391Codes,
+                    ),
+                ],
+                unnamedArgumentList: [
+                    new SlashCommandArgument(
+                        'URL or ID of the YouTube video',
+                        ARGUMENT_TYPE.STRING,
+                        true,
+                        false,
+                    ),
+                ],
+            }),
+        );
     }
 
     /**
@@ -598,9 +835,10 @@ class YouTubeScraper {
             return url;
         }
 
-        const regex = /^.*(?:(?:youtu\.be\/|v\/|vi\/|u\/\w\/|embed\/|shorts\/)|(?:(?:watch)?\?v(?:i)?=|&v(?:i)?=))([^#&?]*).*/;
+        const regex =
+            /^.*(?:(?:youtu\.be\/|v\/|vi\/|u\/\w\/|embed\/|shorts\/)|(?:(?:watch)?\?v(?:i)?=|&v(?:i)?=))([^#&?]*).*/;
         const match = url.match(regex);
-        return (match?.length && match[1] ? match[1] : url);
+        return match?.length && match[1] ? match[1] : url;
     }
 
     /**
@@ -609,10 +847,19 @@ class YouTubeScraper {
      */
     async scrape() {
         let lang = '';
-        const templateHtml = await renderExtensionTemplateAsync('attachments', 'youtube-scrape', {});
+        const templateHtml = await renderExtensionTemplateAsync(
+            'attachments',
+            'youtube-scrape',
+            {},
+        );
         const container = document.createElement('div');
         container.innerHTML = templateHtml;
-        const videoUrl = await callGenericPopup(container, POPUP_TYPE.INPUT, '', { wide: false, large: false, okButton: 'Scrape', cancelButton: 'Cancel' });
+        const videoUrl = await callGenericPopup(container, POPUP_TYPE.INPUT, '', {
+            wide: false,
+            large: false,
+            okButton: 'Scrape',
+            cancelButton: 'Cancel',
+        });
 
         const langInput = container.querySelector('input[name="youtubeLanguageCode"]');
         if (langInput instanceof HTMLInputElement) {
@@ -629,7 +876,9 @@ class YouTubeScraper {
         const { transcript, id } = await this.getScript(String(videoUrl), lang);
         notyf.dismiss(toast);
 
-        const file = new File([transcript], `YouTube - ${id} - ${Date.now()}.txt`, { type: 'text/plain' });
+        const file = new File([transcript], `YouTube - ${id} - ${Date.now()}.txt`, {
+            type: 'text/plain',
+        });
         return [file];
     }
 

@@ -18,13 +18,23 @@ const ENABLE_EXTENSIONS_AUTO_UPDATE = !!getConfigValue('extensions.autoUpdate', 
 // @ts-expect-error TS(2345) FIXME: Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
 const ENABLE_ACCOUNTS = !!getConfigValue('enableUserAccounts', false, 'boolean');
 // @ts-expect-error TS(2345) FIXME: Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
-const ENABLE_REQUEST_COMPRESSION = !!getConfigValue('performance.requestCompression.enabled', false, 'boolean');
+const ENABLE_REQUEST_COMPRESSION = !!getConfigValue(
+    'performance.requestCompression.enabled',
+    false,
+    'boolean',
+);
 // @ts-expect-error TS(2345) FIXME: Argument of type '"256kb"' is not assignable to pa... Remove this comment to see the full error message
-const REQUEST_COMPRESSION_MIN = bytes.parse(getConfigValue('performance.requestCompression.minPayloadSize', '256kb'));
+const REQUEST_COMPRESSION_MIN = bytes.parse(
+    getConfigValue('performance.requestCompression.minPayloadSize', '256kb'),
+);
 // @ts-expect-error TS(2345) FIXME: Argument of type '"8mb"' is not assignable to para... Remove this comment to see the full error message
-const REQUEST_COMPRESSION_MAX = bytes.parse(getConfigValue('performance.requestCompression.maxPayloadSize', '8mb'));
+const REQUEST_COMPRESSION_MAX = bytes.parse(
+    getConfigValue('performance.requestCompression.maxPayloadSize', '8mb'),
+);
 // @ts-expect-error TS(2345) FIXME: Argument of type '3000' is not assignable to param... Remove this comment to see the full error message
-const REQUEST_COMPRESSION_TIMEOUT = Number(getConfigValue('performance.requestCompression.timeout', 3000, 'number'));
+const REQUEST_COMPRESSION_TIMEOUT = Number(
+    getConfigValue('performance.requestCompression.timeout', 3000, 'number'),
+);
 
 // 10 minutes
 const AUTOSAVE_INTERVAL = 10 * 60 * 1000;
@@ -42,7 +52,10 @@ const AUTOSAVE_FUNCTIONS = new Map();
  */
 function triggerAutoSave(handle: string) {
     if (!AUTOSAVE_FUNCTIONS.has(handle)) {
-        const throttledAutoSave = throttle(() => backupUserSettings(handle, true), AUTOSAVE_INTERVAL);
+        const throttledAutoSave = throttle(
+            () => backupUserSettings(handle, true),
+            AUTOSAVE_INTERVAL,
+        );
         AUTOSAVE_FUNCTIONS.set(handle, throttledAutoSave);
     }
 
@@ -61,12 +74,12 @@ function triggerAutoSave(handle: string) {
 function readAndParseFromDirectory(directoryPath: string, fileExtension = '.json') {
     const files = fs
         .readdirSync(directoryPath)
-        .filter(x => path.parse(x).ext == fileExtension)
-        .sort();
+        .filter((x) => path.parse(x).ext == fileExtension)
+        .toSorted();
 
     const parsedFiles: unknown[] = [];
 
-    files.forEach(item => {
+    files.forEach((item) => {
         try {
             const file = fs.readFileSync(path.join(directoryPath, item), 'utf-8');
             parsedFiles.push(fileExtension == '.json' ? JSON.parse(file) : file);
@@ -105,18 +118,24 @@ export function getSettingsBackupFilePrefix(handle: string) {
  * @param {string} [options.fileExtension] File extension to filter by
  * @returns {{ fileContents: string[], fileNames: string[] }} Object with file contents and names
  */
-function readPresetsFromDirectory(directoryPath: string, options: { sortFunction?: (a: string, b: string) => number; removeFileExtension?: boolean; fileExtension?: string } = {}) {
-    const {
-        sortFunction,
-        removeFileExtension = false,
-        fileExtension = '.json',
-    } = options;
+function readPresetsFromDirectory(
+    directoryPath: string,
+    options: {
+        sortFunction?: (a: string, b: string) => number;
+        removeFileExtension?: boolean;
+        fileExtension?: string;
+    } = {},
+) {
+    const { sortFunction, removeFileExtension = false, fileExtension = '.json' } = options;
 
-    const files = fs.readdirSync(directoryPath).sort(sortFunction).filter(x => path.parse(x).ext == fileExtension);
+    const files = fs
+        .readdirSync(directoryPath)
+        .toSorted(sortFunction)
+        .filter((x) => path.parse(x).ext == fileExtension);
     const fileContents: string[] = [];
     const fileNames: string[] = [];
 
-    files.forEach(item => {
+    files.forEach((item) => {
         try {
             const file = fs.readFileSync(path.join(directoryPath, item), 'utf8');
             JSON.parse(file);
@@ -159,7 +178,10 @@ function backupUserSettings(handle: string, preventDuplicates: boolean) {
         return;
     }
 
-    const backupFile = path.join(userDirectories.backups, `${getSettingsBackupFilePrefix(handle)}${generateTimestamp()}.json`);
+    const backupFile = path.join(
+        userDirectories.backups,
+        `${getSettingsBackupFilePrefix(handle)}${generateTimestamp()}.json`,
+    );
     const sourceFile = path.join(userDirectories.root, SETTINGS_FILE);
 
     if (preventDuplicates && isDuplicateBackup(handle, sourceFile)) {
@@ -211,10 +233,14 @@ function areFilesEqual(file1: string, file2: string) {
  */
 function getLatestBackup(handle: string) {
     const userDirectories = getUserDirectories(handle);
-    const backupFiles = fs.readdirSync(userDirectories.backups)
-        .filter(x => x.startsWith(getSettingsBackupFilePrefix(handle)))
-        .map(x => ({ name: x, ctime: fs.statSync(path.join(userDirectories.backups, x)).ctimeMs }));
-    const latestBackup = backupFiles.sort((a, b) => b.ctime - a.ctime)[0]?.name;
+    const backupFiles = fs
+        .readdirSync(userDirectories.backups)
+        .filter((x) => x.startsWith(getSettingsBackupFilePrefix(handle)))
+        .map((x) => ({
+            name: x,
+            ctime: fs.statSync(path.join(userDirectories.backups, x)).ctimeMs,
+        }));
+    const latestBackup = backupFiles.toSorted((a, b) => b.ctime - a.ctime)[0]?.name;
     if (!latestBackup) {
         return null;
     }
@@ -246,35 +272,40 @@ router.post('/get', (request, response) => {
     }
 
     // NovelAI Settings
-    const { fileContents: novelai_settings, fileNames: novelai_setting_names }
-        = readPresetsFromDirectory(request.user.directories.novelAI_Settings, {
+    const { fileContents: novelai_settings, fileNames: novelai_setting_names } =
+        readPresetsFromDirectory(request.user.directories.novelAI_Settings, {
             sortFunction: sortByName(request.user.directories.novelAI_Settings),
             removeFileExtension: true,
         });
 
     // OpenAI Settings
-    const { fileContents: openai_settings, fileNames: openai_setting_names }
-        = readPresetsFromDirectory(request.user.directories.openAI_Settings, {
-            sortFunction: sortByName(request.user.directories.openAI_Settings), removeFileExtension: true,
+    const { fileContents: openai_settings, fileNames: openai_setting_names } =
+        readPresetsFromDirectory(request.user.directories.openAI_Settings, {
+            sortFunction: sortByName(request.user.directories.openAI_Settings),
+            removeFileExtension: true,
         });
 
     // TextGenerationWebUI Settings
-    const { fileContents: textgenerationwebui_presets, fileNames: textgenerationwebui_preset_names }
-        = readPresetsFromDirectory(request.user.directories.textGen_Settings, {
-            sortFunction: sortByName(request.user.directories.textGen_Settings), removeFileExtension: true,
-        });
+    const {
+        fileContents: textgenerationwebui_presets,
+        fileNames: textgenerationwebui_preset_names,
+    } = readPresetsFromDirectory(request.user.directories.textGen_Settings, {
+        sortFunction: sortByName(request.user.directories.textGen_Settings),
+        removeFileExtension: true,
+    });
 
     //Kobold
-    const { fileContents: koboldai_settings, fileNames: koboldai_setting_names }
-        = readPresetsFromDirectory(request.user.directories.koboldAI_Settings, {
-            sortFunction: sortByName(request.user.directories.koboldAI_Settings), removeFileExtension: true,
+    const { fileContents: koboldai_settings, fileNames: koboldai_setting_names } =
+        readPresetsFromDirectory(request.user.directories.koboldAI_Settings, {
+            sortFunction: sortByName(request.user.directories.koboldAI_Settings),
+            removeFileExtension: true,
         });
 
     const worldFiles = fs
         .readdirSync(request.user.directories.worlds)
-        .filter(file => path.extname(file).toLowerCase() === '.json')
-        .sort((a, b) => a.localeCompare(b));
-    const world_names = worldFiles.map(item => path.parse(item).name);
+        .filter((file) => path.extname(file).toLowerCase() === '.json')
+        .toSorted((a, b) => a.localeCompare(b));
+    const world_names = worldFiles.map((item) => path.parse(item).name);
 
     const themes = readAndParseFromDirectory(request.user.directories.themes);
     const movingUIPresets = readAndParseFromDirectory(request.user.directories.movingUI);
@@ -319,9 +350,9 @@ router.post('/get-snapshots', async (request, response) => {
     try {
         const snapshots = fs.readdirSync(request.user.directories.backups);
         const userFilesPattern = getSettingsBackupFilePrefix(request.user.profile.handle);
-        const userSnapshots = snapshots.filter(x => x.startsWith(userFilesPattern));
+        const userSnapshots = snapshots.filter((x) => x.startsWith(userFilesPattern));
 
-        const result = userSnapshots.map(x => {
+        const result = userSnapshots.map((x) => {
             const stat = fs.statSync(path.join(request.user.directories.backups, x));
             return { date: stat.ctimeMs, name: x, size: stat.size };
         });
@@ -367,31 +398,35 @@ router.post('/make-snapshot', async (request, response) => {
     }
 });
 
-router.post('/restore-snapshot', getFileNameValidationFunction('name'), async (request, response) => {
-    try {
-        const userFilesPattern = getSettingsBackupFilePrefix(request.user.profile.handle);
+router.post(
+    '/restore-snapshot',
+    getFileNameValidationFunction('name'),
+    async (request, response) => {
+        try {
+            const userFilesPattern = getSettingsBackupFilePrefix(request.user.profile.handle);
 
-        if (!request.body.name || !request.body.name.startsWith(userFilesPattern)) {
-            return response.status(400).send({ error: 'Invalid snapshot name' });
+            if (!request.body.name || !request.body.name.startsWith(userFilesPattern)) {
+                return response.status(400).send({ error: 'Invalid snapshot name' });
+            }
+
+            const snapshotName = request.body.name;
+            const snapshotPath = path.join(request.user.directories.backups, snapshotName);
+
+            if (!fs.existsSync(snapshotPath)) {
+                return response.sendStatus(404);
+            }
+
+            const pathToSettings = path.join(request.user.directories.root, SETTINGS_FILE);
+            fs.rmSync(pathToSettings, { force: true });
+            fs.copyFileSync(snapshotPath, pathToSettings);
+
+            response.sendStatus(204);
+        } catch (error) {
+            console.error(error);
+            response.sendStatus(500);
         }
-
-        const snapshotName = request.body.name;
-        const snapshotPath = path.join(request.user.directories.backups, snapshotName);
-
-        if (!fs.existsSync(snapshotPath)) {
-            return response.sendStatus(404);
-        }
-
-        const pathToSettings = path.join(request.user.directories.root, SETTINGS_FILE);
-        fs.rmSync(pathToSettings, { force: true });
-        fs.copyFileSync(snapshotPath, pathToSettings);
-
-        response.sendStatus(204);
-    } catch (error) {
-        console.error(error);
-        response.sendStatus(500);
-    }
-});
+    },
+);
 
 /**
  * Initializes the settings endpoint

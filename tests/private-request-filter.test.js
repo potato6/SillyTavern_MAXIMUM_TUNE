@@ -5,20 +5,20 @@ const mockTlsConnect = jest.fn(() => ({ type: 'tls-socket' }));
 const mockLookup = jest.fn();
 
 // Use Bun's native module mocker for built-in Node modules
-mock.module("node:net", () => ({
+mock.module('node:net', () => ({
     default: { connect: mockNetConnect },
 }));
 
-mock.module("node:tls", () => ({
+mock.module('node:tls', () => ({
     default: { connect: mockTlsConnect },
 }));
 
-mock.module("node:dns", () => ({
+mock.module('node:dns', () => ({
     default: { promises: { lookup: mockLookup } },
 }));
 
 // Use mock.module to mock your local ESM utility modules
-mock.module("../src/util.js", () => ({
+mock.module('../src/util.js', () => ({
     color: {
         red: (text) => text,
         green: (text) => text,
@@ -27,10 +27,9 @@ mock.module("../src/util.js", () => ({
     },
 }));
 
-mock.module("../src/express-common.js", () => ({
+mock.module('../src/express-common.js', () => ({
     filterValidIpPatterns: (patterns) => patterns,
 }));
-
 
 /** @type {import('../src/private-request-filter.js').default} */
 let initPrivateRequestFilter;
@@ -83,18 +82,18 @@ describe('private request filter', () => {
         expect(mockNetConnect).toHaveBeenCalledWith(expect.objectContaining({ host: '127.0.0.1' }));
 
         const blockedAgent = initAgent({ privateAddressWhitelist: [] });
-        await expect(blockedAgent.connect({}, { host: '127.0.0.1', secureEndpoint: false }))
-            .rejects
-            .toThrow('Blocked request to private IP address: 127.0.0.1');
+        await expect(
+            blockedAgent.connect({}, { host: '127.0.0.1', secureEndpoint: false }),
+        ).rejects.toThrow('Blocked request to private IP address: 127.0.0.1');
     });
 
     test('resolves hostnames and blocks when DNS returns private IP', async () => {
         mockLookup.mockResolvedValue({ address: '192.168.1.8' });
         const agent = initAgent();
 
-        await expect(agent.connect({}, { host: 'example.com', secureEndpoint: false }))
-            .rejects
-            .toThrow('Blocked request to private IP address: 192.168.1.8');
+        await expect(
+            agent.connect({}, { host: 'example.com', secureEndpoint: false }),
+        ).rejects.toThrow('Blocked request to private IP address: 192.168.1.8');
         expect(mockNetConnect).not.toHaveBeenCalled();
     });
 
@@ -105,21 +104,27 @@ describe('private request filter', () => {
         await agent.connect({}, { host: 'example.com', secureEndpoint: false });
 
         expect(mockLookup).toHaveBeenCalledWith('example.com');
-        expect(mockNetConnect).toHaveBeenCalledWith(expect.objectContaining({ host: '93.184.216.34' }));
+        expect(mockNetConnect).toHaveBeenCalledWith(
+            expect.objectContaining({ host: '93.184.216.34' }),
+        );
     });
 
     test('handles unresolved hosts according to allowUnresolvedHosts setting', async () => {
         mockLookup.mockRejectedValue(new Error('lookup failed'));
         const blockedAgent = initAgent({ allowUnresolvedHosts: false });
 
-        await expect(blockedAgent.connect({}, { host: 'missing-host.local', secureEndpoint: false }))
-            .rejects
-            .toThrow('Unable to resolve host: missing-host.local. Set privateAddressWhitelist.allowUnresolvedHosts to true to bypass this check.');
+        await expect(
+            blockedAgent.connect({}, { host: 'missing-host.local', secureEndpoint: false }),
+        ).rejects.toThrow(
+            'Unable to resolve host: missing-host.local. Set privateAddressWhitelist.allowUnresolvedHosts to true to bypass this check.',
+        );
         expect(mockNetConnect).not.toHaveBeenCalled();
 
         const allowedAgent = initAgent({ allowUnresolvedHosts: true });
         await allowedAgent.connect({}, { host: 'missing-host.local', secureEndpoint: false });
-        expect(mockNetConnect).toHaveBeenCalledWith(expect.objectContaining({ host: 'missing-host.local' }));
+        expect(mockNetConnect).toHaveBeenCalledWith(
+            expect.objectContaining({ host: 'missing-host.local' }),
+        );
     });
 
     test('uses tls.connect for secure endpoints', async () => {
@@ -127,7 +132,9 @@ describe('private request filter', () => {
         const agent = initAgent();
         await agent.connect({}, { host: 'example.com', secureEndpoint: true });
         expect(mockLookup).toHaveBeenCalledWith('example.com');
-        expect(mockTlsConnect).toHaveBeenCalledWith(expect.objectContaining({ host: '93.184.216.34' }));
+        expect(mockTlsConnect).toHaveBeenCalledWith(
+            expect.objectContaining({ host: '93.184.216.34' }),
+        );
         expect(mockNetConnect).not.toHaveBeenCalled();
     });
 });

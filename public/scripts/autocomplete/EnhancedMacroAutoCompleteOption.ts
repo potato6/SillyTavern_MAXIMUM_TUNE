@@ -92,7 +92,11 @@ export class EnhancedMacroAutoCompleteOption extends AutoCompleteOption {
         // Detect if second argument is context or options
         // Context has 'identifier' property, options may have 'noBraces'
         if (contextOrOptions && typeof contextOrOptions === 'object') {
-            if ('noBraces' in contextOrOptions || 'paddingAfter' in contextOrOptions || 'closeWithBraces' in contextOrOptions) {
+            if (
+                'noBraces' in contextOrOptions ||
+                'paddingAfter' in contextOrOptions ||
+                'closeWithBraces' in contextOrOptions
+            ) {
                 // It's an options object
                 this.#options = /** @type {EnhancedMacroAutoCompleteOptions} */ (contextOrOptions);
                 // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
@@ -244,7 +248,9 @@ export class EnhancedMacroAutoCompleteOption extends AutoCompleteOption {
         }
 
         // Reuse MacroBrowser's renderMacroDetails with options
-        const details = renderMacroDetails(this.#macro, { currentArgIndex: hightlightArgsHint ? currentArgIndex : -1 });
+        const details = renderMacroDetails(this.#macro, {
+            currentArgIndex: hightlightArgsHint ? currentArgIndex : -1,
+        });
 
         // Add class for autocomplete-specific styling overrides
         details.classList.add('macro-ac-details');
@@ -359,10 +365,10 @@ export class EnhancedMacroAutoCompleteOption extends AutoCompleteOption {
         const text = document.createElement('span');
         // @ts-expect-error TS(2339) FIXME: Property 'isScopedContentOptional' does not exist ... Remove this comment to see the full error message
         const closingHint = this.#context.isScopedContentOptional
-            // @ts-expect-error TS(2339) FIXME: Property 'scopedMacroName' does not exist on type ... Remove this comment to see the full error message
-            ? `Can optionally close with <code>{{/${this.#context.scopedMacroName}}}</code>`
-            // @ts-expect-error TS(2339) FIXME: Property 'scopedMacroName' does not exist on type ... Remove this comment to see the full error message
-            : `Close with <code>{{/${this.#context.scopedMacroName}}}</code>`;
+            ? // @ts-expect-error TS(2339) FIXME: Property 'scopedMacroName' does not exist on type ... Remove this comment to see the full error message
+              `Can optionally close with <code>{{/${this.#context.scopedMacroName}}}</code>`
+            : // @ts-expect-error TS(2339) FIXME: Property 'scopedMacroName' does not exist on type ... Remove this comment to see the full error message
+              `Close with <code>{{/${this.#context.scopedMacroName}}}</code>`;
         // @ts-expect-error TS(2339) FIXME: Property 'scopedMacroName' does not exist on type ... Remove this comment to see the full error message
         text.innerHTML = `Typing <strong>scoped content</strong> for <code>{{${this.#context.scopedMacroName}}}</code>. ${closingHint}`;
         info.append(text);
@@ -399,7 +405,7 @@ export class EnhancedMacroAutoCompleteOption extends AutoCompleteOption {
             const totalListItems = this.#context.args.length - this.#macro.maxArgs;
 
             const text = document.createElement('span');
-            text.innerHTML = `<strong>List item ${listIndex}</strong>${(listIndex < totalListItems ? ` (of ${totalListItems})` : '')}`;
+            text.innerHTML = `<strong>List item ${listIndex}</strong>${listIndex < totalListItems ? ` (of ${totalListItems})` : ''}`;
 
             const listInfo = document.createElement('span');
             listInfo.classList.add('macro-ac-arg-hint-small');
@@ -419,9 +425,10 @@ export class EnhancedMacroAutoCompleteOption extends AutoCompleteOption {
             const argDef = this.#macro.unnamedArgDefs[argIndex];
             let optionalLabel = '';
             if (argDef?.optional) {
-                optionalLabel = argDef.defaultValue !== undefined
-                    ? ` <em>(optional, default: ${argDef.defaultValue === '' ? '<empty string>' : argDef.defaultValue})</em>`
-                    : ' <em>(optional)</em>';
+                optionalLabel =
+                    argDef.defaultValue !== undefined
+                        ? ` <em>(optional, default: ${argDef.defaultValue === '' ? '<empty string>' : argDef.defaultValue})</em>`
+                        : ' <em>(optional)</em>';
             }
             const text = document.createElement('span');
             text.innerHTML = `<strong>${argDef?.name || `Argument ${argIndex + 1}`}</strong>${optionalLabel}`;
@@ -571,18 +578,58 @@ export const VariableShorthandType = Object.freeze({
  * @type {Map<string, VariableShorthandDefinition>}
  */
 export const VariableShorthandDefinitions = new Map([
-    [VariableShorthandType.LOCAL, {
-        type: VariableShorthandType.LOCAL,
-        name: 'Local Variable',
-        description: 'Access or modify a local variable (scoped to current chat).',
-        operations: ['get', 'set (=)', 'increment (++)', 'decrement (--)', 'add (+=)', 'subtract (-=)', 'logical or (||)', 'nullish coalescing (??)', 'logical or assign (||=)', 'nullish coalescing assign (??=)', 'equals (==)', 'not equals (!=)', 'greater than (>)', 'greater than or equal (>=)', 'less than (<)', 'less than or equal (<=)'],
-    }],
-    [VariableShorthandType.GLOBAL, {
-        type: VariableShorthandType.GLOBAL,
-        name: 'Global Variable',
-        description: 'Access or modify a global variable (shared across all chats).',
-        operations: ['get', 'set (=)', 'increment (++)', 'decrement (--)', 'add (+=)', 'subtract (-=)', 'logical or (||)', 'nullish coalescing (??)', 'logical or assign (||=)', 'nullish coalescing assign (??=)', 'equals (==)', 'not equals (!=)', 'greater than (>)', 'greater than or equal (>=)', 'less than (<)', 'less than or equal (<=)'],
-    }],
+    [
+        VariableShorthandType.LOCAL,
+        {
+            type: VariableShorthandType.LOCAL,
+            name: 'Local Variable',
+            description: 'Access or modify a local variable (scoped to current chat).',
+            operations: [
+                'get',
+                'set (=)',
+                'increment (++)',
+                'decrement (--)',
+                'add (+=)',
+                'subtract (-=)',
+                'logical or (||)',
+                'nullish coalescing (??)',
+                'logical or assign (||=)',
+                'nullish coalescing assign (??=)',
+                'equals (==)',
+                'not equals (!=)',
+                'greater than (>)',
+                'greater than or equal (>=)',
+                'less than (<)',
+                'less than or equal (<=)',
+            ],
+        },
+    ],
+    [
+        VariableShorthandType.GLOBAL,
+        {
+            type: VariableShorthandType.GLOBAL,
+            name: 'Global Variable',
+            description: 'Access or modify a global variable (shared across all chats).',
+            operations: [
+                'get',
+                'set (=)',
+                'increment (++)',
+                'decrement (--)',
+                'add (+=)',
+                'subtract (-=)',
+                'logical or (||)',
+                'nullish coalescing (??)',
+                'logical or assign (||=)',
+                'nullish coalescing assign (??=)',
+                'equals (==)',
+                'not equals (!=)',
+                'greater than (>)',
+                'greater than or equal (>=)',
+                'less than (<)',
+                'less than or equal (<=)',
+            ],
+        },
+    ],
 ]);
 
 /**
@@ -837,7 +884,8 @@ export class VariableNameAutoCompleteOption extends AutoCompleteOption {
         if (this.#isInvalidName) {
             const warningBox = document.createElement('div');
             warningBox.classList.add('variable-invalid-warning');
-            warningBox.style.cssText = 'background: #ff000033; border: 2px solid #ff0000; border-radius: 4px; padding: 10px; margin-bottom: 10px;';
+            warningBox.style.cssText =
+                'background: #ff000033; border: 2px solid #ff0000; border-radius: 4px; padding: 10px; margin-bottom: 10px;';
 
             const warningHeader = document.createElement('h3');
             warningHeader.style.cssText = 'color: #ff6b6b; margin: 0 0 8px 0;';
@@ -851,7 +899,8 @@ export class VariableNameAutoCompleteOption extends AutoCompleteOption {
 
             const rulesText = document.createElement('p');
             rulesText.style.cssText = 'margin: 0; font-size: 0.9em;';
-            rulesText.innerHTML = '<strong>Valid names must:</strong><br>• Start with a letter (a-z, A-Z)<br>• Contain only letters, numbers, underscores, or hyphens<br>• Not end with an underscore or hyphen';
+            rulesText.innerHTML =
+                '<strong>Valid names must:</strong><br>• Start with a letter (a-z, A-Z)<br>• Contain only letters, numbers, underscores, or hyphens<br>• Not end with an underscore or hyphen';
             warningBox.append(rulesText);
 
             details.append(warningBox);
@@ -868,9 +917,10 @@ export class VariableNameAutoCompleteOption extends AutoCompleteOption {
 
         // Description
         const desc = document.createElement('p');
-        const variableSuggestion = this.#scope === 'local'
-            ? 'Local variables are scoped to the current chat.'
-            : 'Global variables are shared across all chats.';
+        const variableSuggestion =
+            this.#scope === 'local'
+                ? 'Local variables are scoped to the current chat.'
+                : 'Global variables are shared across all chats.';
         if (this.#isNewVariable) {
             desc.textContent = `Creates a new ${scopeLabel.toLowerCase()} variable named "${this.#varName}". ${variableSuggestion}`;
         } else {
@@ -932,96 +982,151 @@ function isShortOperatorPrefix(op) {
  * @type {Map<string, { symbol: string, name: string, description: string, needsValue: boolean }>}
  */
 export const VariableOperatorDefinitions = new Map([
-    ['=', {
-        symbol: '=',
-        name: 'Set',
-        description: 'Set the variable to a new value. Returns nothing.',
-        needsValue: true,
-    }],
-    ['++', {
-        symbol: '++',
-        name: 'Increment',
-        description: 'Increment the variable by 1 (numeric). Returns the new value.',
-        needsValue: false,
-    }],
-    ['--', {
-        symbol: '--',
-        name: 'Decrement',
-        description: 'Decrement the variable by 1 (numeric). Returns the new value.',
-        needsValue: false,
-    }],
-    ['+=', {
-        symbol: '+=',
-        name: 'Add',
-        description: 'Add to the variable (numeric addition or string concatenation). Returns nothing.',
-        needsValue: true,
-    }],
-    ['-=', {
-        symbol: '-=',
-        name: 'Subtract',
-        description: 'Subtract a numeric value from the variable. Returns nothing.',
-        needsValue: true,
-    }],
-    ['||', {
-        symbol: '||',
-        name: 'Logical Or',
-        description: 'Return the fallback value if the variable is falsy, otherwise return the variable value.',
-        needsValue: true,
-    }],
-    ['??', {
-        symbol: '??',
-        name: 'Nullish Coalescing',
-        description: 'Return the fallback value only if the variable does not exist, otherwise return the variable value (even if falsy).',
-        needsValue: true,
-    }],
-    ['||=', {
-        symbol: '||=',
-        name: 'Logical Or Assign',
-        description: 'If the variable is falsy, set it to the value and return it; otherwise return the current value.',
-        needsValue: true,
-    }],
-    ['??=', {
-        symbol: '??=',
-        name: 'Nullish Coalescing Assign',
-        description: 'If the variable does not exist, set it to the value and return it; otherwise return the current value.',
-        needsValue: true,
-    }],
-    ['==', {
-        symbol: '==',
-        name: 'Equals',
-        description: 'Compare the variable value to another value. Returns "true" or "false".',
-        needsValue: true,
-    }],
-    ['!=', {
-        symbol: '!=',
-        name: 'Not Equals',
-        description: 'Compare the variable value to another value. Returns "true" if not equal, "false" if equal.',
-        needsValue: true,
-    }],
-    ['>', {
-        symbol: '>',
-        name: 'Greater Than',
-        description: 'Numeric comparison. Returns "true" if variable is greater than value, "false" otherwise.',
-        needsValue: true,
-    }],
-    ['>=', {
-        symbol: '>=',
-        name: 'Greater Than or Equal',
-        description: 'Numeric comparison. Returns "true" if variable is greater than or equal to value, "false" otherwise.',
-        needsValue: true,
-    }],
-    ['<', {
-        symbol: '<',
-        name: 'Less Than',
-        description: 'Numeric comparison. Returns "true" if variable is less than value, "false" otherwise.',
-        needsValue: true,
-    }],
-    ['<=', {
-        symbol: '<=',
-        name: 'Less Than or Equal',
-        description: 'Numeric comparison. Returns "true" if variable is less than or equal to value, "false" otherwise.',
-        needsValue: true,
-    }],
+    [
+        '=',
+        {
+            symbol: '=',
+            name: 'Set',
+            description: 'Set the variable to a new value. Returns nothing.',
+            needsValue: true,
+        },
+    ],
+    [
+        '++',
+        {
+            symbol: '++',
+            name: 'Increment',
+            description: 'Increment the variable by 1 (numeric). Returns the new value.',
+            needsValue: false,
+        },
+    ],
+    [
+        '--',
+        {
+            symbol: '--',
+            name: 'Decrement',
+            description: 'Decrement the variable by 1 (numeric). Returns the new value.',
+            needsValue: false,
+        },
+    ],
+    [
+        '+=',
+        {
+            symbol: '+=',
+            name: 'Add',
+            description:
+                'Add to the variable (numeric addition or string concatenation). Returns nothing.',
+            needsValue: true,
+        },
+    ],
+    [
+        '-=',
+        {
+            symbol: '-=',
+            name: 'Subtract',
+            description: 'Subtract a numeric value from the variable. Returns nothing.',
+            needsValue: true,
+        },
+    ],
+    [
+        '||',
+        {
+            symbol: '||',
+            name: 'Logical Or',
+            description:
+                'Return the fallback value if the variable is falsy, otherwise return the variable value.',
+            needsValue: true,
+        },
+    ],
+    [
+        '??',
+        {
+            symbol: '??',
+            name: 'Nullish Coalescing',
+            description:
+                'Return the fallback value only if the variable does not exist, otherwise return the variable value (even if falsy).',
+            needsValue: true,
+        },
+    ],
+    [
+        '||=',
+        {
+            symbol: '||=',
+            name: 'Logical Or Assign',
+            description:
+                'If the variable is falsy, set it to the value and return it; otherwise return the current value.',
+            needsValue: true,
+        },
+    ],
+    [
+        '??=',
+        {
+            symbol: '??=',
+            name: 'Nullish Coalescing Assign',
+            description:
+                'If the variable does not exist, set it to the value and return it; otherwise return the current value.',
+            needsValue: true,
+        },
+    ],
+    [
+        '==',
+        {
+            symbol: '==',
+            name: 'Equals',
+            description: 'Compare the variable value to another value. Returns "true" or "false".',
+            needsValue: true,
+        },
+    ],
+    [
+        '!=',
+        {
+            symbol: '!=',
+            name: 'Not Equals',
+            description:
+                'Compare the variable value to another value. Returns "true" if not equal, "false" if equal.',
+            needsValue: true,
+        },
+    ],
+    [
+        '>',
+        {
+            symbol: '>',
+            name: 'Greater Than',
+            description:
+                'Numeric comparison. Returns "true" if variable is greater than value, "false" otherwise.',
+            needsValue: true,
+        },
+    ],
+    [
+        '>=',
+        {
+            symbol: '>=',
+            name: 'Greater Than or Equal',
+            description:
+                'Numeric comparison. Returns "true" if variable is greater than or equal to value, "false" otherwise.',
+            needsValue: true,
+        },
+    ],
+    [
+        '<',
+        {
+            symbol: '<',
+            name: 'Less Than',
+            description:
+                'Numeric comparison. Returns "true" if variable is less than value, "false" otherwise.',
+            needsValue: true,
+        },
+    ],
+    [
+        '<=',
+        {
+            symbol: '<=',
+            name: 'Less Than or Equal',
+            description:
+                'Numeric comparison. Returns "true" if variable is less than or equal to value, "false" otherwise.',
+            needsValue: true,
+        },
+    ],
 ]);
 
 /**
@@ -1178,7 +1283,8 @@ export class VariableValueContextAutoCompleteOption extends AutoCompleteOption {
         // Hint
         const hint = document.createElement('p');
         hint.classList.add('hint');
-        hint.innerHTML = '<em>Type your value and close with <code>}}</code> to complete the macro.</em>';
+        hint.innerHTML =
+            '<em>Type your value and close with <code>}}</code> to complete the macro.</em>';
         details.append(hint);
 
         frag.append(details);
@@ -1312,8 +1418,13 @@ export class MacroClosingTagAutoCompleteOption extends AutoCompleteOption {
             content.append(optionalBadge);
             content.append(' ');
 
-            const nestingInfo = this.#nestingLevel > 0 ? ` (nested ${this.#nestingLevel} level${this.#nestingLevel > 1 ? 's' : ''} deep)` : '';
-            content.append(document.createTextNode(`Optionally close {{${this.#macroName}}}${nestingInfo}`));
+            const nestingInfo =
+                this.#nestingLevel > 0
+                    ? ` (nested ${this.#nestingLevel} level${this.#nestingLevel > 1 ? 's' : ''} deep)`
+                    : '';
+            content.append(
+                document.createTextNode(`Optionally close {{${this.#macroName}}}${nestingInfo}`),
+            );
         } else {
             content.textContent = `Close the {{${this.#macroName}}} scoped macro.`;
         }
@@ -1351,7 +1462,10 @@ export class MacroClosingTagAutoCompleteOption extends AutoCompleteOption {
         // Description
         const desc = document.createElement('p');
         if (this.#isOptional) {
-            const nestingInfo = this.#nestingLevel > 0 ? ` This scope is nested ${this.#nestingLevel} level${this.#nestingLevel > 1 ? 's' : ''} deep.` : '';
+            const nestingInfo =
+                this.#nestingLevel > 0
+                    ? ` This scope is nested ${this.#nestingLevel} level${this.#nestingLevel > 1 ? 's' : ''} deep.`
+                    : '';
             desc.textContent = `Optionally inserts the closing tag {{/${this.#macroName}}}. The scoped content for this macro is optional - you can close it or leave it open.${nestingInfo}`;
         } else {
             desc.textContent = `Inserts the closing tag {{/${this.#macroName}}} to complete the scoped macro. The content between the opening and closing tags will be passed as the last argument.`;
@@ -1503,10 +1617,22 @@ export function parseMacroContext(macroText, cursorOffset) {
         } else if (operatorText.startsWith('=')) {
             variableOperator = '=';
             i += 1;
-        } else if (operatorText.startsWith('+') || operatorText.startsWith('-') || operatorText.startsWith('|') || operatorText.startsWith('?') || operatorText.startsWith('!') || operatorText.startsWith('>') || operatorText.startsWith('<')) {
+        } else if (
+            operatorText.startsWith('+') ||
+            operatorText.startsWith('-') ||
+            operatorText.startsWith('|') ||
+            operatorText.startsWith('?') ||
+            operatorText.startsWith('!') ||
+            operatorText.startsWith('>') ||
+            operatorText.startsWith('<')
+        ) {
             // Partial operator prefix - user is typing an operator
             partialOperator = operatorText[0];
-        } else if (operatorText.length > 0 && !/^\s/.test(operatorText) && !operatorText.startsWith('}')) {
+        } else if (
+            operatorText.length > 0 &&
+            !/^\s/.test(operatorText) &&
+            !operatorText.startsWith('}')
+        ) {
             // There's non-whitespace after the variable name that isn't a valid operator
             // This is an invalid trailing character (e.g., $my$ or .var@test)
             // Exception: } is the closing brace, not an invalid char
@@ -1518,7 +1644,9 @@ export function parseMacroContext(macroText, cursorOffset) {
         const variableOperatorEnd = i;
 
         // Check if operator requires a value
-        const operatorDef = variableOperator ? VariableOperatorDefinitions.get(variableOperator) : null;
+        const operatorDef = variableOperator
+            ? VariableOperatorDefinitions.get(variableOperator)
+            : null;
         const operatorNeedsValue = operatorDef?.needsValue ?? false;
 
         // If operator requires a value, parse the value
@@ -1548,7 +1676,11 @@ export function parseMacroContext(macroText, cursorOffset) {
         } else if (cursorOffset >= macroText.length && variableOperator && !operatorNeedsValue) {
             // Cursor at end of complete operator (++ or --) like {{.Lila++ or {{.Lila++  (with trailing space)
             isTypingClosingBrace = true;
-        } else if (cursorOffset >= macroText.length && !variableOperator && variableName.length > 0) {
+        } else if (
+            cursorOffset >= macroText.length &&
+            !variableOperator &&
+            variableName.length > 0
+        ) {
             // Cursor at end of standalone variable (with or without trailing whitespace) like {{.Lila or {{ .Lila
             isTypingClosingBrace = true;
         } else if (operatorNeedsValue && variableValue.length > 0 && variableValue.endsWith('}')) {
@@ -1556,7 +1688,11 @@ export function parseMacroContext(macroText, cursorOffset) {
             isTypingClosingBrace = true;
             // Strip the } from the value
             variableValue = variableValue.slice(0, -1);
-        } else if (operatorNeedsValue && cursorOffset >= macroText.length && variableValue.length > 0) {
+        } else if (
+            operatorNeedsValue &&
+            cursorOffset >= macroText.length &&
+            variableValue.length > 0
+        ) {
             // Cursor at end after typing a value (including trailing whitespace) like {{.Lila+=4
             // This means the shorthand is "complete" and ready to close
             isTypingClosingBrace = true;
@@ -1572,12 +1708,22 @@ export function parseMacroContext(macroText, cursorOffset) {
         } else if (cursorOffset <= variableNameEnd) {
             // Cursor is in the variable name area (including at the end)
             isTypingVariableName = true;
-        } else if (variableName.length > 0 && !variableOperator && !hasInvalidTrailingChars && !isTypingClosingBrace) {
+        } else if (
+            variableName.length > 0 &&
+            !variableOperator &&
+            !hasInvalidTrailingChars &&
+            !isTypingClosingBrace
+        ) {
             // Cursor is after variable name but no operator yet (and no invalid chars)
             // This includes partial operator prefixes like '+', '-', '|', '?', '>', '<'
             // But NOT when typing a closing brace - that takes precedence
             isTypingOperator = true;
-        } else if (variableName.length > 0 && variableOperator && isShortOperatorPrefix(variableOperator) && cursorOffset <= variableOperatorEnd) {
+        } else if (
+            variableName.length > 0 &&
+            variableOperator &&
+            isShortOperatorPrefix(variableOperator) &&
+            cursorOffset <= variableOperatorEnd
+        ) {
             // Short operator that could be prefix of longer one (e.g., > could become >=)
             // But ONLY if cursor is still in the operator area, not past it into value
             isTypingOperator = true;
@@ -1587,7 +1733,7 @@ export function parseMacroContext(macroText, cursorOffset) {
         }
         // For ++ and --, the operator is complete (no value needed)
         // For invalid trailing chars, none of the typing flags will be true
-        const isOperatorComplete = (variableOperator === '++' || variableOperator === '--');
+        const isOperatorComplete = variableOperator === '++' || variableOperator === '--';
 
         // Return early for variable shorthand - different structure than regular macros
         return {
@@ -1643,7 +1789,11 @@ export function parseMacroContext(macroText, cursorOffset) {
     while (j < remainingText.length) {
         // Before the first :: separator, newlines should stop parsing
         // This prevents text on the next line from being considered part of the identifier/space-arg
-        if (!hasSeenSeparator && nestedDepth === 0 && (remainingText[j] === '\n' || remainingText[j] === '\r')) {
+        if (
+            !hasSeenSeparator &&
+            nestedDepth === 0 &&
+            (remainingText[j] === '\n' || remainingText[j] === '\r')
+        ) {
             // Stop parsing here - don't include the newline or anything after
             brokeEarly = true;
             break;
@@ -1689,7 +1839,8 @@ export function parseMacroContext(macroText, cursorOffset) {
     const isInFlagsArea = cursorOffset <= identifierStartPos;
 
     // Check if cursor is on a partial separator (single ':' that might become '::')
-    const isTypingSeparator = remainingText.length > 0 &&
+    const isTypingSeparator =
+        remainingText.length > 0 &&
         cursorOffset > identifierStartPos &&
         macroText[cursorOffset - 1] === ':' &&
         macroText[cursorOffset] !== ':' &&
@@ -1725,7 +1876,10 @@ export function parseMacroContext(macroText, cursorOffset) {
     }
 
     // Calculate identifier end position (for space-after-identifier detection)
-    const identifierEndPos = identifierStartPos + (firstPartText.length - firstPartText.trimStart().length) + identifierOnly.length;
+    const identifierEndPos =
+        identifierStartPos +
+        (firstPartText.length - firstPartText.trimStart().length) +
+        identifierOnly.length;
 
     // Determine which part the cursor is in
     let currentArgIndex = -1;
@@ -1741,7 +1895,10 @@ export function parseMacroContext(macroText, cursorOffset) {
                 currentArgIndex = sepIdx;
             }
         }
-    } else if (spaceArgText.length > 0 || (hasSpaceAfterIdentifier && cursorOffset > identifierEndPos)) {
+    } else if (
+        spaceArgText.length > 0 ||
+        (hasSpaceAfterIdentifier && cursorOffset > identifierEndPos)
+    ) {
         // Space-separated arg: either has content, or cursor is past identifier+space
         currentArgIndex = 0;
     }
@@ -1760,7 +1917,11 @@ export function parseMacroContext(macroText, cursorOffset) {
     // Also strip trailing single } (for partial }} typing) - but only if no separators/args
     let cleanIdentifier = identifierOnly.replace(/:+$/, '');
     let isTypingClosingBrace = false;
-    if (separatorPositions.length === 0 && !hasSpaceAfterIdentifier && cleanIdentifier.endsWith('}')) {
+    if (
+        separatorPositions.length === 0 &&
+        !hasSpaceAfterIdentifier &&
+        cleanIdentifier.endsWith('}')
+    ) {
         // Typing first closing brace on a standalone macro like {{char}
         cleanIdentifier = cleanIdentifier.slice(0, -1);
         isTypingClosingBrace = true;
@@ -1768,7 +1929,7 @@ export function parseMacroContext(macroText, cursorOffset) {
 
     // Build args array - include space-separated arg if present
     // Trim args like the macro engine does
-    let args = parts.slice(1).map(p => p.text.trim());
+    let args = parts.slice(1).map((p) => p.text.trim());
     if (spaceArgText.length > 0) {
         args = [spaceArgText, ...args];
     }
@@ -1825,7 +1986,13 @@ export class SimpleAutoCompleteOption extends AutoCompleteOption {
      * @param {string} [config.type] - Type identifier for CSS/data attributes.
      */
     // @ts-expect-error TS(7031) FIXME: Binding element 'name' implicitly has an 'any' typ... Remove this comment to see the full error message
-    constructor({ name, symbol = ' ', description = '', detailedDescription = null, type = 'simple' }) {
+    constructor({
+        name,
+        symbol = ' ',
+        description = '',
+        detailedDescription = null,
+        type = 'simple',
+    }) {
         super(name, symbol, type);
         this.#description = description;
         this.#detailedDescription = detailedDescription;
@@ -1863,7 +2030,7 @@ export class SimpleAutoCompleteOption extends AutoCompleteOption {
         const nameSpan = document.createElement('span');
         nameSpan.classList.add('name', 'monospace');
         // @ts-expect-error TS(7006) FIXME: Parameter 'char' implicitly has an 'any' type.
-        this.name.split('').forEach(char => {
+        this.name.split('').forEach((char) => {
             const span = document.createElement('span');
             span.textContent = char;
             nameSpan.append(span);

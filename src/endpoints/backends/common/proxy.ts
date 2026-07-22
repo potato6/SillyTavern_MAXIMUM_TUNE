@@ -41,7 +41,8 @@ export interface ProxyRequestOptions {
  * @param options
  */
 export async function proxyRequest(options: ProxyRequestOptions): Promise<void> {
-    const { request, response, url, body, signal, stream, streamHandler, transformResponse } = options;
+    const { request, response, url, body, signal, stream, streamHandler, transformResponse } =
+        options;
     const extraHeaders = options.headers ?? {};
 
     const args: Record<string, unknown> = {
@@ -65,7 +66,7 @@ export async function proxyRequest(options: ProxyRequestOptions): Promise<void> 
 
             if (reply.ok) {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                let data = await reply.json() as any;
+                let data = (await reply.json()) as any;
                 console.debug('Backend response:', data);
 
                 if (transformResponse) {
@@ -89,7 +90,8 @@ export async function proxyRequest(options: ProxyRequestOptions): Promise<void> 
         // @ts-expect-error TS(2571) — unknown catch
         const status = error?.status ?? error?.code ?? 'UNKNOWN';
         // @ts-expect-error TS(2571) — unknown catch
-        const text = error?.error ?? error?.statusText ?? error?.message ?? 'Unknown error on proxy request';
+        const text =
+            error?.error ?? error?.statusText ?? error?.message ?? 'Unknown error on proxy request';
         const value = { error: true, status, response: text };
         console.error('Request error:', error);
 

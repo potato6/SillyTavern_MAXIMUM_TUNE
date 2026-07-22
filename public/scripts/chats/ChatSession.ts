@@ -16,16 +16,15 @@
  * session-managed state.
  */
 
-import {
-    chat,
-    chat_metadata,
-    this_chid,
-    characters,
-    getCurrentChatId,
-} from '../../script.js';
+import { chat, chat_metadata, this_chid, characters, getCurrentChatId } from '../../script.js';
 import { selected_group } from '../group-chats.js';
 
-export type SessionEvent = 'chat-changed' | 'message-added' | 'message-removed' | 'message-edited' | 'metadata-changed';
+export type SessionEvent =
+    | 'chat-changed'
+    | 'message-added'
+    | 'message-removed'
+    | 'message-edited'
+    | 'metadata-changed';
 
 type SessionCallback = (data: unknown) => void;
 

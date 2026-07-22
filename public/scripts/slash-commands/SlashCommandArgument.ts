@@ -1,19 +1,18 @@
 import { commonEnumProviders } from './SlashCommandCommonEnumsProvider.js';
 import { SlashCommandEnumValue } from './SlashCommandEnumValue.js';
 
-
 /**@readonly*/
 /**@enum {string}*/
 export const ARGUMENT_TYPE = {
-    'STRING': 'string',
-    'NUMBER': 'number',
-    'RANGE': 'range',
-    'BOOLEAN': 'bool',
-    'VARIABLE_NAME': 'varname',
-    'CLOSURE': 'closure',
-    'SUBCOMMAND': 'subcommand',
-    'LIST': 'list',
-    'DICTIONARY': 'dictionary',
+    STRING: 'string',
+    NUMBER: 'number',
+    RANGE: 'range',
+    BOOLEAN: 'bool',
+    VARIABLE_NAME: 'varname',
+    CLOSURE: 'closure',
+    SUBCOMMAND: 'subcommand',
+    LIST: 'list',
+    DICTIONARY: 'dictionary',
 };
 
 export class SlashCommandArgument {
@@ -50,7 +49,8 @@ export class SlashCommandArgument {
     // @ts-expect-error TS(7008) FIXME: Member 'defaultValue' implicitly has an 'any' type... Remove this comment to see the full error message
     /**@type {string|SlashCommandClosure}*/ defaultValue;
     /**@type {SlashCommandEnumValue[]}*/ enumList = [];
-    /**@type {(executor:SlashCommandExecutor, scope:SlashCommandScope)=>SlashCommandEnumValue[]}*/ enumProvider = null;
+    /**@type {(executor:SlashCommandExecutor, scope:SlashCommandScope)=>SlashCommandEnumValue[]}*/ enumProvider =
+        null;
     /**@type {boolean}*/ forceEnum = false;
 
     /**
@@ -64,15 +64,24 @@ export class SlashCommandArgument {
      * @param forceEnum
      */
     // @ts-expect-error TS(7006) FIXME: Parameter 'description' implicitly has an 'any' ty... Remove this comment to see the full error message
-    constructor(description, types, isRequired = false, acceptsMultiple = false, defaultValue = null, enums = [], enumProvider = null, forceEnum = false) {
+    constructor(
+        description,
+        types,
+        isRequired = false,
+        acceptsMultiple = false,
+        defaultValue = null,
+        enums = [],
+        enumProvider = null,
+        forceEnum = false,
+    ) {
         this.description = description;
         // @ts-expect-error TS(2322) FIXME: Type 'any[]' is not assignable to type 'never[]'.
-        this.typeList = types ? Array.isArray(types) ? types : [types] : [];
+        this.typeList = types ? (Array.isArray(types) ? types : [types]) : [];
         this.isRequired = isRequired ?? false;
         this.acceptsMultiple = acceptsMultiple ?? false;
         this.defaultValue = defaultValue;
         // @ts-expect-error TS(2322) FIXME: Type 'SlashCommandEnumValue[]' is not assignable t... Remove this comment to see the full error message
-        this.enumList = (enums ? Array.isArray(enums) ? enums : [enums] : []).map(it => {
+        this.enumList = (enums ? (Array.isArray(enums) ? enums : [enums]) : []).map((it) => {
             // @ts-expect-error TS(2358) FIXME: The left-hand side of an 'instanceof' expression m... Remove this comment to see the full error message
             if (it instanceof SlashCommandEnumValue) return it;
             return new SlashCommandEnumValue(it);
@@ -82,7 +91,12 @@ export class SlashCommandArgument {
 
         // If no enums were set explictly and the type is one where we know possible enum values, we set them here
         // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
-        if (!this.enumList.length && this.typeList.length === 1 && this.typeList.includes(ARGUMENT_TYPE.BOOLEAN)) this.enumList = commonEnumProviders.boolean()();
+        if (
+            !this.enumList.length &&
+            this.typeList.length === 1 &&
+            this.typeList.includes(ARGUMENT_TYPE.BOOLEAN)
+        )
+            this.enumList = commonEnumProviders.boolean()();
     }
 }
 
@@ -133,9 +147,29 @@ export class SlashCommandNamedArgument extends SlashCommandArgument {
      * @param {boolean} [forceEnum]
      */
     // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
-    constructor(name, description, types, isRequired = false, acceptsMultiple = false, defaultValue = null, enums = [], aliases = [], enumProvider = null, forceEnum = false) {
-        super(description, types, isRequired, acceptsMultiple, defaultValue, enums, enumProvider, forceEnum);
+    constructor(
+        name,
+        description,
+        types,
+        isRequired = false,
+        acceptsMultiple = false,
+        defaultValue = null,
+        enums = [],
+        aliases = [],
+        enumProvider = null,
+        forceEnum = false,
+    ) {
+        super(
+            description,
+            types,
+            isRequired,
+            acceptsMultiple,
+            defaultValue,
+            enums,
+            enumProvider,
+            forceEnum,
+        );
         this.name = name;
-        this.aliasList = aliases ? Array.isArray(aliases) ? aliases : [aliases] : [];
+        this.aliasList = aliases ? (Array.isArray(aliases) ? aliases : [aliases]) : [];
     }
 }

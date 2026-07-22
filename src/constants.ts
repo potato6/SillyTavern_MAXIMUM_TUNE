@@ -555,7 +555,6 @@ export const MEDIA_REQUEST_TYPE = {
     AUDIO: 0b100,
 };
 
-
 export const ZAI_ENDPOINT = {
     COMMON: 'common',
     CODING: 'coding',

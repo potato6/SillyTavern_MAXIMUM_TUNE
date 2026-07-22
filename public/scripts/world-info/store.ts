@@ -100,7 +100,7 @@ export class WorldInfoStore extends EntityStore<WorldInfoStoreEntry> {
     async getFreeUid(): Promise<number | null> {
         const MAX_UID = 1_000_000;
         const entries = await this.getAll();
-        const usedIds = new Set(entries.map(e => e.uid));
+        const usedIds = new Set(entries.map((e) => e.uid));
         for (let uid = 0; uid < MAX_UID; uid++) {
             if (!usedIds.has(uid)) return uid;
         }
@@ -115,7 +115,7 @@ export class WorldInfoStore extends EntityStore<WorldInfoStoreEntry> {
      * @param entries
      */
     async replaceAllEntries(entries: WorldInfoEntryData[]): Promise<void> {
-        const storeEntries = entries.map(e => {
+        const storeEntries = entries.map((e) => {
             const se = e as WorldInfoStoreEntry;
             se.id = e.uid;
             return se;
@@ -167,11 +167,13 @@ export class WorldInfoStore extends EntityStore<WorldInfoStoreEntry> {
      * @param opts.sort
      * @param opts.limit
      */
-    async queryEntries(opts: {
-        where?: (entry: WorldInfoEntryData) => boolean;
-        sort?: (a: WorldInfoEntryData, b: WorldInfoEntryData) => number;
-        limit?: number;
-    } = {}): Promise<WorldInfoEntryData[]> {
+    async queryEntries(
+        opts: {
+            where?: (entry: WorldInfoEntryData) => boolean;
+            sort?: (a: WorldInfoEntryData, b: WorldInfoEntryData) => number;
+            limit?: number;
+        } = {},
+    ): Promise<WorldInfoEntryData[]> {
         return this.query(opts);
     }
 }

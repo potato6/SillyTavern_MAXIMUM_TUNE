@@ -55,7 +55,6 @@
 
 /* Flashing for highlighting animation */
 @keyframes flash {
-
     0%,
     50%,
     100% {
@@ -84,19 +83,19 @@
 /* Ellipsis animation */
 @keyframes ellipsis {
     0% {
-        content: ""
+        content: '';
     }
 
     25% {
-        content: "."
+        content: '.';
     }
 
     50% {
-        content: ".."
+        content: '..';
     }
 
     75% {
-        content: "..."
+        content: '...';
     }
 }
 
@@ -113,7 +112,6 @@
 
 /* STscript animation */
 @keyframes script_progress_pulse {
-
     0%,
     100% {
         border-top-color: var(--progColor);
@@ -126,7 +124,6 @@
 
 /* Scroll delay animations */
 @keyframes hide-scroll {
-
     from,
     to {
         overflow-y: hidden;

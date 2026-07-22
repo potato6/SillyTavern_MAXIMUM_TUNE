@@ -17,7 +17,13 @@ import {
     waitUntilCondition,
     uuidv4,
 } from './utils.js';
-import { RA_CountCharTokens, humanizedDateTime, dragElement, favsToHotswap, getMessageTimeStamp } from './RossAscends-mods.js';
+import {
+    RA_CountCharTokens,
+    humanizedDateTime,
+    dragElement,
+    favsToHotswap,
+    getMessageTimeStamp,
+} from './RossAscends-mods.js';
 import { power_user, loadMovingUIState, sortEntitiesList } from './power-user.js';
 import { debounce_timeout } from './constants.js';
 
@@ -78,7 +84,15 @@ import {
     chatElement,
     ensureMessageMediaIsArray,
 } from '../script.js';
-import { printTagList, createTagMapFromList, applyTagsOnCharacterSelect, tag_map, applyTagsOnGroupSelect, printTagFilters, tag_filter_type } from './tags.js';
+import {
+    printTagList,
+    createTagMapFromList,
+    applyTagsOnCharacterSelect,
+    tag_map,
+    applyTagsOnGroupSelect,
+    printTagFilters,
+    tag_filter_type,
+} from './tags.js';
 import { FILTER_TYPES, FilterHelper } from './filters.js';
 import { isExternalMediaAllowed } from './chats.js';
 import { POPUP_TYPE, Popup, callGenericPopup } from './popup.js';
@@ -134,12 +148,19 @@ export const group_generation_mode = {
 
 export const DEFAULT_AUTO_MODE_DELAY = 5;
 
-export const groupCandidatesFilter = new FilterHelper(debounce(printGroupCandidates, debounce_timeout.quick));
-export const groupMembersFilter = new FilterHelper(debounce(printGroupMembers, debounce_timeout.quick));
+export const groupCandidatesFilter = new FilterHelper(
+    debounce(printGroupCandidates, debounce_timeout.quick),
+);
+export const groupMembersFilter = new FilterHelper(
+    debounce(printGroupMembers, debounce_timeout.quick),
+);
 // @ts-expect-error TS(7034) FIXME: Variable 'autoModeWorker' implicitly has type 'any... Remove this comment to see the full error message
 let autoModeWorker = null;
 // @ts-expect-error TS(7006) FIXME: Parameter 'group' implicitly has an 'any' type.
-const saveGroupDebounced = debounce(async (group, reload) => await _save(group, reload), debounce_timeout.relaxed);
+const saveGroupDebounced = debounce(
+    async (group, reload) => await _save(group, reload),
+    debounce_timeout.relaxed,
+);
 /** @type {Map<string, number>} */
 let groupChatQueueOrder = new Map();
 
@@ -150,7 +171,8 @@ function setAutoModeWorker() {
     // @ts-expect-error TS(7005) FIXME: Variable 'autoModeWorker' implicitly has an 'any' ... Remove this comment to see the full error message
     clearInterval(autoModeWorker);
 
-    const autoModeDelay = groups.find(x => x.id === selected_group)?.auto_mode_delay ?? DEFAULT_AUTO_MODE_DELAY;
+    const autoModeDelay =
+        groups.find((x) => x.id === selected_group)?.auto_mode_delay ?? DEFAULT_AUTO_MODE_DELAY;
     autoModeWorker = setInterval(groupChatAutoModeWorker, autoModeDelay * 1000);
 }
 
@@ -184,9 +206,9 @@ async function regenerateGroup() {
         const this_generationId = lastMes.extra?.gen_id;
 
         // for new generations after the update
-        if ((generationId && this_generationId) && generationId !== this_generationId) {
+        if (generationId && this_generationId && generationId !== this_generationId) {
             break;
-        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
+            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         } else if (lastMes.is_user || lastMes.is_system) {
             // legacy for generations before the update
             break;
@@ -237,9 +259,8 @@ async function validateGroup(group) {
     // Validate that all members exist as characters
     let dirty = false;
     // @ts-expect-error TS(7006) FIXME: Parameter 'member' implicitly has an 'any' type.
-    group.members = group.members.filter(member => {
-
-        const character = characters.find(x => x.avatar === member || x.name === member);
+    group.members = group.members.filter((member) => {
+        const character = characters.find((x) => x.avatar === member || x.name === member);
         if (!character) {
             const msg = t`Warning: Listed member ${member} does not exist as a character. It will be removed from the group.`;
             notyf.warning(msg, t`Group Validation`);
@@ -272,7 +293,6 @@ async function validateGroup(group) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'groupId' implicitly has an 'any' type.
 export async function getGroupChat(groupId, reload = false) {
-
     const group = groups.find((x) => x.id === groupId);
     if (!group) {
         console.warn('Group not found', groupId);
@@ -303,15 +323,14 @@ export async function getGroupChat(groupId, reload = false) {
     if (group && Array.isArray(group.members) && freshChat) {
         chat.splice(0, chat.length);
         // @ts-expect-error TS(7006) FIXME: Parameter 'el' implicitly has an 'any' type.
-        chatElement[0].querySelectorAll('.mes').forEach(el => el.remove());
+        chatElement[0].querySelectorAll('.mes').forEach((el) => el.remove());
         for (const member of group.members) {
-
-            const character = characters.find(x => x.avatar === member || x.name === member);
+            const character = characters.find((x) => x.avatar === member || x.name === member);
             if (!character) {
                 continue;
             }
 
-            const mes = await getFirstCharacterMessage(character) as { mes?: string };
+            const mes = (await getFirstCharacterMessage(character)) as { mes?: string };
 
             // No first message
             if (!mes?.mes) {
@@ -319,16 +338,20 @@ export async function getGroupChat(groupId, reload = false) {
             }
 
             chat.push(mes);
-            await eventSource.emit(event_types.MESSAGE_RECEIVED, (chat.length - 1), 'first_message');
+            await eventSource.emit(event_types.MESSAGE_RECEIVED, chat.length - 1, 'first_message');
             addOneMessage(mes);
-            await eventSource.emit(event_types.CHARACTER_MESSAGE_RENDERED, (chat.length - 1), 'first_message');
+            await eventSource.emit(
+                event_types.CHARACTER_MESSAGE_RENDERED,
+                chat.length - 1,
+                'first_message',
+            );
         }
         await saveGroupChat(groupId, false);
     } else if (Array.isArray(data) && data.length) {
         chat.splice(0, chat.length, ...data);
         chat.forEach(ensureMessageMediaIsArray);
         // @ts-expect-error TS(7006) FIXME: Parameter 'el' implicitly has an 'any' type.
-        chatElement[0].querySelectorAll('.mes').forEach(el => el.remove());
+        chatElement[0].querySelectorAll('.mes').forEach((el) => el.remove());
         await printMessages();
     }
 
@@ -353,10 +376,9 @@ export async function getGroupChat(groupId, reload = false) {
  * @param groupId
  */
 export function getGroupMembers(groupId = selected_group) {
-
     const group = groups.find((x) => x.id === groupId);
 
-    return group?.members.map(member => characters.find(x => x.avatar === member)) ?? [];
+    return group?.members.map((member) => characters.find((x) => x.avatar === member)) ?? [];
 }
 
 /**
@@ -364,15 +386,13 @@ export function getGroupMembers(groupId = selected_group) {
  * @returns {string[]} An array of character names representing the members of the group.
  */
 export function getGroupNames() {
-
     if (!selected_group) {
         return [];
     }
 
-    const groupMembers = groups.find(x => x.id == selected_group)?.members;
+    const groupMembers = groups.find((x) => x.id == selected_group)?.members;
     return Array.isArray(groupMembers)
-
-        ? groupMembers.map(x => characters.find(y => y.avatar === x)?.name).filter(x => x)
+        ? groupMembers.map((x) => characters.find((y) => y.avatar === x)?.name).filter((x) => x)
         : [];
 }
 
@@ -391,8 +411,7 @@ export function findGroupMemberId(arg, full = false) {
         return;
     }
 
-
-    const group = groups.find(x => x.id == selected_group);
+    const group = groups.find((x) => x.id == selected_group);
 
     if (!group || !Array.isArray(group.members)) {
         console.warn('WARN: No group found for selected group ID');
@@ -403,13 +422,12 @@ export function findGroupMemberId(arg, full = false) {
     const searchByString = isNaN(index);
 
     if (searchByString) {
-
-        const memberNames = group.members.map(x => ({
+        const memberNames = group.members.map((x) => ({
             avatar: x,
 
-            name: characters.find(y => y.avatar === x)?.name,
+            name: characters.find((y) => y.avatar === x)?.name,
 
-            index: characters.findIndex(y => y.avatar === x),
+            index: characters.findIndex((y) => y.avatar === x),
         }));
         const fuse = new Fuse(memberNames, { keys: ['avatar', 'name'] });
         const result = fuse.search(arg);
@@ -428,7 +446,12 @@ export function findGroupMemberId(arg, full = false) {
 
         console.log(`Targeting group member ${chid} (${arg}) from search result`, result[0]);
 
-        return !full ? chid : { ...{ id: chid }, ...result[0]!.item! };
+        return !full
+            ? chid
+            : {
+                  id: chid,
+                  ...result[0]!.item!,
+              };
     } else {
         const memberAvatar = group.members[index];
 
@@ -437,23 +460,26 @@ export function findGroupMemberId(arg, full = false) {
             return;
         }
 
-
-        const chid = characters.findIndex(x => x.avatar === memberAvatar);
+        const chid = characters.findIndex((x) => x.avatar === memberAvatar);
 
         if (chid === -1) {
-            console.warn(`WARN: No character found for group member ${memberAvatar} at index ${index}`);
+            console.warn(
+                `WARN: No character found for group member ${memberAvatar} at index ${index}`,
+            );
             return;
         }
 
         console.log(`Targeting group member ${memberAvatar} at index ${index}`);
 
-        return !full ? chid : {
-            id: chid,
-            avatar: memberAvatar,
+        return !full
+            ? chid
+            : {
+                  id: chid,
+                  avatar: memberAvatar,
 
-            name: characters.find(y => y.avatar === memberAvatar)?.name,
-            index: index,
-        };
+                  name: characters.find((y) => y.avatar === memberAvatar)?.name,
+                  index: index,
+              };
     }
 }
 
@@ -471,7 +497,7 @@ export function getGroupDepthPrompts(groupId, characterId) {
 
     console.debug('getGroupDepthPrompts entered for group: ', groupId);
 
-    const group = groups.find(x => x.id === groupId);
+    const group = groups.find((x) => x.id === groupId);
 
     if (!group || !Array.isArray(group.members) || !group.members.length) {
         return [];
@@ -484,8 +510,7 @@ export function getGroupDepthPrompts(groupId, characterId) {
     const depthPrompts = [];
 
     for (const member of group.members) {
-
-        const index = characters.findIndex(x => x.avatar === member);
+        const index = characters.findIndex((x) => x.avatar === member);
         const character = characters[index];
 
         if (index === -1 || !character) {
@@ -498,15 +523,25 @@ export function getGroupDepthPrompts(groupId, characterId) {
             continue;
         }
 
+        const depthPromptText =
+            baseChatReplace(
+                character.data?.extensions?.depth_prompt?.prompt?.trim(),
+                null,
+                character.name,
+            ) || '';
 
-        const depthPromptText = baseChatReplace(character.data?.extensions?.depth_prompt?.prompt?.trim(), null, character.name) || '';
+        const depthPromptDepth =
+            character.data?.extensions?.depth_prompt?.depth ?? depth_prompt_depth_default;
 
-        const depthPromptDepth = character.data?.extensions?.depth_prompt?.depth ?? depth_prompt_depth_default;
-
-        const depthPromptRole = character.data?.extensions?.depth_prompt?.role ?? depth_prompt_role_default;
+        const depthPromptRole =
+            character.data?.extensions?.depth_prompt?.role ?? depth_prompt_role_default;
 
         if (depthPromptText) {
-            depthPrompts.push({ text: depthPromptText, depth: depthPromptDepth, role: depthPromptRole });
+            depthPrompts.push({
+                text: depthPromptText,
+                depth: depthPromptDepth,
+                role: depthPromptRole,
+            });
         }
     }
 
@@ -546,11 +581,15 @@ export function getGroupCharacterCards(groupId, characterId) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'groupId' implicitly has an 'any' type.
 export function getGroupCharacterCardsLazy(groupId, characterId) {
-
-    const group = groups.find(x => x.id === groupId);
+    const group = groups.find((x) => x.id === groupId);
 
     // If no group cards should be generated, return null so caller knows to fall back
-    if (!group || !group?.generation_mode || !Array.isArray(group.members) || !group.members.length) {
+    if (
+        !group ||
+        !group?.generation_mode ||
+        !Array.isArray(group.members) ||
+        !group.members.length
+    ) {
         return null;
     }
 
@@ -586,8 +625,18 @@ export function getGroupCharacterCardsLazy(groupId, characterId) {
             // @ts-expect-error TS(2349) FIXME: This expression is not callable.
             value = preprocess(value);
         }
-        const prefix = customTransform(group!.generation_mode_join_prefix, fieldName, characterName, false);
-        const suffix = customTransform(group!.generation_mode_join_suffix, fieldName, characterName, false);
+        const prefix = customTransform(
+            group!.generation_mode_join_prefix,
+            fieldName,
+            characterName,
+            false,
+        );
+        const suffix = customTransform(
+            group!.generation_mode_join_suffix,
+            fieldName,
+            characterName,
+            false,
+        );
         value = customTransform(value, fieldName, characterName, true);
         return `${prefix}${value}${suffix}`;
     }
@@ -603,19 +652,23 @@ export function getGroupCharacterCardsLazy(groupId, characterId) {
     function collectField(fieldName, getter, preprocess = null) {
         const values = [];
         for (const member of group!.members) {
-
-            const index = characters.findIndex(x => x.avatar === member);
+            const index = characters.findIndex((x) => x.avatar === member);
             const character = characters[index];
             if (index === -1 || !character) continue;
-            if (group!.disabled_members.includes(member) && characterId !== index && group!.generation_mode !== group_generation_mode.APPEND_DISABLED) {
+            if (
+                group!.disabled_members.includes(member) &&
+                characterId !== index &&
+                group!.generation_mode !== group_generation_mode.APPEND_DISABLED
+            ) {
                 continue;
             }
 
-            values.push(replaceAndPrepareForJoin(getter(character), character.name, fieldName, preprocess));
+            values.push(
+                replaceAndPrepareForJoin(getter(character), character.name, fieldName, preprocess),
+            );
         }
-        return values.filter(x => x.length).join('\n');
+        return values.filter((x) => x.length).join('\n');
     }
-
 
     const scenarioOverride = String(chat_metadata.scenario || '');
 
@@ -623,14 +676,21 @@ export function getGroupCharacterCardsLazy(groupId, characterId) {
 
     return createLazyFields({
         // @ts-expect-error TS(7006) FIXME: Parameter 'c' implicitly has an 'any' type.
-        description: () => collectField('Description', c => c.description),
+        description: () => collectField('Description', (c) => c.description),
         // @ts-expect-error TS(7006) FIXME: Parameter 'c' implicitly has an 'any' type.
-        personality: () => collectField('Personality', c => c.personality),
+        personality: () => collectField('Personality', (c) => c.personality),
         // @ts-expect-error TS(7006) FIXME: Parameter 'c' implicitly has an 'any' type.
-        scenario: () => baseChatReplace(scenarioOverride?.trim()) || collectField('Scenario', c => c.scenario),
-        mesExamples: () => baseChatReplace(mesExamplesOverride?.trim()) ||
+        scenario: () =>
+            baseChatReplace(scenarioOverride?.trim()) ||
+            collectField('Scenario', (c) => c.scenario),
+        mesExamples: () =>
+            baseChatReplace(mesExamplesOverride?.trim()) ||
             // @ts-expect-error TS(7006) FIXME: Parameter 'c' implicitly has an 'any' type.
-            collectField('Example Messages', c => c.mes_example, x => !x.startsWith('<START>') ? `<START>\n${x}` : x),
+            collectField(
+                'Example Messages',
+                (c) => c.mes_example,
+                (x) => (!x.startsWith('<START>') ? `<START>\n${x}` : x),
+            ),
     });
 }
 
@@ -645,7 +705,9 @@ async function getFirstCharacterMessage(character) {
 
     // if there are alternate greetings, pick one at random
     if (Array.isArray(character.data?.alternate_greetings)) {
-        const messageTexts = [character.first_mes, ...character.data.alternate_greetings].filter(x => x);
+        const messageTexts = [character.first_mes, ...character.data.alternate_greetings].filter(
+            (x) => x,
+        );
         messageText = messageTexts[Math.floor(Math.random() * messageTexts.length)];
     }
 
@@ -668,16 +730,14 @@ async function getFirstCharacterMessage(character) {
     // @ts-expect-error TS(2339) FIXME: Property 'original_avatar' does not exist on type ... Remove this comment to see the full error message
     mes.original_avatar = character.avatar;
     // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type '{}'.
-    mes.extra = { 'gen_id': Date.now() * Math.random() * 1000000 };
+    mes.extra = { gen_id: Date.now() * Math.random() * 1000000 };
     // @ts-expect-error TS(2339) FIXME: Property 'mes' does not exist on type '{}'.
     mes.mes = messageText
         ? substituteParams(messageText.trim(), { name2Override: character.name })
         : '';
     // @ts-expect-error TS(2339) FIXME: Property 'force_avatar' does not exist on type '{}... Remove this comment to see the full error message
     mes.force_avatar =
-        character.avatar != 'none'
-            ? getThumbnailUrl('avatar', character.avatar)
-            : default_avatar;
+        character.avatar != 'none' ? getThumbnailUrl('avatar', character.avatar) : default_avatar;
     return mes;
 }
 
@@ -698,8 +758,7 @@ function resetSelectedGroup() {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'groupId' implicitly has an 'any' type.
 async function saveGroupChat(groupId, shouldSaveGroup, force = false) {
-
-    const group = groups.find(x => x.id == groupId);
+    const group = groups.find((x) => x.id == groupId);
     if (!group) {
         console.warn('Group not found', groupId);
         return;
@@ -723,7 +782,10 @@ async function saveGroupChat(groupId, shouldSaveGroup, force = false) {
         const errorData = await response.json();
         const isIntegrityError = errorData?.error === 'integrity' && !force;
         if (!isIntegrityError) {
-            notyf.error(t`Check the server connection and reload the page to prevent data loss.`, t`Group Chat could not be saved`);
+            notyf.error(
+                t`Check the server connection and reload the page to prevent data loss.`,
+                t`Group Chat could not be saved`,
+            );
             console.error('Group chat could not be saved', response);
             return;
         }
@@ -739,7 +801,9 @@ async function saveGroupChat(groupId, shouldSaveGroup, force = false) {
         const forceSaveConfirmed = popupResult === 'OVERWRITE';
 
         if (!forceSaveConfirmed) {
-            console.warn('Chat integrity check failed, and user did not confirm the overwrite. Reloading the page.');
+            console.warn(
+                'Chat integrity check failed, and user did not confirm the overwrite. Reloading the page.',
+            );
             window.location.reload();
             return;
         }
@@ -766,7 +830,7 @@ export async function renameGroupMember(oldAvatar, newAvatar, newName) {
         try {
             // Try finding the member by old avatar link
 
-            const memberIndex = group.members.findIndex(x => x == oldAvatar);
+            const memberIndex = group.members.findIndex((x) => x == oldAvatar);
 
             // Character was not present in the group...
             if (memberIndex == -1) {
@@ -800,23 +864,37 @@ export async function renameGroupMember(oldAvatar, newAvatar, newName) {
 
                         // Message belonged to the old-named character:
                         // Update name, avatar thumbnail URL and original avatar link
-                        if (message.force_avatar && message.force_avatar.indexOf(encodeURIComponent(oldAvatar)) !== -1) {
+                        if (
+                            message.force_avatar &&
+                            message.force_avatar.indexOf(encodeURIComponent(oldAvatar)) !== -1
+                        ) {
                             message.name = newName;
-                            message.force_avatar = message.force_avatar.replace(encodeURIComponent(oldAvatar), encodeURIComponent(newAvatar));
+                            message.force_avatar = message.force_avatar.replace(
+                                encodeURIComponent(oldAvatar),
+                                encodeURIComponent(newAvatar),
+                            );
                             message.original_avatar = newAvatar;
                             hadChanges = true;
                         }
                     }
 
                     if (hadChanges) {
-                        await eventSource.emit(event_types.CHARACTER_RENAMED_IN_PAST_CHAT, messages, oldAvatar, newAvatar);
+                        await eventSource.emit(
+                            event_types.CHARACTER_RENAMED_IN_PAST_CHAT,
+                            messages,
+                            oldAvatar,
+                            newAvatar,
+                        );
 
                         const saveChatRequest = await compressRequest({
                             method: 'POST',
                             headers: getRequestHeaders(),
                             body: JSON.stringify({ id: chatId, chat: [...messages] }),
                         });
-                        const saveChatResponse = await fetch('/api/chats/group/save', saveChatRequest);
+                        const saveChatResponse = await fetch(
+                            '/api/chats/group/save',
+                            saveChatRequest,
+                        );
 
                         if (!saveChatResponse.ok) {
                             throw new Error('Group member could not be renamed');
@@ -827,7 +905,9 @@ export async function renameGroupMember(oldAvatar, newAvatar, newName) {
                 }
             }
         } catch (error) {
-            console.log(`An error during renaming the character ${newName} in group: ${group.name}`);
+            console.log(
+                `An error during renaming the character ${newName} in group: ${group.name}`,
+            );
             console.error(error);
         }
     }
@@ -860,18 +940,17 @@ async function getGroups() {
                 group.chats = [group.id];
                 group.members = group.members
 
-                    .map(x => characters.find(y => y.name == x)?.avatar)
+                    .map((x) => characters.find((y) => y.name == x)?.avatar)
 
-                    .filter(x => x)
+                    .filter((x) => x)
                     .filter(onlyUnique);
             }
             if (typeof group.chat_id === 'number') {
                 group.chat_id = String(group.chat_id);
             }
 
-            if (Array.isArray(group.chats) && group.chats.some(x => typeof x === 'number')) {
-
-                group.chats = group.chats.map(x => String(x));
+            if (Array.isArray(group.chats) && group.chats.some((x) => typeof x === 'number')) {
+                group.chats = group.chats.map((x) => String(x));
             }
         }
     }
@@ -888,10 +967,8 @@ export function getGroupBlock(group) {
 
     if (Array.isArray(group.members) && group.members.length) {
         for (const member of group.members) {
-
-            const character = characters.find(x => x.avatar === member || x.name === member);
+            const character = characters.find((x) => x.avatar === member || x.name === member);
             if (character) {
-
                 namesList.push(character.name);
                 count++;
             }
@@ -915,7 +992,8 @@ export function getGroupBlock(group) {
     // @ts-expect-error TS(2339) FIXME: Property 'querySelector' does not exist on type 'N... Remove this comment to see the full error message
     template.querySelector('.ch_fav').value = String(group.fav);
     // @ts-expect-error TS(2339) FIXME: Property 'querySelector' does not exist on type 'N... Remove this comment to see the full error message
-    template.querySelector('.group_select_counter').textContent = count + ' ' + (count != 1 ? t`characters` : t`character`);
+    template.querySelector('.group_select_counter').textContent =
+        count + ' ' + (count != 1 ? t`characters` : t`character`);
     // @ts-expect-error TS(2339) FIXME: Property 'querySelector' does not exist on type 'N... Remove this comment to see the full error message
     template.querySelector('.group_select_block_list').textContent = namesList.join(', ');
 
@@ -944,7 +1022,7 @@ function updateGroupAvatar(group) {
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     preview.append(getGroupAvatar(group));
 
-    document.querySelectorAll('.group_select').forEach(el => {
+    document.querySelectorAll('.group_select').forEach((el) => {
         // @ts-expect-error TS(2339) FIXME: Property 'dataset' does not exist on type 'Element... Remove this comment to see the full error message
         if (el.dataset.id == group.id) {
             // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
@@ -992,11 +1070,9 @@ function getGroupAvatar(group) {
     const memberAvatars = [];
     if (group && Array.isArray(group.members) && group.members.length) {
         for (const member of group.members) {
-
-            const charIndex = characters.findIndex(x => x.avatar === member);
+            const charIndex = characters.findIndex((x) => x.avatar === member);
 
             if (charIndex !== -1 && characters[charIndex].avatar !== 'none') {
-
                 const avatar = getThumbnailUrl('avatar', characters[charIndex].avatar);
                 memberAvatars.push(avatar);
             }
@@ -1010,7 +1086,9 @@ function getGroupAvatar(group) {
 
     if (avatarCount >= 1 && avatarCount <= 4) {
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        const groupAvatar = document.querySelector(`#group_avatars_template .collage_${avatarCount}`).cloneNode(true);
+        const groupAvatar = document
+            .querySelector(`#group_avatars_template .collage_${avatarCount}`)
+            .cloneNode(true);
         for (let i = 0; i < avatarCount; i++) {
             // @ts-expect-error TS(2339) FIXME: Property 'querySelector' does not exist on type 'N... Remove this comment to see the full error message
             groupAvatar.querySelector(`.img_${i + 1}`).setAttribute('src', memberAvatars[i]);
@@ -1027,7 +1105,9 @@ function getGroupAvatar(group) {
     }
 
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    const groupAvatar = document.querySelector('#group_avatars_template .collage_1').cloneNode(true);
+    const groupAvatar = document
+        .querySelector('#group_avatars_template .collage_1')
+        .cloneNode(true);
     // @ts-expect-error TS(2339) FIXME: Property 'querySelector' does not exist on type 'N... Remove this comment to see the full error message
     groupAvatar.querySelector('.img_1').setAttribute('src', group.avatar_url || system_avatar);
     // @ts-expect-error TS(2339) FIXME: Property 'setAttribute' does not exist on type 'No... Remove this comment to see the full error message
@@ -1042,8 +1122,7 @@ function getGroupAvatar(group) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'groupId' implicitly has an 'any' type.
 function getGroupChatNames(groupId) {
-
-    const group = groups.find(x => x.id === groupId);
+    const group = groups.find((x) => x.id === groupId);
 
     if (!group) {
         return [];
@@ -1087,7 +1166,6 @@ async function generateGroupWrapper(byAutoMode, type = null, params = {}) {
 
     // Auto-navigate back to group menu
     if (menu_type !== 'group_edit') {
-
         select_group_chats(selected_group, false);
         await delay(1);
     }
@@ -1103,7 +1181,6 @@ async function generateGroupWrapper(byAutoMode, type = null, params = {}) {
     }
 
     try {
-
         await unshallowGroupMembers(selected_group);
 
         throwIfAborted();
@@ -1125,13 +1202,15 @@ async function generateGroupWrapper(byAutoMode, type = null, params = {}) {
             activationText = userInput;
         } else {
             if (lastMessage && !lastMessage.is_system) {
-                    activationText = lastMessage.mes ?? '';
+                activationText = lastMessage.mes ?? '';
             }
         }
 
-        const activationStrategy = Number(group.activation_strategy ?? group_activation_strategy.NATURAL);
+        const activationStrategy = Number(
+            group.activation_strategy ?? group_activation_strategy.NATURAL,
+        );
 
-        const enabledMembers = group.members.filter(x => !group.disabled_members.includes(x));
+        const enabledMembers = group.members.filter((x) => !group.disabled_members.includes(x));
         let activatedMembers = [];
 
         // @ts-expect-error TS(2339) FIXME: Property 'force_chid' does not exist on type '{}'.
@@ -1148,20 +1227,31 @@ async function generateGroupWrapper(byAutoMode, type = null, params = {}) {
             activatedMembers = activateSwipe(group.members, { allowSystem: false });
 
             if (activatedMembers.length === 0) {
-                notyf.warning(t`Deleted group member swiped. To get a reply, add them back to the group.`);
+                notyf.warning(
+                    t`Deleted group member swiped. To get a reply, add them back to the group.`,
+                );
                 throw new Error('Deleted group member swiped');
             }
         } else if (type === 'impersonate') {
             activatedMembers = activateImpersonate(group.members);
         } else if (activationStrategy === group_activation_strategy.NATURAL) {
-            activatedMembers = activateNaturalOrder(enabledMembers, activationText, lastMessage, group.allow_self_responses, isUserInput);
+            activatedMembers = activateNaturalOrder(
+                enabledMembers,
+                activationText,
+                lastMessage,
+                group.allow_self_responses,
+                isUserInput,
+            );
         } else if (activationStrategy === group_activation_strategy.LIST) {
             activatedMembers = activateListOrder(enabledMembers);
         } else if (activationStrategy === group_activation_strategy.POOLED) {
             activatedMembers = activatePooledOrder(enabledMembers, lastMessage, isUserInput);
         } else if (activationStrategy === group_activation_strategy.MANUAL && !isUserInput) {
             // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
-            activatedMembers = shuffle(enabledMembers).slice(0, 1).map(x => characters.findIndex(y => y.avatar === x)).filter(x => x !== -1);
+            activatedMembers = shuffle(enabledMembers)
+                .slice(0, 1)
+                .map((x) => characters.findIndex((y) => y.avatar === x))
+                .filter((x) => x !== -1);
         }
 
         if (activatedMembers.length === 0) {
@@ -1174,13 +1264,14 @@ async function generateGroupWrapper(byAutoMode, type = null, params = {}) {
             // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             document.getElementById('send_textarea').value = '';
             // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-            document.getElementById('send_textarea').dispatchEvent(new Event('input', { bubbles: true }));
+            document
+                .getElementById('send_textarea')
+                .dispatchEvent(new Event('input', { bubbles: true }));
         }
         groupChatQueueOrder = new Map();
 
         if (power_user.show_group_chat_queue) {
             for (let i = 0; i < activatedMembers.length; ++i) {
-
                 groupChatQueueOrder.set(characters[activatedMembers[i]].avatar, i + 1);
             }
         }
@@ -1200,20 +1291,24 @@ async function generateGroupWrapper(byAutoMode, type = null, params = {}) {
 
             // Wait for generation to finish
             // @ts-expect-error TS(2345) FIXME: Argument of type 'null' is not assignable to param... Remove this comment to see the full error message
-            const generateType = ['swipe', 'impersonate', 'quiet', 'continue'].includes(type) ? type : 'normal';
-            textResult = await Generate(generateType, { automatic_trigger: byAutoMode, ...(params || {}) });
+            const generateType = ['swipe', 'impersonate', 'quiet', 'continue'].includes(type)
+                ? type
+                : 'normal';
+            textResult = await Generate(generateType, { automatic_trigger: byAutoMode, ...params });
             // @ts-expect-error TS(2339) FIXME: Property 'messageChunk' does not exist on type 'st... Remove this comment to see the full error message
             let messageChunk = textResult?.messageChunk;
 
             if (messageChunk) {
                 while (shouldAutoContinue(messageChunk, type === 'impersonate')) {
-                    textResult = await Generate('continue', { automatic_trigger: byAutoMode, ...(params || {}) });
+                    textResult = await Generate('continue', {
+                        automatic_trigger: byAutoMode,
+                        ...params,
+                    });
                     // @ts-expect-error TS(2339) FIXME: Property 'messageChunk' does not exist on type 'st... Remove this comment to see the full error message
                     messageChunk = textResult?.messageChunk;
                 }
             }
             if (power_user.show_group_chat_queue) {
-
                 groupChatQueueOrder.delete(characters[chId].avatar);
                 groupChatQueueOrder.forEach((value, key, map) => map.set(key, value - 1));
             }
@@ -1285,9 +1380,17 @@ function activateSwipe(members, { allowSystem = false } = {}) {
         return [];
     }
 
-    if (lastMessage.is_user || (!allowSystem && lastMessage.is_system) || lastMessage.extra?.type === system_message_types.NARRATOR) {
-        for (const message of chat.slice().reverse()) {
-            if (message.is_user || (!allowSystem && message.is_system) || message.extra?.type === system_message_types.NARRATOR) {
+    if (
+        lastMessage.is_user ||
+        (!allowSystem && lastMessage.is_system) ||
+        lastMessage.extra?.type === system_message_types.NARRATOR
+    ) {
+        for (const message of chat.slice().toReversed()) {
+            if (
+                message.is_user ||
+                (!allowSystem && message.is_system) ||
+                message.extra?.type === system_message_types.NARRATOR
+            ) {
                 continue;
             }
 
@@ -1304,12 +1407,10 @@ function activateSwipe(members, { allowSystem = false } = {}) {
 
     // pre-update group chat swipe
     if (!lastMessage.original_avatar) {
-        const matches = characters.filter(x => x.name == lastMessage.name);
+        const matches = characters.filter((x) => x.name == lastMessage.name);
 
         for (const match of matches) {
-
             if (members.includes(match.avatar)) {
-
                 activatedNames.push(match.avatar);
                 break;
             }
@@ -1359,7 +1460,7 @@ function activatePooledOrder(members, lastMessage, isUserInput) {
     // @ts-expect-error TS(7034) FIXME: Variable 'spokenSinceUser' implicitly has type 'an... Remove this comment to see the full error message
     const spokenSinceUser = [];
 
-    for (const message of chat.slice().reverse()) {
+    for (const message of chat.slice().toReversed()) {
         if (message.is_user || isUserInput) {
             break;
         }
@@ -1374,21 +1475,26 @@ function activatePooledOrder(members, lastMessage, isUserInput) {
     }
 
     // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
-    const haveNotSpoken = members.filter(x => !spokenSinceUser.includes(x));
+    const haveNotSpoken = members.filter((x) => !spokenSinceUser.includes(x));
 
     if (haveNotSpoken.length) {
         activatedMember = haveNotSpoken[Math.floor(Math.random() * haveNotSpoken.length)];
     }
 
     if (activatedMember === null) {
-        const lastMessageAvatar = members.length > 1 && lastMessage && !lastMessage.is_user && lastMessage.original_avatar;
+        const lastMessageAvatar =
+            members.length > 1 &&
+            lastMessage &&
+            !lastMessage.is_user &&
+            lastMessage.original_avatar;
         // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
-        const randomPool = lastMessageAvatar ? members.filter(x => x !== lastMessage.original_avatar) : members;
+        const randomPool = lastMessageAvatar
+            ? members.filter((x) => x !== lastMessage.original_avatar)
+            : members;
         activatedMember = randomPool[Math.floor(Math.random() * randomPool.length)];
     }
 
-
-    const memberId = characters.findIndex(y => y.avatar === activatedMember);
+    const memberId = characters.findIndex((y) => y.avatar === activatedMember);
     return memberId !== -1 ? [memberId] : [];
 }
 
@@ -1417,14 +1523,11 @@ function activateNaturalOrder(members, input, lastMessage, allowSelfResponses, i
     if (input && input.length) {
         for (const inputWord of extractAllWords(input)) {
             for (const member of members) {
-
-                const character = characters.find(x => x.avatar === member);
-
+                const character = characters.find((x) => x.avatar === member);
 
                 if (!character || character.name === bannedUser) {
                     continue;
                 }
-
 
                 if (extractAllWords(character.name).includes(inputWord)) {
                     activatedMembers.push(member);
@@ -1438,9 +1541,7 @@ function activateNaturalOrder(members, input, lastMessage, allowSelfResponses, i
     // activation by talkativeness (in shuffled order, except banned)
     const shuffledMembers = shuffle([...members]);
     for (const member of shuffledMembers) {
-
         const character = characters.find((x) => x.avatar === member);
-
 
         if (!character || character.name === bannedUser) {
             continue;
@@ -1450,7 +1551,6 @@ function activateNaturalOrder(members, input, lastMessage, allowSelfResponses, i
 
         const talkativeness = isNaN(character.talkativeness)
             ? talkativeness_default
-
             : Number(character.talkativeness);
         if (talkativeness >= rollValue) {
             activatedMembers.push(member);
@@ -1494,7 +1594,6 @@ function activateNaturalOrder(members, input, lastMessage, allowSelfResponses, i
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'id' implicitly has an 'any' type.
 async function deleteGroup(id) {
-
     const group = groups.find((x) => x.id === id);
 
     const response = await fetch('/api/groups/delete', {
@@ -1521,7 +1620,8 @@ async function deleteGroup(id) {
         select_rm_info('group_delete', id);
 
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        document.getElementById('rm_button_selected_ch').querySelector(':scope > h2').textContent = '';
+        document.getElementById('rm_button_selected_ch').querySelector(':scope > h2').textContent =
+            '';
     }
 }
 
@@ -1534,7 +1634,6 @@ async function deleteGroup(id) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'id' implicitly has an 'any' type.
 export async function editGroup(id, immediately, reload = true) {
-
     const group = groups.find((x) => x.id === id);
 
     if (!group) {
@@ -1555,8 +1654,7 @@ export async function editGroup(id, immediately, reload = true) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'groupId' implicitly has an 'any' type.
 export async function unshallowGroupMembers(groupId) {
-
-    const group = groups.find(x => x.id == groupId);
+    const group = groups.find((x) => x.id == groupId);
     if (!group) {
         return;
     }
@@ -1565,8 +1663,7 @@ export async function unshallowGroupMembers(groupId) {
         return;
     }
     for (const member of members) {
-
-        const index = characters.findIndex(x => x.avatar === member);
+        const index = characters.findIndex((x) => x.avatar === member);
         if (index === -1) {
             continue;
         }
@@ -1585,11 +1682,9 @@ async function groupChatAutoModeWorker() {
         return;
     }
 
-
     if (!selected_group || is_send_press || is_group_generating) {
         return;
     }
-
 
     const group = groups.find((x) => x.id === selected_group);
 
@@ -1617,7 +1712,6 @@ async function modifyGroupMember(groupId, groupMember, isDelete) {
     const membersArray = thisGroup?.members ?? newGroupMembers;
 
     if (isDelete) {
-
         const index = membersArray.findIndex((x) => x === id);
         if (index !== -1) {
             membersArray.splice(membersArray.indexOf(id), 1);
@@ -1628,7 +1722,6 @@ async function modifyGroupMember(groupId, groupMember, isDelete) {
 
     // @ts-expect-error TS(7005) FIXME: Variable 'openGroupId' implicitly has an 'any' typ... Remove this comment to see the full error message
     if (openGroupId) {
-
         await unshallowGroupMembers(openGroupId);
 
         await editGroup(openGroupId, false, false);
@@ -1740,8 +1833,8 @@ async function onGroupAutoModeDelayInput(e) {
  *
  * @param e
  */
-    // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
-    async function onGroupGenerationModeTemplateInput(e) {
+// @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
+async function onGroupGenerationModeTemplateInput(e) {
     // @ts-expect-error TS(7005) FIXME: Variable 'openGroupId' implicitly has an 'any' typ... Remove this comment to see the full error message
     if (openGroupId) {
         // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
@@ -1766,7 +1859,8 @@ async function onGroupNameInput(event) {
         const _thisGroup = groups.find((x) => x.id == openGroupId);
         _thisGroup!.name = event.currentTarget.value;
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        document.getElementById('rm_button_selected_ch').querySelector(':scope > h2').textContent = _thisGroup!.name;
+        document.getElementById('rm_button_selected_ch').querySelector(':scope > h2').textContent =
+            _thisGroup!.name;
 
         await editGroup(openGroupId, false);
     }
@@ -1892,7 +1986,10 @@ function printGroupCandidates() {
     const pagContainer = document.getElementById('rm_group_add_members_pagination');
     if (pagContainer) {
         createPaginator(pagContainer, {
-            dataSource: getGroupCharacters({ doFilter: true, onlyMembers: false }) as { item: { id: string }; id: string }[],
+            dataSource: getGroupCharacters({ doFilter: true, onlyMembers: false }) as {
+                item: { id: string };
+                id: string;
+            }[],
             pageSize,
             showSizeChanger: true,
             sizeChangerOptions,
@@ -1928,7 +2025,10 @@ function printGroupMembers() {
 
         const pagContainer = el as HTMLElement;
         createPaginator(pagContainer, {
-            dataSource: getGroupCharacters({ doFilter: true, onlyMembers: false }) as { item: { id: string }; id: string }[],
+            dataSource: getGroupCharacters({ doFilter: true, onlyMembers: false }) as {
+                item: { id: string };
+                id: string;
+            }[],
             pageSize,
             showSizeChanger: true,
             sizeChangerOptions,
@@ -2001,7 +2101,10 @@ function getGroupCharacterBlock(character) {
 
     // @ts-expect-error TS(2339) FIXME: Property 'querySelector' does not exist on type 'Node'. Remove this comment to see the full error message
     const tagsElement = template.querySelector('.tags');
-    printTagList(tagsElement, { forEntityOrKey: characters.indexOf(character), tagOptions: { isCharacterList: true } });
+    printTagList(tagsElement, {
+        forEntityOrKey: characters.indexOf(character),
+        tagOptions: { isCharacterList: true },
+    });
 
     // @ts-expect-error TS(7005) FIXME: Variable 'openGroupId' implicitly has an 'any' typ... Remove this comment to see the full error message
     if (!openGroupId) {
@@ -2038,13 +2141,19 @@ async function onDeleteGroupClick() {
         return;
     }
     if (is_group_generating) {
-        notyf.warning(t`Not so fast! Wait for the characters to stop typing before deleting the group.`);
+        notyf.warning(
+            t`Not so fast! Wait for the characters to stop typing before deleting the group.`,
+        );
         return;
     }
 
-    const confirm = await Popup.show.confirm(t`Delete the group?`, '<p>' + t`This will also delete all your chats with that group. If you want to delete a single conversation, select a "View past chats" option in the lower left menu.` + '</p>');
+    const confirm = await Popup.show.confirm(
+        t`Delete the group?`,
+        '<p>' +
+            t`This will also delete all your chats with that group. If you want to delete a single conversation, select a "View past chats" option in the lower left menu.` +
+            '</p>',
+    );
     if (confirm) {
-
         deleteGroup(openGroupId);
     }
 }
@@ -2107,11 +2216,15 @@ async function onHideMutedSpritesClick(value) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'group' implicitly has an 'any' type.
 function toggleHiddenControls(group, generationMode = null) {
-    const isJoin = [group_generation_mode.APPEND, group_generation_mode.APPEND_DISABLED].includes(generationMode ?? group?.generation_mode);
+    const isJoin = [group_generation_mode.APPEND, group_generation_mode.APPEND_DISABLED].includes(
+        generationMode ?? group?.generation_mode,
+    );
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    document.getElementById('rm_group_generation_mode_join_prefix').parentElement.style.display = isJoin ? '' : 'none';
+    document.getElementById('rm_group_generation_mode_join_prefix').parentElement.style.display =
+        isJoin ? '' : 'none';
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    document.getElementById('rm_group_generation_mode_join_suffix').parentElement.style.display = isJoin ? '' : 'none';
+    document.getElementById('rm_group_generation_mode_join_suffix').parentElement.style.display =
+        isJoin ? '' : 'none';
 
     if (!CSS.supports('field-sizing', 'content')) {
         initScrollHeight(document.getElementById('rm_group_generation_mode_join_prefix'));
@@ -2141,7 +2254,8 @@ function select_group_chats(groupId, skipAnimation) {
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     preview.append(getGroupAvatar(group));
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    document.getElementById('rm_group_restore_avatar').style.display = (!!group && isValidImageUrl(group.avatar_url)) ? '' : 'none';
+    document.getElementById('rm_group_restore_avatar').style.display =
+        !!group && isValidImageUrl(group.avatar_url) ? '' : 'none';
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     document.getElementById('rm_group_filter').value = '';
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
@@ -2149,14 +2263,20 @@ function select_group_chats(groupId, skipAnimation) {
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     document.getElementById('rm_group_members_filter').value = '';
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    document.getElementById('rm_group_members_filter').dispatchEvent(new Event('input', { bubbles: true }));
+    document
+        .getElementById('rm_group_members_filter')
+        .dispatchEvent(new Event('input', { bubbles: true }));
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     document.getElementById('rm_group_activation_strategy').value = replyStrategy;
-    const _strategyOption = document.querySelector(`#rm_group_activation_strategy option[value="${replyStrategy}"]`);
+    const _strategyOption = document.querySelector(
+        `#rm_group_activation_strategy option[value="${replyStrategy}"]`,
+    );
     if (_strategyOption instanceof HTMLOptionElement) _strategyOption.selected = true;
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     document.getElementById('rm_group_generation_mode').value = generationMode;
-    const _genModeOption = document.querySelector(`#rm_group_generation_mode option[value="${generationMode}"]`);
+    const _genModeOption = document.querySelector(
+        `#rm_group_generation_mode option[value="${generationMode}"]`,
+    );
     if (_genModeOption instanceof HTMLOptionElement) _genModeOption.selected = true;
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     document.getElementById('rm_group_chat_name').value = groupName;
@@ -2173,7 +2293,7 @@ function select_group_chats(groupId, skipAnimation) {
     printGroupMembers();
 
     const groupHasMembers = !!document.querySelector('#rm_group_members')?.children.length;
-            const submitBtn = document.getElementById('rm_group_submit');
+    const submitBtn = document.getElementById('rm_group_submit');
     if (submitBtn) {
         if (!groupHasMembers) submitBtn.setAttribute('disabled', '');
         else submitBtn.removeAttribute('disabled');
@@ -2183,7 +2303,9 @@ function select_group_chats(groupId, skipAnimation) {
     const hideMuted = document.getElementById('rm_group_hidemutedsprites');
     if (hideMuted) (hideMuted as HTMLInputElement).checked = !!(group && group.hideMutedSprites);
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    document.getElementById('rm_group_automode_delay').value = String(group?.auto_mode_delay ?? DEFAULT_AUTO_MODE_DELAY);
+    document.getElementById('rm_group_automode_delay').value = String(
+        group?.auto_mode_delay ?? DEFAULT_AUTO_MODE_DELAY,
+    );
 
     const _joinPrefix = document.getElementById('rm_group_generation_mode_join_prefix');
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
@@ -2206,7 +2328,9 @@ function select_group_chats(groupId, skipAnimation) {
         document.getElementById('rm_group_delete').style.display = '';
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         document.getElementById('rm_group_scenario').style.display = '';
-        const lorebookBtn = document.querySelector('#group-metadata-controls .chat_lorebook_button');
+        const lorebookBtn = document.querySelector(
+            '#group-metadata-controls .chat_lorebook_button',
+        );
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         lorebookBtn.classList.remove('disabled');
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
@@ -2215,13 +2339,19 @@ function select_group_chats(groupId, skipAnimation) {
         document.getElementById('group_open_media_overrides').style.display = '';
         const isMediaAllowed = isExternalMediaAllowed();
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        document.getElementById('group_media_allowed_icon').style.display = isMediaAllowed ? '' : 'none';
+        document.getElementById('group_media_allowed_icon').style.display = isMediaAllowed
+            ? ''
+            : 'none';
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        document.getElementById('group_media_forbidden_icon').style.display = !isMediaAllowed ? '' : 'none';
+        document.getElementById('group_media_forbidden_icon').style.display = !isMediaAllowed
+            ? ''
+            : 'none';
     } else {
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         document.getElementById('rm_group_submit').style.display = '';
-        const drawerContent = document.querySelector('#groupAddMemberListToggle .inline-drawer-content');
+        const drawerContent = document.querySelector(
+            '#groupAddMemberListToggle .inline-drawer-content',
+        );
         if (drawerContent && window.getComputedStyle(drawerContent).display !== 'block') {
             // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             document.querySelector('#groupAddMemberListToggle .inline-drawer-toggle').click();
@@ -2230,7 +2360,9 @@ function select_group_chats(groupId, skipAnimation) {
         document.getElementById('rm_group_delete').style.display = 'none';
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         document.getElementById('rm_group_scenario').style.display = 'none';
-        const lorebookBtn = document.querySelector('#group-metadata-controls .chat_lorebook_button');
+        const lorebookBtn = document.querySelector(
+            '#group-metadata-controls .chat_lorebook_button',
+        );
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         lorebookBtn.classList.add('disabled');
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
@@ -2247,7 +2379,8 @@ function select_group_chats(groupId, skipAnimation) {
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         document.getElementById('rm_group_automode_label').style.display = '';
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        document.getElementById('rm_button_selected_ch').querySelector(':scope > h2').textContent = groupName;
+        document.getElementById('rm_button_selected_ch').querySelector(':scope > h2').textContent =
+            groupName;
     } else {
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         document.getElementById('rm_group_automode_label').style.display = 'none';
@@ -2255,13 +2388,15 @@ function select_group_chats(groupId, skipAnimation) {
 
     // Toggle textbox sizes, as input events have not fired here
     if (!CSS.supports('field-sizing', 'content')) {
-        document.querySelectorAll('#rm_group_chats_block .autoSetHeight').forEach(element => {
+        document.querySelectorAll('#rm_group_chats_block .autoSetHeight').forEach((element) => {
             resetScrollHeight(element);
         });
     }
 
     hideMutedSprites = group?.hideMutedSprites ?? false;
-    const rmGroupHideMutedSpritesEl = document.getElementById('rm_group_hidemutedsprites') as HTMLInputElement | null;
+    const rmGroupHideMutedSpritesEl = document.getElementById(
+        'rm_group_hidemutedsprites',
+    ) as HTMLInputElement | null;
     if (rmGroupHideMutedSpritesEl) rmGroupHideMutedSpritesEl.checked = hideMutedSprites;
 
     eventSource.emit('groupSelected', { detail: { id: openGroupId, group: group } });
@@ -2289,9 +2424,16 @@ async function uploadGroupAvatar(event) {
     const result = await getBase64Async(file);
 
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    document.getElementById('dialogue_popup').classList.add('large_dialogue_popup', 'wide_dialogue_popup');
+    document
+        .getElementById('dialogue_popup')
+        .classList.add('large_dialogue_popup', 'wide_dialogue_popup');
 
-    const croppedImage = await callGenericPopup('Set the crop position of the avatar image', POPUP_TYPE.CROP, '', { cropImage: result });
+    const croppedImage = await callGenericPopup(
+        'Set the crop position of the avatar image',
+        POPUP_TYPE.CROP,
+        '',
+        { cropImage: result },
+    );
 
     if (!croppedImage) {
         return;
@@ -2307,7 +2449,12 @@ async function uploadGroupAvatar(event) {
     // filename should be group id + human readable timestamp
     const filename = _thisGroup ? `${_thisGroup.id}_${humanizedDateTime()}` : humanizedDateTime();
     // @ts-expect-error TS(7005) FIXME: Variable 'openGroupId' implicitly has an 'any' typ... Remove this comment to see the full error message
-    const thumbnailUrl = await saveBase64AsFile(thumbnail, String(openGroupId ?? ''), filename, 'jpg');
+    const thumbnailUrl = await saveBase64AsFile(
+        thumbnail,
+        String(openGroupId ?? ''),
+        filename,
+        'jpg',
+    );
     // @ts-expect-error TS(7005) FIXME: Variable 'openGroupId' implicitly has an 'any' typ... Remove this comment to see the full error message
     if (!openGroupId) {
         const _avatarPreviewImg = document.querySelector('#group_avatar_preview img');
@@ -2333,7 +2480,10 @@ async function uploadGroupAvatar(event) {
  *
  */
 async function restoreGroupAvatar() {
-    const confirm = await Popup.show.confirm('Are you sure you want to restore the group avatar?', 'Your custom image will be deleted, and a collage will be used instead.');
+    const confirm = await Popup.show.confirm(
+        'Are you sure you want to restore the group avatar?',
+        'Your custom image will be deleted, and a collage will be used instead.',
+    );
     if (!confirm) {
         return;
     }
@@ -2386,7 +2536,7 @@ async function onGroupActionClick(event) {
     if (action === 'enable') {
         member.classList.remove('disabled');
         // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
-        const _thisGroup = groups.find(x => x.id === openGroupId);
+        const _thisGroup = groups.find((x) => x.id === openGroupId);
         const index = _thisGroup!.disabled_members.indexOf(member.dataset.id);
         if (index !== -1) {
             _thisGroup!.disabled_members.splice(index, 1);
@@ -2398,7 +2548,7 @@ async function onGroupActionClick(event) {
     if (action === 'disable') {
         member.classList.add('disabled');
         // @ts-expect-error TS(7005) FIXME: Variable 'groups' implicitly has an 'any[]' type.
-        const _thisGroup = groups.find(x => x.id === openGroupId);
+        const _thisGroup = groups.find((x) => x.id === openGroupId);
         if (!_thisGroup!.disabled_members.includes(member.dataset.id)) {
             _thisGroup!.disabled_members.push(member.dataset.id);
             // @ts-expect-error TS(7005) FIXME: Variable 'openGroupId' implicitly has an 'any' typ... Remove this comment to see the full error message
@@ -2448,19 +2598,20 @@ function updateFavButtonState(state) {
 // @ts-expect-error TS(7006) FIXME: Parameter 'groupId' implicitly has an 'any' type.
 export async function openGroupById(groupId) {
     if (isChatSaving) {
-        notyf.info(t`Please wait until the chat is saved before switching characters.`, t`Your chat is still saving...`);
+        notyf.info(
+            t`Please wait until the chat is saved before switching characters.`,
+            t`Your chat is still saving...`,
+        );
         return false;
     }
 
-
-    if (!groups.find(x => x.id === groupId)) {
+    if (!groups.find((x) => x.id === groupId)) {
         console.log('Group not found', groupId);
         return false;
     }
 
     if (!is_send_press && !is_group_generating) {
         select_group_chats(groupId, false);
-
 
         if (selected_group !== groupId) {
             groupChatQueueOrder = new Map();
@@ -2488,7 +2639,7 @@ export async function openGroupById(groupId) {
 async function openCharacterDefinition(characterSelect) {
     if (is_group_generating) {
         notyf.warning(t`Can't peek a character while group reply is being generated`);
-        console.warn('Can\'t peek a character def while group reply is being generated');
+        console.warn("Can't peek a character def while group reply is being generated");
         return;
     }
 
@@ -2534,15 +2685,23 @@ async function createGroup() {
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     const allowSelfResponses = !!document.getElementById('rm_group_allow_self_responses').checked;
     // @ts-expect-error TS(2339) FIXME: Property 'value' does not exist on type 'Element'.
-    const activationStrategy = Number(document.querySelector('#rm_group_activation_strategy :checked')?.value) ?? group_activation_strategy.NATURAL;
+    const activationStrategy =
+        Number(document.querySelector('#rm_group_activation_strategy :checked')?.value) ??
+        group_activation_strategy.NATURAL;
     // @ts-expect-error TS(2339) FIXME: Property 'value' does not exist on type 'Element'.
-    const generationMode = Number(document.querySelector('#rm_group_generation_mode :checked')?.value) ?? group_generation_mode.SWAP;
+    const generationMode =
+        Number(document.querySelector('#rm_group_generation_mode :checked')?.value) ??
+        group_generation_mode.SWAP;
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    const autoModeDelay = Number(document.getElementById('rm_group_automode_delay').value) ?? DEFAULT_AUTO_MODE_DELAY;
+    const autoModeDelay =
+        Number(document.getElementById('rm_group_automode_delay').value) ?? DEFAULT_AUTO_MODE_DELAY;
     // @ts-expect-error TS(7005) FIXME: Variable 'newGroupMembers' implicitly has an 'any[... Remove this comment to see the full error message
     const members = newGroupMembers;
 
-    const memberNames = characters.filter(x => members.includes(x.avatar)).map(x => x.name).join(', ');
+    const memberNames = characters
+        .filter((x) => members.includes(x.avatar))
+        .map((x) => x.name)
+        .join(', ');
 
     if (!name) {
         name = t`Group: ${memberNames}`;
@@ -2590,8 +2749,7 @@ async function createGroup() {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'groupId' implicitly has an 'any' type.
 export async function createNewGroupChat(groupId) {
-
-    const group = groups.find(x => x.id === groupId);
+    const group = groups.find((x) => x.id === groupId);
 
     if (!group) {
         return;
@@ -2614,8 +2772,7 @@ export async function createNewGroupChat(groupId) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'groupId' implicitly has an 'any' type.
 export async function getGroupPastChats(groupId) {
-
-    const group = groups.find(x => x.id === groupId);
+    const group = groups.find((x) => x.id === groupId);
 
     if (!group) {
         return [];
@@ -2651,7 +2808,7 @@ export async function getGroupPastChats(groupId) {
 export async function openGroupChat(groupId, chatId) {
     await waitUntilCondition(() => !isChatSaving, debounce_timeout.extended, 10);
 
-    const group = groups.find(x => x.id === groupId);
+    const group = groups.find((x) => x.id === groupId);
 
     if (!group || !group.chats.includes(chatId)) {
         return;
@@ -2675,8 +2832,7 @@ export async function openGroupChat(groupId, chatId) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'groupId' implicitly has an 'any' type.
 export async function renameGroupChat(groupId, oldChatId, newChatId) {
-
-    const group = groups.find(x => x.id === groupId);
+    const group = groups.find((x) => x.id === groupId);
 
     if (!group || !group.chats.includes(oldChatId)) {
         return;
@@ -2700,8 +2856,7 @@ export async function renameGroupChat(groupId, oldChatId, newChatId) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'groupId' implicitly has an 'any' type.
 export async function deleteGroupChatByName(groupId, chatName) {
-
-    const group = groups.find(x => x.id === groupId);
+    const group = groups.find((x) => x.id === groupId);
     if (!group || !group.chats.includes(chatName)) {
         return;
     }
@@ -2715,14 +2870,19 @@ export async function deleteGroupChatByName(groupId, chatName) {
     });
 
     if (!response.ok) {
-        notyf.error(t`Check the server connection and reload the page to prevent data loss.`, t`Group chat could not be deleted`);
+        notyf.error(
+            t`Check the server connection and reload the page to prevent data loss.`,
+            t`Group chat could not be deleted`,
+        );
         console.error('Group chat could not be deleted');
         return;
     }
 
     // If the deleted chat was the current chat, switch to the last chat in the group
     if (group.chat_id === chatName) {
-        const newChatName = group.chats.length ? group.chats[group.chats.length - 1] : humanizedDateTime();
+        const newChatName = group.chats.length
+            ? group.chats[group.chats.length - 1]
+            : humanizedDateTime();
         group.chat_id = newChatName ?? humanizedDateTime();
     }
 
@@ -2739,8 +2899,7 @@ export async function deleteGroupChatByName(groupId, chatName) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'groupId' implicitly has an 'any' type.
 export async function deleteGroupChat(groupId, chatId, { jumpToNewChat = true } = {}) {
-
-    const group = groups.find(x => x.id === groupId);
+    const group = groups.find((x) => x.id === groupId);
 
     if (!group || !group.chats.includes(chatId)) {
         return;
@@ -2793,7 +2952,7 @@ export async function importGroupChat(formData, { refresh = true } = {}) {
         if (data.res) {
             const chatId = data.res;
 
-            const group = groups.find(x => x.id == selected_group);
+            const group = groups.find((x) => x.id == selected_group);
 
             if (group) {
                 group.chats.push(chatId);
@@ -2824,8 +2983,7 @@ export async function importGroupChat(formData, { refresh = true } = {}) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'groupId' implicitly has an 'any' type.
 export async function saveGroupBookmarkChat(groupId, name, metadata, mesId, chatData = undefined) {
-
-    const group = groups.find(x => x.id === groupId);
+    const group = groups.find((x) => x.id === groupId);
 
     if (!group) {
         return;
@@ -2835,7 +2993,7 @@ export async function saveGroupBookmarkChat(groupId, name, metadata, mesId, chat
 
     /** @type {ChatHeader} */
     const chatHeader = {
-        chat_metadata: { ...chat_metadata, ...(metadata || {}) },
+        chat_metadata: { ...chat_metadata, ...metadata },
         user_name: 'unused',
         character_name: 'unused',
     };
@@ -2843,9 +3001,9 @@ export async function saveGroupBookmarkChat(groupId, name, metadata, mesId, chat
     /** @type {ChatMessage[]} */
     const trimmedChat = Array.isArray(chatData)
         ? chatData
-        : (mesId !== undefined && mesId >= 0 && mesId < chat.length)
-            ? chat.slice(0, Number(mesId) + 1)
-            : chat;
+        : mesId !== undefined && mesId >= 0 && mesId < chat.length
+          ? chat.slice(0, Number(mesId) + 1)
+          : chat;
 
     await editGroup(groupId, true, false);
 
@@ -2857,7 +3015,10 @@ export async function saveGroupBookmarkChat(groupId, name, metadata, mesId, chat
     const response = await fetch('/api/chats/group/save', saveChatRequest);
 
     if (!response.ok) {
-        notyf.error(t`Check the server connection and reload the page to prevent data loss.`, t`Group chat could not be saved`);
+        notyf.error(
+            t`Check the server connection and reload the page to prevent data loss.`,
+            t`Group chat could not be saved`,
+        );
         console.error('Group chat could not be saved', response);
     }
 }
@@ -2869,8 +3030,10 @@ function onSendTextareaInput() {
     if (is_group_automode_enabled) {
         // Wait for current automode generation to finish
         is_group_automode_enabled = false;
-            const rmGroupAutomodeEl = document.getElementById('rm_group_automode') as HTMLInputElement | null;
-            if (rmGroupAutomodeEl) rmGroupAutomodeEl.checked = false;
+        const rmGroupAutomodeEl = document.getElementById(
+            'rm_group_automode',
+        ) as HTMLInputElement | null;
+        if (rmGroupAutomodeEl) rmGroupAutomodeEl.checked = false;
     }
 }
 
@@ -2880,12 +3043,13 @@ function onSendTextareaInput() {
 function stopAutoModeGeneration() {
     // @ts-expect-error TS(7005) FIXME: Variable 'groupAutoModeAbortController' implicitly... Remove this comment to see the full error message
     if (groupAutoModeAbortController) {
-
         groupAutoModeAbortController.abort();
     }
 
     is_group_automode_enabled = false;
-    const rmGroupAutomodeEl = document.getElementById('rm_group_automode') as HTMLInputElement | null;
+    const rmGroupAutomodeEl = document.getElementById(
+        'rm_group_automode',
+    ) as HTMLInputElement | null;
     if (rmGroupAutomodeEl) rmGroupAutomodeEl.checked = false;
 }
 
@@ -2898,7 +3062,10 @@ function doCurMemberListPopout(event) {
     //repurposes the zoomed avatar template to server as a floating group member list
     if (!document.getElementById('groupMemberListPopout')) {
         console.debug('did not see popout yet, creating');
-        const memberListClone = event.currentTarget.parentElement?.parentElement?.querySelector('.inline-drawer-content')?.innerHTML ?? '';
+        const memberListClone =
+            event.currentTarget.parentElement?.parentElement?.querySelector(
+                '.inline-drawer-content',
+            )?.innerHTML ?? '';
         const templateElement = document.getElementById('zoomed_avatar_template');
 
         let newElement = null;
@@ -2942,16 +3109,13 @@ function doCurMemberListPopout(event) {
         if (closeBtn) {
             closeBtn.addEventListener('click', function () {
                 if (animation_duration > 0) {
-
                     newElement.style.transition = `opacity ${animation_duration}ms ease`;
 
                     newElement.style.opacity = '0';
                     setTimeout(() => {
-
                         newElement.remove();
                     }, animation_duration);
                 } else {
-
                     newElement.remove();
                 }
             });
@@ -2994,11 +3158,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     document.getElementById('rm_group_filter').addEventListener('input', filterGroupMembers);
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    document.getElementById('rm_group_members_filter').addEventListener('input', filterGroupMemberList);
+    document
+        .getElementById('rm_group_members_filter')
+        .addEventListener('input', filterGroupMemberList);
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     document.getElementById('rm_group_submit').addEventListener('click', createGroup);
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    document.getElementById('rm_group_scenario').addEventListener('click', setCharacterSettingsOverrides);
+    document
+        .getElementById('rm_group_scenario')
+        .addEventListener('click', setCharacterSettingsOverrides);
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     document.getElementById('rm_group_automode').addEventListener('input', function (e) {
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
@@ -3016,28 +3184,46 @@ document.addEventListener('DOMContentLoaded', () => {
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     document.getElementById('send_textarea').addEventListener('keyup', onSendTextareaInput);
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    document.getElementById('groupCurrentMemberPopoutButton').addEventListener('click', doCurMemberListPopout);
+    document
+        .getElementById('groupCurrentMemberPopoutButton')
+        .addEventListener('click', doCurMemberListPopout);
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     document.getElementById('rm_group_chat_name').addEventListener('input', onGroupNameInput);
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     document.getElementById('rm_group_delete').addEventListener('click', onDeleteGroupClick);
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    document.getElementById('group_favorite_button').addEventListener('click', onFavoriteGroupClick);
+    document
+        .getElementById('group_favorite_button')
+        .addEventListener('click', onFavoriteGroupClick);
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    document.getElementById('rm_group_allow_self_responses').addEventListener('input', onGroupSelfResponsesClick);
+    document
+        .getElementById('rm_group_allow_self_responses')
+        .addEventListener('input', onGroupSelfResponsesClick);
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    document.getElementById('rm_group_activation_strategy').addEventListener('change', onGroupActivationStrategyInput);
+    document
+        .getElementById('rm_group_activation_strategy')
+        .addEventListener('change', onGroupActivationStrategyInput);
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    document.getElementById('rm_group_generation_mode').addEventListener('change', onGroupGenerationModeInput);
+    document
+        .getElementById('rm_group_generation_mode')
+        .addEventListener('change', onGroupGenerationModeInput);
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    document.getElementById('rm_group_automode_delay').addEventListener('input', onGroupAutoModeDelayInput);
+    document
+        .getElementById('rm_group_automode_delay')
+        .addEventListener('input', onGroupAutoModeDelayInput);
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    document.getElementById('rm_group_generation_mode_join_prefix').addEventListener('input', onGroupGenerationModeTemplateInput);
+    document
+        .getElementById('rm_group_generation_mode_join_prefix')
+        .addEventListener('input', onGroupGenerationModeTemplateInput);
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    document.getElementById('rm_group_generation_mode_join_suffix').addEventListener('input', onGroupGenerationModeTemplateInput);
+    document
+        .getElementById('rm_group_generation_mode_join_suffix')
+        .addEventListener('input', onGroupGenerationModeTemplateInput);
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     document.getElementById('group_avatar_button').addEventListener('input', uploadGroupAvatar);
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    document.getElementById('rm_group_restore_avatar').addEventListener('click', restoreGroupAvatar);
+    document
+        .getElementById('rm_group_restore_avatar')
+        .addEventListener('click', restoreGroupAvatar);
     document.addEventListener('click', onGroupActionClick);
 });

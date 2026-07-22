@@ -18,7 +18,8 @@ export default createOAIChatProvider({
     supportsTools: true,
     supportsReasoning: true,
     extraBodyParams: (req) => ({
-        tools: Array.isArray(req.body.tools) && req.body.tools.length > 0 ? req.body.tools : undefined,
+        tools:
+            Array.isArray(req.body.tools) && req.body.tools.length > 0 ? req.body.tools : undefined,
         tool_choice: req.body.tool_choice || undefined,
         reasoning_effort: req.body.reasoning_effort || undefined,
         ...(req.body.logprobs > 0 ? { top_logprobs: req.body.logprobs, logprobs: true } : {}),

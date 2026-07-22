@@ -21,7 +21,7 @@ export default function initRequestProxy({
     url,
     bypass,
     enableKeepAlive,
-    privateRequestFilterEnabled
+    privateRequestFilterEnabled,
 }: {
     enabled: boolean;
     url: string;
@@ -36,8 +36,14 @@ export default function initRequestProxy({
         }
 
         if (privateRequestFilterEnabled) {
-            console.warn(color.yellow(LOG_HEADER), 'Warning: Request proxy is enabled while private request filter is also enabled. Only URLs that BYPASS the request proxy will be checked.');
-            console.warn(color.yellow(LOG_HEADER), 'To ensure all requests are properly filtered, disable the request proxy.');
+            console.warn(
+                color.yellow(LOG_HEADER),
+                'Warning: Request proxy is enabled while private request filter is also enabled. Only URLs that BYPASS the request proxy will be checked.',
+            );
+            console.warn(
+                color.yellow(LOG_HEADER),
+                'To ensure all requests are properly filtered, disable the request proxy.',
+            );
         }
 
         if (!url) {

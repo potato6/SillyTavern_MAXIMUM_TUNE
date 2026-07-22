@@ -37,28 +37,36 @@ router.post('/delete', getFileNameValidationFunction('avatar'), function (reques
     return response.sendStatus(404);
 });
 
-router.post('/upload', getFileNameValidationFunction('overwrite_name'), async (request, response) => {
-    if (!request.file) return response.sendStatus(400);
+router.post(
+    '/upload',
+    getFileNameValidationFunction('overwrite_name'),
+    async (request, response) => {
+        if (!request.file) return response.sendStatus(400);
 
-    try {
-        const pathToUpload = path.join(request.file.destination, request.file.filename);
-        const crop = tryParse(request.query.crop as string);
-        const fileBuffer = fs.readFileSync(pathToUpload);
-        const image = await applyAvatarCropResize(fileBuffer, crop);
+        try {
+            const pathToUpload = path.join(request.file.destination, request.file.filename);
+            const crop = tryParse(request.query.crop as string);
+            const fileBuffer = fs.readFileSync(pathToUpload);
+            const image = await applyAvatarCropResize(fileBuffer, crop);
 
-        // Remove previous thumbnail and bust cache if overwriting
-        if (request.body.overwrite_name) {
-            invalidateThumbnail(request.user.directories, 'persona', sanitize(request.body.overwrite_name));
-            cacheBuster.bust(request, response);
+            // Remove previous thumbnail and bust cache if overwriting
+            if (request.body.overwrite_name) {
+                invalidateThumbnail(
+                    request.user.directories,
+                    'persona',
+                    sanitize(request.body.overwrite_name),
+                );
+                cacheBuster.bust(request, response);
+            }
+
+            const filename = sanitize(request.body.overwrite_name || `${Date.now()}.png`);
+            const pathToNewFile = path.join(request.user.directories.avatars, filename);
+            writeFileAtomicSync(pathToNewFile, image);
+            fs.unlinkSync(pathToUpload);
+            return response.send({ path: filename });
+        } catch (err) {
+            console.error('Error uploading user avatar:', err);
+            return response.status(400).send('Is not a valid image');
         }
-
-        const filename = sanitize(request.body.overwrite_name || `${Date.now()}.png`);
-        const pathToNewFile = path.join(request.user.directories.avatars, filename);
-        writeFileAtomicSync(pathToNewFile, image);
-        fs.unlinkSync(pathToUpload);
-        return response.send({ path: filename });
-    } catch (err) {
-        console.error('Error uploading user avatar:', err);
-        return response.status(400).send('Is not a valid image');
-    }
-});
+    },
+);

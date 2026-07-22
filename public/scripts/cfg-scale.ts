@@ -15,8 +15,8 @@ import { power_user } from './power-user.js';
 const extensionName = 'cfg';
 const defaultSettings = {
     global: {
-        'guidance_scale': 1,
-        'negative_prompt': '',
+        guidance_scale: 1,
+        negative_prompt: '',
     },
     chara: [],
 };
@@ -67,17 +67,21 @@ function setCharCfg(tempValue: string, setting: number) {
     const extSettings = extension_settings as any;
 
     if (extSettings.cfg.chara) {
-        existingCharaCfgIndex = extSettings.cfg.chara.findIndex((e: Record<string, unknown>) => e.name === avatarName);
+        existingCharaCfgIndex = extSettings.cfg.chara.findIndex(
+            (e: Record<string, unknown>) => e.name === avatarName,
+        );
         existingCharaCfg = extSettings.cfg.chara[existingCharaCfgIndex];
     }
 
     if (extSettings.cfg.chara && existingCharaCfg) {
         const tempAssign = Object.assign(existingCharaCfg, tempCharaCfg);
 
-        if (!existingCharaCfg.useChara &&
-            (tempAssign.guidance_scale ?? 1.00) === 1.00 &&
+        if (
+            !existingCharaCfg.useChara &&
+            (tempAssign.guidance_scale ?? 1.0) === 1.0 &&
             (tempAssign.negative_prompt?.length ?? 0) === 0 &&
-            (tempAssign.positive_prompt?.length ?? 0) === 0) {
+            (tempAssign.positive_prompt?.length ?? 0) === 0
+        ) {
             extSettings.cfg.chara.splice(existingCharaCfgIndex, 1);
         }
     } else if (avatarName && tempValue.length > 0) {
@@ -146,7 +150,8 @@ function onCfgMenuItemClick() {
         };
 
         const cfgBlockToggle = document.getElementById('CFGBlockToggle');
-        const inlineDrawerContent = cfgBlockToggle?.parentElement?.querySelector('.inline-drawer-content');
+        const inlineDrawerContent =
+            cfgBlockToggle?.parentElement?.querySelector('.inline-drawer-content');
         if (inlineDrawerContent && getComputedStyle(inlineDrawerContent).display !== 'block') {
             document.getElementById('floatingPrompt')?.classList.add('resizing');
             cfgBlockToggle?.click();
@@ -170,7 +175,9 @@ function onCfgMenuItemClick() {
     if (el) {
         el.style.transition = `opacity ${animation_duration}ms`;
         el.style.opacity = '0';
-        setTimeout(() => { el.style.display = 'none'; }, animation_duration);
+        setTimeout(() => {
+            el.style.display = 'none';
+        }, animation_duration);
     }
 }
 
@@ -187,7 +194,9 @@ async function onChatChanged() {
  */
 async function modifyCharaHtml() {
     const charaCfgContainer = document.getElementById('chara_cfg_container');
-    const groupchatCfgUseCharaContainer = document.getElementById('groupchat_cfg_use_chara_container');
+    const groupchatCfgUseCharaContainer = document.getElementById(
+        'groupchat_cfg_use_chara_container',
+    );
     if (selected_group) {
         if (charaCfgContainer) charaCfgContainer.style.display = 'none';
         if (groupchatCfgUseCharaContainer) groupchatCfgUseCharaContainer.style.display = '';
@@ -201,16 +210,31 @@ async function modifyCharaHtml() {
  *
  */
 function loadSettings() {
-    document.getElementById('chat_cfg_guidance_scale')?.setAttribute('value', chat_metadata[metadataKeys.guidance_scale] ?? (1.0).toFixed(2));
-    document.getElementById('chat_cfg_guidance_scale_counter')?.setAttribute('value', chat_metadata[metadataKeys.guidance_scale]?.toFixed(2) ?? (1.0).toFixed(2));
-    document.getElementById('chat_cfg_negative_prompt')?.setAttribute('value', chat_metadata[metadataKeys.negative_prompt] ?? '');
-    document.getElementById('chat_cfg_positive_prompt')?.setAttribute('value', chat_metadata[metadataKeys.positive_prompt] ?? '');
+    document
+        .getElementById('chat_cfg_guidance_scale')
+        ?.setAttribute('value', chat_metadata[metadataKeys.guidance_scale] ?? (1.0).toFixed(2));
+    document
+        .getElementById('chat_cfg_guidance_scale_counter')
+        ?.setAttribute(
+            'value',
+            chat_metadata[metadataKeys.guidance_scale]?.toFixed(2) ?? (1.0).toFixed(2),
+        );
+    document
+        .getElementById('chat_cfg_negative_prompt')
+        ?.setAttribute('value', chat_metadata[metadataKeys.negative_prompt] ?? '');
+    document
+        .getElementById('chat_cfg_positive_prompt')
+        ?.setAttribute('value', chat_metadata[metadataKeys.positive_prompt] ?? '');
     const groupChatEl = document.getElementById('groupchat_cfg_use_chara');
-    if (groupChatEl) (groupChatEl as HTMLInputElement).checked = chat_metadata[metadataKeys.groupchat_individual_chars] ?? false;
+    if (groupChatEl)
+        (groupChatEl as HTMLInputElement).checked =
+            chat_metadata[metadataKeys.groupchat_individual_chars] ?? false;
     if (chat_metadata[metadataKeys.prompt_combine]?.length > 0) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         chat_metadata[metadataKeys.prompt_combine].forEach((element: any) => {
-            const cb = document.querySelector(`input[name="cfg_prompt_combine"][value="${element}"]`) as HTMLInputElement | null;
+            const cb = document.querySelector(
+                `input[name="cfg_prompt_combine"][value="${element}"]`,
+            ) as HTMLInputElement | null;
             if (cb) cb.checked = true;
         });
     }
@@ -228,17 +252,27 @@ function loadSettings() {
         }
     }
 
-    (document.getElementById('cfg_prompt_separator') as HTMLInputElement).value = promptSeparatorDisplay.length === 0 ? '' : promptSeparatorDisplay.join('');
+    (document.getElementById('cfg_prompt_separator') as HTMLInputElement).value =
+        promptSeparatorDisplay.length === 0 ? '' : promptSeparatorDisplay.join('');
 
-    (document.getElementById('cfg_prompt_insertion_depth') as HTMLInputElement).value = String(chat_metadata[metadataKeys.prompt_insertion_depth] ?? 1);
+    (document.getElementById('cfg_prompt_insertion_depth') as HTMLInputElement).value = String(
+        chat_metadata[metadataKeys.prompt_insertion_depth] ?? 1,
+    );
 
     if (!selected_group) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const charaCfg = (extension_settings as any).cfg.chara.find((e: Record<string, unknown>) => e.name === getCharaFilename());
-        (document.getElementById('chara_cfg_guidance_scale') as HTMLInputElement).value = String(charaCfg?.guidance_scale ?? 1.00);
-        (document.getElementById('chara_cfg_guidance_scale_counter') as HTMLInputElement).value = charaCfg?.guidance_scale?.toFixed(2) ?? (1.0).toFixed(2);
-        (document.getElementById('chara_cfg_negative_prompt') as HTMLInputElement).value = charaCfg?.negative_prompt ?? '';
-        (document.getElementById('chara_cfg_positive_prompt') as HTMLInputElement).value = charaCfg?.positive_prompt ?? '';
+        const charaCfg = (extension_settings as any).cfg.chara.find(
+            (e: Record<string, unknown>) => e.name === getCharaFilename(),
+        );
+        (document.getElementById('chara_cfg_guidance_scale') as HTMLInputElement).value = String(
+            charaCfg?.guidance_scale ?? 1.0,
+        );
+        (document.getElementById('chara_cfg_guidance_scale_counter') as HTMLInputElement).value =
+            charaCfg?.guidance_scale?.toFixed(2) ?? (1.0).toFixed(2);
+        (document.getElementById('chara_cfg_negative_prompt') as HTMLInputElement).value =
+            charaCfg?.negative_prompt ?? '';
+        (document.getElementById('chara_cfg_positive_prompt') as HTMLInputElement).value =
+            charaCfg?.positive_prompt ?? '';
     }
 }
 
@@ -255,10 +289,15 @@ async function initialLoadSettings() {
         saveSettingsDebounced();
     }
 
-    (document.getElementById('global_cfg_guidance_scale') as HTMLInputElement).value = String(_ext.cfg.global.guidance_scale);
-    (document.getElementById('global_cfg_guidance_scale_counter') as HTMLInputElement).value = _ext.cfg.global.guidance_scale.toFixed(2);
-    (document.getElementById('global_cfg_negative_prompt') as HTMLInputElement).value = _ext.cfg.global.negative_prompt;
-    (document.getElementById('global_cfg_positive_prompt') as HTMLInputElement).value = _ext.cfg.global.positive_prompt;
+    (document.getElementById('global_cfg_guidance_scale') as HTMLInputElement).value = String(
+        _ext.cfg.global.guidance_scale,
+    );
+    (document.getElementById('global_cfg_guidance_scale_counter') as HTMLInputElement).value =
+        _ext.cfg.global.guidance_scale.toFixed(2);
+    (document.getElementById('global_cfg_negative_prompt') as HTMLInputElement).value =
+        _ext.cfg.global.negative_prompt;
+    (document.getElementById('global_cfg_positive_prompt') as HTMLInputElement).value =
+        _ext.cfg.global.positive_prompt;
 }
 
 /**
@@ -292,7 +331,8 @@ function migrateSettings() {
     }
 
     if (chat_metadata.cfg_negative_insertion_depth) {
-        chat_metadata[metadataKeys.prompt_insertion_depth] = chat_metadata.cfg_negative_insertion_depth;
+        chat_metadata[metadataKeys.prompt_insertion_depth] =
+            chat_metadata.cfg_negative_insertion_depth;
         chat_metadata.cfg_negative_insertion_depth = undefined;
         performMetaSave = true;
     }
@@ -328,89 +368,130 @@ export function initCfg() {
                 fill: 'forwards',
             });
         }
-        setTimeout(function () { 
+        setTimeout(function () {
             const cfgEl = document.getElementById('cfgConfig');
             if (cfgEl) cfgEl.style.display = 'none';
         }, animation_duration);
     });
 
-    document.getElementById('chat_cfg_guidance_scale')?.addEventListener('input', function (this: HTMLInputElement) {
-        const numberValue = Number(this.value);
-        const success = setChatCfg(String(numberValue), settingType.guidance_scale);
-        if (success) {
-            (document.getElementById('chat_cfg_guidance_scale_counter') as HTMLInputElement).value = numberValue.toFixed(2);
-        }
-    });
+    document
+        .getElementById('chat_cfg_guidance_scale')
+        ?.addEventListener('input', function (this: HTMLInputElement) {
+            const numberValue = Number(this.value);
+            const success = setChatCfg(String(numberValue), settingType.guidance_scale);
+            if (success) {
+                (
+                    document.getElementById('chat_cfg_guidance_scale_counter') as HTMLInputElement
+                ).value = numberValue.toFixed(2);
+            }
+        });
 
-    document.getElementById('chat_cfg_negative_prompt')?.addEventListener('input', function (this: HTMLInputElement) {
-        setChatCfg(this.value, settingType.negative_prompt);
-    });
+    document
+        .getElementById('chat_cfg_negative_prompt')
+        ?.addEventListener('input', function (this: HTMLInputElement) {
+            setChatCfg(this.value, settingType.negative_prompt);
+        });
 
-    document.getElementById('chat_cfg_positive_prompt')?.addEventListener('input', function (this: HTMLInputElement) {
-        setChatCfg(this.value, settingType.positive_prompt);
-    });
+    document
+        .getElementById('chat_cfg_positive_prompt')
+        ?.addEventListener('input', function (this: HTMLInputElement) {
+            setChatCfg(this.value, settingType.positive_prompt);
+        });
 
-    document.getElementById('chara_cfg_guidance_scale')?.addEventListener('input', function (this: HTMLInputElement) {
-        const value = this.value;
-        const success = setCharCfg(value, settingType.guidance_scale);
-        if (success) {
-            (document.getElementById('chara_cfg_guidance_scale_counter') as HTMLInputElement).value = Number(value).toFixed(2);
-        }
-    });
+    document
+        .getElementById('chara_cfg_guidance_scale')
+        ?.addEventListener('input', function (this: HTMLInputElement) {
+            const value = this.value;
+            const success = setCharCfg(value, settingType.guidance_scale);
+            if (success) {
+                (
+                    document.getElementById('chara_cfg_guidance_scale_counter') as HTMLInputElement
+                ).value = Number(value).toFixed(2);
+            }
+        });
 
-    document.getElementById('chara_cfg_negative_prompt')?.addEventListener('input', function (this: HTMLInputElement) {
-        setCharCfg(this.value, settingType.negative_prompt);
-    });
+    document
+        .getElementById('chara_cfg_negative_prompt')
+        ?.addEventListener('input', function (this: HTMLInputElement) {
+            setCharCfg(this.value, settingType.negative_prompt);
+        });
 
-    document.getElementById('chara_cfg_positive_prompt')?.addEventListener('input', function (this: HTMLInputElement) {
-        setCharCfg(this.value, settingType.positive_prompt);
-    });
+    document
+        .getElementById('chara_cfg_positive_prompt')
+        ?.addEventListener('input', function (this: HTMLInputElement) {
+            setCharCfg(this.value, settingType.positive_prompt);
+        });
 
-    document.getElementById('global_cfg_guidance_scale')?.addEventListener('input', function (this: HTMLInputElement) {
-        _ext.cfg.global.guidance_scale = Number(this.value);
-        (document.getElementById('global_cfg_guidance_scale_counter') as HTMLInputElement).value = _ext.cfg.global.guidance_scale.toFixed(2);
-        saveSettingsDebounced();
-    });
+    document
+        .getElementById('global_cfg_guidance_scale')
+        ?.addEventListener('input', function (this: HTMLInputElement) {
+            _ext.cfg.global.guidance_scale = Number(this.value);
+            (
+                document.getElementById('global_cfg_guidance_scale_counter') as HTMLInputElement
+            ).value = _ext.cfg.global.guidance_scale.toFixed(2);
+            saveSettingsDebounced();
+        });
 
-    document.getElementById('global_cfg_negative_prompt')?.addEventListener('input', function (this: HTMLInputElement) {
-        _ext.cfg.global.negative_prompt = this.value;
-        saveSettingsDebounced();
-    });
+    document
+        .getElementById('global_cfg_negative_prompt')
+        ?.addEventListener('input', function (this: HTMLInputElement) {
+            _ext.cfg.global.negative_prompt = this.value;
+            saveSettingsDebounced();
+        });
 
-    document.getElementById('global_cfg_positive_prompt')?.addEventListener('input', function (this: HTMLInputElement) {
-        _ext.cfg.global.positive_prompt = this.value;
-        saveSettingsDebounced();
-    });
+    document
+        .getElementById('global_cfg_positive_prompt')
+        ?.addEventListener('input', function (this: HTMLInputElement) {
+            _ext.cfg.global.positive_prompt = this.value;
+            saveSettingsDebounced();
+        });
 
-    document.querySelector('input[name="cfg_prompt_combine"]')?.addEventListener('input', function () {
-        const values = Array.from(document.querySelectorAll<HTMLInputElement>('#cfgConfig input[name="cfg_prompt_combine"]:checked'))
-            .map(function (el) { return Number(el.value); })
-            .filter((e) => !Number.isNaN(e)) || [];
+    document
+        .querySelector('input[name="cfg_prompt_combine"]')
+        ?.addEventListener('input', function () {
+            const values =
+                Array.from(
+                    document.querySelectorAll<HTMLInputElement>(
+                        '#cfgConfig input[name="cfg_prompt_combine"]:checked',
+                    ),
+                )
+                    .map(function (el) {
+                        return Number(el.value);
+                    })
+                    .filter((e) => !Number.isNaN(e)) || [];
 
-        chat_metadata[metadataKeys.prompt_combine] = values;
-        saveMetadataDebounced();
-    });
+            chat_metadata[metadataKeys.prompt_combine] = values;
+            saveMetadataDebounced();
+        });
 
-    document.getElementById('cfg_prompt_insertion_depth')?.addEventListener('input', function (this: HTMLInputElement) {
-        chat_metadata[metadataKeys.prompt_insertion_depth] = Number(this.value);
-        saveMetadataDebounced();
-    });
+    document
+        .getElementById('cfg_prompt_insertion_depth')
+        ?.addEventListener('input', function (this: HTMLInputElement) {
+            chat_metadata[metadataKeys.prompt_insertion_depth] = Number(this.value);
+            saveMetadataDebounced();
+        });
 
-    document.getElementById('cfg_prompt_separator')?.addEventListener('input', function (this: HTMLInputElement) {
-        chat_metadata[metadataKeys.prompt_separator] = this.value;
-        saveMetadataDebounced();
-    });
+    document
+        .getElementById('cfg_prompt_separator')
+        ?.addEventListener('input', function (this: HTMLInputElement) {
+            chat_metadata[metadataKeys.prompt_separator] = this.value;
+            saveMetadataDebounced();
+        });
 
-    document.getElementById('groupchat_cfg_use_chara')?.addEventListener('input', function (this: HTMLInputElement) {
-        const checked = !!(this).checked;
-        chat_metadata[metadataKeys.groupchat_individual_chars] = checked;
+    document
+        .getElementById('groupchat_cfg_use_chara')
+        ?.addEventListener('input', function (this: HTMLInputElement) {
+            const checked = !!this.checked;
+            chat_metadata[metadataKeys.groupchat_individual_chars] = checked;
 
-        if (checked) {
-            notyf.info('You can edit character CFG values in their respective character chats.');
-        }
+            if (checked) {
+                notyf.info(
+                    'You can edit character CFG values in their respective character chats.',
+                );
+            }
 
-        saveMetadataDebounced();
-    });
+            saveMetadataDebounced();
+        });
 
     initialLoadSettings();
 
@@ -452,7 +533,9 @@ export function getGuidanceScale() {
         return;
     }
 
-    const charaCfg = _ext.cfg.chara?.find((e: Record<string, unknown>) => e.name === getCharaFilename(this_chid));
+    const charaCfg = _ext.cfg.chara?.find(
+        (e: Record<string, unknown>) => e.name === getCharaFilename(this_chid),
+    );
     const chatGuidanceScale = chat_metadata[metadataKeys.guidance_scale];
     const groupchatCharOverride = chat_metadata[metadataKeys.groupchat_individual_chars] ?? false;
 
@@ -463,7 +546,10 @@ export function getGuidanceScale() {
         };
     }
 
-    if ((!selected_group && charaCfg || groupchatCharOverride) && charaCfg?.guidance_scale !== 1) {
+    if (
+        ((!selected_group && charaCfg) || groupchatCharOverride) &&
+        charaCfg?.guidance_scale !== 1
+    ) {
         return {
             type: cfgType.chara,
             value: charaCfg.guidance_scale,
@@ -504,26 +590,32 @@ function getCustomSeparator() {
  * @param isNegative
  * @param quiet
  */
-export function getCfgPrompt(guidanceScale: { type: number; value: number }, isNegative: boolean, quiet = false) {
+export function getCfgPrompt(
+    guidanceScale: { type: number; value: number },
+    isNegative: boolean,
+    quiet = false,
+) {
     const splitCfgPrompt = [];
 
     const cfgPromptCombine = chat_metadata[metadataKeys.prompt_combine] ?? [];
     if (guidanceScale.type === cfgType.chat || cfgPromptCombine.includes(cfgType.chat)) {
         splitCfgPrompt.unshift(
             substituteParams(
-                chat_metadata[isNegative ? metadataKeys.negative_prompt : metadataKeys.positive_prompt],
+                chat_metadata[
+                    isNegative ? metadataKeys.negative_prompt : metadataKeys.positive_prompt
+                ],
             ),
         );
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const _ext = extension_settings as any;
-    const charaCfg = _ext.cfg.chara?.find((e: Record<string, unknown>) => e.name === getCharaFilename(this_chid));
+    const charaCfg = _ext.cfg.chara?.find(
+        (e: Record<string, unknown>) => e.name === getCharaFilename(this_chid),
+    );
     if (guidanceScale.type === cfgType.chara || cfgPromptCombine.includes(cfgType.chara)) {
         splitCfgPrompt.unshift(
-            substituteParams(
-                isNegative ? charaCfg.negative_prompt : charaCfg.positive_prompt,
-            ),
+            substituteParams(isNegative ? charaCfg.negative_prompt : charaCfg.positive_prompt),
         );
     }
 
@@ -538,7 +630,10 @@ export function getCfgPrompt(guidanceScale: { type: number; value: number }, isN
     const customSeparator = getCustomSeparator();
     const combinedCfgPrompt = splitCfgPrompt.filter((e) => e.length > 0).join(customSeparator);
     const insertionDepth = chat_metadata[metadataKeys.prompt_insertion_depth] ?? 1;
-    if (!quiet) console.log(`Setting CFG with guidance scale: ${guidanceScale.value}, negatives: ${combinedCfgPrompt}`);
+    if (!quiet)
+        console.log(
+            `Setting CFG with guidance scale: ${guidanceScale.value}, negatives: ${combinedCfgPrompt}`,
+        );
 
     return {
         value: combinedCfgPrompt,

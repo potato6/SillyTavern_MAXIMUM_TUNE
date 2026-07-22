@@ -17,20 +17,26 @@ export class SlashCommandBrowser {
     // @ts-expect-error TS(7006) FIXME: Parameter 'parent' implicitly has an 'any' type.
     renderInto(parent) {
         if (!this.dom) {
-            const queryRegex = /(?:(?:^|\s+)([^\s"][^\s]*?)(?:\s+|$))|(?:(?:^|\s+)"(.*?)(?:"|$)(?:\s+|$))/;
-            const root = document.createElement('div'); {
+            const queryRegex =
+                /(?:(?:^|\s+)([^\s"][^\s]*?)(?:\s+|$))|(?:(?:^|\s+)"(.*?)(?:"|$)(?:\s+|$))/;
+            const root = document.createElement('div');
+            {
                 this.dom = root;
-                const search = document.createElement('div'); {
+                const search = document.createElement('div');
+                {
                     search.classList.add('search');
-                    const lbl = document.createElement('label'); {
+                    const lbl = document.createElement('label');
+                    {
                         lbl.classList.add('searchLabel');
                         lbl.textContent = 'Search: ';
-                        const inp = document.createElement('input'); {
+                        const inp = document.createElement('input');
+                        {
                             this.search = inp;
                             inp.classList.add('searchInput');
                             inp.classList.add('text_pole');
                             inp.type = 'search';
-                            inp.placeholder = 'Search slash commands - use quotes to search "literal" instead of fuzzy';
+                            inp.placeholder =
+                                'Search slash commands - use quotes to search "literal" instead of fuzzy';
                             inp.addEventListener('input', () => {
                                 this.details?.remove();
                                 this.details = null;
@@ -46,7 +52,15 @@ export class SlashCommandBrowser {
                                     const match = queryRegex.exec(query);
                                     if (!match) break;
                                     if (match[1] !== undefined) {
-                                        fuzzyList.push(new RegExp(`^(.*?)${match[1].split('').map(char => `(${escapeRegex(char)})`).join('(.*?)')}(.*?)$`, 'i'));
+                                        fuzzyList.push(
+                                            new RegExp(
+                                                `^(.*?)${match[1]
+                                                    .split('')
+                                                    .map((char) => `(${escapeRegex(char)})`)
+                                                    .join('(.*?)')}(.*?)$`,
+                                                'i',
+                                            ),
+                                        );
                                     } else if (match[2] !== undefined) {
                                         quotedList.push(match[2]);
                                     }
@@ -56,24 +70,34 @@ export class SlashCommandBrowser {
                                     const targets = [
                                         cmd.name,
                                         // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
-                                        ...cmd.namedArgumentList.map(it => it.name),
+                                        ...cmd.namedArgumentList.map((it) => it.name),
                                         // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
-                                        ...cmd.namedArgumentList.map(it => it.description),
+                                        ...cmd.namedArgumentList.map((it) => it.description),
                                         // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
-                                        ...cmd.namedArgumentList.map(it => it.enumList.map(e => e.value)).flat(),
+                                        ...cmd.namedArgumentList.flatMap((it) =>
+                                            it.enumList.map((e) => e.value),
+                                        ),
                                         // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
-                                        ...cmd.namedArgumentList.map(it => it.typeList).flat(),
+                                        ...cmd.namedArgumentList.flatMap((it) => it.typeList),
                                         // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
-                                        ...cmd.unnamedArgumentList.map(it => it.description),
+                                        ...cmd.unnamedArgumentList.map((it) => it.description),
                                         // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
-                                        ...cmd.unnamedArgumentList.map(it => it.enumList.map(e => e.value)).flat(),
+                                        ...cmd.unnamedArgumentList.flatMap((it) =>
+                                            it.enumList.map((e) => e.value),
+                                        ),
                                         // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
-                                        ...cmd.unnamedArgumentList.map(it => it.typeList).flat(),
+                                        ...cmd.unnamedArgumentList.flatMap((it) => it.typeList),
                                         ...cmd.aliases,
                                         cmd.helpString,
                                     ];
                                     // @ts-expect-error TS(7005) FIXME: Variable 'fuzzyList' implicitly has an 'any[]' typ... Remove this comment to see the full error message
-                                    const find = () => targets.find(t => (fuzzyList.find(f => f.test(t)) ?? quotedList.find(q => t.includes(q))) !== undefined) !== undefined;
+                                    const find = () =>
+                                        targets.find(
+                                            (t) =>
+                                                (fuzzyList.find((f) => f.test(t)) ??
+                                                    quotedList.find((q) => t.includes(q))) !==
+                                                undefined,
+                                        ) !== undefined;
                                     if (fuzzyList.length + quotedList.length === 0 || find()) {
                                         // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                                         this.itemMap[cmd.name].classList.remove('isFiltered');
@@ -89,18 +113,18 @@ export class SlashCommandBrowser {
                     }
                     root.append(search);
                 }
-                const container = document.createElement('div'); {
+                const container = document.createElement('div');
+                {
                     container.classList.add('commandContainer');
-                    const list = document.createElement('div'); {
+                    const list = document.createElement('div');
+                    {
                         list.classList.add('autoComplete');
-                        this.cmdList = Object
-                            .keys(SlashCommandParser.commands)
+                        this.cmdList = Object.keys(SlashCommandParser.commands)
                             // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                            .filter(key => SlashCommandParser.commands[key].name === key) // exclude aliases
-                            .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
+                            .filter((key) => SlashCommandParser.commands[key].name === key) // exclude aliases
+                            .toSorted((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
                             // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                            .map(key => SlashCommandParser.commands[key])
-                        ;
+                            .map((key) => SlashCommandParser.commands[key]);
                         for (const cmd of this.cmdList) {
                             const item = cmd.renderHelpItem();
                             // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
@@ -110,9 +134,11 @@ export class SlashCommandBrowser {
                             item.addEventListener('click', () => {
                                 // @ts-expect-error TS(7005) FIXME: Variable 'details' implicitly has an 'any' type.
                                 if (!details) {
-                                    details = document.createElement('div'); {
+                                    details = document.createElement('div');
+                                    {
                                         details.classList.add('autoComplete-detailsWrap');
-                                        const inner = document.createElement('div'); {
+                                        const inner = document.createElement('div');
+                                        {
                                             inner.classList.add('autoComplete-details');
                                             inner.append(cmd.renderHelpDetails());
                                             details.append(inner);
@@ -120,14 +146,19 @@ export class SlashCommandBrowser {
                                     }
                                 }
                                 if (this.details !== details) {
-                                    Array.from(list.querySelectorAll('.selected')).forEach(it => it.classList.remove('selected'));
+                                    Array.from(list.querySelectorAll('.selected')).forEach((it) =>
+                                        it.classList.remove('selected'),
+                                    );
                                     item.classList.add('selected');
                                     this.details?.remove();
                                     container.append(details);
                                     this.details = details;
                                     const pRect = list.getBoundingClientRect();
                                     const rect = item.children[0].getBoundingClientRect();
-                                    details.style.setProperty('--targetOffset', rect.top - pRect.top);
+                                    details.style.setProperty(
+                                        '--targetOffset',
+                                        rect.top - pRect.top,
+                                    );
                                 } else {
                                     item.classList.remove('selected');
                                     details.remove();
@@ -145,8 +176,14 @@ export class SlashCommandBrowser {
         }
         parent.append(this.dom);
 
-        this.mo = new MutationObserver(muts => {
-            if (muts.find(mut => Array.from(mut.removedNodes).find(it => it === this.dom || it.contains(this.dom)))) {
+        this.mo = new MutationObserver((muts) => {
+            if (
+                muts.find((mut) =>
+                    Array.from(mut.removedNodes).find(
+                        (it) => it === this.dom || it.contains(this.dom),
+                    ),
+                )
+            ) {
                 this.mo.disconnect();
                 window.removeEventListener('keydown', boundHandler);
             }

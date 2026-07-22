@@ -50,8 +50,15 @@ export class TavernCardValidator {
      * @returns {boolean} true if all required V1 fields are present
      */
     validateV1() {
-        const requiredFields = ['name', 'description', 'personality', 'scenario', 'first_mes', 'mes_example'];
-        return requiredFields.every(field => {
+        const requiredFields = [
+            'name',
+            'description',
+            'personality',
+            'scenario',
+            'first_mes',
+            'mes_example',
+        ];
+        return requiredFields.every((field) => {
             if (!Object.hasOwn(this.card, field)) {
                 // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'null'.
                 this.#lastValidationError = field;
@@ -66,10 +73,12 @@ export class TavernCardValidator {
      * @returns {boolean} true if the card conforms to V2 spec
      */
     validateV2() {
-        return this.#validateSpecV2()
-            && this.#validateSpecVersionV2()
-            && this.#validateDataV2()
-            && this.#validateCharacterBookV2();
+        return (
+            this.#validateSpecV2() &&
+            this.#validateSpecVersionV2() &&
+            this.#validateDataV2() &&
+            this.#validateCharacterBookV2()
+        );
     }
 
     /**
@@ -77,9 +86,7 @@ export class TavernCardValidator {
      * @returns {boolean} true if the card conforms to V3 spec
      */
     validateV3() {
-        return this.#validateSpecV3()
-            && this.#validateSpecVersionV3()
-            && this.#validateDataV3();
+        return this.#validateSpecV3() && this.#validateSpecVersionV3() && this.#validateDataV3();
     }
 
     #validateSpecV2() {
@@ -109,8 +116,23 @@ export class TavernCardValidator {
             return false;
         }
 
-        const requiredFields = ['name', 'description', 'personality', 'scenario', 'first_mes', 'mes_example', 'creator_notes', 'system_prompt', 'post_history_instructions', 'alternate_greetings', 'tags', 'creator', 'character_version', 'extensions'];
-        const isAllRequiredFieldsPresent = requiredFields.every(field => {
+        const requiredFields = [
+            'name',
+            'description',
+            'personality',
+            'scenario',
+            'first_mes',
+            'mes_example',
+            'creator_notes',
+            'system_prompt',
+            'post_history_instructions',
+            'alternate_greetings',
+            'tags',
+            'creator',
+            'character_version',
+            'extensions',
+        ];
+        const isAllRequiredFieldsPresent = requiredFields.every((field) => {
             if (!Object.hasOwn(data, field)) {
                 // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'null'.
                 this.#lastValidationError = `data.${field}`;
@@ -120,7 +142,12 @@ export class TavernCardValidator {
         });
 
         // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-        return isAllRequiredFieldsPresent && Array.isArray(data.alternate_greetings) && Array.isArray(data.tags) && typeof data.extensions === 'object';
+        return (
+            isAllRequiredFieldsPresent &&
+            Array.isArray(data.alternate_greetings) &&
+            Array.isArray(data.tags) &&
+            typeof data.extensions === 'object'
+        );
     }
 
     #validateCharacterBookV2() {
@@ -132,7 +159,7 @@ export class TavernCardValidator {
         }
 
         const requiredFields = ['extensions', 'entries'];
-        const isAllRequiredFieldsPresent = requiredFields.every(field => {
+        const isAllRequiredFieldsPresent = requiredFields.every((field) => {
             if (!Object.hasOwn(characterBook, field)) {
                 // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'null'.
                 this.#lastValidationError = `data.character_book.${field}`;
@@ -141,7 +168,11 @@ export class TavernCardValidator {
             return true;
         });
 
-        return isAllRequiredFieldsPresent && Array.isArray(characterBook.entries) && typeof characterBook.extensions === 'object';
+        return (
+            isAllRequiredFieldsPresent &&
+            Array.isArray(characterBook.entries) &&
+            typeof characterBook.extensions === 'object'
+        );
     }
 
     #validateSpecV3() {

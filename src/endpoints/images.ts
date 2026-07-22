@@ -62,7 +62,11 @@ router.post('/upload', async (request, response) => {
         // if character is defined, save to a sub folder for that character
         let pathToNewFile = path.join(request.user.directories.userImages, sanitize(filename));
         if (request.body.ch_name) {
-            pathToNewFile = path.join(request.user.directories.userImages, sanitize(request.body.ch_name), sanitize(filename));
+            pathToNewFile = path.join(
+                request.user.directories.userImages,
+                sanitize(request.body.ch_name),
+                sanitize(filename),
+            );
         }
 
         ensureDirectoryExistence(pathToNewFile);
@@ -79,7 +83,9 @@ router.post('/list{/:folder}', (request, response) => {
     try {
         if (request.params.folder) {
             if (request.body.folder) {
-                return response.status(400).send({ error: 'Folder specified in both URL and body' });
+                return response
+                    .status(400)
+                    .send({ error: 'Folder specified in both URL and body' });
             }
 
             console.warn('Deprecated: Use POST /api/images/list with folder in request body');
@@ -90,7 +96,10 @@ router.post('/list{/:folder}', (request, response) => {
             return response.status(400).send({ error: 'No folder specified' });
         }
 
-        const directoryPath = path.join(request.user.directories.userImages, sanitize(request.body.folder));
+        const directoryPath = path.join(
+            request.user.directories.userImages,
+            sanitize(request.body.folder),
+        );
         const type = Number(request.body.type ?? MEDIA_REQUEST_TYPE.IMAGE);
         const sort = request.body.sortField || 'date';
         const order = request.body.sortOrder || 'asc';
@@ -117,9 +126,10 @@ router.post('/folders', (request, response) => {
             fs.mkdirSync(directoryPath, { recursive: true });
         }
 
-        const folders = fs.readdirSync(directoryPath, { withFileTypes: true })
-            .filter(dirent => dirent.isDirectory())
-            .map(dirent => dirent.name);
+        const folders = fs
+            .readdirSync(directoryPath, { withFileTypes: true })
+            .filter((dirent) => dirent.isDirectory())
+            .map((dirent) => dirent.name);
 
         return response.send(folders);
     } catch (error) {

@@ -39,7 +39,8 @@ export function registerStateMacros() {
 
     MacroRegistry.registerMacro('lastGenerationType', {
         category: MacroCategory.STATE,
-        description: 'Type of the last queued generation request (e.g. "normal", "impersonate", "regenerate", "quiet", "swipe", "continue"). Empty if none yet or chat was switched.',
+        description:
+            'Type of the last queued generation request (e.g. "normal", "impersonate", "regenerate", "quiet", "swipe", "continue"). Empty if none yet or chat was switched.',
         returns: 'Type of the last queued generation request.',
         handler: () => lastGenerationTypeValue,
     });
@@ -47,12 +48,15 @@ export function registerStateMacros() {
     // Macro that checks if an extension is enabled
     MacroRegistry.registerMacro('hasExtension', {
         category: MacroCategory.STATE,
-        unnamedArgs: [{
-            name: 'extensionName',
-            type: 'string',
-            description: 'The name of the extension to check',
-        }],
-        description: 'Checks if a specific extension is enabled. If the extension does not exist, returns false.',
+        unnamedArgs: [
+            {
+                name: 'extensionName',
+                type: 'string',
+                description: 'The name of the extension to check',
+            },
+        ],
+        description:
+            'Checks if a specific extension is enabled. If the extension does not exist, returns false.',
         returns: 'true if the extension is enabled, false otherwise.',
         // @ts-expect-error TS(7031) FIXME: Binding element 'extensionName' implicitly has an ... Remove this comment to see the full error message
         handler: ({ unnamedArgs: [extensionName] }) => {

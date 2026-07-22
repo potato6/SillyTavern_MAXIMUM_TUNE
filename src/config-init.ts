@@ -20,7 +20,7 @@ const keyMigrationMap: MigrationMap[] = [
     {
         oldKey: 'disableThumbnails',
         newKey: 'thumbnails.enabled',
-        migrate: (value: unknown) => !Boolean(value),
+        migrate: (value: unknown) => !value,
     },
     {
         oldKey: 'thumbnailsQuality',
@@ -30,12 +30,12 @@ const keyMigrationMap: MigrationMap[] = [
     {
         oldKey: 'avatarThumbnailsPng',
         newKey: 'thumbnails.format',
-        migrate: (value: unknown) => Boolean(value) ? 'png' : 'jpg',
+        migrate: (value: unknown) => (value ? 'png' : 'jpg'),
     },
     {
         oldKey: 'disableChatBackup',
         newKey: 'backups.chat.enabled',
-        migrate: (value: unknown) => !Boolean(value),
+        migrate: (value: unknown) => !value,
     },
     {
         oldKey: 'numberOfBackups',
@@ -65,7 +65,7 @@ const keyMigrationMap: MigrationMap[] = [
     {
         oldKey: 'extras.disableAutoDownload',
         newKey: 'extensions.models.autoDownload',
-        migrate: (value: unknown) => !Boolean(value),
+        migrate: (value: unknown) => !value,
     },
     {
         oldKey: 'extras.classificationModel',
@@ -153,7 +153,7 @@ const keyMigrationMap: MigrationMap[] = [
  * @returns {string[]} Array of all keys in the object
  */
 function getAllKeys(obj: Record<string, unknown>, prefix = ''): string[] {
-    return Object.keys(obj).flatMap(key => {
+    return Object.keys(obj).flatMap((key) => {
         const newPrefix = prefix ? `${prefix}.${key}` : key;
         const value = obj[key];
         if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
@@ -170,10 +170,16 @@ function getAllKeys(obj: Record<string, unknown>, prefix = ''): string[] {
  */
 export function addMissingConfigValues(configPath: string) {
     try {
-        const defaultConfig = yaml.parse(fs.readFileSync(path.join(serverDirectory, './default/config.yaml'), 'utf8'));
+        const defaultConfig = yaml.parse(
+            fs.readFileSync(path.join(serverDirectory, './default/config.yaml'), 'utf8'),
+        );
 
         if (!fs.existsSync(configPath)) {
-            console.warn(color.yellow(`Warning: config.yaml not found at ${configPath}. Creating a new one with default values.`));
+            console.warn(
+                color.yellow(
+                    `Warning: config.yaml not found at ${configPath}. Creating a new one with default values.`,
+                ),
+            );
             fs.writeFileSync(configPath, yaml.stringify(defaultConfig));
             return;
         }
@@ -192,8 +198,14 @@ export function addMissingConfigValues(configPath: string) {
                 // @ts-expect-error TS(2322) FIXME: Type 'unknown' is not assignable to type 'string |... Remove this comment to see the full error message
                 process.env[newEnvKey] = newValue;
                 delete process.env[oldEnvKey];
-                console.warn(color.yellow(`Warning: Using a deprecated environment variable: ${oldEnvKey}. Please use ${newEnvKey} instead.`));
-                console.log(`Redirecting ${color.blue(oldEnvKey)}=${oldValue} -> ${color.blue(newEnvKey)}=${newValue}`);
+                console.warn(
+                    color.yellow(
+                        `Warning: Using a deprecated environment variable: ${oldEnvKey}. Please use ${newEnvKey} instead.`,
+                    ),
+                );
+                console.log(
+                    `Redirecting ${color.blue(oldEnvKey)}=${oldValue} -> ${color.blue(newEnvKey)}=${newValue}`,
+                );
             }
 
             if (has(config, oldKey)) {

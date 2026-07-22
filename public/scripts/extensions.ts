@@ -1,7 +1,23 @@
-import { eventSource, event_types, saveSettings, saveSettingsDebounced, getRequestHeaders, CLIENT_VERSION } from '../script.js';
+import {
+    eventSource,
+    event_types,
+    saveSettings,
+    saveSettingsDebounced,
+    getRequestHeaders,
+    CLIENT_VERSION,
+} from '../script.js';
 import { POPUP_RESULT, POPUP_TYPE, Popup } from './popup.js';
 import { renderTemplateAsync } from './templates.js';
-import { delay, deleteValueByPath, equalsIgnoreCaseAndAccents, escapeHtml, isSubsetOf, sanitizeSelector, setValueByPath, versionCompare } from './utils.js';
+import {
+    delay,
+    deleteValueByPath,
+    equalsIgnoreCaseAndAccents,
+    escapeHtml,
+    isSubsetOf,
+    sanitizeSelector,
+    setValueByPath,
+    versionCompare,
+} from './utils.js';
 import { getContext } from './st-context.js';
 import { isAdmin } from './user.js';
 import { addLocaleData, getCurrentLocale, t } from './i18n.js';
@@ -9,11 +25,7 @@ import { debounce_timeout } from './constants.js';
 import { accountStorage } from './util/AccountStorage.js';
 import { SimpleMutex } from './util/SimpleMutex.js';
 
-export {
-    getContext,
-    getApiUrl,
-    SimpleMutex as ModuleWorkerWrapper,
-};
+export { getContext, getApiUrl, SimpleMutex as ModuleWorkerWrapper };
 
 /** @type {string[]} */
 export let extensionNames: string[] = [];
@@ -44,8 +56,12 @@ const activeExtensions = new Set<string>();
 const extensionLoadErrors = new Set<string>();
 
 const getApiUrl = () => extension_settings.apiUrl;
-const sortManifestsByOrder = (a: Record<string, unknown>, b: Record<string, unknown>) => parseInt(a.loading_order as string) - parseInt(b.loading_order as string) || String(a.display_name).localeCompare(String(b.display_name));
-const sortManifestsByName = (a: Record<string, unknown>, b: Record<string, unknown>) => String(a.display_name).localeCompare(String(b.display_name)) || parseInt(a.loading_order as string) - parseInt(b.loading_order as string);
+const sortManifestsByOrder = (a: Record<string, unknown>, b: Record<string, unknown>) =>
+    parseInt(a.loading_order as string) - parseInt(b.loading_order as string) ||
+    String(a.display_name).localeCompare(String(b.display_name));
+const sortManifestsByName = (a: Record<string, unknown>, b: Record<string, unknown>) =>
+    String(a.display_name).localeCompare(String(b.display_name)) ||
+    parseInt(a.loading_order as string) - parseInt(b.loading_order as string);
 let connectedToApi = false;
 
 /**
@@ -126,8 +142,20 @@ export function saveMetadataDebounced(): void {
  * @param localize
  * @returns {Promise<string>} Rendered HTML
  */
-export function renderExtensionTemplateAsync(extensionName: string, templateId: string, templateData: Record<string, unknown> = {}, sanitize = true, localize = true): Promise<string> {
-    return renderTemplateAsync(`scripts/extensions/${extensionName}/${templateId}.html`, templateData, sanitize, localize, true);
+export function renderExtensionTemplateAsync(
+    extensionName: string,
+    templateId: string,
+    templateData: Record<string, unknown> = {},
+    sanitize = true,
+    localize = true,
+): Promise<string> {
+    return renderTemplateAsync(
+        `scripts/extensions/${extensionName}/${templateId}.html`,
+        templateData,
+        sanitize,
+        localize,
+        true,
+    );
 }
 
 export const extension_settings: Record<string, unknown> = {
@@ -224,7 +252,9 @@ function showHideExtensionsMenu(): void {
     // Get the number of menu items that are not hidden
     const menu = document.getElementById('extensionsMenu');
     if (!menu) return;
-    const hasMenuItems = Array.from(menu.children).some(child => getComputedStyle(child).display !== 'none');
+    const hasMenuItems = Array.from(menu.children).some(
+        (child) => getComputedStyle(child).display !== 'none',
+    );
 
     // We have menu items, so we can stop checking
     if (hasMenuItems) {
@@ -245,7 +275,9 @@ const menuInterval = setInterval(showHideExtensionsMenu, 1000);
  * @returns {string} Type of the extension (global, local, system, or empty string if not found)
  */
 function getExtensionType(externalId: string): string {
-    const id = Object.keys(extensionTypes).find(id => id === externalId || (id.startsWith('third-party') && id.endsWith(externalId)));
+    const id = Object.keys(extensionTypes).find(
+        (id) => id === externalId || (id.startsWith('third-party') && id.endsWith(externalId)),
+    );
     return id ? extensionTypes[id]! : '';
 }
 
@@ -255,7 +287,10 @@ function getExtensionType(externalId: string): string {
  * @param {RequestInit} args Request arguments
  * @returns {Promise<Response>} Response from the fetch
  */
-export async function doExtrasFetch(endpoint: string | URL, args: Record<string, unknown> = {}): Promise<Response> {
+export async function doExtrasFetch(
+    endpoint: string | URL,
+    args: Record<string, unknown> = {},
+): Promise<Response> {
     if (!args) {
         args = {};
     }
@@ -270,7 +305,7 @@ export async function doExtrasFetch(endpoint: string | URL, args: Record<string,
 
     if (extension_settings.apiKey) {
         Object.assign(args.headers as Record<string, string>, {
-            'Authorization': `Bearer ${extension_settings.apiKey}`,
+            Authorization: `Bearer ${extension_settings.apiKey}`,
         });
     }
 
@@ -284,7 +319,10 @@ export async function doExtrasFetch(endpoint: string | URL, args: Record<string,
  * @param {string} [options.prefix] Optional prefix to ignore when generating the selector (e.g. "third-party")
  * @returns {string} CSS selector for the extension, with the prefix removed if it was present and specified in options
  */
-function getNameSelector(name: string, { prefix = 'third-party' }: { prefix?: string } = {}): string {
+function getNameSelector(
+    name: string,
+    { prefix = 'third-party' }: { prefix?: string } = {},
+): string {
     const nameWithoutPrefix = prefix && name.startsWith(prefix) ? name.slice(prefix.length) : name;
     return CSS.escape(nameWithoutPrefix);
 }
@@ -331,12 +369,21 @@ function onEnableExtensionClick(this: HTMLElement): void {
  * @param {JQuery<HTMLElement>} toggleContainer
  * @returns {object[]} Updated extensionsToToggle array
  */
-function onToggleAllExtensions(extensionsToToggle: Array<{ name: string; toggleHandler?: (...args: unknown[]) => unknown; enable?: boolean }>, toggleContainer: HTMLElement): Array<{ name: string; toggleHandler?: (...args: unknown[]) => unknown; enable?: boolean }> {
+function onToggleAllExtensions(
+    extensionsToToggle: Array<{
+        name: string;
+        toggleHandler?: (...args: unknown[]) => unknown;
+        enable?: boolean;
+    }>,
+    toggleContainer: HTMLElement,
+): Array<{ name: string; toggleHandler?: (...args: unknown[]) => unknown; enable?: boolean }> {
     const extensionNames = Object.keys(manifests);
-    const thirdPartyExtensions = extensionNames.filter(name => ['local', 'global'].includes(getExtensionType(name)));
+    const thirdPartyExtensions = extensionNames.filter((name) =>
+        ['local', 'global'].includes(getExtensionType(name)),
+    );
 
     const checkIfDisabled = (name: string): boolean => {
-        const toggle = extensionsToToggle.find(ext => ext.name === name);
+        const toggle = extensionsToToggle.find((ext) => ext.name === name);
         return toggle
             ? !toggle.enable
             : (extension_settings.disabledExtensions as string[]).includes(name);
@@ -362,16 +409,22 @@ function onToggleAllExtensions(extensionsToToggle: Array<{ name: string; toggleH
         const doToggleExtension = enable ? isDisabled : !isDisabled;
 
         if (doToggleExtension) {
-            const toggle = extensionsToToggle.find(ext => ext.name === name);
+            const toggle = extensionsToToggle.find((ext) => ext.name === name);
 
             if (toggle) {
                 toggle.toggleHandler = toggleHandler as (...args: unknown[]) => unknown;
                 toggle.enable = enable;
             } else {
-                extensionsToToggle.push({ name, toggleHandler: toggleHandler as (...args: unknown[]) => unknown, enable });
+                extensionsToToggle.push({
+                    name,
+                    toggleHandler: toggleHandler as (...args: unknown[]) => unknown,
+                    enable,
+                });
             }
 
-            const toggleEl = toggleContainer.querySelector(`.extension_block[data-name="${getNameSelector(name)}"] .extension_toggle input`) as HTMLInputElement | null;
+            const toggleEl = toggleContainer.querySelector(
+                `.extension_block[data-name="${getNameSelector(name)}"] .extension_toggle input`,
+            ) as HTMLInputElement | null;
             if (toggleEl) {
                 toggleEl.checked = enable;
                 toggleEl.classList.toggle('toggle_enable', !enable);
@@ -412,7 +465,9 @@ async function callExtensionHook(name: string, hookName: string): Promise<void> 
     const manifest = manifests[name];
 
     if (!manifest) {
-        console.debug(`callExtensionHook: Extension "${name}" has no manifest, skipping hook "${hookName}"`);
+        console.debug(
+            `callExtensionHook: Extension "${name}" has no manifest, skipping hook "${hookName}"`,
+        );
         return;
     }
 
@@ -427,23 +482,31 @@ async function callExtensionHook(name: string, hookName: string): Promise<void> 
     const hookFunctionName = (manifest.hooks as Record<string, string>)[hookName];
 
     if (typeof hookFunctionName !== 'string' || !hookFunctionName) {
-        console.warn(`callExtensionHook: Extension "${name}" hook "${hookName}" is not a valid string`);
+        console.warn(
+            `callExtensionHook: Extension "${name}" hook "${hookName}" is not a valid string`,
+        );
         return;
     }
 
     if (!manifest.js) {
-        console.warn(`callExtensionHook: Extension "${name}" has hook "${hookName}" but no JS entry point defined in manifest`);
+        console.warn(
+            `callExtensionHook: Extension "${name}" has hook "${hookName}" but no JS entry point defined in manifest`,
+        );
         return;
     }
 
     const url = `/scripts/extensions/${name}/${manifest.js as string}`;
-    console.debug(`callExtensionHook: Calling hook "${hookName}" (function "${hookFunctionName}") for extension "${name}"`);
+    console.debug(
+        `callExtensionHook: Calling hook "${hookName}" (function "${hookFunctionName}") for extension "${name}"`,
+    );
 
     try {
-        const module = await import(url) as Record<string, (...args: unknown[]) => unknown>;
+        const module = (await import(url)) as Record<string, (...args: unknown[]) => unknown>;
 
         if (typeof module[hookFunctionName] !== 'function') {
-            console.warn(`callExtensionHook: Extension "${name}" hook "${hookName}" references "${hookFunctionName}" which is not an exported function`);
+            console.warn(
+                `callExtensionHook: Extension "${name}" hook "${hookName}" references "${hookFunctionName}" which is not an exported function`,
+            );
             return;
         }
 
@@ -456,17 +519,27 @@ async function callExtensionHook(name: string, hookName: string): Promise<void> 
         };
 
         const result = await Promise.race([
-            (hookCallResult instanceof Promise ? hookCallResult : Promise.resolve(hookCallResult)).then(() => HOOK_RESULT.OK),
+            (hookCallResult instanceof Promise
+                ? hookCallResult
+                : Promise.resolve(hookCallResult)
+            ).then(() => HOOK_RESULT.OK),
             delay(HOOK_TIMEOUT).then(() => HOOK_RESULT.TIMEOUT),
         ]);
 
         if (result === HOOK_RESULT.TIMEOUT) {
-            console.warn(`callExtensionHook: Hook "${hookName}" for extension "${name}" timed out after ${HOOK_TIMEOUT}ms`);
+            console.warn(
+                `callExtensionHook: Hook "${hookName}" for extension "${name}" timed out after ${HOOK_TIMEOUT}ms`,
+            );
         } else {
-            console.debug(`callExtensionHook: Hook "${hookName}" completed for extension "${name}"`);
+            console.debug(
+                `callExtensionHook: Hook "${hookName}" completed for extension "${name}"`,
+            );
         }
     } catch (error) {
-        console.error(`callExtensionHook: Error calling hook "${hookName}" for extension "${name}":`, error);
+        console.error(
+            `callExtensionHook: Error calling hook "${hookName}" for extension "${name}":`,
+            error,
+        );
     }
 }
 
@@ -477,7 +550,9 @@ async function callExtensionHook(name: string, hookName: string): Promise<void> 
  */
 export async function enableExtension(name: string, reload = true): Promise<void> {
     await callExtensionHook(name, 'enable');
-    extension_settings.disabledExtensions = (extension_settings.disabledExtensions as string[]).filter(x => x !== name);
+    extension_settings.disabledExtensions = (
+        extension_settings.disabledExtensions as string[]
+    ).filter((x) => x !== name);
     stateChanged = true;
     await saveSettings();
     if (reload) {
@@ -510,11 +585,16 @@ export async function disableExtension(name: string, reload = true): Promise<voi
  * @returns {{name: string, enabled: boolean}|null} Object with name and enabled properties, or null if not found
  */
 export function findExtension(name: string): { name: string; enabled: boolean } | null {
-    const internalExtensionName = extensionNames.find(extName => {
-        return equalsIgnoreCaseAndAccents(extName, name) || equalsIgnoreCaseAndAccents(extName, `third-party/${name}`);
+    const internalExtensionName = extensionNames.find((extName) => {
+        return (
+            equalsIgnoreCaseAndAccents(extName, name) ||
+            equalsIgnoreCaseAndAccents(extName, `third-party/${name}`)
+        );
     });
     if (!internalExtensionName) return null;
-    const isEnabled = !(extension_settings.disabledExtensions as string[]).includes(internalExtensionName);
+    const isEnabled = !(extension_settings.disabledExtensions as string[]).includes(
+        internalExtensionName,
+    );
     return { name: internalExtensionName, enabled: isEnabled };
 }
 
@@ -526,8 +606,10 @@ export function findExtension(name: string): { name: string; enabled: boolean } 
  * @returns {object|null} Cloned manifest object, or null if not found
  */
 export function getExtensionManifest(name: string): Record<string, unknown> | null {
-    const found = extensionNames.find(extName =>
-        equalsIgnoreCaseAndAccents(extName, name) || equalsIgnoreCaseAndAccents(extName, `third-party/${name}`),
+    const found = extensionNames.find(
+        (extName) =>
+            equalsIgnoreCaseAndAccents(extName, name) ||
+            equalsIgnoreCaseAndAccents(extName, `third-party/${name}`),
     );
     const manifest = found ? manifests[found] : null;
     return manifest ? structuredClone(manifest) : null;
@@ -544,18 +626,20 @@ async function getManifests(names: string[]): Promise<Record<string, Record<stri
 
     for (const name of names) {
         const promise = new Promise<void>((resolve, reject) => {
-            fetch(`/scripts/extensions/${name}/manifest.json`).then(async response => {
-                if (response.ok) {
-                    const json = await response.json();
-                    obj[name] = json;
-                    resolve();
-                } else {
+            fetch(`/scripts/extensions/${name}/manifest.json`)
+                .then(async (response) => {
+                    if (response.ok) {
+                        const json = await response.json();
+                        obj[name] = json;
+                        resolve();
+                    } else {
+                        reject();
+                    }
+                })
+                .catch((err) => {
                     reject();
-                }
-            }).catch(err => {
-                reject();
-                console.log('Could not load manifest.json for ' + name, err);
-            });
+                    console.log('Could not load manifest.json for ' + name, err);
+                });
         });
 
         promises.push(promise);
@@ -572,8 +656,10 @@ async function getManifests(names: string[]): Promise<Record<string, Record<stri
 async function activateExtensions(): Promise<void> {
     extensionLoadErrors.clear();
     const clientVersion = CLIENT_VERSION.split(':')[1]!;
-    const extensions = Object.entries(manifests).sort((a, b) => sortManifestsByOrder(a[1], b[1]));
-    const extensionNames = extensions.map(x => x[0]!);
+    const extensions = Object.entries(manifests).toSorted((a, b) =>
+        sortManifestsByOrder(a[1], b[1]),
+    );
+    const extensionNames = extensions.map((x) => x[0]!);
     const promises: Promise<unknown>[] = [];
 
     for (const entry of extensions) {
@@ -599,9 +685,13 @@ async function activateExtensions(): Promise<void> {
         if (extrasRequirements !== undefined) {
             if (Array.isArray(extrasRequirements)) {
                 meetsModuleRequirements = isSubsetOf(modules, extrasRequirements as string[]);
-                missingModules = (extrasRequirements as string[]).filter(req => !modules.includes(req));
+                missingModules = (extrasRequirements as string[]).filter(
+                    (req) => !modules.includes(req),
+                );
             } else {
-                console.warn(`Extension ${name}: manifest.json 'requires' field is not an array. Loading allowed, but any intended requirements were not verified to exist.`);
+                console.warn(
+                    `Extension ${name}: manifest.json 'requires' field is not an array. Loading allowed, but any intended requirements were not verified to exist.`,
+                );
             }
         }
 
@@ -613,69 +703,106 @@ async function activateExtensions(): Promise<void> {
             if (Array.isArray(extensionDependencies)) {
                 // Check if all dependencies exist
                 meetsExtensionDeps = isSubsetOf(extensionNames, extensionDependencies as string[]);
-                missingDependencies = (extensionDependencies as string[]).filter(dep => !extensionNames.includes(dep));
+                missingDependencies = (extensionDependencies as string[]).filter(
+                    (dep) => !extensionNames.includes(dep),
+                );
                 // Check for disabled dependencies
                 if (meetsExtensionDeps) {
-                    disabledDependencies = (extensionDependencies as string[]).filter(dep => (extension_settings.disabledExtensions as string[]).includes(dep));
+                    disabledDependencies = (extensionDependencies as string[]).filter((dep) =>
+                        (extension_settings.disabledExtensions as string[]).includes(dep),
+                    );
                     if (disabledDependencies.length > 0) {
                         // Fail if any dependencies are disabled
                         meetsExtensionDeps = false;
                     }
                 }
             } else {
-                console.warn(`Extension ${name}: manifest.json 'dependencies' field is not an array. Loading allowed, but any intended requirements were not verified to exist.`);
+                console.warn(
+                    `Extension ${name}: manifest.json 'dependencies' field is not an array. Loading allowed, but any intended requirements were not verified to exist.`,
+                );
             }
         }
 
         const isDisabled = (extension_settings.disabledExtensions as string[]).includes(name);
 
-        if (meetsModuleRequirements && meetsExtensionDeps && meetsClientMinimumVersion && !isDisabled) {
+        if (
+            meetsModuleRequirements &&
+            meetsExtensionDeps &&
+            meetsClientMinimumVersion &&
+            !isDisabled
+        ) {
             try {
                 console.debug('Activating extension', name);
                 const promise = addExtensionLocale(name, manifest).finally(() =>
-                    Promise.all([addExtensionScript(name, manifest), addExtensionStyle(name, manifest)]),
+                    Promise.all([
+                        addExtensionScript(name, manifest),
+                        addExtensionStyle(name, manifest),
+                    ]),
                 );
                 await promise
                     .then(() => {
                         activeExtensions.add(name);
                         return callExtensionHook(name, 'activate');
                     })
-                    .catch(err => {
+                    .catch((err) => {
                         console.log('Could not activate extension', name, err);
-                        extensionLoadErrors.add(t`Extension "${displayName}" failed to load: ${err}`);
+                        extensionLoadErrors.add(
+                            t`Extension "${displayName}" failed to load: ${err}`,
+                        );
                     });
                 promises.push(promise);
             } catch (error) {
                 console.error('Could not activate extension', name, error);
             }
         } else if (!meetsModuleRequirements && !isDisabled) {
-            console.warn(t`Extension "${name}" did not load. Missing required Extras module(s): "${missingModules.join(', ')}"`);
-            extensionLoadErrors.add(t`Extension "${displayName}" did not load. Missing required Extras module(s): "${missingModules.join(', ')}"`);
+            console.warn(
+                t`Extension "${name}" did not load. Missing required Extras module(s): "${missingModules.join(', ')}"`,
+            );
+            extensionLoadErrors.add(
+                t`Extension "${displayName}" did not load. Missing required Extras module(s): "${missingModules.join(', ')}"`,
+            );
         } else if (!meetsExtensionDeps && !isDisabled) {
             if (disabledDependencies.length > 0) {
-                console.warn(t`Extension "${name}" did not load. Required extensions exist but are disabled: "${disabledDependencies.join(', ')}". Enable them first, then reload.`);
-                extensionLoadErrors.add(t`Extension "${displayName}" did not load. Required extensions exist but are disabled: "${disabledDependencies.join(', ')}". Enable them first, then reload.`);
+                console.warn(
+                    t`Extension "${name}" did not load. Required extensions exist but are disabled: "${disabledDependencies.join(', ')}". Enable them first, then reload.`,
+                );
+                extensionLoadErrors.add(
+                    t`Extension "${displayName}" did not load. Required extensions exist but are disabled: "${disabledDependencies.join(', ')}". Enable them first, then reload.`,
+                );
             } else {
-                console.warn(t`Extension "${name}" did not load. Missing required extensions: "${missingDependencies.join(', ')}"`);
-                extensionLoadErrors.add(t`Extension "${displayName}" did not load. Missing required extensions: "${missingDependencies.join(', ')}"`);
+                console.warn(
+                    t`Extension "${name}" did not load. Missing required extensions: "${missingDependencies.join(', ')}"`,
+                );
+                extensionLoadErrors.add(
+                    t`Extension "${displayName}" did not load. Missing required extensions: "${missingDependencies.join(', ')}"`,
+                );
             }
         } else if (!meetsClientMinimumVersion && !isDisabled) {
-            console.warn(t`Extension "${name}" did not load. Requires ST client version ${minClientVersion}, but current version is ${clientVersion}.`);
-            extensionLoadErrors.add(t`Extension "${displayName}" did not load. Requires ST client version ${minClientVersion}, but current version is ${clientVersion}.`);
+            console.warn(
+                t`Extension "${name}" did not load. Requires ST client version ${minClientVersion}, but current version is ${clientVersion}.`,
+            );
+            extensionLoadErrors.add(
+                t`Extension "${displayName}" did not load. Requires ST client version ${minClientVersion}, but current version is ${clientVersion}.`,
+            );
         }
     }
 
     await Promise.allSettled(promises);
-    document.getElementById('extensions_details')?.classList.toggle('warning', extensionLoadErrors.size > 0);
+    document
+        .getElementById('extensions_details')
+        ?.classList.toggle('warning', extensionLoadErrors.size > 0);
 }
 
 /**
  *
  */
 async function connectClickHandler(): Promise<void> {
-    const baseUrl = String((document.getElementById('extensions_url') as HTMLInputElement)?.value ?? '');
+    const baseUrl = String(
+        (document.getElementById('extensions_url') as HTMLInputElement)?.value ?? '',
+    );
     extension_settings.apiUrl = baseUrl;
-    const testApiKey = (document.getElementById('extensions_api_key') as HTMLInputElement)?.value ?? '';
+    const testApiKey =
+        (document.getElementById('extensions_api_key') as HTMLInputElement)?.value ?? '';
     extension_settings.apiKey = String(testApiKey);
     saveSettingsDebounced();
     await connectToApi(baseUrl);
@@ -742,7 +869,9 @@ async function addExtensionsButtonAndMenu(): Promise<void> {
  *
  */
 function notifyUpdatesInputHandler(): void {
-    extension_settings.notifyUpdates = !!((document.getElementById('extensions_notify_updates') as HTMLInputElement)?.checked ?? false);
+    extension_settings.notifyUpdates = !!(
+        (document.getElementById('extensions_notify_updates') as HTMLInputElement)?.checked ?? false
+    );
     saveSettingsDebounced();
 
     if (extension_settings.notifyUpdates) {
@@ -767,7 +896,7 @@ async function connectToApi(baseUrl: string): Promise<void> {
         const getExtensionsResult = await doExtrasFetch(url);
 
         if (getExtensionsResult.ok) {
-            const data = await getExtensionsResult.json() as Record<string, unknown>;
+            const data = (await getExtensionsResult.json()) as Record<string, unknown>;
             modules = data.modules as string[];
             await activateExtensions();
             await eventSource.emit(event_types.EXTRAS_CONNECTED, modules);
@@ -882,18 +1011,18 @@ function addExtensionLocale(name: string, manifest: Record<string, unknown>): Pr
     }
 
     return fetch(`/scripts/extensions/${name}/${localeFile}`)
-        .then(async response => {
+        .then(async (response) => {
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
 
-            const data = await response.json() as Record<string, unknown>;
+            const data = (await response.json()) as Record<string, unknown>;
 
             if (data && typeof data === 'object') {
                 addLocaleData(currentLocale, data);
             }
         })
-        .catch(err => {
+        .catch((err) => {
             console.log('Could not load extension locale data for ' + name, err);
         });
 }
@@ -908,7 +1037,14 @@ function addExtensionLocale(name: string, manifest: Record<string, unknown>): Pr
  * @param {string} checkboxClass - The class for the checkbox HTML element.
  * @returns {HTMLElement} - The element that represents the extension.
  */
-function generateExtensionElement(name: string, manifest: Record<string, unknown>, isActive: boolean, isDisabled: boolean, isExternal: boolean, checkboxClass: string): HTMLElement {
+function generateExtensionElement(
+    name: string,
+    manifest: Record<string, unknown>,
+    isActive: boolean,
+    isDisabled: boolean,
+    isExternal: boolean,
+    checkboxClass: string,
+): HTMLElement {
     /**
      *
      */
@@ -978,7 +1114,11 @@ function generateExtensionElement(name: string, manifest: Record<string, unknown
     textBlock.classList.add('flexGrow', 'extension_text_block');
 
     const statusSpan = document.createElement('span');
-    statusSpan.className = isActive ? 'extension_enabled' : isDisabled ? 'extension_disabled' : 'extension_missing';
+    statusSpan.className = isActive
+        ? 'extension_enabled'
+        : isDisabled
+          ? 'extension_disabled'
+          : 'extension_missing';
 
     const nameSpan = document.createElement('span');
     nameSpan.classList.add('extension_name');
@@ -995,7 +1135,7 @@ function generateExtensionElement(name: string, manifest: Record<string, unknown
 
     if (isActive && Array.isArray(manifest.optional)) {
         const optional = new Set(manifest.optional as string[]);
-        modules.forEach(x => optional.delete(x));
+        modules.forEach((x) => optional.delete(x));
         if (optional.size > 0) {
             const modulesDiv = document.createElement('div');
             modulesDiv.classList.add('extension_modules');
@@ -1008,7 +1148,7 @@ function generateExtensionElement(name: string, manifest: Record<string, unknown
     } else if (!isDisabled) {
         // Neither active nor disabled
         const requirements = new Set(manifest.requires as string[]);
-        modules.forEach(x => requirements.delete(x));
+        modules.forEach((x) => requirements.delete(x));
         if (requirements.size > 0) {
             const modulesDiv = document.createElement('div');
             modulesDiv.classList.add('extension_modules');
@@ -1043,7 +1183,12 @@ function generateExtensionElement(name: string, manifest: Record<string, unknown
      * @param {string} iconClasses Classes for the icon
      * @returns {HTMLButtonElement} The created button element
      */
-    function makeActionButton(cls: string, dataName: string, title: string, iconClasses: string): HTMLButtonElement {
+    function makeActionButton(
+        cls: string,
+        dataName: string,
+        title: string,
+        iconClasses: string,
+    ): HTMLButtonElement {
         const btn = document.createElement('button');
         btn.classList.add(cls, 'menu_button');
         btn.dataset.name = dataName;
@@ -1055,22 +1200,45 @@ function generateExtensionElement(name: string, manifest: Record<string, unknown
     }
 
     if (isExternal) {
-        const updateBtn = makeActionButton('btn_update', externalId, t`Update available`, 'fa-solid fa-download fa-fw');
+        const updateBtn = makeActionButton(
+            'btn_update',
+            externalId,
+            t`Update available`,
+            'fa-solid fa-download fa-fw',
+        );
         updateBtn.classList.add('displayNone');
         actionsDiv.appendChild(updateBtn);
     }
 
     if (isExternal && hasExtensionHook(externalId, 'clean')) {
-        actionsDiv.appendChild(makeActionButton('btn_clean', externalId, t`Clean extension data`, 'fa-fw fa-solid fa-broom'));
+        actionsDiv.appendChild(
+            makeActionButton(
+                'btn_clean',
+                externalId,
+                t`Clean extension data`,
+                'fa-fw fa-solid fa-broom',
+            ),
+        );
     }
 
     if (isExternal && isUserAdmin) {
-        actionsDiv.appendChild(makeActionButton('btn_branch', externalId, t`Switch branch`, 'fa-solid fa-code-branch fa-fw'));
-        actionsDiv.appendChild(makeActionButton('btn_move', externalId, t`Move`, 'fa-solid fa-folder-tree fa-fw'));
+        actionsDiv.appendChild(
+            makeActionButton(
+                'btn_branch',
+                externalId,
+                t`Switch branch`,
+                'fa-solid fa-code-branch fa-fw',
+            ),
+        );
+        actionsDiv.appendChild(
+            makeActionButton('btn_move', externalId, t`Move`, 'fa-solid fa-folder-tree fa-fw'),
+        );
     }
 
     if (isExternal) {
-        actionsDiv.appendChild(makeActionButton('btn_delete', externalId, t`Delete`, 'fa-fw fa-solid fa-trash-can'));
+        actionsDiv.appendChild(
+            makeActionButton('btn_delete', externalId, t`Delete`, 'fa-fw fa-solid fa-trash-can'),
+        );
     }
 
     block.appendChild(actionsDiv);
@@ -1083,7 +1251,10 @@ function generateExtensionElement(name: string, manifest: Record<string, unknown
  * @param {Array} extension - An array where the first element is the extension name and the second element is the extension manifest.
  * @returns {{isExternal: boolean, extensionElement: HTMLElement}} - An object with 'isExternal' indicating whether the extension is external, and 'extensionElement' for the extension's HTML element.
  */
-function getExtensionData(extension: [string, Record<string, unknown>]): { isExternal: boolean; extensionElement: HTMLElement } {
+function getExtensionData(extension: [string, Record<string, unknown>]): {
+    isExternal: boolean;
+    extensionElement: HTMLElement;
+} {
     const name = extension[0]!;
     const manifest = extension[1]!;
     const isActive = activeExtensions.has(name);
@@ -1091,11 +1262,17 @@ function getExtensionData(extension: [string, Record<string, unknown>]): { isExt
     const isExternal = name.startsWith('third-party');
 
     const checkboxClass = isDisabled ? 'checkbox_disabled' : '';
-    const extensionElement = generateExtensionElement(name, manifest, isActive, isDisabled, isExternal, checkboxClass);
+    const extensionElement = generateExtensionElement(
+        name,
+        manifest,
+        isActive,
+        isDisabled,
+        isExternal,
+        checkboxClass,
+    );
 
     return { isExternal, extensionElement };
 }
-
 
 /**
  * Gets the module information to be displayed.
@@ -1150,7 +1327,9 @@ async function showExtensionsDetails(): Promise<void> {
     try {
         // If we are updating an extension, the "old" popup is still active. We should close that.
         let initialScrollTop = 0;
-        const oldPopup = (Popup.util.popups as Array<Record<string, unknown>>).find(popup => (popup.content as HTMLElement).querySelector('.extensions_info'));
+        const oldPopup = (Popup.util.popups as Array<Record<string, unknown>>).find((popup) =>
+            (popup.content as HTMLElement).querySelector('.extensions_info'),
+        );
         if (oldPopup) {
             initialScrollTop = (oldPopup.content as HTMLElement).scrollTop;
             await (oldPopup.completeCancelled as () => void)();
@@ -1166,7 +1345,13 @@ async function showExtensionsDetails(): Promise<void> {
         const externalContainer = document.createElement('div');
         externalContainer.classList.add('marginBot10');
         const externalHeader = document.createElement('div');
-        externalHeader.classList.add('flex-container', 'alignitemscenter', 'spaceBetween', 'flexnowrap', 'marginBot10');
+        externalHeader.classList.add(
+            'flex-container',
+            'alignitemscenter',
+            'spaceBetween',
+            'flexnowrap',
+            'marginBot10',
+        );
         const externalHeading = document.createElement('h3');
         externalHeading.classList.add('margin0');
         externalHeading.textContent = t`Installed Extensions:`;
@@ -1176,7 +1361,13 @@ async function showExtensionsDetails(): Promise<void> {
         externalContainer.appendChild(externalHeader);
 
         const loadingEl = document.createElement('div');
-        loadingEl.classList.add('flex-container', 'alignItemsCenter', 'justifyCenter', 'marginTop10', 'marginBot5');
+        loadingEl.classList.add(
+            'flex-container',
+            'alignItemsCenter',
+            'justifyCenter',
+            'marginTop10',
+            'marginBot5',
+        );
         const loadingIcon = document.createElement('i');
         loadingIcon.classList.add('fa-solid', 'fa-spinner', 'fa-spin');
         const loadingSpan = document.createElement('span');
@@ -1188,10 +1379,16 @@ async function showExtensionsDetails(): Promise<void> {
         const sortOrderKey = 'extensions_sortByName';
         const sortByName = accountStorage.getItem(sortOrderKey) === 'true';
         const sortFn = sortByName ? sortManifestsByName : sortManifestsByOrder;
-        const extensions = Object.entries(manifests).sort((a, b) => sortFn(a[1], b[1])).map(getExtensionData);
-        let extensionsToToggle: Array<{ name: string; toggleHandler?: (...args: unknown[]) => unknown; enable?: boolean }> = [];
+        const extensions = Object.entries(manifests)
+            .toSorted((a, b) => sortFn(a[1], b[1]))
+            .map(getExtensionData);
+        let extensionsToToggle: Array<{
+            name: string;
+            toggleHandler?: (...args: unknown[]) => unknown;
+            enable?: boolean;
+        }> = [];
 
-        extensions.forEach(value => {
+        extensions.forEach((value) => {
             const { isExternal, extensionElement } = value;
             const container = isExternal ? externalContainer : defaultContainer;
             container.appendChild(extensionElement);
@@ -1231,7 +1428,13 @@ async function showExtensionsDetails(): Promise<void> {
             toggleAllExtensionsButton.append(toggleAllLabel, toggleAllIcon);
 
             const restoreBulkToggledExtensionsButton = document.createElement('div');
-            restoreBulkToggledExtensionsButton.classList.add('menu_button', 'menu_button_icon', 'fa-solid', 'fa-arrow-right-rotate', 'displayNone');
+            restoreBulkToggledExtensionsButton.classList.add(
+                'menu_button',
+                'menu_button_icon',
+                'fa-solid',
+                'fa-arrow-right-rotate',
+                'displayNone',
+            );
             restoreBulkToggledExtensionsButton.title = t`Restore toggled extensions.\n\nIt does not restore extensions toggled individually.`;
 
             toggleAllExtensionsButton.addEventListener('click', () => {
@@ -1240,10 +1443,18 @@ async function showExtensionsDetails(): Promise<void> {
                 for (const extension of extensionsToToggle) {
                     const { name } = extension;
 
-                    const toggleInput = externalContainer.querySelector(`.extension_block[data-name="${getNameSelector(name)}"] .extension_toggle input`);
-                    toggleInput?.addEventListener('click', () => {
-                        extensionsToToggle = extensionsToToggle.filter(ext => ext.name !== name);
-                    }, { once: true });
+                    const toggleInput = externalContainer.querySelector(
+                        `.extension_block[data-name="${getNameSelector(name)}"] .extension_toggle input`,
+                    );
+                    toggleInput?.addEventListener(
+                        'click',
+                        () => {
+                            extensionsToToggle = extensionsToToggle.filter(
+                                (ext) => ext.name !== name,
+                            );
+                        },
+                        { once: true },
+                    );
                 }
 
                 const restoreButtonHandler = extensionsToToggle.length > 0 ? 'remove' : 'add';
@@ -1254,9 +1465,13 @@ async function showExtensionsDetails(): Promise<void> {
             restoreBulkToggledExtensionsButton.addEventListener('click', () => {
                 for (const extension of extensionsToToggle) {
                     const { name } = extension;
-                    const isDisabled = (extension_settings.disabledExtensions as string[]).includes(name);
+                    const isDisabled = (extension_settings.disabledExtensions as string[]).includes(
+                        name,
+                    );
 
-                    const toggleInput = externalContainer.querySelector(`.extension_block[data-name="${getNameSelector(name)}"] .extension_toggle input`) as HTMLInputElement | null;
+                    const toggleInput = externalContainer.querySelector(
+                        `.extension_block[data-name="${getNameSelector(name)}"] .extension_toggle input`,
+                    ) as HTMLInputElement | null;
                     if (toggleInput) {
                         toggleInput.checked = !isDisabled;
                         toggleInput.classList.toggle('toggle_enable', isDisabled);
@@ -1274,7 +1489,9 @@ async function showExtensionsDetails(): Promise<void> {
 
             const sortOrderButton = document.createElement('button');
             sortOrderButton.classList.add('menu_button', 'menu_button_icon');
-            sortOrderButton.textContent = sortByName ? t`Sort: Display Name` : t`Sort: Loading Order`;
+            sortOrderButton.textContent = sortByName
+                ? t`Sort: Display Name`
+                : t`Sort: Loading Order`;
             sortOrderButton.addEventListener('click', async () => {
                 abortController.abort();
                 accountStorage.setItem(sortOrderKey, sortByName ? 'false' : 'true');
@@ -1301,7 +1518,9 @@ async function showExtensionsDetails(): Promise<void> {
 
                 for (const extension of extensionsToToggle) {
                     const { name, toggleHandler, enable } = extension;
-                    const isDisabled = (extension_settings.disabledExtensions as string[]).includes(name);
+                    const isDisabled = (extension_settings.disabledExtensions as string[]).includes(
+                        name,
+                    );
 
                     try {
                         if (isDisabled && !enable) continue;
@@ -1312,13 +1531,18 @@ async function showExtensionsDetails(): Promise<void> {
                         if (toggleHandler) await toggleHandler(name, false);
                     } catch (error) {
                         console.error(`Could not toggle extension ${name}:`, error);
-                        notyf.error(t`Could not toggle extension ${name}. See console for details.`);
+                        notyf.error(
+                            t`Could not toggle extension ${name}. See console for details.`,
+                        );
                     }
                 }
 
                 if (stateChanged) {
                     waitingForSave = true;
-                    const toast = notyf.info(t`The page will be reloaded shortly...`, t`Extensions state changed`);
+                    const toast = notyf.info(
+                        t`The page will be reloaded shortly...`,
+                        t`Extensions state changed`,
+                    );
                     await saveSettings();
                     notyf.dismiss(toast!);
                     waitingForSave = false;
@@ -1373,7 +1597,11 @@ async function onUpdateClick(this: HTMLElement): Promise<void> {
  * @param {boolean} quiet If true, don't show a success message
  * @param {number?} timeout Timeout in milliseconds to wait for the update to complete. If null, no timeout is set.
  */
-async function updateExtension(extensionName: string, quiet: boolean, timeout: number | null = null): Promise<void> {
+async function updateExtension(
+    extensionName: string,
+    quiet: boolean,
+    timeout: number | null = null,
+): Promise<void> {
     try {
         const signal = timeout ? AbortSignal.timeout(timeout) : undefined;
         const response = await fetch('/api/extensions/update', {
@@ -1393,7 +1621,7 @@ async function updateExtension(extensionName: string, quiet: boolean, timeout: n
             return;
         }
 
-        const data = await response.json() as Record<string, unknown>;
+        const data = (await response.json()) as Record<string, unknown>;
 
         if (!quiet) {
             void showExtensionsDetails();
@@ -1404,9 +1632,14 @@ async function updateExtension(extensionName: string, quiet: boolean, timeout: n
                 notyf.success('Extension is already up to date');
             }
         } else {
-            const fullExtensionName = extensionName.startsWith('third-party') ? extensionName : `third-party${extensionName}`;
+            const fullExtensionName = extensionName.startsWith('third-party')
+                ? extensionName
+                : `third-party${extensionName}`;
             await callExtensionHook(fullExtensionName, 'update');
-            notyf.success(t`Extension ${extensionName} updated to ${data.shortCommitHash as string}`, t`Reload the page to apply updates`);
+            notyf.success(
+                t`Extension ${extensionName} updated to ${data.shortCommitHash as string}`,
+                t`Reload the page to apply updates`,
+            );
         }
     } catch (error) {
         console.error('Extension update error:', error);
@@ -1433,13 +1666,27 @@ async function onDeleteClick(this: HTMLElement): Promise<void> {
     const hasCleanHook = hasExtensionHook(extensionName, 'clean');
 
     /** @type {import('./popup.js').CustomPopupInput[]} */
-    const customInputs = hasCleanHook ? [{ id: 'extension_delete_cleanup', label: t`Also clean up extension data`, defaultState: false }] : null;
+    const customInputs = hasCleanHook
+        ? [
+              {
+                  id: 'extension_delete_cleanup',
+                  label: t`Also clean up extension data`,
+                  defaultState: false,
+              },
+          ]
+        : null;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const popup = new Popup(t`Are you sure you want to delete ${escapeHtml(extensionName)}?`, POPUP_TYPE.CONFIRM, '', { customInputs: customInputs as null | undefined });
+    const popup = new Popup(
+        t`Are you sure you want to delete ${escapeHtml(extensionName)}?`,
+        POPUP_TYPE.CONFIRM,
+        '',
+        { customInputs: customInputs as null | undefined },
+    );
     const confirmation = await popup.show();
     if (confirmation === POPUP_RESULT.AFFIRMATIVE) {
-        const shouldClean = hasCleanHook && Boolean(popup.inputResults?.get('extension_delete_cleanup'));
+        const shouldClean =
+            hasCleanHook && Boolean(popup.inputResults?.get('extension_delete_cleanup'));
         await deleteExtension(extensionName, shouldClean);
     }
 }
@@ -1452,7 +1699,10 @@ async function onCleanClick(this: HTMLElement): Promise<void> {
     const extensionName = this.dataset.name;
     if (!extensionName) return;
 
-    const confirmation = await Popup.show.confirm(t`Clean extension data`, t`Are you sure you want to clean up data for ${escapeHtml(extensionName)}? This action cannot be undone.`);
+    const confirmation = await Popup.show.confirm(
+        t`Clean extension data`,
+        t`Are you sure you want to clean up data for ${escapeHtml(extensionName)}? This action cannot be undone.`,
+    );
     if (!confirmation) {
         return;
     }
@@ -1466,7 +1716,9 @@ async function onCleanClick(this: HTMLElement): Promise<void> {
  * @returns {Promise<void>}
  */
 async function cleanExtension(extensionName: string): Promise<void> {
-    const fullExtensionName = extensionName.startsWith('third-party') ? extensionName : `third-party${extensionName}`;
+    const fullExtensionName = extensionName.startsWith('third-party')
+        ? extensionName
+        : `third-party${extensionName}`;
     await callExtensionHook(fullExtensionName, 'clean');
 
     // Clean might have updated settings, which could race with the page reload, so we'll force save here
@@ -1491,7 +1743,12 @@ async function onBranchClick(this: HTMLElement): Promise<void> {
 
     let newBranch = '';
 
-    const branches = await getExtensionBranches(extensionName, isGlobal) as Array<{ name: string; commit: string; current: boolean; label: string }>;
+    const branches = (await getExtensionBranches(extensionName, isGlobal)) as Array<{
+        name: string;
+        commit: string;
+        current: boolean;
+        label: string;
+    }>;
     const selectElement = document.createElement('select');
     selectElement.classList.add('text_pole', 'wide100p');
     selectElement.addEventListener('change', function (this: HTMLSelectElement) {
@@ -1535,9 +1792,10 @@ async function onMoveClick(this: HTMLElement): Promise<void> {
     const destination = source === 'global' ? 'local' : 'global';
 
     const confirmationHeader = t`Move extension`;
-    const confirmationText = source == 'global'
-        ? t`Are you sure you want to move ${escapeHtml(extensionName)} to your local extensions? This will make it available only for you.`
-        : t`Are you sure you want to move ${escapeHtml(extensionName)} to the global extensions? This will make it available for all users.`;
+    const confirmationText =
+        source == 'global'
+            ? t`Are you sure you want to move ${escapeHtml(extensionName)} to your local extensions? This will make it available only for you.`
+            : t`Are you sure you want to move ${escapeHtml(extensionName)} to the global extensions? This will make it available for all users.`;
 
     const confirmation = await Popup.show.confirm(confirmationHeader, confirmationText);
 
@@ -1556,7 +1814,11 @@ async function onMoveClick(this: HTMLElement): Promise<void> {
  * @param {string} destination Destination type
  * @returns {Promise<void>}
  */
-async function moveExtension(extensionName: string, source: string, destination: string): Promise<void> {
+async function moveExtension(
+    extensionName: string,
+    source: string,
+    destination: string,
+): Promise<void> {
     try {
         const result = await fetch('/api/extensions/move', {
             method: 'POST',
@@ -1589,7 +1851,9 @@ async function moveExtension(extensionName: string, source: string, destination:
  * @param {boolean} [shouldClean] Whether to also run the 'clean' hook before deleting
  */
 export async function deleteExtension(extensionName: string, shouldClean = false): Promise<void> {
-    const fullExtensionName = extensionName.startsWith('third-party') ? extensionName : `third-party${extensionName}`;
+    const fullExtensionName = extensionName.startsWith('third-party')
+        ? extensionName
+        : `third-party${extensionName}`;
 
     if (shouldClean) {
         await callExtensionHook(fullExtensionName, 'clean');
@@ -1625,7 +1889,10 @@ export async function deleteExtension(extensionName: string, shouldClean = false
  * This object includes the currentBranchName, currentCommitHash, isUpToDate, and remoteUrl.
  * @throws {error} - If there is an error during the fetch operation, it logs the error to the console.
  */
-async function getExtensionVersion(extensionName: string, abortSignal?: AbortSignal): Promise<Record<string, unknown> | undefined> {
+async function getExtensionVersion(
+    extensionName: string,
+    abortSignal?: AbortSignal,
+): Promise<Record<string, unknown> | undefined> {
     try {
         const response = await fetch('/api/extensions/version', {
             method: 'POST',
@@ -1637,7 +1904,7 @@ async function getExtensionVersion(extensionName: string, abortSignal?: AbortSig
             signal: abortSignal,
         });
 
-        const data = await response.json() as Record<string, unknown>;
+        const data = (await response.json()) as Record<string, unknown>;
         return data;
     } catch (error) {
         if (error instanceof Error && error.name === 'AbortError') {
@@ -1658,7 +1925,10 @@ async function getExtensionVersion(extensionName: string, abortSignal?: AbortSig
  * @property {boolean} current Whether this branch is the current one
  * @property {string} label The commit label of the branch
  */
-async function getExtensionBranches(extensionName: string, isGlobal: boolean): Promise<Array<{ name: string; commit: string; current: boolean; label: string }>> {
+async function getExtensionBranches(
+    extensionName: string,
+    isGlobal: boolean,
+): Promise<Array<{ name: string; commit: string; current: boolean; label: string }>> {
     try {
         const response = await fetch('/api/extensions/branches', {
             method: 'POST',
@@ -1672,11 +1942,21 @@ async function getExtensionBranches(extensionName: string, isGlobal: boolean): P
         if (!response.ok) {
             const text = await response.text();
             notyf.error(text || response.statusText, t`Extension branches fetch failed`);
-            console.error('Extension branches fetch failed', response.status, response.statusText, text);
+            console.error(
+                'Extension branches fetch failed',
+                response.status,
+                response.statusText,
+                text,
+            );
             return [];
         }
 
-        return await response.json() as Array<{ name: string; commit: string; current: boolean; label: string }>;
+        return (await response.json()) as Array<{
+            name: string;
+            commit: string;
+            current: boolean;
+            label: string;
+        }>;
     } catch (error) {
         console.error('Error:', error);
         return [];
@@ -1690,7 +1970,11 @@ async function getExtensionBranches(extensionName: string, isGlobal: boolean): P
  * @param {string} branch Branch name to switch to
  * @returns {Promise<void>}
  */
-async function switchExtensionBranch(extensionName: string, isGlobal: boolean, branch: string): Promise<void> {
+async function switchExtensionBranch(
+    extensionName: string,
+    isGlobal: boolean,
+    branch: string,
+): Promise<void> {
     try {
         const response = await fetch('/api/extensions/switch', {
             method: 'POST',
@@ -1705,11 +1989,19 @@ async function switchExtensionBranch(extensionName: string, isGlobal: boolean, b
         if (!response.ok) {
             const text = await response.text();
             notyf.error(text || response.statusText, t`Extension branch switch failed`);
-            console.error('Extension branch switch failed', response.status, response.statusText, text);
+            console.error(
+                'Extension branch switch failed',
+                response.status,
+                response.statusText,
+                text,
+            );
             return;
         }
 
-        notyf.success(t`Extension ${extensionName} switched to ${branch}`, t`Reload the page to apply updates`);
+        notyf.success(
+            t`Extension ${extensionName} switched to ${branch}`,
+            t`Reload the page to apply updates`,
+        );
         await loadExtensionSettings({}, false, false);
         void showExtensionsDetails();
     } catch (error) {
@@ -1724,7 +2016,11 @@ async function switchExtensionBranch(extensionName: string, isGlobal: boolean, b
  * @param {string} [branch] Optional branch to install, if not provided the default branch will be used
  * @returns {Promise<boolean>} True if the extension was installed successfully, false otherwise
  */
-export async function installExtension(url: string, global: boolean, branch = ''): Promise<boolean> {
+export async function installExtension(
+    url: string,
+    global: boolean,
+    branch = '',
+): Promise<boolean> {
     try {
         const parsedUrl = new URL(url);
         if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
@@ -1742,23 +2038,37 @@ export async function installExtension(url: string, global: boolean, branch = ''
     if (!isOfficialExtension(url)) {
         const extensionInstallationWarningKey = 'extensionInstallationWarningShown';
         if (accountStorage.getItem(extensionInstallationWarningKey)) {
-            console.debug('Bypassed URL check for third-party extension (account preference).', url);
+            console.debug(
+                'Bypassed URL check for third-party extension (account preference).',
+                url,
+            );
         } else {
             let dismissWarning = false;
             const confirmation = await Popup.show.confirm(
                 t`Install a third-party extension?`,
                 await renderTemplateAsync('thirdPartyExtensionWarning'),
                 {
-                    customInputs: [{ id: 'dontAskAgain', type: 'checkbox', label: t`Don't show this warning again`, defaultState: false }],
+                    customInputs: [
+                        {
+                            id: 'dontAskAgain',
+                            type: 'checkbox',
+                            label: t`Don't show this warning again`,
+                            defaultState: false,
+                        },
+                    ],
                     onClose: (popup: Record<string, unknown>) => {
                         if (!popup.result) {
                             return;
                         }
-                        dismissWarning = Boolean((popup.inputResults as Map<string, unknown>)?.get('dontAskAgain') ?? false);
+                        dismissWarning = Boolean(
+                            (popup.inputResults as Map<string, unknown>)?.get('dontAskAgain') ??
+                            false,
+                        );
                     },
                     okButton: t`Yes, install it`,
                     cancelButton: t`No, cancel`,
-                });
+                },
+            );
             if (!confirmation) {
                 return false;
             }
@@ -1784,14 +2094,21 @@ export async function installExtension(url: string, global: boolean, branch = ''
 
     if (!request.ok) {
         const text = await request.text();
-        notyf.warning(text || request.statusText, t`Extension installation failed`, { timeOut: 5000 });
+        notyf.warning(text || request.statusText, t`Extension installation failed`, {
+            timeOut: 5000,
+        });
         console.error('Extension installation failed', request.status, request.statusText, text);
         return false;
     }
 
-    const response = await request.json() as Record<string, unknown>;
-    notyf.success(t`Extension '${response.display_name as string}' has been installed successfully!`, t`Extension installation successful`);
-    console.debug(`Extension "${response.display_name}" has been installed successfully at ${response.extensionPath}`);
+    const response = (await request.json()) as Record<string, unknown>;
+    notyf.success(
+        t`Extension '${response.display_name as string}' has been installed successfully!`,
+        t`Extension installation successful`,
+    );
+    console.debug(
+        `Extension "${response.display_name}" has been installed successfully at ${response.extensionPath}`,
+    );
     await loadExtensionSettings({}, false, false);
     await eventSource.emit(event_types.EXTENSION_SETTINGS_LOADED, response);
 
@@ -1809,7 +2126,11 @@ export async function installExtension(url: string, global: boolean, branch = ''
  * @param {boolean} versionChanged Is this a version change?
  * @param {boolean} enableAutoUpdate Enable auto-update
  */
-export async function loadExtensionSettings(settings: Record<string, unknown>, versionChanged: boolean, enableAutoUpdate: boolean): Promise<void> {
+export async function loadExtensionSettings(
+    settings: Record<string, unknown>,
+    versionChanged: boolean,
+    enableAutoUpdate: boolean,
+): Promise<void> {
     if (settings.extension_settings) {
         Object.assign(extension_settings, settings.extension_settings);
     }
@@ -1820,15 +2141,19 @@ export async function loadExtensionSettings(settings: Record<string, unknown>, v
     if (elKey) elKey.value = extension_settings.apiKey as string;
     const elAuto = document.getElementById('extensions_autoconnect') as HTMLInputElement | null;
     if (elAuto) elAuto.checked = extension_settings.autoConnect as boolean;
-    const elNotify = document.getElementById('extensions_notify_updates') as HTMLInputElement | null;
+    const elNotify = document.getElementById(
+        'extensions_notify_updates',
+    ) as HTMLInputElement | null;
     if (elNotify) elNotify.checked = extension_settings.notifyUpdates as boolean;
 
     // Activate offline extensions
     await eventSource.emit(event_types.EXTENSIONS_FIRST_LOAD);
     const extensions = await discoverExtensions();
     extensionNames = extensions.map((x: { name: string }) => x.name);
-    extensionTypes = Object.fromEntries(extensions.map((x: { name: string; type: string }) => [x.name, x.type]));
-    manifests = await getManifests(extensionNames) as Record<string, Record<string, unknown>>;
+    extensionTypes = Object.fromEntries(
+        extensions.map((x: { name: string; type: string }) => [x.name, x.type]),
+    );
+    manifests = (await getManifests(extensionNames)) as Record<string, Record<string, unknown>>;
 
     if (versionChanged && enableAutoUpdate) {
         await autoUpdateExtensions(false);
@@ -1887,9 +2212,14 @@ function processVersionCheckQueue(): void {
  * @param {AbortSignal} abortSignal Signal to abort the operation
  * @returns {Promise<any[]>}
  */
-async function checkForUpdatesManual(sortFn: (a: Record<string, unknown>, b: Record<string, unknown>) => number, abortSignal: AbortSignal): Promise<PromiseSettledResult<unknown>[]> {
+async function checkForUpdatesManual(
+    sortFn: (a: Record<string, unknown>, b: Record<string, unknown>) => number,
+    abortSignal: AbortSignal,
+): Promise<PromiseSettledResult<unknown>[]> {
     const promises: Promise<unknown>[] = [];
-    for (const id of Object.keys(manifests).filter(x => x.startsWith('third-party')).sort((a, b) => sortFn(manifests[a]!, manifests[b]!))) {
+    for (const id of Object.keys(manifests)
+        .filter((x) => x.startsWith('third-party'))
+        .toSorted((a, b) => sortFn(manifests[a]!, manifests[b]!))) {
         const externalId = id.replace('third-party', '');
         const promise = enqueueVersionCheck(async () => {
             try {
@@ -1898,7 +2228,9 @@ async function checkForUpdatesManual(sortFn: (a: Record<string, unknown>, b: Rec
                     return;
                 }
                 const selector = getNameSelector(externalId, { prefix: '' });
-                const extensionBlock = document.querySelector(`.extension_block[data-name="${selector}"]`);
+                const extensionBlock = document.querySelector(
+                    `.extension_block[data-name="${selector}"]`,
+                );
                 if (extensionBlock && data) {
                     if (data.isUpToDate === false) {
                         const buttonElement = extensionBlock.querySelector('.btn_update');
@@ -1914,7 +2246,9 @@ async function checkForUpdatesManual(sortFn: (a: Record<string, unknown>, b: Rec
                     const commitHash = data.currentCommitHash as string;
                     const origin = data.remoteUrl as string;
 
-                    const originLink = extensionBlock.querySelector('a') as HTMLAnchorElement | null;
+                    const originLink = extensionBlock.querySelector(
+                        'a',
+                    ) as HTMLAnchorElement | null;
                     if (originLink) {
                         try {
                             const url = new URL(origin);
@@ -1980,12 +2314,16 @@ async function checkForExtensionUpdates(force: boolean): Promise<void> {
     for (const [id, manifest] of Object.entries(manifests)) {
         const isDisabled = (extension_settings.disabledExtensions as string[]).includes(id);
         if (isDisabled) {
-            console.debug(`Skipping extension: ${manifest.display_name as string} (${id}) for non-admin user`);
+            console.debug(
+                `Skipping extension: ${manifest.display_name as string} (${id}) for non-admin user`,
+            );
             continue;
         }
         const isGlobal = getExtensionType(id) === 'global';
         if (isGlobal && !isCurrentUserAdmin) {
-            console.debug(`Skipping global extension: ${manifest.display_name as string} (${id}) for non-admin user`);
+            console.debug(
+                `Skipping global extension: ${manifest.display_name as string} (${id}) for non-admin user`,
+            );
             continue;
         }
 
@@ -2010,7 +2348,10 @@ async function checkForExtensionUpdates(force: boolean): Promise<void> {
     await Promise.allSettled(promises);
 
     if (updatesAvailable.length > 0) {
-        notyf.info(`${updatesAvailable.map(x => `• ${x}`).join('\n')}`, t`Extension updates available`);
+        notyf.info(
+            `${updatesAvailable.map((x) => `• ${x}`).join('\n')}`,
+            t`Extension updates available`,
+        );
     }
 }
 
@@ -2020,27 +2361,37 @@ async function checkForExtensionUpdates(force: boolean): Promise<void> {
  * @returns {Promise<void>}
  */
 async function autoUpdateExtensions(forceAll: boolean): Promise<void> {
-    if (!Object.values(manifests).some(x => x.auto_update)) {
+    if (!Object.values(manifests).some((x) => x.auto_update)) {
         return;
     }
 
-    const banner = notyf.info(t`Auto-updating extensions. This may take several minutes.`, t`Please wait...`, { timeOut: 10000, extendedTimeOut: 10000 });
+    const banner = notyf.info(
+        t`Auto-updating extensions. This may take several minutes.`,
+        t`Please wait...`,
+        { timeOut: 10000, extendedTimeOut: 10000 },
+    );
     const isCurrentUserAdmin = isAdmin();
     const promises: Promise<void>[] = [];
     const autoUpdateTimeout = 60 * 1000;
     for (const [id, manifest] of Object.entries(manifests)) {
         const isDisabled = (extension_settings.disabledExtensions as string[]).includes(id);
         if (!forceAll && isDisabled) {
-            console.debug(`Skipping extension: ${manifest.display_name as string} (${id}) for non-admin user`);
+            console.debug(
+                `Skipping extension: ${manifest.display_name as string} (${id}) for non-admin user`,
+            );
             continue;
         }
         const isGlobal = getExtensionType(id) === 'global';
         if (isGlobal && !isCurrentUserAdmin) {
-            console.debug(`Skipping global extension: ${manifest.display_name as string} (${id}) for non-admin user`);
+            console.debug(
+                `Skipping global extension: ${manifest.display_name as string} (${id}) for non-admin user`,
+            );
             continue;
         }
         if ((forceAll || manifest.auto_update) && id.startsWith('third-party')) {
-            console.debug(`Auto-updating 3rd-party extension: ${manifest.display_name as string} (${id})`);
+            console.debug(
+                `Auto-updating 3rd-party extension: ${manifest.display_name as string} (${id})`,
+            );
             promises.push(updateExtension(id.replace('third-party', ''), true, autoUpdateTimeout));
         }
     }
@@ -2055,7 +2406,11 @@ async function autoUpdateExtensions(forceAll: boolean): Promise<void> {
  * @param {string} type Generation type
  * @returns {Promise<boolean>} True if generation should be aborted
  */
-export async function runGenerationInterceptors(chat: unknown[], contextSize: number, type: string): Promise<boolean> {
+export async function runGenerationInterceptors(
+    chat: unknown[],
+    contextSize: number,
+    type: string,
+): Promise<boolean> {
     let aborted = false;
     let exitImmediately = false;
 
@@ -2064,13 +2419,20 @@ export async function runGenerationInterceptors(chat: unknown[], contextSize: nu
         exitImmediately = immediately;
     };
 
-    for (const manifest of Object.values(manifests).filter(x => x.generate_interceptor).sort((a, b) => sortManifestsByOrder(a, b))) {
+    for (const manifest of Object.values(manifests)
+        .filter((x) => x.generate_interceptor)
+        .toSorted((a, b) => sortManifestsByOrder(a, b))) {
         const interceptorKey = manifest.generate_interceptor as string;
         if (typeof (globalThis as Record<string, unknown>)[interceptorKey] === 'function') {
             try {
-                await (globalThis as unknown as Record<string, (...args: unknown[]) => unknown>)[interceptorKey]?.(chat, contextSize, abort, type);
+                await (globalThis as unknown as Record<string, (...args: unknown[]) => unknown>)[
+                    interceptorKey
+                ]?.(chat, contextSize, abort, type);
             } catch (e) {
-                console.error(`Failed running interceptor for ${manifest.display_name as string}`, e);
+                console.error(
+                    `Failed running interceptor for ${manifest.display_name as string}`,
+                    e,
+                );
             }
         }
 
@@ -2101,7 +2463,11 @@ export const UNSET_VALUE = '__@@UNSET@@__';
  * @param {any} value Field value
  * @returns {Promise<void>} When the field is written
  */
-export async function writeExtensionField(characterId: number | string, key: string, value: unknown): Promise<void> {
+export async function writeExtensionField(
+    characterId: number | string,
+    key: string,
+    value: unknown,
+): Promise<void> {
     const context = getContext();
     const character = context.characters[characterId as number];
     if (!character) {
@@ -2129,7 +2495,9 @@ export async function writeExtensionField(characterId: number | string, key: str
 
         // Make sure the data doesn't get lost when saving the current character
         if (Number(characterId) === Number(context.characterId)) {
-            const charJsonEl = document.getElementById('character_json_data') as HTMLInputElement | null;
+            const charJsonEl = document.getElementById(
+                'character_json_data',
+            ) as HTMLInputElement | null;
             if (charJsonEl) charJsonEl.value = character.json_data;
         }
     }
@@ -2183,9 +2551,12 @@ export async function writeExtensionField(characterId: number | string, key: str
  *   automatically skip characters where the field is missing/`undefined`.
  * @returns {Promise<BulkExtensionFieldResult>} Summary of the bulk operation
  */
-export async function writeExtensionFieldBulk(avatars: string[] | null, key: string, value: unknown, {
-    filterPath
-}: { filterPath?: string } = {}): Promise<{ updated: string[]; skipped: string[]; failed: string[] }> {
+export async function writeExtensionFieldBulk(
+    avatars: string[] | null,
+    key: string,
+    value: unknown,
+    { filterPath }: { filterPath?: string } = {},
+): Promise<{ updated: string[]; skipped: string[]; failed: string[] }> {
     const context = getContext();
     const extensionPath = `data.extensions.${key}`;
     const isUnset = value === UNSET_VALUE;
@@ -2220,7 +2591,11 @@ export async function writeExtensionFieldBulk(avatars: string[] | null, key: str
     }
 
     /** @type {BulkExtensionFieldResult} */
-    const result = await mergeResponse.json() as { updated: string[]; skipped: string[]; failed: string[] };
+    const result = (await mergeResponse.json()) as {
+        updated: string[];
+        skipped: string[];
+        failed: string[];
+    };
 
     // Sync in-memory character objects for successfully updated characters
     const updatedSet = new Set(result.updated);
@@ -2249,7 +2624,9 @@ export async function writeExtensionFieldBulk(avatars: string[] | null, key: str
     if (context.characterId !== undefined) {
         const activeChar = context.characters[context.characterId as number];
         if (activeChar && updatedSet.has(activeChar.avatar) && activeChar.json_data) {
-            const charJsonEl = document.getElementById('character_json_data') as HTMLInputElement | null;
+            const charJsonEl = document.getElementById(
+                'character_json_data',
+            ) as HTMLInputElement | null;
             if (charJsonEl) charJsonEl.value = activeChar.json_data;
         }
     }
@@ -2272,14 +2649,15 @@ export async function openThirdPartyExtensionMenu(suggestUrl = ''): Promise<void
     const okButton = isCurrentUserAdmin ? t`Install just for me` : t`Install`;
 
     let global = false;
-    const installForAllButton: { text: string; appendAtEnd: boolean; action: () => Promise<void> } = {
-        text: t`Install for all users`,
-        appendAtEnd: false,
-        action: async () => {
-            global = true;
-            await popup.complete(POPUP_RESULT.AFFIRMATIVE);
-        },
-    };
+    const installForAllButton: { text: string; appendAtEnd: boolean; action: () => Promise<void> } =
+        {
+            text: t`Install for all users`,
+            appendAtEnd: false,
+            action: async () => {
+                global = true;
+                await popup.complete(POPUP_RESULT.AFFIRMATIVE);
+            },
+        };
     /** @type {import('./popup.js').CustomPopupInput} */
     const branchNameInput: { id: string; label: string; type: string; tooltip: string } = {
         id: 'extension_branch_name',
@@ -2291,7 +2669,11 @@ export async function openThirdPartyExtensionMenu(suggestUrl = ''): Promise<void
     const customButtons = isCurrentUserAdmin ? [installForAllButton] : [];
     const customInputs = [branchNameInput];
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const popup = new Popup(html, POPUP_TYPE.INPUT, suggestUrl ?? '', { okButton, customButtons, customInputs } as Record<string, unknown>);
+    const popup = new Popup(html, POPUP_TYPE.INPUT, suggestUrl ?? '', {
+        okButton,
+        customButtons,
+        customInputs,
+    } as Record<string, unknown>);
     const input = await popup.show();
 
     if (!input) {
@@ -2323,7 +2705,7 @@ export function getAuthorFromUrl(url: string): { name: string; url: string } {
 
     try {
         const parsedUrl = new URL(url);
-        const pathSegments = parsedUrl.pathname.split('/').filter(s => s.length > 0);
+        const pathSegments = parsedUrl.pathname.split('/').filter((s) => s.length > 0);
 
         // TODO: Handle non-GitHub URLs if needed
         if (parsedUrl.host === 'github.com' && pathSegments.length >= 2) {
@@ -2346,9 +2728,13 @@ export async function initExtensions(): Promise<void> {
     if (menuButton) menuButton.style.display = 'flex';
 
     document.getElementById('extensions_connect')?.addEventListener('click', connectClickHandler);
-    (document.getElementById('extensions_autoconnect') as HTMLInputElement | null)?.addEventListener('input', autoConnectInputHandler);
+    (
+        document.getElementById('extensions_autoconnect') as HTMLInputElement | null
+    )?.addEventListener('input', autoConnectInputHandler);
     document.getElementById('extensions_details')?.addEventListener('click', showExtensionsDetails);
-    (document.getElementById('extensions_notify_updates') as HTMLInputElement | null)?.addEventListener('input', notifyUpdatesInputHandler);
+    (
+        document.getElementById('extensions_notify_updates') as HTMLInputElement | null
+    )?.addEventListener('input', notifyUpdatesInputHandler);
     document.addEventListener('click', function (this: void, event: Event) {
         if (!(event.target instanceof Element)) return;
         const el = event.target.closest('.extensions_info .extension_block .toggle_disable');
@@ -2389,5 +2775,7 @@ export async function initExtensions(): Promise<void> {
      * Handles the click event for the third-party extension import button.
      * @listens #third_party_extension_button#click - The click event of the '#third_party_extension_button' element.
      */
-    document.getElementById('third_party_extension_button')?.addEventListener('click', () => openThirdPartyExtensionMenu());
+    document
+        .getElementById('third_party_extension_button')
+        ?.addEventListener('click', () => openThirdPartyExtensionMenu());
 }

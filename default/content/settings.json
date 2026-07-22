@@ -62,14 +62,7 @@
             "min_p",
             "mirostat"
         ],
-        "samplers": [
-            "top_k",
-            "tfs_z",
-            "typical_p",
-            "top_p",
-            "min_p",
-            "temperature"
-        ],
+        "samplers": ["top_k", "tfs_z", "typical_p", "top_p", "min_p", "temperature"],
         "mirostat_mode": 0,
         "mirostat_tau": 5,
         "mirostat_eta": 0.1,
@@ -394,9 +387,7 @@
         }
     ],
     "tag_map": {
-        "default_Seraphina.png": [
-            "1345561466591"
-        ]
+        "default_Seraphina.png": ["1345561466591"]
     },
     "nai_settings": {
         "temperature": 1.5,
@@ -416,14 +407,7 @@
         "streaming_novel": true,
         "preamble": "[ Style: chat, complex, sensory, visceral ]",
         "banned_tokens": "",
-        "order": [
-            1,
-            5,
-            0,
-            2,
-            3,
-            4
-        ],
+        "order": [1, 5, 0, 2, 3, 4],
         "logit_bias": []
     },
     "kai_settings": {
@@ -438,15 +422,7 @@
         "tfs": 1,
         "rep_pen_slope": 0,
         "streaming_kobold": false,
-        "sampler_order": [
-            6,
-            0,
-            1,
-            2,
-            3,
-            4,
-            5
-        ],
+        "sampler_order": [6, 0, 1, 2, 3, 4, 5],
         "mirostat": 0,
         "mirostat_tau": 5,
         "mirostat_eta": 0.1,

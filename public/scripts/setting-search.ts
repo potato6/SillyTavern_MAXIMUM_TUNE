@@ -50,12 +50,16 @@ function highlightMatchingElements(element, searchString) {
  */
 function removeHighlighting() {
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    document.querySelector('.highlighted').classList.remove('highlighted');  // Remove CSS class from previously highlighted elements
+    document.querySelector('.highlighted').classList.remove('highlighted'); // Remove CSS class from previously highlighted elements
 }
 
 /**
  *
  */
 export function initSettingsSearch() {
-    const _ssEl = document.getElementById('settingsSearch'); if (_ssEl) { _ssEl.addEventListener('input', searchSettings); _ssEl.addEventListener('change', searchSettings); }
+    const _ssEl = document.getElementById('settingsSearch');
+    if (_ssEl) {
+        _ssEl.addEventListener('input', searchSettings);
+        _ssEl.addEventListener('change', searchSettings);
+    }
 }

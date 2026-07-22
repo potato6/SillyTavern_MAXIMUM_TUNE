@@ -5,7 +5,9 @@ export class SlashCommandExecutionError extends Error {
     /**@type {string} */ commandText;
 
     /**@type {string} */ text;
-    get index() { return this.start; }
+    get index() {
+        return this.start;
+    }
 
     get line() {
         return this.text.slice(0, this.index).replace(/[^\n]/g, '').length;
@@ -32,7 +34,7 @@ export class SlashCommandExecutionError extends Error {
             offset++;
             end++;
         }
-        const hint  = [];
+        const hint = [];
         const lines = this.text.slice(start + 1, end - 1).split('\n');
         let lineNum = this.line - lines.length + 1;
         let tabOffset = 0;
@@ -46,7 +48,6 @@ export class SlashCommandExecutionError extends Error {
         hint.push(`${' '.repeat(this.index - lineStart + lineOffset + 1 + tabOffset)}^^^^^`);
         return hint.join('\n');
     }
-
 
     // @ts-expect-error TS(7006) FIXME: Parameter 'cause' implicitly has an 'any' type.
     constructor(cause, message, commandName, start, end, commandText, fullText) {

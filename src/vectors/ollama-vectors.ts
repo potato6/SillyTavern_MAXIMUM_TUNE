@@ -14,7 +14,13 @@ type OllamaEmbeddingResponse = {
  * @param {import('../users.js').UserDirectoryList} directories - The directories object for the user
  * @returns {Promise<number[][]>} - The array of vectors for the texts
  */
-export async function getBatchVector(texts: string[], apiUrl: string, model: string, keep: boolean, directories: import('../users.js').UserDirectoryList): Promise<number[][]> {
+export async function getBatchVector(
+    texts: string[],
+    apiUrl: string,
+    model: string,
+    keep: boolean,
+    directories: import('../users.js').UserDirectoryList,
+): Promise<number[][]> {
     const url = new URL(apiUrl);
     url.pathname = '/api/embed';
 
@@ -37,10 +43,12 @@ export async function getBatchVector(texts: string[], apiUrl: string, model: str
 
     if (!response.ok) {
         const responseText = await response.text();
-        throw new Error(`Ollama: Failed to get batch vectors: ${response.statusText} ${responseText}`);
+        throw new Error(
+            `Ollama: Failed to get batch vectors: ${response.statusText} ${responseText}`,
+        );
     }
 
-    const data = await response.json() as OllamaEmbeddingResponse;
+    const data = (await response.json()) as OllamaEmbeddingResponse;
 
     if (!Array.isArray(data?.embeddings)) {
         throw new Error('API response was not an array');
@@ -58,7 +66,13 @@ export async function getBatchVector(texts: string[], apiUrl: string, model: str
  * @param {import('../users.js').UserDirectoryList} directories - The directories object for the user
  * @returns {Promise<number[]>} - The vector for the text
  */
-export async function getVector(text: string, apiUrl: string, model: string, keep: boolean, directories: import('../users.js').UserDirectoryList): Promise<number[]> {
+export async function getVector(
+    text: string,
+    apiUrl: string,
+    model: string,
+    keep: boolean,
+    directories: import('../users.js').UserDirectoryList,
+): Promise<number[]> {
     const vectors = await getBatchVector([text], apiUrl, model, keep, directories);
     return vectors[0]!;
 }

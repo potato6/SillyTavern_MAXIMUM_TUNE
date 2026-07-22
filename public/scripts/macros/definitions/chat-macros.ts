@@ -69,7 +69,8 @@ export function registerChatMacros() {
 
     MacroRegistry.registerMacro('allChatRange', {
         category: MacroCategory.CHAT,
-        description: 'Range of all message IDs in the chat (e.g. "0-10"). Empty string if the chat is empty.',
+        description:
+            'Range of all message IDs in the chat (e.g. "0-10"). Empty string if the chat is empty.',
         returns: 'Range string from 0 to last message ID, or empty string.',
         handler: () => {
             if (!Array.isArray(chat) || chat.length === 0) {
@@ -86,7 +87,10 @@ export function registerChatMacros() {
  * @param root0.exclude_swipe_in_propress
  * @param root0.filter
  */
-function getLastMessageId({ exclude_swipe_in_propress = true, filter = null as ((m: ChatMessage) => boolean) | null } = {}) {
+function getLastMessageId({
+    exclude_swipe_in_propress = true,
+    filter = null as ((m: ChatMessage) => boolean) | null,
+} = {}) {
     if (!Array.isArray(chat) || chat.length === 0) {
         return null;
     }
@@ -95,7 +99,11 @@ function getLastMessageId({ exclude_swipe_in_propress = true, filter = null as (
         const message = chat[i];
 
         // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-        if (exclude_swipe_in_propress && message.swipes && message.swipe_id >= message.swipes.length) {
+        if (
+            exclude_swipe_in_propress &&
+            message.swipes &&
+            message.swipe_id >= message.swipes.length
+        ) {
             continue;
         }
 

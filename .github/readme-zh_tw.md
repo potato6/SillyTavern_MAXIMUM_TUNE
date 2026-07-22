@@ -7,7 +7,7 @@
 
 <div align="center">
 
-[English](readme.md)  | [German](readme-de_de.md) | [中文](readme-zh_cn.md) | 繁體中文 | [日本語](readme-ja_jp.md) | [Русский](readme-ru_ru.md) | [한국어](readme-ko_kr.md)
+[English](readme.md) | [German](readme-de_de.md) | [中文](readme-zh_cn.md) | 繁體中文 | [日本語](readme-ja_jp.md) | [Русский](readme-ru_ru.md) | [한국어](readme-ko_kr.md)
 
 [![GitHub 星標](https://img.shields.io/github/stars/SillyTavern/SillyTavern.svg)](https://github.com/SillyTavern/SillyTavern/stargazers)
 [![GitHub 分支](https://img.shields.io/github/forks/SillyTavern/SillyTavern.svg)](https://github.com/SillyTavern/SillyTavern/forks)
@@ -43,17 +43,17 @@ SillyTavern 的硬體需求相當低。任何能夠運行 NodeJS 20 或更高版
 ### 歡迎加入我們的 Discord 伺服器
 
 | [![][discord-shield-badge]][discord-link] | [加入我們的 Disocrd 伺服器](https://discord.gg/sillytavern) 以獲得技術支援、分享您喜愛的角色與提示詞。 |
-| :---------------------------------------- | :----------------------------------------------------------------------------------------------------------------- |
+| :---------------------------------------- | :----------------------------------------------------------------------------------------------------- |
 
 或直接聯繫開發者：
 
-* Discord: cohee, rossascends, wolfsblvt
-* Reddit: [/u/RossAscends](https://www.reddit.com/user/RossAscends/), [/u/sillylossy](https://www.reddit.com/user/sillylossy/), [u/Wolfsblvt](https://www.reddit.com/user/Wolfsblvt/)
-* [提交 GitHub 問題](https://github.com/SillyTavern/SillyTavern/issues)
+- Discord: cohee, rossascends, wolfsblvt
+- Reddit: [/u/RossAscends](https://www.reddit.com/user/RossAscends/), [/u/sillylossy](https://www.reddit.com/user/sillylossy/), [u/Wolfsblvt](https://www.reddit.com/user/Wolfsblvt/)
+- [提交 GitHub 問題](https://github.com/SillyTavern/SillyTavern/issues)
 
 ### 我喜歡這個專案，我該如何貢獻呢？
 
-1. **提交拉取要求（Pull Request）**：想了解如何貢獻，請參閱 [CONTRIBUTING.md](../CONTRIBUTING.md)。 
+1. **提交拉取要求（Pull Request）**：想了解如何貢獻，請參閱 [CONTRIBUTING.md](../CONTRIBUTING.md)。
 2. **提供功能建議與問題報告**：使用本專案所提供的模板提交建議或問題報告。
 3. **仔細閱讀此 README 文件及相關文檔**：請避免提出重複問題或建議。
 
@@ -66,29 +66,30 @@ SillyTavern 的硬體需求相當低。任何能夠運行 NodeJS 20 或更高版
 
 有關詳細的安裝說明，請訪問我們的文檔：
 
-* **[Windows 安裝指南](https://docs.sillytavern.app/installation/windows/)**
-* **[MacOS/Linux 安裝指南](https://docs.sillytavern.app/installation/linuxmacos/)**
-* **[Android (Termux) 安裝指南](https://docs.sillytavern.app/installation/android-(termux)/)**
-* **[Docker 安裝指南](https://docs.sillytavern.app/installation/docker/)**
+- **[Windows 安裝指南](https://docs.sillytavern.app/installation/windows/)**
+- **[MacOS/Linux 安裝指南](https://docs.sillytavern.app/installation/linuxmacos/)**
+- **[Android (Termux) 安裝指南](<https://docs.sillytavern.app/installation/android-(termux)/>)**
+- **[Docker 安裝指南](https://docs.sillytavern.app/installation/docker/)**
 
 ## 授權與致謝
 
 **本程式（SillyTavern）的發布是基於其可能對使用者有所幫助的期許，但不提供任何形式的保證；包括但不限於對可銷售性（marketability）或特定用途適用性的隱含保證。如需更多詳情，請參閱 GNU Affero 通用公共許可證。**
 
-* [TavernAI](https://github.com/TavernAI/TavernAI) 1.2.8 由 Humi 提供：MIT 許可
-* 經授權使用部分來自 CncAnon 的 TavernAITurbo 模組
-* 視覺小說模式（Visual Novel Mode）的靈感，來源於 PepperTaco 的貢獻（<https://github.com/peppertaco/Tavern/>）
-* Noto Sans 字體由 Google 提供（OFL 許可）
-* 主題圖示由 Font Awesome <https://fontawesome.com> 提供（圖示：CC BY 4.0，字體：SIL OFL 1.1，程式碼：MIT 許可）
-* 預設資源來源於 @OtisAlejandro（包含角色 Seraphina 與知識書）與 @kallmeflocc（SillyTavern 官方 Discord 伺服器成員突破 10K 的慶祝背景）
-* Docker 安裝指南由 [@mrguymiah](https://github.com/mrguymiah) 和 [@Bronya-Rand](https://github.com/Bronya-Rand) 編寫
-* kokoro-js 函式庫由 [@hexgrad](https://github.com/hexgrad) 提供 (Apache-2.0 許可)
+- [TavernAI](https://github.com/TavernAI/TavernAI) 1.2.8 由 Humi 提供：MIT 許可
+- 經授權使用部分來自 CncAnon 的 TavernAITurbo 模組
+- 視覺小說模式（Visual Novel Mode）的靈感，來源於 PepperTaco 的貢獻（<https://github.com/peppertaco/Tavern/>）
+- Noto Sans 字體由 Google 提供（OFL 許可）
+- 主題圖示由 Font Awesome <https://fontawesome.com> 提供（圖示：CC BY 4.0，字體：SIL OFL 1.1，程式碼：MIT 許可）
+- 預設資源來源於 @OtisAlejandro（包含角色 Seraphina 與知識書）與 @kallmeflocc（SillyTavern 官方 Discord 伺服器成員突破 10K 的慶祝背景）
+- Docker 安裝指南由 [@mrguymiah](https://github.com/mrguymiah) 和 [@Bronya-Rand](https://github.com/Bronya-Rand) 編寫
+- kokoro-js 函式庫由 [@hexgrad](https://github.com/hexgrad) 提供 (Apache-2.0 許可)
 
 ## 主要貢獻者
 
 [![Contributors](https://contrib.rocks/image?repo=SillyTavern/SillyTavern)](https://github.com/SillyTavern/SillyTavern/graphs/contributors)
 
 <!-- LINK GROUP -->
+
 [cover]: https://github.com/user-attachments/assets/01a6ae9a-16aa-45f2-8bff-32b5dc587e44
 [discord-link]: https://discord.gg/sillytavern
 [discord-shield-badge]: https://img.shields.io/discord/1100685673633153084?color=5865F2&label=discord&labelColor=black&logo=discord&logoColor=white&style=for-the-badge

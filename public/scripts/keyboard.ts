@@ -43,8 +43,8 @@ export const DISABLED_CONTROL_CLASS = 'disabled';
  * An observer that will check if any new interactables or scroll reset containers are added to the body
  * @type {MutationObserver}
  */
-const observer = new MutationObserver(mutations => {
-    mutations.forEach(mutation => {
+const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
         if (mutation.type === 'childList') {
             mutation.addedNodes.forEach(handleNodeChange);
         }
@@ -89,13 +89,16 @@ function handleNodeChange(node) {
  * @param {boolean} [options.notFocusableByDefault] - Whether interactables of this class should not be focusable by default
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'interactableSelector' implicitly has an... Remove this comment to see the full error message
-export function registerInteractableType(interactableSelector, { disabledByDefault = false, notFocusableByDefault = false } = {}) {
+export function registerInteractableType(
+    interactableSelector,
+    { disabledByDefault = false, notFocusableByDefault = false } = {},
+) {
     interactableSelectors.push(interactableSelector);
 
     const interactables = document.querySelectorAll(interactableSelector);
 
     if (disabledByDefault || notFocusableByDefault) {
-        interactables.forEach(interactable => {
+        interactables.forEach((interactable) => {
             if (disabledByDefault) interactable.classList.add(DISABLED_CONTROL_CLASS);
             if (notFocusableByDefault) interactable.classList.add(NOT_FOCUSABLE_CONTROL_CLASS);
         });
@@ -112,7 +115,7 @@ export function registerInteractableType(interactableSelector, { disabledByDefau
 // @ts-expect-error TS(7006) FIXME: Parameter 'control' implicitly has an 'any' type.
 export function isKeyboardInteractable(control) {
     // Check if this control matches any of the selectors
-    return interactableSelectors.some(selector => control.matches(selector));
+    return interactableSelectors.some((selector) => control.matches(selector));
 }
 
 /**
@@ -122,7 +125,7 @@ export function isKeyboardInteractable(control) {
  */
 // @ts-expect-error TS(7019) FIXME: Rest parameter 'interactables' implicitly has an '... Remove this comment to see the full error message
 export function makeKeyboardInteractable(...interactables) {
-    interactables.forEach(interactable => {
+    interactables.forEach((interactable) => {
         // If this control doesn't have any of the classes, lets say the caller knows this and wants this to be a custom-enabled keyboard control.
         if (!isKeyboardInteractable(interactable)) {
             interactable.classList.add(CUSTOM_INTERACTABLE_CONTROL_CLASS);
@@ -141,7 +144,10 @@ export function makeKeyboardInteractable(...interactables) {
         // @ts-expect-error TS(7006) FIXME: Parameter 'el' implicitly has an 'any' type.
         const hasDisabledOrNotFocusableAncestor = (el) => {
             while (el) {
-                if (el.classList.contains(NOT_FOCUSABLE_CONTROL_CLASS) || el.classList.contains(DISABLED_CONTROL_CLASS)) {
+                if (
+                    el.classList.contains(NOT_FOCUSABLE_CONTROL_CLASS) ||
+                    el.classList.contains(DISABLED_CONTROL_CLASS)
+                ) {
                     return true;
                 }
                 el = el.parentElement;
@@ -156,7 +162,10 @@ export function makeKeyboardInteractable(...interactables) {
                 interactable.setAttribute('tabindex', tabIndex);
             }
         } else {
-            interactable.setAttribute('data-original-tabindex', interactable.getAttribute('tabindex'));
+            interactable.setAttribute(
+                'data-original-tabindex',
+                interactable.getAttribute('tabindex'),
+            );
             interactable.removeAttribute('tabindex');
         }
     });
@@ -180,7 +189,11 @@ function initializeInteractables(element = document) {
 function getAllInteractables(element) {
     // Query each selector individually and combine all to a big array to return
     // @ts-expect-error TS(2769) FIXME: No overload matches this call.
-    return [].concat(...interactableSelectors.map(selector => Array.from(element.querySelectorAll(`${selector}`))));
+    return [].concat(
+        ...interactableSelectors.map((selector) =>
+            Array.from(element.querySelectorAll(`${selector}`)),
+        ),
+    );
 }
 
 /**
@@ -207,7 +220,7 @@ const applyScrollResetBehavior = (container) => {
  */
 function initializeScrollResetBehaviors(element = document) {
     const scrollResetContainers = element.querySelectorAll('.scroll-reset-container');
-    scrollResetContainers.forEach(container => applyScrollResetBehavior(container));
+    scrollResetContainers.forEach((container) => applyScrollResetBehavior(container));
 }
 
 /**
@@ -217,12 +230,10 @@ function initializeScrollResetBehaviors(element = document) {
 // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
 function handleGlobalKeyDown(event) {
     if (event.key === 'Enter') {
-        if (!(event.target instanceof HTMLElement))
-            return;
+        if (!(event.target instanceof HTMLElement)) return;
 
         // Only count enter on this interactable if no modifier key is pressed
-        if (event.altKey || event.ctrlKey || event.shiftKey)
-            return;
+        if (event.altKey || event.ctrlKey || event.shiftKey) return;
 
         // Traverse up the DOM tree to find the actual interactable element
         let target = event.target;
@@ -232,7 +243,10 @@ function handleGlobalKeyDown(event) {
 
         // Trigger click if a valid interactable is found and it's not disabled
         if (target && !target.classList.contains(DISABLED_CONTROL_CLASS)) {
-            console.debug('Triggering click on keyboard-focused interactable control via Enter', target);
+            console.debug(
+                'Triggering click on keyboard-focused interactable control via Enter',
+                target,
+            );
             target.click();
         }
     }

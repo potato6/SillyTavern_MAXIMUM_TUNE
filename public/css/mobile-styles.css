@@ -1,6 +1,5 @@
 /*will apply to anything 1000px or less. this catches ipads, horizontal phones, and vertical phones)*/
 @media screen and (max-width: 1000px) {
-
     #UI-Theme-Block,
     #UI-Customization,
     #power-user-options-block,
@@ -151,12 +150,12 @@
         min-width: 6em;
     }
 
-    #add_background_button_top>span,
-    #auto_background>span,
-    #bg_add_folder_button>span,
-    #bg_selection_mode_button>span:not(#bg_group_select_count),
-    #bg_group_add_to_folder_button>span,
-    #bg_folder_remove_selected_button>span {
+    #add_background_button_top > span,
+    #auto_background > span,
+    #bg_add_folder_button > span,
+    #bg_selection_mode_button > span:not(#bg_group_select_count),
+    #bg_group_add_to_folder_button > span,
+    #bg_folder_remove_selected_button > span {
         display: none;
     }
 
@@ -299,9 +298,7 @@
         width: 100vw !important;
         width: 100dvw !important;
         background-position: center;
-
     }
-
 
     #sheld,
     #character_popup,
@@ -351,7 +348,7 @@
         align-items: start;
         align-content: start;
         overflow-y: auto;
-        overflow-x: hidden
+        overflow-x: hidden;
     }
 
     .mes_buttons {
@@ -361,7 +358,6 @@
     .drag-grabber,
     .pull-tab {
         display: none !important;
-
     }
 
     #groupCurrentMemberPopoutButton,
@@ -374,7 +370,7 @@
     #floatingPrompt,
     #cfgConfig,
     #logprobsViewer,
-    #movingDivs>div {
+    #movingDivs > div {
         /* 100vh are fallback units for browsers that don't support dvh */
         height: calc(100vh - 45px);
         height: calc(100dvh - 45px);
@@ -409,7 +405,7 @@
     #floatingPrompt,
     #cfgConfig,
     #logprobsViewer,
-    #movingDivs>div {
+    #movingDivs > div {
         height: min-content;
     }
 
@@ -418,7 +414,7 @@
     }
 
     #result_info {
-        font-size: calc(var(--mainFontSize) - .1rem);
+        font-size: calc(var(--mainFontSize) - 0.1rem);
     }
 
     /*     .avatar_div {
@@ -535,7 +531,6 @@
 
 /*portrait mode phones*/
 @media screen and (max-width: 450px) {
-
     body:not(.waifuMode) .zoomed_avatar {
         min-width: 100px;
         min-height: 100px;
@@ -569,7 +564,6 @@
         top: unset;
         bottom: unset;
     }
-
 
     #leftSendForm,
     #rightSendForm {
@@ -611,7 +605,6 @@
         padding-right: max(env(safe-area-inset-right), 2px);
         padding-left: max(env(safe-area-inset-left), 2px);
         padding-bottom: max(env(safe-area-inset-bottom), 15px);
-
     }
 
     #character_popup,
@@ -636,7 +629,6 @@
         max-height: calc(100vh - 70px);
         max-height: calc(100dvh - 70px);
         max-width: calc(100dvw - 5px);
-
     }
 
     #character_popup,

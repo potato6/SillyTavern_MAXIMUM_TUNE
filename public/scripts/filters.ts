@@ -1,4 +1,11 @@
-import { fuzzySearchCharacters, fuzzySearchGroups, fuzzySearchPersonas, fuzzySearchTags, fuzzySearchWorldInfo, power_user } from './power-user.js';
+import {
+    fuzzySearchCharacters,
+    fuzzySearchGroups,
+    fuzzySearchPersonas,
+    fuzzySearchTags,
+    fuzzySearchWorldInfo,
+    power_user,
+} from './power-user.js';
 import { tag_map } from './tags.js';
 import { includesIgnoreCaseAndAccents } from './utils.js';
 
@@ -156,7 +163,7 @@ export class FilterHelper {
             this.folderFilter.bind(this),
             this.tagFilter.bind(this),
             this.wiSearchFilter.bind(this),
-            this.personaSearchFilter.bind(this)
+            this.personaSearchFilter.bind(this),
         ];
     }
 
@@ -175,7 +182,8 @@ export class FilterHelper {
         if (fd[FILTER_TYPES.FOLDER] !== false) return true;
 
         const tags = fd[FILTER_TYPES.TAG] as { selected: unknown[]; excluded: unknown[] };
-        if ((tags.selected as unknown[]).length > 0 || (tags.excluded as unknown[]).length > 0) return true;
+        if ((tags.selected as unknown[]).length > 0 || (tags.excluded as unknown[]).length > 0)
+            return true;
 
         return false;
     }
@@ -189,7 +197,11 @@ export class FilterHelper {
         const term = this.filterData[FILTER_TYPES.WORLD_INFO_SEARCH] as string | undefined;
         if (!term) return data;
 
-        const fuzzySearchResults: unknown = fuzzySearchWorldInfo(data, term, this.fuzzySearchCaches);
+        const fuzzySearchResults: unknown = fuzzySearchWorldInfo(
+            data,
+            term,
+            this.fuzzySearchCaches,
+        );
         const resultsArr = fuzzySearchResults as { item?: { uid: unknown }; score: number }[];
 
         const typeScores = this.scoreCache.get(FILTER_TYPES.WORLD_INFO_SEARCH) || new Map();
@@ -275,7 +287,10 @@ export class FilterHelper {
      */
     tagFilter(data: unknown[]) {
         const TAG_LOGIC_AND = true; // switch to false to use OR logic for combining tags
-        const tagsData = this.filterData[FILTER_TYPES.TAG] as { selected: string[]; excluded: string[] };
+        const tagsData = this.filterData[FILTER_TYPES.TAG] as {
+            selected: string[];
+            excluded: string[];
+        };
         const selected = tagsData.selected;
         const excluded = tagsData.excluded;
 
@@ -333,7 +348,10 @@ export class FilterHelper {
      */
     favFilter(data: unknown[]) {
         const state = this.filterData[FILTER_TYPES.FAV];
-        if (!isFilterState(state, FILTER_STATES.SELECTED) && !isFilterState(state, FILTER_STATES.EXCLUDED)) {
+        if (
+            !isFilterState(state, FILTER_STATES.SELECTED) &&
+            !isFilterState(state, FILTER_STATES.EXCLUDED)
+        ) {
             return data;
         }
 
@@ -362,7 +380,10 @@ export class FilterHelper {
      */
     groupFilter(data: unknown[]) {
         const state = this.filterData[FILTER_TYPES.GROUP];
-        if (!isFilterState(state, FILTER_STATES.SELECTED) && !isFilterState(state, FILTER_STATES.EXCLUDED)) {
+        if (
+            !isFilterState(state, FILTER_STATES.SELECTED) &&
+            !isFilterState(state, FILTER_STATES.EXCLUDED)
+        ) {
             return data;
         }
 
@@ -390,7 +411,10 @@ export class FilterHelper {
      */
     folderFilter(data: unknown[]) {
         const state = this.filterData[FILTER_TYPES.FOLDER];
-        if (!isFilterState(state, FILTER_STATES.SELECTED) && !isFilterState(state, FILTER_STATES.EXCLUDED)) {
+        if (
+            !isFilterState(state, FILTER_STATES.SELECTED) &&
+            !isFilterState(state, FILTER_STATES.EXCLUDED)
+        ) {
             return data;
         }
 
@@ -420,13 +444,31 @@ export class FilterHelper {
         let typeScores: Map<string | number, number> | undefined;
 
         if (useFuzzy) {
-            const fuzzySearchCharactersResults: unknown = fuzzySearchCharacters(searchValue, this.fuzzySearchCaches);
-            const fuzzySearchGroupsResults: unknown = fuzzySearchGroups(searchValue, this.fuzzySearchCaches);
-            const fuzzySearchTagsResult: unknown = fuzzySearchTags(searchValue, this.fuzzySearchCaches);
+            const fuzzySearchCharactersResults: unknown = fuzzySearchCharacters(
+                searchValue,
+                this.fuzzySearchCaches,
+            );
+            const fuzzySearchGroupsResults: unknown = fuzzySearchGroups(
+                searchValue,
+                this.fuzzySearchCaches,
+            );
+            const fuzzySearchTagsResult: unknown = fuzzySearchTags(
+                searchValue,
+                this.fuzzySearchCaches,
+            );
 
-            const charResults = fuzzySearchCharactersResults as { refIndex: number; score: number }[];
-            const groupResults = fuzzySearchGroupsResults as { item: { id: string | number }; score: number }[];
-            const tagResults = fuzzySearchTagsResult as { item: { id: string | number }; score: number }[];
+            const charResults = fuzzySearchCharactersResults as {
+                refIndex: number;
+                score: number;
+            }[];
+            const groupResults = fuzzySearchGroupsResults as {
+                item: { id: string | number };
+                score: number;
+            }[];
+            const tagResults = fuzzySearchTagsResult as {
+                item: { id: string | number };
+                score: number;
+            }[];
 
             typeScores = this.scoreCache.get(FILTER_TYPES.SEARCH) || new Map();
 
@@ -444,7 +486,11 @@ export class FilterHelper {
 
         const result: unknown[] = [];
         for (let i = 0; i < data.length; i++) {
-            const entity = data[i] as { type: string; id?: string | number; item?: { name?: string } };
+            const entity = data[i] as {
+                type: string;
+                id?: string | number;
+                item?: { name?: string };
+            };
             if (useFuzzy) {
                 if (typeScores && typeScores.has(`${entity.type}.${entity.id}`)) {
                     result.push(entity);
@@ -469,7 +515,11 @@ export class FilterHelper {
         this.filterData[filterType] = data;
 
         // V8: Reference check first. `JSON.stringify` on objects is slower
-        if (!suppressDataChanged && oldData !== data && JSON.stringify(oldData) !== JSON.stringify(data)) {
+        if (
+            !suppressDataChanged &&
+            oldData !== data &&
+            JSON.stringify(oldData) !== JSON.stringify(data)
+        ) {
             this.onDataChanged();
         }
     }
@@ -491,7 +541,14 @@ export class FilterHelper {
      * @param {boolean} [options.clearFuzzySearchCaches] - Whether the fuzzy search caches should be cleared.
      * @returns {unknown[]} The filtered data.
      */
-    applyFilters(data: unknown[], options?: { clearScoreCache?: boolean; tempOverrides?: Record<string, unknown>; clearFuzzySearchCaches?: boolean }) {
+    applyFilters(
+        data: unknown[],
+        options?: {
+            clearScoreCache?: boolean;
+            tempOverrides?: Record<string, unknown>;
+            clearFuzzySearchCaches?: boolean;
+        },
+    ) {
         const clearScoreCache = options?.clearScoreCache !== false;
         const tempOverrides = options?.tempOverrides;
         const clearFuzzySearchCaches = options?.clearFuzzySearchCaches !== false;

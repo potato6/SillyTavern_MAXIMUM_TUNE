@@ -1,5 +1,3 @@
-
-
 export class SlashCommandDebugController {
     /** @type {SlashCommandClosure[]} */ stack = [];
     /** @type {SlashCommandExecutor[]} */ cmdStack = [];
@@ -21,13 +19,11 @@ export class SlashCommandDebugController {
     // @ts-expect-error TS(7008) FIXME: Member 'onBreakPoint' implicitly has an 'any' type... Remove this comment to see the full error message
     /** @type {(closure:SlashCommandClosure, executor:SlashCommandExecutor)=>Promise<boolean>} */ onBreakPoint;
 
-
     // @ts-expect-error TS(7006) FIXME: Parameter 'closure' implicitly has an 'any' type.
     testStepping(closure) {
         // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
         return this.stepStack[this.stack.indexOf(closure)];
     }
-
 
     // @ts-expect-error TS(7006) FIXME: Parameter 'closure' implicitly has an 'any' type.
     down(closure) {
@@ -50,23 +46,22 @@ export class SlashCommandDebugController {
         this.cmdStack[this.stack.length - 1] = executor;
     }
 
-
     resume() {
         this.continueResolver?.(false);
         this.continuePromise = null;
         // @ts-expect-error TS(2322) FIXME: Type 'boolean' is not assignable to type 'never'.
-        this.stepStack.forEach((_, idx) => this.stepStack[idx] = false);
+        this.stepStack.forEach((_, idx) => (this.stepStack[idx] = false));
     }
     step() {
         // @ts-expect-error TS(2322) FIXME: Type 'boolean' is not assignable to type 'never'.
-        this.stepStack.forEach((_, idx) => this.stepStack[idx] = true);
+        this.stepStack.forEach((_, idx) => (this.stepStack[idx] = true));
         this.continueResolver?.(true);
         this.continuePromise = null;
     }
     stepInto() {
         this.isSteppingInto = true;
         // @ts-expect-error TS(2322) FIXME: Type 'boolean' is not assignable to type 'never'.
-        this.stepStack.forEach((_, idx) => this.stepStack[idx] = true);
+        this.stepStack.forEach((_, idx) => (this.stepStack[idx] = true));
         this.continueResolver?.(true);
         this.continuePromise = null;
     }
@@ -79,7 +74,7 @@ export class SlashCommandDebugController {
     }
 
     async awaitContinue() {
-        this.continuePromise ??= new Promise(resolve => {
+        this.continuePromise ??= new Promise((resolve) => {
             this.continueResolver = resolve;
         });
         this.isStepping = await this.continuePromise;

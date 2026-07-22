@@ -70,14 +70,14 @@ import { isFalseBoolean } from '/scripts/utils.js';
  * @property {number} argCount - Number of arguments provided to the macro.
  */
 
-
-
 class MacroCstWalker {
     // @ts-expect-error TS(7008) FIXME: Member '#instance' implicitly has an 'any' type.
     /** @type {MacroCstWalker} */ static #instance;
-    /** @type {MacroCstWalker} */ static get instance() { return MacroCstWalker.#instance ?? (MacroCstWalker.#instance = new MacroCstWalker()); }
+    /** @type {MacroCstWalker} */ static get instance() {
+        return MacroCstWalker.#instance ?? (MacroCstWalker.#instance = new MacroCstWalker());
+    }
 
-    constructor() { }
+    constructor() {}
 
     /**
      * Evaluates a full document CST into a resolved string.
@@ -125,7 +125,7 @@ class MacroCstWalker {
             if (item.type === 'plaintext') {
                 result += text.slice(item.startOffset, item.endOffset + 1);
                 cursor = item.endOffset + 1;
-            // @ts-expect-error TS(2339) FIXME: Property 'keepRaw' does not exist on type '{ type:... Remove this comment to see the full error message
+                // @ts-expect-error TS(2339) FIXME: Property 'keepRaw' does not exist on type '{ type:... Remove this comment to see the full error message
             } else if (item.keepRaw) {
                 // Unmatched closing macros stay as raw text
                 result += text.slice(item.startOffset, item.endOffset + 1);
@@ -189,7 +189,7 @@ class MacroCstWalker {
         // Check for closing block flag
         const flagTokens = /** @type {IToken[]} */ (children.flags || []);
         // @ts-expect-error TS(7006) FIXME: Parameter 'token' implicitly has an 'any' type.
-        const isClosing = flagTokens.some(token => token.image === MacroFlagType.CLOSING_BLOCK);
+        const isClosing = flagTokens.some((token) => token.image === MacroFlagType.CLOSING_BLOCK);
 
         return {
             name,
@@ -233,7 +233,9 @@ class MacroCstWalker {
             if (info.isClosing) {
                 // Find matching opener in stack (case-insensitive)
                 // When closing an outer scope, all inner unclosed scopes are implicitly closed
-                const matchIndex = unclosedStack.findLastIndex(s => s.name.toLowerCase() === info.name.toLowerCase());
+                const matchIndex = unclosedStack.findLastIndex(
+                    (s) => s.name.toLowerCase() === info.name.toLowerCase(),
+                );
                 if (matchIndex !== -1) {
                     // Pop everything from matchIndex to end (inclusive) - closes the matched scope and all nested ones
                     unclosedStack.splice(matchIndex);
@@ -243,7 +245,10 @@ class MacroCstWalker {
                 // Opening tag - check if this macro can accept scoped content
                 if (this.#canAcceptScopedContent(item.node, info.name)) {
                     // Extract whitespace padding from the macro
-                    const { paddingBefore, paddingAfter } = this.#extractMacroPadding(item.node, text);
+                    const { paddingBefore, paddingAfter } = this.#extractMacroPadding(
+                        item.node,
+                        text,
+                    );
 
                     unclosedStack.push({
                         name: info.name,
@@ -380,7 +385,7 @@ class MacroCstWalker {
         // Extract flag tokens and parse them into a MacroFlags object (now inside macroBody)
         const flagTokens = /** @type {IToken[]} */ (children.flags || []);
         // @ts-expect-error TS(7006) FIXME: Parameter 'token' implicitly has an 'any' type.
-        const flagSymbols = flagTokens.map(token => token.image);
+        const flagSymbols = flagTokens.map((token) => token.image);
         const flags = flagSymbols.length > 0 ? parseFlags(flagSymbols) : createEmptyFlags();
 
         const range = this.#getMacroRange(macroNode);
@@ -407,11 +412,15 @@ class MacroCstWalker {
 
         for (const argNode of argumentNodes) {
             const location = this.#getArgumentLocation(argNode);
-            const rawArgText = location ? text.slice(location.startOffset, location.endOffset + 1) : '';
+            const rawArgText = location
+                ? text.slice(location.startOffset, location.endOffset + 1)
+                : '';
             rawArgs.push(rawArgText);
 
             // If delayArgResolution is true, use raw text; otherwise evaluate nested macros
-            const argValue = delayArgResolution ? rawArgText : this.#evaluateArgumentNode(argNode, context);
+            const argValue = delayArgResolution
+                ? rawArgText
+                : this.#evaluateArgumentNode(argNode, context);
             args.push(argValue);
 
             if (location) {
@@ -429,7 +438,10 @@ class MacroCstWalker {
                 args.push('');
                 rawArgs.push('');
             } else {
-                const rawScopedText = text.slice(scopedContent.startOffset, scopedContent.endOffset + 1);
+                const rawScopedText = text.slice(
+                    scopedContent.startOffset,
+                    scopedContent.endOffset + 1,
+                );
                 rawArgs.push(rawScopedText);
 
                 // If delayArgResolution is true, use raw text; otherwise evaluate nested macros
@@ -515,11 +527,17 @@ class MacroCstWalker {
 
         // Extract scope (. for local, $ for global)
         // @ts-expect-error TS(7006) FIXME: Parameter 't' implicitly has an 'any' type.
-        const localPrefixToken = /** @type {IToken?} */ ((varChildren['Var.scope'] || []).find(t => /** @type {IToken} */(t).tokenType?.name === 'Var.LocalPrefix'));
+        const localPrefixToken = /** @type {IToken?} */ (
+            (varChildren['Var.scope'] || []).find(
+                (t) => /** @type {IToken} */ (t).tokenType?.name === 'Var.LocalPrefix',
+            )
+        );
         const isGlobal = !localPrefixToken;
 
         // Extract variable name
-        const varIdentifierToken = /** @type {IToken?} */ ((varChildren['Var.identifier'] || [])[0]);
+        const varIdentifierToken = /** @type {IToken?} */ (
+            (varChildren['Var.identifier'] || [])[0]
+        );
         const varName = varIdentifierToken?.image || '';
 
         // Extract operator (if any)
@@ -597,7 +615,9 @@ class MacroCstWalker {
                         break;
                     default:
                         // @ts-expect-error TS(2345) FIXME: Argument of type '{ message: string; }' is not ass... Remove this comment to see the full error message
-                        logMacroInternalError({ message: `Lexer found macro operator that is not implemented for variable shorthand expressions in macro node '${macroNode.name}'.` });
+                        logMacroInternalError({
+                            message: `Lexer found macro operator that is not implemented for variable shorthand expressions in macro node '${macroNode.name}'.`,
+                        });
                         break;
                 }
             }
@@ -606,7 +626,9 @@ class MacroCstWalker {
         // Create a lazy value resolver that caches its result on first call.
         // This ensures the value expression is only evaluated when actually needed,
         // which is important for performance and because some macros are stateful.
-        const lazyValue = hasValueExpr ? this.#createLazyValue(operatorChildren, context) : () => '';
+        const lazyValue = hasValueExpr
+            ? this.#createLazyValue(operatorChildren, context)
+            : () => '';
 
         // Execute the operation using direct variable API calls
         return this.#executeVariableOperation(varName, isGlobal, operation, lazyValue);
@@ -687,7 +709,10 @@ class MacroCstWalker {
                 const numValue = Number(lazyValue());
                 if (!isNaN(numValue)) vars.add(varName, -numValue);
                 // @ts-expect-error TS(2345) FIXME: Argument of type '{ message: string; }' is not ass... Remove this comment to see the full error message
-                else logMacroRuntimeWarning({ message: `Variable shorthand "-=" operator requires a numeric value, got: "${lazyValue()}"` });
+                else
+                    logMacroRuntimeWarning({
+                        message: `Variable shorthand "-=" operator requires a numeric value, got: "${lazyValue()}"`,
+                    });
                 return '';
             }
 
@@ -747,7 +772,9 @@ class MacroCstWalker {
                 const compareNum = Number(lazyValue());
                 if (isNaN(currentNum) || isNaN(compareNum)) {
                     // @ts-expect-error TS(2345) FIXME: Argument of type '{ message: string; }' is not ass... Remove this comment to see the full error message
-                    logMacroRuntimeWarning({ message: `Variable shorthand ">" operator requires numeric values. Got: "${vars.get(varName)}" > "${lazyValue()}"` });
+                    logMacroRuntimeWarning({
+                        message: `Variable shorthand ">" operator requires numeric values. Got: "${vars.get(varName)}" > "${lazyValue()}"`,
+                    });
                     return 'false';
                 }
                 return currentNum > compareNum ? 'true' : 'false';
@@ -759,7 +786,9 @@ class MacroCstWalker {
                 const compareNum = Number(lazyValue());
                 if (isNaN(currentNum) || isNaN(compareNum)) {
                     // @ts-expect-error TS(2345) FIXME: Argument of type '{ message: string; }' is not ass... Remove this comment to see the full error message
-                    logMacroRuntimeWarning({ message: `Variable shorthand ">=" operator requires numeric values. Got: "${vars.get(varName)}" >= "${lazyValue()}"` });
+                    logMacroRuntimeWarning({
+                        message: `Variable shorthand ">=" operator requires numeric values. Got: "${vars.get(varName)}" >= "${lazyValue()}"`,
+                    });
                     return 'false';
                 }
                 return currentNum >= compareNum ? 'true' : 'false';
@@ -771,7 +800,9 @@ class MacroCstWalker {
                 const compareNum = Number(lazyValue());
                 if (isNaN(currentNum) || isNaN(compareNum)) {
                     // @ts-expect-error TS(2345) FIXME: Argument of type '{ message: string; }' is not ass... Remove this comment to see the full error message
-                    logMacroRuntimeWarning({ message: `Variable shorthand "<" operator requires numeric values. Got: "${vars.get(varName)}" < "${lazyValue()}"` });
+                    logMacroRuntimeWarning({
+                        message: `Variable shorthand "<" operator requires numeric values. Got: "${vars.get(varName)}" < "${lazyValue()}"`,
+                    });
                     return 'false';
                 }
                 return currentNum < compareNum ? 'true' : 'false';
@@ -783,7 +814,9 @@ class MacroCstWalker {
                 const compareNum = Number(lazyValue());
                 if (isNaN(currentNum) || isNaN(compareNum)) {
                     // @ts-expect-error TS(2345) FIXME: Argument of type '{ message: string; }' is not ass... Remove this comment to see the full error message
-                    logMacroRuntimeWarning({ message: `Variable shorthand "<=" operator requires numeric values. Got: "${vars.get(varName)}" <= "${lazyValue()}"` });
+                    logMacroRuntimeWarning({
+                        message: `Variable shorthand "<=" operator requires numeric values. Got: "${vars.get(varName)}" <= "${lazyValue()}"`,
+                    });
                     return 'false';
                 }
                 return currentNum <= compareNum ? 'true' : 'false';
@@ -791,7 +824,9 @@ class MacroCstWalker {
 
             default:
                 // @ts-expect-error TS(2345) FIXME: Argument of type '{ message: string; }' is not ass... Remove this comment to see the full error message
-                logMacroRuntimeWarning({ message: `Unknown variable shorthand operation: "${operation}"` });
+                logMacroRuntimeWarning({
+                    message: `Unknown variable shorthand operation: "${operation}"`,
+                });
                 return '';
         }
     }
@@ -824,17 +859,17 @@ class MacroCstWalker {
         // Get the range of the value
         const allTokens = [...identifierTokens, ...unknownTokens];
         const allRanges = [
-            ...allTokens.map(t => ({ startOffset: t.startOffset, endOffset: t.endOffset })),
+            ...allTokens.map((t) => ({ startOffset: t.startOffset, endOffset: t.endOffset })),
             // @ts-expect-error TS(7006) FIXME: Parameter 'm' implicitly has an 'any' type.
-            ...nestedMacros.map(m => this.#getMacroRange(m)),
+            ...nestedMacros.map((m) => this.#getMacroRange(m)),
         ];
 
         if (allRanges.length === 0) {
             return '';
         }
 
-        const startOffset = Math.min(...allRanges.map(r => r.startOffset));
-        const endOffset = Math.max(...allRanges.map(r => r.endOffset));
+        const startOffset = Math.min(...allRanges.map((r) => r.startOffset));
+        const endOffset = Math.max(...allRanges.map((r) => r.endOffset));
 
         // If no nested macros, return the raw text (trimmed)
         if (nestedMacros.length === 0) {
@@ -843,7 +878,7 @@ class MacroCstWalker {
 
         // Evaluate nested macros
         // @ts-expect-error TS(7006) FIXME: Parameter 'node' implicitly has an 'any' type.
-        const nestedWithRange = nestedMacros.map(node => ({
+        const nestedWithRange = nestedMacros.map((node) => ({
             node,
             range: this.#getMacroRange(node),
         }));
@@ -953,7 +988,7 @@ class MacroCstWalker {
             if (item.type === 'plaintext') {
                 result += rawContent.slice(item.startOffset, item.endOffset + 1);
                 cursor = item.endOffset + 1;
-            // @ts-expect-error TS(2339) FIXME: Property 'keepRaw' does not exist on type '{ type:... Remove this comment to see the full error message
+                // @ts-expect-error TS(2339) FIXME: Property 'keepRaw' does not exist on type '{ type:... Remove this comment to see the full error message
             } else if (item.keepRaw) {
                 // Unmatched closing macros stay as raw text
                 result += rawContent.slice(item.startOffset, item.endOffset + 1);
@@ -987,14 +1022,21 @@ class MacroCstWalker {
      */
     // @ts-expect-error TS(7006) FIXME: Parameter 'macroNode' implicitly has an 'any' type... Remove this comment to see the full error message
     #getMacroRange(macroNode) {
-        const startToken = /** @type {IToken?} */ (((macroNode.children || {})['Macro.Start'] || [])[0]);
-        const endToken = /** @type {IToken?} */ (((macroNode.children || {})['Macro.End'] || [])[0]);
+        const startToken = /** @type {IToken?} */ (
+            ((macroNode.children || {})['Macro.Start'] || [])[0]
+        );
+        const endToken = /** @type {IToken?} */ (
+            ((macroNode.children || {})['Macro.End'] || [])[0]
+        );
 
         if (startToken && endToken) {
             return { startOffset: startToken.startOffset, endOffset: endToken.endOffset };
         }
         if (macroNode.location) {
-            return { startOffset: macroNode.location.startOffset, endOffset: macroNode.location.endOffset };
+            return {
+                startOffset: macroNode.location.startOffset,
+                endOffset: macroNode.location.endOffset,
+            };
         }
         return { startOffset: 0, endOffset: 0 };
     }
@@ -1026,8 +1068,12 @@ class MacroCstWalker {
                 } else if ('children' in element) {
                     // Handle nested CstNode (macro or argument)
                     const nestedChildren = element.children || {};
-                    const nestedEnd = /** @type {IToken?} */ ((nestedChildren['Macro.End'] || [])[0]);
-                    const nestedStart = /** @type {IToken?} */ ((nestedChildren['Macro.Start'] || [])[0]);
+                    const nestedEnd = /** @type {IToken?} */ (
+                        (nestedChildren['Macro.End'] || [])[0]
+                    );
+                    const nestedStart = /** @type {IToken?} */ (
+                        (nestedChildren['Macro.Start'] || [])[0]
+                    );
 
                     // Check if this is a complete macro node
                     if (nestedStart && nestedEnd) {
@@ -1061,9 +1107,11 @@ class MacroCstWalker {
      */
     // @ts-expect-error TS(7006) FIXME: Parameter 'token' implicitly has an 'any' type.
     #isRecoveryToken(token) {
-        return token?.isInsertedInRecovery === true
-            || typeof token?.startOffset !== 'number'
-            || Number.isNaN(token?.startOffset);
+        return (
+            token?.isInsertedInRecovery === true ||
+            typeof token?.startOffset !== 'number' ||
+            Number.isNaN(token?.startOffset)
+        );
     }
 
     /**
@@ -1315,7 +1363,7 @@ class MacroCstWalker {
         // Check for closing block flag (inside macroBody)
         const flagTokens = /** @type {IToken[]} */ (children.flags || []);
         // @ts-expect-error TS(7006) FIXME: Parameter 'token' implicitly has an 'any' type.
-        const isClosing = flagTokens.some(token => token.image === MacroFlagType.CLOSING_BLOCK);
+        const isClosing = flagTokens.some((token) => token.image === MacroFlagType.CLOSING_BLOCK);
 
         return { name, isClosing };
     }

@@ -57,18 +57,20 @@ const provider: ChatProvider = {
             seed: req.body.seed,
             n: req.body.n,
             repetition_penalty: req.body.repetition_penalty,
-            ...(req.body.json_schema ? {
-                response_format: {
-                    type: 'json_schema',
-                    json_schema: req.body.json_schema.value,
-                },
-            } : {}),
+            ...(req.body.json_schema
+                ? {
+                      response_format: {
+                          type: 'json_schema',
+                          json_schema: req.body.json_schema.value,
+                      },
+                  }
+                : {}),
         };
 
         const url = `${baseUrl}/chat/completions`;
         const headers: Record<string, string> = {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiKey}`,
+            Authorization: `Bearer ${apiKey}`,
         };
 
         await proxyRequest({
@@ -88,19 +90,24 @@ const provider: ChatProvider = {
 
         if (!apiKey || !accountId) return [];
 
-        const modelsUrl = new URL(`${API_WORKERS_AI}/${encodeURIComponent(accountId)}/ai/models/search`);
+        const modelsUrl = new URL(
+            `${API_WORKERS_AI}/${encodeURIComponent(accountId)}/ai/models/search`,
+        );
         modelsUrl.searchParams.set('task', 'Text Generation');
         modelsUrl.searchParams.set('per_page', '1000');
 
         const response = await globalThis.fetch(modelsUrl, {
-            headers: { 'Authorization': `Bearer ${apiKey}` },
+            headers: { Authorization: `Bearer ${apiKey}` },
         });
 
         if (!response.ok) return [];
 
-        const data = await response.json() as Record<string, unknown>;
+        const data = (await response.json()) as Record<string, unknown>;
         if (Array.isArray(data?.result)) {
-            return data.result.map((m: Record<string, unknown>) => ({ id: m.name as string, ...m })) as ModelEntry[];
+            return data.result.map((m: Record<string, unknown>) => ({
+                id: m.name as string,
+                ...m,
+            })) as ModelEntry[];
         }
 
         return [];

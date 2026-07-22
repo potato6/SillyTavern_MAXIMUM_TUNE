@@ -27,7 +27,7 @@ export class SlashCommandParserError extends Error {
             offset++;
             end++;
         }
-        const hint  = [];
+        const hint = [];
         const lines = this.text.slice(start + 1, end - 1).split('\n');
         let lineNum = this.line - lines.length + 1;
         let tabOffset = 0;

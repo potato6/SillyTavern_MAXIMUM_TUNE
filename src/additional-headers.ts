@@ -11,10 +11,12 @@ import { getConfigValue } from './util.js';
 function getMancerHeaders(directories: import('./users.js').UserDirectoryList, secretId = null) {
     const apiKey = readSecret(directories, SECRET_KEYS.MANCER, secretId);
 
-    return apiKey ? ({
-        'X-API-KEY': apiKey,
-        'Authorization': `Bearer ${apiKey}`,
-    }) : {};
+    return apiKey
+        ? {
+              'X-API-KEY': apiKey,
+              Authorization: `Bearer ${apiKey}`,
+          }
+        : {};
 }
 
 /**
@@ -23,12 +25,17 @@ function getMancerHeaders(directories: import('./users.js').UserDirectoryList, s
  * @param {string|null} secretId Secret ID for the request (optional, used to determine which secret to use)
  * @returns {object} Headers for the request
  */
-function getTogetherAIHeaders(directories: import('./users.js').UserDirectoryList, secretId = null) {
+function getTogetherAIHeaders(
+    directories: import('./users.js').UserDirectoryList,
+    secretId = null,
+) {
     const apiKey = readSecret(directories, SECRET_KEYS.TOGETHERAI, secretId);
 
-    return apiKey ? ({
-        'Authorization': `Bearer ${apiKey}`,
-    }) : {};
+    return apiKey
+        ? {
+              Authorization: `Bearer ${apiKey}`,
+          }
+        : {};
 }
 
 /**
@@ -37,12 +44,17 @@ function getTogetherAIHeaders(directories: import('./users.js').UserDirectoryLis
  * @param {string|null} secretId Secret ID for the request (optional, used to determine which secret to use)
  * @returns {object} Headers for the request
  */
-function getInfermaticAIHeaders(directories: import('./users.js').UserDirectoryList, secretId = null) {
+function getInfermaticAIHeaders(
+    directories: import('./users.js').UserDirectoryList,
+    secretId = null,
+) {
     const apiKey = readSecret(directories, SECRET_KEYS.INFERMATICAI, secretId);
 
-    return apiKey ? ({
-        'Authorization': `Bearer ${apiKey}`,
-    }) : {};
+    return apiKey
+        ? {
+              Authorization: `Bearer ${apiKey}`,
+          }
+        : {};
 }
 
 /**
@@ -54,9 +66,11 @@ function getInfermaticAIHeaders(directories: import('./users.js').UserDirectoryL
 function getDreamGenHeaders(directories: import('./users.js').UserDirectoryList, secretId = null) {
     const apiKey = readSecret(directories, SECRET_KEYS.DREAMGEN, secretId);
 
-    return apiKey ? ({
-        'Authorization': `Bearer ${apiKey}`,
-    }) : {};
+    return apiKey
+        ? {
+              Authorization: `Bearer ${apiKey}`,
+          }
+        : {};
 }
 
 /**
@@ -65,11 +79,14 @@ function getDreamGenHeaders(directories: import('./users.js').UserDirectoryList,
  * @param {string|null} secretId Secret ID for the request (optional, used to determine which secret to use)
  * @returns {object} Headers for the request
  */
-function getOpenRouterHeaders(directories: import('./users.js').UserDirectoryList, secretId = null) {
+function getOpenRouterHeaders(
+    directories: import('./users.js').UserDirectoryList,
+    secretId = null,
+) {
     const apiKey = readSecret(directories, SECRET_KEYS.OPENROUTER, secretId);
     const baseHeaders = { ...OPENROUTER_HEADERS };
 
-    return apiKey ? Object.assign(baseHeaders, { 'Authorization': `Bearer ${apiKey}` }) : baseHeaders;
+    return apiKey ? Object.assign(baseHeaders, { Authorization: `Bearer ${apiKey}` }) : baseHeaders;
 }
 
 /**
@@ -81,9 +98,11 @@ function getOpenRouterHeaders(directories: import('./users.js').UserDirectoryLis
 function getVllmHeaders(directories: import('./users.js').UserDirectoryList, secretId = null) {
     const apiKey = readSecret(directories, SECRET_KEYS.VLLM, secretId);
 
-    return apiKey ? ({
-        'Authorization': `Bearer ${apiKey}`,
-    }) : {};
+    return apiKey
+        ? {
+              Authorization: `Bearer ${apiKey}`,
+          }
+        : {};
 }
 
 /**
@@ -95,10 +114,12 @@ function getVllmHeaders(directories: import('./users.js').UserDirectoryList, sec
 function getAphroditeHeaders(directories: import('./users.js').UserDirectoryList, secretId = null) {
     const apiKey = readSecret(directories, SECRET_KEYS.APHRODITE, secretId);
 
-    return apiKey ? ({
-        'X-API-KEY': apiKey,
-        'Authorization': `Bearer ${apiKey}`,
-    }) : {};
+    return apiKey
+        ? {
+              'X-API-KEY': apiKey,
+              Authorization: `Bearer ${apiKey}`,
+          }
+        : {};
 }
 
 /**
@@ -110,10 +131,12 @@ function getAphroditeHeaders(directories: import('./users.js').UserDirectoryList
 function getTabbyHeaders(directories: import('./users.js').UserDirectoryList, secretId = null) {
     const apiKey = readSecret(directories, SECRET_KEYS.TABBY, secretId);
 
-    return apiKey ? ({
-        'x-api-key': apiKey,
-        'Authorization': `Bearer ${apiKey}`,
-    }) : {};
+    return apiKey
+        ? {
+              'x-api-key': apiKey,
+              Authorization: `Bearer ${apiKey}`,
+          }
+        : {};
 }
 
 /**
@@ -125,9 +148,11 @@ function getTabbyHeaders(directories: import('./users.js').UserDirectoryList, se
 function getLlamaCppHeaders(directories: import('./users.js').UserDirectoryList, secretId = null) {
     const apiKey = readSecret(directories, SECRET_KEYS.LLAMACPP, secretId);
 
-    return apiKey ? ({
-        'Authorization': `Bearer ${apiKey}`,
-    }) : {};
+    return apiKey
+        ? {
+              Authorization: `Bearer ${apiKey}`,
+          }
+        : {};
 }
 
 /**
@@ -139,9 +164,11 @@ function getLlamaCppHeaders(directories: import('./users.js').UserDirectoryList,
 function getOobaHeaders(directories: import('./users.js').UserDirectoryList, secretId = null) {
     const apiKey = readSecret(directories, SECRET_KEYS.OOBA, secretId);
 
-    return apiKey ? ({
-        'Authorization': `Bearer ${apiKey}`,
-    }) : {};
+    return apiKey
+        ? {
+              Authorization: `Bearer ${apiKey}`,
+          }
+        : {};
 }
 
 /**
@@ -153,9 +180,11 @@ function getOobaHeaders(directories: import('./users.js').UserDirectoryList, sec
 function getKoboldCppHeaders(directories: import('./users.js').UserDirectoryList, secretId = null) {
     const apiKey = readSecret(directories, SECRET_KEYS.KOBOLDCPP, secretId);
 
-    return apiKey ? ({
-        'Authorization': `Bearer ${apiKey}`,
-    }) : {};
+    return apiKey
+        ? {
+              Authorization: `Bearer ${apiKey}`,
+          }
+        : {};
 }
 
 /**
@@ -164,11 +193,14 @@ function getKoboldCppHeaders(directories: import('./users.js').UserDirectoryList
  * @param {string|null} secretId Secret ID for the request (optional, used to determine which secret to use)
  * @returns {object} Headers for the request
  */
-function getFeatherlessHeaders(directories: import('./users.js').UserDirectoryList, secretId = null) {
+function getFeatherlessHeaders(
+    directories: import('./users.js').UserDirectoryList,
+    secretId = null,
+) {
     const apiKey = readSecret(directories, SECRET_KEYS.FEATHERLESS, secretId);
     const baseHeaders = { ...FEATHERLESS_HEADERS };
 
-    return apiKey ? Object.assign(baseHeaders, { 'Authorization': `Bearer ${apiKey}` }) : baseHeaders;
+    return apiKey ? Object.assign(baseHeaders, { Authorization: `Bearer ${apiKey}` }) : baseHeaders;
 }
 
 /**
@@ -177,12 +209,17 @@ function getFeatherlessHeaders(directories: import('./users.js').UserDirectoryLi
  * @param {string|null} secretId Secret ID for the request (optional, used to determine which secret to use)
  * @returns {object} Headers for the request
  */
-function getHuggingFaceHeaders(directories: import('./users.js').UserDirectoryList, secretId = null) {
+function getHuggingFaceHeaders(
+    directories: import('./users.js').UserDirectoryList,
+    secretId = null,
+) {
     const apiKey = readSecret(directories, SECRET_KEYS.HUGGINGFACE, secretId);
 
-    return apiKey ? ({
-        'Authorization': `Bearer ${apiKey}`,
-    }) : {};
+    return apiKey
+        ? {
+              Authorization: `Bearer ${apiKey}`,
+          }
+        : {};
 }
 
 /**
@@ -194,9 +231,11 @@ function getHuggingFaceHeaders(directories: import('./users.js').UserDirectoryLi
 function getGenericHeaders(directories: import('./users.js').UserDirectoryList, secretId = null) {
     const apiKey = readSecret(directories, SECRET_KEYS.GENERIC, secretId);
 
-    return apiKey ? ({
-        'Authorization': `Bearer ${apiKey}`,
-    }) : {};
+    return apiKey
+        ? {
+              Authorization: `Bearer ${apiKey}`,
+          }
+        : {};
 }
 
 /**
@@ -206,7 +245,9 @@ function getGenericHeaders(directories: import('./users.js').UserDirectoryList, 
 export function getOverrideHeaders(urlHost: string) {
     // @ts-expect-error TS(2345) FIXME: Argument of type 'never[]' is not assignable to pa... Remove this comment to see the full error message
     const requestOverrides = getConfigValue('requestOverrides', []);
-    const overrideHeaders = requestOverrides?.find((e: { hosts?: string[]; headers?: Record<string, string> }) => e.hosts?.includes(urlHost))?.headers;
+    const overrideHeaders = requestOverrides?.find(
+        (e: { hosts?: string[]; headers?: Record<string, string> }) => e.hosts?.includes(urlHost),
+    )?.headers;
     if (overrideHeaders && urlHost) {
         return overrideHeaders;
     } else {
@@ -220,9 +261,19 @@ export function getOverrideHeaders(urlHost: string) {
  * @param {object} args New request arguments
  * @param {string|null} server API server for new request
  */
-export function setAdditionalHeaders(request: import('express').Request, args: Record<string, unknown>, server: string | null) {
+export function setAdditionalHeaders(
+    request: import('express').Request,
+    args: Record<string, unknown>,
+    server: string | null,
+) {
     // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
-    setAdditionalHeadersByType(args.headers, request.body.api_type, server, request.user.directories, request.body.secret_id);
+    setAdditionalHeadersByType(
+        args.headers,
+        request.body.api_type,
+        server,
+        request.user.directories,
+        request.body.secret_id,
+    );
 }
 
 /**
@@ -233,7 +284,13 @@ export function setAdditionalHeaders(request: import('express').Request, args: R
  * @param {import('./users.js').UserDirectoryList} directories User directories
  * @param {string|null} secretId Secret ID for the request (optional, used for some API types to determine which secret to use)
  */
-export function setAdditionalHeadersByType(requestHeaders: Record<string, unknown>, type: string, server: string | null, directories: import('./users.js').UserDirectoryList, secretId = null) {
+export function setAdditionalHeadersByType(
+    requestHeaders: Record<string, unknown>,
+    type: string,
+    server: string | null,
+    directories: import('./users.js').UserDirectoryList,
+    secretId = null,
+) {
     const headerGetters = {
         [TEXTGEN_TYPES.MANCER]: getMancerHeaders,
         [TEXTGEN_TYPES.VLLM]: getVllmHeaders,

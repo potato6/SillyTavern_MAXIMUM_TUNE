@@ -1,12 +1,13 @@
-import {
-    main_api,
-    saveSettingsDebounced,
-} from '../script.js';
+import { main_api, saveSettingsDebounced } from '../script.js';
 //import { BIAS_CACHE, displayLogitBias, getLogitBiasListResult } from './logit-bias.js';
 //import { getEventSourceStream } from './sse-stream.js';
 //import { getSortableDelay, onlyUnique } from './utils.js';
 //import { getCfgPrompt } from './cfg-scale.js';
-import { setting_names as TGsamplerNames, showTGSamplerControls, textgenerationwebui_settings } from './textgen-settings.js';
+import {
+    setting_names as TGsamplerNames,
+    showTGSamplerControls,
+    textgenerationwebui_settings,
+} from './textgen-settings.js';
 import { renderTemplateAsync } from './templates.js';
 import { Popup, POPUP_TYPE } from './popup.js';
 import { localspace } from '../lib.js';
@@ -41,7 +42,11 @@ async function showSamplerSelectPopup() {
     if (APISamplers) listContainer.innerHTML = APISamplers.toString();
     html.appendChild(listContainer);
 
-    const showPromise = new Popup(html, POPUP_TYPE.TEXT, undefined, { wide: true, large: true, allowVerticalScrolling: true }).show();
+    const showPromise = new Popup(html, POPUP_TYPE.TEXT, undefined, {
+        wide: true,
+        large: true,
+        allowVerticalScrolling: true,
+    }).show();
 
     setSamplerListListeners();
 
@@ -49,8 +54,10 @@ async function showSamplerSelectPopup() {
         console.log('saw sampler select reset click');
 
         if (main_api === 'textgenerationwebui') {
-            document.getElementById('prioritizeManuallySelectedSamplers')?.classList.toggle('toggleEnabled', false);
-                await resetApiSelectedSamplers(undefined, true);
+            document
+                .getElementById('prioritizeManuallySelectedSamplers')
+                ?.classList.toggle('toggleEnabled', false);
+            await resetApiSelectedSamplers(undefined, true);
         }
 
         await validateDisabledSamplers(true);
@@ -59,18 +66,21 @@ async function showSamplerSelectPopup() {
     if (main_api === 'textgenerationwebui') {
         const prioritizeEl = document.getElementById('prioritizeManuallySelectedSamplers');
         if (prioritizeEl) prioritizeEl.style.display = '';
-        document.getElementById('prioritizeManuallySelectedSamplers')?.classList.toggle('toggleEnabled', isSamplerManualPriorityEnabled());
-        document.getElementById('prioritizeManuallySelectedSamplers')?.addEventListener('click', function (this: HTMLElement) {
-            this.classList.toggle('toggleEnabled');
+        document
+            .getElementById('prioritizeManuallySelectedSamplers')
+            ?.classList.toggle('toggleEnabled', isSamplerManualPriorityEnabled());
+        document
+            .getElementById('prioritizeManuallySelectedSamplers')
+            ?.addEventListener('click', function (this: HTMLElement) {
+                this.classList.toggle('toggleEnabled');
 
-            const isActive = this.classList.contains('toggleEnabled');
+                const isActive = this.classList.contains('toggleEnabled');
 
-            toggleSamplerManualPriority(isActive);
-        });
+                toggleSamplerManualPriority(isActive);
+            });
     } else {
         const prioritizeEl = document.getElementById('prioritizeManuallySelectedSamplers');
         if (prioritizeEl) prioritizeEl.style.display = 'none';
-
     }
 
     await showPromise;
@@ -81,7 +91,11 @@ async function showSamplerSelectPopup() {
  *
  * @param samplerName
  */
-function getRelatedDOMElement(samplerName: string): { relatedDOMElement: HTMLElement | null; targetDisplayType: string; displayname: string | undefined } {
+function getRelatedDOMElement(samplerName: string): {
+    relatedDOMElement: HTMLElement | null;
+    targetDisplayType: string;
+    displayname: string | undefined;
+} {
     const element = document.getElementById(`${samplerName}_${main_api}`);
     let relatedDOMElement: HTMLElement | null = element?.parentElement ?? null;
     let targetDisplayType = 'flex';
@@ -94,79 +108,86 @@ function getRelatedDOMElement(samplerName: string): { relatedDOMElement: HTMLEle
     }
 
     if (samplerName === 'grammar_string') {
-    relatedDOMElement = document.getElementById('grammar_block_ooba');
+        relatedDOMElement = document.getElementById('grammar_block_ooba');
         targetDisplayType = 'block';
         displayname = 'Grammar Block';
     }
 
     if (samplerName === 'guidance_scale') {
-    relatedDOMElement = document.getElementById('cfg_block_ooba');
+        relatedDOMElement = document.getElementById('cfg_block_ooba');
         targetDisplayType = 'block';
         displayname = 'CFG Block';
     }
 
     if (samplerName === 'mirostat_mode') {
-    relatedDOMElement = document.getElementById('mirostat_block_ooba');
+        relatedDOMElement = document.getElementById('mirostat_block_ooba');
         targetDisplayType = 'block';
         displayname = 'Mirostat Block';
     }
 
     if (samplerName === 'dry_multiplier') {
-    relatedDOMElement = document.getElementById('dryBlock');
+        relatedDOMElement = document.getElementById('dryBlock');
         targetDisplayType = 'block';
         displayname = 'DRY Rep Pen Block';
     }
 
     if (samplerName === 'xtc_probability') {
-    relatedDOMElement = document.getElementById('xtc_block');
+        relatedDOMElement = document.getElementById('xtc_block');
         targetDisplayType = 'block';
         displayname = 'XTC Block';
     }
 
     if (samplerName === 'dynatemp') {
-    relatedDOMElement = document.getElementById('dynatemp_block_ooba');
+        relatedDOMElement = document.getElementById('dynatemp_block_ooba');
         targetDisplayType = 'block';
         displayname = 'DynaTemp Block';
     }
 
     if (samplerName === 'banned_tokens') {
-    relatedDOMElement = document.getElementById('banned_tokens_block_ooba');
+        relatedDOMElement = document.getElementById('banned_tokens_block_ooba');
         targetDisplayType = 'block';
     }
 
-    if (samplerName === 'sampler_order') { //this is for kcpp sampler order
-    relatedDOMElement = document.getElementById('sampler_order_block_kcpp');
+    if (samplerName === 'sampler_order') {
+        //this is for kcpp sampler order
+        relatedDOMElement = document.getElementById('sampler_order_block_kcpp');
         displayname = 'KCPP Sampler Order Block';
     }
 
-    if (samplerName === 'samplers') { //this is for lcpp sampler order
-    relatedDOMElement = document.getElementById('sampler_order_block_lcpp');
+    if (samplerName === 'samplers') {
+        //this is for lcpp sampler order
+        relatedDOMElement = document.getElementById('sampler_order_block_lcpp');
         displayname = 'LCPP Sampler Order Block';
     }
 
-    if (samplerName === 'sampler_priority') { //this is for ooba's sampler priority
-    relatedDOMElement = document.getElementById('sampler_priority_block_ooba');
+    if (samplerName === 'sampler_priority') {
+        //this is for ooba's sampler priority
+        relatedDOMElement = document.getElementById('sampler_priority_block_ooba');
         displayname = 'Ooba Sampler Priority Block';
     }
 
-    if (samplerName === 'samplers_priorities') { //this is for aphrodite's sampler priority
-    relatedDOMElement = document.getElementById('sampler_priority_block_aphrodite');
+    if (samplerName === 'samplers_priorities') {
+        //this is for aphrodite's sampler priority
+        relatedDOMElement = document.getElementById('sampler_priority_block_aphrodite');
         displayname = 'Aphrodite Sampler Priority Block';
     }
 
-    if (samplerName === 'penalty_alpha') { //contrastive search only has one sampler, does it need its own block?
-    relatedDOMElement = document.getElementById('contrastiveSearchBlock');
+    if (samplerName === 'penalty_alpha') {
+        //contrastive search only has one sampler, does it need its own block?
+        relatedDOMElement = document.getElementById('contrastiveSearchBlock');
         displayname = 'Contrast Search Block';
     }
 
-    if (samplerName === 'num_beams') { // num_beams is the killswitch for Beam Search
-    relatedDOMElement = document.getElementById('beamSearchBlock');
+    if (samplerName === 'num_beams') {
+        // num_beams is the killswitch for Beam Search
+        relatedDOMElement = document.getElementById('beamSearchBlock');
         targetDisplayType = 'block';
         displayname = 'Beam Search Block';
     }
 
-    if (samplerName === 'smoothing_factor') { // num_beams is the killswitch for Beam Search
-    relatedDOMElement = document.getElementById('smoothingBlock');
+    if (samplerName === 'smoothing_factor') {
+        // num_beams is the killswitch for Beam Search
+        relatedDOMElement = document.getElementById('smoothingBlock');
         targetDisplayType = 'block';
         displayname = 'Smoothing Block';
     }
@@ -180,46 +201,76 @@ function getRelatedDOMElement(samplerName: string): { relatedDOMElement: HTMLEle
 function setSamplerListListeners() {
     // Goal 2: hide unchecked samplers from DOM
     const listContainer = document.getElementById('apiSamplersList');
-    listContainer!.querySelectorAll('input').forEach(el => el.addEventListener('change', async function (this: HTMLInputElement) {
-        const samplerName = this.name.replace('_checkbox', '');
-        const { relatedDOMElement, targetDisplayType } = getRelatedDOMElement(samplerName);
+    listContainer!.querySelectorAll('input').forEach((el) =>
+        el.addEventListener('change', async function (this: HTMLInputElement) {
+            const samplerName = this.name.replace('_checkbox', '');
+            const { relatedDOMElement, targetDisplayType } = getRelatedDOMElement(samplerName);
 
-        // Get the current state of the custom data attribute
-        const previousState = relatedDOMElement?.dataset[SELECT_SAMPLER.DATA] as string | undefined;
-        const isChecked = this.checked;
-        const popupInputLabel: HTMLElement | null = this.parentElement ? this.parentElement.querySelector('.sampler_name') : null;
+            // Get the current state of the custom data attribute
+            const previousState = relatedDOMElement?.dataset[SELECT_SAMPLER.DATA] as
+                | string
+                | undefined;
+            const isChecked = this.checked;
+            const popupInputLabel: HTMLElement | null = this.parentElement
+                ? this.parentElement.querySelector('.sampler_name')
+                : null;
 
-        if (isChecked === false) {
-            if (previousState === SELECT_SAMPLER.SHOWN) {
-                console.log('saw previously custom shown sampler => new state:', isChecked, samplerName);
-                if (relatedDOMElement) delete relatedDOMElement.dataset[SELECT_SAMPLER.DATA];
-                popupInputLabel?.removeAttribute('style');
+            if (isChecked === false) {
+                if (previousState === SELECT_SAMPLER.SHOWN) {
+                    console.log(
+                        'saw previously custom shown sampler => new state:',
+                        isChecked,
+                        samplerName,
+                    );
+                    if (relatedDOMElement) delete relatedDOMElement.dataset[SELECT_SAMPLER.DATA];
+                    popupInputLabel?.removeAttribute('style');
+                } else {
+                    console.log(
+                        'saw previous untouched sampler => new state:',
+                        isChecked,
+                        samplerName,
+                    );
+                    if (relatedDOMElement)
+                        relatedDOMElement.dataset[SELECT_SAMPLER.DATA] = SELECT_SAMPLER.HIDDEN;
+                    if (popupInputLabel) popupInputLabel.setAttribute('style', forcedOffColoring);
+                }
             } else {
-                console.log('saw previous untouched sampler => new state:', isChecked, samplerName);
-                if (relatedDOMElement) relatedDOMElement.dataset[SELECT_SAMPLER.DATA] = SELECT_SAMPLER.HIDDEN;
-                if (popupInputLabel) popupInputLabel.setAttribute('style', forcedOffColoring);
+                if (previousState === SELECT_SAMPLER.HIDDEN) {
+                    console.log(
+                        'saw previously custom hidden sampler => new state:',
+                        isChecked,
+                        samplerName,
+                    );
+                    if (relatedDOMElement) delete relatedDOMElement.dataset[SELECT_SAMPLER.DATA];
+                    popupInputLabel?.removeAttribute('style');
+                } else {
+                    console.log(
+                        'saw previous untouched sampler => new state:',
+                        isChecked,
+                        samplerName,
+                    );
+                    if (relatedDOMElement)
+                        relatedDOMElement.dataset[SELECT_SAMPLER.DATA] = SELECT_SAMPLER.SHOWN;
+                    if (popupInputLabel) popupInputLabel.setAttribute('style', forcedOnColoring);
+                }
             }
-        } else {
-            if (previousState === SELECT_SAMPLER.HIDDEN) {
-                console.log('saw previously custom hidden sampler => new state:', isChecked, samplerName);
-                if (relatedDOMElement) delete relatedDOMElement.dataset[SELECT_SAMPLER.DATA];
-                popupInputLabel?.removeAttribute('style');
-            } else {
-                console.log('saw previous untouched sampler => new state:', isChecked, samplerName);
-                if (relatedDOMElement) relatedDOMElement.dataset[SELECT_SAMPLER.DATA] = SELECT_SAMPLER.SHOWN;
-                if (popupInputLabel) popupInputLabel.setAttribute('style', forcedOnColoring);
-            }
-        }
 
-        await saveSettingsDebounced();
+            await saveSettingsDebounced();
 
-        const shouldDisplay = isChecked ? targetDisplayType : 'none';
-        if (relatedDOMElement instanceof HTMLElement) relatedDOMElement.style.display = shouldDisplay;
+            const shouldDisplay = isChecked ? targetDisplayType : 'none';
+            if (relatedDOMElement instanceof HTMLElement)
+                relatedDOMElement.style.display = shouldDisplay;
 
-        if (main_api === 'textgenerationwebui') setApiSamplersState(samplerName, shouldDisplay !== 'none');
+            if (main_api === 'textgenerationwebui')
+                setApiSamplersState(samplerName, shouldDisplay !== 'none');
 
-        console.log(samplerName, relatedDOMElement?.dataset[SELECT_SAMPLER.DATA], shouldDisplay);
-    }));
+            console.log(
+                samplerName,
+                relatedDOMElement?.dataset[SELECT_SAMPLER.DATA],
+                shouldDisplay,
+            );
+        }),
+    );
 }
 
 /**
@@ -236,18 +287,28 @@ function isElementVisibleInDOM(element: HTMLElement | null) {
     return true;
 }
 
-
 /**
  *
  * @param main_api
  * @param arrayOnly
  */
-async function listSamplers(main_api: string, arrayOnly = false): Promise<string | string[] | undefined> {
+async function listSamplers(
+    main_api: string,
+    arrayOnly = false,
+): Promise<string | string[] | undefined> {
     let availableSamplers: string[] = [];
     if (main_api === 'textgenerationwebui') {
         availableSamplers = TGsamplerNames;
-        const valuesToRemove = new Set(['streaming', 'bypass_status_check', 'custom_model', 'generic_model', 'openrouter_allow_fallbacks', 'legacy_api', 'extensions']);
-        availableSamplers = availableSamplers.filter(sampler => !valuesToRemove.has(sampler));
+        const valuesToRemove = new Set([
+            'streaming',
+            'bypass_status_check',
+            'custom_model',
+            'generic_model',
+            'openrouter_allow_fallbacks',
+            'legacy_api',
+            'extensions',
+        ]);
+        availableSamplers = availableSamplers.filter((sampler) => !valuesToRemove.has(sampler));
         availableSamplers.sort();
     }
 
@@ -256,8 +317,10 @@ async function listSamplers(main_api: string, arrayOnly = false): Promise<string
         return availableSamplers;
     }
 
-    const samplersActivatedManually = (main_api === 'textgenerationwebui') ? getActiveManualApiSamplers() : [];
-    const prioritizeManualSamplerSelect = (main_api === 'textgenerationwebui') ? isSamplerManualPriorityEnabled() : false;
+    const samplersActivatedManually =
+        main_api === 'textgenerationwebui' ? getActiveManualApiSamplers() : [];
+    const prioritizeManualSamplerSelect =
+        main_api === 'textgenerationwebui' ? isSamplerManualPriorityEnabled() : false;
 
     const samplersListHTML = availableSamplers.reduce((html: string, sampler: string) => {
         let customColor;
@@ -265,7 +328,9 @@ async function listSamplers(main_api: string, arrayOnly = false): Promise<string
         let { displayname } = getRelatedDOMElement(sampler);
 
         const isManuallyActivated = samplersActivatedManually.includes(sampler);
-        const displayModified = relatedDOMElement?.dataset[SELECT_SAMPLER.DATA] as string | undefined;
+        const displayModified = relatedDOMElement?.dataset[SELECT_SAMPLER.DATA] as
+            | string
+            | undefined;
         const isInDefaultState = !displayModified;
 
         const shouldBeChecked = () => {
@@ -286,11 +351,14 @@ async function listSamplers(main_api: string, arrayOnly = false): Promise<string
         if (displayname === undefined) displayname = sampler;
         if (main_api === 'textgenerationwebui') setApiSamplersState(sampler, shouldBeChecked());
 
-        return html + `
+        return (
+            html +
+            `
         <label class="sampler_view_list_item wide50p flex-container">
             <input type="checkbox" name="${sampler}_checkbox" ${shouldBeChecked() ? 'checked' : ''}>
             <small class="sampler_name" style="${customColor}">${displayname}</small>
-        </label>`;
+        </label>`
+        );
     }, '');
 
     return samplersListHTML;
@@ -310,18 +378,25 @@ export async function validateDisabledSamplers(redraw = false) {
         return;
     }
 
-    const samplersActivatedManually = (main_api === 'textgenerationwebui') ? getActiveManualApiSamplers() : [];
-    const prioritizeManualSamplerSelect = (main_api === 'textgenerationwebui') ? isSamplerManualPriorityEnabled() : false;
+    const samplersActivatedManually =
+        main_api === 'textgenerationwebui' ? getActiveManualApiSamplers() : [];
+    const prioritizeManualSamplerSelect =
+        main_api === 'textgenerationwebui' ? isSamplerManualPriorityEnabled() : false;
 
     for (const sampler of APISamplers) {
         const { relatedDOMElement, targetDisplayType } = getRelatedDOMElement(sampler);
 
         if (prioritizeManualSamplerSelect) {
             const isManuallyActivated = samplersActivatedManually.includes(sampler);
-            if (relatedDOMElement instanceof HTMLElement) relatedDOMElement.style.display = isManuallyActivated ? targetDisplayType : 'none';
+            if (relatedDOMElement instanceof HTMLElement)
+                relatedDOMElement.style.display = isManuallyActivated ? targetDisplayType : 'none';
         } else {
-            const selectSamplerData = relatedDOMElement?.dataset[SELECT_SAMPLER.DATA] as string | undefined;
-            if (relatedDOMElement instanceof HTMLElement) relatedDOMElement.style.display = selectSamplerData === SELECT_SAMPLER.SHOWN ? targetDisplayType : 'none';
+            const selectSamplerData = relatedDOMElement?.dataset[SELECT_SAMPLER.DATA] as
+                | string
+                | undefined;
+            if (relatedDOMElement instanceof HTMLElement)
+                relatedDOMElement.style.display =
+                    selectSamplerData === SELECT_SAMPLER.SHOWN ? targetDisplayType : 'none';
         }
 
         if (relatedDOMElement) delete relatedDOMElement.dataset[SELECT_SAMPLER.DATA];
@@ -333,7 +408,7 @@ export async function validateDisabledSamplers(redraw = false) {
 
     if (redraw) {
         const samplersHTML = await listSamplers(main_api);
-    document.getElementById('apiSamplersList')!.innerHTML = String(samplersHTML);
+        document.getElementById('apiSamplersList')!.innerHTML = String(samplersHTML);
         setSamplerListListeners();
     }
 
@@ -347,9 +422,16 @@ export async function validateDisabledSamplers(redraw = false) {
 export async function loadApiSelectedSamplers() {
     try {
         console.debug('Text Completions: loading selected samplers');
-        selectedSamplers = (await textGenObjectStore.getItem('selectedSamplers') as Record<string, Record<string, boolean>>) || {};
+        selectedSamplers =
+            ((await textGenObjectStore.getItem('selectedSamplers')) as Record<
+                string,
+                Record<string, boolean>
+            >) || {};
     } catch (error) {
-        console.log('Text Completions: unable to load selected samplers, using default samplers', error);
+        console.log(
+            'Text Completions: unable to load selected samplers, using default samplers',
+            error,
+        );
         selectedSamplers = {};
     }
 }
@@ -470,7 +552,9 @@ export function isSamplerManualPriorityEnabled(tcApiType = ''): boolean {
  */
 export async function initCustomSelectedSamplers() {
     await saveSettingsDebounced();
-    document.getElementById('samplerSelectButton')?.addEventListener('click', showSamplerSelectPopup);
+    document
+        .getElementById('samplerSelectButton')
+        ?.addEventListener('click', showSamplerSelectPopup);
 }
 
 // Goal 4: filter hidden samplers from API output

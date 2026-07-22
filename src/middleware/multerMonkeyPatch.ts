@@ -16,7 +16,11 @@ function decodeFileName(str: string) {
  * @param {import('express').Response} _res Response
  * @param {import('express').NextFunction} next Next middleware
  */
-export default function multerMonkeyPatch(req: import('express').Request, _res: import('express').Response, next: import('express').NextFunction) {
+export default function multerMonkeyPatch(
+    req: import('express').Request,
+    _res: import('express').Response,
+    next: import('express').NextFunction,
+) {
     try {
         if (req.file) {
             req.file.originalname = decodeFileName(req.file.originalname);

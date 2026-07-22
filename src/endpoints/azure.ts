@@ -59,7 +59,10 @@ router.post('/generate', async (req, res) => {
 
         const url = `https://${region}.tts.speech.microsoft.com/cognitiveservices/v1`;
         const lang = String(voice).split('-').slice(0, 2).join('-');
-        const escapedText = String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const escapedText = String(text)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
         const ssml = `<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xml:lang='${lang}'><voice xml:lang='${lang}' name='${voice}'>${escapedText}</voice></speak>`;
 
         const response = await fetch(url, {

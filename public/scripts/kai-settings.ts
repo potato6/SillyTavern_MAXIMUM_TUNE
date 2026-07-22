@@ -16,16 +16,17 @@ import {
 import { t } from './i18n.js';
 import { autoSelectInstructPreset } from './instruct-mode.js';
 
-import {
-    power_user,
-} from './power-user.js';
+import { power_user } from './power-user.js';
 import { getEventSourceStream } from './sse-stream.js';
 import { getSortableDelay, versionCompare } from './utils.js';
 
 interface SortableInstance {
     option(key: string, value: boolean): void;
 }
-declare const Sortable: new (el: HTMLElement | null, options: Record<string, unknown>) => SortableInstance;
+declare const Sortable: new (
+    el: HTMLElement | null,
+    options: Record<string, unknown>,
+) => SortableInstance;
 
 export let koboldai_settings: unknown[] = [];
 export let koboldai_setting_names: string[] | Record<string, number> = [];
@@ -101,7 +102,7 @@ export function formatKoboldUrl(value: string): string | null {
  *
  */
 function selectKoboldGuiPreset() {
-        const option = document.querySelector('#settings_preset option[value="gui"]');
+    const option = document.querySelector('#settings_preset option[value="gui"]');
     option?.setAttribute('selected', 'true');
     option?.closest('select')?.dispatchEvent(new Event('change'));
 }
@@ -112,7 +113,11 @@ function selectKoboldGuiPreset() {
  * @param preset
  * @param settings
  */
-export function loadKoboldSettings(data: Record<string, unknown>, preset: Record<string, unknown>, settings: Record<string, unknown>) {
+export function loadKoboldSettings(
+    data: Record<string, unknown>,
+    preset: Record<string, unknown>,
+    settings: Record<string, unknown>,
+) {
     koboldai_setting_names = data.koboldai_setting_names as string[];
     koboldai_settings = data.koboldai_settings as unknown[];
     koboldai_settings.forEach(function (item: unknown, i: number) {
@@ -122,11 +127,15 @@ export function loadKoboldSettings(data: Record<string, unknown>, preset: Record
     if (document.getElementById('settings_preset')) {
         document.getElementById('settings_preset')!.innerHTML = '';
     }
-    document.getElementById('settings_preset')?.insertAdjacentHTML('beforeend', '<option value="gui">GUI KoboldAI Settings</option>');
+    document
+        .getElementById('settings_preset')
+        ?.insertAdjacentHTML('beforeend', '<option value="gui">GUI KoboldAI Settings</option>');
     const names: Record<string, number> = {};
     (koboldai_setting_names as string[]).forEach(function (item: string, i: number) {
         names[item] = i;
-        document.getElementById('settings_preset')?.insertAdjacentHTML('beforeend', `<option value=${i}>${item}</option>`);
+        document
+            .getElementById('settings_preset')
+            ?.insertAdjacentHTML('beforeend', `<option value=${i}>${item}</option>`);
     });
     koboldai_setting_names = names;
 
@@ -136,8 +145,14 @@ export function loadKoboldSettings(data: Record<string, unknown>, preset: Record
     if (kai_settings.preset_settings == 'gui') {
         selectKoboldGuiPreset();
     } else {
-        if (typeof (koboldai_setting_names as Record<string, number>)[kai_settings.preset_settings] !== 'undefined') {
-                        const presetOption = document.querySelector(`#settings_preset option[value="${(koboldai_setting_names as Record<string, number>)[kai_settings.preset_settings]}"]`);
+        if (
+            typeof (koboldai_setting_names as Record<string, number>)[
+                kai_settings.preset_settings
+            ] !== 'undefined'
+        ) {
+            const presetOption = document.querySelector(
+                `#settings_preset option[value="${(koboldai_setting_names as Record<string, number>)[kai_settings.preset_settings]}"]`,
+            );
             if (presetOption) presetOption.setAttribute('selected', 'true');
         } else {
             kai_settings.preset_settings = 'gui';
@@ -163,8 +178,10 @@ function loadKoboldSettingsFromPreset(preset: Record<string, unknown>) {
             continue;
         }
 
-        const value = (preset as Record<string, unknown>)[name] ?? (defaultValues as Record<string, unknown>)[name];
-        const slider = sliders.find(x => x.name === name);
+        const value =
+            (preset as Record<string, unknown>)[name] ??
+            (defaultValues as Record<string, unknown>)[name];
+        const slider = sliders.find((x) => x.name === name);
 
         if (!slider) {
             continue;
@@ -180,11 +197,13 @@ function loadKoboldSettingsFromPreset(preset: Record<string, unknown>) {
 
     if (Object.hasOwn(preset, 'streaming_kobold')) {
         kai_settings.streaming_kobold = preset.streaming_kobold as boolean;
-        const el = document.getElementById('streaming_kobold') as HTMLInputElement | null; if (el) el.checked = kai_settings.streaming_kobold;
+        const el = document.getElementById('streaming_kobold') as HTMLInputElement | null;
+        if (el) el.checked = kai_settings.streaming_kobold;
     }
     if (Object.hasOwn(preset, 'use_default_badwordsids')) {
         kai_settings.use_default_badwordsids = preset.use_default_badwordsids as boolean;
-        const el = document.getElementById('use_default_badwordsids') as HTMLInputElement | null; if (el) el.checked = kai_settings.use_default_badwordsids;
+        const el = document.getElementById('use_default_badwordsids') as HTMLInputElement | null;
+        if (el) el.checked = kai_settings.use_default_badwordsids;
     }
 }
 
@@ -198,7 +217,14 @@ function loadKoboldSettingsFromPreset(preset: Record<string, unknown>) {
  * @param {string} type Generation type.
  * @returns {object} Kobold generation data.
  */
-export function getKoboldGenerationData(finalPrompt: string, settings: Record<string, unknown>, maxLength: number, maxContextLength: number, isHorde: boolean, type: string) {
+export function getKoboldGenerationData(
+    finalPrompt: string,
+    settings: Record<string, unknown>,
+    maxLength: number,
+    maxContextLength: number,
+    isHorde: boolean,
+    type: string,
+) {
     const isImpersonate = type === 'impersonate';
     const isContinue = type === 'continue';
     const sampler_order = kai_settings.sampler_order || settings.sampler_order;
@@ -217,19 +243,28 @@ export function getKoboldGenerationData(finalPrompt: string, settings: Record<st
         top_a: kai_settings.top_a,
         top_k: kai_settings.top_k,
         top_p: kai_settings.top_p,
-        min_p: (kai_flags.can_use_min_p || isHorde) ? kai_settings.min_p : undefined,
+        min_p: kai_flags.can_use_min_p || isHorde ? kai_settings.min_p : undefined,
         typical: kai_settings.typical,
         use_world_info: false,
         singleline: false,
-        stop_sequence: (kai_flags.can_use_stop_sequence || isHorde) ? getStoppingStrings(isImpersonate, isContinue) : undefined,
+        stop_sequence:
+            kai_flags.can_use_stop_sequence || isHorde
+                ? getStoppingStrings(isImpersonate, isContinue)
+                : undefined,
         streaming: kai_settings.streaming_kobold && kai_flags.can_use_streaming && type !== 'quiet',
         can_abort: kai_flags.can_use_streaming,
-        mirostat: (kai_flags.can_use_mirostat || isHorde) ? kai_settings.mirostat : undefined,
-        mirostat_tau: (kai_flags.can_use_mirostat || isHorde) ? kai_settings.mirostat_tau : undefined,
-        mirostat_eta: (kai_flags.can_use_mirostat || isHorde) ? kai_settings.mirostat_eta : undefined,
-        use_default_badwordsids: (kai_flags.can_use_default_badwordsids || isHorde) ? kai_settings.use_default_badwordsids : undefined,
-        grammar: (kai_flags.can_use_grammar || isHorde) ? substituteParams(kai_settings.grammar) : undefined,
-        grammar_retain_state: (kai_flags.can_use_grammar && !!isContinue) ? true : undefined,
+        mirostat: kai_flags.can_use_mirostat || isHorde ? kai_settings.mirostat : undefined,
+        mirostat_tau: kai_flags.can_use_mirostat || isHorde ? kai_settings.mirostat_tau : undefined,
+        mirostat_eta: kai_flags.can_use_mirostat || isHorde ? kai_settings.mirostat_eta : undefined,
+        use_default_badwordsids:
+            kai_flags.can_use_default_badwordsids || isHorde
+                ? kai_settings.use_default_badwordsids
+                : undefined,
+        grammar:
+            kai_flags.can_use_grammar || isHorde
+                ? substituteParams(kai_settings.grammar)
+                : undefined,
+        grammar_retain_state: kai_flags.can_use_grammar && !!isContinue ? true : undefined,
         sampler_seed: kai_settings.seed >= 0 ? kai_settings.seed : undefined,
         api_server: kai_settings.api_server,
     };
@@ -263,7 +298,10 @@ function tryParseStreamingError(response: Response, decoded: string) {
  * @param generate_data
  * @param signal
  */
-export async function generateKoboldWithStreaming(generate_data: Record<string, unknown>, signal: AbortSignal) {
+export async function generateKoboldWithStreaming(
+    generate_data: Record<string, unknown>,
+    signal: AbortSignal,
+) {
     const response = await fetch('/api/backends/kobold/generate', {
         headers: getRequestHeaders(),
         body: JSON.stringify(generate_data),
@@ -307,112 +345,145 @@ const sliders: SliderDef[] = [
         sliderId: '#temp',
         counterId: '#temp_counter',
         format: (val: unknown) => Number(val).toFixed(2),
-        setValue: (val: unknown) => { kai_settings.temp = Number(val); },
+        setValue: (val: unknown) => {
+            kai_settings.temp = Number(val);
+        },
     },
     {
         name: 'rep_pen',
         sliderId: '#rep_pen',
         counterId: '#rep_pen_counter',
         format: (val: unknown) => Number(val).toFixed(2),
-        setValue: (val: unknown) => { kai_settings.rep_pen = Number(val); },
+        setValue: (val: unknown) => {
+            kai_settings.rep_pen = Number(val);
+        },
     },
     {
         name: 'rep_pen_range',
         sliderId: '#rep_pen_range',
         counterId: '#rep_pen_range_counter',
         format: (val: unknown) => String(val),
-        setValue: (val: unknown) => { kai_settings.rep_pen_range = Number(val); },
+        setValue: (val: unknown) => {
+            kai_settings.rep_pen_range = Number(val);
+        },
     },
     {
         name: 'top_p',
         sliderId: '#top_p',
         counterId: '#top_p_counter',
         format: (val: unknown) => String(val),
-        setValue: (val: unknown) => { kai_settings.top_p = Number(val); },
+        setValue: (val: unknown) => {
+            kai_settings.top_p = Number(val);
+        },
     },
     {
         name: 'min_p',
         sliderId: '#min_p',
         counterId: '#min_p_counter',
         format: (val: unknown) => String(val),
-        setValue: (val: unknown) => { kai_settings.min_p = Number(val); },
+        setValue: (val: unknown) => {
+            kai_settings.min_p = Number(val);
+        },
     },
     {
         name: 'top_a',
         sliderId: '#top_a',
         counterId: '#top_a_counter',
         format: (val: unknown) => String(val),
-        setValue: (val: unknown) => { kai_settings.top_a = Number(val); },
+        setValue: (val: unknown) => {
+            kai_settings.top_a = Number(val);
+        },
     },
     {
         name: 'top_k',
         sliderId: '#top_k',
         counterId: '#top_k_counter',
         format: (val: unknown) => String(val),
-        setValue: (val: unknown) => { kai_settings.top_k = Number(val); },
+        setValue: (val: unknown) => {
+            kai_settings.top_k = Number(val);
+        },
     },
     {
         name: 'typical',
         sliderId: '#typical_p',
         counterId: '#typical_p_counter',
         format: (val: unknown) => String(val),
-        setValue: (val: unknown) => { kai_settings.typical = Number(val); },
+        setValue: (val: unknown) => {
+            kai_settings.typical = Number(val);
+        },
     },
     {
         name: 'tfs',
         sliderId: '#tfs',
         counterId: '#tfs_counter',
         format: (val: unknown) => String(val),
-        setValue: (val: unknown) => { kai_settings.tfs = Number(val); },
+        setValue: (val: unknown) => {
+            kai_settings.tfs = Number(val);
+        },
     },
     {
         name: 'rep_pen_slope',
         sliderId: '#rep_pen_slope',
         counterId: '#rep_pen_slope_counter',
         format: (val: unknown) => String(val),
-        setValue: (val: unknown) => { kai_settings.rep_pen_slope = Number(val); },
+        setValue: (val: unknown) => {
+            kai_settings.rep_pen_slope = Number(val);
+        },
     },
     {
         name: 'sampler_order',
         sliderId: '#no_op_selector',
         counterId: '#no_op_selector',
         format: (val: unknown) => String(val),
-        setValue: (val: unknown) => { sortItemsByOrder(val as number[]); kai_settings.sampler_order = val as number[]; },
+        setValue: (val: unknown) => {
+            sortItemsByOrder(val as number[]);
+            kai_settings.sampler_order = val as number[];
+        },
     },
     {
         name: 'mirostat',
         sliderId: '#mirostat_mode_kobold',
         counterId: '#mirostat_mode_counter_kobold',
         format: (val: unknown) => String(val),
-        setValue: (val: unknown) => { kai_settings.mirostat = Number(val); },
+        setValue: (val: unknown) => {
+            kai_settings.mirostat = Number(val);
+        },
     },
     {
         name: 'mirostat_tau',
         sliderId: '#mirostat_tau_kobold',
         counterId: '#mirostat_tau_counter_kobold',
         format: (val: unknown) => String(val),
-        setValue: (val: unknown) => { kai_settings.mirostat_tau = Number(val); },
+        setValue: (val: unknown) => {
+            kai_settings.mirostat_tau = Number(val);
+        },
     },
     {
         name: 'mirostat_eta',
         sliderId: '#mirostat_eta_kobold',
         counterId: '#mirostat_eta_counter_kobold',
         format: (val: unknown) => String(val),
-        setValue: (val: unknown) => { kai_settings.mirostat_eta = Number(val); },
+        setValue: (val: unknown) => {
+            kai_settings.mirostat_eta = Number(val);
+        },
     },
     {
         name: 'grammar',
         sliderId: '#grammar',
         counterId: '#grammar_counter_kobold',
         format: (val: unknown) => String(val),
-        setValue: (val: unknown) => { kai_settings.grammar = String(val); },
+        setValue: (val: unknown) => {
+            kai_settings.grammar = String(val);
+        },
     },
     {
         name: 'seed',
         sliderId: '#seed_kobold',
         counterId: '#seed_counter_kobold',
         format: (val: unknown) => String(val),
-        setValue: (val: unknown) => { kai_settings.seed = Number(val); },
+        setValue: (val: unknown) => {
+            kai_settings.seed = Number(val);
+        },
     },
 ];
 
@@ -422,7 +493,10 @@ const sliders: SliderDef[] = [
  * @param {string} koboldCppVersion KoboldCPP version
  */
 export function setKoboldFlags(koboldUnitedVersion: string, koboldCppVersion: string) {
-    kai_flags.can_use_stop_sequence = versionCompare(koboldUnitedVersion, MIN_STOP_SEQUENCE_VERSION);
+    kai_flags.can_use_stop_sequence = versionCompare(
+        koboldUnitedVersion,
+        MIN_STOP_SEQUENCE_VERSION,
+    );
     kai_flags.can_use_streaming = versionCompare(koboldCppVersion, MIN_STREAMING_KCPPVERSION);
     kai_flags.can_use_tokenization = versionCompare(koboldCppVersion, MIN_TOKENIZATION_KCPPVERSION);
     kai_flags.can_use_default_badwordsids = versionCompare(koboldUnitedVersion, MIN_UNBAN_VERSION);
@@ -488,7 +562,7 @@ export async function getStatusKobold() {
 
         // We didn't get a 200 status code, but the endpoint has an explanation. Which means it DID connect, but I digress.
         if (online_status === 'no_connection' && data.response) {
-                notyf.error(data.response, t`API Error`);
+            notyf.error(data.response, t`API Error`);
         }
     } catch (err) {
         console.error('Error getting status', err);
@@ -502,7 +576,7 @@ export async function getStatusKobold() {
  *
  */
 export function initKoboldSettings() {
-    sliders.forEach(slider => {
+    sliders.forEach((slider) => {
         document.addEventListener('input', function (event) {
             if (!(event.target instanceof Element)) return;
             const el = event.target.closest(slider.sliderId);
@@ -534,27 +608,35 @@ export function initKoboldSettings() {
         }
     });
 
-    document.getElementById('streaming_kobold')?.addEventListener('input', function (this: HTMLInputElement) {
-        const value = !!this.checked;
-        kai_settings.streaming_kobold = value;
-        saveSettingsDebounced();
-    });
+    document
+        .getElementById('streaming_kobold')
+        ?.addEventListener('input', function (this: HTMLInputElement) {
+            const value = !!this.checked;
+            kai_settings.streaming_kobold = value;
+            saveSettingsDebounced();
+        });
 
-    document.getElementById('use_default_badwordsids')?.addEventListener('input', function (this: HTMLInputElement) {
-        const value = !!this.checked;
-        kai_settings.use_default_badwordsids = value;
-        saveSettingsDebounced();
-    });
+    document
+        .getElementById('use_default_badwordsids')
+        ?.addEventListener('input', function (this: HTMLInputElement) {
+            const value = !!this.checked;
+            kai_settings.use_default_badwordsids = value;
+            saveSettingsDebounced();
+        });
 
-    const koboldOrderEl = document.getElementById('kobold_order') as (HTMLElement & { sortableInstance?: SortableInstance }) | null;
+    const koboldOrderEl = document.getElementById('kobold_order') as
+        | (HTMLElement & { sortableInstance?: SortableInstance })
+        | null;
     if (koboldOrderEl) {
         koboldOrderEl.sortableInstance = new Sortable(koboldOrderEl, {
             delay: getSortableDelay(),
             onEnd: function () {
                 const order: number[] = [];
-                Array.from(document.getElementById('kobold_order')!.children).forEach(function (child) {
-                    order.push(Number((child as HTMLElement).dataset.id));
-                });
+                Array.from(document.getElementById('kobold_order')!.children).forEach(
+                    function (child) {
+                        order.push(Number((child as HTMLElement).dataset.id));
+                    },
+                );
                 kai_settings.sampler_order = order;
                 console.log('Samplers reordered:', kai_settings.sampler_order);
                 saveSettingsDebounced();
@@ -570,12 +652,22 @@ export function initKoboldSettings() {
 
     document.getElementById('settings_preset')?.addEventListener('change', async function () {
         const settingsPresetEl = document.getElementById('settings_preset')!;
-        if ((settingsPresetEl as HTMLSelectElement).options[(settingsPresetEl as HTMLSelectElement).selectedIndex]?.value != 'gui') {
-            kai_settings.preset_settings = (settingsPresetEl as HTMLSelectElement).options[(settingsPresetEl as HTMLSelectElement).selectedIndex]!.text;
-            const preset = (koboldai_settings as unknown[])[(koboldai_setting_names as Record<string, number>)[kai_settings.preset_settings]!] as Record<string, unknown>;
+        if (
+            (settingsPresetEl as HTMLSelectElement).options[
+                (settingsPresetEl as HTMLSelectElement).selectedIndex
+            ]?.value != 'gui'
+        ) {
+            kai_settings.preset_settings = (settingsPresetEl as HTMLSelectElement).options[
+                (settingsPresetEl as HTMLSelectElement).selectedIndex
+            ]!.text;
+            const preset = (koboldai_settings as unknown[])[
+                (koboldai_setting_names as Record<string, number>)[kai_settings.preset_settings]!
+            ] as Record<string, unknown>;
             loadKoboldSettingsFromPreset(preset);
             setGenerationParamsFromPreset(preset);
-            document.querySelectorAll('#kobold_api-settings input').forEach(el => (el as HTMLInputElement).disabled = false);
+            document
+                .querySelectorAll('#kobold_api-settings input')
+                .forEach((el) => ((el as HTMLInputElement).disabled = false));
             document.getElementById('kobold_api-settings')?.style.removeProperty('opacity');
             document.getElementById('kobold_api-settings')?.style.setProperty('opacity', '1');
             (document.getElementById('kobold_order') as HTMLElement | null)!.style.opacity = '1';
@@ -583,13 +675,18 @@ export function initKoboldSettings() {
         } else {
             kai_settings.preset_settings = 'gui';
 
-            document.querySelectorAll('#kobold_api-settings input').forEach(el => (el as HTMLInputElement).disabled = true);
+            document
+                .querySelectorAll('#kobold_api-settings input')
+                .forEach((el) => ((el as HTMLInputElement).disabled = true));
             document.getElementById('kobold_api-settings')?.style.setProperty('opacity', '0.5');
 
             (document.getElementById('kobold_order') as HTMLElement | null)!.style.opacity = '0.5';
             koboldOrderEl!.sortableInstance?.option('disabled', true);
         }
         saveSettingsDebounced();
-        await eventSource.emit(event_types.PRESET_CHANGED, { apiId: 'kobold', name: kai_settings.preset_settings });
+        await eventSource.emit(event_types.PRESET_CHANGED, {
+            apiId: 'kobold',
+            name: kai_settings.preset_settings,
+        });
     });
 }

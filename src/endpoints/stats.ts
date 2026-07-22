@@ -84,25 +84,57 @@ function parseTimestamp(timestamp: string | number | Date) {
     const dateFormats = [];
 
     // meridiem-based format
-    const convertFromMeridiemBased = (_: string, month: string, day: string, year: string, hour: string, minute: string, meridiem: string) => {
+    const convertFromMeridiemBased = (
+        _: string,
+        month: string,
+        day: string,
+        year: string,
+        hour: string,
+        minute: string,
+        meridiem: string,
+    ) => {
         const monthNum = monthNames.indexOf(month) + 1;
-        const hour24 = meridiem.toLowerCase() === 'pm' ? (parseInt(hour, 10) % 12) + 12 : parseInt(hour, 10) % 12;
+        const hour24 =
+            meridiem.toLowerCase() === 'pm'
+                ? (parseInt(hour, 10) % 12) + 12
+                : parseInt(hour, 10) % 12;
         return `${year}-${monthNum}-${day.padStart(2, '0')}T${hour24.toString().padStart(2, '0')}:${minute.padStart(2, '0')}:00`;
     };
     // June 19, 2023 2:20pm
-    dateFormats.push({ callback: convertFromMeridiemBased, pattern: /(\w+)\s(\d{1,2}),\s(\d{4})\s(\d{1,2}):(\d{1,2})(am|pm)/i });
+    dateFormats.push({
+        callback: convertFromMeridiemBased,
+        pattern: /(\w+)\s(\d{1,2}),\s(\d{4})\s(\d{1,2}):(\d{1,2})(am|pm)/i,
+    });
 
     // ST "humanized" format patterns
-    const convertFromHumanized = (_: string, year: string, month: string, day: string, hour: string, min: string, sec: string, ms: string | undefined) => {
+    const convertFromHumanized = (
+        _: string,
+        year: string,
+        month: string,
+        day: string,
+        hour: string,
+        min: string,
+        sec: string,
+        ms: string | undefined,
+    ) => {
         ms = typeof ms !== 'undefined' ? `.${ms.padStart(3, '0')}` : '';
         return `${year.padStart(4, '0')}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${hour.padStart(2, '0')}:${min.padStart(2, '0')}:${sec.padStart(2, '0')}${ms}Z`;
     };
     // 2024-07-12@01h31m37s123ms
-    dateFormats.push({ callback: convertFromHumanized, pattern: /(\d{4})-(\d{1,2})-(\d{1,2})@(\d{1,2})h(\d{1,2})m(\d{1,2})s(\d{1,3})ms/ });
+    dateFormats.push({
+        callback: convertFromHumanized,
+        pattern: /(\d{4})-(\d{1,2})-(\d{1,2})@(\d{1,2})h(\d{1,2})m(\d{1,2})s(\d{1,3})ms/,
+    });
     // 2024-7-12@01h31m37s
-    dateFormats.push({ callback: convertFromHumanized, pattern: /(\d{4})-(\d{1,2})-(\d{1,2})@(\d{1,2})h(\d{1,2})m(\d{1,2})s/ });
+    dateFormats.push({
+        callback: convertFromHumanized,
+        pattern: /(\d{4})-(\d{1,2})-(\d{1,2})@(\d{1,2})h(\d{1,2})m(\d{1,2})s/,
+    });
     // 2024-6-5 @14h 56m 50s 682ms
-    dateFormats.push({ callback: convertFromHumanized, pattern: /(\d{4})-(\d{1,2})-(\d{1,2}) @(\d{1,2})h (\d{1,2})m (\d{1,2})s (\d{1,3})ms/ });
+    dateFormats.push({
+        callback: convertFromHumanized,
+        pattern: /(\d{4})-(\d{1,2})-(\d{1,2}) @(\d{1,2})h (\d{1,2})m (\d{1,2})s (\d{1,3})ms/,
+    });
 
     for (const x of dateFormats) {
         const rgxMatch = timestamp.match(x.pattern);
@@ -126,9 +158,7 @@ async function collectAndCreateStats(chatsPath: string, charactersPath: string) 
 
     const pngFiles = files.filter((file) => file.endsWith('.png'));
 
-    const processingPromises = pngFiles.map((file) =>
-        calculateStats(chatsPath, file),
-    );
+    const processingPromises = pngFiles.map((file) => calculateStats(chatsPath, file));
     const statsArr = await Promise.all(processingPromises);
 
     let finalStats = {};
@@ -298,14 +328,8 @@ const calculateStats = (chatsPath: string, item: string) => {
 
                 const chatStat = fs.statSync(path.join(chatDir, chat));
                 stats.chat_size += chatStat.size;
-                stats.date_last_chat = Math.max(
-                    stats.date_last_chat,
-                    Math.floor(chatStat.mtimeMs),
-                );
-                stats.date_first_chat = Math.min(
-                    stats.date_first_chat,
-                    result.firstChatTime,
-                );
+                stats.date_last_chat = Math.max(stats.date_last_chat, Math.floor(chatStat.mtimeMs));
+                stats.date_first_chat = Math.min(stats.date_first_chat, result.firstChatTime);
             }
         }
     }
@@ -352,10 +376,7 @@ function calculateTotalGenTimeAndWordCount(
             try {
                 const json = JSON.parse(line);
                 if (json.mes) {
-                    const hash = crypto
-                        .createHash('sha256')
-                        .update(json.mes)
-                        .digest('hex');
+                    const hash = crypto.createHash('sha256').update(json.mes).digest('hex');
                     if (uniqueGenStartTimes.has(hash)) {
                         continue;
                     }
@@ -365,10 +386,7 @@ function calculateTotalGenTimeAndWordCount(
                 }
 
                 if (json.gen_started && json.gen_finished) {
-                    const genTime = calculateGenTime(
-                        json.gen_started,
-                        json.gen_finished,
-                    );
+                    const genTime = calculateGenTime(json.gen_started, json.gen_finished);
                     totalGenTime += genTime;
 
                     if (json.swipes && !json.swipe_info) {
@@ -416,10 +434,7 @@ function calculateTotalGenTimeAndWordCount(
                         // Start from the second swipe
                         const swipe = json.swipe_info[i];
                         if (swipe.gen_started && swipe.gen_finished) {
-                            totalGenTime += calculateGenTime(
-                                swipe.gen_started,
-                                swipe.gen_finished,
-                            );
+                            totalGenTime += calculateGenTime(swipe.gen_started, swipe.gen_finished);
                         }
                     }
                 }
@@ -460,7 +475,11 @@ router.post('/get', function (request, response) {
  */
 router.post('/recreate', async function (request, response) {
     try {
-        await recreateStats(request.user.profile.handle, request.user.directories.chats, request.user.directories.characters);
+        await recreateStats(
+            request.user.profile.handle,
+            request.user.directories.chats,
+            request.user.directories.characters,
+        );
         return response.sendStatus(200);
     } catch (error) {
         console.error(error);

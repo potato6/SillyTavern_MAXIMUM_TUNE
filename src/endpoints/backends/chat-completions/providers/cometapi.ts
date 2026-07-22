@@ -6,9 +6,8 @@ const provider = createOAIChatProvider({
     defaultBase: 'https://api.cometapi.com/v1',
     secretKey: { id: 'COMETAPI', label: 'CometAPI', category: 'chat-completion' },
     supportsReverseProxy: false,
-    extraBodyParams: (req) => ({
-        ...(req.body.reasoning_effort ? { reasoning_effort: req.body.reasoning_effort } : {}),
-    }),
+    extraBodyParams: (req) =>
+        req.body.reasoning_effort ? { reasoning_effort: req.body.reasoning_effort } : {},
 });
 
 export default provider;

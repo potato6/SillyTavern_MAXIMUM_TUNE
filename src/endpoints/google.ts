@@ -19,7 +19,12 @@ const API_VERTEX_AI = 'https://us-central1-aiplatform.googleapis.com';
  * @param numChannels
  * @param bitsPerSample
  */
-function createWavHeader(dataSize: number, sampleRate: number, numChannels = 1, bitsPerSample = 16) {
+function createWavHeader(
+    dataSize: number,
+    sampleRate: number,
+    numChannels = 1,
+    bitsPerSample = 16,
+) {
     const header = Buffer.alloc(44);
     header.write('RIFF', 0);
     header.writeUInt32LE(36 + dataSize, 4);
@@ -29,8 +34,8 @@ function createWavHeader(dataSize: number, sampleRate: number, numChannels = 1, 
     header.writeUInt16LE(1, 20);
     header.writeUInt16LE(numChannels, 22);
     header.writeUInt32LE(sampleRate, 24);
-    header.writeUInt32LE(sampleRate * numChannels * bitsPerSample / 8, 28);
-    header.writeUInt16LE(numChannels * bitsPerSample / 8, 32);
+    header.writeUInt32LE((sampleRate * numChannels * bitsPerSample) / 8, 28);
+    header.writeUInt16LE((numChannels * bitsPerSample) / 8, 32);
     header.writeUInt16LE(bitsPerSample, 34);
     header.write('data', 36);
     header.writeUInt32LE(dataSize, 40);
@@ -73,7 +78,10 @@ export async function getVertexAIAuth(request: express.Request) {
         throw new Error('API key is required for Vertex AI Express mode');
     } else if (authMode === 'full') {
         // Get service account JSON from backend storage
-        const serviceAccountJson = readSecret(request.user.directories, SECRET_KEYS.VERTEXAI_SERVICE_ACCOUNT);
+        const serviceAccountJson = readSecret(
+            request.user.directories,
+            SECRET_KEYS.VERTEXAI_SERVICE_ACCOUNT,
+        );
 
         if (serviceAccountJson) {
             try {
@@ -87,7 +95,9 @@ export async function getVertexAIAuth(request: express.Request) {
             } catch (error) {
                 console.error('Failed to authenticate with service account:', error);
                 // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-                throw new Error(`Service account authentication failed: ${error.message}`);
+                throw new Error(`Service account authentication failed: ${error.message}`, {
+                    cause: error,
+                });
             }
         }
         throw new Error('Service Account JSON is required for Vertex AI Full mode');
@@ -150,7 +160,7 @@ export async function getAccessToken(jwtToken: string) {
     }
 
     /** @type {any} */
-    const data = await response.json() as Record<string, unknown>;
+    const data = (await response.json()) as Record<string, unknown>;
     return data.access_token;
 }
 
@@ -180,7 +190,11 @@ export function getProjectIdFromServiceAccount(serviceAccount: Record<string, un
  * @param {string} endpoint API endpoint (default: 'generateContent')
  * @returns {Promise<{url: string, headers: object, apiName: string, baseUrl: string, safetySettings: object[]}>} URL, headers, and API name
  */
-export async function getGoogleApiConfig(request: express.Request, model: string, endpoint = 'generateContent') {
+export async function getGoogleApiConfig(
+    request: express.Request,
+    model: string,
+    endpoint = 'generateContent',
+) {
     const useVertexAi = request.body.api === 'vertexai';
     const region = request.body.vertexai_region || 'us-central1';
     const apiName = useVertexAi ? 'Google Vertex AI' : 'Google AI Studio';
@@ -200,9 +214,10 @@ export async function getGoogleApiConfig(request: express.Request, model: string
             // Express mode: use API key parameter
             const keyParam = authHeader.replace('Bearer ', '');
             const projectId = request.body.vertexai_express_project_id;
-            baseUrl = region === 'global'
-                ? 'https://aiplatform.googleapis.com/v1'
-                : `https://${region}-aiplatform.googleapis.com/v1`;
+            baseUrl =
+                region === 'global'
+                    ? 'https://aiplatform.googleapis.com/v1'
+                    : `https://${region}-aiplatform.googleapis.com/v1`;
             url = projectId
                 ? `${baseUrl}/projects/${projectId}/locations/${region}/publishers/google/models/${model}:${endpoint}`
                 : `${baseUrl}/publishers/google/models/${model}:${endpoint}`;
@@ -211,7 +226,10 @@ export async function getGoogleApiConfig(request: express.Request, model: string
         } else if (authType === 'full') {
             // Full mode: use project-specific URL with Authorization header
             // Get project ID from Service Account JSON
-            const serviceAccountJson = readSecret(request.user.directories, SECRET_KEYS.VERTEXAI_SERVICE_ACCOUNT);
+            const serviceAccountJson = readSecret(
+                request.user.directories,
+                SECRET_KEYS.VERTEXAI_SERVICE_ACCOUNT,
+            );
             if (!serviceAccountJson) {
                 throw new Error('Vertex AI Service Account JSON is missing.');
             }
@@ -224,9 +242,10 @@ export async function getGoogleApiConfig(request: express.Request, model: string
                 throw new Error('Failed to extract project ID from Service Account JSON.');
             }
             // Handle global region differently - no region prefix in hostname
-            baseUrl = region === 'global'
-                ? 'https://aiplatform.googleapis.com/v1'
-                : `https://${region}-aiplatform.googleapis.com/v1`;
+            baseUrl =
+                region === 'global'
+                    ? 'https://aiplatform.googleapis.com/v1'
+                    : `https://${region}-aiplatform.googleapis.com/v1`;
             url = `${baseUrl}/projects/${projectId}/locations/${region}/publishers/google/models/${model}:${endpoint}`;
             // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             headers['Authorization'] = authHeader;
@@ -240,7 +259,9 @@ export async function getGoogleApiConfig(request: express.Request, model: string
         }
     } else {
         // Google AI Studio
-        const apiKey = request.body.reverse_proxy ? request.body.proxy_password : readSecret(request.user.directories, SECRET_KEYS.MAKERSUITE);
+        const apiKey = request.body.reverse_proxy
+            ? request.body.proxy_password
+            : readSecret(request.user.directories, SECRET_KEYS.MAKERSUITE);
         const apiUrl = trimTrailingSlash(request.body.reverse_proxy || API_MAKERSUITE);
         // @ts-expect-error TS(2345) FIXME: Argument of type '"v1beta"' is not assignable to p... Remove this comment to see the full error message
         const apiVersion = getConfigValue('gemini.apiVersion', 'v1beta');
@@ -263,17 +284,20 @@ router.post('/caption-image', async (request, response) => {
         const { url, headers, apiName, safetySettings } = await getGoogleApiConfig(request, model);
 
         const body = {
-            contents: [{
-                role: 'user',
-                parts: [
-                    { text: request.body.prompt },
-                    {
-                        inlineData: {
-                            mimeType: mimeType,
-                            data: base64Data,
+            contents: [
+                {
+                    role: 'user',
+                    parts: [
+                        { text: request.body.prompt },
+                        {
+                            inlineData: {
+                                mimeType: mimeType,
+                                data: base64Data,
+                            },
                         },
-                    }],
-            }],
+                    ],
+                },
+            ],
             safetySettings: safetySettings,
         };
 
@@ -286,8 +310,11 @@ router.post('/caption-image', async (request, response) => {
         });
 
         if (!result.ok) {
-            const error = await result.json() as Record<string, unknown>;
-            console.error(`${apiName} API returned error: ${result.status} ${result.statusText}`, error);
+            const error = (await result.json()) as Record<string, unknown>;
+            console.error(
+                `${apiName} API returned error: ${result.status} ${result.statusText}`,
+                error,
+            );
             return response.status(500).send({ error: true });
         }
 
@@ -297,7 +324,9 @@ router.post('/caption-image', async (request, response) => {
 
         const candidates = data?.candidates;
         if (!candidates) {
-            return response.status(500).send('No candidates found, image was most likely filtered.');
+            return response
+                .status(500)
+                .send('No candidates found, image was most likely filtered.');
         }
 
         const caption = candidates[0].content.parts[0].text;
@@ -323,7 +352,7 @@ router.post('/generate-voice', async (request, response) => {
 
         const result = await speak(text, { to: voice, forceBatch: false });
         const buffer = Array.isArray(result)
-            ? Buffer.concat(result.map(x => new Uint8Array(Buffer.from(x.toString(), 'base64'))))
+            ? Buffer.concat(result.map((x) => new Uint8Array(Buffer.from(x.toString(), 'base64'))))
             : Buffer.from(result.toString(), 'base64');
 
         response.setHeader('Content-Type', 'audio/mpeg');
@@ -356,7 +385,12 @@ router.post('/list-native-voices', async (_, response) => {
             { name: 'Despina', voice_id: 'Despina', lang: 'en-US', description: 'Smooth' },
             { name: 'Erinome', voice_id: 'Erinome', lang: 'en-US', description: 'Clear' },
             { name: 'Algenib', voice_id: 'Algenib', lang: 'en-US', description: 'Gravelly' },
-            { name: 'Rasalgethi', voice_id: 'Rasalgethi', lang: 'en-US', description: 'Informative' },
+            {
+                name: 'Rasalgethi',
+                voice_id: 'Rasalgethi',
+                lang: 'en-US',
+                description: 'Informative',
+            },
             { name: 'Laomedeia', voice_id: 'Laomedeia', lang: 'en-US', description: 'Upbeat' },
             { name: 'Achernar', voice_id: 'Achernar', lang: 'en-US', description: 'Soft' },
             { name: 'Alnilam', voice_id: 'Alnilam', lang: 'en-US', description: 'Firm' },
@@ -364,10 +398,25 @@ router.post('/list-native-voices', async (_, response) => {
             { name: 'Gacrux', voice_id: 'Gacrux', lang: 'en-US', description: 'Mature' },
             { name: 'Pulcherrima', voice_id: 'Pulcherrima', lang: 'en-US', description: 'Forward' },
             { name: 'Achird', voice_id: 'Achird', lang: 'en-US', description: 'Friendly' },
-            { name: 'Zubenelgenubi', voice_id: 'Zubenelgenubi', lang: 'en-US', description: 'Casual' },
-            { name: 'Vindemiatrix', voice_id: 'Vindemiatrix', lang: 'en-US', description: 'Gentle' },
+            {
+                name: 'Zubenelgenubi',
+                voice_id: 'Zubenelgenubi',
+                lang: 'en-US',
+                description: 'Casual',
+            },
+            {
+                name: 'Vindemiatrix',
+                voice_id: 'Vindemiatrix',
+                lang: 'en-US',
+                description: 'Gentle',
+            },
             { name: 'Sadachbia', voice_id: 'Sadachbia', lang: 'en-US', description: 'Lively' },
-            { name: 'Sadaltager', voice_id: 'Sadaltager', lang: 'en-US', description: 'Knowledgeable' },
+            {
+                name: 'Sadaltager',
+                voice_id: 'Sadaltager',
+                lang: 'en-US',
+                description: 'Knowledgeable',
+            },
             { name: 'Sulafat', voice_id: 'Sulafat', lang: 'en-US', description: 'Warm' },
         ];
         return response.json({ voices });
@@ -385,10 +434,12 @@ router.post('/generate-native-tts', async (request, response) => {
         console.debug(`${apiName} TTS request`, { model, text, voice });
 
         const requestBody = {
-            contents: [{
-                role: 'user',
-                parts: [{ text: text }],
-            }],
+            contents: [
+                {
+                    role: 'user',
+                    parts: [{ text: text }],
+                },
+            ],
             generationConfig: {
                 responseModalities: ['AUDIO'],
                 speechConfig: {
@@ -410,7 +461,10 @@ router.post('/generate-native-tts', async (request, response) => {
 
         if (!result.ok) {
             const errorText = await result.text();
-            console.error(`${apiName} TTS API error: ${result.status} ${result.statusText}`, errorText);
+            console.error(
+                `${apiName} TTS API error: ${result.status} ${result.statusText}`,
+                errorText,
+            );
             const errorMessage = JSON.parse(errorText).error?.message || 'TTS generation failed.';
             return response.status(result.status).json({ error: errorMessage });
         }
@@ -447,7 +501,9 @@ router.post('/generate-native-tts', async (request, response) => {
     } catch (error) {
         console.error('Google TTS generation failed:', error);
         if (!response.headersSent) {
-            return response.status(500).json({ error: 'Internal server error during TTS generation' });
+            return response
+                .status(500)
+                .json({ error: 'Internal server error during TTS generation' });
         }
         return response.end();
     }
@@ -467,18 +523,26 @@ router.post('/generate-image', async (request, response) => {
         const personGeneration = getConfigValue('gemini.image.personGeneration', 'allow_adult');
 
         const requestBody = {
-            instances: [{
-                prompt: request.body.prompt || '',
-            }],
+            instances: [
+                {
+                    prompt: request.body.prompt || '',
+                },
+            ],
             parameters: {
                 sampleCount: 1,
-                seed: isVertex ? Number(request.body.seed ?? Math.floor(Math.random() * 1000000)) : undefined,
+                seed: isVertex
+                    ? Number(request.body.seed ?? Math.floor(Math.random() * 1000000))
+                    : undefined,
                 enhancePrompt: isVertex ? Boolean(request.body.enhance ?? false) : undefined,
-                negativePrompt: isVertex ? (request.body.negative_prompt || undefined) : undefined,
+                negativePrompt: isVertex ? request.body.negative_prompt || undefined : undefined,
                 aspectRatio: String(request.body.aspect_ratio || '1:1'),
                 personGeneration: !isDeprecated && personGeneration ? personGeneration : undefined,
                 language: isVertex ? 'auto' : undefined,
-                safetySetting: !isDeprecated ? (isVertex ? 'block_only_high' : 'block_low_and_above') : undefined,
+                safetySetting: !isDeprecated
+                    ? isVertex
+                        ? 'block_only_high'
+                        : 'block_low_and_above'
+                    : undefined,
                 addWatermark: isVertex ? false : undefined,
                 outputOptions: {
                     mimeType: 'image/jpeg',
@@ -497,7 +561,10 @@ router.post('/generate-image', async (request, response) => {
 
         if (!result.ok) {
             const errorText = await result.text();
-            console.warn(`${apiName} image generation error: ${result.status} ${result.statusText}`, errorText);
+            console.warn(
+                `${apiName} image generation error: ${result.status} ${result.statusText}`,
+                errorText,
+            );
             return response.status(500).send('Image generation request failed');
         }
 
@@ -529,7 +596,11 @@ router.post('/generate-video', async (request, response) => {
         });
 
         const model = request.body.model || 'veo-3.1-generate-preview';
-        const { url, headers, apiName, baseUrl } = await getGoogleApiConfig(request, model, 'predictLongRunning');
+        const { url, headers, apiName, baseUrl } = await getGoogleApiConfig(
+            request,
+            model,
+            'predictLongRunning',
+        );
         const useVertexAi = request.body.api === 'vertexai';
 
         const isVeo3 = /veo-3/.test(model);
@@ -537,15 +608,19 @@ router.post('/generate-video', async (request, response) => {
         const upperBound = isVeo3 ? 8 : 8;
 
         const requestBody = {
-            instances: [{
-                prompt: String(request.body.prompt || ''),
-            }],
+            instances: [
+                {
+                    prompt: String(request.body.prompt || ''),
+                },
+            ],
             parameters: {
                 negativePrompt: String(request.body.negative_prompt || ''),
                 durationSeconds: clamp(Number(request.body.seconds || 6), lowerBound, upperBound),
                 aspectRatio: String(request.body.aspect_ratio || '16:9'),
                 personGeneration: 'allow_all',
-                seed: isVeo3 ? Number(request.body.seed ?? Math.floor(Math.random() * 1000000)) : undefined,
+                seed: isVeo3
+                    ? Number(request.body.seed ?? Math.floor(Math.random() * 1000000))
+                    : undefined,
             },
         };
 
@@ -558,7 +633,10 @@ router.post('/generate-video', async (request, response) => {
 
         if (!videoJobResponse.ok) {
             const errorText = await videoJobResponse.text();
-            console.warn(`${apiName} video generation error: ${videoJobResponse.status} ${videoJobResponse.statusText}`, errorText);
+            console.warn(
+                `${apiName} video generation error: ${videoJobResponse.status} ${videoJobResponse.statusText}`,
+                errorText,
+            );
             return response.status(500).send('Video generation request failed');
         }
 
@@ -582,7 +660,11 @@ router.post('/generate-video', async (request, response) => {
             await delay(5000 + attempt * 1000);
 
             if (useVertexAi) {
-                const { url: pollUrl, headers: pollHeaders } = await getGoogleApiConfig(request, model, 'fetchPredictOperation');
+                const { url: pollUrl, headers: pollHeaders } = await getGoogleApiConfig(
+                    request,
+                    model,
+                    'fetchPredictOperation',
+                );
 
                 const pollResponse = await fetch(pollUrl, {
                     method: 'POST',
@@ -592,27 +674,40 @@ router.post('/generate-video', async (request, response) => {
 
                 if (!pollResponse.ok) {
                     const errorText = await pollResponse.text();
-                    console.warn(`${apiName} video job status error: ${pollResponse.status} ${pollResponse.statusText}`, errorText);
+                    console.warn(
+                        `${apiName} video job status error: ${pollResponse.status} ${pollResponse.statusText}`,
+                        errorText,
+                    );
                     return response.status(500).send('Video job status request failed');
                 }
 
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic Vertex AI response
                 const pollData: any = await pollResponse.json();
                 const jobDone = pollData?.done;
-                console.debug(`${apiName} video job status attempt ${attempt + 1}: ${jobDone ? 'done' : 'running'}`);
+                console.debug(
+                    `${apiName} video job status attempt ${attempt + 1}: ${jobDone ? 'done' : 'running'}`,
+                );
 
                 if (jobDone) {
                     const videoData = pollData?.response?.videos?.[0]?.bytesBase64Encoded;
                     if (!videoData) {
-                        const pollDataLog = util.inspect(pollData, { depth: 5, colors: true, maxStringLength: 500 });
-                        console.warn(`${apiName} video generation error: No video data found in response`, pollDataLog);
+                        const pollDataLog = util.inspect(pollData, {
+                            depth: 5,
+                            colors: true,
+                            maxStringLength: 500,
+                        });
+                        console.warn(
+                            `${apiName} video generation error: No video data found in response`,
+                            pollDataLog,
+                        );
                         return response.status(500).send('No video data found in response');
                     }
 
                     return response.send({ video: videoData });
                 }
             } else {
-                const pollUrl = baseUrl.replace(/\/+$/, '') + '/' + videoJobName.replace(/^\/+/, '');
+                const pollUrl =
+                    baseUrl.replace(/\/+$/, '') + '/' + videoJobName.replace(/^\/+/, '');
                 const pollResponse = await fetch(pollUrl, {
                     method: 'GET',
                     headers: headers,
@@ -620,22 +715,36 @@ router.post('/generate-video', async (request, response) => {
 
                 if (!pollResponse.ok) {
                     const errorText = await pollResponse.text();
-                    console.warn(`${apiName} video job status error: ${pollResponse.status} ${pollResponse.statusText}`, errorText);
+                    console.warn(
+                        `${apiName} video job status error: ${pollResponse.status} ${pollResponse.statusText}`,
+                        errorText,
+                    );
                     return response.status(500).send('Video job status request failed');
                 }
 
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic Vertex AI response
                 const pollData: any = await pollResponse.json();
                 const jobDone = pollData?.done;
-                console.debug(`${apiName} video job status attempt ${attempt + 1}: ${jobDone ? 'done' : 'running'}`);
+                console.debug(
+                    `${apiName} video job status attempt ${attempt + 1}: ${jobDone ? 'done' : 'running'}`,
+                );
 
                 if (jobDone) {
-                    const videoUri = pollData?.response?.generateVideoResponse?.generatedSamples?.[0]?.video?.uri;
+                    const videoUri =
+                        pollData?.response?.generateVideoResponse?.generatedSamples?.[0]?.video
+                            ?.uri;
                     console.debug(`${apiName} video URI:`, videoUri);
 
                     if (!videoUri) {
-                        const pollDataLog = util.inspect(pollData, { depth: 5, colors: true, maxStringLength: 500 });
-                        console.warn(`${apiName} video generation error: No video URI found in response`, pollDataLog);
+                        const pollDataLog = util.inspect(pollData, {
+                            depth: 5,
+                            colors: true,
+                            maxStringLength: 500,
+                        });
+                        console.warn(
+                            `${apiName} video generation error: No video URI found in response`,
+                            pollDataLog,
+                        );
                         return response.status(500).send('No video URI found in response');
                     }
 
@@ -645,7 +754,9 @@ router.post('/generate-video', async (request, response) => {
                     });
 
                     if (!videoResponse.ok) {
-                        console.warn(`${apiName} video fetch error: ${videoResponse.status} ${videoResponse.statusText}`);
+                        console.warn(
+                            `${apiName} video fetch error: ${videoResponse.status} ${videoResponse.statusText}`,
+                        );
                         return response.status(500).send('Video fetch request failed');
                     }
 

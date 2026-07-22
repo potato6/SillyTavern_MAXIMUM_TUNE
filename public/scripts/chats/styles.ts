@@ -1,11 +1,6 @@
 import { DOMPurify, css } from '../../lib.js';
 import { accountStorage } from '../util/AccountStorage.js';
-import {
-    converter,
-    characters,
-    this_chid,
-    substituteParams,
-} from '../../script.js';
+import { converter, characters, this_chid, substituteParams } from '../../script.js';
 import { getCurrentEntityId, isExternalMediaAllowed } from '../chats.js';
 import { selected_group } from '../group-chats.js';
 import { power_user } from '../power-user.js';
@@ -30,15 +25,11 @@ export class StylesPreference {
     }
 
     exists(): boolean {
-        return this.avatarId
-            ? accountStorage.getItem(this.key) !== null
-            : true;
+        return this.avatarId ? accountStorage.getItem(this.key) !== null : true;
     }
 
     get(): boolean {
-        return this.avatarId
-            ? accountStorage.getItem(this.key) === 'true'
-            : false;
+        return this.avatarId ? accountStorage.getItem(this.key) === 'true' : false;
     }
 
     set(allowed: boolean): void {
@@ -67,10 +58,7 @@ export function encodeStyleTags(text: string): string {
  * @param root0
  * @param root0.prefix
  */
-export function decodeStyleTags(
-    text: string,
-    { prefix }: { prefix?: string } = {},
-): string {
+export function decodeStyleTags(text: string, { prefix }: { prefix?: string } = {}): string {
     const styleDecodeRegex = /<custom-style>(.+?)<\/custom-style>/gms;
 
     /**
@@ -80,9 +68,7 @@ export function decodeStyleTags(
     function sanitizeRule(rule: Record<string, unknown>): Record<string, unknown> {
         const selectors = rule.selectors;
         if (Array.isArray(selectors)) {
-            rule.selectors = selectors
-                .map((s) => sanitizeSelector(String(s)))
-                .filter(Boolean);
+            rule.selectors = selectors.map((s) => sanitizeSelector(String(s))).filter(Boolean);
         }
         return rule;
     }
@@ -92,7 +78,18 @@ export function decodeStyleTags(
      * @param selector
      */
     function sanitizeSelector(selector: string): string {
-        const pseudoClasses = ['hover', 'active', 'focus', 'visited', 'link', 'checked', 'disabled', 'enabled', 'empty', 'target'];
+        const pseudoClasses = [
+            'hover',
+            'active',
+            'focus',
+            'visited',
+            'link',
+            'checked',
+            'disabled',
+            'enabled',
+            'empty',
+            'target',
+        ];
         const pseudoRegex = new RegExp(`:(${pseudoClasses.join('|')})`, 'gi');
         const sanitizedContent = selector.replace(pseudoRegex, ':custom-$1');
 
@@ -106,7 +103,10 @@ export function decodeStyleTags(
      * @param selector
      */
     function sanitizeSimpleSelector(selector: string): string {
-        let sanitized = selector.replace(/::before/gi, '').replace(/::after/gi, '').replace(/::selection/gi, '');
+        let sanitized = selector
+            .replace(/::before/gi, '')
+            .replace(/::after/gi, '')
+            .replace(/::selection/gi, '');
         sanitized = sanitized.replace(/\[.*?\]/g, '');
         if (sanitized.startsWith(prefix || '.mes_text ')) {
             sanitized = sanitized.substring((prefix || '.mes_text ').length);
@@ -220,19 +220,26 @@ export function addDOMPurifyHooks(): void {
         }
 
         const permittedNodeTypes = ['BUTTON', 'DIV'];
-        if (config.MESSAGE_ALLOW_SYSTEM_UI && node.classList.contains('menu_button') && permittedNodeTypes.includes(node.nodeName)) {
+        if (
+            config.MESSAGE_ALLOW_SYSTEM_UI &&
+            node.classList.contains('menu_button') &&
+            permittedNodeTypes.includes(node.nodeName)
+        ) {
             return;
         }
 
         switch (data.attrName) {
             case 'class': {
                 if (data.attrValue) {
-                    data.attrValue = data.attrValue.split(' ').map((v: string) => {
-                        if (v.startsWith('fa-') || v.startsWith('note-') || v === 'monospace') {
-                            return v;
-                        }
-                        return 'custom-' + v;
-                    }).join(' ');
+                    data.attrValue = data.attrValue
+                        .split(' ')
+                        .map((v: string) => {
+                            if (v.startsWith('fa-') || v.startsWith('note-') || v === 'monospace') {
+                                return v;
+                            }
+                            return 'custom-' + v;
+                        })
+                        .join(' ');
                 }
                 break;
             }
@@ -290,42 +297,45 @@ export function addDOMPurifyHooks(): void {
             case 'TRACK':
             case 'EMBED':
             case 'OBJECT':
-            case 'IMG': {
-                const isExternalUrl = (url: string) => (url.indexOf('://') > 0 || url.indexOf('//') === 0) && !url.startsWith(window.location.origin);
-                const src = node.getAttribute('src');
-                const data = node.getAttribute('data');
-                const srcset = node.getAttribute('srcset');
+            case 'IMG':
+                {
+                    const isExternalUrl = (url: string) =>
+                        (url.indexOf('://') > 0 || url.indexOf('//') === 0) &&
+                        !url.startsWith(window.location.origin);
+                    const src = node.getAttribute('src');
+                    const data = node.getAttribute('data');
+                    const srcset = node.getAttribute('srcset');
 
-                if (srcset) {
-                    const srcsetUrls = srcset.split(',');
-                    for (const srcsetUrl of srcsetUrls) {
-                        const [url = ''] = srcsetUrl.trim().split(' ');
-                        if (isExternalUrl(url)) {
-                            console.warn('External media blocked', url);
-                            node.remove();
-                            mediaBlocked = true;
-                            break;
+                    if (srcset) {
+                        const srcsetUrls = srcset.split(',');
+                        for (const srcsetUrl of srcsetUrls) {
+                            const [url = ''] = srcsetUrl.trim().split(' ');
+                            if (isExternalUrl(url)) {
+                                console.warn('External media blocked', url);
+                                node.remove();
+                                mediaBlocked = true;
+                                break;
+                            }
                         }
                     }
-                }
 
-                if (src && isExternalUrl(src)) {
-                    console.warn('External media blocked', src);
-                    mediaBlocked = true;
-                    node.remove();
-                }
+                    if (src && isExternalUrl(src)) {
+                        console.warn('External media blocked', src);
+                        mediaBlocked = true;
+                        node.remove();
+                    }
 
-                if (data && isExternalUrl(data)) {
-                    console.warn('External media blocked', data);
-                    mediaBlocked = true;
-                    node.remove();
-                }
+                    if (data && isExternalUrl(data)) {
+                        console.warn('External media blocked', data);
+                        mediaBlocked = true;
+                        node.remove();
+                    }
 
-                if (mediaBlocked && (node instanceof HTMLMediaElement)) {
-                    node.autoplay = false;
-                    node.pause();
+                    if (mediaBlocked && node instanceof HTMLMediaElement) {
+                        node.autoplay = false;
+                        node.pause();
+                    }
                 }
-            }
                 break;
         }
 
@@ -379,13 +389,18 @@ export async function openGlobalStylesPreferenceDialog(): Promise<void> {
     if (allowedRadio instanceof HTMLInputElement) allowedRadio.checked = currentValue === true;
     if (forbiddenRadio instanceof HTMLInputElement) forbiddenRadio.checked = currentValue === false;
 
-    const currentPreferenceRadio = template.querySelector('input[name="styles_preference"]:checked');
+    const currentPreferenceRadio = template.querySelector(
+        'input[name="styles_preference"]:checked',
+    );
     if (!currentPreferenceRadio) {
         const defaultRadio = template.querySelector('#styles_default');
         if (defaultRadio instanceof HTMLInputElement) defaultRadio.checked = true;
     }
 
-    const result = await callGenericPopup(template, POPUP_TYPE.CONFIRM, '', { wide: true, large: true });
+    const result = await callGenericPopup(template, POPUP_TYPE.CONFIRM, '', {
+        wide: true,
+        large: true,
+    });
     if (result !== POPUP_RESULT.AFFIRMATIVE) return;
 
     const newValue = template.querySelector('input[name="styles_preference"]:checked');
@@ -454,7 +469,8 @@ export function setGlobalStylesButtonClass(): void {
 
     if (selected_group) {
         button.classList.add('neutral');
-        button.title = 'Group chat detected: global styles from character notes will not be applied';
+        button.title =
+            'Group chat detected: global styles from character notes will not be applied';
         return;
     }
 
@@ -524,25 +540,34 @@ export async function openExternalMediaOverridesDialog(): Promise<void> {
         overrideAllowed.checked = power_user.external_media_allowed_overrides.includes(entityId);
     }
     if (overrideForbidden instanceof HTMLInputElement) {
-        overrideForbidden.checked = power_user.external_media_forbidden_overrides.includes(entityId);
+        overrideForbidden.checked =
+            power_user.external_media_forbidden_overrides.includes(entityId);
     }
     if (overrideGlobal instanceof HTMLInputElement) {
-        overrideGlobal.checked = !power_user.external_media_allowed_overrides.includes(entityId)
-            && !power_user.external_media_forbidden_overrides.includes(entityId);
+        overrideGlobal.checked =
+            !power_user.external_media_allowed_overrides.includes(entityId) &&
+            !power_user.external_media_forbidden_overrides.includes(entityId);
     }
 
-    const result = await callGenericPopup(template, POPUP_TYPE.CONFIRM, '', { wide: true, large: true });
+    const result = await callGenericPopup(template, POPUP_TYPE.CONFIRM, '', {
+        wide: true,
+        large: true,
+    });
     if (result !== POPUP_RESULT.AFFIRMATIVE) return;
 
     // Apply the changes
     if (overrideAllowed instanceof HTMLInputElement && overrideAllowed.checked) {
         power_user.external_media_allowed_overrides.push(entityId);
-        power_user.external_media_forbidden_overrides = power_user.external_media_forbidden_overrides.filter((v: string) => v !== entityId);
+        power_user.external_media_forbidden_overrides =
+            power_user.external_media_forbidden_overrides.filter((v: string) => v !== entityId);
     } else if (overrideForbidden instanceof HTMLInputElement && overrideForbidden.checked) {
         power_user.external_media_forbidden_overrides.push(entityId);
-        power_user.external_media_allowed_overrides = power_user.external_media_allowed_overrides.filter((v: string) => v !== entityId);
+        power_user.external_media_allowed_overrides =
+            power_user.external_media_allowed_overrides.filter((v: string) => v !== entityId);
     } else {
-        power_user.external_media_allowed_overrides = power_user.external_media_allowed_overrides.filter((v: string) => v !== entityId);
-        power_user.external_media_forbidden_overrides = power_user.external_media_forbidden_overrides.filter((v: string) => v !== entityId);
+        power_user.external_media_allowed_overrides =
+            power_user.external_media_allowed_overrides.filter((v: string) => v !== entityId);
+        power_user.external_media_forbidden_overrides =
+            power_user.external_media_forbidden_overrides.filter((v: string) => v !== entityId);
     }
 }

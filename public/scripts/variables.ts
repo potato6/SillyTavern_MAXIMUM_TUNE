@@ -3,10 +3,17 @@ import { extension_settings, saveMetadataDebounced } from './extensions.js';
 import { executeSlashCommandsWithOptions } from './slash-commands.js';
 import { SlashCommand } from './slash-commands/SlashCommand.js';
 import { SlashCommandAbortController } from './slash-commands/SlashCommandAbortController.js';
-import { ARGUMENT_TYPE, SlashCommandArgument, SlashCommandNamedArgument } from './slash-commands/SlashCommandArgument.js';
+import {
+    ARGUMENT_TYPE,
+    SlashCommandArgument,
+    SlashCommandNamedArgument,
+} from './slash-commands/SlashCommandArgument.js';
 import { SlashCommandBreakController } from './slash-commands/SlashCommandBreakController.js';
 import { SlashCommandClosure } from './slash-commands/SlashCommandClosure.js';
-import { commonEnumProviders, enumIcons } from './slash-commands/SlashCommandCommonEnumsProvider.js';
+import {
+    commonEnumProviders,
+    enumIcons,
+} from './slash-commands/SlashCommandCommonEnumsProvider.js';
 import { SlashCommandEnumValue, enumTypes } from './slash-commands/SlashCommandEnumValue.js';
 import { SlashCommandParser } from './slash-commands/SlashCommandParser.js';
 import { slashCommandReturnHelper } from './slash-commands/SlashCommandReturnHelper.js';
@@ -51,7 +58,9 @@ export function getLocalVariable(name, args = {}) {
         }
     }
 
-    return (localVariable?.trim?.() === '' || isNaN(Number(localVariable))) ? (localVariable || '') : Number(localVariable);
+    return localVariable?.trim?.() === '' || isNaN(Number(localVariable))
+        ? localVariable || ''
+        : Number(localVariable);
 }
 
 /**
@@ -130,7 +139,9 @@ export function getGlobalVariable(name, args = {}) {
         }
     }
 
-    return (globalVariable?.trim?.() === '' || isNaN(Number(globalVariable))) ? (globalVariable || '') : Number(globalVariable);
+    return globalVariable?.trim?.() === '' || isNaN(Number(globalVariable))
+        ? globalVariable || ''
+        : Number(globalVariable);
 }
 
 /**
@@ -321,7 +332,10 @@ async function listVariablesCallback(args) {
     const returnType = args.return;
 
     // Now the actual new return type handling
-    const scope = String(args?.scope || '').toLowerCase().trim() || 'all';
+    const scope =
+        String(args?.scope || '')
+            .toLowerCase()
+            .trim() || 'all';
     if (!chat_metadata.variables) {
         chat_metadata.variables = {};
     }
@@ -329,28 +343,48 @@ async function listVariablesCallback(args) {
     const includeLocalVariables = scope === 'all' || scope === 'local';
     const includeGlobalVariables = scope === 'all' || scope === 'global';
 
-    const localVariables = includeLocalVariables ? Object.entries(chat_metadata.variables).map(([name, value]) => `${name}: ${value}`) : [];
-    const globalVariables = includeGlobalVariables ? Object.entries((extension_settings.variables as { global: Record<string, string> }).global).map(([name, value]) => `${name}: ${value}`) : [];
+    const localVariables = includeLocalVariables
+        ? Object.entries(chat_metadata.variables).map(([name, value]) => `${name}: ${value}`)
+        : [];
+    const globalVariables = includeGlobalVariables
+        ? Object.entries(
+              (extension_settings.variables as { global: Record<string, string> }).global,
+          ).map(([name, value]) => `${name}: ${value}`)
+        : [];
 
     // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
     const buildTextValue = (_) => {
-        const localVariablesString = localVariables.length > 0 ? localVariables.join('\n\n') : 'No local variables';
-        const globalVariablesString = globalVariables.length > 0 ? globalVariables.join('\n\n') : 'No global variables';
+        const localVariablesString =
+            localVariables.length > 0 ? localVariables.join('\n\n') : 'No local variables';
+        const globalVariablesString =
+            globalVariables.length > 0 ? globalVariables.join('\n\n') : 'No global variables';
         const chatName = getCurrentChatId();
 
         const message = [
-            includeLocalVariables ? `### Local variables (${chatName}):\n${localVariablesString}` : '',
+            includeLocalVariables
+                ? `### Local variables (${chatName}):\n${localVariablesString}`
+                : '',
             includeGlobalVariables ? `### Global variables:\n${globalVariablesString}` : '',
-        ].filter(x => x).join('\n\n');
+        ]
+            .filter((x) => x)
+            .join('\n\n');
         return message;
     };
 
     const jsonVariables = [
-        ...Object.entries(chat_metadata.variables).map(x => ({ key: x[0], value: x[1], scope: 'local' })),
-        ...Object.entries((extension_settings.variables as { global: Record<string, string> }).global).map(x => ({ key: x[0], value: x[1], scope: 'global' })),
+        ...Object.entries(chat_metadata.variables).map((x) => ({
+            key: x[0],
+            value: x[1],
+            scope: 'local',
+        })),
+        ...Object.entries(
+            (extension_settings.variables as { global: Record<string, string> }).global,
+        ).map((x) => ({ key: x[0], value: x[1], scope: 'global' })),
     ];
 
-    return await slashCommandReturnHelper.doReturn(returnType ?? 'popup-html', jsonVariables, { objectToStringFunc: buildTextValue });
+    return await slashCommandReturnHelper.doReturn(returnType ?? 'popup-html', jsonVariables, {
+        objectToStringFunc: buildTextValue,
+    });
 }
 
 /**
@@ -360,7 +394,8 @@ async function listVariablesCallback(args) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 async function whileCallback(args, value) {
-    if (args.guard instanceof SlashCommandClosure) throw new Error('argument \'guard\' cannot be a closure for command /while');
+    if (args.guard instanceof SlashCommandClosure)
+        throw new Error("argument 'guard' cannot be a closure for command /while");
     const isGuardOff = isFalseBoolean(args.guard?.toString());
     const iterations = isGuardOff ? Number.MAX_SAFE_INTEGER : MAX_LOOPS;
     /**@type {string|SlashCommandClosure} */
@@ -383,7 +418,12 @@ async function whileCallback(args, value) {
                 command.breakController = new SlashCommandBreakController();
                 commandResult = await command.execute();
             } else {
-                commandResult = await executeSubCommands(command, args._scope, args._parserFlags, args._abortController);
+                commandResult = await executeSubCommands(
+                    command,
+                    args._scope,
+                    args._parserFlags,
+                    args._abortController,
+                );
             }
             // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             if (commandResult.isAborted) break;
@@ -409,7 +449,8 @@ async function whileCallback(args, value) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 async function timesCallback(args, value) {
-    if (args.guard instanceof SlashCommandClosure) throw new Error('argument \'guard\' cannot be a closure for command /while');
+    if (args.guard instanceof SlashCommandClosure)
+        throw new Error("argument 'guard' cannot be a closure for command /while");
     let repeats;
     let command;
     if (Array.isArray(value)) {
@@ -420,7 +461,7 @@ async function timesCallback(args, value) {
             command = command.join(' ');
         }
     } else {
-        [repeats, ...command] = /**@type {string}*/(value).split(' ');
+        [repeats, ...command] = /**@type {string}*/ (value).split(' ');
         command = command.join(' ');
     }
     const isGuardOff = isFalseBoolean(args.guard?.toString());
@@ -432,7 +473,12 @@ async function timesCallback(args, value) {
             command.scope.setMacro('timesIndex', i);
             result = await command.execute();
         } else {
-            result = await executeSubCommands(command.replace(/\{\{timesIndex\}\}/g, i.toString()), args._scope, args._parserFlags, args._abortController);
+            result = await executeSubCommands(
+                command.replace(/\{\{timesIndex\}\}/g, i.toString()),
+                args._scope,
+                args._parserFlags,
+                args._abortController,
+            );
         }
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         if (result.isAborted) break;
@@ -466,10 +512,25 @@ async function ifCallback(args, value) {
     let commandResult;
     if (result && command) {
         if (command instanceof SlashCommandClosure) return (await command.execute()).pipe;
-        commandResult = await executeSubCommands(command, args._scope, args._parserFlags, args._abortController);
-    } else if (!result && args.else && ((typeof args.else === 'string' && args.else !== '') || args.else instanceof SlashCommandClosure)) {
+        commandResult = await executeSubCommands(
+            command,
+            args._scope,
+            args._parserFlags,
+            args._abortController,
+        );
+    } else if (
+        !result &&
+        args.else &&
+        ((typeof args.else === 'string' && args.else !== '') ||
+            args.else instanceof SlashCommandClosure)
+    ) {
         if (args.else instanceof SlashCommandClosure) return (await args.else.execute()).pipe;
-        commandResult = await executeSubCommands(args.else, args._scope, args._parserFlags, args._abortController);
+        commandResult = await executeSubCommands(
+            args.else,
+            args._scope,
+            args._parserFlags,
+            args._abortController,
+        );
     }
 
     if (commandResult) {
@@ -496,7 +557,10 @@ export function existsLocalVariable(name) {
 // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
 export function existsGlobalVariable(name) {
     // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-    return extension_settings.variables.global && extension_settings.variables.global[name] !== undefined;
+    return (
+        extension_settings.variables.global &&
+        extension_settings.variables.global[name] !== undefined
+    );
 }
 
 /**
@@ -520,7 +584,8 @@ export function parseBooleanOperands(args) {
         }
 
         // Number parses spaces as 0, and parseFloat is weird
-        const operandNumber = typeof operand === 'string' && operand.trim().length ? Number(operand) : NaN;
+        const operandNumber =
+            typeof operand === 'string' && operand.trim().length ? Number(operand) : NaN;
 
         if (!isNaN(operandNumber)) {
             return operandNumber;
@@ -576,7 +641,9 @@ export function evalBoolean(rule, a, b) {
                 return a ? resultOnTruthy : !resultOnTruthy;
             }
             default:
-                throw new Error(`Unknown boolean comparison rule for truthy check. If right operand is not provided, the rule must not provided or be 'not'. Provided: ${rule}`);
+                throw new Error(
+                    `Unknown boolean comparison rule for truthy check. If right operand is not provided, the rule must not provided or be 'not'. Provided: ${rule}`,
+                );
         }
     }
 
@@ -604,16 +671,20 @@ export function evalBoolean(rule, a, b) {
             case 'in':
             case 'nin':
                 // Fall through to string comparison. Otherwise you could not check if 12345 contains 45 for example.
-                console.debug(`Boolean comparison rule '${rule}' is not supported for type number. Falling back to string comparison.`);
+                console.debug(
+                    `Boolean comparison rule '${rule}' is not supported for type number. Falling back to string comparison.`,
+                );
                 break;
             default:
-                throw new Error(`Unknown boolean comparison rule for type number. Accepted: gt, gte, lt, lte, eq, neq. Provided: ${rule}`);
+                throw new Error(
+                    `Unknown boolean comparison rule for type number. Accepted: gt, gte, lt, lte, eq, neq. Provided: ${rule}`,
+                );
         }
     }
 
     // otherwise do case-insensitive string comparsion, stringify non-strings
-    const aString = (typeof a === 'string') ? a.toLowerCase() : JSON.stringify(a).toLowerCase();
-    const bString = (typeof b === 'string') ? b.toLowerCase() : JSON.stringify(b).toLowerCase();
+    const aString = typeof a === 'string' ? a.toLowerCase() : JSON.stringify(a).toLowerCase();
+    const bString = typeof b === 'string' ? b.toLowerCase() : JSON.stringify(b).toLowerCase();
 
     switch (rule) {
         case 'in':
@@ -625,7 +696,9 @@ export function evalBoolean(rule, a, b) {
         case 'neq':
             return aString !== bString;
         default:
-            throw new Error(`Unknown boolean comparison rule for type string. Accepted: in, nin, eq, neq. Provided: ${rule}`);
+            throw new Error(
+                `Unknown boolean comparison rule for type string. Accepted: in, nin, eq, neq. Provided: ${rule}`,
+            );
     }
 }
 
@@ -638,7 +711,12 @@ export function evalBoolean(rule, a, b) {
  * @returns {Promise<SlashCommandClosureResult>} Closure execution result
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'command' implicitly has an 'any' type.
-async function executeSubCommands(command, scope = null, parserFlags = null, abortController = null) {
+async function executeSubCommands(
+    command,
+    scope = null,
+    parserFlags = null,
+    abortController = null,
+) {
     if (command.startsWith('"') && command.endsWith('"')) {
         command = command.slice(1, -1);
     }
@@ -716,13 +794,14 @@ function parseNumericSeries(value, scope = null) {
     }
 
     // @ts-expect-error TS(7006) FIXME: Parameter 'i' implicitly has an 'any' type.
-    const array = values.map(i => typeof i === 'string' ? i.trim() : i)
+    const array = values
+        .map((i) => (typeof i === 'string' ? i.trim() : i))
         // @ts-expect-error TS(7006) FIXME: Parameter 'i' implicitly has an 'any' type.
-        .filter(i => i !== '')
+        .filter((i) => i !== '')
         // @ts-expect-error TS(7006) FIXME: Parameter 'i' implicitly has an 'any' type.
-        .map(i => isNaN(Number(i)) ? Number(resolveVariable(String(i), scope)) : Number(i))
+        .map((i) => (isNaN(Number(i)) ? Number(resolveVariable(String(i), scope)) : Number(i)))
         // @ts-expect-error TS(7006) FIXME: Parameter 'i' implicitly has an 'any' type.
-        .filter(i => !isNaN(i));
+        .filter((i) => !isNaN(i));
 
     return array;
 }
@@ -815,7 +894,12 @@ function maxValuesCallback(args, value) {
 // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 function subValuesCallback(args, value) {
     // @ts-expect-error TS(7006) FIXME: Parameter 'array' implicitly has an 'any' type.
-    return performOperation(value, (array) => array.reduce((a, b) => a - b, array.shift() ?? 0), false, args._scope);
+    return performOperation(
+        value,
+        (array) => array.reduce((a, b) => a - b, array.shift() ?? 0),
+        false,
+        args._scope,
+    );
 }
 
 /**
@@ -826,13 +910,18 @@ function subValuesCallback(args, value) {
 // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 function divValuesCallback(args, value) {
     // @ts-expect-error TS(7006) FIXME: Parameter 'array' implicitly has an 'any' type.
-    return performOperation(value, (array) => {
-        if (array[1] === 0) {
-            console.warn('Division by zero.');
-            return 0;
-        }
-        return array[0] / array[1];
-    }, false, args._scope);
+    return performOperation(
+        value,
+        (array) => {
+            if (array[1] === 0) {
+                console.warn('Division by zero.');
+                return 0;
+            }
+            return array[0] / array[1];
+        },
+        false,
+        args._scope,
+    );
 }
 
 /**
@@ -843,13 +932,18 @@ function divValuesCallback(args, value) {
 // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 function modValuesCallback(args, value) {
     // @ts-expect-error TS(7006) FIXME: Parameter 'array' implicitly has an 'any' type.
-    return performOperation(value, (array) => {
-        if (array[1] === 0) {
-            console.warn('Division by zero.');
-            return 0;
-        }
-        return array[0] % array[1];
-    }, false, args._scope);
+    return performOperation(
+        value,
+        (array) => {
+            if (array[1] === 0) {
+                console.warn('Division by zero.');
+                return 0;
+            }
+            return array[0] % array[1];
+        },
+        false,
+        args._scope,
+    );
 }
 
 /**
@@ -1012,9 +1106,11 @@ function sortArrayObjectCallback(args, value) {
         const keysort = args.keysort;
         if (isFalseBoolean(keysort)) {
             // @ts-expect-error TS(7005) FIXME: Variable 'parsedValue' implicitly has an 'any' typ... Remove this comment to see the full error message
-            parsedValue = Object.keys(parsedValue).sort(function (a, b) { return customSortComparitor(parsedValue[a], parsedValue[b]); });
+            parsedValue = Object.keys(parsedValue).toSorted(function (a, b) {
+                return customSortComparitor(parsedValue[a], parsedValue[b]);
+            });
         } else {
-            parsedValue = Object.keys(parsedValue).sort(customSortComparitor);
+            parsedValue = Object.keys(parsedValue).toSorted(customSortComparitor);
         }
     }
     return JSON.stringify(parsedValue);
@@ -1114,69 +1210,105 @@ function closureDeserializeCallback(args, value) {
  *
  */
 export function registerVariableCommands() {
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'listvar',
-        callback: listVariablesCallback,
-        aliases: ['listchatvar'],
-        helpString: 'List registered chat variables. Displays variables in a popup by default. Use the <code>return</code> argument to change the return type.',
-        returns: 'JSON list of local variables',
-        namedArgumentList: [
-            SlashCommandNamedArgument.fromProps({
-                name: 'scope',
-                description: 'filter variables by scope',
-                typeList: [ARGUMENT_TYPE.STRING],
-                defaultValue: 'all',
-                isRequired: false,
-                forceEnum: true,
-                enumList: [
-                    new SlashCommandEnumValue('all', 'All variables', enumTypes.enum, enumIcons.variable),
-                    new SlashCommandEnumValue('local', 'Local variables', enumTypes.enum, enumIcons.localVariable),
-                    new SlashCommandEnumValue('global', 'Global variables', enumTypes.enum, enumIcons.globalVariable),
-                ],
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'return',
-                description: 'The way how you want the return value to be provided',
-                typeList: [ARGUMENT_TYPE.STRING],
-                defaultValue: 'popup-html',
-                enumList: slashCommandReturnHelper.enumList({ allowPipe: false, allowObject: true, allowChat: true, allowPopup: true, allowTextVersion: false }),
-                forceEnum: true,
-            }),
-        ],
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'setvar',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
-        callback: (args, value) => String(setLocalVariable(args.key || args.name, value, args)),
-        aliases: ['setchatvar'],
-        returns: 'the set variable value',
-        namedArgumentList: [
-            SlashCommandNamedArgument.fromProps({
-                name: 'key',
-                description: 'variable name',
-                typeList: [ARGUMENT_TYPE.VARIABLE_NAME],
-                isRequired: true,
-                enumProvider: commonEnumProviders.variables('local'),
-                forceEnum: false,
-            }),
-            new SlashCommandNamedArgument(
-                'index', 'list index', [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.STRING], false,
-            ),
-            SlashCommandNamedArgument.fromProps({
-                name: 'as',
-                description: 'change the type of the value when used with index',
-                forceEnum: true,
-                enumProvider: commonEnumProviders.types,
-                isRequired: false,
-                defaultValue: 'string',
-            }),
-        ],
-        unnamedArgumentList: [
-            new SlashCommandArgument(
-                'value', [ARGUMENT_TYPE.STRING, ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.BOOLEAN, ARGUMENT_TYPE.LIST, ARGUMENT_TYPE.DICTIONARY], true,
-            ),
-        ],
-        helpString: `
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'listvar',
+            callback: listVariablesCallback,
+            aliases: ['listchatvar'],
+            helpString:
+                'List registered chat variables. Displays variables in a popup by default. Use the <code>return</code> argument to change the return type.',
+            returns: 'JSON list of local variables',
+            namedArgumentList: [
+                SlashCommandNamedArgument.fromProps({
+                    name: 'scope',
+                    description: 'filter variables by scope',
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    defaultValue: 'all',
+                    isRequired: false,
+                    forceEnum: true,
+                    enumList: [
+                        new SlashCommandEnumValue(
+                            'all',
+                            'All variables',
+                            enumTypes.enum,
+                            enumIcons.variable,
+                        ),
+                        new SlashCommandEnumValue(
+                            'local',
+                            'Local variables',
+                            enumTypes.enum,
+                            enumIcons.localVariable,
+                        ),
+                        new SlashCommandEnumValue(
+                            'global',
+                            'Global variables',
+                            enumTypes.enum,
+                            enumIcons.globalVariable,
+                        ),
+                    ],
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'return',
+                    description: 'The way how you want the return value to be provided',
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    defaultValue: 'popup-html',
+                    enumList: slashCommandReturnHelper.enumList({
+                        allowPipe: false,
+                        allowObject: true,
+                        allowChat: true,
+                        allowPopup: true,
+                        allowTextVersion: false,
+                    }),
+                    forceEnum: true,
+                }),
+            ],
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'setvar',
+            // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
+            callback: (args, value) => String(setLocalVariable(args.key || args.name, value, args)),
+            aliases: ['setchatvar'],
+            returns: 'the set variable value',
+            namedArgumentList: [
+                SlashCommandNamedArgument.fromProps({
+                    name: 'key',
+                    description: 'variable name',
+                    typeList: [ARGUMENT_TYPE.VARIABLE_NAME],
+                    isRequired: true,
+                    enumProvider: commonEnumProviders.variables('local'),
+                    forceEnum: false,
+                }),
+                new SlashCommandNamedArgument(
+                    'index',
+                    'list index',
+                    [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.STRING],
+                    false,
+                ),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'as',
+                    description: 'change the type of the value when used with index',
+                    forceEnum: true,
+                    enumProvider: commonEnumProviders.types,
+                    isRequired: false,
+                    defaultValue: 'string',
+                }),
+            ],
+            unnamedArgumentList: [
+                new SlashCommandArgument(
+                    'value',
+                    [
+                        ARGUMENT_TYPE.STRING,
+                        ARGUMENT_TYPE.NUMBER,
+                        ARGUMENT_TYPE.BOOLEAN,
+                        ARGUMENT_TYPE.LIST,
+                        ARGUMENT_TYPE.DICTIONARY,
+                    ],
+                    true,
+                ),
+            ],
+            helpString: `
             <div>
                 Set a local variable value and pass it down the pipe. The <code>index</code> argument is optional.
                 To convert the value to a specific JSON type when using <code>index</code>, use the <code>as</code> argument.
@@ -1193,33 +1325,38 @@ export function registerVariableCommands() {
                 </ul>
             </div>
         `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'getvar',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
-        callback: (args, value) => String(getLocalVariable(value, args)),
-        aliases: ['getchatvar'],
-        returns: 'the variable value',
-        namedArgumentList: [
-            SlashCommandNamedArgument.fromProps({
-                name: 'key',
-                description: 'variable name',
-                typeList: [ARGUMENT_TYPE.VARIABLE_NAME],
-                enumProvider: commonEnumProviders.variables('local'),
-            }),
-            new SlashCommandNamedArgument(
-                'index', 'list index', [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.STRING], false,
-            ),
-        ],
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: 'key',
-                typeList: [ARGUMENT_TYPE.VARIABLE_NAME],
-                isRequired: false,
-                enumProvider: commonEnumProviders.variables('local'),
-            }),
-        ],
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'getvar',
+            // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
+            callback: (args, value) => String(getLocalVariable(value, args)),
+            aliases: ['getchatvar'],
+            returns: 'the variable value',
+            namedArgumentList: [
+                SlashCommandNamedArgument.fromProps({
+                    name: 'key',
+                    description: 'variable name',
+                    typeList: [ARGUMENT_TYPE.VARIABLE_NAME],
+                    enumProvider: commonEnumProviders.variables('local'),
+                }),
+                new SlashCommandNamedArgument(
+                    'index',
+                    'list index',
+                    [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.STRING],
+                    false,
+                ),
+            ],
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: 'key',
+                    typeList: [ARGUMENT_TYPE.VARIABLE_NAME],
+                    isRequired: false,
+                    enumProvider: commonEnumProviders.variables('local'),
+                }),
+            ],
+            helpString: `
             <div>
                 Get a local variable value and pass it down the pipe. The <code>index</code> argument is optional.
             </div>
@@ -1238,29 +1375,33 @@ export function registerVariableCommands() {
                 </ul>
             </div>
         `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'addvar',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
-        callback: (args, value) => String(addLocalVariable(args.key || args.name, value)),
-        aliases: ['addchatvar'],
-        returns: 'the new variable value',
-        namedArgumentList: [
-            SlashCommandNamedArgument.fromProps({
-                name: 'key',
-                description: 'variable name',
-                typeList: [ARGUMENT_TYPE.VARIABLE_NAME],
-                isRequired: true,
-                enumProvider: commonEnumProviders.variables('local'),
-                forceEnum: false,
-            }),
-        ],
-        unnamedArgumentList: [
-            new SlashCommandArgument(
-                'value to add to the variable', [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.STRING], true,
-            ),
-        ],
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'addvar',
+            // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
+            callback: (args, value) => String(addLocalVariable(args.key || args.name, value)),
+            aliases: ['addchatvar'],
+            returns: 'the new variable value',
+            namedArgumentList: [
+                SlashCommandNamedArgument.fromProps({
+                    name: 'key',
+                    description: 'variable name',
+                    typeList: [ARGUMENT_TYPE.VARIABLE_NAME],
+                    isRequired: true,
+                    enumProvider: commonEnumProviders.variables('local'),
+                    forceEnum: false,
+                }),
+            ],
+            unnamedArgumentList: [
+                new SlashCommandArgument(
+                    'value to add to the variable',
+                    [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.STRING],
+                    true,
+                ),
+            ],
+            helpString: `
             <div>
                 Add a value to a local variable and pass the result down the pipe.
             </div>
@@ -1273,39 +1414,53 @@ export function registerVariableCommands() {
                 </ul>
             </div>
         `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'setglobalvar',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
-        callback: (args, value) => String(setGlobalVariable(args.key || args.name, value, args)),
-        returns: 'the set global variable value',
-        namedArgumentList: [
-            SlashCommandNamedArgument.fromProps({
-                name: 'key',
-                description: 'variable name',
-                typeList: [ARGUMENT_TYPE.VARIABLE_NAME],
-                isRequired: true,
-                enumProvider: commonEnumProviders.variables('global'),
-                forceEnum: false,
-            }),
-            new SlashCommandNamedArgument(
-                'index', 'list index', [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.STRING], false,
-            ),
-            SlashCommandNamedArgument.fromProps({
-                name: 'as',
-                description: 'change the type of the value when used with index',
-                forceEnum: true,
-                enumProvider: commonEnumProviders.types,
-                isRequired: false,
-                defaultValue: 'string',
-            }),
-        ],
-        unnamedArgumentList: [
-            new SlashCommandArgument(
-                'value', [ARGUMENT_TYPE.STRING, ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.BOOLEAN, ARGUMENT_TYPE.LIST, ARGUMENT_TYPE.DICTIONARY], true,
-            ),
-        ],
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'setglobalvar',
+            // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
+            callback: (args, value) =>
+                String(setGlobalVariable(args.key || args.name, value, args)),
+            returns: 'the set global variable value',
+            namedArgumentList: [
+                SlashCommandNamedArgument.fromProps({
+                    name: 'key',
+                    description: 'variable name',
+                    typeList: [ARGUMENT_TYPE.VARIABLE_NAME],
+                    isRequired: true,
+                    enumProvider: commonEnumProviders.variables('global'),
+                    forceEnum: false,
+                }),
+                new SlashCommandNamedArgument(
+                    'index',
+                    'list index',
+                    [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.STRING],
+                    false,
+                ),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'as',
+                    description: 'change the type of the value when used with index',
+                    forceEnum: true,
+                    enumProvider: commonEnumProviders.types,
+                    isRequired: false,
+                    defaultValue: 'string',
+                }),
+            ],
+            unnamedArgumentList: [
+                new SlashCommandArgument(
+                    'value',
+                    [
+                        ARGUMENT_TYPE.STRING,
+                        ARGUMENT_TYPE.NUMBER,
+                        ARGUMENT_TYPE.BOOLEAN,
+                        ARGUMENT_TYPE.LIST,
+                        ARGUMENT_TYPE.DICTIONARY,
+                    ],
+                    true,
+                ),
+            ],
+            helpString: `
             <div>
                 Set a global variable value and pass it down the pipe. The <code>index</code> argument is optional.
                 To convert the value to a specific JSON type when using <code>index</code>, use the <code>as</code> argument.
@@ -1322,31 +1477,36 @@ export function registerVariableCommands() {
                 </ul>
             </div>
         `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'getglobalvar',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
-        callback: (args, value) => String(getGlobalVariable(value, args)),
-        returns: 'global variable value',
-        namedArgumentList: [
-            SlashCommandNamedArgument.fromProps({
-                name: 'key',
-                description: 'variable name',
-                typeList: [ARGUMENT_TYPE.VARIABLE_NAME],
-                enumProvider: commonEnumProviders.variables('global'),
-            }),
-            new SlashCommandNamedArgument(
-                'index', 'list index', [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.STRING], false,
-            ),
-        ],
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: 'key',
-                typeList: [ARGUMENT_TYPE.VARIABLE_NAME],
-                enumProvider: commonEnumProviders.variables('global'),
-            }),
-        ],
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'getglobalvar',
+            // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
+            callback: (args, value) => String(getGlobalVariable(value, args)),
+            returns: 'global variable value',
+            namedArgumentList: [
+                SlashCommandNamedArgument.fromProps({
+                    name: 'key',
+                    description: 'variable name',
+                    typeList: [ARGUMENT_TYPE.VARIABLE_NAME],
+                    enumProvider: commonEnumProviders.variables('global'),
+                }),
+                new SlashCommandNamedArgument(
+                    'index',
+                    'list index',
+                    [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.STRING],
+                    false,
+                ),
+            ],
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: 'key',
+                    typeList: [ARGUMENT_TYPE.VARIABLE_NAME],
+                    enumProvider: commonEnumProviders.variables('global'),
+                }),
+            ],
+            helpString: `
             <div>
                 Get a global variable value and pass it down the pipe. The <code>index</code> argument is optional.
             </div>
@@ -1365,28 +1525,32 @@ export function registerVariableCommands() {
                 </ul>
             </div>
         `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'addglobalvar',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
-        callback: (args, value) => String(addGlobalVariable(args.key || args.name, value)),
-        returns: 'the new variable value',
-        namedArgumentList: [
-            SlashCommandNamedArgument.fromProps({
-                name: 'key',
-                description: 'variable name',
-                typeList: [ARGUMENT_TYPE.VARIABLE_NAME],
-                isRequired: true,
-                enumProvider: commonEnumProviders.variables('global'),
-                forceEnum: false,
-            }),
-        ],
-        unnamedArgumentList: [
-            new SlashCommandArgument(
-                'value to add to the variable', [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.STRING], true,
-            ),
-        ],
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'addglobalvar',
+            // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
+            callback: (args, value) => String(addGlobalVariable(args.key || args.name, value)),
+            returns: 'the new variable value',
+            namedArgumentList: [
+                SlashCommandNamedArgument.fromProps({
+                    name: 'key',
+                    description: 'variable name',
+                    typeList: [ARGUMENT_TYPE.VARIABLE_NAME],
+                    isRequired: true,
+                    enumProvider: commonEnumProviders.variables('global'),
+                    forceEnum: false,
+                }),
+            ],
+            unnamedArgumentList: [
+                new SlashCommandArgument(
+                    'value to add to the variable',
+                    [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.STRING],
+                    true,
+                ),
+            ],
+            helpString: `
             <div>
                 Add a value to a global variable and pass the result down the pipe.
             </div>
@@ -1399,24 +1563,26 @@ export function registerVariableCommands() {
                 </ul>
             </div>
         `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'incvar',
-        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
-        callback: (_, value) => String(incrementLocalVariable(value)),
-        aliases: ['incchatvar'],
-        returns: 'the new variable value',
-        unnamedArgumentList: [
-            SlashCommandNamedArgument.fromProps({
-                name: 'key',
-                description: 'variable name',
-                typeList: [ARGUMENT_TYPE.VARIABLE_NAME],
-                isRequired: true,
-                enumProvider: commonEnumProviders.variables('local'),
-                forceEnum: false,
-            }),
-        ],
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'incvar',
+            // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
+            callback: (_, value) => String(incrementLocalVariable(value)),
+            aliases: ['incchatvar'],
+            returns: 'the new variable value',
+            unnamedArgumentList: [
+                SlashCommandNamedArgument.fromProps({
+                    name: 'key',
+                    description: 'variable name',
+                    typeList: [ARGUMENT_TYPE.VARIABLE_NAME],
+                    isRequired: true,
+                    enumProvider: commonEnumProviders.variables('local'),
+                    forceEnum: false,
+                }),
+            ],
+            helpString: `
             <div>
                 Increment a local variable by 1 and pass the result down the pipe.
             </div>
@@ -1429,24 +1595,26 @@ export function registerVariableCommands() {
                 </ul>
             </div>
         `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'decvar',
-        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
-        callback: (_, value) => String(decrementLocalVariable(value)),
-        aliases: ['decchatvar'],
-        returns: 'the new variable value',
-        unnamedArgumentList: [
-            SlashCommandNamedArgument.fromProps({
-                name: 'key',
-                description: 'variable name',
-                typeList: [ARGUMENT_TYPE.VARIABLE_NAME],
-                isRequired: true,
-                enumProvider: commonEnumProviders.variables('local'),
-                forceEnum: false,
-            }),
-        ],
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'decvar',
+            // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
+            callback: (_, value) => String(decrementLocalVariable(value)),
+            aliases: ['decchatvar'],
+            returns: 'the new variable value',
+            unnamedArgumentList: [
+                SlashCommandNamedArgument.fromProps({
+                    name: 'key',
+                    description: 'variable name',
+                    typeList: [ARGUMENT_TYPE.VARIABLE_NAME],
+                    isRequired: true,
+                    enumProvider: commonEnumProviders.variables('local'),
+                    forceEnum: false,
+                }),
+            ],
+            helpString: `
             <div>
                 Decrement a local variable by 1 and pass the result down the pipe.
             </div>
@@ -1459,23 +1627,25 @@ export function registerVariableCommands() {
                 </ul>
             </div>
         `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'incglobalvar',
-        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
-        callback: (_, value) => String(incrementGlobalVariable(value)),
-        returns: 'the new variable value',
-        unnamedArgumentList: [
-            SlashCommandNamedArgument.fromProps({
-                name: 'key',
-                description: 'variable name',
-                typeList: [ARGUMENT_TYPE.VARIABLE_NAME],
-                isRequired: true,
-                enumProvider: commonEnumProviders.variables('global'),
-                forceEnum: false,
-            }),
-        ],
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'incglobalvar',
+            // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
+            callback: (_, value) => String(incrementGlobalVariable(value)),
+            returns: 'the new variable value',
+            unnamedArgumentList: [
+                SlashCommandNamedArgument.fromProps({
+                    name: 'key',
+                    description: 'variable name',
+                    typeList: [ARGUMENT_TYPE.VARIABLE_NAME],
+                    isRequired: true,
+                    enumProvider: commonEnumProviders.variables('global'),
+                    forceEnum: false,
+                }),
+            ],
+            helpString: `
             <div>
                 Increment a global variable by 1 and pass the result down the pipe.
             </div>
@@ -1488,23 +1658,25 @@ export function registerVariableCommands() {
                 </ul>
             </div>
         `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'decglobalvar',
-        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
-        callback: (_, value) => String(decrementGlobalVariable(value)),
-        returns: 'the new variable value',
-        unnamedArgumentList: [
-            SlashCommandNamedArgument.fromProps({
-                name: 'key',
-                description: 'variable name',
-                typeList: [ARGUMENT_TYPE.VARIABLE_NAME],
-                isRequired: true,
-                enumProvider: commonEnumProviders.variables('global'),
-                forceEnum: false,
-            }),
-        ],
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'decglobalvar',
+            // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
+            callback: (_, value) => String(decrementGlobalVariable(value)),
+            returns: 'the new variable value',
+            unnamedArgumentList: [
+                SlashCommandNamedArgument.fromProps({
+                    name: 'key',
+                    description: 'variable name',
+                    typeList: [ARGUMENT_TYPE.VARIABLE_NAME],
+                    isRequired: true,
+                    enumProvider: commonEnumProviders.variables('global'),
+                    forceEnum: false,
+                }),
+            ],
+            helpString: `
             <div>
                 Decrement a global variable by 1 and pass the result down the pipe.
             </div>
@@ -1517,56 +1689,74 @@ export function registerVariableCommands() {
                 </ul>
             </div>
         `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'if',
-        callback: ifCallback,
-        returns: 'result of the executed command ("then" or "else")',
-        namedArgumentList: [
-            SlashCommandNamedArgument.fromProps({
-                name: 'left',
-                description: 'left operand',
-                typeList: [ARGUMENT_TYPE.VARIABLE_NAME, ARGUMENT_TYPE.STRING, ARGUMENT_TYPE.NUMBER],
-                isRequired: true,
-                enumProvider: commonEnumProviders.variables('all'),
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'right',
-                description: 'right operand',
-                typeList: [ARGUMENT_TYPE.VARIABLE_NAME, ARGUMENT_TYPE.STRING, ARGUMENT_TYPE.NUMBER],
-                enumProvider: commonEnumProviders.variables('all'),
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'rule',
-                description: 'comparison rule',
-                typeList: [ARGUMENT_TYPE.STRING],
-                defaultValue: 'eq',
-                enumList: [
-                    new SlashCommandEnumValue('eq', 'a == b (strings & numbers)'),
-                    new SlashCommandEnumValue('neq', 'a !== b (strings & numbers)'),
-                    new SlashCommandEnumValue('in', 'a includes b (strings & numbers as strings)'),
-                    new SlashCommandEnumValue('nin', 'a not includes b (strings & numbers as strings)'),
-                    new SlashCommandEnumValue('gt', 'a > b (numbers)'),
-                    new SlashCommandEnumValue('gte', 'a >= b (numbers)'),
-                    new SlashCommandEnumValue('lt', 'a < b (numbers)'),
-                    new SlashCommandEnumValue('lte', 'a <= b (numbers)'),
-                    new SlashCommandEnumValue('not', '!a (truthy)'),
-                ],
-                forceEnum: true,
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'else',
-                description: 'command to execute if not true',
-                typeList: [ARGUMENT_TYPE.CLOSURE, ARGUMENT_TYPE.SUBCOMMAND],
-            }),
-        ],
-        unnamedArgumentList: [
-            new SlashCommandArgument(
-                'command to execute if true', [ARGUMENT_TYPE.CLOSURE, ARGUMENT_TYPE.SUBCOMMAND], true,
-            ),
-        ],
-        splitUnnamedArgument: true,
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'if',
+            callback: ifCallback,
+            returns: 'result of the executed command ("then" or "else")',
+            namedArgumentList: [
+                SlashCommandNamedArgument.fromProps({
+                    name: 'left',
+                    description: 'left operand',
+                    typeList: [
+                        ARGUMENT_TYPE.VARIABLE_NAME,
+                        ARGUMENT_TYPE.STRING,
+                        ARGUMENT_TYPE.NUMBER,
+                    ],
+                    isRequired: true,
+                    enumProvider: commonEnumProviders.variables('all'),
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'right',
+                    description: 'right operand',
+                    typeList: [
+                        ARGUMENT_TYPE.VARIABLE_NAME,
+                        ARGUMENT_TYPE.STRING,
+                        ARGUMENT_TYPE.NUMBER,
+                    ],
+                    enumProvider: commonEnumProviders.variables('all'),
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'rule',
+                    description: 'comparison rule',
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    defaultValue: 'eq',
+                    enumList: [
+                        new SlashCommandEnumValue('eq', 'a == b (strings & numbers)'),
+                        new SlashCommandEnumValue('neq', 'a !== b (strings & numbers)'),
+                        new SlashCommandEnumValue(
+                            'in',
+                            'a includes b (strings & numbers as strings)',
+                        ),
+                        new SlashCommandEnumValue(
+                            'nin',
+                            'a not includes b (strings & numbers as strings)',
+                        ),
+                        new SlashCommandEnumValue('gt', 'a > b (numbers)'),
+                        new SlashCommandEnumValue('gte', 'a >= b (numbers)'),
+                        new SlashCommandEnumValue('lt', 'a < b (numbers)'),
+                        new SlashCommandEnumValue('lte', 'a <= b (numbers)'),
+                        new SlashCommandEnumValue('not', '!a (truthy)'),
+                    ],
+                    forceEnum: true,
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'else',
+                    description: 'command to execute if not true',
+                    typeList: [ARGUMENT_TYPE.CLOSURE, ARGUMENT_TYPE.SUBCOMMAND],
+                }),
+            ],
+            unnamedArgumentList: [
+                new SlashCommandArgument(
+                    'command to execute if true',
+                    [ARGUMENT_TYPE.CLOSURE, ARGUMENT_TYPE.SUBCOMMAND],
+                    true,
+                ),
+            ],
+            splitUnnamedArgument: true,
+            helpString: `
             <div>
                 Compares the value of the left operand <code>a</code> with the value of the right operand <code>b</code>,
                 and if the condition yields true, then execute any valid slash command enclosed in quotes and pass the
@@ -1618,58 +1808,76 @@ export function registerVariableCommands() {
                 </ul>
             </div>
         `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'while',
-        callback: whileCallback,
-        returns: 'result of the last executed command',
-        namedArgumentList: [
-            SlashCommandNamedArgument.fromProps({
-                name: 'left',
-                description: 'left operand',
-                typeList: [ARGUMENT_TYPE.VARIABLE_NAME, ARGUMENT_TYPE.STRING, ARGUMENT_TYPE.NUMBER],
-                isRequired: true,
-                enumProvider: commonEnumProviders.variables('all'),
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'right',
-                description: 'right operand',
-                typeList: [ARGUMENT_TYPE.VARIABLE_NAME, ARGUMENT_TYPE.STRING, ARGUMENT_TYPE.NUMBER],
-                enumProvider: commonEnumProviders.variables('all'),
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'rule',
-                description: 'comparison rule',
-                typeList: [ARGUMENT_TYPE.STRING],
-                defaultValue: 'eq',
-                enumList: [
-                    new SlashCommandEnumValue('eq', 'a == b (strings & numbers)'),
-                    new SlashCommandEnumValue('neq', 'a !== b (strings & numbers)'),
-                    new SlashCommandEnumValue('in', 'a includes b (strings & numbers as strings)'),
-                    new SlashCommandEnumValue('nin', 'a not includes b (strings & numbers as strings)'),
-                    new SlashCommandEnumValue('gt', 'a > b (numbers)'),
-                    new SlashCommandEnumValue('gte', 'a >= b (numbers)'),
-                    new SlashCommandEnumValue('lt', 'a < b (numbers)'),
-                    new SlashCommandEnumValue('lte', 'a <= b (numbers)'),
-                    new SlashCommandEnumValue('not', '!a (truthy)'),
-                ],
-                forceEnum: true,
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'guard',
-                description: 'disable loop iteration limit',
-                typeList: [ARGUMENT_TYPE.STRING],
-                defaultValue: 'off',
-                enumList: commonEnumProviders.boolean('onOff')(),
-            }),
-        ],
-        unnamedArgumentList: [
-            new SlashCommandArgument(
-                'command to execute while true', [ARGUMENT_TYPE.CLOSURE, ARGUMENT_TYPE.SUBCOMMAND], true,
-            ),
-        ],
-        splitUnnamedArgument: true,
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'while',
+            callback: whileCallback,
+            returns: 'result of the last executed command',
+            namedArgumentList: [
+                SlashCommandNamedArgument.fromProps({
+                    name: 'left',
+                    description: 'left operand',
+                    typeList: [
+                        ARGUMENT_TYPE.VARIABLE_NAME,
+                        ARGUMENT_TYPE.STRING,
+                        ARGUMENT_TYPE.NUMBER,
+                    ],
+                    isRequired: true,
+                    enumProvider: commonEnumProviders.variables('all'),
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'right',
+                    description: 'right operand',
+                    typeList: [
+                        ARGUMENT_TYPE.VARIABLE_NAME,
+                        ARGUMENT_TYPE.STRING,
+                        ARGUMENT_TYPE.NUMBER,
+                    ],
+                    enumProvider: commonEnumProviders.variables('all'),
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'rule',
+                    description: 'comparison rule',
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    defaultValue: 'eq',
+                    enumList: [
+                        new SlashCommandEnumValue('eq', 'a == b (strings & numbers)'),
+                        new SlashCommandEnumValue('neq', 'a !== b (strings & numbers)'),
+                        new SlashCommandEnumValue(
+                            'in',
+                            'a includes b (strings & numbers as strings)',
+                        ),
+                        new SlashCommandEnumValue(
+                            'nin',
+                            'a not includes b (strings & numbers as strings)',
+                        ),
+                        new SlashCommandEnumValue('gt', 'a > b (numbers)'),
+                        new SlashCommandEnumValue('gte', 'a >= b (numbers)'),
+                        new SlashCommandEnumValue('lt', 'a < b (numbers)'),
+                        new SlashCommandEnumValue('lte', 'a <= b (numbers)'),
+                        new SlashCommandEnumValue('not', '!a (truthy)'),
+                    ],
+                    forceEnum: true,
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'guard',
+                    description: 'disable loop iteration limit',
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    defaultValue: 'off',
+                    enumList: commonEnumProviders.boolean('onOff')(),
+                }),
+            ],
+            unnamedArgumentList: [
+                new SlashCommandArgument(
+                    'command to execute while true',
+                    [ARGUMENT_TYPE.CLOSURE, ARGUMENT_TYPE.SUBCOMMAND],
+                    true,
+                ),
+            ],
+            splitUnnamedArgument: true,
+            helpString: `
             <div>
                 Compares the value of the left operand <code>a</code> with the value of the right operand <code>b</code>,
                 and if the condition yields true, then execute any valid slash command enclosed in quotes.
@@ -1708,32 +1916,36 @@ export function registerVariableCommands() {
                 Loops are limited to 100 iterations by default, pass <code>guard=off</code> to disable.
             </div>
         `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'times',
-        callback: timesCallback,
-        returns: 'result of the last executed command',
-        namedArgumentList: [
-            new SlashCommandNamedArgument(
-                // @ts-expect-error TS(2345) FIXME: Argument of type 'SlashCommandEnumValue[]' is not ... Remove this comment to see the full error message
-                'guard', 'disable loop iteration limit', [ARGUMENT_TYPE.STRING], false, false, null, commonEnumProviders.boolean('onOff')(),
-            ),
-        ],
-        unnamedArgumentList: [
-            new SlashCommandArgument(
-                'repeats',
-                [ARGUMENT_TYPE.NUMBER],
-                true,
-            ),
-            new SlashCommandArgument(
-                'command',
-                [ARGUMENT_TYPE.CLOSURE, ARGUMENT_TYPE.SUBCOMMAND],
-                true,
-            ),
-        ],
-        splitUnnamedArgument: true,
-        splitUnnamedArgumentCount: 1,
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'times',
+            callback: timesCallback,
+            returns: 'result of the last executed command',
+            namedArgumentList: [
+                new SlashCommandNamedArgument(
+                    // @ts-expect-error TS(2345) FIXME: Argument of type 'SlashCommandEnumValue[]' is not ... Remove this comment to see the full error message
+                    'guard',
+                    'disable loop iteration limit',
+                    [ARGUMENT_TYPE.STRING],
+                    false,
+                    false,
+                    null,
+                    commonEnumProviders.boolean('onOff')(),
+                ),
+            ],
+            unnamedArgumentList: [
+                new SlashCommandArgument('repeats', [ARGUMENT_TYPE.NUMBER], true),
+                new SlashCommandArgument(
+                    'command',
+                    [ARGUMENT_TYPE.CLOSURE, ARGUMENT_TYPE.SUBCOMMAND],
+                    true,
+                ),
+            ],
+            splitUnnamedArgument: true,
+            splitUnnamedArgumentCount: 1,
+            helpString: `
             <div>
                 Execute any valid slash command enclosed in quotes <code>repeats</code> number of times.
             </div>
@@ -1754,21 +1966,28 @@ export function registerVariableCommands() {
                 Loops are limited to 100 iterations by default, pass <code>guard=off</code> to disable.
             </div>
         `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'flushvar',
-        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
-        callback: async (_, value) => deleteLocalVariable(value instanceof SlashCommandClosure ? (await value.execute())?.pipe : String(value)),
-        aliases: ['flushchatvar'],
-        unnamedArgumentList: [
-            SlashCommandNamedArgument.fromProps({
-                name: 'key',
-                description: 'variable name or closure that returns a variable name',
-                typeList: [ARGUMENT_TYPE.VARIABLE_NAME, ARGUMENT_TYPE.CLOSURE],
-                enumProvider: commonEnumProviders.variables('local'),
-            }),
-        ],
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'flushvar',
+            // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
+            callback: async (_, value) =>
+                deleteLocalVariable(
+                    value instanceof SlashCommandClosure
+                        ? (await value.execute())?.pipe
+                        : String(value),
+                ),
+            aliases: ['flushchatvar'],
+            unnamedArgumentList: [
+                SlashCommandNamedArgument.fromProps({
+                    name: 'key',
+                    description: 'variable name or closure that returns a variable name',
+                    typeList: [ARGUMENT_TYPE.VARIABLE_NAME, ARGUMENT_TYPE.CLOSURE],
+                    enumProvider: commonEnumProviders.variables('local'),
+                }),
+            ],
+            helpString: `
             <div>
                 Delete a local variable.
             </div>
@@ -1781,21 +2000,28 @@ export function registerVariableCommands() {
                 </ul>
             </div>
         `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'flushglobalvar',
-        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
-        callback: async (_, value) => deleteGlobalVariable(value instanceof SlashCommandClosure ? (await value.execute())?.pipe : String(value)),
-        namedArgumentList: [],
-        unnamedArgumentList: [
-            SlashCommandNamedArgument.fromProps({
-                name: 'key',
-                description: 'variable name or closure that returns a variable name',
-                typeList: [ARGUMENT_TYPE.VARIABLE_NAME, ARGUMENT_TYPE.CLOSURE],
-                enumProvider: commonEnumProviders.variables('global'),
-            }),
-        ],
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'flushglobalvar',
+            // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
+            callback: async (_, value) =>
+                deleteGlobalVariable(
+                    value instanceof SlashCommandClosure
+                        ? (await value.execute())?.pipe
+                        : String(value),
+                ),
+            namedArgumentList: [],
+            unnamedArgumentList: [
+                SlashCommandNamedArgument.fromProps({
+                    name: 'key',
+                    description: 'variable name or closure that returns a variable name',
+                    typeList: [ARGUMENT_TYPE.VARIABLE_NAME, ARGUMENT_TYPE.CLOSURE],
+                    enumProvider: commonEnumProviders.variables('global'),
+                }),
+            ],
+            helpString: `
             <div>
                 Deletes the specified global variable.
             </div>
@@ -1809,24 +2035,30 @@ export function registerVariableCommands() {
                 </ul>
             </div>
         `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'add',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
-        callback: (args, value) => addValuesCallback(args, value),
-        returns: 'sum of the provided values',
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: 'values to sum',
-                typeList: [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.VARIABLE_NAME, ARGUMENT_TYPE.LIST],
-                isRequired: true,
-                acceptsMultiple: true,
-                enumProvider: commonEnumProviders.numbersAndVariables,
-                forceEnum: false,
-            }),
-        ],
-        splitUnnamedArgument: true,
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'add',
+            // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
+            callback: (args, value) => addValuesCallback(args, value),
+            returns: 'sum of the provided values',
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: 'values to sum',
+                    typeList: [
+                        ARGUMENT_TYPE.NUMBER,
+                        ARGUMENT_TYPE.VARIABLE_NAME,
+                        ARGUMENT_TYPE.LIST,
+                    ],
+                    isRequired: true,
+                    acceptsMultiple: true,
+                    enumProvider: commonEnumProviders.numbersAndVariables,
+                    forceEnum: false,
+                }),
+            ],
+            splitUnnamedArgument: true,
+            helpString: `
             <div>
                 Performs an addition of the set of values and passes the result down the pipe.
             </div>
@@ -1845,24 +2077,30 @@ export function registerVariableCommands() {
                 </ul>
             </div>
         `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'mul',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
-        callback: (args, value) => mulValuesCallback(args, value),
-        returns: 'product of the provided values',
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: 'values to multiply',
-                typeList: [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.VARIABLE_NAME, ARGUMENT_TYPE.LIST],
-                isRequired: true,
-                acceptsMultiple: true,
-                enumProvider: commonEnumProviders.numbersAndVariables,
-                forceEnum: false,
-            }),
-        ],
-        splitUnnamedArgument: true,
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'mul',
+            // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
+            callback: (args, value) => mulValuesCallback(args, value),
+            returns: 'product of the provided values',
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: 'values to multiply',
+                    typeList: [
+                        ARGUMENT_TYPE.NUMBER,
+                        ARGUMENT_TYPE.VARIABLE_NAME,
+                        ARGUMENT_TYPE.LIST,
+                    ],
+                    isRequired: true,
+                    acceptsMultiple: true,
+                    enumProvider: commonEnumProviders.numbersAndVariables,
+                    forceEnum: false,
+                }),
+            ],
+            splitUnnamedArgument: true,
+            helpString: `
             <div>
                 Performs a multiplication of the set of values and passes the result down the pipe.
             </div>
@@ -1881,23 +2119,29 @@ export function registerVariableCommands() {
                 </ul>
             </div>
         `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'max',
-        callback: maxValuesCallback,
-        returns: 'maximum value of the set of values',
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: 'values to find the max',
-                typeList: [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.VARIABLE_NAME, ARGUMENT_TYPE.LIST],
-                isRequired: true,
-                acceptsMultiple: true,
-                enumProvider: commonEnumProviders.numbersAndVariables,
-                forceEnum: false,
-            }),
-        ],
-        splitUnnamedArgument: true,
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'max',
+            callback: maxValuesCallback,
+            returns: 'maximum value of the set of values',
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: 'values to find the max',
+                    typeList: [
+                        ARGUMENT_TYPE.NUMBER,
+                        ARGUMENT_TYPE.VARIABLE_NAME,
+                        ARGUMENT_TYPE.LIST,
+                    ],
+                    isRequired: true,
+                    acceptsMultiple: true,
+                    enumProvider: commonEnumProviders.numbersAndVariables,
+                    forceEnum: false,
+                }),
+            ],
+            splitUnnamedArgument: true,
+            helpString: `
             <div>
                 Returns the maximum value of the set of values and passes the result down the pipe.
             </div>
@@ -1916,23 +2160,29 @@ export function registerVariableCommands() {
                 </ul>
             </div>
         `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'min',
-        callback: minValuesCallback,
-        returns: 'minimum value of the set of values',
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: 'values to find the min',
-                typeList: [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.VARIABLE_NAME, ARGUMENT_TYPE.LIST],
-                isRequired: true,
-                acceptsMultiple: true,
-                enumProvider: commonEnumProviders.numbersAndVariables,
-                forceEnum: false,
-            }),
-        ],
-        splitUnnamedArgument: true,
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'min',
+            callback: minValuesCallback,
+            returns: 'minimum value of the set of values',
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: 'values to find the min',
+                    typeList: [
+                        ARGUMENT_TYPE.NUMBER,
+                        ARGUMENT_TYPE.VARIABLE_NAME,
+                        ARGUMENT_TYPE.LIST,
+                    ],
+                    isRequired: true,
+                    acceptsMultiple: true,
+                    enumProvider: commonEnumProviders.numbersAndVariables,
+                    forceEnum: false,
+                }),
+            ],
+            splitUnnamedArgument: true,
+            helpString: `
             <div>
                 Returns the minimum value of the set of values and passes the result down the pipe.
             </div>
@@ -1951,23 +2201,29 @@ export function registerVariableCommands() {
                 </ul>
             </div>
         `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'sub',
-        callback: subValuesCallback,
-        returns: 'difference of the provided values',
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: 'values to subtract, starting form the first provided value',
-                typeList: [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.VARIABLE_NAME, ARGUMENT_TYPE.LIST],
-                isRequired: true,
-                acceptsMultiple: true,
-                enumProvider: commonEnumProviders.numbersAndVariables,
-                forceEnum: false,
-            }),
-        ],
-        splitUnnamedArgument: true,
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'sub',
+            callback: subValuesCallback,
+            returns: 'difference of the provided values',
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: 'values to subtract, starting form the first provided value',
+                    typeList: [
+                        ARGUMENT_TYPE.NUMBER,
+                        ARGUMENT_TYPE.VARIABLE_NAME,
+                        ARGUMENT_TYPE.LIST,
+                    ],
+                    isRequired: true,
+                    acceptsMultiple: true,
+                    enumProvider: commonEnumProviders.numbersAndVariables,
+                    forceEnum: false,
+                }),
+            ],
+            splitUnnamedArgument: true,
+            helpString: `
             <div>
                 Performs a subtraction of the set of values and passes the result down the pipe.
             </div>
@@ -1986,29 +2242,31 @@ export function registerVariableCommands() {
                 </ul>
             </div>
         `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'div',
-        callback: divValuesCallback,
-        returns: 'result of division',
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: 'dividend',
-                typeList: [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.VARIABLE_NAME],
-                isRequired: true,
-                enumProvider: commonEnumProviders.numbersAndVariables,
-                forceEnum: false,
-            }),
-            SlashCommandArgument.fromProps({
-                description: 'divisor',
-                typeList: [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.VARIABLE_NAME],
-                isRequired: true,
-                enumProvider: commonEnumProviders.numbersAndVariables,
-                forceEnum: false,
-            }),
-        ],
-        splitUnnamedArgument: true,
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'div',
+            callback: divValuesCallback,
+            returns: 'result of division',
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: 'dividend',
+                    typeList: [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.VARIABLE_NAME],
+                    isRequired: true,
+                    enumProvider: commonEnumProviders.numbersAndVariables,
+                    forceEnum: false,
+                }),
+                SlashCommandArgument.fromProps({
+                    description: 'divisor',
+                    typeList: [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.VARIABLE_NAME],
+                    isRequired: true,
+                    enumProvider: commonEnumProviders.numbersAndVariables,
+                    forceEnum: false,
+                }),
+            ],
+            splitUnnamedArgument: true,
+            helpString: `
             <div>
                 Performs a division of two values and passes the result down the pipe.
                 Can use variable names.
@@ -2022,29 +2280,31 @@ export function registerVariableCommands() {
                 </ul>
             </div>
         `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'mod',
-        callback: modValuesCallback,
-        returns: 'result of modulo operation',
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: 'dividend',
-                typeList: [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.VARIABLE_NAME],
-                isRequired: true,
-                enumProvider: commonEnumProviders.numbersAndVariables,
-                forceEnum: false,
-            }),
-            SlashCommandArgument.fromProps({
-                description: 'divisor',
-                typeList: [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.VARIABLE_NAME],
-                isRequired: true,
-                enumProvider: commonEnumProviders.numbersAndVariables,
-                forceEnum: false,
-            }),
-        ],
-        splitUnnamedArgument: true,
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'mod',
+            callback: modValuesCallback,
+            returns: 'result of modulo operation',
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: 'dividend',
+                    typeList: [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.VARIABLE_NAME],
+                    isRequired: true,
+                    enumProvider: commonEnumProviders.numbersAndVariables,
+                    forceEnum: false,
+                }),
+                SlashCommandArgument.fromProps({
+                    description: 'divisor',
+                    typeList: [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.VARIABLE_NAME],
+                    isRequired: true,
+                    enumProvider: commonEnumProviders.numbersAndVariables,
+                    forceEnum: false,
+                }),
+            ],
+            splitUnnamedArgument: true,
+            helpString: `
             <div>
                 Performs a modulo operation of two values and passes the result down the pipe.
                 Can use variable names.
@@ -2058,29 +2318,31 @@ export function registerVariableCommands() {
                 </ul>
             </div>
         `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'pow',
-        callback: powValuesCallback,
-        returns: 'result of power operation',
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: 'base',
-                typeList: [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.VARIABLE_NAME],
-                isRequired: true,
-                enumProvider: commonEnumProviders.numbersAndVariables,
-                forceEnum: false,
-            }),
-            SlashCommandArgument.fromProps({
-                description: 'exponent',
-                typeList: [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.VARIABLE_NAME],
-                isRequired: true,
-                enumProvider: commonEnumProviders.numbersAndVariables,
-                forceEnum: false,
-            }),
-        ],
-        splitUnnamedArgument: true,
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'pow',
+            callback: powValuesCallback,
+            returns: 'result of power operation',
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: 'base',
+                    typeList: [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.VARIABLE_NAME],
+                    isRequired: true,
+                    enumProvider: commonEnumProviders.numbersAndVariables,
+                    forceEnum: false,
+                }),
+                SlashCommandArgument.fromProps({
+                    description: 'exponent',
+                    typeList: [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.VARIABLE_NAME],
+                    isRequired: true,
+                    enumProvider: commonEnumProviders.numbersAndVariables,
+                    forceEnum: false,
+                }),
+            ],
+            splitUnnamedArgument: true,
+            helpString: `
             <div>
                 Performs a power operation of two values and passes the result down the pipe.
                 Can use variable names.
@@ -2094,21 +2356,23 @@ export function registerVariableCommands() {
                 </ul>
             </div>
         `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'sin',
-        callback: sinValuesCallback,
-        returns: 'sine of the provided value',
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: 'value',
-                typeList: [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.VARIABLE_NAME],
-                isRequired: true,
-                enumProvider: commonEnumProviders.numbersAndVariables,
-                forceEnum: false,
-            }),
-        ],
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'sin',
+            callback: sinValuesCallback,
+            returns: 'sine of the provided value',
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: 'value',
+                    typeList: [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.VARIABLE_NAME],
+                    isRequired: true,
+                    enumProvider: commonEnumProviders.numbersAndVariables,
+                    forceEnum: false,
+                }),
+            ],
+            helpString: `
             <div>
                 Performs a sine operation of a value and passes the result down the pipe.
                 Can use variable names.
@@ -2122,21 +2386,23 @@ export function registerVariableCommands() {
                 </ul>
             </div>
         `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'cos',
-        callback: cosValuesCallback,
-        returns: 'cosine of the provided value',
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: 'value',
-                typeList: [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.VARIABLE_NAME],
-                isRequired: true,
-                enumProvider: commonEnumProviders.numbersAndVariables,
-                forceEnum: false,
-            }),
-        ],
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'cos',
+            callback: cosValuesCallback,
+            returns: 'cosine of the provided value',
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: 'value',
+                    typeList: [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.VARIABLE_NAME],
+                    isRequired: true,
+                    enumProvider: commonEnumProviders.numbersAndVariables,
+                    forceEnum: false,
+                }),
+            ],
+            helpString: `
             <div>
                 Performs a cosine operation of a value and passes the result down the pipe.
                 Can use variable names.
@@ -2150,22 +2416,24 @@ export function registerVariableCommands() {
                 </ul>
             </div>
         `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'log',
-        callback: logValuesCallback,
-        returns: 'log of the provided value',
-        namedArgumentList: [],
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: 'value',
-                typeList: [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.VARIABLE_NAME],
-                isRequired: true,
-                enumProvider: commonEnumProviders.numbersAndVariables,
-                forceEnum: false,
-            }),
-        ],
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'log',
+            callback: logValuesCallback,
+            returns: 'log of the provided value',
+            namedArgumentList: [],
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: 'value',
+                    typeList: [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.VARIABLE_NAME],
+                    isRequired: true,
+                    enumProvider: commonEnumProviders.numbersAndVariables,
+                    forceEnum: false,
+                }),
+            ],
+            helpString: `
             <div>
                 Performs a logarithm operation of a value and passes the result down the pipe.
                 Can use variable names.
@@ -2179,21 +2447,23 @@ export function registerVariableCommands() {
                 </ul>
             </div>
         `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'abs',
-        callback: absValuesCallback,
-        returns: 'absolute value of the provided value',
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: 'value',
-                typeList: [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.VARIABLE_NAME],
-                isRequired: true,
-                enumProvider: commonEnumProviders.numbersAndVariables,
-                forceEnum: false,
-            }),
-        ],
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'abs',
+            callback: absValuesCallback,
+            returns: 'absolute value of the provided value',
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: 'value',
+                    typeList: [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.VARIABLE_NAME],
+                    isRequired: true,
+                    enumProvider: commonEnumProviders.numbersAndVariables,
+                    forceEnum: false,
+                }),
+            ],
+            helpString: `
             <div>
                 Performs an absolute value operation of a value and passes the result down the pipe.
                 Can use variable names.
@@ -2207,21 +2477,23 @@ export function registerVariableCommands() {
                 </ul>
             </div>
         `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'sqrt',
-        callback: sqrtValuesCallback,
-        returns: 'square root of the provided value',
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: 'value',
-                typeList: [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.VARIABLE_NAME],
-                isRequired: true,
-                enumProvider: commonEnumProviders.numbersAndVariables,
-                forceEnum: false,
-            }),
-        ],
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'sqrt',
+            callback: sqrtValuesCallback,
+            returns: 'square root of the provided value',
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: 'value',
+                    typeList: [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.VARIABLE_NAME],
+                    isRequired: true,
+                    enumProvider: commonEnumProviders.numbersAndVariables,
+                    forceEnum: false,
+                }),
+            ],
+            helpString: `
             <div>
                 Performs a square root operation of a value and passes the result down the pipe.
                 Can use variable names.
@@ -2235,21 +2507,23 @@ export function registerVariableCommands() {
                 </ul>
             </div>
         `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'round',
-        callback: roundValuesCallback,
-        returns: 'rounded value',
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: 'value',
-                typeList: [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.VARIABLE_NAME],
-                isRequired: true,
-                enumProvider: commonEnumProviders.numbersAndVariables,
-                forceEnum: false,
-            }),
-        ],
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'round',
+            callback: roundValuesCallback,
+            returns: 'rounded value',
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: 'value',
+                    typeList: [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.VARIABLE_NAME],
+                    isRequired: true,
+                    enumProvider: commonEnumProviders.numbersAndVariables,
+                    forceEnum: false,
+                }),
+            ],
+            helpString: `
             <div>
                 Rounds a value and passes the result down the pipe.
                 Can use variable names.
@@ -2263,22 +2537,29 @@ export function registerVariableCommands() {
                 </ul>
             </div>
         `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'len',
-        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
-        callback: (_, value) => String(lenValuesCallback(value)),
-        aliases: ['length'],
-        returns: 'length of the provided value',
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: 'value',
-                typeList: [ARGUMENT_TYPE.STRING, ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.LIST, ARGUMENT_TYPE.DICTIONARY],
-                isRequired: true,
-                forceEnum: false,
-            }),
-        ],
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'len',
+            // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
+            callback: (_, value) => String(lenValuesCallback(value)),
+            aliases: ['length'],
+            returns: 'length of the provided value',
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: 'value',
+                    typeList: [
+                        ARGUMENT_TYPE.STRING,
+                        ARGUMENT_TYPE.NUMBER,
+                        ARGUMENT_TYPE.LIST,
+                        ARGUMENT_TYPE.DICTIONARY,
+                    ],
+                    isRequired: true,
+                    forceEnum: false,
+                }),
+            ],
+            helpString: `
             <div>
                 Gets the length of a value and passes the result down the pipe.
                 <ul>
@@ -2302,29 +2583,36 @@ export function registerVariableCommands() {
                 </ul>
             </div>
         `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'sort',
-        callback: sortArrayObjectCallback,
-        returns: 'the sorted list or dictionary keys',
-        namedArgumentList: [
-            SlashCommandNamedArgument.fromProps({
-                name: 'keysort',
-                description: 'whether to sort by key or value; ignored for lists',
-                typeList: [ARGUMENT_TYPE.BOOLEAN],
-                enumList: ['true', 'false'],
-                defaultValue: 'true',
-            }),
-        ],
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: 'value',
-                typeList: [ARGUMENT_TYPE.STRING, ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.LIST, ARGUMENT_TYPE.DICTIONARY],
-                isRequired: true,
-                forceEnum: false,
-            }),
-        ],
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'sort',
+            callback: sortArrayObjectCallback,
+            returns: 'the sorted list or dictionary keys',
+            namedArgumentList: [
+                SlashCommandNamedArgument.fromProps({
+                    name: 'keysort',
+                    description: 'whether to sort by key or value; ignored for lists',
+                    typeList: [ARGUMENT_TYPE.BOOLEAN],
+                    enumList: ['true', 'false'],
+                    defaultValue: 'true',
+                }),
+            ],
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: 'value',
+                    typeList: [
+                        ARGUMENT_TYPE.STRING,
+                        ARGUMENT_TYPE.NUMBER,
+                        ARGUMENT_TYPE.LIST,
+                        ARGUMENT_TYPE.DICTIONARY,
+                    ],
+                    isRequired: true,
+                    forceEnum: false,
+                }),
+            ],
+            helpString: `
             <div>
                 Sorts a list or dictionary in ascending order and passes the result down the pipe.
                 <ul>
@@ -2348,43 +2636,52 @@ export function registerVariableCommands() {
                 </ul>
             </div>
         `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'rand',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
-        callback: (args, value) => String(randValuesCallback(Number(args.from ?? 0), Number(args.to ?? (value ? value : 1)), args)),
-        returns: 'random number',
-        namedArgumentList: [
-            new SlashCommandNamedArgument(
-                'from',
-                'starting value for the range (inclusive)',
-                [ARGUMENT_TYPE.NUMBER],
-                false,
-                false,
-                // @ts-expect-error TS(2345) FIXME: Argument of type '"0"' is not assignable to parame... Remove this comment to see the full error message
-                '0',
-            ),
-            new SlashCommandNamedArgument(
-                'to',
-                'ending value for the range (inclusive)',
-                [ARGUMENT_TYPE.NUMBER],
-                false,
-                false,
-                // @ts-expect-error TS(2345) FIXME: Argument of type '"1"' is not assignable to parame... Remove this comment to see the full error message
-                '1',
-            ),
-            new SlashCommandNamedArgument(
-                'round',
-                'rounding method for the result',
-                [ARGUMENT_TYPE.STRING],
-                false,
-                false,
-                null,
-                // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'never'.
-                ['round', 'ceil', 'floor'],
-            ),
-        ],
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'rand',
+            // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
+            callback: (args, value) =>
+                String(
+                    randValuesCallback(
+                        Number(args.from ?? 0),
+                        Number(args.to ?? (value ? value : 1)),
+                        args,
+                    ),
+                ),
+            returns: 'random number',
+            namedArgumentList: [
+                new SlashCommandNamedArgument(
+                    'from',
+                    'starting value for the range (inclusive)',
+                    [ARGUMENT_TYPE.NUMBER],
+                    false,
+                    false,
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '"0"' is not assignable to parame... Remove this comment to see the full error message
+                    '0',
+                ),
+                new SlashCommandNamedArgument(
+                    'to',
+                    'ending value for the range (inclusive)',
+                    [ARGUMENT_TYPE.NUMBER],
+                    false,
+                    false,
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '"1"' is not assignable to parame... Remove this comment to see the full error message
+                    '1',
+                ),
+                new SlashCommandNamedArgument(
+                    'round',
+                    'rounding method for the result',
+                    [ARGUMENT_TYPE.STRING],
+                    false,
+                    false,
+                    null,
+                    // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'never'.
+                    ['round', 'ceil', 'floor'],
+                ),
+            ],
+            helpString: `
             <div>
                 Returns a random number between <code>from</code> and <code>to</code> (inclusive).
             </div>
@@ -2406,53 +2703,63 @@ export function registerVariableCommands() {
                 </ul>
             </div>
         `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'var',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
-        callback: (/** @type {NamedArguments} */ args, value) => varCallback(args, value),
-        returns: 'the variable value',
-        namedArgumentList: [
-            SlashCommandNamedArgument.fromProps({
-                name: 'key',
-                description: 'variable name; forces setting the variable, even if no value is provided',
-                typeList: [ARGUMENT_TYPE.VARIABLE_NAME],
-                enumProvider: commonEnumProviders.variables('scope'),
-                forceEnum: false,
-            }),
-            new SlashCommandNamedArgument(
-                'index',
-                'optional index for list or dictionary',
-                [ARGUMENT_TYPE.NUMBER],
-                false, // isRequired
-                false, // acceptsMultiple
-            ),
-            SlashCommandNamedArgument.fromProps({
-                name: 'as',
-                description: 'change the type of the value when used with index',
-                forceEnum: true,
-                enumProvider: commonEnumProviders.types,
-                isRequired: false,
-                defaultValue: 'string',
-            }),
-        ],
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: 'variable name',
-                typeList: [ARGUMENT_TYPE.VARIABLE_NAME],
-                enumProvider: commonEnumProviders.variables('scope'),
-                forceEnum: false,
-            }),
-            new SlashCommandArgument(
-                'variable value',
-                [ARGUMENT_TYPE.STRING, ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.BOOLEAN, ARGUMENT_TYPE.LIST, ARGUMENT_TYPE.DICTIONARY, ARGUMENT_TYPE.CLOSURE],
-                false, // isRequired
-                false, // acceptsMultiple
-            ),
-        ],
-        splitUnnamedArgument: true,
-        splitUnnamedArgumentCount: 1,
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'var',
+            // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
+            callback: (/** @type {NamedArguments} */ args, value) => varCallback(args, value),
+            returns: 'the variable value',
+            namedArgumentList: [
+                SlashCommandNamedArgument.fromProps({
+                    name: 'key',
+                    description:
+                        'variable name; forces setting the variable, even if no value is provided',
+                    typeList: [ARGUMENT_TYPE.VARIABLE_NAME],
+                    enumProvider: commonEnumProviders.variables('scope'),
+                    forceEnum: false,
+                }),
+                new SlashCommandNamedArgument(
+                    'index',
+                    'optional index for list or dictionary',
+                    [ARGUMENT_TYPE.NUMBER],
+                    false, // isRequired
+                    false, // acceptsMultiple
+                ),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'as',
+                    description: 'change the type of the value when used with index',
+                    forceEnum: true,
+                    enumProvider: commonEnumProviders.types,
+                    isRequired: false,
+                    defaultValue: 'string',
+                }),
+            ],
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: 'variable name',
+                    typeList: [ARGUMENT_TYPE.VARIABLE_NAME],
+                    enumProvider: commonEnumProviders.variables('scope'),
+                    forceEnum: false,
+                }),
+                new SlashCommandArgument(
+                    'variable value',
+                    [
+                        ARGUMENT_TYPE.STRING,
+                        ARGUMENT_TYPE.NUMBER,
+                        ARGUMENT_TYPE.BOOLEAN,
+                        ARGUMENT_TYPE.LIST,
+                        ARGUMENT_TYPE.DICTIONARY,
+                        ARGUMENT_TYPE.CLOSURE,
+                    ],
+                    false, // isRequired
+                    false, // acceptsMultiple
+                ),
+            ],
+            splitUnnamedArgument: true,
+            splitUnnamedArgumentCount: 1,
+            helpString: `
             <div>
                 Get or set a variable. Use <code>index</code> to access elements of a JSON-serialized list or dictionary.
                 To convert the value to a specific JSON type when using with <code>index</code>, use the <code>as</code> argument.
@@ -2472,35 +2779,42 @@ export function registerVariableCommands() {
                 </ul>
             </div>
         `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'let',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
-        callback: (/** @type {NamedArguments} */ args, value) => letCallback(args, value),
-        returns: 'the variable value',
-        namedArgumentList: [
-            SlashCommandNamedArgument.fromProps({
-                name: 'key',
-                description: 'variable name',
-                typeList: [ARGUMENT_TYPE.VARIABLE_NAME],
-                enumProvider: commonEnumProviders.variables('scope'),
-                forceEnum: false,
-            }),
-        ],
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: 'variable name',
-                typeList: [ARGUMENT_TYPE.VARIABLE_NAME],
-                enumProvider: commonEnumProviders.variables('scope'),
-                forceEnum: false,
-            }),
-            new SlashCommandArgument(
-                'variable value', [ARGUMENT_TYPE.STRING, ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.BOOLEAN, ARGUMENT_TYPE.LIST, ARGUMENT_TYPE.DICTIONARY, ARGUMENT_TYPE.CLOSURE],
-            ),
-        ],
-        splitUnnamedArgument: true,
-        splitUnnamedArgumentCount: 1,
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'let',
+            // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
+            callback: (/** @type {NamedArguments} */ args, value) => letCallback(args, value),
+            returns: 'the variable value',
+            namedArgumentList: [
+                SlashCommandNamedArgument.fromProps({
+                    name: 'key',
+                    description: 'variable name',
+                    typeList: [ARGUMENT_TYPE.VARIABLE_NAME],
+                    enumProvider: commonEnumProviders.variables('scope'),
+                    forceEnum: false,
+                }),
+            ],
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: 'variable name',
+                    typeList: [ARGUMENT_TYPE.VARIABLE_NAME],
+                    enumProvider: commonEnumProviders.variables('scope'),
+                    forceEnum: false,
+                }),
+                new SlashCommandArgument('variable value', [
+                    ARGUMENT_TYPE.STRING,
+                    ARGUMENT_TYPE.NUMBER,
+                    ARGUMENT_TYPE.BOOLEAN,
+                    ARGUMENT_TYPE.LIST,
+                    ARGUMENT_TYPE.DICTIONARY,
+                    ARGUMENT_TYPE.CLOSURE,
+                ]),
+            ],
+            splitUnnamedArgument: true,
+            splitUnnamedArgumentCount: 1,
+            helpString: `
             <div>
                 Declares a new variable in the current scope.
             </div>
@@ -2519,26 +2833,28 @@ export function registerVariableCommands() {
                 </ul>
             </div>
         `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'closure-serialize',
-        /**
-         *
-         * @param {NamedArguments} args
-         * @param {SlashCommandClosure} value
-         * @returns {string}
-         */
-        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
-        callback: (args, value) => closureSerializeCallback(args, value),
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: 'the closure to serialize',
-                typeList: [ARGUMENT_TYPE.CLOSURE],
-                isRequired: true,
-            }),
-        ],
-        returns: 'serialized closure as string',
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'closure-serialize',
+            /**
+             *
+             * @param {NamedArguments} args
+             * @param {SlashCommandClosure} value
+             * @returns {string}
+             */
+            // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
+            callback: (args, value) => closureSerializeCallback(args, value),
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: 'the closure to serialize',
+                    typeList: [ARGUMENT_TYPE.CLOSURE],
+                    isRequired: true,
+                }),
+            ],
+            returns: 'serialized closure as string',
+            helpString: `
             <div>
                 Serialize a closure as text that can be stored in global and chat variables.
             </div>
@@ -2551,25 +2867,27 @@ export function registerVariableCommands() {
                 </ul>
             </div>
         `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'closure-deserialize',
-        /**
-         * @param {NamedArguments} args
-         * @param {UnnamedArguments} value
-         * @returns {SlashCommandClosure}
-         */
-        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
-        callback: (args, value) => closureDeserializeCallback(args, value),
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: 'serialized closure',
-                typeList: [ARGUMENT_TYPE.STRING],
-                isRequired: true,
-            }),
-        ],
-        returns: 'deserialized closure',
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'closure-deserialize',
+            /**
+             * @param {NamedArguments} args
+             * @param {UnnamedArguments} value
+             * @returns {SlashCommandClosure}
+             */
+            // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
+            callback: (args, value) => closureDeserializeCallback(args, value),
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: 'serialized closure',
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    isRequired: true,
+                }),
+            ],
+            returns: 'deserialized closure',
+            helpString: `
             <div>
                 Deserialize a closure from text.
             </div>
@@ -2582,5 +2900,6 @@ export function registerVariableCommands() {
                 </ul>
             </div>
         `,
-    }));
+        }),
+    );
 }

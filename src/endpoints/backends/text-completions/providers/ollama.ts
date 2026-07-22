@@ -14,7 +14,10 @@ const provider: BackendProvider = {
         const keepAlive = Number(getConfigValue('ollama.keepAlive', -1, 'number'));
         // @ts-expect-error TS(2345) — getConfigValue signature accepts null|undefined for default
         const numBatch = Number(getConfigValue('ollama.batchSize', -1, 'number'));
-        const options = pickBy(body, (_, key) => OLLAMA_KEYS.includes(key)) as Record<string, unknown>;
+        const options = pickBy(body, (_, key) => OLLAMA_KEYS.includes(key)) as Record<
+            string,
+            unknown
+        >;
 
         if (numBatch > 0) {
             options.num_batch = numBatch;
@@ -67,9 +70,12 @@ export async function parseOllamaStream(
         }
 
         // Bun: Response.body is a Web ReadableStream without .on('data').
-        const body: Readable = typeof (jsonStream.body as { on: unknown }).on === 'function'
-            ? jsonStream.body as unknown as Readable
-            : (Readable.fromWeb as unknown as (s: ReadableStream) => Readable)(jsonStream.body as ReadableStream);
+        const body: Readable =
+            typeof (jsonStream.body as { on: unknown }).on === 'function'
+                ? (jsonStream.body as unknown as Readable)
+                : (Readable.fromWeb as unknown as (s: ReadableStream) => Readable)(
+                      jsonStream.body as ReadableStream,
+                  );
 
         let partialData = '';
         body.on('data', (data: Buffer) => {

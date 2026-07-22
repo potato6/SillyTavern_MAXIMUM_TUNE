@@ -23,7 +23,7 @@ export function registerEnvMacros() {
 
     MacroRegistry.registerMacro('char', {
         category: MacroCategory.NAMES,
-        description: 'The character\'s name.',
+        description: "The character's name.",
         returns: 'Character name.',
         // @ts-expect-error TS(7031) FIXME: Binding element 'env' implicitly has an 'any' type... Remove this comment to see the full error message
         handler: ({ env }) => env.names.char,
@@ -32,7 +32,8 @@ export function registerEnvMacros() {
     MacroRegistry.registerMacro('group', {
         aliases: [{ alias: 'charIfNotGroup', visible: false }],
         category: MacroCategory.NAMES,
-        description: 'Comma-separated list of group member names (including muted) or the character name in solo chats.',
+        description:
+            'Comma-separated list of group member names (including muted) or the character name in solo chats.',
         returns: 'List of group member names.',
         // @ts-expect-error TS(7031) FIXME: Binding element 'env' implicitly has an 'any' type... Remove this comment to see the full error message
         handler: ({ env }) => env.names.group ?? '',
@@ -57,7 +58,7 @@ export function registerEnvMacros() {
     // Character card field macros (from MacroEnv.character)
     MacroRegistry.registerMacro('charPrompt', {
         category: MacroCategory.CHARACTER,
-        description: 'The character\'s Main Prompt override.',
+        description: "The character's Main Prompt override.",
         returns: 'Character Main Prompt override.',
         // @ts-expect-error TS(7031) FIXME: Binding element 'env' implicitly has an 'any' type... Remove this comment to see the full error message
         handler: ({ env }) => env.character.charPrompt ?? '',
@@ -65,7 +66,7 @@ export function registerEnvMacros() {
 
     MacroRegistry.registerMacro('charInstruction', {
         category: MacroCategory.CHARACTER,
-        description: 'The character\'s Post-History Instructions override.',
+        description: "The character's Post-History Instructions override.",
         returns: 'Character Post-History Instructions override.',
         // @ts-expect-error TS(7031) FIXME: Binding element 'env' implicitly has an 'any' type... Remove this comment to see the full error message
         handler: ({ env }) => env.character.charInstruction ?? '',
@@ -74,7 +75,7 @@ export function registerEnvMacros() {
     MacroRegistry.registerMacro('charDescription', {
         aliases: [{ alias: 'description' }],
         category: MacroCategory.CHARACTER,
-        description: 'The character\'s description.',
+        description: "The character's description.",
         returns: 'Character description.',
         // @ts-expect-error TS(7031) FIXME: Binding element 'env' implicitly has an 'any' type... Remove this comment to see the full error message
         handler: ({ env }) => env.character.description ?? '',
@@ -83,7 +84,7 @@ export function registerEnvMacros() {
     MacroRegistry.registerMacro('charPersonality', {
         aliases: [{ alias: 'personality' }],
         category: MacroCategory.CHARACTER,
-        description: 'The character\'s personality.',
+        description: "The character's personality.",
         returns: 'Character personality.',
         // @ts-expect-error TS(7031) FIXME: Binding element 'env' implicitly has an 'any' type... Remove this comment to see the full error message
         handler: ({ env }) => env.character.personality ?? '',
@@ -92,7 +93,7 @@ export function registerEnvMacros() {
     MacroRegistry.registerMacro('charScenario', {
         aliases: [{ alias: 'scenario' }],
         category: MacroCategory.CHARACTER,
-        description: 'The character\'s scenario.',
+        description: "The character's scenario.",
         returns: 'Character scenario.',
         // @ts-expect-error TS(7031) FIXME: Binding element 'env' implicitly has an 'any' type... Remove this comment to see the full error message
         handler: ({ env }) => env.character.scenario ?? '',
@@ -116,7 +117,7 @@ export function registerEnvMacros() {
 
     MacroRegistry.registerMacro('mesExamples', {
         category: MacroCategory.CHARACTER,
-        description: 'The character\'s dialogue examples, formatted for instruct mode when enabled.',
+        description: "The character's dialogue examples, formatted for instruct mode when enabled.",
         returns: 'Formatted dialogue examples.',
         // @ts-expect-error TS(7031) FIXME: Binding element 'env' implicitly has an 'any' type... Remove this comment to see the full error message
         handler: ({ env }) => {
@@ -140,7 +141,7 @@ export function registerEnvMacros() {
 
     MacroRegistry.registerMacro('charDepthPrompt', {
         category: MacroCategory.CHARACTER,
-        description: 'The character\'s @ Depth Note.',
+        description: "The character's @ Depth Note.",
         returns: 'Character @ Depth Note.',
         // @ts-expect-error TS(7031) FIXME: Binding element 'env' implicitly has an 'any' type... Remove this comment to see the full error message
         handler: ({ env }) => env.character.charDepthPrompt ?? '',
@@ -164,10 +165,12 @@ export function registerEnvMacros() {
                 optional: true,
                 defaultValue: '0',
                 type: MacroValueType.INTEGER,
-                description: '0-based index. 0 (default) returns the main greeting, 1 and up return alternate greetings.',
+                description:
+                    '0-based index. 0 (default) returns the main greeting, 1 and up return alternate greetings.',
             },
         ],
-        description: 'The character\'s first message / greeting. Optionally specify an index to access alternate greetings.',
+        description:
+            "The character's first message / greeting. Optionally specify an index to access alternate greetings.",
         returns: 'Character greeting at the given index, or empty string if out of bounds.',
         exampleUsage: ['{{greeting}}', '{{greeting::0}}', '{{greeting::1}}'],
         // @ts-expect-error TS(7031) FIXME: Binding element 'env' implicitly has an 'any' type... Remove this comment to see the full error message
@@ -187,7 +190,7 @@ export function registerEnvMacros() {
             { alias: 'char_version', visible: false }, // Legacy underscore variant
         ],
         category: MacroCategory.CHARACTER,
-        description: 'The character\'s version number.',
+        description: "The character's version number.",
         returns: 'Character version number.',
         // @ts-expect-error TS(7031) FIXME: Binding element 'env' implicitly has an 'any' type... Remove this comment to see the full error message
         handler: ({ env }) => env.character.version ?? '',
@@ -196,7 +199,8 @@ export function registerEnvMacros() {
     // System / env extras macros (from MacroEnv.system / MacroEnv.extra)
     MacroRegistry.registerMacro('model', {
         category: MacroCategory.STATE,
-        description: 'Model name for the currently selected API (Chat Completion or Chat Completion).',
+        description:
+            'Model name for the currently selected API (Chat Completion or Chat Completion).',
         returns: 'Model name.',
         // @ts-expect-error TS(7031) FIXME: Binding element 'env' implicitly has an 'any' type... Remove this comment to see the full error message
         handler: ({ env }) => env.system.model,
@@ -204,7 +208,8 @@ export function registerEnvMacros() {
 
     MacroRegistry.registerMacro('original', {
         category: MacroCategory.CHARACTER,
-        description: 'Original message content for {{original}} substitution in in character prompt overrides.',
+        description:
+            'Original message content for {{original}} substitution in in character prompt overrides.',
         returns: 'Original message content.',
         // @ts-expect-error TS(7031) FIXME: Binding element 'env' implicitly has an 'any' type... Remove this comment to see the full error message
         handler: ({ env }) => {

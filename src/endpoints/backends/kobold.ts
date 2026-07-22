@@ -2,7 +2,11 @@ import fs from 'node:fs';
 import express from 'express';
 
 import { forwardFetchResponse, delay } from '../../util.js';
-import { getOverrideHeaders, setAdditionalHeaders, setAdditionalHeadersByType } from '../../additional-headers.js';
+import {
+    getOverrideHeaders,
+    setAdditionalHeaders,
+    setAdditionalHeadersByType,
+} from '../../additional-headers.js';
 import { TEXTGEN_TYPES } from '../../constants.js';
 
 export const router = express.Router();
@@ -86,7 +90,7 @@ router.post('/generate', async function (request, response_generate) {
         body: JSON.stringify(this_settings),
         headers: Object.assign(
             { 'Content-Type': 'application/json' },
-            getOverrideHeaders((new URL(request.body.api_server))?.host),
+            getOverrideHeaders(new URL(request.body.api_server)?.host),
         ),
         signal: controller.signal,
     };
@@ -95,7 +99,9 @@ router.post('/generate', async function (request, response_generate) {
     const delayAmount = 2500;
     for (let i = 0; i < MAX_RETRIES; i++) {
         try {
-            const url = request.body.streaming ? `${request.body.api_server}/extra/generate/stream` : `${request.body.api_server}/v1/generate`;
+            const url = request.body.streaming
+                ? `${request.body.api_server}/extra/generate/stream`
+                : `${request.body.api_server}/v1/generate`;
             const response = await fetch(url, { method: 'POST', ...args });
 
             if (request.body.streaming) {
@@ -105,18 +111,22 @@ router.post('/generate', async function (request, response_generate) {
             } else {
                 if (!response.ok) {
                     const errorText = await response.text();
-                    console.warn(`Kobold returned error: ${response.status} ${response.statusText} ${errorText}`);
+                    console.warn(
+                        `Kobold returned error: ${response.status} ${response.statusText} ${errorText}`,
+                    );
 
                     try {
                         const errorJson = JSON.parse(errorText);
                         const message = errorJson?.detail?.msg || errorText;
                         return response_generate.status(400).send({ error: { message } });
                     } catch {
-                        return response_generate.status(400).send({ error: { message: errorText } });
+                        return response_generate
+                            .status(400)
+                            .send({ error: { message: errorText } });
                     }
                 }
 
-                const data = await response.json() as Record<string, unknown>;
+                const data = (await response.json()) as Record<string, unknown>;
                 console.debug('Endpoint response:', data);
                 return response_generate.send(data);
             }
@@ -163,22 +173,31 @@ router.post('/status', async function (request, response) {
         // We catch errors both from the response not having a successful HTTP status and from JSON parsing failing
 
         // Kobold United API version
-        fetch(`${api_server}/v1/info/version`).then(response => {
-            if (!response.ok) throw new Error(`Kobold API error: ${(response.status, response.statusText)}`);
-            return response.json();
-        }).catch(() => ({ result: '0.0.0' })),
+        fetch(`${api_server}/v1/info/version`)
+            .then((response) => {
+                if (!response.ok)
+                    throw new Error(`Kobold API error: ${(response.status, response.statusText)}`);
+                return response.json();
+            })
+            .catch(() => ({ result: '0.0.0' })),
 
         // KoboldCpp version
-        fetch(`${api_server}/extra/version`).then(response => {
-            if (!response.ok) throw new Error(`Kobold API error: ${(response.status, response.statusText)}`);
-            return response.json();
-        }).catch(() => ({ version: '0.0' })),
+        fetch(`${api_server}/extra/version`)
+            .then((response) => {
+                if (!response.ok)
+                    throw new Error(`Kobold API error: ${(response.status, response.statusText)}`);
+                return response.json();
+            })
+            .catch(() => ({ version: '0.0' })),
 
         // Current model
-        fetch(`${api_server}/v1/model`).then(response => {
-            if (!response.ok) throw new Error(`Kobold API error: ${(response.status, response.statusText)}`);
-            return response.json();
-        }).catch(() => null),
+        fetch(`${api_server}/v1/model`)
+            .then((response) => {
+                if (!response.ok)
+                    throw new Error(`Kobold API error: ${(response.status, response.statusText)}`);
+                return response.json();
+            })
+            .catch(() => null),
     ]);
 
     // @ts-expect-error TS(2339) FIXME: Property 'koboldUnitedVersion' does not exist on t... Remove this comment to see the full error message
@@ -186,9 +205,11 @@ router.post('/status', async function (request, response) {
     // @ts-expect-error TS(2339) FIXME: Property 'koboldCppVersion' does not exist on type... Remove this comment to see the full error message
     result.koboldCppVersion = koboldExtraResponse.result;
     // @ts-expect-error TS(2339) FIXME: Property 'result' does not exist on type '{}'.
-    result.model = !koboldModelResponse || (koboldModelResponse as Record<string, unknown>).result === 'ReadOnly' ?
-        'no_connection' :
-        (koboldModelResponse as Record<string, unknown>).result;
+    result.model =
+        !koboldModelResponse ||
+        (koboldModelResponse as Record<string, unknown>).result === 'ReadOnly'
+            ? 'no_connection'
+            : (koboldModelResponse as Record<string, unknown>).result;
 
     response.send(result);
 });
@@ -213,7 +234,12 @@ router.post('/transcribe-audio', async function (request, response) {
         fs.unlinkSync(request.file.path);
 
         const headers = {};
-        setAdditionalHeadersByType(headers, TEXTGEN_TYPES.KOBOLDCPP, server, request.user.directories);
+        setAdditionalHeadersByType(
+            headers,
+            TEXTGEN_TYPES.KOBOLDCPP,
+            server,
+            request.user.directories,
+        );
 
         const url = new URL(server);
         url.pathname = '/api/extra/transcribe';
@@ -235,7 +261,7 @@ router.post('/transcribe-audio', async function (request, response) {
             return response.status(500).send(text);
         }
 
-        const data = await result.json() as Record<string, unknown>;
+        const data = (await result.json()) as Record<string, unknown>;
         console.debug('KoboldCpp transcription response', data);
         return response.json(data);
     } catch (error) {
@@ -254,7 +280,12 @@ router.post('/embed', async function (request, response) {
         }
 
         const headers = {};
-        setAdditionalHeadersByType(headers, TEXTGEN_TYPES.KOBOLDCPP, server, request.user.directories);
+        setAdditionalHeadersByType(
+            headers,
+            TEXTGEN_TYPES.KOBOLDCPP,
+            server,
+            request.user.directories,
+        );
 
         const embeddingsUrl = new URL(server);
         embeddingsUrl.pathname = '/api/extra/embeddings';
@@ -270,7 +301,7 @@ router.post('/embed', async function (request, response) {
         });
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any -- API response shape unknown, needs dynamic access
-        const data = await embeddingsResult.json() as any;
+        const data = (await embeddingsResult.json()) as any;
 
         if (!Array.isArray(data?.data)) {
             console.warn('KoboldCpp API response was not an array');
@@ -278,7 +309,10 @@ router.post('/embed', async function (request, response) {
         }
 
         const model = data.model || 'unknown';
-        const embeddings = data.data.map((x: unknown) => Array.isArray(x) ? x[0] : x).sort((a: { index: number }, b: { index: number }) => a.index - b.index).map((x: { embedding: unknown }) => x.embedding);
+        const embeddings = data.data
+            .map((x: unknown) => (Array.isArray(x) ? x[0] : x))
+            .toSorted((a: { index: number }, b: { index: number }) => a.index - b.index)
+            .map((x: { embedding: unknown }) => x.embedding);
         return response.json({ model, embeddings });
     } catch (error) {
         console.error('KoboldCpp embedding failed', error);

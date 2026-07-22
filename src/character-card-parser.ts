@@ -14,7 +14,7 @@ import PNGtext from 'png-chunk-text';
  */
 export const write = (image: Buffer | Uint8Array, data: string) => {
     const chunks = extract(new Uint8Array(image));
-    const tEXtChunks = chunks.filter(chunk => chunk.name === 'tEXt');
+    const tEXtChunks = chunks.filter((chunk) => chunk.name === 'tEXt');
 
     // Remove existing tEXt chunks
     for (const tEXtChunk of tEXtChunks) {
@@ -54,7 +54,9 @@ export const write = (image: Buffer | Uint8Array, data: string) => {
 export const read = (image: Buffer | Uint8Array) => {
     const chunks = extract(new Uint8Array(image));
 
-    const textChunks = chunks.filter((chunk) => chunk.name === 'tEXt').map((chunk) => PNGtext.decode(chunk.data));
+    const textChunks = chunks
+        .filter((chunk) => chunk.name === 'tEXt')
+        .map((chunk) => PNGtext.decode(chunk.data));
 
     if (textChunks.length === 0) {
         console.error('PNG metadata does not contain any text chunks.');
@@ -95,4 +97,3 @@ export const parse = async (cardUrl: string, format: string) => {
 
     throw new Error('Unsupported format');
 };
-

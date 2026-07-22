@@ -5,8 +5,15 @@ import { callGenericPopup, POPUP_TYPE } from './popup.js';
 import { power_user } from './power-user.js';
 import { getPresetManager } from './preset-manager.js';
 import { SlashCommand } from './slash-commands/SlashCommand.js';
-import { ARGUMENT_TYPE, SlashCommandArgument, SlashCommandNamedArgument } from './slash-commands/SlashCommandArgument.js';
-import { commonEnumProviders, enumIcons } from './slash-commands/SlashCommandCommonEnumsProvider.js';
+import {
+    ARGUMENT_TYPE,
+    SlashCommandArgument,
+    SlashCommandNamedArgument,
+} from './slash-commands/SlashCommandArgument.js';
+import {
+    commonEnumProviders,
+    enumIcons,
+} from './slash-commands/SlashCommandCommonEnumsProvider.js';
 import { enumTypes, SlashCommandEnumValue } from './slash-commands/SlashCommandEnumValue.js';
 import { SlashCommandParser } from './slash-commands/SlashCommandParser.js';
 import { renderTemplateAsync } from './templates.js';
@@ -32,7 +39,7 @@ async function migrateSystemPromptFromInstructMode() {
         power_user.sysprompt.post_history = '';
 
         // @ts-expect-error TS(2339) FIXME: Property 'content' does not exist on type 'never'.
-        const existingPromptName = system_prompts.find(x => x.content === prompt)?.name;
+        const existingPromptName = system_prompts.find((x) => x.content === prompt)?.name;
 
         if (existingPromptName) {
             power_user.sysprompt.name = existingPromptName;
@@ -43,7 +50,11 @@ async function migrateSystemPromptFromInstructMode() {
         }
 
         saveSettingsDebounced();
-        notyf.info('System prompt settings have been moved from the Instruct Mode.', 'Migration notice', { timeOut: 5000 });
+        notyf.info(
+            'System prompt settings have been moved from the Instruct Mode.',
+            'Migration notice',
+            { timeOut: 5000 },
+        );
     }
 }
 
@@ -90,8 +101,11 @@ export async function checkForSystemPromptInInstructTemplate(name, template) {
     }
     if ('system_prompt' in template && template.system_prompt) {
         // @ts-expect-error TS(2339) FIXME: Property 'content' does not exist on type 'never'.
-        const existingName = system_prompts.find(x => x.content === template.system_prompt)?.name;
-        const html = await renderTemplateAsync('migrateInstructPrompt', { prompt: template.system_prompt, existing: existingName });
+        const existingName = system_prompts.find((x) => x.content === template.system_prompt)?.name;
+        const html = await renderTemplateAsync('migrateInstructPrompt', {
+            prompt: template.system_prompt,
+            existing: existingName,
+        });
         const confirm = await callGenericPopup(html, POPUP_TYPE.CONFIRM);
         if (confirm) {
             const migratedName = `[Migrated] ${name}`;
@@ -112,7 +126,10 @@ export async function checkForSystemPromptInInstructTemplate(name, template) {
  */
 function toggleSystemPromptDisabledControls() {
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    document.getElementById('sysprompt_enabled').parentElement.querySelector('i').classList.toggle('toggleEnabled', !!power_user.sysprompt.enabled);
+    document
+        .getElementById('sysprompt_enabled')
+        .parentElement.querySelector('i')
+        .classList.toggle('toggleEnabled', !!power_user.sysprompt.enabled);
     $contentBlock.classList.toggle('disabled', !power_user.sysprompt.enabled);
 }
 
@@ -163,8 +180,8 @@ function selectSystemPromptCallback(args, name) {
 
     const quiet = isTrueBoolean(args?.quiet);
     // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
-    const systemPromptNames = system_prompts.map(preset => preset.name);
-    let foundName = systemPromptNames.find(x => x.toLowerCase() === name.toLowerCase());
+    const systemPromptNames = system_prompts.map((preset) => preset.name);
+    let foundName = systemPromptNames.find((x) => x.toLowerCase() === name.toLowerCase());
 
     if (!foundName) {
         const fuse = new Fuse(systemPromptNames);
@@ -179,7 +196,7 @@ function selectSystemPromptCallback(args, name) {
     }
 
     $select.value = foundName;
-    $select.dispatchEvent(new Event('change', {bubbles: true}));
+    $select.dispatchEvent(new Event('change', { bubbles: true }));
     if (!quiet) notyf.success(`System prompt "${foundName}" selected`);
     return foundName;
 }
@@ -197,12 +214,12 @@ export function initSystemPrompts() {
     $select.addEventListener('change', async function () {
         if (!power_user.sysprompt.enabled) {
             $enabled.checked = true;
-            $enabled.dispatchEvent(new Event('input', {bubbles: true}));
+            $enabled.dispatchEvent(new Event('input', { bubbles: true }));
         }
 
         const name = String(this.value);
         // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
-        const prompt = system_prompts.find(p => p.name === name);
+        const prompt = system_prompts.find((p) => p.name === name);
         if (prompt) {
             // @ts-expect-error TS(2339) FIXME: Property 'content' does not exist on type 'never'.
             $content.value = prompt.content || '';
@@ -233,36 +250,46 @@ export function initSystemPrompts() {
         saveSettingsDebounced();
     });
 
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'sysprompt',
-        aliases: ['system-prompt'],
-        callback: selectSystemPromptCallback,
-        returns: 'current prompt name',
-        namedArgumentList: [
-            SlashCommandNamedArgument.fromProps({
-                name: 'quiet',
-                description: 'Suppress the toast message on prompt change',
-                typeList: [ARGUMENT_TYPE.BOOLEAN],
-                defaultValue: 'false',
-                enumList: commonEnumProviders.boolean('trueFalse')(),
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'forceGet',
-                description: 'Force getting a name even if system prompt is disabled',
-                typeList: [ARGUMENT_TYPE.BOOLEAN],
-                defaultValue: 'false',
-                enumList: commonEnumProviders.boolean('trueFalse')(),
-            }),
-        ],
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: 'system prompt name',
-                typeList: [ARGUMENT_TYPE.STRING],
-                // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
-                enumProvider: () => system_prompts.map(x => new SlashCommandEnumValue(x.name, null, enumTypes.enum, enumIcons.preset)),
-            }),
-        ],
-        helpString: `
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'sysprompt',
+            aliases: ['system-prompt'],
+            callback: selectSystemPromptCallback,
+            returns: 'current prompt name',
+            namedArgumentList: [
+                SlashCommandNamedArgument.fromProps({
+                    name: 'quiet',
+                    description: 'Suppress the toast message on prompt change',
+                    typeList: [ARGUMENT_TYPE.BOOLEAN],
+                    defaultValue: 'false',
+                    enumList: commonEnumProviders.boolean('trueFalse')(),
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'forceGet',
+                    description: 'Force getting a name even if system prompt is disabled',
+                    typeList: [ARGUMENT_TYPE.BOOLEAN],
+                    defaultValue: 'false',
+                    enumList: commonEnumProviders.boolean('trueFalse')(),
+                }),
+            ],
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: 'system prompt name',
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
+                    enumProvider: () =>
+                        system_prompts.map(
+                            (x) =>
+                                new SlashCommandEnumValue(
+                                    x.name,
+                                    null,
+                                    enumTypes.enum,
+                                    enumIcons.preset,
+                                ),
+                        ),
+                }),
+            ],
+            helpString: `
             <div>
                 Selects a system prompt by name, using fuzzy search to find the closest match.
                 Gets the current system prompt if no name is provided and sysprompt is enabled or <code>forceGet=true</code> is passed.
@@ -276,30 +303,38 @@ export function initSystemPrompts() {
                 </ul>
             </div>
         `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'sysprompt-on',
-        aliases: ['sysprompt-enable'],
-        callback: () => setSystemPromptStateCallback(true),
-        helpString: 'Enables system prompt.',
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'sysprompt-off',
-        aliases: ['sysprompt-disable'],
-        callback: () => setSystemPromptStateCallback(false),
-        helpString: 'Disables system prompt',
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'sysprompt-state',
-        aliases: ['sysprompt-toggle'],
-        helpString: 'Gets the current system prompt state. If an argument is provided, it will set the system prompt state.',
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: 'system prompt state',
-                typeList: [ARGUMENT_TYPE.BOOLEAN],
-                enumList: commonEnumProviders.boolean('trueFalse')(),
-            }),
-        ],
-        callback: toggleSystemPromptCallback,
-    }));
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'sysprompt-on',
+            aliases: ['sysprompt-enable'],
+            callback: () => setSystemPromptStateCallback(true),
+            helpString: 'Enables system prompt.',
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'sysprompt-off',
+            aliases: ['sysprompt-disable'],
+            callback: () => setSystemPromptStateCallback(false),
+            helpString: 'Disables system prompt',
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'sysprompt-state',
+            aliases: ['sysprompt-toggle'],
+            helpString:
+                'Gets the current system prompt state. If an argument is provided, it will set the system prompt state.',
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: 'system prompt state',
+                    typeList: [ARGUMENT_TYPE.BOOLEAN],
+                    enumList: commonEnumProviders.boolean('trueFalse')(),
+                }),
+            ],
+            callback: toggleSystemPromptCallback,
+        }),
+    );
 }

@@ -1,11 +1,17 @@
 import express from 'express';
 // @ts-expect-error TS(2792) FIXME: Cannot find module '@zeldafan0225/ai_horde'. Did y... Remove this comment to see the full error message
-import { AIHorde, ModelGenerationInputStableSamplers, ModelInterrogationFormTypes, HordeAsyncRequestStates } from '@zeldafan0225/ai_horde';
+import {
+    AIHorde,
+    ModelGenerationInputStableSamplers,
+    ModelInterrogationFormTypes,
+    HordeAsyncRequestStates,
+} from '@zeldafan0225/ai_horde';
 import { getVersion, delay, Cache } from '../util.js';
 import { readSecret, SECRET_KEYS } from './secrets.js';
 
 const ANONYMOUS_KEY = '0000000000';
-const HORDE_TEXT_MODEL_METADATA_URL = 'https://raw.githubusercontent.com/db0/AI-Horde-text-model-reference/main/db.json';
+const HORDE_TEXT_MODEL_METADATA_URL =
+    'https://raw.githubusercontent.com/db0/AI-Horde-text-model-reference/main/db.json';
 const cache = new Cache(60 * 1000);
 export const router = express.Router();
 
@@ -41,16 +47,25 @@ function sanitizeHordeImagePrompt(prompt: string) {
     }
 
     //to avoid flagging from some image models, always swap these words
-    prompt = prompt.replace(/\b(girl)\b/gmi, 'woman');
-    prompt = prompt.replace(/\b(boy)\b/gmi, 'man');
-    prompt = prompt.replace(/\b(girls)\b/gmi, 'women');
-    prompt = prompt.replace(/\b(boys)\b/gmi, 'men');
+    prompt = prompt.replace(/\b(girl)\b/gim, 'woman');
+    prompt = prompt.replace(/\b(boy)\b/gim, 'man');
+    prompt = prompt.replace(/\b(girls)\b/gim, 'women');
+    prompt = prompt.replace(/\b(boys)\b/gim, 'men');
     //always remove these high risk words from prompt, as they add little value to image gen while increasing the risk the prompt gets flagged
-    prompt = prompt.replace(/\b(under.age|under.aged|underage|underaged|loli|pedo|pedophile|(\w+).year.old|(\w+).years.old|minor|prepubescent|minors|shota)\b/gmi, '');
+    prompt = prompt.replace(
+        /\b(under.age|under.aged|underage|underaged|loli|pedo|pedophile|(\w+).year.old|(\w+).years.old|minor|prepubescent|minors|shota)\b/gim,
+        '',
+    );
     //replace risky subject nouns with person
-    prompt = prompt.replace(/\b(youngster|infant|baby|toddler|child|teen|kid|kiddie|kiddo|teenager|student|preteen|pre.teen)\b/gmi, 'person');
+    prompt = prompt.replace(
+        /\b(youngster|infant|baby|toddler|child|teen|kid|kiddie|kiddo|teenager|student|preteen|pre.teen)\b/gim,
+        'person',
+    );
     //remove risky adjectives and related words
-    prompt = prompt.replace(/\b(young|younger|youthful|youth|small|smaller|smallest|girly|boyish|lil|tiny|teenaged|lit[tl]le|school.aged|school|highschool|kindergarten|teens|children|kids)\b/gmi, '');
+    prompt = prompt.replace(
+        /\b(young|younger|youthful|youth|small|smaller|smallest|girly|boyish|lil|tiny|teenaged|lit[tl]le|school.aged|school|highschool|kindergarten|teens|children|kids)\b/gim,
+        '',
+    );
 
     return prompt;
 }
@@ -69,7 +84,7 @@ router.post('/text-workers', async (request, response) => {
                 'Client-Agent': agent,
             },
         });
-        const data = await fetchResult.json() as Record<string, unknown>;
+        const data = (await fetchResult.json()) as Record<string, unknown>;
         cache.set('workers', data);
         return response.send(data);
     } catch (error) {
@@ -83,7 +98,7 @@ router.post('/text-workers', async (request, response) => {
  */
 async function getHordeTextModelMetadata() {
     const response = await fetch(HORDE_TEXT_MODEL_METADATA_URL);
-    return await response.json() as Record<string, unknown>;
+    return (await response.json()) as Record<string, unknown>;
 }
 
 /**
@@ -91,7 +106,10 @@ async function getHordeTextModelMetadata() {
  * @param models
  * @param metadata
  */
-async function mergeModelsAndMetadata(models: Record<string, unknown>[], metadata: Record<string, unknown>) {
+async function mergeModelsAndMetadata(
+    models: Record<string, unknown>[],
+    metadata: Record<string, unknown>,
+) {
     return models.map((model: Record<string, unknown>) => {
         // @ts-expect-error TS(2538) FIXME: Type 'unknown' cannot be used as an index type.
         const metadataModel = metadata[model.name];
@@ -116,7 +134,7 @@ router.post('/text-models', async (request, response) => {
             },
         });
 
-        let data = await fetchResult.json() as Record<string, unknown>[];
+        let data = (await fetchResult.json()) as Record<string, unknown>[];
 
         // attempt to fetch and merge models metadata
         try {
@@ -154,14 +172,17 @@ router.post('/cancel-task', async (request, response) => {
     try {
         const taskId = request.body.taskId;
         const agent = await getClientAgent();
-        const fetchResult = await fetch(`https://aihorde.net/api/v2/generate/text/status/${taskId}`, {
-            method: 'DELETE',
-            headers: {
-                'Client-Agent': agent,
+        const fetchResult = await fetch(
+            `https://aihorde.net/api/v2/generate/text/status/${taskId}`,
+            {
+                method: 'DELETE',
+                headers: {
+                    'Client-Agent': agent,
+                },
             },
-        });
+        );
 
-        const data = await fetchResult.json() as Record<string, unknown>;
+        const data = (await fetchResult.json()) as Record<string, unknown>;
         console.info(`Cancelled Horde task ${taskId}`);
         return response.send(data);
     } catch (error) {
@@ -174,13 +195,16 @@ router.post('/task-status', async (request, response) => {
     try {
         const taskId = request.body.taskId;
         const agent = await getClientAgent();
-        const fetchResult = await fetch(`https://aihorde.net/api/v2/generate/text/status/${taskId}`, {
-            headers: {
-                'Client-Agent': agent,
+        const fetchResult = await fetch(
+            `https://aihorde.net/api/v2/generate/text/status/${taskId}`,
+            {
+                headers: {
+                    'Client-Agent': agent,
+                },
             },
-        });
+        );
 
-        const data = await fetchResult.json() as Record<string, unknown>;
+        const data = (await fetchResult.json()) as Record<string, unknown>;
         console.info(`Horde task ${taskId} status:`, data);
         return response.send(data);
     } catch (error) {
@@ -201,7 +225,7 @@ router.post('/generate-text', async (request, response) => {
             body: JSON.stringify(request.body),
             headers: {
                 'Content-Type': 'application/json',
-                'apikey': apiKey,
+                apikey: apiKey,
                 'Client-Agent': agent,
             },
         });
@@ -212,7 +236,7 @@ router.post('/generate-text', async (request, response) => {
             return response.send({ error: { message } });
         }
 
-        const data = await result.json() as Record<string, unknown>;
+        const data = (await result.json()) as Record<string, unknown>;
         return response.send(data);
     } catch (error) {
         console.error(error);
@@ -243,15 +267,22 @@ router.post('/sd-models', async (_, response) => {
 
 router.post('/caption-image', async (request, response) => {
     try {
-        const api_key_horde = readSecret(request.user.directories, SECRET_KEYS.HORDE) || ANONYMOUS_KEY;
+        const api_key_horde =
+            readSecret(request.user.directories, SECRET_KEYS.HORDE) || ANONYMOUS_KEY;
         const ai_horde = await getHordeClient();
-        const result = await ai_horde.postAsyncInterrogate({
-            source_image: request.body.image,
-            forms: [{ name: ModelInterrogationFormTypes.caption }],
-        }, { token: api_key_horde });
+        const result = await ai_horde.postAsyncInterrogate(
+            {
+                source_image: request.body.image,
+                forms: [{ name: ModelInterrogationFormTypes.caption }],
+            },
+            { token: api_key_horde },
+        );
 
         if (!result.id) {
-            console.error('Image interrogation request is not satisfyable:', result.message || 'unknown error');
+            console.error(
+                'Image interrogation request is not satisfyable:',
+                result.message || 'unknown error',
+            );
             return response.sendStatus(400);
         }
 
@@ -280,7 +311,10 @@ router.post('/caption-image', async (request, response) => {
                 return response.send({ caption });
             }
 
-            if (status.state === HordeAsyncRequestStates.faulted || status.state === HordeAsyncRequestStates.cancelled) {
+            if (
+                status.state === HordeAsyncRequestStates.faulted ||
+                status.state === HordeAsyncRequestStates.cancelled
+            ) {
                 console.error('Image interrogation request is not successful.');
                 return response.sendStatus(503);
             }
@@ -342,7 +376,8 @@ router.post('/generate-image', async (request, response) => {
             request.body.prompt = sanitized;
         }
 
-        const api_key_horde = readSecret(request.user.directories, SECRET_KEYS.HORDE) || ANONYMOUS_KEY;
+        const api_key_horde =
+            readSecret(request.user.directories, SECRET_KEYS.HORDE) || ANONYMOUS_KEY;
         console.debug('Stable Horde request:', request.body);
 
         const ai_horde = await getHordeClient();
@@ -350,8 +385,7 @@ router.post('/generate-image', async (request, response) => {
         const generation = await ai_horde.postAsyncImageGenerate(
             {
                 prompt: `${request.body.prompt} ### ${request.body.negative_prompt}`,
-                params:
-                {
+                params: {
                     sampler_name: request.body.sampler,
                     hires_fix: request.body.enable_hr,
                     use_gfpgan: request.body.restore_faces,
@@ -368,10 +402,14 @@ router.post('/generate-image', async (request, response) => {
                 nsfw: request.body.nfsw,
                 models: [request.body.model],
             },
-            { token: api_key_horde });
+            { token: api_key_horde },
+        );
 
         if (!generation.id) {
-            console.warn('Image generation request is not satisfyable:', generation.message || 'unknown error');
+            console.warn(
+                'Image generation request is not satisfyable:',
+                generation.message || 'unknown error',
+            );
             return response.sendStatus(400);
         }
 

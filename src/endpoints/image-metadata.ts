@@ -40,11 +40,11 @@ export const METADATA_FILE = 'image-metadata.json';
 /** @type {Record<string, number[]>} */
 export const thumbnailDimensions = {
     // @ts-expect-error TS(2345) FIXME: Argument of type 'number[]' is not assignable to p... Remove this comment to see the full error message
-    'bg': getConfigValue('thumbnails.dimensions.bg', [160, 90]),
+    bg: getConfigValue('thumbnails.dimensions.bg', [160, 90]),
     // @ts-expect-error TS(2345) FIXME: Argument of type 'number[]' is not assignable to p... Remove this comment to see the full error message
-    'avatar': getConfigValue('thumbnails.dimensions.avatar', [96, 144]),
+    avatar: getConfigValue('thumbnails.dimensions.avatar', [96, 144]),
     // @ts-expect-error TS(2345) FIXME: Argument of type 'number[]' is not assignable to p... Remove this comment to see the full error message
-    'persona': getConfigValue('thumbnails.dimensions.persona', [96, 144]),
+    persona: getConfigValue('thumbnails.dimensions.persona', [96, 144]),
 };
 
 /**
@@ -95,7 +95,12 @@ async function getAverageColor(buffer: Buffer): Promise<string> {
         while (offset < png.length) {
             const length = new DataView(png.buffer, offset, 4).getUint32(0);
             // @ts-expect-error TS(2345) FIXME: Argument of type 'number | undefined' is not assig... Remove this comment to see the full error message
-            const type = String.fromCharCode(png[offset + 4], png[offset + 5], png[offset + 6], png[offset + 7]);
+            const type = String.fromCharCode(
+                png[offset + 4],
+                png[offset + 5],
+                png[offset + 6],
+                png[offset + 7],
+            );
             if (type === 'IDAT') {
                 const compressed = png.slice(offset + 8, offset + 8 + length);
                 const raw = inflateSync(compressed);
@@ -120,7 +125,10 @@ async function getAverageColor(buffer: Buffer): Promise<string> {
  * @returns {Promise<ImageMetadata>} A metadata object. Throws an error if processing fails.
  */
 // @ts-expect-error TS(2304) FIXME: Cannot find name 'ThumbnailType'.
-export async function generateImageMetadata(filePath: string, type: ThumbnailType): Promise<ImageMetadata> {
+export async function generateImageMetadata(
+    filePath: string,
+    type: ThumbnailType,
+): Promise<ImageMetadata> {
     const buffer = await fs.readFile(filePath);
     const hash = crypto.createHash('sha256').update(buffer).digest('hex');
     const dimensions = imageSize(buffer);
@@ -192,7 +200,10 @@ export async function readMetadataIndex(userDataRoot: string): Promise<MetadataI
  * @param {MetadataIndex} metadata - The metadata to write
  */
 // @ts-expect-error TS(2304) FIXME: Cannot find name 'MetadataIndex'.
-export async function writeMetadataIndex(userDataRoot: string, metadata: MetadataIndex): Promise<void> {
+export async function writeMetadataIndex(
+    userDataRoot: string,
+    metadata: MetadataIndex,
+): Promise<void> {
     const indexPath = path.join(userDataRoot, METADATA_FILE);
     const jsonString = JSON.stringify(metadata, null, 4);
     await writeFileAtomic(indexPath, jsonString, 'utf8');
@@ -207,7 +218,11 @@ export async function writeMetadataIndex(userDataRoot: string, metadata: Metadat
  * @returns {Promise<{results: {[key: string]: ImageMetadata}, generatedCount: number}>} Results map and count of newly generated
  */
 // @ts-expect-error TS(2304) FIXME: Cannot find name 'ThumbnailType'.
-export async function getOrGenerateMetadataBatch(userDataRoot: string, relativePaths: string[], type: ThumbnailType) {
+export async function getOrGenerateMetadataBatch(
+    userDataRoot: string,
+    relativePaths: string[],
+    type: ThumbnailType,
+) {
     /** @type {{[key: string]: ImageMetadata}} */
     const results = {};
     const index = await readMetadataIndex(userDataRoot);
@@ -253,7 +268,10 @@ export async function getOrGenerateMetadataBatch(userDataRoot: string, relativeP
             generatedCount++;
         } catch (error) {
             // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-            console.warn(`[ImageMetadata] Failed to generate metadata for ${relativePath}:`, error.message);
+            console.warn(
+                `[ImageMetadata] Failed to generate metadata for ${relativePath}:`,
+                error.message,
+            );
         }
     }
 
@@ -298,7 +316,11 @@ export async function removeMetadata(userDataRoot: string, relativePath: string)
  * @returns {Promise<ImageMetadata|null>} The updated metadata
  */
 // @ts-expect-error TS(2304) FIXME: Cannot find name 'ImageMetadata'.
-export async function renameMetadata(userDataRoot: string, oldRelativePath: string, newRelativePath: string): Promise<ImageMetadata | null> {
+export async function renameMetadata(
+    userDataRoot: string,
+    oldRelativePath: string,
+    newRelativePath: string,
+): Promise<ImageMetadata | null> {
     const posixOldPath = oldRelativePath.replaceAll(path.sep, path.posix.sep);
     const posixNewPath = newRelativePath.replaceAll(path.sep, path.posix.sep);
     const index = await readMetadataIndex(userDataRoot);
@@ -369,7 +391,10 @@ export async function cleanupOrphanedMetadata(userDataRoot: string): Promise<str
  * @param {string} name Folder name
  * @returns {Promise<{id: string, name: string, thumbnailFile: string}>} The created folder
  */
-export async function createFolder(userDataRoot: string, name: string): Promise<{ id: string; name: string; thumbnailFile: string }> {
+export async function createFolder(
+    userDataRoot: string,
+    name: string,
+): Promise<{ id: string; name: string; thumbnailFile: string }> {
     const index = await readMetadataIndex(userDataRoot);
     const id = uuidv4();
     const folder = { id, name, thumbnailFile: '' };
@@ -385,10 +410,15 @@ export async function createFolder(userDataRoot: string, name: string): Promise<
  * @param {{id: string, thumbnailFile: string}[]} updates Array of folder ID to thumbnail file mappings
  * @returns {Promise<void>}
  */
-export async function setFolderThumbnailsBatch(userDataRoot: string, updates: { id: string; thumbnailFile: string }[]): Promise<void> {
+export async function setFolderThumbnailsBatch(
+    userDataRoot: string,
+    updates: { id: string; thumbnailFile: string }[],
+): Promise<void> {
     const index = await readMetadataIndex(userDataRoot);
     for (const { id, thumbnailFile } of updates) {
-        const folder = index.folders.find((f: { id: string; name: string; thumbnailFile: string }) => f.id === id);
+        const folder = index.folders.find(
+            (f: { id: string; name: string; thumbnailFile: string }) => f.id === id,
+        );
         if (folder) {
             folder.thumbnailFile = thumbnailFile;
         }
@@ -405,9 +435,15 @@ export async function setFolderThumbnailsBatch(userDataRoot: string, updates: { 
  * @param {string} [updates.thumbnailFile] New thumbnail filename
  * @returns {Promise<{id: string, name: string, thumbnailFile: string}>} The updated folder
  */
-export async function updateFolder(userDataRoot: string, folderId: string, updates: { name?: string; thumbnailFile?: string }): Promise<{ id: string; name: string; thumbnailFile: string }> {
+export async function updateFolder(
+    userDataRoot: string,
+    folderId: string,
+    updates: { name?: string; thumbnailFile?: string },
+): Promise<{ id: string; name: string; thumbnailFile: string }> {
     const index = await readMetadataIndex(userDataRoot);
-    const folder = index.folders.find((f: { id: string; name: string; thumbnailFile: string }) => f.id === folderId);
+    const folder = index.folders.find(
+        (f: { id: string; name: string; thumbnailFile: string }) => f.id === folderId,
+    );
     if (!folder) throw new Error(`Folder '${folderId}' not found.`);
     if (updates.name !== undefined) folder.name = updates.name;
     if (updates.thumbnailFile !== undefined) folder.thumbnailFile = updates.thumbnailFile;
@@ -423,7 +459,9 @@ export async function updateFolder(userDataRoot: string, folderId: string, updat
  */
 export async function deleteFolder(userDataRoot: string, folderId: string): Promise<void> {
     const index = await readMetadataIndex(userDataRoot);
-    const idx = index.folders.findIndex((f: { id: string; name: string; thumbnailFile: string }) => f.id === folderId);
+    const idx = index.folders.findIndex(
+        (f: { id: string; name: string; thumbnailFile: string }) => f.id === folderId,
+    );
     if (idx === -1) throw new Error(`Folder '${folderId}' not found.`);
     index.folders.splice(idx, 1);
     // Remove folderId from all images
@@ -446,9 +484,17 @@ export async function deleteFolder(userDataRoot: string, folderId: string): Prom
  * @param {string[]} relativePaths Relative paths of images to assign
  * @returns {Promise<void>}
  */
-export async function assignImagesToFolder(userDataRoot: string, folderId: string, relativePaths: string[]): Promise<void> {
+export async function assignImagesToFolder(
+    userDataRoot: string,
+    folderId: string,
+    relativePaths: string[],
+): Promise<void> {
     const index = await readMetadataIndex(userDataRoot);
-    if (!index.folders.some((f: { id: string; name: string; thumbnailFile: string }) => f.id === folderId)) {
+    if (
+        !index.folders.some(
+            (f: { id: string; name: string; thumbnailFile: string }) => f.id === folderId,
+        )
+    ) {
         throw new Error(`Folder '${folderId}' not found.`);
     }
     for (const rp of relativePaths) {
@@ -456,7 +502,10 @@ export async function assignImagesToFolder(userDataRoot: string, folderId: strin
 
         // Validate: must be a backgrounds/ path, and no path-traversal segments
         const normalized = path.posix.normalize(posixPath);
-        if (!normalized.startsWith('backgrounds/') || normalized.split('/').some(seg => seg === '..')) {
+        if (
+            !normalized.startsWith('backgrounds/') ||
+            normalized.split('/').some((seg) => seg === '..')
+        ) {
             throw new Error(`Invalid background path: '${posixPath}'`);
         }
 
@@ -490,7 +539,11 @@ export async function assignImagesToFolder(userDataRoot: string, folderId: strin
  * @param {string[]} relativePaths Relative paths of images to unassign
  * @returns {Promise<void>}
  */
-export async function unassignImagesFromFolder(userDataRoot: string, folderId: string, relativePaths: string[]): Promise<void> {
+export async function unassignImagesFromFolder(
+    userDataRoot: string,
+    folderId: string,
+    relativePaths: string[],
+): Promise<void> {
     const index = await readMetadataIndex(userDataRoot);
     for (const rp of relativePaths) {
         const posixPath = rp.replaceAll(path.sep, path.posix.sep);
@@ -543,8 +596,13 @@ router.post('/folders/create', async function (request, response) {
 router.post('/folders/set-thumbnails', async function (request, response) {
     try {
         const { updates } = request.body;
-        if (!Array.isArray(updates) || updates.some(u => !u.id || typeof u.thumbnailFile !== 'string')) {
-            return response.status(400).json({ error: '"updates" must be an array of {id, thumbnailFile}.' });
+        if (
+            !Array.isArray(updates) ||
+            updates.some((u) => !u.id || typeof u.thumbnailFile !== 'string')
+        ) {
+            return response
+                .status(400)
+                .json({ error: '"updates" must be an array of {id, thumbnailFile}.' });
         }
         await setFolderThumbnailsBatch(request.user.directories.root, updates);
         return response.json({ ok: true });
@@ -681,12 +739,18 @@ router.post('/', async function (request, response) {
                 return response.status(404).json({ error: 'File not found.' });
             }
 
-            const { results: metadataResults } = await getOrGenerateMetadataBatch(userDataRoot, [relativePath], type);
+            const { results: metadataResults } = await getOrGenerateMetadataBatch(
+                userDataRoot,
+                [relativePath],
+                type,
+            );
             // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             const metadata = metadataResults[relativePath];
 
             if (!metadata) {
-                return response.status(404).json({ error: 'Could not generate metadata for file.' });
+                return response
+                    .status(404)
+                    .json({ error: 'Could not generate metadata for file.' });
             }
 
             return response.json(metadata);
@@ -710,7 +774,11 @@ router.post('/', async function (request, response) {
             }
 
             // Process all valid paths in a single batch
-            const { results: batchMetadata } = await getOrGenerateMetadataBatch(userDataRoot, validPaths, type);
+            const { results: batchMetadata } = await getOrGenerateMetadataBatch(
+                userDataRoot,
+                validPaths,
+                type,
+            );
 
             for (const relativePath of validPaths) {
                 // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message

@@ -15,8 +15,12 @@ import { setValueByPath } from '../utils.js';
 //  Template references
 // ═══════════════════════════════════════════════════════════════
 
-export const WI_ENTRY_HEADER_TEMPLATE = /** @type {HTMLElement} */ (document.querySelector('#entry_edit_template .world_entry'));
-export const WI_ENTRY_EDIT_TEMPLATE = /** @type {HTMLElement} */ (document.querySelector('#entry_edit_template .world_entry_edit'));
+export const WI_ENTRY_HEADER_TEMPLATE = /** @type {HTMLElement} */ (
+    document.querySelector('#entry_edit_template .world_entry')
+);
+export const WI_ENTRY_EDIT_TEMPLATE = /** @type {HTMLElement} */ (
+    document.querySelector('#entry_edit_template .world_entry_edit')
+);
 
 // ═══════════════════════════════════════════════════════════════
 //  Utilities
@@ -26,7 +30,10 @@ export const WI_ENTRY_EDIT_TEMPLATE = /** @type {HTMLElement} */ (document.query
  * Shows a toast when no WI file is loaded.
  */
 export function nullWorldInfo() {
-    notyf.info('Create or import a new World Info file first.', 'World Info is not set', { timeOut: 10000, preventDuplicates: true });
+    notyf.info('Create or import a new World Info file first.', 'World Info is not set', {
+        timeOut: 10000,
+        preventDuplicates: true,
+    });
 }
 
 /**
@@ -41,10 +48,12 @@ export function updateWorldEntryKeyOptionsCache(
     { remove = false, reset = false }: { remove?: boolean; reset?: boolean } = {},
 ) {
     if (!keyOptions.length) return;
-    const options = keyOptions.map(x => typeof x === 'string' ? { id: getSelect2OptionId(x), text: x } : { ...x, count: 0 });
+    const options = keyOptions.map((x) =>
+        typeof x === 'string' ? { id: getSelect2OptionId(x), text: x } : { ...x, count: 0 },
+    );
     if (reset) worldEntryKeyOptionsCache.length = 0;
-    options.forEach(option => {
-        const cachedEntry = worldEntryKeyOptionsCache.find(x => x.id == option.id);
+    options.forEach((option) => {
+        const cachedEntry = worldEntryKeyOptionsCache.find((x) => x.id == option.id);
         if (cachedEntry) {
             cachedEntry.count += !remove ? 1 : -1;
         } else if (!remove) {
@@ -76,7 +85,11 @@ export function clearEntryList(listElement: HTMLElement) {
         // @ts-expect-error TS(2339) Property 'tomselect' does not exist
         const tomSelect = select.tomselect;
         if (tomSelect) {
-            try { tomSelect.destroy(); } catch (e) { console.debug('TomSelect destroy failed:', e); }
+            try {
+                tomSelect.destroy();
+            } catch (e) {
+                console.debug('TomSelect destroy failed:', e);
+            }
         }
         const container = select.parentElement;
         if (container) {
@@ -108,7 +121,9 @@ export function setWIOriginalDataValue(
     value: unknown,
 ) {
     if (data.originalData && Array.isArray(data.originalData.entries)) {
-        const originalEntry = data.originalData.entries.find((x: Record<string, unknown>) => x.uid === uid);
+        const originalEntry = data.originalData.entries.find(
+            (x: Record<string, unknown>) => x.uid === uid,
+        );
         if (originalEntry) {
             setValueByPath(originalEntry, key, value);
         }
@@ -120,12 +135,11 @@ export function setWIOriginalDataValue(
  * @param data
  * @param uid
  */
-export function deleteWIOriginalDataValue(
-    data: WorldInfoBook,
-    uid: number | string,
-) {
+export function deleteWIOriginalDataValue(data: WorldInfoBook, uid: number | string) {
     if (data.originalData && Array.isArray(data.originalData.entries)) {
-        const originalIndex = data.originalData.entries.findIndex((x: Record<string, unknown>) => x.uid == uid);
+        const originalIndex = data.originalData.entries.findIndex(
+            (x: Record<string, unknown>) => x.uid == uid,
+        );
         if (originalIndex >= 0) {
             data.originalData.entries.splice(originalIndex, 1);
         }

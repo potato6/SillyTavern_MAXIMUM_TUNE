@@ -17,7 +17,17 @@ import { favsToHotswap } from './RossAscends-mods.js';
 import { loader } from './action-loader.js';
 import { convertCharacterToPersona } from './personas.js';
 import { callGenericPopup, POPUP_TYPE } from './popup.js';
-import { createTagInput, getTagKeyForEntity, getTagsList, printTagList, tag_map, compareTagsForSort, removeTagFromMap, importTags, tag_import_setting } from './tags.js';
+import {
+    createTagInput,
+    getTagKeyForEntity,
+    getTagsList,
+    printTagList,
+    tag_map,
+    compareTagsForSort,
+    removeTagFromMap,
+    importTags,
+    tag_import_setting,
+} from './tags.js';
 import { t } from './i18n.js';
 
 /**
@@ -56,7 +66,10 @@ class CharacterContextMenu {
         }
 
         const data = await result.json();
-        await eventSource.emit(event_types.CHARACTER_DUPLICATED, { oldAvatar: body.avatar_url, newAvatar: data.path });
+        await eventSource.emit(event_types.CHARACTER_DUPLICATED, {
+            oldAvatar: body.avatar_url,
+            newAvatar: data.path,
+        });
     };
 
     /**
@@ -88,7 +101,13 @@ class CharacterContextMenu {
         });
 
         if (!mergeResponse.ok) {
-            mergeResponse.json().then(json => notyf.error(`Character not saved. Error: ${json.message}. Field: ${json.error}`));
+            mergeResponse
+                .json()
+                .then((json) =>
+                    notyf.error(
+                        `Character not saved. Error: ${json.message}. Field: ${json.error}`,
+                    ),
+                );
         }
 
         const element = document.getElementById(`CharID${characterId}`);
@@ -154,7 +173,8 @@ class CharacterContextMenu {
      * @returns {void}
      */
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    static hide = () => document.getElementById(BulkEditOverlay.contextMenuId).classList.add('hidden');
+    static hide = () =>
+        document.getElementById(BulkEditOverlay.contextMenuId).classList.add('hidden');
 
     /**
      * Sets up the context menu for the given overlay
@@ -163,15 +183,34 @@ class CharacterContextMenu {
     // @ts-expect-error TS(7006) FIXME: Parameter 'characterGroupOverlay' implicitly has a... Remove this comment to see the full error message
     constructor(characterGroupOverlay) {
         const contextMenuItems = [
-            { id: 'character_context_menu_favorite', callback: characterGroupOverlay.handleContextMenuFavorite },
-            { id: 'character_context_menu_duplicate', callback: characterGroupOverlay.handleContextMenuDuplicate },
-            { id: 'character_context_menu_delete', callback: characterGroupOverlay.handleContextMenuDelete },
-            { id: 'character_context_menu_persona', callback: characterGroupOverlay.handleContextMenuPersona },
-            { id: 'character_context_menu_tag', callback: characterGroupOverlay.handleContextMenuTag },
+            {
+                id: 'character_context_menu_favorite',
+                callback: characterGroupOverlay.handleContextMenuFavorite,
+            },
+            {
+                id: 'character_context_menu_duplicate',
+                callback: characterGroupOverlay.handleContextMenuDuplicate,
+            },
+            {
+                id: 'character_context_menu_delete',
+                callback: characterGroupOverlay.handleContextMenuDelete,
+            },
+            {
+                id: 'character_context_menu_persona',
+                callback: characterGroupOverlay.handleContextMenuPersona,
+            },
+            {
+                id: 'character_context_menu_tag',
+                callback: characterGroupOverlay.handleContextMenuTag,
+            },
         ];
 
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        contextMenuItems.forEach(contextMenuItem => document.getElementById(contextMenuItem.id).addEventListener('click', contextMenuItem.callback));
+        contextMenuItems.forEach((contextMenuItem) =>
+            document
+                .getElementById(contextMenuItem.id)
+                .addEventListener('click', contextMenuItem.callback),
+        );
     }
 }
 
@@ -198,7 +237,7 @@ class BulkTagPopupHandler {
      *
      * Characters can be passed in with the show() call.
      */
-    constructor() { }
+    constructor() {}
 
     /**
      * Gets the HTML as a string that is going to be the popup for the bulk tag edit
@@ -259,25 +298,43 @@ class BulkTagPopupHandler {
         document.body.insertAdjacentHTML('beforeend', this.#getHtml());
 
         // @ts-expect-error TS(7006) FIXME: Parameter 'id' implicitly has an 'any' type.
-        const entities = this.characterIds.map(id => characterToEntity(characters[id], id)).filter(entity => entity.item !== undefined);
+        const entities = this.characterIds
+            .map((id) => characterToEntity(characters[id], id))
+            .filter((entity) => entity.item !== undefined);
         buildAvatarList(document.getElementById('bulk_tags_avatars_block'), entities);
 
         // Print the tag list with all mutuable tags, marking them as removable. That is the initial fill
-        printTagList(document.getElementById('bulkTagList'), { tags: () => this.getMutualTags(), tagOptions: { removable: true } });
+        printTagList(document.getElementById('bulkTagList'), {
+            tags: () => this.getMutualTags(),
+            tagOptions: { removable: true },
+        });
 
         // Tag input with resolvable list for the mutual tags to get redrawn, so that newly added tags get sorted correctly
-        createTagInput('#bulkTagInput', '#bulkTagList', { tags: () => this.getMutualTags(), tagOptions: { removable: true } });
+        createTagInput('#bulkTagInput', '#bulkTagList', {
+            tags: () => this.getMutualTags(),
+            tagOptions: { removable: true },
+        });
 
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        document.querySelector('#bulk_tag_popup_reset').addEventListener('click', this.resetTags.bind(this));
+        document
+            .querySelector('#bulk_tag_popup_reset')
+            .addEventListener('click', this.resetTags.bind(this));
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        document.querySelector('#bulk_tag_popup_remove_mutual').addEventListener('click', this.removeMutual.bind(this));
+        document
+            .querySelector('#bulk_tag_popup_remove_mutual')
+            .addEventListener('click', this.removeMutual.bind(this));
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        document.querySelector('#bulk_tag_popup_cancel').addEventListener('click', this.hide.bind(this));
+        document
+            .querySelector('#bulk_tag_popup_cancel')
+            .addEventListener('click', this.hide.bind(this));
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        document.querySelector('#bulk_tag_popup_import_all_tags').addEventListener('click', this.importAllTags.bind(this));
+        document
+            .querySelector('#bulk_tag_popup_import_all_tags')
+            .addEventListener('click', this.importAllTags.bind(this));
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        document.querySelector('#bulk_tag_popup_import_existing_tags').addEventListener('click', this.importExistingTags.bind(this));
+        document
+            .querySelector('#bulk_tag_popup_import_existing_tags')
+            .addEventListener('click', this.importExistingTags.bind(this));
     }
 
     /**
@@ -285,7 +342,9 @@ class BulkTagPopupHandler {
      */
     async importExistingTags() {
         for (const characterId of this.characterIds) {
-            await importTags(characters[characterId], { importSetting: tag_import_setting.ONLY_EXISTING });
+            await importTags(characters[characterId], {
+                importSetting: tag_import_setting.ONLY_EXISTING,
+            });
         }
 
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
@@ -320,14 +379,14 @@ class BulkTagPopupHandler {
 
         // Find mutual tags for multiple characters
         // @ts-expect-error TS(7006) FIXME: Parameter 'cid' implicitly has an 'any' type.
-        const allTags = this.characterIds.map(cid => getTagsList(getTagKeyForEntity(cid)));
+        const allTags = this.characterIds.map((cid) => getTagsList(getTagKeyForEntity(cid)));
         // @ts-expect-error TS(7006) FIXME: Parameter 'mutual' implicitly has an 'any' type.
         const mutualTags = allTags.reduce((mutual, characterTags) =>
             // @ts-expect-error TS(7006) FIXME: Parameter 'tag' implicitly has an 'any' type.
-            mutual.filter(tag => characterTags.some(cTag => cTag.id === tag.id)),
+            mutual.filter((tag) => characterTags.some((cTag) => cTag.id === tag.id)),
         );
 
-        this.currentMutualTags = mutualTags.sort(compareTagsForSort);
+        this.currentMutualTags = mutualTags.toSorted(compareTagsForSort);
         return this.currentMutualTags;
     }
 
@@ -454,10 +513,14 @@ class BulkEditOverlay {
     set state(newState) {
         if (this.#state === newState) return;
 
-        eventSource.emit(event_types.CHARACTER_GROUP_OVERLAY_STATE_CHANGE_BEFORE, newState)
+        eventSource
+            .emit(event_types.CHARACTER_GROUP_OVERLAY_STATE_CHANGE_BEFORE, newState)
             .then(() => {
                 this.#state = newState;
-                eventSource.emit(event_types.CHARACTER_GROUP_OVERLAY_STATE_CHANGE_AFTER, this.state);
+                eventSource.emit(
+                    event_types.CHARACTER_GROUP_OVERLAY_STATE_CHANGE_AFTER,
+                    this.state,
+                );
             });
     }
 
@@ -491,13 +554,15 @@ class BulkEditOverlay {
 
     constructor() {
         // @ts-expect-error TS(7005) FIXME: Variable 'bulkEditOverlayInstance' implicitly has ... Remove this comment to see the full error message
-        if (bulkEditOverlayInstance instanceof BulkEditOverlay)
-            return bulkEditOverlayInstance;
+        if (bulkEditOverlayInstance instanceof BulkEditOverlay) return bulkEditOverlayInstance;
 
         // @ts-expect-error TS(2322) FIXME: Type 'HTMLElement | null' is not assignable to typ... Remove this comment to see the full error message
         this.container = document.getElementById(BulkEditOverlay.containerId);
 
-        eventSource.on(event_types.CHARACTER_GROUP_OVERLAY_STATE_CHANGE_AFTER, this.handleStateChange);
+        eventSource.on(
+            event_types.CHARACTER_GROUP_OVERLAY_STATE_CHANGE_AFTER,
+            this.handleStateChange,
+        );
         bulkEditOverlayInstance = Object.freeze(this);
     }
 
@@ -505,13 +570,13 @@ class BulkEditOverlay {
      * Set the overlay to browse mode
      * @returns {void}
      */
-    browseState = () => this.state = BulkEditOverlayState.browse;
+    browseState = () => (this.state = BulkEditOverlayState.browse);
 
     /**
      * Set the overlay to select mode
      * @returns {void}
      */
-    selectState = () => this.state = BulkEditOverlayState.select;
+    selectState = () => (this.state = BulkEditOverlayState.select);
 
     /**
      * Set up a Sortable grid for the loaded page
@@ -520,14 +585,20 @@ class BulkEditOverlay {
         this.browseState();
 
         const elements = this.#getEnabledElements();
-        elements.forEach(element => element.addEventListener('touchstart', this.handleHold));
-        elements.forEach(element => element.addEventListener('mousedown', this.handleHold));
-        elements.forEach(element => element.addEventListener('contextmenu', this.handleDefaultContextMenu));
+        elements.forEach((element) => element.addEventListener('touchstart', this.handleHold));
+        elements.forEach((element) => element.addEventListener('mousedown', this.handleHold));
+        elements.forEach((element) =>
+            element.addEventListener('contextmenu', this.handleDefaultContextMenu),
+        );
 
-        elements.forEach(element => element.addEventListener('touchend', this.handleLongPressEnd));
-        elements.forEach(element => element.addEventListener('mouseup', this.handleLongPressEnd));
-        elements.forEach(element => element.addEventListener('dragend', this.handleLongPressEnd));
-        elements.forEach(element => element.addEventListener('touchmove', this.handleLongPressEnd));
+        elements.forEach((element) =>
+            element.addEventListener('touchend', this.handleLongPressEnd),
+        );
+        elements.forEach((element) => element.addEventListener('mouseup', this.handleLongPressEnd));
+        elements.forEach((element) => element.addEventListener('dragend', this.handleLongPressEnd));
+        elements.forEach((element) =>
+            element.addEventListener('touchmove', this.handleLongPressEnd),
+        );
 
         // Cohee: It only triggers when clicking on a margin between the elements?
         // Feel free to fix or remove this, I'm not sure how to.
@@ -563,7 +634,7 @@ class BulkEditOverlay {
         }
 
         // @ts-expect-error TS(2349) FIXME: This expression is not callable.
-        this.stateChangeCallbacks.forEach(callback => callback(this.state));
+        this.stateChangeCallbacks.forEach((callback) => callback(this.state));
     };
 
     /**
@@ -612,7 +683,7 @@ class BulkEditOverlay {
         let cancel = false;
 
         // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
-        const cancelHold = (event) => cancel = true;
+        const cancelHold = (event) => (cancel = true);
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         this.container.addEventListener('mouseup', cancelHold);
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
@@ -668,28 +739,47 @@ class BulkEditOverlay {
         event.stopPropagation();
     };
 
-    #enableClickEventsForGroups = () => this.#getDisabledElements().forEach((element) => element.removeEventListener('click', this.#stopEventPropagation));
+    #enableClickEventsForGroups = () =>
+        this.#getDisabledElements().forEach((element) =>
+            element.removeEventListener('click', this.#stopEventPropagation),
+        );
 
-    #disableClickEventsForGroups = () => this.#getDisabledElements().forEach((element) => element.addEventListener('click', this.#stopEventPropagation));
+    #disableClickEventsForGroups = () =>
+        this.#getDisabledElements().forEach((element) =>
+            element.addEventListener('click', this.#stopEventPropagation),
+        );
 
-    #enableClickEventsForCharacters = () => this.#getEnabledElements().forEach(element => element.removeEventListener('click', this.toggleCharacterSelected));
+    #enableClickEventsForCharacters = () =>
+        this.#getEnabledElements().forEach((element) =>
+            element.removeEventListener('click', this.toggleCharacterSelected),
+        );
 
-    #disableClickEventsForCharacters = () => this.#getEnabledElements().forEach(element => element.addEventListener('click', this.toggleCharacterSelected));
+    #disableClickEventsForCharacters = () =>
+        this.#getEnabledElements().forEach((element) =>
+            element.addEventListener('click', this.toggleCharacterSelected),
+        );
 
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    #enableBulkEditButtonHighlight = () => document.getElementById('bulkEditButton').classList.add('bulk_edit_overlay_active');
+    #enableBulkEditButtonHighlight = () =>
+        document.getElementById('bulkEditButton').classList.add('bulk_edit_overlay_active');
 
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    #disableBulkEditButtonHighlight = () => document.getElementById('bulkEditButton').classList.remove('bulk_edit_overlay_active');
+    #disableBulkEditButtonHighlight = () =>
+        document.getElementById('bulkEditButton').classList.remove('bulk_edit_overlay_active');
 
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    #getEnabledElements = () => [...this.container.getElementsByClassName(BulkEditOverlay.characterClass)];
+    #getEnabledElements = () => [
+        ...this.container.getElementsByClassName(BulkEditOverlay.characterClass),
+    ];
 
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-    #getDisabledElements = () => [...this.container.getElementsByClassName(BulkEditOverlay.groupClass), ...this.container.getElementsByClassName(BulkEditOverlay.bogusFolderClass)];
+    #getDisabledElements = () => [
+        ...this.container.getElementsByClassName(BulkEditOverlay.groupClass),
+        ...this.container.getElementsByClassName(BulkEditOverlay.bogusFolderClass),
+    ];
 
     // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
-    toggleCharacterSelected = event => {
+    toggleCharacterSelected = (event) => {
         event.stopPropagation();
 
         const character = event.currentTarget;
@@ -744,7 +834,9 @@ class BulkEditOverlay {
 
         // @ts-expect-error TS(2345) FIXME: Argument of type 'number' is not assignable to par... Remove this comment to see the full error message
         const select = !this.selectedCharacters.includes(characterId);
-        const legacyBulkEditCheckbox = /** @type {HTMLInputElement} */ (character.querySelector('.' + BulkEditOverlay.legacySelectedClass));
+        const legacyBulkEditCheckbox = /** @type {HTMLInputElement} */ (
+            character.querySelector('.' + BulkEditOverlay.legacySelectedClass)
+        );
 
         if (select) {
             character.classList.add(BulkEditOverlay.selectedClass);
@@ -754,7 +846,9 @@ class BulkEditOverlay {
         } else {
             character.classList.remove(BulkEditOverlay.selectedClass);
             if (legacyBulkEditCheckbox) legacyBulkEditCheckbox.checked = false;
-            this.#selectedCharacters = this.#selectedCharacters.filter(item => characterId !== item);
+            this.#selectedCharacters = this.#selectedCharacters.filter(
+                (item) => characterId !== item,
+            );
         }
 
         this.updateSelectedCount();
@@ -789,10 +883,18 @@ class BulkEditOverlay {
     // @ts-expect-error TS(7006) FIXME: Parameter 'currentCharacter' implicitly has an 'an... Remove this comment to see the full error message
     toggleCharactersInRange = (currentCharacter, select) => {
         const currentCharacterId = Number(currentCharacter.getAttribute('data-chid'));
-        const characters = Array.from(document.querySelectorAll('#' + BulkEditOverlay.containerId + ' .' + BulkEditOverlay.characterClass));
+        const characters = Array.from(
+            document.querySelectorAll(
+                '#' + BulkEditOverlay.containerId + ' .' + BulkEditOverlay.characterClass,
+            ),
+        );
 
-        const startIndex = characters.findIndex(c => Number(c.getAttribute('data-chid')) === Number(this.lastSelected.characterId));
-        const endIndex = characters.findIndex(c => Number(c.getAttribute('data-chid')) === currentCharacterId);
+        const startIndex = characters.findIndex(
+            (c) => Number(c.getAttribute('data-chid')) === Number(this.lastSelected.characterId),
+        );
+        const endIndex = characters.findIndex(
+            (c) => Number(c.getAttribute('data-chid')) === currentCharacterId,
+        );
 
         for (let i = Math.min(startIndex, endIndex); i <= Math.max(startIndex, endIndex); i++) {
             const character = characters[i];
@@ -802,8 +904,13 @@ class BulkEditOverlay {
 
             // Only toggle the character if it wasn't on the state we have are toggling towards.
             // Also doing a weird type check, because typescript checker doesn't like the return of 'querySelectorAll'.
-            if ((select && !isCharacterSelected || !select && isCharacterSelected) && character instanceof HTMLElement) {
-                this.toggleSingleCharacter(character, { markState: currentCharacterId == characterId });
+            if (
+                ((select && !isCharacterSelected) || (!select && isCharacterSelected)) &&
+                character instanceof HTMLElement
+            ) {
+                this.toggleSingleCharacter(character, {
+                    markState: currentCharacterId == characterId,
+                });
             }
         }
     };
@@ -820,7 +927,7 @@ class BulkEditOverlay {
     handleContextMenuHide = (event) => {
         const contextMenu = document.getElementById(BulkEditOverlay.contextMenuId);
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-            if (false === contextMenu.contains(event.target)) {
+        if (false === contextMenu.contains(event.target)) {
             (CharacterContextMenu as unknown as HTMLElement).style.display = 'none';
             this.#contextMenuOpen = false;
         }
@@ -847,9 +954,14 @@ class BulkEditOverlay {
      * Concurrently handle character duplicate requests.
      * @returns {Promise<number>} Number of duplicated characters
      */
-    handleContextMenuDuplicate = () => Promise.all(this.selectedCharacters.map(async characterId => CharacterContextMenu.duplicate(characterId)))
-        .then(() => getCharacters())
-        .then(() => this.browseState());
+    handleContextMenuDuplicate = () =>
+        Promise.all(
+            this.selectedCharacters.map(async (characterId) =>
+                CharacterContextMenu.duplicate(characterId),
+            ),
+        )
+            .then(() => getCharacters())
+            .then(() => this.browseState());
 
     /**
      * Sequentially handle all character-to-persona conversions.
@@ -897,26 +1009,27 @@ class BulkEditOverlay {
         tempDiv.innerHTML = BulkEditOverlay.#getDeletePopupContentHtml(characterIds);
         const popupContent = tempDiv;
         const checkbox = popupContent.querySelectorAll('#del_char_checkbox');
-        const promise = callGenericPopup(popupContent, POPUP_TYPE.CONFIRM)
-            .then((accept) => {
-                if (!accept) return;
+        const promise = callGenericPopup(popupContent, POPUP_TYPE.CONFIRM).then((accept) => {
+            if (!accept) return;
 
-                const deleteChats = (checkbox as unknown as HTMLInputElement).checked ?? false;
+            const deleteChats = (checkbox as unknown as HTMLInputElement).checked ?? false;
 
-                const loaderHandle = loader.show({
-                    slug: 'bulk-delete',
-                    title: t`Bulk Delete`,
-                    message: t`Deleting ${characterIds.length} character(s)…`,
-                    toastMode: loader.ToastMode.STATIC,
-                });
-                const avatarList = characterIds.map(id => characters[id]?.avatar).filter(a => a);
-                return CharacterContextMenu.delete(avatarList, deleteChats)
-                    .then(() => this.browseState())
-                    .finally(() => loaderHandle.hide());
+            const loaderHandle = loader.show({
+                slug: 'bulk-delete',
+                title: t`Bulk Delete`,
+                message: t`Deleting ${characterIds.length} character(s)…`,
+                toastMode: loader.ToastMode.STATIC,
             });
+            const avatarList = characterIds.map((id) => characters[id]?.avatar).filter((a) => a);
+            return CharacterContextMenu.delete(avatarList, deleteChats)
+                .then(() => this.browseState())
+                .finally(() => loaderHandle.hide());
+        });
 
         // At this moment the popup is already changed in the dom, but not yet closed/resolved. We build the avatar list here
-        const entities = characterIds.map(id => characterToEntity(characters[id], id)).filter(entity => entity.item !== undefined);
+        const entities = characterIds
+            .map((id) => characterToEntity(characters[id], id))
+            .filter((entity) => entity.item !== undefined);
         buildAvatarList(document.getElementById('bulk_delete_avatars_block'), entities);
 
         return promise;
@@ -931,15 +1044,18 @@ class BulkEditOverlay {
     };
 
     // @ts-expect-error TS(7006) FIXME: Parameter 'callback' implicitly has an 'any' type.
-    addStateChangeCallback = callback => this.stateChangeCallbacks.push(callback);
+    addStateChangeCallback = (callback) => this.stateChangeCallbacks.push(callback);
 
     /**
      * Clears internal character storage and
      * removes visual highlight.
      */
     clearSelectedCharacters = () => {
-        document.querySelectorAll('#' + BulkEditOverlay.containerId + ' .' + BulkEditOverlay.selectedClass)
-            .forEach(element => element.classList.remove(BulkEditOverlay.selectedClass));
+        document
+            .querySelectorAll(
+                '#' + BulkEditOverlay.containerId + ' .' + BulkEditOverlay.selectedClass,
+            )
+            .forEach((element) => element.classList.remove(BulkEditOverlay.selectedClass));
         this.selectedCharacters.length = 0;
     };
 }

@@ -149,13 +149,14 @@ export default function bunSessionMiddleware(opts: {
         // Store reference to the original end to avoid issues
         const originalEnd = res.end.bind(res);
 
-
         const setSessionCookie = () => {
             // Read current session value through the proxy
             const currentProxy = req.session;
             if (currentProxy === null || currentProxy === undefined) {
-                res.setHeader('Set-Cookie',
-                    `${name}=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=${sameSite}`);
+                res.setHeader(
+                    'Set-Cookie',
+                    `${name}=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=${sameSite}`,
+                );
                 return;
             }
 
@@ -187,7 +188,10 @@ export default function bunSessionMiddleware(opts: {
 
         const finish = (...args: unknown[]) => {
             if (dirty) setSessionCookie();
-            return (originalEnd as (...a: unknown[]) => ReturnType<typeof res.end>)(args[0], args[1]);
+            return (originalEnd as (...a: unknown[]) => ReturnType<typeof res.end>)(
+                args[0],
+                args[1],
+            );
         };
 
         res.end = finish as unknown as typeof res.end;

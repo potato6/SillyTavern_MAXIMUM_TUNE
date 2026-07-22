@@ -9,7 +9,10 @@ function sanitizeInlineQuotationOnCopy() {
     // STRG+C, STRG+V on firefox leads to duplicate double quotes when inline quotation elements are copied.
     // To work around this, take the selection and transform <q> to <span> before calling toString().
     document.addEventListener('copy', function (event) {
-        if (document.activeElement instanceof HTMLInputElement || document.activeElement instanceof HTMLTextAreaElement) {
+        if (
+            document.activeElement instanceof HTMLInputElement ||
+            document.activeElement instanceof HTMLTextAreaElement
+        ) {
             return;
         }
 
@@ -34,7 +37,7 @@ function sanitizeInlineQuotationOnCopy() {
                 // Transform <q> to <span>, preserve children
                 const span = document.createElement('span');
 
-                [...node.childNodes].forEach(child => {
+                [...node.childNodes].forEach((child) => {
                     const processedChild = processNode(child);
                     span.appendChild(processedChild);
                 });
@@ -46,7 +49,7 @@ function sanitizeInlineQuotationOnCopy() {
             }
         }
 
-        [...range.childNodes].forEach(child => {
+        [...range.childNodes].forEach((child) => {
             const processedChild = processNode(child);
             tempDOM.appendChild(processedChild);
         });
@@ -66,9 +69,13 @@ function sanitizeInlineQuotationOnCopy() {
 function addSafariPatch() {
     const userAgent = getParsedUA();
     console.debug('User Agent', userAgent);
-    const isMobileSafari = /iPad|iPhone|iPod/.test(navigator.platform) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const isMobileSafari =
+        /iPad|iPhone|iPod/.test(navigator.platform) ||
+        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
     const ua = userAgent as Record<string, unknown>;
-    const isDesktopSafari = (ua?.browser as Record<string, string>)?.name === 'Safari' && (ua?.platform as Record<string, string>)?.type === 'desktop';
+    const isDesktopSafari =
+        (ua?.browser as Record<string, string>)?.name === 'Safari' &&
+        (ua?.platform as Record<string, string>)?.type === 'desktop';
     const isIOS = (ua?.os as Record<string, string>)?.name === 'iOS';
 
     if (isIOS || isMobileSafari || isDesktopSafari) {
@@ -96,7 +103,7 @@ function applyBrowserFixes() {
             }
             console.debug('[Mobile] Device viewport change detected.');
             document.documentElement.style.position = 'fixed';
-            requestAnimationFrame(() => document.documentElement.style.position = '');
+            requestAnimationFrame(() => (document.documentElement.style.position = ''));
         };
         window.addEventListener('resize', fixFunkyPositioning);
         window.addEventListener('orientationchange', fixFunkyPositioning);

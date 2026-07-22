@@ -5,7 +5,14 @@ import express from 'express';
 import { RateLimiterMemory, RateLimiterRes } from 'rate-limiter-flexible';
 import { getIpAddress, retryAfter } from '../express-common.js';
 import { color, Cache, getConfigValue } from '../util.js';
-import { KEY_PREFIX, getUserAvatar, toKey, getPasswordHash, getPasswordSalt, getAccountVersion } from '../users.js';
+import {
+    KEY_PREFIX,
+    getUserAvatar,
+    toKey,
+    getPasswordHash,
+    getPasswordSalt,
+    getAccountVersion,
+} from '../users.js';
 
 // @ts-expect-error TS(2345) FIXME: Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
 const DISCREET_LOGIN = getConfigValue('enableDiscreetLogin', false, 'boolean');
@@ -17,7 +24,8 @@ const LOGIN_POINTS = getConfigValue('rateLimiting.accountsLoginMaxAttempts', 5, 
 const RECOVER_POINTS = getConfigValue('rateLimiting.accountsRecoverMaxAttempts', 5, 'number');
 const MFA_CACHE = new Cache(5 * 60 * 1000);
 
-const generateRecoveryCode = () => Array.from({ length: 6 }, () => crypto.randomInt(0, 10)).join('');
+const generateRecoveryCode = () =>
+    Array.from({ length: 6 }, () => crypto.randomInt(0, 10)).join('');
 
 export const router = express.Router();
 const loginLimiter = new RateLimiterMemory({
@@ -36,22 +44,25 @@ router.post('/list', async (_request, response) => {
         }
 
         /** @type {import('../users.js').User[]} */
-        const users = await storage.values(x => x.key.startsWith(KEY_PREFIX));
+        const users = await storage.values((x) => x.key.startsWith(KEY_PREFIX));
 
         /** @type {Promise<import('../users.js').UserViewModel>[]} */
         const viewModelPromises = users
-            .filter(x => x.enabled)
-            .map(user => new Promise(async (resolve) => {
-                getUserAvatar(user.handle).then(avatar =>
-                    resolve({
-                        handle: user.handle,
-                        name: user.name,
-                        created: user.created,
-                        avatar: avatar,
-                        password: !!user.password,
+            .filter((x) => x.enabled)
+            .map(
+                (user) =>
+                    new Promise(async (resolve) => {
+                        getUserAvatar(user.handle).then((avatar) =>
+                            resolve({
+                                handle: user.handle,
+                                name: user.name,
+                                created: user.created,
+                                avatar: avatar,
+                                password: !!user.password,
+                            }),
+                        );
                     }),
-                );
-            }));
+            );
 
         const viewModels = await Promise.all(viewModelPromises);
         // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
@@ -99,12 +110,24 @@ router.post('/login', async (request, response) => {
         await loginLimiter.delete(ip);
         request.session.handle = user.handle;
         request.session.version = getAccountVersion(user);
-        console.info('Login successful:', user.handle, 'from', ip, 'at', new Date().toLocaleString());
+        console.info(
+            'Login successful:',
+            user.handle,
+            'from',
+            ip,
+            'at',
+            new Date().toLocaleString(),
+        );
         return response.json({ handle: user.handle });
     } catch (error) {
         if (error instanceof RateLimiterRes) {
-            console.error('Login failed: Rate limited from', getIpAddress(request, PREFER_REAL_IP_HEADER));
-            return retryAfter(response, error).status(429).send({ error: 'Too many attempts. Try again later or recover your password.' });
+            console.error(
+                'Login failed: Rate limited from',
+                getIpAddress(request, PREFER_REAL_IP_HEADER),
+            );
+            return retryAfter(response, error)
+                .status(429)
+                .send({ error: 'Too many attempts. Try again later or recover your password.' });
         }
 
         console.error('Login failed:', error);
@@ -137,14 +160,21 @@ router.post('/recover-step1', async (request, response) => {
 
         const mfaCode = generateRecoveryCode();
         console.log();
-        console.log(color.blue(`${user.name}, your password recovery code is: `) + color.magenta(mfaCode));
+        console.log(
+            color.blue(`${user.name}, your password recovery code is: `) + color.magenta(mfaCode),
+        );
         console.log();
         MFA_CACHE.set(user.handle, mfaCode);
         return response.sendStatus(204);
     } catch (error) {
         if (error instanceof RateLimiterRes) {
-            console.error('Recover step 1 failed: Rate limited from', getIpAddress(request, PREFER_REAL_IP_HEADER));
-            return retryAfter(response, error).status(429).send({ error: 'Too many attempts. Try again later or contact your admin.' });
+            console.error(
+                'Recover step 1 failed: Rate limited from',
+                getIpAddress(request, PREFER_REAL_IP_HEADER),
+            );
+            return retryAfter(response, error)
+                .status(429)
+                .send({ error: 'Too many attempts. Try again later or contact your admin.' });
         }
 
         console.error('Recover step 1 failed:', error);
@@ -206,8 +236,13 @@ router.post('/recover-step2', async (request, response) => {
         return response.sendStatus(204);
     } catch (error) {
         if (error instanceof RateLimiterRes) {
-            console.error('Recover step 2 failed: Rate limited from', getIpAddress(request, PREFER_REAL_IP_HEADER));
-            return retryAfter(response, error).status(429).send({ error: 'Too many attempts. Try again later or contact your admin.' });
+            console.error(
+                'Recover step 2 failed: Rate limited from',
+                getIpAddress(request, PREFER_REAL_IP_HEADER),
+            );
+            return retryAfter(response, error)
+                .status(429)
+                .send({ error: 'Too many attempts. Try again later or contact your admin.' });
         }
 
         console.error('Recover step 2 failed:', error);

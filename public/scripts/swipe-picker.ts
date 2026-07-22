@@ -7,7 +7,15 @@ import { isMobile } from './RossAscends-mods.js';
 import { getTokenCountAsync } from './tokenizers.js';
 import { addLongPressEvent, clamp, copyText, timestampToMoment } from './utils.js';
 // @ts-expect-error TS(2792) FIXME: Cannot find module '/script.js'. Did you mean to s... Remove this comment to see the full error message
-import { chat, deleteSwipe, ensureSwipes, isMessageSwipeable, isSwipingAllowed, swipe, syncMesToSwipe } from '/script.js';
+import {
+    chat,
+    deleteSwipe,
+    ensureSwipes,
+    isMessageSwipeable,
+    isSwipingAllowed,
+    swipe,
+    syncMesToSwipe,
+} from '/script.js';
 
 /**
  * Returns whether a swipe picker can be opened for the message.
@@ -30,7 +38,7 @@ export function canOpenSwipePickerForMessage(messageId) {
     return Boolean(
         message?.swipes?.length > 1 &&
         !message?.is_user &&
-        !(message?.extra?.isSmallSys) &&
+        !message?.extra?.isSmallSys &&
         !(message?.extra?.swipeable === false),
     );
 }
@@ -44,7 +52,11 @@ export function canOpenSwipePickerForMessage(messageId) {
 // @ts-expect-error TS(7006) FIXME: Parameter 'messageId' implicitly has an 'any' type... Remove this comment to see the full error message
 export function canJumpToSwipeForMessage(messageId) {
     const message = chat[messageId];
-    return canOpenSwipePickerForMessage(messageId) && isSwipingAllowed() && isMessageSwipeable(messageId, message);
+    return (
+        canOpenSwipePickerForMessage(messageId) &&
+        isSwipingAllowed() &&
+        isMessageSwipeable(messageId, message)
+    );
 }
 
 /**
@@ -65,10 +77,23 @@ async function openSwipePicker(messageId) {
     let selectedSwipeId = clamp(Number(message.swipe_id ?? 0), 0, message.swipes.length - 1);
     const swipeIdInputId = `swipe_picker_id_${messageId}`;
     const wrapper = document.createElement('div');
-    wrapper.classList.add('flex-container', 'flexFlowColumn', 'flexNoGap', 'wide100p', 'flex1', 'overflowHidden');
+    wrapper.classList.add(
+        'flex-container',
+        'flexFlowColumn',
+        'flexNoGap',
+        'wide100p',
+        'flex1',
+        'overflowHidden',
+    );
 
     const header = document.createElement('div');
-    header.classList.add('swipe_picker_header', 'flex-container', 'alignItemsCenter', 'justifySpaceBetween', 'gap10px');
+    header.classList.add(
+        'swipe_picker_header',
+        'flex-container',
+        'alignItemsCenter',
+        'justifySpaceBetween',
+        'gap10px',
+    );
 
     const description = document.createElement('h3');
     description.classList.add('margin0', 'justifyLeft');
@@ -116,16 +141,18 @@ async function openSwipePicker(messageId) {
      *
      */
     function scrollToSelectedSwipe() {
-        const swipeBlock = listContainer.querySelector(`.swipe_picker_block[data-swipe-id="${selectedSwipeId}"]`);
+        const swipeBlock = listContainer.querySelector(
+            `.swipe_picker_block[data-swipe-id="${selectedSwipeId}"]`,
+        );
         if (swipeBlock instanceof HTMLElement) {
             const scrollParent = swipeBlock.closest('.swipe_picker_div');
             if (scrollParent instanceof HTMLElement) {
                 const blockRect = swipeBlock.getBoundingClientRect();
                 const parentRect = scrollParent.getBoundingClientRect();
                 if (blockRect.top < parentRect.top) {
-                    scrollParent.scrollTop -= (parentRect.top - blockRect.top) + 5;
+                    scrollParent.scrollTop -= parentRect.top - blockRect.top + 5;
                 } else if (blockRect.bottom > parentRect.bottom) {
-                    scrollParent.scrollTop += (blockRect.bottom - parentRect.bottom) + 5;
+                    scrollParent.scrollTop += blockRect.bottom - parentRect.bottom + 5;
                 }
             }
         }
@@ -150,159 +177,196 @@ async function openSwipePicker(messageId) {
      */
     async function renderSwipeList() {
         // @ts-expect-error TS(7006) FIXME: Parameter 'swipe' implicitly has an 'any' type.
-        const swipeBlocks = await Promise.all(message.swipes.map(async (swipe, index) => {
-            const swipeText = String(swipe ?? '');
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                        const template = document.querySelector('#past_chat_template .select_chat_block_wrapper').cloneNode(true);
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const block = template.querySelector('.select_chat_block');
-            block.classList.remove('select_chat_block');
-            block.classList.add('swipe_picker_block');
-                        block.querySelector('.select_chat_actions').classList.remove('gap10px');
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const branchButton = template.querySelector('.exportRawChatButton');
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            const deleteButton = template.querySelector('.PastChat_cross');
-            const swipeInfo = Array.isArray(message.swipe_info) ? message.swipe_info[index] : null;
-            const sendDate = swipeInfo?.send_date ? timestampToMoment(swipeInfo.send_date).format('lll') : '';
-            const previewText = swipeText.replace(/\s+/g, ' ').trim();
-            // @ts-expect-error TS(2345) FIXME: Argument of type '0' is not assignable to paramete... Remove this comment to see the full error message
-            const tokenCount = swipeInfo?.extra?.token_count ?? (await getTokenCountAsync(swipeText, 0));
-            const canDeleteSwipe = canDeleteSwipeFromPicker(index);
-            const swipeDetails = [];
+        const swipeBlocks = await Promise.all(
+            message.swipes.map(async (swipe, index) => {
+                const swipeText = String(swipe ?? '');
+                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                const template = document
+                    .querySelector('#past_chat_template .select_chat_block_wrapper')
+                    .cloneNode(true);
+                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                const block = template.querySelector('.select_chat_block');
+                block.classList.remove('select_chat_block');
+                block.classList.add('swipe_picker_block');
+                block.querySelector('.select_chat_actions').classList.remove('gap10px');
+                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                const branchButton = template.querySelector('.exportRawChatButton');
+                // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+                const deleteButton = template.querySelector('.PastChat_cross');
+                const swipeInfo = Array.isArray(message.swipe_info)
+                    ? message.swipe_info[index]
+                    : null;
+                const sendDate = swipeInfo?.send_date
+                    ? timestampToMoment(swipeInfo.send_date).format('lll')
+                    : '';
+                const previewText = swipeText.replace(/\s+/g, ' ').trim();
+                // @ts-expect-error TS(2345) FIXME: Argument of type '0' is not assignable to paramete... Remove this comment to see the full error message
+                const tokenCount =
+                    swipeInfo?.extra?.token_count ?? (await getTokenCountAsync(swipeText, 0));
+                const canDeleteSwipe = canDeleteSwipeFromPicker(index);
+                const swipeDetails = [];
 
-            if (previewText) {
-                swipeDetails.push(`${previewText.length} ${t`chars`}`);
-            }
-
-            if (tokenCount) {
-                swipeDetails.push(`${tokenCount}t`);
-            }
-
-            block.setAttribute('file_name', `swipe-${index + 1}`);
-            block.setAttribute('data-swipe-id', String(index));
-
-            // @ts-expect-error TS(7006) FIXME: Parameter 'el' implicitly has an 'any' type.
-            template.querySelectorAll('.renameChatButton, .exportChatButton').forEach(el => el.remove());
-            branchButton.removeAttribute('data-format');
-            branchButton.setAttribute('title', t`Create Branch`);
-            branchButton.setAttribute('data-i18n', '[title]Create Branch');
-            branchButton.classList.remove('exportRawChatButton', 'fa-solid', 'fa-file-export');
-            branchButton.classList.add('swipe_picker_branch', 'mes_button', 'fa-fw', 'fa-regular', 'fa-code-branch');
-            branchButton.addEventListener('click', async (event: Event) => {
-                event.preventDefault();
-                event.stopPropagation();
-                setSelectedSwipe(index);
-                branchActionSwipeId = index;
-                await popup.completeCancelled();
-            });
-            if (deleteButton) {
-                deleteButton.removeAttribute('file_name');
-                deleteButton.setAttribute('aria-disabled', String(!canDeleteSwipe));
-                deleteButton.classList.remove('fa-skull');
-                deleteButton.classList.add('swipe_picker_delete', 'fa-fw', 'fa-trash-can');
-                deleteButton.classList.toggle('hoverglow', canDeleteSwipe);
-                deleteButton.classList.toggle('disabled', !canDeleteSwipe);
-
-                if (canDeleteSwipe) {
-                    deleteButton.setAttribute('title', t`Delete Swipe`);
-                    deleteButton.setAttribute('data-i18n', '[title]Delete Swipe');
-                } else {
-                    deleteButton.removeAttribute('title');
-                    deleteButton.removeAttribute('data-i18n');
+                if (previewText) {
+                    swipeDetails.push(`${previewText.length} ${t`chars`}`);
                 }
 
-                deleteButton.addEventListener('click', async (event: Event) => {
+                if (tokenCount) {
+                    swipeDetails.push(`${tokenCount}t`);
+                }
+
+                block.setAttribute('file_name', `swipe-${index + 1}`);
+                block.setAttribute('data-swipe-id', String(index));
+
+                // @ts-expect-error TS(7006) FIXME: Parameter 'el' implicitly has an 'any' type.
+                template
+                    .querySelectorAll('.renameChatButton, .exportChatButton')
+                    .forEach((el) => el.remove());
+                branchButton.removeAttribute('data-format');
+                branchButton.setAttribute('title', t`Create Branch`);
+                branchButton.setAttribute('data-i18n', '[title]Create Branch');
+                branchButton.classList.remove('exportRawChatButton', 'fa-solid', 'fa-file-export');
+                branchButton.classList.add(
+                    'swipe_picker_branch',
+                    'mes_button',
+                    'fa-fw',
+                    'fa-regular',
+                    'fa-code-branch',
+                );
+                branchButton.addEventListener('click', async (event: Event) => {
                     event.preventDefault();
                     event.stopPropagation();
+                    setSelectedSwipe(index);
+                    branchActionSwipeId = index;
+                    await popup.completeCancelled();
+                });
+                if (deleteButton) {
+                    deleteButton.removeAttribute('file_name');
+                    deleteButton.setAttribute('aria-disabled', String(!canDeleteSwipe));
+                    deleteButton.classList.remove('fa-skull');
+                    deleteButton.classList.add('swipe_picker_delete', 'fa-fw', 'fa-trash-can');
+                    deleteButton.classList.toggle('hoverglow', canDeleteSwipe);
+                    deleteButton.classList.toggle('disabled', !canDeleteSwipe);
 
-                    if (!canDeleteSwipe) {
-                        return;
+                    if (canDeleteSwipe) {
+                        deleteButton.setAttribute('title', t`Delete Swipe`);
+                        deleteButton.setAttribute('data-i18n', '[title]Delete Swipe');
+                    } else {
+                        deleteButton.removeAttribute('title');
+                        deleteButton.removeAttribute('data-i18n');
                     }
 
-                    const nextSelectedSwipeId = index < selectedSwipeId
-                        ? selectedSwipeId - 1
-                        : index > selectedSwipeId
-                            ? selectedSwipeId
-                            : Math.min(selectedSwipeId, message.swipes.length - 2);
+                    deleteButton.addEventListener('click', async (event: Event) => {
+                        event.preventDefault();
+                        event.stopPropagation();
 
-                    if (power_user.confirm_message_delete) {
-                        // @ts-expect-error TS(2345) FIXME: Argument of type 'null' is not assignable to param... Remove this comment to see the full error message
-                        const result = await callGenericPopup(t`Are you sure you want to delete swipe #${index + 1}?`, POPUP_TYPE.CONFIRM, null, {
-                            okButton: t`Delete Swipe`,
-                            cancelButton: t`Cancel`,
-                        });
-
-                        if (result !== POPUP_RESULT.AFFIRMATIVE) {
+                        if (!canDeleteSwipe) {
                             return;
                         }
-                    }
 
-                    const newSwipeId = await deleteSwipe(index, messageId);
-                    if (!Number.isInteger(newSwipeId)) {
+                        const nextSelectedSwipeId =
+                            index < selectedSwipeId
+                                ? selectedSwipeId - 1
+                                : index > selectedSwipeId
+                                  ? selectedSwipeId
+                                  : Math.min(selectedSwipeId, message.swipes.length - 2);
+
+                        if (power_user.confirm_message_delete) {
+                            // @ts-expect-error TS(2345) FIXME: Argument of type 'null' is not assignable to param... Remove this comment to see the full error message
+                            const result = await callGenericPopup(
+                                t`Are you sure you want to delete swipe #${index + 1}?`,
+                                POPUP_TYPE.CONFIRM,
+                                null,
+                                {
+                                    okButton: t`Delete Swipe`,
+                                    cancelButton: t`Cancel`,
+                                },
+                            );
+
+                            if (result !== POPUP_RESULT.AFFIRMATIVE) {
+                                return;
+                            }
+                        }
+
+                        const newSwipeId = await deleteSwipe(index, messageId);
+                        if (!Number.isInteger(newSwipeId)) {
+                            return;
+                        }
+
+                        selectedSwipeId = clamp(nextSelectedSwipeId, 0, message.swipes.length - 1);
+
+                        if (swipeIdInput instanceof HTMLInputElement) {
+                            swipeIdInput.max = String(message.swipes.length);
+                        }
+
+                        await renderSwipeList();
+                    });
+                }
+
+                // Add expand/collapse toggle
+                const expandCheckboxId = `swipe_picker_expand_${messageId}_${index}`;
+                const expandCheckbox = document.createElement('input');
+                expandCheckbox.type = 'checkbox';
+                expandCheckbox.id = expandCheckboxId;
+                expandCheckbox.classList.add('swipe_picker_expand_toggle');
+                block.prepend(expandCheckbox);
+
+                const expandLabel = document.createElement('label');
+                expandLabel.htmlFor = expandCheckboxId;
+                expandLabel.classList.add(
+                    'swipe_picker_expand_label',
+                    'fa-solid',
+                    'fa-fw',
+                    'fa-chevron-down',
+                );
+                expandLabel.title = t`Expand/Collapse`;
+                expandLabel.setAttribute('data-i18n', '[title]Expand/Collapse');
+                expandLabel.addEventListener('click', (event: Event) => event.stopPropagation());
+
+                // Add copy button
+                const copyButton = document.createElement('div');
+                copyButton.classList.add('swipe_picker_copy', 'fa-solid', 'fa-fw', 'fa-copy');
+                copyButton.title = t`Copy`;
+                copyButton.setAttribute('data-i18n', '[title]Copy');
+                copyButton.addEventListener('click', async (event: Event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    await copyText(swipeText);
+                    notyf.info(t`Copied!`, '', { timeOut: 2000 });
+                });
+
+                // Insert new buttons before the branch button
+                branchButton.before(expandLabel, copyButton);
+
+                (template as HTMLElement).querySelector(
+                    '.select_chat_block_filename',
+                )!.textContent =
+                    `#${index + 1}${index === Number(message.swipe_id ?? 0) ? ` ${t`[Current]`}` : ''}`;
+                (template as HTMLElement).querySelector('.chat_messages_date')!.textContent =
+                    sendDate;
+                const fileSizeText = swipeDetails.length
+                    ? '(' + swipeDetails[0] + (swipeDetails.length > 1 ? ',' : '') + ')'
+                    : '';
+                (template as HTMLElement).querySelector('.chat_file_size')!.textContent =
+                    fileSizeText;
+                const messagesNum = swipeDetails.length > 1 ? swipeDetails.slice(1).join(', ') : '';
+                (template as HTMLElement).querySelector('.chat_messages_num')!.textContent =
+                    messagesNum;
+                (template as HTMLElement).querySelector('.select_chat_block_mes')!.textContent =
+                    previewText ? swipeText : t`(empty swipe)`;
+
+                (block as HTMLElement)?.addEventListener('click', () => setSelectedSwipe(index));
+                (block as HTMLElement)?.addEventListener('dblclick', async () => {
+                    if (!canJumpToSwipe) {
                         return;
                     }
 
-                    selectedSwipeId = clamp(nextSelectedSwipeId, 0, message.swipes.length - 1);
-
-                    if (swipeIdInput instanceof HTMLInputElement) {
-                        swipeIdInput.max = String(message.swipes.length);
-                    }
-
-                    await renderSwipeList();
+                    setSelectedSwipe(index);
+                    await popup.completeAffirmative();
                 });
-            }
 
-            // Add expand/collapse toggle
-            const expandCheckboxId = `swipe_picker_expand_${messageId}_${index}`;
-            const expandCheckbox = document.createElement('input');
-            expandCheckbox.type = 'checkbox';
-            expandCheckbox.id = expandCheckboxId;
-            expandCheckbox.classList.add('swipe_picker_expand_toggle');
-            block.prepend(expandCheckbox);
-
-            const expandLabel = document.createElement('label');
-            expandLabel.htmlFor = expandCheckboxId;
-            expandLabel.classList.add('swipe_picker_expand_label', 'fa-solid', 'fa-fw', 'fa-chevron-down');
-            expandLabel.title = t`Expand/Collapse`;
-            expandLabel.setAttribute('data-i18n', '[title]Expand/Collapse');
-            expandLabel.addEventListener('click', (event: Event) => event.stopPropagation());
-
-            // Add copy button
-            const copyButton = document.createElement('div');
-            copyButton.classList.add('swipe_picker_copy', 'fa-solid', 'fa-fw', 'fa-copy');
-            copyButton.title = t`Copy`;
-            copyButton.setAttribute('data-i18n', '[title]Copy');
-            copyButton.addEventListener('click', async (event: Event) => {
-                event.preventDefault();
-                event.stopPropagation();
-                await copyText(swipeText);
-                notyf.info(t`Copied!`, '', { timeOut: 2000 });
-            });
-
-            // Insert new buttons before the branch button
-            branchButton.before(expandLabel, copyButton);
-
-            (template as HTMLElement).querySelector('.select_chat_block_filename')!.textContent = `#${index + 1}${index === Number(message.swipe_id ?? 0) ? ` ${t`[Current]`}` : ''}`;
-            (template as HTMLElement).querySelector('.chat_messages_date')!.textContent = sendDate;
-            const fileSizeText = swipeDetails.length ? '(' + swipeDetails[0] + (swipeDetails.length > 1 ? ',' : '') + ')' : '';
-            (template as HTMLElement).querySelector('.chat_file_size')!.textContent = fileSizeText;
-            const messagesNum = swipeDetails.length > 1 ? swipeDetails.slice(1).join(', ') : '';
-            (template as HTMLElement).querySelector('.chat_messages_num')!.textContent = messagesNum;
-            (template as HTMLElement).querySelector('.select_chat_block_mes')!.textContent = previewText ? swipeText : t`(empty swipe)`;
-
-            (block as HTMLElement)?.addEventListener('click', () => setSelectedSwipe(index));
-            (block as HTMLElement)?.addEventListener('dblclick', async () => {
-                if (!canJumpToSwipe) {
-                    return;
-                }
-
-                setSelectedSwipe(index);
-                await popup.completeAffirmative();
-            });
-
-            return template;
-        }));
+                return template;
+            }),
+        );
 
         listContainer.replaceChildren(...swipeBlocks);
         setSelectedSwipe(selectedSwipeId);
@@ -320,13 +384,15 @@ async function openSwipePicker(messageId) {
         // @ts-expect-error TS(2322) FIXME: Type 'false' is not assignable to type 'null | und... Remove this comment to see the full error message
         cancelButton: false,
         // @ts-expect-error TS(2322) FIXME: Type '{ id: string; label: any; type: string; defa... Remove this comment to see the full error message
-        customInputs: [{
-            id: swipeIdInputId,
-            label: t`Swipe ID`,
-            type: 'text',
-            defaultState: String(selectedSwipeId + 1),
-            tooltip: `1-${message.swipes.length}`,
-        }],
+        customInputs: [
+            {
+                id: swipeIdInputId,
+                label: t`Swipe ID`,
+                type: 'text',
+                defaultState: String(selectedSwipeId + 1),
+                tooltip: `1-${message.swipes.length}`,
+            },
+        ],
         large: true,
         wider: true,
         allowVerticalScrolling: true,
@@ -343,10 +409,20 @@ async function openSwipePicker(messageId) {
             }
 
             const swipeIdInput = popup.dlg.querySelector(`#${swipeIdInputId}`);
-            const targetSwipeNumber = Number.parseInt(String(swipeIdInput instanceof HTMLInputElement ? swipeIdInput.value : '').trim(), 10);
+            const targetSwipeNumber = Number.parseInt(
+                String(swipeIdInput instanceof HTMLInputElement ? swipeIdInput.value : '').trim(),
+                10,
+            );
 
-            if (!Number.isInteger(targetSwipeNumber) || targetSwipeNumber < 1 || targetSwipeNumber > message.swipes.length) {
-                notyf.warning(t`Enter a swipe ID between 1 and ${message.swipes.length}.`, t`Jump to Swipe`);
+            if (
+                !Number.isInteger(targetSwipeNumber) ||
+                targetSwipeNumber < 1 ||
+                targetSwipeNumber > message.swipes.length
+            ) {
+                notyf.warning(
+                    t`Enter a swipe ID between 1 and ${message.swipes.length}.`,
+                    t`Jump to Swipe`,
+                );
                 if (swipeIdInput instanceof HTMLInputElement) {
                     swipeIdInput.focus();
                     swipeIdInput.select();
@@ -375,8 +451,17 @@ async function openSwipePicker(messageId) {
     const swipeIdLabel = popup.dlg.querySelector(`label[for="${swipeIdInputId}"]`);
 
     if (swipeIdLabel instanceof HTMLLabelElement) {
-        swipeIdLabel.classList.add('flex-container', 'alignItemsCenter', 'justifyCenter', 'gap10px', 'margin0');
-        popup.buttonControls.insertBefore(swipeIdLabel, canJumpToSwipe ? popup.okButton : popup.buttonControls.firstChild);
+        swipeIdLabel.classList.add(
+            'flex-container',
+            'alignItemsCenter',
+            'justifyCenter',
+            'gap10px',
+            'margin0',
+        );
+        popup.buttonControls.insertBefore(
+            swipeIdLabel,
+            canJumpToSwipe ? popup.okButton : popup.buttonControls.firstChild,
+        );
         popup.inputControls.style.display = 'none';
     }
 
@@ -392,7 +477,11 @@ async function openSwipePicker(messageId) {
 
         swipeIdInput.addEventListener('input', function () {
             const nextSwipeId = Number.parseInt(this.value, 10);
-            if (!Number.isInteger(nextSwipeId) || nextSwipeId < 1 || nextSwipeId > message.swipes.length) {
+            if (
+                !Number.isInteger(nextSwipeId) ||
+                nextSwipeId < 1 ||
+                nextSwipeId > message.swipes.length
+            ) {
                 return;
             }
 
@@ -431,7 +520,11 @@ async function openSwipePicker(messageId) {
     }
 
     const direction = targetSwipeId > currentSwipeId ? SWIPE_DIRECTION.RIGHT : SWIPE_DIRECTION.LEFT;
-    await swipe(null, direction, { source: SWIPE_SOURCE.SWIPE_PICKER, forceMesId: messageId, forceSwipeId: targetSwipeId });
+    await swipe(null, direction, {
+        source: SWIPE_SOURCE.SWIPE_PICKER,
+        forceMesId: messageId,
+        forceSwipeId: targetSwipeId,
+    });
 }
 
 /**
@@ -456,12 +549,18 @@ export function initSwipePicker() {
         addLongPressEvent('.swipes-counter.swipe-picker-enabled', onSwipeCounterClick);
     } else {
         document.addEventListener('click', function (e: Event) {
-            const target = e.target instanceof Element ? e.target.closest('.swipes-counter.swipe-picker-enabled') : null;
+            const target =
+                e.target instanceof Element
+                    ? e.target.closest('.swipes-counter.swipe-picker-enabled')
+                    : null;
             if (target) onSwipeCounterClick.call(target, e);
         });
     }
     document.addEventListener('keydown', async function (e: KeyboardEvent) {
-        const target = e.target instanceof Element ? e.target.closest('.swipes-counter.swipe-picker-enabled') : null;
+        const target =
+            e.target instanceof Element
+                ? e.target.closest('.swipes-counter.swipe-picker-enabled')
+                : null;
         if (!target || e.key !== ' ') {
             return;
         }

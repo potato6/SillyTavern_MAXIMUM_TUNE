@@ -3,21 +3,11 @@
  * actionable tags, and filter persistence across contexts.
  */
 
-import {
-    FILTER_TYPES,
-    FILTER_STATES,
-    DEFAULT_FILTER_STATE,
-} from '../../filters.js';
+import { FILTER_TYPES, FILTER_STATES, DEFAULT_FILTER_STATE } from '../../filters.js';
 
-import {
-    entitiesFilter,
-    saveSettings,
-} from '../../../script.js';
+import { entitiesFilter, saveSettings } from '../../../script.js';
 
-import {
-    groupCandidatesFilter,
-    groupMembersFilter,
-} from '../../group-chats.js';
+import { groupCandidatesFilter, groupMembersFilter } from '../../group-chats.js';
 
 import { tag_filter_type } from '../types.js';
 import { tags, tag_map, getTagIdsFromDOM } from '../store/tagStore.js';
@@ -57,19 +47,119 @@ const ACTIONABLE_TAGS: {
         icon?: string;
         class?: string;
     };
-    FAV: { id: string; sort_order: number; name: string; color: string; filter_state: undefined; action: ((this: HTMLElement, ...args: unknown[]) => void) | undefined; icon: string; class: string };
-    GROUP: { id: string; sort_order: number; name: string; color: string; filter_state: undefined; action: ((this: HTMLElement, ...args: unknown[]) => void) | undefined; icon: string; class: string };
-    FOLDER: { id: string; sort_order: number; name: string; color: string; filter_state: undefined; action: ((this: HTMLElement, ...args: unknown[]) => void) | undefined; icon: string; class: string };
-    VIEW: { id: string; sort_order: number; name: string; color: string; action: ((this: HTMLElement, ...args: unknown[]) => void) | undefined; icon: string; class: string };
-    HINT: { id: string; sort_order: number; name: string; color: string; action: ((this: HTMLElement, ...args: unknown[]) => void) | undefined; icon: string; class: string };
-    UNFILTER: { id: string; sort_order: number; name: string; action: ((this: HTMLElement, ...args: unknown[]) => void) | undefined; icon: string; class: string };
+    FAV: {
+        id: string;
+        sort_order: number;
+        name: string;
+        color: string;
+        filter_state: undefined;
+        action: ((this: HTMLElement, ...args: unknown[]) => void) | undefined;
+        icon: string;
+        class: string;
+    };
+    GROUP: {
+        id: string;
+        sort_order: number;
+        name: string;
+        color: string;
+        filter_state: undefined;
+        action: ((this: HTMLElement, ...args: unknown[]) => void) | undefined;
+        icon: string;
+        class: string;
+    };
+    FOLDER: {
+        id: string;
+        sort_order: number;
+        name: string;
+        color: string;
+        filter_state: undefined;
+        action: ((this: HTMLElement, ...args: unknown[]) => void) | undefined;
+        icon: string;
+        class: string;
+    };
+    VIEW: {
+        id: string;
+        sort_order: number;
+        name: string;
+        color: string;
+        action: ((this: HTMLElement, ...args: unknown[]) => void) | undefined;
+        icon: string;
+        class: string;
+    };
+    HINT: {
+        id: string;
+        sort_order: number;
+        name: string;
+        color: string;
+        action: ((this: HTMLElement, ...args: unknown[]) => void) | undefined;
+        icon: string;
+        class: string;
+    };
+    UNFILTER: {
+        id: string;
+        sort_order: number;
+        name: string;
+        action: ((this: HTMLElement, ...args: unknown[]) => void) | undefined;
+        icon: string;
+        class: string;
+    };
 } = {
-    FAV: { id: '1', sort_order: 1, name: 'Show only favorites', color: 'rgba(255, 255, 0, 0.5)', filter_state: undefined, action: undefined, icon: 'fa-solid fa-star', class: 'filterByFavorites' },
-    GROUP: { id: '0', sort_order: 2, name: 'Show only groups', color: 'rgba(100, 100, 100, 0.5)', filter_state: undefined, action: undefined, icon: 'fa-solid fa-users', class: 'filterByGroups' },
-    FOLDER: { id: '4', sort_order: 3, name: 'Show only folders', color: 'rgba(120, 120, 120, 0.5)', filter_state: undefined, action: undefined, icon: 'fa-solid fa-folder-plus', class: 'filterByFolder' },
-    VIEW: { id: '2', sort_order: 4, name: 'Manage tags', color: 'rgba(150, 100, 100, 0.5)', action: undefined, icon: 'fa-solid fa-gear', class: 'manageTags' },
-    HINT: { id: '3', sort_order: 5, name: 'Show Tag List', color: 'rgba(150, 100, 100, 0.5)', action: undefined, icon: 'fa-solid fa-tags', class: 'showTagList' },
-    UNFILTER: { id: '5', sort_order: 6, name: 'Clear all filters', action: undefined, icon: 'fa-solid fa-filter-circle-xmark', class: 'clearAllFilters' },
+    FAV: {
+        id: '1',
+        sort_order: 1,
+        name: 'Show only favorites',
+        color: 'rgba(255, 255, 0, 0.5)',
+        filter_state: undefined,
+        action: undefined,
+        icon: 'fa-solid fa-star',
+        class: 'filterByFavorites',
+    },
+    GROUP: {
+        id: '0',
+        sort_order: 2,
+        name: 'Show only groups',
+        color: 'rgba(100, 100, 100, 0.5)',
+        filter_state: undefined,
+        action: undefined,
+        icon: 'fa-solid fa-users',
+        class: 'filterByGroups',
+    },
+    FOLDER: {
+        id: '4',
+        sort_order: 3,
+        name: 'Show only folders',
+        color: 'rgba(120, 120, 120, 0.5)',
+        filter_state: undefined,
+        action: undefined,
+        icon: 'fa-solid fa-folder-plus',
+        class: 'filterByFolder',
+    },
+    VIEW: {
+        id: '2',
+        sort_order: 4,
+        name: 'Manage tags',
+        color: 'rgba(150, 100, 100, 0.5)',
+        action: undefined,
+        icon: 'fa-solid fa-gear',
+        class: 'manageTags',
+    },
+    HINT: {
+        id: '3',
+        sort_order: 5,
+        name: 'Show Tag List',
+        color: 'rgba(150, 100, 100, 0.5)',
+        action: undefined,
+        icon: 'fa-solid fa-tags',
+        class: 'showTagList',
+    },
+    UNFILTER: {
+        id: '5',
+        sort_order: 6,
+        name: 'Clear all filters',
+        action: undefined,
+        icon: 'fa-solid fa-filter-circle-xmark',
+        class: 'clearAllFilters',
+    },
 };
 
 /**
@@ -83,8 +173,7 @@ const TAG_ID_TO_FILTER_TYPE = new Map([
 ]);
 
 /** @type {{[key: string]: Tag}} An optional list of actionables that can be utilized by extensions */
-const InListActionable = {
-};
+const InListActionable = {};
 
 // ──────────────────────────────────────────────
 // Actionable tags initialization (breaks circular deps)
@@ -101,8 +190,14 @@ let _onClearAllFiltersClick: ((filterHelper: unknown) => void) | undefined;
  */
 function initActionableTags() {
     ACTIONABLE_TAGS.FAV.action = filterByFav as (this: HTMLElement, ...args: unknown[]) => void;
-    ACTIONABLE_TAGS.GROUP.action = filterByGroups as (this: HTMLElement, ...args: unknown[]) => void;
-    ACTIONABLE_TAGS.FOLDER.action = filterByFolder as (this: HTMLElement, ...args: unknown[]) => void;
+    ACTIONABLE_TAGS.GROUP.action = filterByGroups as (
+        this: HTMLElement,
+        ...args: unknown[]
+    ) => void;
+    ACTIONABLE_TAGS.FOLDER.action = filterByFolder as (
+        this: HTMLElement,
+        ...args: unknown[]
+    ) => void;
     ACTIONABLE_TAGS.VIEW.action = _onViewTagsListClick;
     ACTIONABLE_TAGS.HINT.action = _onTagListHintClick;
     ACTIONABLE_TAGS.UNFILTER.action = _onClearAllFiltersClick;
@@ -159,7 +254,7 @@ function getTagFilterVisibilitySetting(type: number): string {
  */
 function getTagFilterVisibility(type: number): boolean {
     const settingKey = getTagFilterVisibilitySetting(type);
-    return (power_user as Record<string, unknown>)[settingKey] as boolean ?? false;
+    return ((power_user as Record<string, unknown>)[settingKey] as boolean) ?? false;
 }
 
 /**
@@ -187,7 +282,13 @@ function setTagFilterVisibility(type: number, visible: boolean): void {
  * @param {boolean} isFilterActionable - Whether the tag is an actionable filter tag
  * @returns {string} The filter state
  */
-function determineTagFilterState(filterHelper: { getFilterData: (type: string) => { excluded: string[]; selected: string[] } | string }, tag: Record<string, unknown>, isFilterActionable: boolean): string {
+function determineTagFilterState(
+    filterHelper: {
+        getFilterData: (type: string) => { excluded: string[]; selected: string[] } | string;
+    },
+    tag: Record<string, unknown>,
+    isFilterActionable: boolean,
+): string {
     if (isFilterActionable) {
         // For actionable tags: read from filter helper (which is loaded from storage)
         const filterType = TAG_ID_TO_FILTER_TYPE.get(tag.id as string) || null;
@@ -196,7 +297,10 @@ function determineTagFilterState(filterHelper: { getFilterData: (type: string) =
         }
     } else {
         // For regular tags: read from the filter helper's TAG filter data
-        const tagFilterData = filterHelper.getFilterData(FILTER_TYPES.TAG) as { excluded: string[]; selected: string[] };
+        const tagFilterData = filterHelper.getFilterData(FILTER_TYPES.TAG) as {
+            excluded: string[];
+            selected: string[];
+        };
         if (tagFilterData.excluded.includes(tag.id as string)) {
             return 'EXCLUDED';
         }
@@ -216,7 +320,13 @@ function determineTagFilterState(filterHelper: { getFilterData: (type: string) =
  * @param {boolean} [param1.simulateClick] - Optionally specify that the state should not just be set on the html element, but actually achieved via triggering the "click" on it, which follows up with the general click handlers and reprinting
  * @returns {string} The string representing the new state
  */
-function toggleTagThreeState(element: HTMLElement | null, { stateOverride = undefined, simulateClick = false }: { stateOverride?: string | symbol | undefined; simulateClick?: boolean } = {}): string {
+function toggleTagThreeState(
+    element: HTMLElement | null,
+    {
+        stateOverride = undefined,
+        simulateClick = false,
+    }: { stateOverride?: string | symbol | undefined; simulateClick?: boolean } = {},
+): string {
     const states = Object.keys(FILTER_STATES);
 
     /**
@@ -229,36 +339,63 @@ function toggleTagThreeState(element: HTMLElement | null, { stateOverride = unde
         return index !== -1 ? index : states.indexOf(fallback);
     }
 
-    const overrideKey = typeof stateOverride == 'string' && states.includes(stateOverride) ? stateOverride : Object.keys(FILTER_STATES).find(key => (FILTER_STATES as Record<string, unknown>)[key] === stateOverride);
+    const overrideKey =
+        typeof stateOverride == 'string' && states.includes(stateOverride)
+            ? stateOverride
+            : Object.keys(FILTER_STATES).find(
+                  (key) => (FILTER_STATES as Record<string, unknown>)[key] === stateOverride,
+              );
 
-    const currentStateIndex = getStateIndex(element?.getAttribute('data-toggle-state'), DEFAULT_FILTER_STATE);
-    const targetStateIndex = overrideKey !== undefined ? getStateIndex(overrideKey, DEFAULT_FILTER_STATE) : (currentStateIndex + 1) % states.length;
+    const currentStateIndex = getStateIndex(
+        element?.getAttribute('data-toggle-state'),
+        DEFAULT_FILTER_STATE,
+    );
+    const targetStateIndex =
+        overrideKey !== undefined
+            ? getStateIndex(overrideKey, DEFAULT_FILTER_STATE)
+            : (currentStateIndex + 1) % states.length;
 
     if (simulateClick) {
         let clickCount = 0;
         if (targetStateIndex >= currentStateIndex) {
             clickCount = targetStateIndex - currentStateIndex;
         } else {
-            clickCount = (states.length - currentStateIndex) + targetStateIndex;
+            clickCount = states.length - currentStateIndex + targetStateIndex;
         }
 
         for (let i = 0; i < clickCount; i++) {
             element?.dispatchEvent(new Event('click'));
         }
 
-        console.debug('manually click-toggle three-way filter from', states[currentStateIndex], 'to', states[targetStateIndex], 'on', element);
+        console.debug(
+            'manually click-toggle three-way filter from',
+            states[currentStateIndex],
+            'to',
+            states[targetStateIndex],
+            'on',
+            element,
+        );
     } else {
         element?.setAttribute('data-toggle-state', states[targetStateIndex]!);
 
-        states.forEach(state => {
-            element?.classList.toggle(((FILTER_STATES as Record<string, { class: string }>)[state])?.class ?? '', state === states[targetStateIndex]);
+        states.forEach((state) => {
+            element?.classList.toggle(
+                (FILTER_STATES as Record<string, { class: string }>)[state]?.class ?? '',
+                state === states[targetStateIndex],
+            );
         });
 
         if (states[currentStateIndex] !== states[targetStateIndex]) {
-            console.debug('toggle three-way filter from', states[currentStateIndex], 'to', states[targetStateIndex], 'on', element);
+            console.debug(
+                'toggle three-way filter from',
+                states[currentStateIndex],
+                'to',
+                states[targetStateIndex],
+                'on',
+                element,
+            );
         }
     }
-
 
     return states[targetStateIndex]!;
 }
@@ -278,7 +415,17 @@ function toggleTagThreeState(element: HTMLElement | null, { stateOverride = unde
  * @param {string} filterType - The filter type constant
  * @param {string} storageKey - The storage key base for persistence
  */
-function applyActionableTagFilter(this: HTMLElement, filterHelper: { getFilterData: (type: string) => unknown; setFilterData: (type: string, state: string) => void; getFilterStorageKey?: () => string | null }, tag: Record<string, unknown>, filterType: string, storageKey: string): void {
+function applyActionableTagFilter(
+    this: HTMLElement,
+    filterHelper: {
+        getFilterData: (type: string) => unknown;
+        setFilterData: (type: string, state: string) => void;
+        getFilterStorageKey?: () => string | null;
+    },
+    tag: Record<string, unknown>,
+    filterType: string,
+    storageKey: string,
+): void {
     const state = toggleTagThreeState(this);
 
     // Persist to storage for all contexts
@@ -303,8 +450,20 @@ function applyActionableTagFilter(this: HTMLElement, filterHelper: { getFilterDa
  * @param filterHelper.getFilterData
  * @param filterHelper.setFilterData
  */
-function filterByFav(this: HTMLElement, filterHelper: { getFilterData: (type: string) => unknown; setFilterData: (type: string, state: string) => void }): void {
-    applyActionableTagFilter.call(this, filterHelper, ACTIONABLE_TAGS.FAV, FILTER_TYPES.FAV, ACTIONABLE_FILTER_STORAGE_KEYS.FAV);
+function filterByFav(
+    this: HTMLElement,
+    filterHelper: {
+        getFilterData: (type: string) => unknown;
+        setFilterData: (type: string, state: string) => void;
+    },
+): void {
+    applyActionableTagFilter.call(
+        this,
+        filterHelper,
+        ACTIONABLE_TAGS.FAV,
+        FILTER_TYPES.FAV,
+        ACTIONABLE_FILTER_STORAGE_KEYS.FAV,
+    );
 }
 
 /**
@@ -313,8 +472,20 @@ function filterByFav(this: HTMLElement, filterHelper: { getFilterData: (type: st
  * @param filterHelper.getFilterData
  * @param filterHelper.setFilterData
  */
-function filterByGroups(this: HTMLElement, filterHelper: { getFilterData: (type: string) => unknown; setFilterData: (type: string, state: string) => void }): void {
-    applyActionableTagFilter.call(this, filterHelper, ACTIONABLE_TAGS.GROUP, FILTER_TYPES.GROUP, ACTIONABLE_FILTER_STORAGE_KEYS.GROUP);
+function filterByGroups(
+    this: HTMLElement,
+    filterHelper: {
+        getFilterData: (type: string) => unknown;
+        setFilterData: (type: string, state: string) => void;
+    },
+): void {
+    applyActionableTagFilter.call(
+        this,
+        filterHelper,
+        ACTIONABLE_TAGS.GROUP,
+        FILTER_TYPES.GROUP,
+        ACTIONABLE_FILTER_STORAGE_KEYS.GROUP,
+    );
 }
 
 /**
@@ -323,7 +494,13 @@ function filterByGroups(this: HTMLElement, filterHelper: { getFilterData: (type:
  * @param filterHelper.getFilterData
  * @param filterHelper.setFilterData
  */
-function filterByFolder(this: HTMLElement, filterHelper: { getFilterData: (type: string) => unknown; setFilterData: (type: string, state: string) => void }): void {
+function filterByFolder(
+    this: HTMLElement,
+    filterHelper: {
+        getFilterData: (type: string) => unknown;
+        setFilterData: (type: string, state: string) => void;
+    },
+): void {
     if (!power_user.bogus_folders) {
         const bogusFolders = document.getElementById('bogus_folders');
         if (bogusFolders) {
@@ -331,11 +508,21 @@ function filterByFolder(this: HTMLElement, filterHelper: { getFilterData: (type:
             bogusFolders.dispatchEvent(new Event('input', { bubbles: true }));
         }
         _onViewTagsListClick?.();
-        flashHighlight(document.querySelector('#tag_view_list .tag_as_folder, #tag_view_list .tag_folder_indicator'));
+        flashHighlight(
+            document.querySelector(
+                '#tag_view_list .tag_as_folder, #tag_view_list .tag_folder_indicator',
+            ),
+        );
         return;
     }
 
-    applyActionableTagFilter.call(this, filterHelper, ACTIONABLE_TAGS.FOLDER, FILTER_TYPES.FOLDER, ACTIONABLE_FILTER_STORAGE_KEYS.FOLDER);
+    applyActionableTagFilter.call(
+        this,
+        filterHelper,
+        ACTIONABLE_TAGS.FOLDER,
+        FILTER_TYPES.FOLDER,
+        ACTIONABLE_FILTER_STORAGE_KEYS.FOLDER,
+    );
 }
 
 // ──────────────────────────────────────────────
@@ -347,10 +534,19 @@ function filterByFolder(this: HTMLElement, filterHelper: { getFilterData: (type:
  * @param listElement
  */
 function runTagFilters(listElement: string | HTMLElement | null): void {
-    const $listEl = typeof listElement === 'string' ? document.querySelector(listElement) : listElement;
-    const tagIds = getTagIdsFromDOM($listEl as HTMLElement | null, '.tag.selected:not(.actionable)');
-    const excludedTagIds = getTagIdsFromDOM($listEl as HTMLElement | null, '.tag.excluded:not(.actionable)');
-    const filterHelper = getFilterHelper(listElement) as { setFilterData: (type: string, data: unknown) => void };
+    const $listEl =
+        typeof listElement === 'string' ? document.querySelector(listElement) : listElement;
+    const tagIds = getTagIdsFromDOM(
+        $listEl as HTMLElement | null,
+        '.tag.selected:not(.actionable)',
+    );
+    const excludedTagIds = getTagIdsFromDOM(
+        $listEl as HTMLElement | null,
+        '.tag.excluded:not(.actionable)',
+    );
+    const filterHelper = getFilterHelper(listElement) as {
+        setFilterData: (type: string, data: unknown) => void;
+    };
     filterHelper.setFilterData(FILTER_TYPES.TAG, { excluded: excludedTagIds, selected: tagIds });
 }
 
@@ -365,7 +561,13 @@ function runTagFilters(listElement: string | HTMLElement | null): void {
  * @param filterHelper.getFilterData
  * @param {string} storagePrefix - The storage key prefix for this context
  */
-function loadFilterStatesForContext(filterHelper: { setFilterData: (type: string, data: unknown, quiet?: boolean) => void; getFilterData: (type: string) => { excluded: string[]; selected: string[] } }, storagePrefix: string): void {
+function loadFilterStatesForContext(
+    filterHelper: {
+        setFilterData: (type: string, data: unknown, quiet?: boolean) => void;
+        getFilterData: (type: string) => { excluded: string[]; selected: string[] };
+    },
+    storagePrefix: string,
+): void {
     const validStates = new Set(Object.keys(FILTER_STATES));
     const readState = (storageKey: string): string | null => {
         const v = accountStorage.getItem(storageKey);
@@ -415,9 +617,27 @@ function loadFilterStatesForContext(filterHelper: { setFilterData: (type: string
 function restoreSavedTagFilters() {
     try {
         // Load persisted filter states for all contexts (including character list)
-        loadFilterStatesForContext(entitiesFilter as { setFilterData: (type: string, data: unknown, quiet?: boolean) => void; getFilterData: (type: string) => { excluded: string[]; selected: string[] } }, 'CharacterList');
-        loadFilterStatesForContext(groupCandidatesFilter as { setFilterData: (type: string, data: unknown, quiet?: boolean) => void; getFilterData: (type: string) => { excluded: string[]; selected: string[] } }, 'GroupCandidates');
-        loadFilterStatesForContext(groupMembersFilter as { setFilterData: (type: string, data: unknown, quiet?: boolean) => void; getFilterData: (type: string) => { excluded: string[]; selected: string[] } }, 'GroupMembers');
+        loadFilterStatesForContext(
+            entitiesFilter as {
+                setFilterData: (type: string, data: unknown, quiet?: boolean) => void;
+                getFilterData: (type: string) => { excluded: string[]; selected: string[] };
+            },
+            'CharacterList',
+        );
+        loadFilterStatesForContext(
+            groupCandidatesFilter as {
+                setFilterData: (type: string, data: unknown, quiet?: boolean) => void;
+                getFilterData: (type: string) => { excluded: string[]; selected: string[] };
+            },
+            'GroupCandidates',
+        );
+        loadFilterStatesForContext(
+            groupMembersFilter as {
+                setFilterData: (type: string, data: unknown, quiet?: boolean) => void;
+                getFilterData: (type: string) => { excluded: string[]; selected: string[] };
+            },
+            'GroupMembers',
+        );
     } catch (e) {
         console.warn('Failed to restore actionable filter states from account storage', e);
     }
@@ -427,13 +647,17 @@ function restoreSavedTagFilters() {
  *
  */
 function removeMissingTagFilters(): void {
-    const tagIds = new Set((tags as Record<string, unknown>[]).map(tag => tag.id as string));
+    const tagIds = new Set((tags as Record<string, unknown>[]).map((tag) => tag.id as string));
     const assignedTagIds = new Set(Object.values(tag_map).flat());
-    const openBogusFolderIds = new Set(getOpenBogusFolders().map(tag => tag.id as string));
-    const isEmptyOpenBogusFolder = (tagId: string): boolean => openBogusFolderIds.has(tagId) && !assignedTagIds.has(tagId);
+    const openBogusFolderIds = new Set(getOpenBogusFolders().map((tag) => tag.id as string));
+    const isEmptyOpenBogusFolder = (tagId: string): boolean =>
+        openBogusFolderIds.has(tagId) && !assignedTagIds.has(tagId);
 
     for (const helper of [groupCandidatesFilter, groupMembersFilter, entitiesFilter]) {
-        const { selected, excluded } = helper.getFilterData(FILTER_TYPES.TAG) as { selected: string[]; excluded: string[] };
+        const { selected, excluded } = helper.getFilterData(FILTER_TYPES.TAG) as {
+            selected: string[];
+            excluded: string[];
+        };
         let anyRemoved = false;
 
         if (Array.isArray(selected)) {
@@ -472,7 +696,9 @@ function removeMissingTagFilters(): void {
  * @param {object[]} actionTags - Array of actionable tag objects
  * @returns {object[]} Filtered array of actionable tags
  */
-function filterActionableTagsForGroupContext(actionTags: Record<string, unknown>[]): Record<string, unknown>[] {
+function filterActionableTagsForGroupContext(
+    actionTags: Record<string, unknown>[],
+): Record<string, unknown>[] {
     return actionTags.filter((tag: Record<string, unknown>) => {
         // Always show Favorites
         if (tag.id === ACTIONABLE_TAGS.FAV.id) {

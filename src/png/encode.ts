@@ -22,12 +22,12 @@ export default function encode(chunks: { name: string; data: Uint8Array }[]) {
 
     output[0] = 0x89;
     output[1] = 0x50;
-    output[2] = 0x4E;
+    output[2] = 0x4e;
     output[3] = 0x47;
-    output[4] = 0x0D;
-    output[5] = 0x0A;
-    output[6] = 0x1A;
-    output[7] = 0x0A;
+    output[4] = 0x0d;
+    output[5] = 0x0a;
+    output[6] = 0x1a;
+    output[7] = 0x0a;
 
     for (let i = 0; i < chunks.length; i++) {
         // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type '{ name: st... Remove this comment to see the full error message

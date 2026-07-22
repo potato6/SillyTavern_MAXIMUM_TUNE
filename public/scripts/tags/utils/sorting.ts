@@ -13,15 +13,21 @@ import { tag_sort_mode } from '../types.js';
  * @param {Map<string, number>} [counts] - Optional map of tag ID to usage count
  * @returns {number} The compare result
  */
-export function compareTagsForSort(a: Record<string, unknown>, b: Record<string, unknown>, counts: Map<string, number> | null = null): number {
+export function compareTagsForSort(
+    a: Record<string, unknown>,
+    b: Record<string, unknown>,
+    counts: Map<string, number> | null = null,
+): number {
     // default sort: alphabetical, case insensitive
-    const defaultSort = (a.name as string).toLowerCase().localeCompare((b.name as string).toLowerCase());
+    const defaultSort = (a.name as string)
+        .toLowerCase()
+        .localeCompare((b.name as string).toLowerCase());
 
     // sort on number of entries
     if (power_user.tag_sort_mode === tag_sort_mode.BY_ENTRIES) {
-        const aCount = counts instanceof Map ? (counts.get(a.id as string) || 0) : 0;
-        const bCount = counts instanceof Map ? (counts.get(b.id as string) || 0) : 0;
-        return (bCount - aCount) || defaultSort;
+        const aCount = counts instanceof Map ? counts.get(a.id as string) || 0 : 0;
+        const bCount = counts instanceof Map ? counts.get(b.id as string) || 0 : 0;
+        return bCount - aCount || defaultSort;
     }
 
     // alphabetical sort
@@ -47,6 +53,13 @@ export function compareTagsForSort(a: Record<string, unknown>, b: Record<string,
  * @param {Map<string, number>} [counts] - Optional map of tag ID to usage count
  * @returns {object[]} The sorted tags
  */
-export function sortTags(tags: Record<string, unknown>[], counts: Map<string, number> | null = null): Record<string, unknown>[] {
-    return tags.slice().sort((a: Record<string, unknown>, b: Record<string, unknown>) => compareTagsForSort(a, b, counts));
+export function sortTags(
+    tags: Record<string, unknown>[],
+    counts: Map<string, number> | null = null,
+): Record<string, unknown>[] {
+    return tags
+        .slice()
+        .toSorted((a: Record<string, unknown>, b: Record<string, unknown>) =>
+            compareTagsForSort(a, b, counts),
+        );
 }

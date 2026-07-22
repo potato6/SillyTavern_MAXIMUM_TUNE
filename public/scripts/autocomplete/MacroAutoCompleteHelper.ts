@@ -106,7 +106,9 @@ export function findUnclosedScopesRegex(text) {
             // Find matching opener in stack (case-insensitive)
             // When closing an outer scope, all inner unclosed scopes are implicitly closed
             // @ts-expect-error TS(2339) FIXME: Property 'findLastIndex' does not exist on type '{... Remove this comment to see the full error message
-            const matchIndex = stack.findLastIndex(s => s.name.toLowerCase() === name.toLowerCase());
+            const matchIndex = stack.findLastIndex(
+                (s) => s.name.toLowerCase() === name.toLowerCase(),
+            );
             if (matchIndex !== -1) {
                 // Pop everything from matchIndex to end (inclusive) - closes the matched scope and all nested ones
                 stack.splice(matchIndex);
@@ -200,7 +202,7 @@ function filterOptionalScopes(unclosedScopes, textUpToCursor, isForced) {
 
     // Filter out scopes where the scope content is optional
     // @ts-expect-error TS(7006) FIXME: Parameter 'scope' implicitly has an 'any' type.
-    return unclosedScopes.filter(scope => !isScopeOptional(scope, textUpToCursor));
+    return unclosedScopes.filter((scope) => !isScopeOptional(scope, textUpToCursor));
 }
 
 /**
@@ -221,7 +223,6 @@ export function buildVariableShorthandOptions(context, opts = {}) {
     const isLocal = context.variablePrefix === '.';
     const scope = isLocal ? 'local' : 'global';
 
-
     // Always show the typed variable prefix as a non-completable option (like flags do)
     // This allows the details panel to show information about the prefix
     const prefixDef = VariableShorthandDefinitions.get(context.variablePrefix);
@@ -237,11 +238,13 @@ export function buildVariableShorthandOptions(context, opts = {}) {
     // If typing the variable name, suggest existing variables
     // Get existing variable names from the appropriate scope
     // Filter to only include names that are valid for shorthand syntax
-    const existingVariables = getVariableNames(scope)
-        .filter(name => isValidVariableShorthandName(name));
+    const existingVariables = getVariableNames(scope).filter((name) =>
+        isValidVariableShorthandName(name),
+    );
 
     // Check if the typed variable name exactly matches an existing variable
-    const variableNameMatchesExisting = context.variableName.length > 0 && existingVariables.includes(context.variableName);
+    const variableNameMatchesExisting =
+        context.variableName.length > 0 && existingVariables.includes(context.variableName);
 
     if (context.isTypingVariableName) {
         // Add existing variables that match the typed name
@@ -266,7 +269,12 @@ export function buildVariableShorthandOptions(context, opts = {}) {
         // But if the name is invalid for shorthand syntax, show a warning instead
         if (context.variableName.length > 0 && !existingVariables.includes(context.variableName)) {
             const isInvalid = !isValidVariableShorthandName(context.variableName);
-            const newVarOption = new VariableNameAutoCompleteOption(context.variableName, scope, true, isInvalid);
+            const newVarOption = new VariableNameAutoCompleteOption(
+                context.variableName,
+                scope,
+                true,
+                isInvalid,
+            );
             newVarOption.sortPriority = isInvalid ? 2 : 4; // Invalid names get higher priority to show warning
             if (isInvalid) {
                 // Make it non-selectable since it can't be used
@@ -274,7 +282,8 @@ export function buildVariableShorthandOptions(context, opts = {}) {
                 newVarOption.makeSelectable = false;
             } else if (forIfCondition) {
                 // For {{if}} condition, provide full value with closing braces
-                newVarOption.valueProvider = () => `${context.variablePrefix}${context.variableName}${paddingAfter}}}`;
+                newVarOption.valueProvider = () =>
+                    `${context.variablePrefix}${context.variableName}${paddingAfter}}}`;
                 newVarOption.makeSelectable = true;
             }
             options.push(newVarOption);
@@ -317,7 +326,11 @@ export function buildVariableShorthandOptions(context, opts = {}) {
     // If ready for operator (after variable name), suggest operators
     if (context.isTypingOperator) {
         // Show the current variable name as context (already typed)
-        const varNameOption = new VariableNameAutoCompleteOption(context.variableName, scope, false);
+        const varNameOption = new VariableNameAutoCompleteOption(
+            context.variableName,
+            scope,
+            false,
+        );
         varNameOption.valueProvider = () => ''; // Already typed, don't re-insert
         varNameOption.makeSelectable = false;
         varNameOption.sortPriority = 2;
@@ -353,7 +366,11 @@ export function buildVariableShorthandOptions(context, opts = {}) {
     // But we show the current context for reference (greyed out, non-selectable)
     if (context.isTypingValue && !context.isTypingOperator && !context.isTypingClosingBrace) {
         // Show the current variable name as context (non-selectable)
-        const varNameOption = new VariableNameAutoCompleteOption(context.variableName, scope, false);
+        const varNameOption = new VariableNameAutoCompleteOption(
+            context.variableName,
+            scope,
+            false,
+        );
         varNameOption.valueProvider = () => ''; // Context only
         varNameOption.makeSelectable = false;
         varNameOption.sortPriority = 2;
@@ -372,7 +389,10 @@ export function buildVariableShorthandOptions(context, opts = {}) {
                 options.push(opOption);
 
                 // Show value context info (non-selectable)
-                const valueOption = new VariableValueContextAutoCompleteOption(opDef, context.variableValue);
+                const valueOption = new VariableValueContextAutoCompleteOption(
+                    opDef,
+                    context.variableValue,
+                );
                 valueOption.valueProvider = () => ''; // Context only
                 valueOption.makeSelectable = false;
                 valueOption.sortPriority = 4;
@@ -385,7 +405,11 @@ export function buildVariableShorthandOptions(context, opts = {}) {
     // If operator is complete (++ or --), show context without value input (non-selectable)
     if (context.isOperatorComplete && !context.isTypingOperator) {
         // Show the current variable name as context (non-selectable)
-        const varNameOption = new VariableNameAutoCompleteOption(context.variableName, scope, false);
+        const varNameOption = new VariableNameAutoCompleteOption(
+            context.variableName,
+            scope,
+            false,
+        );
         varNameOption.valueProvider = () => ''; // Context only
         varNameOption.makeSelectable = false;
         varNameOption.sortPriority = 2;
@@ -408,9 +432,18 @@ export function buildVariableShorthandOptions(context, opts = {}) {
 
     // If typing closing brace on a variable shorthand (without operator), show the current state
     // This handles cases like {{.Lila} or {{.Lila}}| where we want to show what was typed
-    if (context.isTypingClosingBrace && !context.isOperatorComplete && !context.isTypingOperator && !context.isTypingValue) {
+    if (
+        context.isTypingClosingBrace &&
+        !context.isOperatorComplete &&
+        !context.isTypingOperator &&
+        !context.isTypingValue
+    ) {
         // Show the current variable name as context (non-selectable)
-        const varNameOption = new VariableNameAutoCompleteOption(context.variableName, scope, false);
+        const varNameOption = new VariableNameAutoCompleteOption(
+            context.variableName,
+            scope,
+            false,
+        );
         varNameOption.valueProvider = () => ''; // Context only
         varNameOption.makeSelectable = false;
         varNameOption.sortPriority = 2;
@@ -422,7 +455,11 @@ export function buildVariableShorthandOptions(context, opts = {}) {
     // show the full context (variable + operator + value)
     if (context.isTypingClosingBrace && context.variableOperator && context.isTypingValue) {
         // Show the current variable name as context (non-selectable)
-        const varNameOption = new VariableNameAutoCompleteOption(context.variableName, scope, false);
+        const varNameOption = new VariableNameAutoCompleteOption(
+            context.variableName,
+            scope,
+            false,
+        );
         varNameOption.valueProvider = () => ''; // Context only
         varNameOption.makeSelectable = false;
         varNameOption.sortPriority = 2;
@@ -440,7 +477,10 @@ export function buildVariableShorthandOptions(context, opts = {}) {
             options.push(opOption);
 
             // Show value context info (non-selectable)
-            const valueOption = new VariableValueContextAutoCompleteOption(opDef, context.variableValue);
+            const valueOption = new VariableValueContextAutoCompleteOption(
+                opDef,
+                context.variableValue,
+            );
             valueOption.valueProvider = () => ''; // Context only
             valueOption.makeSelectable = false;
             valueOption.sortPriority = 4;
@@ -526,7 +566,8 @@ export function buildEnhancedMacroOptions(context, textUpToCursor, { isForced = 
         // Build flag options with priority-based sorting
         // Last typed flag has highest priority (1), other flags have lower priority (10)
         // Already-typed flags (except last) are hidden from the list
-        const lastTypedFlag = context.flags.length > 0 ? context.flags[context.flags.length - 1] : null;
+        const lastTypedFlag =
+            context.flags.length > 0 ? context.flags[context.flags.length - 1] : null;
 
         // Add last typed flag with high priority (so it appears at top)
         if (lastTypedFlag) {
@@ -552,7 +593,8 @@ export function buildEnhancedMacroOptions(context, textUpToCursor, { isForced = 
 
             // Define whether this flag is selectable (and at the top), based on being implemented, and closing actually being relevant
             let isSelectable = flagDef.implemented;
-            if (flagDef.type === MacroFlagType.CLOSING_BLOCK && !unclosedScopes.length) isSelectable = false;
+            if (flagDef.type === MacroFlagType.CLOSING_BLOCK && !unclosedScopes.length)
+                isSelectable = false;
             if (!isSelectable) {
                 flagOption.valueProvider = () => '';
                 flagOption.makeSelectable = false;
@@ -582,7 +624,7 @@ export function buildEnhancedMacroOptions(context, textUpToCursor, { isForced = 
 
     // Check if we're inside a scoped {{if}} for {{else}} selectability
     // @ts-expect-error TS(7006) FIXME: Parameter 'scope' implicitly has an 'any' type.
-    const isInsideScopedIf = unclosedScopes.some(scope => scope.name === 'if');
+    const isInsideScopedIf = unclosedScopes.some((scope) => scope.name === 'if');
 
     // Track if any macro matches the identifier (for "no match" message)
     let hasMatchingMacro = false;
@@ -599,7 +641,7 @@ export function buildEnhancedMacroOptions(context, textUpToCursor, { isForced = 
         // Only pass context to the macro that matches the identifier being typed
         // This ensures argument hints only show for the relevant macro
         /** @type {MacroAutoCompleteContext|EnhancedMacroAutoCompleteOptions|null} */
-        let macroContext = (isExactMatch || isAliasMatch) ? context : null;
+        let macroContext = isExactMatch || isAliasMatch ? context : null;
 
         // If no context, we pass some options for additional details though
         if (!macroContext) {
@@ -635,7 +677,9 @@ export function buildEnhancedMacroOptions(context, textUpToCursor, { isForced = 
         // itself may have already closed the scope by this point in the text
         const isClosingMacro = context.identifier.startsWith('/');
         const closingMacroName = isClosingMacro ? context.identifier.slice(1) : null;
-        const macroDef = closingMacroName ? macroSystem.registry.getPrimaryMacro(closingMacroName) : null;
+        const macroDef = closingMacroName
+            ? macroSystem.registry.getPrimaryMacro(closingMacroName)
+            : null;
 
         if (macroDef) {
             // Show the original macro's details for the closing tag
@@ -698,19 +742,23 @@ export function buildIfConditionOptions(context, allMacros, macroInnerText) {
 
     // Check for inversion prefix (!) - also trim whitespace after !
     const hasInversionPrefix = conditionText.startsWith('!');
-    const conditionAfterInversion = hasInversionPrefix ? conditionText.slice(1).trimStart() : conditionText;
+    const conditionAfterInversion = hasInversionPrefix
+        ? conditionText.slice(1).trimStart()
+        : conditionText;
 
     const inversionOption = new SimpleAutoCompleteOption({
         name: '!',
         symbol: '🔁',
         description: 'Invert condition (NOT)',
         // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'null | un... Remove this comment to see the full error message
-        detailedDescription: 'Inverts the condition result. If the condition is truthy, it becomes falsy, and vice versa.<br><br>Example: <code>{{if !myVar}}</code> executes when <code>myVar</code> is empty or zero.',
+        detailedDescription:
+            'Inverts the condition result. If the condition is truthy, it becomes falsy, and vice versa.<br><br>Example: <code>{{if !myVar}}</code> executes when <code>myVar</code> is empty or zero.',
         type: 'inverse',
     });
 
     // Check if condition starts with a variable shorthand prefix (with or without !)
-    const isTypingVariableShorthand = conditionAfterInversion.startsWith('.') || conditionAfterInversion.startsWith('$');
+    const isTypingVariableShorthand =
+        conditionAfterInversion.startsWith('.') || conditionAfterInversion.startsWith('$');
 
     if (isTypingVariableShorthand) {
         // User is typing a variable shorthand - reuse #buildVariableShorthandOptions
@@ -741,7 +789,10 @@ export function buildIfConditionOptions(context, allMacros, macroInnerText) {
             variableValue: '',
         };
 
-        const varOptions = buildVariableShorthandOptions(varContext, { forIfCondition: true, paddingAfter });
+        const varOptions = buildVariableShorthandOptions(varContext, {
+            forIfCondition: true,
+            paddingAfter,
+        });
         options.push(...varOptions);
         return options;
     }
@@ -897,7 +948,10 @@ export function getVariableNames(scope) {
             return Object.keys(chat_metadata?.variables ?? {});
         } else {
             // Global variables are in extension_settings.variables.global
-            return Object.keys((extension_settings?.variables as Record<string, unknown>)?.global ?? {} as Record<string, unknown>);
+            return Object.keys(
+                (extension_settings?.variables as Record<string, unknown>)?.global ??
+                    ({} as Record<string, unknown>),
+            );
         }
     } catch {
         return [];
@@ -920,12 +974,11 @@ export function getVariableNames(scope) {
  * @returns {Promise<AutoCompleteNameResult|null>}
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'text' implicitly has an 'any' type.
-export async function buildMacroAutoCompleteResult(text, cursorPos, {
-    macro = null,
-    textUpToCursor = null,
-    unclosedScopes = null,
-    isForced = false,
-} = {}) {
+export async function buildMacroAutoCompleteResult(
+    text,
+    cursorPos,
+    { macro = null, textUpToCursor = null, unclosedScopes = null, isForced = false } = {},
+) {
     // Compute textUpToCursor if not provided
     if (textUpToCursor === null) {
         textUpToCursor = text.slice(0, cursorPos);
@@ -966,7 +1019,10 @@ export async function buildMacroAutoCompleteResult(text, cursorPos, {
                 const macroDef = macroSystem.registry.getPrimaryMacro(scopedMacro.name);
                 if (macroDef) {
                     // @ts-expect-error TS(2345) FIXME: Argument of type '{ currentArgIndex: number; isInS... Remove this comment to see the full error message
-                    const scopedOption = new EnhancedMacroAutoCompleteOption(macroDef, scopedContext);
+                    const scopedOption = new EnhancedMacroAutoCompleteOption(
+                        macroDef,
+                        scopedContext,
+                    );
                     scopedOption.valueProvider = () => '';
                     scopedOption.makeSelectable = false;
 
@@ -1017,7 +1073,10 @@ export async function buildMacroAutoCompleteResult(text, cursorPos, {
                 const macroDef = macroSystem.registry.getPrimaryMacro(scopedMacro.name);
                 if (macroDef) {
                     // @ts-expect-error TS(2345) FIXME: Argument of type '{ currentArgIndex: number; isInS... Remove this comment to see the full error message
-                    const scopedOption = new EnhancedMacroAutoCompleteOption(macroDef, scopedContext);
+                    const scopedOption = new EnhancedMacroAutoCompleteOption(
+                        macroDef,
+                        scopedContext,
+                    );
                     scopedOption.valueProvider = () => '';
                     scopedOption.makeSelectable = false;
 
@@ -1105,8 +1164,11 @@ export async function buildMacroAutoCompleteResult(text, cursorPos, {
         const trimmedCondition = conditionText.trim();
         const hasInversion = trimmedCondition.startsWith('!');
         // Trim whitespace after ! to handle "! $myvar" syntax
-        const conditionAfterInversion = hasInversion ? trimmedCondition.slice(1).trimStart() : trimmedCondition;
-        const isTypingVarShorthand = conditionAfterInversion.startsWith('.') || conditionAfterInversion.startsWith('$');
+        const conditionAfterInversion = hasInversion
+            ? trimmedCondition.slice(1).trimStart()
+            : trimmedCondition;
+        const isTypingVarShorthand =
+            conditionAfterInversion.startsWith('.') || conditionAfterInversion.startsWith('$');
         let resultIdentifier = conditionText;
         let resultStart = conditionStartInText;
 
@@ -1132,7 +1194,7 @@ export async function buildMacroAutoCompleteResult(text, cursorPos, {
             resultStart = conditionStartInText + macroNameStart;
         }
 
-        await new Promise(r => setTimeout(r, 0)); // yield to allow rendering
+        await new Promise((r) => setTimeout(r, 0)); // yield to allow rendering
 
         return new AutoCompleteNameResult(
             resultIdentifier,
@@ -1140,12 +1202,14 @@ export async function buildMacroAutoCompleteResult(text, cursorPos, {
             // @ts-expect-error TS(2345) FIXME: Argument of type '(VariableShorthandAutoCompleteOp... Remove this comment to see the full error message
             options,
             false,
-            () => isTypingVarShorthand
-                ? 'Enter a variable name for the condition'
-                : 'Use {{macro}} syntax for dynamic conditions',
-            () => isTypingVarShorthand
-                ? 'Enter a variable name or select from the list'
-                : 'Enter a macro name or {{macro}} for the condition',
+            () =>
+                isTypingVarShorthand
+                    ? 'Enter a variable name for the condition'
+                    : 'Use {{macro}} syntax for dynamic conditions',
+            () =>
+                isTypingVarShorthand
+                    ? 'Enter a variable name or select from the list'
+                    : 'Enter a macro name or {{macro}} for the condition',
         );
     }
 
@@ -1204,7 +1268,8 @@ export async function buildMacroAutoCompleteResult(text, cursorPos, {
                 resultStart++;
             }
 
-            makeNoMatchText = () => `Type any value you want to ${context.variableOperator == '+=' ? `add to the variable '${context.variableName}'` : `set the variable '${context.variableName}' to`}.`;
+            makeNoMatchText = () =>
+                `Type any value you want to ${context.variableOperator == '+=' ? `add to the variable '${context.variableName}'` : `set the variable '${context.variableName}' to`}.`;
             makeNoOptionsText = () => 'Enter a variable value';
         } else if (context.isTypingClosingBrace) {
             // Typing closing brace on variable shorthand - show context, no replacement needed
@@ -1220,7 +1285,8 @@ export async function buildMacroAutoCompleteResult(text, cursorPos, {
         }
 
         if (!makeNoMatchText && !makeNoOptionsText) {
-            makeNoMatchText = () => 'Invalid syntax or variable name (must be alphanumeric, not ending in hyphen or underscore). Use a valid macro name or syntax.';
+            makeNoMatchText = () =>
+                'Invalid syntax or variable name (must be alphanumeric, not ending in hyphen or underscore). Use a valid macro name or syntax.';
             makeNoOptionsText = () => 'Enter a variable name to create or use a new variable';
         }
     }

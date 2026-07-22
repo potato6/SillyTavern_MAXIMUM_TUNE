@@ -60,10 +60,12 @@ const registerPromptManagerMigration = () => {
 
         if (settings.main_prompt || settings.nsfw_prompt || settings.jailbreak_prompt) {
             console.log('Running prompt manager configuration migration');
-            if (settings.prompts === undefined || settings.prompts.length === 0) settings.prompts = structuredClone(chatCompletionDefaultPrompts.prompts);
+            if (settings.prompts === undefined || settings.prompts.length === 0)
+                settings.prompts = structuredClone(chatCompletionDefaultPrompts.prompts);
 
             // @ts-expect-error TS(7006) FIXME: Parameter 'identifier' implicitly has an 'any' typ... Remove this comment to see the full error message
-            const findPrompt = (identifier) => settings.prompts.find(prompt => identifier === prompt.identifier);
+            const findPrompt = (identifier) =>
+                settings.prompts.find((prompt) => identifier === prompt.identifier);
             if (settings.main_prompt) {
                 findPrompt('main').content = settings.main_prompt;
                 delete settings.main_prompt;
@@ -85,9 +87,11 @@ const registerPromptManagerMigration = () => {
     };
 
     // @ts-expect-error TS(7006) FIXME: Parameter 'settings' implicitly has an 'any' type.
-    eventSource.on(event_types.SETTINGS_LOADED_BEFORE, settings => migrate(settings));
+    eventSource.on(event_types.SETTINGS_LOADED_BEFORE, (settings) => migrate(settings));
     // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
-    eventSource.on(event_types.OAI_PRESET_CHANGED_BEFORE, event => migrate(event.preset, event.savePreset, event.presetName));
+    eventSource.on(event_types.OAI_PRESET_CHANGED_BEFORE, (event) =>
+        migrate(event.preset, event.savePreset, event.presetName),
+    );
 };
 
 /**
@@ -224,8 +228,8 @@ class Prompt {
         forbid_overrides,
         extension,
         injection_order,
-        injection_trigger
-    // @ts-expect-error TS(2304) FIXME: Cannot find name 'PromptConstructorParams'.
+        injection_trigger,
+        // @ts-expect-error TS(2304) FIXME: Cannot find name 'PromptConstructorParams'.
     }: PromptConstructorParams = {}) {
         this.identifier = identifier;
         this.role = role;
@@ -312,7 +316,7 @@ export class PromptCollection {
     // @ts-expect-error TS(7006) FIXME: Parameter 'identifier' implicitly has an 'any' typ... Remove this comment to see the full error message
     get(identifier) {
         // @ts-expect-error TS(2339) FIXME: Property 'identifier' does not exist on type 'neve... Remove this comment to see the full error message
-        return this.collection.find(prompt => prompt.identifier === identifier);
+        return this.collection.find((prompt) => prompt.identifier === identifier);
     }
 
     /**
@@ -323,7 +327,7 @@ export class PromptCollection {
     // @ts-expect-error TS(7006) FIXME: Parameter 'identifier' implicitly has an 'any' typ... Remove this comment to see the full error message
     index(identifier) {
         // @ts-expect-error TS(2339) FIXME: Property 'identifier' does not exist on type 'neve... Remove this comment to see the full error message
-        return this.collection.findIndex(prompt => prompt.identifier === identifier);
+        return this.collection.findIndex((prompt) => prompt.identifier === identifier);
     }
 
     /**
@@ -390,17 +394,9 @@ class PromptManager {
     }
 
     constructor() {
-        this.systemPrompts = [
-            'main',
-            'nsfw',
-            'jailbreak',
-            'enhanceDefinitions',
-        ];
+        this.systemPrompts = ['main', 'nsfw', 'jailbreak', 'enhanceDefinitions'];
 
-        this.overridablePrompts = [
-            'main',
-            'jailbreak',
-        ];
+        this.overridablePrompts = ['main', 'jailbreak'];
 
         this.overriddenPrompts = [];
 
@@ -451,54 +447,55 @@ class PromptManager {
         this.error = null;
 
         /** Dry-run for generate, must return a promise  */
-        this.tryGenerate = async () => { };
+        this.tryGenerate = async () => {};
 
         /** Called to persist the configuration, must return a promise */
-        this.saveServiceSettings = () => { return Promise.resolve(); };
+        this.saveServiceSettings = () => {
+            return Promise.resolve();
+        };
 
         /** Toggle prompt button click */
-        this.handleToggle = () => { };
+        this.handleToggle = () => {};
 
         /** Prompt name click */
-        this.handleInspect = () => { };
+        this.handleInspect = () => {};
 
         /** Edit prompt button click */
-        this.handleEdit = () => { };
+        this.handleEdit = () => {};
 
         /** Detach prompt button click */
-        this.handleDetach = () => { };
+        this.handleDetach = () => {};
 
         /** Save prompt button click */
-        this.handleSavePrompt = () => { };
+        this.handleSavePrompt = () => {};
 
         /** Reset prompt button click */
-        this.handleResetPrompt = () => { };
+        this.handleResetPrompt = () => {};
 
         /** New prompt button click */
-        this.handleNewPrompt = () => { };
+        this.handleNewPrompt = () => {};
 
         /** Delete prompt button click */
-        this.handleDeletePrompt = () => { };
+        this.handleDeletePrompt = () => {};
 
         /** Append prompt button click */
-        this.handleAppendPrompt = () => { };
+        this.handleAppendPrompt = () => {};
 
         /** Import button click */
-        this.handleImport = () => { };
+        this.handleImport = () => {};
 
         /** Full export click */
-        this.handleFullExport = () => { };
+        this.handleFullExport = () => {};
 
         /** Character export click */
-        this.handleCharacterExport = () => { };
+        this.handleCharacterExport = () => {};
 
         /** Character reset button click*/
-        this.handleCharacterReset = () => { };
+        this.handleCharacterReset = () => {};
 
         /** Debounced version of render */
         this.renderDebounced = debounce(this.render.bind(this), debounce_timeout.relaxed);
     }
-
 
     /**
      * Initializes the PromptManager with provided configuration and service settings.
@@ -511,20 +508,27 @@ class PromptManager {
     // @ts-expect-error TS(7006) FIXME: Parameter 'moduleConfiguration' implicitly has an ... Remove this comment to see the full error message
     init(moduleConfiguration, serviceSettings) {
         this.configuration = Object.assign(this.configuration, moduleConfiguration);
-        this.tokenHandler = this.tokenHandler || new TokenHandler(() => { throw new Error('Token handler not set'); });
+        this.tokenHandler =
+            this.tokenHandler ||
+            new TokenHandler(() => {
+                throw new Error('Token handler not set');
+            });
         this.serviceSettings = serviceSettings;
         // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
         this.containerElement = document.getElementById(this.configuration.containerIdentifier);
 
         // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-        if ('global' === this.configuration.promptOrder.strategy) this.activeCharacter = { id: this.configuration.promptOrder.dummyId };
+        if ('global' === this.configuration.promptOrder.strategy)
+            this.activeCharacter = { id: this.configuration.promptOrder.dummyId };
 
         this.sanitizeServiceSettings();
 
         // Enable and disable prompts
         this.handleToggle = (event) => {
             // @ts-expect-error TS(2339) FIXME: Property 'target' does not exist on type 'string'.
-            const promptID = event.target.closest('.' + this.configuration.prefix + 'prompt_manager_prompt').dataset.pmIdentifier;
+            const promptID = event.target.closest(
+                '.' + this.configuration.prefix + 'prompt_manager_prompt',
+            ).dataset.pmIdentifier;
             const promptOrderEntry = this.getPromptOrderEntry(this.activeCharacter, promptID);
             // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             const counts = this.tokenHandler.getCounts();
@@ -541,7 +545,9 @@ class PromptManager {
             this.clearInspectForm();
 
             // @ts-expect-error TS(2339) FIXME: Property 'target' does not exist on type 'string'.
-            const promptID = event.target.closest('.' + this.configuration.prefix + 'prompt_manager_prompt').dataset.pmIdentifier;
+            const promptID = event.target.closest(
+                '.' + this.configuration.prefix + 'prompt_manager_prompt',
+            ).dataset.pmIdentifier;
             const prompt = this.getPromptById(promptID);
 
             this.loadPromptIntoEditForm(prompt);
@@ -555,7 +561,9 @@ class PromptManager {
             this.clearEditForm();
             this.clearInspectForm();
 
-            const promptID = event.target.closest('.' + this.configuration.prefix + 'prompt_manager_prompt').dataset.pmIdentifier;
+            const promptID = event.target.closest(
+                '.' + this.configuration.prefix + 'prompt_manager_prompt',
+            ).dataset.pmIdentifier;
             // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             if (true === this.messages.hasItemWithIdentifier(promptID)) {
                 // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
@@ -571,7 +579,9 @@ class PromptManager {
         // @ts-expect-error TS(2322) FIXME: Type '(event: any) => void' is not assignable to t... Remove this comment to see the full error message
         this.handleDetach = (event) => {
             if (null === this.activeCharacter) return;
-            const promptID = event.target.closest('.' + this.configuration.prefix + 'prompt_manager_prompt').dataset.pmIdentifier;
+            const promptID = event.target.closest(
+                '.' + this.configuration.prefix + 'prompt_manager_prompt',
+            ).dataset.pmIdentifier;
             const prompt = this.getPromptById(promptID);
 
             this.detachPrompt(prompt, this.activeCharacter);
@@ -639,19 +649,68 @@ class PromptManager {
                     break;
             }
 
-            const nameField = /** @type {HTMLInputElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_form_name'));
-            const roleField = /** @type {HTMLSelectElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_form_role'));
-            const promptField = /** @type {HTMLTextAreaElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_form_prompt'));
-            const injectionPositionField = /** @type {HTMLSelectElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_form_injection_position'));
-            const injectionDepthField = /** @type {HTMLInputElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_form_injection_depth'));
-            const injectionOrderField = /** @type {HTMLInputElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_form_injection_order'));
-            const injectionTriggerField = /** @type {HTMLSelectElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_form_injection_trigger'));
-            const depthBlock = /** @type {HTMLDivElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_depth_block'));
-            const orderBlock = /** @type {HTMLDivElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_order_block'));
-            const forbidOverridesField = /** @type {HTMLInputElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_form_forbid_overrides'));
-            const forbidOverridesBlock = /** @type {HTMLDivElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_forbid_overrides_block'));
-            const entrySourceBlock = /** @type {HTMLDivElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_source_block'));
-            const entrySource = /** @type {HTMLSpanElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_source'));
+            const nameField = /** @type {HTMLInputElement} */ (
+                document.getElementById(
+                    this.configuration.prefix + 'prompt_manager_popup_entry_form_name',
+                )
+            );
+            const roleField = /** @type {HTMLSelectElement} */ (
+                document.getElementById(
+                    this.configuration.prefix + 'prompt_manager_popup_entry_form_role',
+                )
+            );
+            const promptField = /** @type {HTMLTextAreaElement} */ (
+                document.getElementById(
+                    this.configuration.prefix + 'prompt_manager_popup_entry_form_prompt',
+                )
+            );
+            const injectionPositionField = /** @type {HTMLSelectElement} */ (
+                document.getElementById(
+                    this.configuration.prefix +
+                        'prompt_manager_popup_entry_form_injection_position',
+                )
+            );
+            const injectionDepthField = /** @type {HTMLInputElement} */ (
+                document.getElementById(
+                    this.configuration.prefix + 'prompt_manager_popup_entry_form_injection_depth',
+                )
+            );
+            const injectionOrderField = /** @type {HTMLInputElement} */ (
+                document.getElementById(
+                    this.configuration.prefix + 'prompt_manager_popup_entry_form_injection_order',
+                )
+            );
+            const injectionTriggerField = /** @type {HTMLSelectElement} */ (
+                document.getElementById(
+                    this.configuration.prefix + 'prompt_manager_popup_entry_form_injection_trigger',
+                )
+            );
+            const depthBlock = /** @type {HTMLDivElement} */ (
+                document.getElementById(this.configuration.prefix + 'prompt_manager_depth_block')
+            );
+            const orderBlock = /** @type {HTMLDivElement} */ (
+                document.getElementById(this.configuration.prefix + 'prompt_manager_order_block')
+            );
+            const forbidOverridesField = /** @type {HTMLInputElement} */ (
+                document.getElementById(
+                    this.configuration.prefix + 'prompt_manager_popup_entry_form_forbid_overrides',
+                )
+            );
+            const forbidOverridesBlock = /** @type {HTMLDivElement} */ (
+                document.getElementById(
+                    this.configuration.prefix + 'prompt_manager_forbid_overrides_block',
+                )
+            );
+            const entrySourceBlock = /** @type {HTMLDivElement} */ (
+                document.getElementById(
+                    this.configuration.prefix + 'prompt_manager_popup_entry_source_block',
+                )
+            );
+            const entrySource = /** @type {HTMLSpanElement} */ (
+                document.getElementById(
+                    this.configuration.prefix + 'prompt_manager_popup_entry_source',
+                )
+            );
 
             // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             nameField.value = prompt.name;
@@ -666,20 +725,26 @@ class PromptManager {
             // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             injectionOrderField.value = (prompt.injection_order ?? DEFAULT_ORDER).toString();
             // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-            Array.from(injectionTriggerField.options).forEach(option => {
+            Array.from(injectionTriggerField.options).forEach((option) => {
                 // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 option.selected = false;
             });
             // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             injectionTriggerField.dispatchEvent(new Event('change', { bubbles: true }));
             // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-            depthBlock.style.visibility = prompt.injection_position === INJECTION_POSITION.ABSOLUTE ? 'visible' : 'hidden';
+            depthBlock.style.visibility =
+                prompt.injection_position === INJECTION_POSITION.ABSOLUTE ? 'visible' : 'hidden';
             // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-            orderBlock.style.visibility = prompt.injection_position === INJECTION_POSITION.ABSOLUTE ? 'visible' : 'hidden';
+            orderBlock.style.visibility =
+                prompt.injection_position === INJECTION_POSITION.ABSOLUTE ? 'visible' : 'hidden';
             // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             forbidOverridesField.checked = prompt.forbid_overrides ?? false;
             // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-            forbidOverridesBlock.style.visibility = this.overridablePrompts.includes(prompt.identifier) ? 'visible' : 'hidden';
+            forbidOverridesBlock.style.visibility = this.overridablePrompts.includes(
+                prompt.identifier,
+            )
+                ? 'visible'
+                : 'hidden';
             // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             promptField.disabled = prompt.marker ?? false;
             // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
@@ -696,7 +761,11 @@ class PromptManager {
         // Append prompt to selected character
         // @ts-expect-error TS(2322) FIXME: Type '(event: any) => void' is not assignable to t... Remove this comment to see the full error message
         this.handleAppendPrompt = (event) => {
-            const appendPromptFooter = /** @type {HTMLSelectElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_footer_append_prompt'));
+            const appendPromptFooter = /** @type {HTMLSelectElement} */ (
+                document.getElementById(
+                    this.configuration.prefix + 'prompt_manager_footer_append_prompt',
+                )
+            );
             // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             const promptID = appendPromptFooter.value;
             const prompt = this.getPromptById(promptID);
@@ -710,26 +779,32 @@ class PromptManager {
 
         // Delete selected prompt from list form and close edit form
         this.handleDeletePrompt = async (event) => {
-            Popup.show.confirm(t`Are you sure you want to delete this prompt?`, null).then((userChoice) => {
-                if (!userChoice) return;
-                const appendPromptFooter = /** @type {HTMLSelectElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_footer_append_prompt'));
-                // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-                const promptID = appendPromptFooter.value;
-                const prompt = this.getPromptById(promptID);
-
-                if (prompt && true === this.isPromptDeletionAllowed(prompt)) {
-                    const promptIndex = this.getPromptIndexById(promptID);
+            Popup.show
+                .confirm(t`Are you sure you want to delete this prompt?`, null)
+                .then((userChoice) => {
+                    if (!userChoice) return;
+                    const appendPromptFooter = /** @type {HTMLSelectElement} */ (
+                        document.getElementById(
+                            this.configuration.prefix + 'prompt_manager_footer_append_prompt',
+                        )
+                    );
                     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-                    this.serviceSettings.prompts.splice(Number(promptIndex), 1);
+                    const promptID = appendPromptFooter.value;
+                    const prompt = this.getPromptById(promptID);
 
-                    this.log('Deleted prompt: ' + prompt.identifier);
+                    if (prompt && true === this.isPromptDeletionAllowed(prompt)) {
+                        const promptIndex = this.getPromptIndexById(promptID);
+                        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
+                        this.serviceSettings.prompts.splice(Number(promptIndex), 1);
 
-                    this.hidePopup();
-                    this.clearEditForm();
-                    this.render();
-                    this.saveServiceSettings();
-                }
-            });
+                        this.log('Deleted prompt: ' + prompt.identifier);
+
+                        this.hidePopup();
+                        this.clearEditForm();
+                        this.render();
+                        this.saveServiceSettings();
+                    }
+                });
         };
 
         // Create new prompt, then save it to settings and close form.
@@ -750,7 +825,8 @@ class PromptManager {
         this.handleFullExport = () => {
             // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             const prompts = this.serviceSettings.prompts.reduce((userPrompts, prompt) => {
-                if (false === prompt.system_prompt && false === prompt.marker) userPrompts.push(prompt);
+                if (false === prompt.system_prompt && false === prompt.marker)
+                    userPrompts.push(prompt);
                 return userPrompts;
             }, []);
 
@@ -758,8 +834,10 @@ class PromptManager {
             // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             if ('global' === this.configuration.promptOrder.strategy) {
                 // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-                promptOrder = this.getPromptOrderForCharacter({ id: this.configuration.promptOrder.dummyId });
-            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+                promptOrder = this.getPromptOrderForCharacter({
+                    id: this.configuration.promptOrder.dummyId,
+                });
+                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             } else if ('character' === this.configuration.promptOrder.strategy) {
                 promptOrder = [];
             } else {
@@ -777,10 +855,13 @@ class PromptManager {
         // Export user prompts and order for this character
         this.handleCharacterExport = () => {
             // @ts-expect-error TS(7006) FIXME: Parameter 'userPrompts' implicitly has an 'any' ty... Remove this comment to see the full error message
-            const characterPrompts = this.getPromptsForCharacter(this.activeCharacter).reduce((userPrompts, prompt) => {
-                if (false === prompt.system_prompt && !prompt.marker) userPrompts.push(prompt);
-                return userPrompts;
-            }, []);
+            const characterPrompts = this.getPromptsForCharacter(this.activeCharacter).reduce(
+                (userPrompts, prompt) => {
+                    if (false === prompt.system_prompt && !prompt.marker) userPrompts.push(prompt);
+                    return userPrompts;
+                },
+                [],
+            );
 
             const characterList = this.getPromptOrderForCharacter(this.activeCharacter);
 
@@ -796,8 +877,12 @@ class PromptManager {
 
         // Import prompts for the selected character
         this.handleImport = () => {
-            Popup.show.confirm(t`Existing prompts with the same ID will be overridden. Do you want to proceed?`, null)
-                .then(userChoice => {
+            Popup.show
+                .confirm(
+                    t`Existing prompts with the same ID will be overridden. Do you want to proceed?`,
+                    null,
+                )
+                .then((userChoice) => {
                     if (!userChoice) return;
 
                     const fileOpener = document.createElement('input');
@@ -821,7 +906,9 @@ class PromptManager {
                                 const data = JSON.parse(fileContent.toString());
                                 this.import(data);
                             } catch (err) {
-                                notyf.error(t`An error occurred while importing prompts. More info available in console.`);
+                                notyf.error(
+                                    t`An error occurred while importing prompts. More info available in console.`,
+                                );
                                 console.log('An error occurred while importing prompts');
                                 // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                                 console.log(err.toString());
@@ -837,12 +924,19 @@ class PromptManager {
 
         // Restore default state of a characters prompt order
         this.handleCharacterReset = () => {
-            Popup.show.confirm(t`This will reset the prompt order for this character. You will not lose any prompts.`, null)
-                .then(userChoice => {
+            Popup.show
+                .confirm(
+                    t`This will reset the prompt order for this character. You will not lose any prompts.`,
+                    null,
+                )
+                .then((userChoice) => {
                     if (!userChoice) return;
 
                     this.removePromptOrderForCharacter(this.activeCharacter);
-                    this.addPromptOrderForCharacter(this.activeCharacter, promptManagerDefaultPromptOrder);
+                    this.addPromptOrderForCharacter(
+                        this.activeCharacter,
+                        promptManagerDefaultPromptOrder,
+                    );
 
                     this.render();
                     this.saveServiceSettings();
@@ -861,7 +955,11 @@ class PromptManager {
 
                 // Update edit form if present
                 // @see https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/offsetParent
-                const popupEditFormPrompt = /** @type {HTMLTextAreaElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_form_prompt'));
+                const popupEditFormPrompt = /** @type {HTMLTextAreaElement} */ (
+                    document.getElementById(
+                        this.configuration.prefix + 'prompt_manager_popup_entry_form_prompt',
+                    )
+                );
                 // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                 if (popupEditFormPrompt.offsetParent) {
                     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
@@ -885,7 +983,9 @@ class PromptManager {
             const jailbreakPrompt = this.getPromptById('jailbreak');
             const jailbreakElementId = this.updateQuickEdit('jailbreak', jailbreakPrompt);
             // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-            document.getElementById(jailbreakElementId).addEventListener('blur', handleQuickEditSave);
+            document
+                .getElementById(jailbreakElementId)
+                .addEventListener('blur', handleQuickEditSave);
         }
 
         // Re-render when chat history changes.
@@ -942,9 +1042,13 @@ class PromptManager {
 
         // Prepare prompt edit form buttons
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_form_save').addEventListener('click', this.handleSavePrompt);
+        document
+            .getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_form_save')
+            .addEventListener('click', this.handleSavePrompt);
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_form_reset').addEventListener('click', this.handleResetPrompt);
+        document
+            .getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_form_reset')
+            .addEventListener('click', this.handleResetPrompt);
 
         const closeAndClearPopup = () => {
             this.hidePopup();
@@ -954,9 +1058,13 @@ class PromptManager {
 
         // Clear forms on closing the popup
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_form_close').addEventListener('click', closeAndClearPopup);
+        document
+            .getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_form_close')
+            .addEventListener('click', closeAndClearPopup);
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        document.getElementById(this.configuration.prefix + 'prompt_manager_popup_close_button').addEventListener('click', closeAndClearPopup);
+        document
+            .getElementById(this.configuration.prefix + 'prompt_manager_popup_close_button')
+            .addEventListener('click', closeAndClearPopup);
         closeAndClearPopup();
 
         // Re-render prompt manager on openai preset change
@@ -987,7 +1095,9 @@ class PromptManager {
      * @returns {number} - Scroll position of the prompt manager
      */
     #getScrollPosition() {
-        return document.getElementById(this.configuration.prefix + 'prompt_manager')?.closest('.scrollableInner')?.scrollTop;
+        return document
+            .getElementById(this.configuration.prefix + 'prompt_manager')
+            ?.closest('.scrollableInner')?.scrollTop;
     }
 
     /**
@@ -997,7 +1107,10 @@ class PromptManager {
     // @ts-expect-error TS(7006) FIXME: Parameter 'scrollPosition' implicitly has an 'any'... Remove this comment to see the full error message
     #setScrollPosition(scrollPosition) {
         if (scrollPosition === undefined || scrollPosition === null) return;
-        document.getElementById(this.configuration.prefix + 'prompt_manager')?.closest('.scrollableInner')?.scrollTo(0, scrollPosition);
+        document
+            .getElementById(this.configuration.prefix + 'prompt_manager')
+            ?.closest('.scrollableInner')
+            ?.scrollTo(0, scrollPosition);
     }
 
     /**
@@ -1008,15 +1121,30 @@ class PromptManager {
         if (main_api !== 'openai') return;
 
         // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-        if ('character' === this.configuration.promptOrder.strategy && null === this.activeCharacter) return;
+        if (
+            'character' === this.configuration.promptOrder.strategy &&
+            null === this.activeCharacter
+        )
+            return;
         this.error = null;
 
-        waitUntilCondition(() => !is_send_press && !is_group_generating, 1024 * 1024, 100).then(async () => {
-            if (true === afterTryGenerate) {
-                // Executed during dry-run for determining context composition
-                this.profileStart('filling context');
-                this.tryGenerate().finally(async () => {
-                    this.profileEnd('filling context');
+        waitUntilCondition(() => !is_send_press && !is_group_generating, 1024 * 1024, 100)
+            .then(async () => {
+                if (true === afterTryGenerate) {
+                    // Executed during dry-run for determining context composition
+                    this.profileStart('filling context');
+                    this.tryGenerate().finally(async () => {
+                        this.profileEnd('filling context');
+                        this.profileStart('render');
+                        const scrollPosition = this.#getScrollPosition();
+                        await this.renderPromptManager();
+                        await this.renderPromptManagerListItems();
+                        this.makeDraggable();
+                        this.#setScrollPosition(scrollPosition);
+                        this.profileEnd('render');
+                    });
+                } else {
+                    // Executed during live communication
                     this.profileStart('render');
                     const scrollPosition = this.#getScrollPosition();
                     await this.renderPromptManager();
@@ -1024,20 +1152,11 @@ class PromptManager {
                     this.makeDraggable();
                     this.#setScrollPosition(scrollPosition);
                     this.profileEnd('render');
-                });
-            } else {
-                // Executed during live communication
-                this.profileStart('render');
-                const scrollPosition = this.#getScrollPosition();
-                await this.renderPromptManager();
-                await this.renderPromptManagerListItems();
-                this.makeDraggable();
-                this.#setScrollPosition(scrollPosition);
-                this.profileEnd('render');
-            }
-        }).catch(() => {
-            console.log('Timeout while waiting for send press to be false');
-        });
+                }
+            })
+            .catch(() => {
+                console.log('Timeout while waiting for send press to be false');
+            });
     }
 
     /**
@@ -1047,14 +1166,46 @@ class PromptManager {
      */
     // @ts-expect-error TS(7006) FIXME: Parameter 'prompt' implicitly has an 'any' type.
     updatePromptWithPromptEditForm(prompt) {
-        const nameField = /** @type {HTMLInputElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_form_name'));
-        const roleField = /** @type {HTMLSelectElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_form_role'));
-        const promptField = /** @type {HTMLTextAreaElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_form_prompt'));
-        const injectionPositionField = /** @type {HTMLSelectElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_form_injection_position'));
-        const injectionDepthField = /** @type {HTMLInputElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_form_injection_depth'));
-        const injectionOrderField = /** @type {HTMLInputElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_form_injection_order'));
-        const injectionTriggerField = /** @type {HTMLSelectElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_form_injection_trigger'));
-        const forbidOverridesField = /** @type {HTMLInputElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_form_forbid_overrides'));
+        const nameField = /** @type {HTMLInputElement} */ (
+            document.getElementById(
+                this.configuration.prefix + 'prompt_manager_popup_entry_form_name',
+            )
+        );
+        const roleField = /** @type {HTMLSelectElement} */ (
+            document.getElementById(
+                this.configuration.prefix + 'prompt_manager_popup_entry_form_role',
+            )
+        );
+        const promptField = /** @type {HTMLTextAreaElement} */ (
+            document.getElementById(
+                this.configuration.prefix + 'prompt_manager_popup_entry_form_prompt',
+            )
+        );
+        const injectionPositionField = /** @type {HTMLSelectElement} */ (
+            document.getElementById(
+                this.configuration.prefix + 'prompt_manager_popup_entry_form_injection_position',
+            )
+        );
+        const injectionDepthField = /** @type {HTMLInputElement} */ (
+            document.getElementById(
+                this.configuration.prefix + 'prompt_manager_popup_entry_form_injection_depth',
+            )
+        );
+        const injectionOrderField = /** @type {HTMLInputElement} */ (
+            document.getElementById(
+                this.configuration.prefix + 'prompt_manager_popup_entry_form_injection_order',
+            )
+        );
+        const injectionTriggerField = /** @type {HTMLSelectElement} */ (
+            document.getElementById(
+                this.configuration.prefix + 'prompt_manager_popup_entry_form_injection_trigger',
+            )
+        );
+        const forbidOverridesField = /** @type {HTMLInputElement} */ (
+            document.getElementById(
+                this.configuration.prefix + 'prompt_manager_popup_entry_form_forbid_overrides',
+            )
+        );
 
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         prompt.name = nameField.value;
@@ -1069,7 +1220,9 @@ class PromptManager {
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         prompt.injection_order = Number(injectionOrderField.value);
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        prompt.injection_trigger = Array.from(injectionTriggerField.selectedOptions).map(option => option.value);
+        prompt.injection_trigger = Array.from(injectionTriggerField.selectedOptions).map(
+            (option) => option.value,
+        );
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         prompt.forbid_overrides = forbidOverridesField.checked;
     }
@@ -1122,7 +1275,7 @@ class PromptManager {
     appendPrompt(prompt, character) {
         const promptOrder = this.getPromptOrderForCharacter(character);
         // @ts-expect-error TS(7006) FIXME: Parameter 'entry' implicitly has an 'any' type.
-        const index = promptOrder.findIndex(entry => entry.identifier === prompt.identifier);
+        const index = promptOrder.findIndex((entry) => entry.identifier === prompt.identifier);
 
         if (-1 === index) promptOrder.unshift({ identifier: prompt.identifier, enabled: false });
     }
@@ -1138,7 +1291,7 @@ class PromptManager {
     detachPrompt(prompt, character) {
         const promptOrder = this.getPromptOrderForCharacter(character);
         // @ts-expect-error TS(7006) FIXME: Parameter 'entry' implicitly has an 'any' type.
-        const index = promptOrder.findIndex(entry => entry.identifier === prompt.identifier);
+        const index = promptOrder.findIndex((entry) => entry.identifier === prompt.identifier);
         if (-1 === index) return;
         promptOrder.splice(index, 1);
     }
@@ -1151,7 +1304,8 @@ class PromptManager {
      */
     // @ts-expect-error TS(7006) FIXME: Parameter 'prompt' implicitly has an 'any' type.
     addPrompt(prompt, identifier) {
-        if (typeof prompt !== 'object' || prompt === null) throw new Error('Object is not a prompt');
+        if (typeof prompt !== 'object' || prompt === null)
+            throw new Error('Object is not a prompt');
 
         const newPrompt = {
             identifier: identifier,
@@ -1181,7 +1335,8 @@ class PromptManager {
             const dummyCharacter = { id: this.configuration.promptOrder.dummyId };
             const promptOrder = this.getPromptOrderForCharacter(dummyCharacter);
 
-            if (0 === promptOrder.length) this.addPromptOrderForCharacter(dummyCharacter, promptManagerDefaultPromptOrder);
+            if (0 === promptOrder.length)
+                this.addPromptOrderForCharacter(dummyCharacter, promptManagerDefaultPromptOrder);
         }
 
         // Check whether the referenced prompts are present.
@@ -1195,14 +1350,22 @@ class PromptManager {
 
         // Add identifiers if there are none assigned to a prompt
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        this.serviceSettings.prompts.forEach(prompt => prompt && (prompt.identifier = prompt.identifier ?? this.getUuidv4()));
+        this.serviceSettings.prompts.forEach(
+            (prompt) => prompt && (prompt.identifier = prompt.identifier ?? this.getUuidv4()),
+        );
 
         if (this.activeCharacter) {
             const promptReferences = this.getPromptOrderForCharacter(this.activeCharacter);
             for (let i = promptReferences.length - 1; i >= 0; i--) {
                 const reference = promptReferences[i];
                 // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-                if (reference && -1 === this.serviceSettings.prompts.findIndex(prompt => prompt.identifier === reference.identifier)) {
+                if (
+                    reference &&
+                    -1 ===
+                        this.serviceSettings.prompts.findIndex(
+                            (prompt) => prompt.identifier === reference.identifier,
+                        )
+                ) {
                     promptReferences.splice(i, 1);
                     this.log('Removed unused reference: ' + reference.identifier);
                 }
@@ -1218,15 +1381,24 @@ class PromptManager {
     // @ts-expect-error TS(7006) FIXME: Parameter 'prompts' implicitly has an 'any' type.
     checkForMissingPrompts(prompts) {
         // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
-        const defaultPromptIdentifiers = chatCompletionDefaultPrompts.prompts.reduce((list, prompt) => { list.push(prompt.identifier); return list; }, []);
-
-        const missingIdentifiers = defaultPromptIdentifiers.filter(identifier =>
-            // @ts-expect-error TS(7006) FIXME: Parameter 'prompt' implicitly has an 'any' type.
-            !prompts.some(prompt => prompt.identifier === identifier),
+        const defaultPromptIdentifiers = chatCompletionDefaultPrompts.prompts.reduce(
+            (list, prompt) => {
+                list.push(prompt.identifier);
+                return list;
+            },
+            [],
         );
 
-        missingIdentifiers.forEach(identifier => {
-            const defaultPrompt = chatCompletionDefaultPrompts.prompts.find(prompt => prompt?.identifier === identifier);
+        const missingIdentifiers = defaultPromptIdentifiers.filter(
+            (identifier) =>
+                // @ts-expect-error TS(7006) FIXME: Parameter 'prompt' implicitly has an 'any' type.
+                !prompts.some((prompt) => prompt.identifier === identifier),
+        );
+
+        missingIdentifiers.forEach((identifier) => {
+            const defaultPrompt = chatCompletionDefaultPrompts.prompts.find(
+                (prompt) => prompt?.identifier === identifier,
+            );
             if (defaultPrompt) {
                 prompts.push(defaultPrompt);
                 this.log(`Missing system prompt: ${defaultPrompt.identifier}. Added default.`);
@@ -1291,7 +1463,9 @@ class PromptManager {
             'dialogueExamples',
         ];
         // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-        return prompt.marker && !forceTogglePrompts.includes(prompt.identifier) ? false : !this.configuration.toggleDisabled.includes(prompt.identifier);
+        return prompt.marker && !forceTogglePrompts.includes(prompt.identifier)
+            ? false
+            : !this.configuration.toggleDisabled.includes(prompt.identifier);
     }
 
     /**
@@ -1319,7 +1493,7 @@ class PromptManager {
         if ('global' === this.configuration.promptOrder.strategy) {
             // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             this.activeCharacter = { id: this.configuration.promptOrder.dummyId };
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         } else if ('character' === this.configuration.promptOrder.strategy) {
             console.log('FOO');
             this.activeCharacter = { id: event.detail.id, ...event.detail.character };
@@ -1327,7 +1501,11 @@ class PromptManager {
 
             // ToDo: These should be passed as parameter or attached to the manager as a set of default options.
             // Set default prompts and order for character.
-            if (0 === promptOrder.length) this.addPromptOrderForCharacter(this.activeCharacter, promptManagerDefaultPromptOrder);
+            if (0 === promptOrder.length)
+                this.addPromptOrderForCharacter(
+                    this.activeCharacter,
+                    promptManagerDefaultPromptOrder,
+                );
         } else {
             throw new Error('Unsupported prompt order mode.');
         }
@@ -1343,7 +1521,7 @@ class PromptManager {
         if ('global' === this.configuration.promptOrder.strategy) {
             // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             this.activeCharacter = { id: this.configuration.promptOrder.dummyId };
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         } else if ('character' === this.configuration.promptOrder.strategy) {
             this.activeCharacter = { id: event.detail.id, ...event.detail.character };
         } else {
@@ -1361,13 +1539,14 @@ class PromptManager {
         if ('global' === this.configuration.promptOrder.strategy) {
             // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             this.activeCharacter = { id: this.configuration.promptOrder.dummyId };
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         } else if ('character' === this.configuration.promptOrder.strategy) {
             const characterDummy = { id: event.detail.id, group: event.detail.group };
             this.activeCharacter = characterDummy;
             const promptOrder = this.getPromptOrderForCharacter(characterDummy);
 
-            if (0 === promptOrder.length) this.addPromptOrderForCharacter(characterDummy, promptManagerDefaultPromptOrder);
+            if (0 === promptOrder.length)
+                this.addPromptOrderForCharacter(characterDummy, promptManagerDefaultPromptOrder);
         } else {
             throw new Error('Prompt order strategy not supported.');
         }
@@ -1380,7 +1559,9 @@ class PromptManager {
     getActiveGroupCharacters() {
         // ToDo: Ideally, this should return the actual characters.
         // @ts-expect-error TS(2339) FIXME: Property 'group' does not exist on type 'object'.
-        return (this.activeCharacter?.group?.members || []).map(member => member && member.substring(0, member.lastIndexOf('.')));
+        return (this.activeCharacter?.group?.members || []).map(
+            (member) => member && member.substring(0, member.lastIndexOf('.')),
+        );
     }
 
     /**
@@ -1391,11 +1572,19 @@ class PromptManager {
      */
     // @ts-expect-error TS(7006) FIXME: Parameter 'character' implicitly has an 'any' type... Remove this comment to see the full error message
     getPromptsForCharacter(character, onlyEnabled = false) {
-        return this.getPromptOrderForCharacter(character)
-            // @ts-expect-error TS(7006) FIXME: Parameter 'item' implicitly has an 'any' type.
-            .map(item => true === onlyEnabled ? (true === item.enabled ? this.getPromptById(item.identifier) : null) : this.getPromptById(item.identifier))
-            // @ts-expect-error TS(7006) FIXME: Parameter 'prompt' implicitly has an 'any' type.
-            .filter(prompt => null !== prompt);
+        return (
+            this.getPromptOrderForCharacter(character)
+                // @ts-expect-error TS(7006) FIXME: Parameter 'item' implicitly has an 'any' type.
+                .map((item) =>
+                    true === onlyEnabled
+                        ? true === item.enabled
+                            ? this.getPromptById(item.identifier)
+                            : null
+                        : this.getPromptById(item.identifier),
+                )
+                // @ts-expect-error TS(7006) FIXME: Parameter 'prompt' implicitly has an 'any' type.
+                .filter((prompt) => null !== prompt)
+        );
     }
 
     /**
@@ -1406,7 +1595,11 @@ class PromptManager {
     // @ts-expect-error TS(7006) FIXME: Parameter 'character' implicitly has an 'any' type... Remove this comment to see the full error message
     getPromptOrderForCharacter(character) {
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        return !character ? [] : (this.serviceSettings.prompt_order.find(list => String(list.character_id) === String(character.id))?.order ?? []);
+        return !character
+            ? []
+            : (this.serviceSettings.prompt_order.find(
+                  (list) => String(list.character_id) === String(character.id),
+              )?.order ?? []);
     }
 
     /**
@@ -1428,7 +1621,9 @@ class PromptManager {
     // @ts-expect-error TS(7006) FIXME: Parameter 'character' implicitly has an 'any' type... Remove this comment to see the full error message
     removePromptOrderForCharacter(character) {
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        const index = this.serviceSettings.prompt_order.findIndex(list => String(list.character_id) === String(character.id));
+        const index = this.serviceSettings.prompt_order.findIndex(
+            (list) => String(list.character_id) === String(character.id),
+        );
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         if (-1 !== index) this.serviceSettings.prompt_order.splice(index, 1);
     }
@@ -1456,7 +1651,11 @@ class PromptManager {
     // @ts-expect-error TS(7006) FIXME: Parameter 'character' implicitly has an 'any' type... Remove this comment to see the full error message
     getPromptOrderEntry(character, identifier) {
         // @ts-expect-error TS(7006) FIXME: Parameter 'entry' implicitly has an 'any' type.
-        return this.getPromptOrderForCharacter(character).find(entry => entry.identifier === identifier) ?? null;
+        return (
+            this.getPromptOrderForCharacter(character).find(
+                (entry) => entry.identifier === identifier,
+            ) ?? null
+        );
     }
 
     /**
@@ -1467,7 +1666,10 @@ class PromptManager {
     // @ts-expect-error TS(7006) FIXME: Parameter 'identifier' implicitly has an 'any' typ... Remove this comment to see the full error message
     getPromptById(identifier) {
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        return this.serviceSettings.prompts.find(item => item && item.identifier === identifier) ?? null;
+        return (
+            this.serviceSettings.prompts.find((item) => item && item.identifier === identifier) ??
+            null
+        );
     }
 
     /**
@@ -1478,7 +1680,9 @@ class PromptManager {
     // @ts-expect-error TS(7006) FIXME: Parameter 'identifier' implicitly has an 'any' typ... Remove this comment to see the full error message
     getPromptIndexById(identifier) {
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        return this.serviceSettings.prompts.findIndex(item => item.identifier === identifier) ?? null;
+        return (
+            this.serviceSettings.prompts.findIndex((item) => item.identifier === identifier) ?? null
+        );
     }
 
     /**
@@ -1493,10 +1697,17 @@ class PromptManager {
         const preparedPrompt = new Prompt(prompt);
 
         if (typeof original === 'string') {
-            if (0 < groupMembers.length) preparedPrompt.content = substituteParams(prompt.content ?? '', { original, groupOverride: groupMembers.join(', ') });
+            if (0 < groupMembers.length)
+                preparedPrompt.content = substituteParams(prompt.content ?? '', {
+                    original,
+                    groupOverride: groupMembers.join(', '),
+                });
             else preparedPrompt.content = substituteParams(prompt.content, { original });
         } else {
-            if (0 < groupMembers.length) preparedPrompt.content = substituteParams(prompt.content ?? '', { groupOverride: groupMembers.join(', ') });
+            if (0 < groupMembers.length)
+                preparedPrompt.content = substituteParams(prompt.content ?? '', {
+                    groupOverride: groupMembers.join(', '),
+                });
             else preparedPrompt.content = substituteParams(prompt.content);
         }
 
@@ -1528,7 +1739,9 @@ class PromptManager {
 
         const debouncedSaveServiceSettings = debouncePromise(() => this.saveServiceSettings(), 300);
 
-        const textarea = /** @type {HTMLTextAreaElement} */(document.getElementById(textareaIdentifier));
+        const textarea = /** @type {HTMLTextAreaElement} */ (
+            document.getElementById(textareaIdentifier)
+        );
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         textarea.addEventListener('blur', () => {
             // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
@@ -1547,7 +1760,7 @@ class PromptManager {
     // @ts-expect-error TS(7006) FIXME: Parameter 'identifier' implicitly has an 'any' typ... Remove this comment to see the full error message
     updateQuickEdit(identifier, prompt) {
         const elementId = `${identifier}_prompt_quick_edit_textarea`;
-        const textarea = /** @type {HTMLTextAreaElement} */(document.getElementById(elementId));
+        const textarea = /** @type {HTMLTextAreaElement} */ (document.getElementById(elementId));
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         textarea.value = prompt.content;
 
@@ -1578,19 +1791,65 @@ class PromptManager {
      */
     // @ts-expect-error TS(7006) FIXME: Parameter 'prompt' implicitly has an 'any' type.
     loadPromptIntoEditForm(prompt) {
-        const nameField = /** @type {HTMLInputElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_form_name'));
-        const roleField = /** @type {HTMLSelectElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_form_role'));
-        const promptField = /** @type {HTMLTextAreaElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_form_prompt'));
-        const injectionPositionField = /** @type {HTMLSelectElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_form_injection_position'));
-        const injectionDepthField = /** @type {HTMLInputElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_form_injection_depth'));
-        const injectionOrderField = /** @type {HTMLInputElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_form_injection_order'));
-        const injectionTriggerField = /** @type {HTMLSelectElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_form_injection_trigger'));
-        const injectionDepthBlock = /** @type {HTMLDivElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_depth_block'));
-        const injectionOrderBlock = /** @type {HTMLDivElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_order_block'));
-        const forbidOverridesField = /** @type {HTMLInputElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_form_forbid_overrides'));
-        const forbidOverridesBlock = /** @type {HTMLDivElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_forbid_overrides_block'));
-        const entrySourceBlock = /** @type {HTMLDivElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_source_block'));
-        const entrySource = /** @type {HTMLSpanElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_source'));
+        const nameField = /** @type {HTMLInputElement} */ (
+            document.getElementById(
+                this.configuration.prefix + 'prompt_manager_popup_entry_form_name',
+            )
+        );
+        const roleField = /** @type {HTMLSelectElement} */ (
+            document.getElementById(
+                this.configuration.prefix + 'prompt_manager_popup_entry_form_role',
+            )
+        );
+        const promptField = /** @type {HTMLTextAreaElement} */ (
+            document.getElementById(
+                this.configuration.prefix + 'prompt_manager_popup_entry_form_prompt',
+            )
+        );
+        const injectionPositionField = /** @type {HTMLSelectElement} */ (
+            document.getElementById(
+                this.configuration.prefix + 'prompt_manager_popup_entry_form_injection_position',
+            )
+        );
+        const injectionDepthField = /** @type {HTMLInputElement} */ (
+            document.getElementById(
+                this.configuration.prefix + 'prompt_manager_popup_entry_form_injection_depth',
+            )
+        );
+        const injectionOrderField = /** @type {HTMLInputElement} */ (
+            document.getElementById(
+                this.configuration.prefix + 'prompt_manager_popup_entry_form_injection_order',
+            )
+        );
+        const injectionTriggerField = /** @type {HTMLSelectElement} */ (
+            document.getElementById(
+                this.configuration.prefix + 'prompt_manager_popup_entry_form_injection_trigger',
+            )
+        );
+        const injectionDepthBlock = /** @type {HTMLDivElement} */ (
+            document.getElementById(this.configuration.prefix + 'prompt_manager_depth_block')
+        );
+        const injectionOrderBlock = /** @type {HTMLDivElement} */ (
+            document.getElementById(this.configuration.prefix + 'prompt_manager_order_block')
+        );
+        const forbidOverridesField = /** @type {HTMLInputElement} */ (
+            document.getElementById(
+                this.configuration.prefix + 'prompt_manager_popup_entry_form_forbid_overrides',
+            )
+        );
+        const forbidOverridesBlock = /** @type {HTMLDivElement} */ (
+            document.getElementById(
+                this.configuration.prefix + 'prompt_manager_forbid_overrides_block',
+            )
+        );
+        const entrySourceBlock = /** @type {HTMLDivElement} */ (
+            document.getElementById(
+                this.configuration.prefix + 'prompt_manager_popup_entry_source_block',
+            )
+        );
+        const entrySource = /** @type {HTMLSpanElement} */ (
+            document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_source')
+        );
         const isPulledPrompt = Object.keys(this.promptSources).includes(prompt.identifier);
 
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
@@ -1602,28 +1861,36 @@ class PromptManager {
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         promptField.disabled = prompt.marker ?? false;
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        injectionPositionField.value = (prompt.injection_position ?? INJECTION_POSITION.RELATIVE).toString();
+        injectionPositionField.value = (
+            prompt.injection_position ?? INJECTION_POSITION.RELATIVE
+        ).toString();
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         injectionDepthField.value = (prompt.injection_depth ?? DEFAULT_DEPTH).toString();
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         injectionOrderField.value = (prompt.injection_order ?? DEFAULT_ORDER).toString();
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        Array.from(injectionTriggerField.options).forEach(option => {
+        Array.from(injectionTriggerField.options).forEach((option) => {
             // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-            option.selected = Array.isArray(prompt.injection_trigger) && prompt.injection_trigger.includes(option.value);
+            option.selected =
+                Array.isArray(prompt.injection_trigger) &&
+                prompt.injection_trigger.includes(option.value);
         });
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         injectionTriggerField.dispatchEvent(new Event('change', { bubbles: true }));
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        injectionDepthBlock.style.visibility = prompt.injection_position === INJECTION_POSITION.ABSOLUTE ? 'visible' : 'hidden';
+        injectionDepthBlock.style.visibility =
+            prompt.injection_position === INJECTION_POSITION.ABSOLUTE ? 'visible' : 'hidden';
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        injectionOrderBlock.style.visibility = prompt.injection_position === INJECTION_POSITION.ABSOLUTE ? 'visible' : 'hidden';
+        injectionOrderBlock.style.visibility =
+            prompt.injection_position === INJECTION_POSITION.ABSOLUTE ? 'visible' : 'hidden';
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         injectionPositionField.removeAttribute('disabled');
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         forbidOverridesField.checked = prompt.forbid_overrides ?? false;
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        forbidOverridesBlock.style.visibility = this.overridablePrompts.includes(prompt.identifier) ? 'visible' : 'hidden';
+        forbidOverridesBlock.style.visibility = this.overridablePrompts.includes(prompt.identifier)
+            ? 'visible'
+            : 'hidden';
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         entrySourceBlock.style.display = isPulledPrompt ? '' : 'none';
 
@@ -1634,7 +1901,9 @@ class PromptManager {
             entrySource.textContent = sourceName;
         }
 
-        const resetPromptButton = document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_form_reset');
+        const resetPromptButton = document.getElementById(
+            this.configuration.prefix + 'prompt_manager_popup_entry_form_reset',
+        );
         if (true === prompt.system_prompt) {
             // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             resetPromptButton.style.display = 'block';
@@ -1646,19 +1915,29 @@ class PromptManager {
         }
 
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        injectionPositionField.removeEventListener('change', (e) => this.handleInjectionPositionChange(e));
+        injectionPositionField.removeEventListener('change', (e) =>
+            this.handleInjectionPositionChange(e),
+        );
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        injectionPositionField.addEventListener('change', (e) => this.handleInjectionPositionChange(e));
+        injectionPositionField.addEventListener('change', (e) =>
+            this.handleInjectionPositionChange(e),
+        );
 
-        const savePromptButton = document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_form_save');
+        const savePromptButton = document.getElementById(
+            this.configuration.prefix + 'prompt_manager_popup_entry_form_save',
+        );
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         savePromptButton.dataset.pmPrompt = prompt.identifier;
     }
 
     // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
     handleInjectionPositionChange(event) {
-        const injectionDepthBlock = document.getElementById(this.configuration.prefix + 'prompt_manager_depth_block');
-        const injectionOrderBlock = document.getElementById(this.configuration.prefix + 'prompt_manager_order_block');
+        const injectionDepthBlock = document.getElementById(
+            this.configuration.prefix + 'prompt_manager_depth_block',
+        );
+        const injectionOrderBlock = document.getElementById(
+            this.configuration.prefix + 'prompt_manager_order_block',
+        );
         const injectionPosition = Number(event.target.value);
         if (injectionPosition === INJECTION_POSITION.ABSOLUTE) {
             // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
@@ -1683,7 +1962,10 @@ class PromptManager {
 
         // @ts-expect-error TS(7006) FIXME: Parameter 'message' implicitly has an 'any' type.
         const createInlineDrawer = (message) => {
-            const truncatedTitle = message.content.length > 32 ? message.content.slice(0, 32) + '...' : message.content;
+            const truncatedTitle =
+                message.content.length > 32
+                    ? message.content.slice(0, 32) + '...'
+                    : message.content;
             const title = message.identifier || truncatedTitle;
             const role = message.role;
             const content = message.content || 'No Content';
@@ -1704,15 +1986,19 @@ class PromptManager {
             return template.content.firstChild;
         };
 
-        const messageList = document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_form_inspect_list');
+        const messageList = document.getElementById(
+            this.configuration.prefix + 'prompt_manager_popup_entry_form_inspect_list',
+        );
 
-        const messagesCollection = messages instanceof Message ? [messages] : messages.getCollection();
+        const messagesCollection =
+            messages instanceof Message ? [messages] : messages.getCollection();
 
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        if (0 === messagesCollection.length) messageList.innerHTML = '<span>This marker does not contain any prompts.</span>';
+        if (0 === messagesCollection.length)
+            messageList.innerHTML = '<span>This marker does not contain any prompts.</span>';
 
         // @ts-expect-error TS(7006) FIXME: Parameter 'message' implicitly has an 'any' type.
-        messagesCollection.forEach(message => {
+        messagesCollection.forEach((message) => {
             // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             messageList.append(createInlineDrawer(message));
         });
@@ -1722,23 +2008,71 @@ class PromptManager {
      * Clears all input fields in the edit form.
      */
     clearEditForm() {
-        const editArea = document.getElementById(this.configuration.prefix + 'prompt_manager_popup_edit');
+        const editArea = document.getElementById(
+            this.configuration.prefix + 'prompt_manager_popup_edit',
+        );
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         editArea.style.display = 'none';
 
-        const nameField = /** @type {HTMLInputElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_form_name'));
-        const roleField = /** @type {HTMLSelectElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_form_role'));
-        const promptField = /** @type {HTMLTextAreaElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_form_prompt'));
-        const injectionPositionField = /** @type {HTMLSelectElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_form_injection_position'));
-        const injectionDepthField = /** @type {HTMLInputElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_form_injection_depth'));
-        const injectionDepthBlock = /** @type {HTMLDivElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_depth_block'));
-        const injectionOrderBlock = /** @type {HTMLDivElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_order_block'));
-        const injectionOrderField = /** @type {HTMLInputElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_form_injection_order'));
-        const injectionTriggerField = /** @type {HTMLSelectElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_form_injection_trigger'));
-        const forbidOverridesField = /** @type {HTMLInputElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_form_forbid_overrides'));
-        const forbidOverridesBlock = /** @type {HTMLDivElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_forbid_overrides_block'));
-        const entrySourceBlock = /** @type {HTMLDivElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_source_block'));
-        const entrySource = /** @type {HTMLSpanElement} */(document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_source'));
+        const nameField = /** @type {HTMLInputElement} */ (
+            document.getElementById(
+                this.configuration.prefix + 'prompt_manager_popup_entry_form_name',
+            )
+        );
+        const roleField = /** @type {HTMLSelectElement} */ (
+            document.getElementById(
+                this.configuration.prefix + 'prompt_manager_popup_entry_form_role',
+            )
+        );
+        const promptField = /** @type {HTMLTextAreaElement} */ (
+            document.getElementById(
+                this.configuration.prefix + 'prompt_manager_popup_entry_form_prompt',
+            )
+        );
+        const injectionPositionField = /** @type {HTMLSelectElement} */ (
+            document.getElementById(
+                this.configuration.prefix + 'prompt_manager_popup_entry_form_injection_position',
+            )
+        );
+        const injectionDepthField = /** @type {HTMLInputElement} */ (
+            document.getElementById(
+                this.configuration.prefix + 'prompt_manager_popup_entry_form_injection_depth',
+            )
+        );
+        const injectionDepthBlock = /** @type {HTMLDivElement} */ (
+            document.getElementById(this.configuration.prefix + 'prompt_manager_depth_block')
+        );
+        const injectionOrderBlock = /** @type {HTMLDivElement} */ (
+            document.getElementById(this.configuration.prefix + 'prompt_manager_order_block')
+        );
+        const injectionOrderField = /** @type {HTMLInputElement} */ (
+            document.getElementById(
+                this.configuration.prefix + 'prompt_manager_popup_entry_form_injection_order',
+            )
+        );
+        const injectionTriggerField = /** @type {HTMLSelectElement} */ (
+            document.getElementById(
+                this.configuration.prefix + 'prompt_manager_popup_entry_form_injection_trigger',
+            )
+        );
+        const forbidOverridesField = /** @type {HTMLInputElement} */ (
+            document.getElementById(
+                this.configuration.prefix + 'prompt_manager_popup_entry_form_forbid_overrides',
+            )
+        );
+        const forbidOverridesBlock = /** @type {HTMLDivElement} */ (
+            document.getElementById(
+                this.configuration.prefix + 'prompt_manager_forbid_overrides_block',
+            )
+        );
+        const entrySourceBlock = /** @type {HTMLDivElement} */ (
+            document.getElementById(
+                this.configuration.prefix + 'prompt_manager_popup_entry_source_block',
+            )
+        );
+        const entrySource = /** @type {HTMLSpanElement} */ (
+            document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_source')
+        );
 
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         nameField.value = '';
@@ -1776,10 +2110,14 @@ class PromptManager {
     }
 
     clearInspectForm() {
-        const inspectArea = document.getElementById(this.configuration.prefix + 'prompt_manager_popup_inspect');
+        const inspectArea = document.getElementById(
+            this.configuration.prefix + 'prompt_manager_popup_inspect',
+        );
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         inspectArea.style.display = 'none';
-        const messageList = document.getElementById(this.configuration.prefix + 'prompt_manager_popup_entry_form_inspect_list');
+        const messageList = document.getElementById(
+            this.configuration.prefix + 'prompt_manager_popup_entry_form_inspect_list',
+        );
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         messageList.innerHTML = '';
     }
@@ -1791,12 +2129,14 @@ class PromptManager {
      */
     // @ts-expect-error TS(7006) FIXME: Parameter 'generationType' implicitly has an 'any'... Remove this comment to see the full error message
     getPromptCollection(generationType) {
-        generationType = String(generationType || 'normal').toLowerCase().trim();
+        generationType = String(generationType || 'normal')
+            .toLowerCase()
+            .trim();
         const promptCollection = new PromptCollection();
         const promptOrder = this.getPromptOrderForCharacter(this.activeCharacter);
 
         // @ts-expect-error TS(7006) FIXME: Parameter 'entry' implicitly has an 'any' type.
-        promptOrder.forEach(entry => {
+        promptOrder.forEach((entry) => {
             const prompt = this.getPromptById(entry.identifier);
             const allowedTrigger = entry.enabled && this.shouldTrigger(prompt, generationType);
 
@@ -1864,7 +2204,7 @@ class PromptManager {
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         const counts = this.tokenHandler.getCounts();
         // @ts-expect-error TS(7006) FIXME: Parameter 'message' implicitly has an 'any' type.
-        messages.getCollection().forEach(message => {
+        messages.getCollection().forEach((message) => {
             counts[message.identifier] = message.getTokens();
         });
 
@@ -1879,7 +2219,9 @@ class PromptManager {
      */
     async renderPromptManager() {
         let selectedPromptIndex = 0;
-        const existingAppendSelect = document.getElementById(`${this.configuration.prefix}prompt_manager_footer_append_prompt`);
+        const existingAppendSelect = document.getElementById(
+            `${this.configuration.prefix}prompt_manager_footer_append_prompt`,
+        );
         if (existingAppendSelect instanceof HTMLSelectElement) {
             selectedPromptIndex = existingAppendSelect.selectedIndex;
         }
@@ -1887,27 +2229,41 @@ class PromptManager {
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         promptManagerDiv.innerHTML = '';
 
-        const errorDiv = this.error ? `
+        const errorDiv = this.error
+            ? `
                 <div class="${this.configuration.prefix}prompt_manager_error">
                     <span class="fa-solid tooltip fa-triangle-exclamation text_danger"></span> ${DOMPurify.sanitize(this.error)}
                 </div>
-        ` : '';
+        `
+            : '';
 
         const totalActiveTokens = this.tokenUsage;
 
-        const headerHtml = await renderTemplateAsync('promptManagerHeader', { error: this.error, errorDiv, prefix: this.configuration.prefix, totalActiveTokens });
+        const headerHtml = await renderTemplateAsync('promptManagerHeader', {
+            error: this.error,
+            errorDiv,
+            prefix: this.configuration.prefix,
+            totalActiveTokens,
+        });
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         promptManagerDiv.insertAdjacentHTML('beforeend', headerHtml);
 
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        this.listElement = promptManagerDiv.querySelector(`#${this.configuration.prefix}prompt_manager_list`);
+        this.listElement = promptManagerDiv.querySelector(
+            `#${this.configuration.prefix}prompt_manager_list`,
+        );
 
         if (null !== this.activeCharacter) {
             // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             const prompts = [...this.serviceSettings.prompts]
-                .filter(prompt => prompt && !prompt?.system_prompt)
-                .sort((promptA, promptB) => promptA.name.localeCompare(promptB.name));
-            const promptsHtml = prompts.reduce((acc, prompt) => acc + `<option value="${prompt.identifier}">${escapeHtml(prompt.name)}</option>`, '');
+                .filter((prompt) => prompt && !prompt?.system_prompt)
+                .toSorted((promptA, promptB) => promptA.name.localeCompare(promptB.name));
+            const promptsHtml = prompts.reduce(
+                (acc, prompt) =>
+                    acc +
+                    `<option value="${prompt.identifier}">${escapeHtml(prompt.name)}</option>`,
+                '',
+            );
 
             if (selectedPromptIndex > 0) {
                 selectedPromptIndex = Math.min(selectedPromptIndex, prompts.length - 1);
@@ -1921,28 +2277,43 @@ class PromptManager {
             const rangeBlockDiv = promptManagerDiv.querySelector('.range-block');
             // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             const headerDiv = promptManagerDiv.querySelector('.completion_prompt_manager_header');
-            const footerHtml = await renderTemplateAsync('promptManagerFooter', { promptsHtml, prefix: this.configuration.prefix });
+            const footerHtml = await renderTemplateAsync('promptManagerFooter', {
+                promptsHtml,
+                prefix: this.configuration.prefix,
+            });
             // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             headerDiv.insertAdjacentHTML('afterend', footerHtml);
             // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-            rangeBlockDiv.querySelector('#prompt-manager-reset-character').addEventListener('click', this.handleCharacterReset);
+            rangeBlockDiv
+                .querySelector('#prompt-manager-reset-character')
+                .addEventListener('click', this.handleCharacterReset);
 
             // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-            const footerDiv = rangeBlockDiv.querySelector(`.${this.configuration.prefix}prompt_manager_footer`);
+            const footerDiv = rangeBlockDiv.querySelector(
+                `.${this.configuration.prefix}prompt_manager_footer`,
+            );
             // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-            footerDiv.querySelector('.menu_button:nth-child(2)').addEventListener('click', this.handleAppendPrompt);
+            footerDiv
+                .querySelector('.menu_button:nth-child(2)')
+                .addEventListener('click', this.handleAppendPrompt);
             // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             footerDiv.querySelector('.caution').addEventListener('click', this.handleDeletePrompt);
             // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-            footerDiv.querySelector('.menu_button:last-child').addEventListener('click', this.handleNewPrompt);
+            footerDiv
+                .querySelector('.menu_button:last-child')
+                .addEventListener('click', this.handleNewPrompt);
             // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             footerDiv.querySelector('select').selectedIndex = selectedPromptIndex;
 
             // Add prompt export dialogue and options
             // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-            footerDiv.querySelector('#prompt-manager-import').addEventListener('click', this.handleImport);
+            footerDiv
+                .querySelector('#prompt-manager-import')
+                .addEventListener('click', this.handleImport);
             // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-            footerDiv.querySelector('#prompt-manager-export').addEventListener('click', this.handleFullExport);
+            footerDiv
+                .querySelector('#prompt-manager-export')
+                .addEventListener('click', this.handleFullExport);
         }
     }
 
@@ -1962,7 +2333,7 @@ class PromptManager {
         let listItemHtml = await renderTemplateAsync('promptManagerListHeader', { prefix });
 
         // @ts-expect-error TS(7006) FIXME: Parameter 'prompt' implicitly has an 'any' type.
-        this.getPromptsForCharacter(this.activeCharacter).forEach(prompt => {
+        this.getPromptsForCharacter(this.activeCharacter).forEach((prompt) => {
             if (!prompt) return;
 
             const listEntry = this.getPromptOrderEntry(this.activeCharacter, prompt.identifier);
@@ -1977,17 +2348,18 @@ class PromptManager {
             let warningTitle = '';
 
             // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-            const tokenBudget = this.serviceSettings.openai_max_context - this.serviceSettings.openai_max_tokens;
-            if (this.tokenUsage > tokenBudget * 0.8 &&
-                'chatHistory' === prompt.identifier) {
+            const tokenBudget =
+                this.serviceSettings.openai_max_context - this.serviceSettings.openai_max_tokens;
+            if (this.tokenUsage > tokenBudget * 0.8 && 'chatHistory' === prompt.identifier) {
                 const warningThreshold = this.configuration.warningTokenThreshold;
                 const dangerThreshold = this.configuration.dangerTokenThreshold;
 
                 // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 if (tokens <= dangerThreshold) {
                     warningClass = 'fa-solid tooltip fa-triangle-exclamation text_danger';
-                    warningTitle = 'Very little of your chat history is being sent, consider deactivating some other prompts.';
-                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+                    warningTitle =
+                        'Very little of your chat history is being sent, consider deactivating some other prompts.';
+                    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 } else if (tokens <= warningThreshold) {
                     warningClass = 'fa-solid tooltip fa-triangle-exclamation text_warning';
                     warningTitle = 'Only a few messages worth chat history are being sent.';
@@ -2024,14 +2396,31 @@ class PromptManager {
             }
 
             const encodedName = escapeHtml(prompt.name);
-            const isMarkerPrompt = prompt.marker && prompt.injection_position !== INJECTION_POSITION.ABSOLUTE;
-            const isSystemPrompt = !prompt.marker && prompt.system_prompt && prompt.injection_position !== INJECTION_POSITION.ABSOLUTE && !prompt.forbid_overrides;
-            const isImportantPrompt = !prompt.marker && prompt.system_prompt && prompt.injection_position !== INJECTION_POSITION.ABSOLUTE && prompt.forbid_overrides;
-            const isUserPrompt = !prompt.marker && !prompt.system_prompt && prompt.injection_position !== INJECTION_POSITION.ABSOLUTE;
+            const isMarkerPrompt =
+                prompt.marker && prompt.injection_position !== INJECTION_POSITION.ABSOLUTE;
+            const isSystemPrompt =
+                !prompt.marker &&
+                prompt.system_prompt &&
+                prompt.injection_position !== INJECTION_POSITION.ABSOLUTE &&
+                !prompt.forbid_overrides;
+            const isImportantPrompt =
+                !prompt.marker &&
+                prompt.system_prompt &&
+                prompt.injection_position !== INJECTION_POSITION.ABSOLUTE &&
+                prompt.forbid_overrides;
+            const isUserPrompt =
+                !prompt.marker &&
+                !prompt.system_prompt &&
+                prompt.injection_position !== INJECTION_POSITION.ABSOLUTE;
             const isInjectionPrompt = prompt.injection_position === INJECTION_POSITION.ABSOLUTE;
-            const isOverriddenPrompt = Array.isArray(this.overriddenPrompts) && this.overriddenPrompts.includes(prompt.identifier);
+            const isOverriddenPrompt =
+                Array.isArray(this.overriddenPrompts) &&
+                this.overriddenPrompts.includes(prompt.identifier);
             const importantClass = isImportantPrompt ? `${prefix}prompt_manager_important` : '';
-            const iconLookup = prompt.role === 'system' && (prompt.marker || prompt.system_prompt) ? '' : prompt.role;
+            const iconLookup =
+                prompt.role === 'system' && (prompt.marker || prompt.system_prompt)
+                    ? ''
+                    : prompt.role;
 
             //add role icons to the right of prompt name
             const promptRoles = {
@@ -2075,26 +2464,34 @@ class PromptManager {
 
         // Now that the new elements are in the DOM, you can add the event listeners.
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        Array.from(promptManagerList.getElementsByClassName('prompt-manager-detach-action')).forEach(el => {
+        Array.from(
+            promptManagerList.getElementsByClassName('prompt-manager-detach-action'),
+        ).forEach((el) => {
             el.addEventListener('click', this.handleDetach);
         });
 
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        Array.from(promptManagerList.getElementsByClassName('prompt-manager-inspect-action')).forEach(el => {
+        Array.from(
+            promptManagerList.getElementsByClassName('prompt-manager-inspect-action'),
+        ).forEach((el) => {
             el.addEventListener('click', this.handleInspect);
         });
 
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        Array.from(promptManagerList.getElementsByClassName('prompt-manager-edit-action')).forEach(el => {
-            // @ts-expect-error TS(2769) FIXME: No overload matches this call.
-            el.addEventListener('click', this.handleEdit);
-        });
+        Array.from(promptManagerList.getElementsByClassName('prompt-manager-edit-action')).forEach(
+            (el) => {
+                // @ts-expect-error TS(2769) FIXME: No overload matches this call.
+                el.addEventListener('click', this.handleEdit);
+            },
+        );
 
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        Array.from(promptManagerList.querySelectorAll('.prompt-manager-toggle-action')).forEach(el => {
-            // @ts-expect-error TS(2769) FIXME: No overload matches this call.
-            el.addEventListener('click', this.handleToggle);
-        });
+        Array.from(promptManagerList.querySelectorAll('.prompt-manager-toggle-action')).forEach(
+            (el) => {
+                // @ts-expect-error TS(2769) FIXME: No overload matches this call.
+                el.addEventListener('click', this.handleToggle);
+            },
+        );
     }
 
     /**
@@ -2168,16 +2565,20 @@ class PromptManager {
         // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         if ('global' === this.configuration.promptOrder.strategy) {
             // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-            const promptOrder = this.getPromptOrderForCharacter({ id: this.configuration.promptOrder.dummyId });
+            const promptOrder = this.getPromptOrderForCharacter({
+                id: this.configuration.promptOrder.dummyId,
+            });
             Object.assign(promptOrder, importData.data.prompt_order);
             this.log('Prompt order import succeeded');
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         } else if ('character' === this.configuration.promptOrder.strategy) {
             if ('character' === importData.type) {
                 const promptOrder = this.getPromptOrderForCharacter(this.activeCharacter);
                 Object.assign(promptOrder, importData.data.prompt_order);
                 // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-                this.log(`Prompt order import for character ${this.activeCharacter.name} succeeded`);
+                this.log(
+                    `Prompt order import for character ${this.activeCharacter.name} succeeded`,
+                );
             }
         } else {
             throw new Error('Prompt order strategy not supported.');
@@ -2246,9 +2647,13 @@ class PromptManager {
                 const promptOrder = this.getPromptOrderForCharacter(this.activeCharacter);
                 const promptListElement = sortableInstance;
                 // @ts-expect-error TS(7006) FIXME: Parameter 'prompt' implicitly has an 'any' type.
-                const idToObjectMap = new Map(promptOrder.map(prompt => [prompt.identifier, prompt]));
+                const idToObjectMap = new Map(
+                    promptOrder.map((prompt) => [prompt.identifier, prompt]),
+                );
                 // @ts-expect-error TS(7006) FIXME: Parameter 'identifier' implicitly has an 'any' typ... Remove this comment to see the full error message
-                const updatedPromptOrder = promptListElement.map(identifier => idToObjectMap.get(identifier));
+                const updatedPromptOrder = promptListElement.map((identifier) =>
+                    idToObjectMap.get(identifier),
+                );
 
                 this.removePromptOrderForCharacter(this.activeCharacter);
                 this.addPromptOrderForCharacter(this.activeCharacter, updatedPromptOrder);
@@ -2267,7 +2672,9 @@ class PromptManager {
      * @returns {void}
      */
     showPopup(area = 'edit') {
-        const areaElement = document.getElementById(this.configuration.prefix + 'prompt_manager_popup_' + area);
+        const areaElement = document.getElementById(
+            this.configuration.prefix + 'prompt_manager_popup_' + area,
+        );
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         areaElement.style.display = 'flex';
 
@@ -2332,139 +2739,141 @@ class PromptManager {
 }
 
 const chatCompletionDefaultPrompts = {
-    'prompts': [
+    prompts: [
         {
-            'name': 'Main Prompt',
-            'system_prompt': true,
-            'role': 'system',
-            'content': 'Write {{char}}\'s next reply in a fictional chat between {{charIfNotGroup}} and {{user}}.',
-            'identifier': 'main',
+            name: 'Main Prompt',
+            system_prompt: true,
+            role: 'system',
+            content:
+                "Write {{char}}'s next reply in a fictional chat between {{charIfNotGroup}} and {{user}}.",
+            identifier: 'main',
         },
         {
-            'name': 'Auxiliary Prompt',
-            'system_prompt': true,
-            'role': 'system',
-            'content': '',
-            'identifier': 'nsfw',
+            name: 'Auxiliary Prompt',
+            system_prompt: true,
+            role: 'system',
+            content: '',
+            identifier: 'nsfw',
         },
         {
-            'identifier': 'dialogueExamples',
-            'name': 'Chat Examples',
-            'system_prompt': true,
-            'marker': true,
+            identifier: 'dialogueExamples',
+            name: 'Chat Examples',
+            system_prompt: true,
+            marker: true,
         },
         {
-            'name': 'Post-History Instructions',
-            'system_prompt': true,
-            'role': 'system',
-            'content': '',
-            'identifier': 'jailbreak',
+            name: 'Post-History Instructions',
+            system_prompt: true,
+            role: 'system',
+            content: '',
+            identifier: 'jailbreak',
         },
         {
-            'identifier': 'chatHistory',
-            'name': 'Chat History',
-            'system_prompt': true,
-            'marker': true,
+            identifier: 'chatHistory',
+            name: 'Chat History',
+            system_prompt: true,
+            marker: true,
         },
         {
-            'identifier': 'worldInfoAfter',
-            'name': 'World Info (after)',
-            'system_prompt': true,
-            'marker': true,
+            identifier: 'worldInfoAfter',
+            name: 'World Info (after)',
+            system_prompt: true,
+            marker: true,
         },
         {
-            'identifier': 'worldInfoBefore',
-            'name': 'World Info (before)',
-            'system_prompt': true,
-            'marker': true,
+            identifier: 'worldInfoBefore',
+            name: 'World Info (before)',
+            system_prompt: true,
+            marker: true,
         },
         {
-            'identifier': 'enhanceDefinitions',
-            'role': 'system',
-            'name': 'Enhance Definitions',
-            'content': 'If you have more knowledge of {{char}}, add to the character\'s lore and personality to enhance them but keep the Character Sheet\'s definitions absolute.',
-            'system_prompt': true,
-            'marker': false,
+            identifier: 'enhanceDefinitions',
+            role: 'system',
+            name: 'Enhance Definitions',
+            content:
+                "If you have more knowledge of {{char}}, add to the character's lore and personality to enhance them but keep the Character Sheet's definitions absolute.",
+            system_prompt: true,
+            marker: false,
         },
         {
-            'identifier': 'charDescription',
-            'name': 'Char Description',
-            'system_prompt': true,
-            'marker': true,
+            identifier: 'charDescription',
+            name: 'Char Description',
+            system_prompt: true,
+            marker: true,
         },
         {
-            'identifier': 'charPersonality',
-            'name': 'Char Personality',
-            'system_prompt': true,
-            'marker': true,
+            identifier: 'charPersonality',
+            name: 'Char Personality',
+            system_prompt: true,
+            marker: true,
         },
         {
-            'identifier': 'scenario',
-            'name': 'Scenario',
-            'system_prompt': true,
-            'marker': true,
+            identifier: 'scenario',
+            name: 'Scenario',
+            system_prompt: true,
+            marker: true,
         },
         {
-            'identifier': 'personaDescription',
-            'name': 'Persona Description',
-            'system_prompt': true,
-            'marker': true,
+            identifier: 'personaDescription',
+            name: 'Persona Description',
+            system_prompt: true,
+            marker: true,
         },
     ],
 };
 
 const promptManagerDefaultPromptOrders = {
-    'prompt_order': [],
+    prompt_order: [],
 };
 
 const promptManagerDefaultPromptOrder = [
     {
-        'identifier': 'main',
-        'enabled': true,
+        identifier: 'main',
+        enabled: true,
     },
     {
-        'identifier': 'worldInfoBefore',
-        'enabled': true,
+        identifier: 'worldInfoBefore',
+        enabled: true,
     },
     {
-        'identifier': 'personaDescription',
-        'enabled': true,
+        identifier: 'personaDescription',
+        enabled: true,
     },
     {
-        'identifier': 'charDescription',
-        'enabled': true,
+        identifier: 'charDescription',
+        enabled: true,
     },
     {
-        'identifier': 'charPersonality',
-        'enabled': true,
+        identifier: 'charPersonality',
+        enabled: true,
     },
     {
-        'identifier': 'scenario',
-        'enabled': true,
+        identifier: 'scenario',
+        enabled: true,
     },
     {
-        'identifier': 'enhanceDefinitions',
-        'enabled': false,
+        identifier: 'enhanceDefinitions',
+        enabled: false,
     },
     {
-        'identifier': 'nsfw',
-        'enabled': true,
+        identifier: 'nsfw',
+        enabled: true,
     },
     {
-        'identifier': 'worldInfoAfter',
-        'enabled': true,
+        identifier: 'worldInfoAfter',
+        enabled: true,
     },
     {
-        'identifier': 'dialogueExamples',
-        'enabled': true,
+        identifier: 'dialogueExamples',
+        enabled: true,
     },
     {
-        'identifier': 'chatHistory',
-        'enabled': true,
+        identifier: 'chatHistory',
+        enabled: true,
     },
     {
-        'identifier': 'jailbreak',
-        'enabled': true,
+        identifier: 'jailbreak',
+        enabled: true,
     },
 ];
 

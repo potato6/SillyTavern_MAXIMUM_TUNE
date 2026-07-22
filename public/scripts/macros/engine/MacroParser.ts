@@ -42,7 +42,9 @@ class MacroParser extends CstParser {
     lexerInstance: import('./MacroLexer.js').MacroLexer | null; // Used to cache the Lexer locally
 
     /** @type {MacroParser} */ static #instance: MacroParser;
-    /** @type {MacroParser} */ static get instance() { return MacroParser.#instance ?? (MacroParser.#instance = new MacroParser()); }
+    /** @type {MacroParser} */ static get instance() {
+        return MacroParser.#instance ?? (MacroParser.#instance = new MacroParser());
+    }
 
     /** @private */
     constructor() {
@@ -127,19 +129,84 @@ class MacroParser extends CstParser {
                 {
                     ALT: () => {
                         $.OR5([
-                            { ALT: () => $.CONSUME(Tokens.Var.Operators.NullishCoalescingEquals, { LABEL: 'Var.operator' }) },
-                            { ALT: () => $.CONSUME(Tokens.Var.Operators.NullishCoalescing, { LABEL: 'Var.operator' }) },
-                            { ALT: () => $.CONSUME(Tokens.Var.Operators.LogicalOrEquals, { LABEL: 'Var.operator' }) },
-                            { ALT: () => $.CONSUME(Tokens.Var.Operators.LogicalOr, { LABEL: 'Var.operator' }) },
-                            { ALT: () => $.CONSUME(Tokens.Var.Operators.MinusEquals, { LABEL: 'Var.operator' }) },
-                            { ALT: () => $.CONSUME(Tokens.Var.Operators.DoubleEquals, { LABEL: 'Var.operator' }) },
-                            { ALT: () => $.CONSUME(Tokens.Var.Operators.NotEquals, { LABEL: 'Var.operator' }) },
-                            { ALT: () => $.CONSUME(Tokens.Var.Operators.GreaterThanOrEqual, { LABEL: 'Var.operator' }) },
-                            { ALT: () => $.CONSUME(Tokens.Var.Operators.GreaterThan, { LABEL: 'Var.operator' }) },
-                            { ALT: () => $.CONSUME(Tokens.Var.Operators.LessThanOrEqual, { LABEL: 'Var.operator' }) },
-                            { ALT: () => $.CONSUME(Tokens.Var.Operators.LessThan, { LABEL: 'Var.operator' }) },
-                            { ALT: () => $.CONSUME(Tokens.Var.Operators.PlusEquals, { LABEL: 'Var.operator' }) },
-                            { ALT: () => $.CONSUME(Tokens.Var.Operators.Equals, { LABEL: 'Var.operator' }) },
+                            {
+                                ALT: () =>
+                                    $.CONSUME(Tokens.Var.Operators.NullishCoalescingEquals, {
+                                        LABEL: 'Var.operator',
+                                    }),
+                            },
+                            {
+                                ALT: () =>
+                                    $.CONSUME(Tokens.Var.Operators.NullishCoalescing, {
+                                        LABEL: 'Var.operator',
+                                    }),
+                            },
+                            {
+                                ALT: () =>
+                                    $.CONSUME(Tokens.Var.Operators.LogicalOrEquals, {
+                                        LABEL: 'Var.operator',
+                                    }),
+                            },
+                            {
+                                ALT: () =>
+                                    $.CONSUME(Tokens.Var.Operators.LogicalOr, {
+                                        LABEL: 'Var.operator',
+                                    }),
+                            },
+                            {
+                                ALT: () =>
+                                    $.CONSUME(Tokens.Var.Operators.MinusEquals, {
+                                        LABEL: 'Var.operator',
+                                    }),
+                            },
+                            {
+                                ALT: () =>
+                                    $.CONSUME(Tokens.Var.Operators.DoubleEquals, {
+                                        LABEL: 'Var.operator',
+                                    }),
+                            },
+                            {
+                                ALT: () =>
+                                    $.CONSUME(Tokens.Var.Operators.NotEquals, {
+                                        LABEL: 'Var.operator',
+                                    }),
+                            },
+                            {
+                                ALT: () =>
+                                    $.CONSUME(Tokens.Var.Operators.GreaterThanOrEqual, {
+                                        LABEL: 'Var.operator',
+                                    }),
+                            },
+                            {
+                                ALT: () =>
+                                    $.CONSUME(Tokens.Var.Operators.GreaterThan, {
+                                        LABEL: 'Var.operator',
+                                    }),
+                            },
+                            {
+                                ALT: () =>
+                                    $.CONSUME(Tokens.Var.Operators.LessThanOrEqual, {
+                                        LABEL: 'Var.operator',
+                                    }),
+                            },
+                            {
+                                ALT: () =>
+                                    $.CONSUME(Tokens.Var.Operators.LessThan, {
+                                        LABEL: 'Var.operator',
+                                    }),
+                            },
+                            {
+                                ALT: () =>
+                                    $.CONSUME(Tokens.Var.Operators.PlusEquals, {
+                                        LABEL: 'Var.operator',
+                                    }),
+                            },
+                            {
+                                ALT: () =>
+                                    $.CONSUME(Tokens.Var.Operators.Equals, {
+                                        LABEL: 'Var.operator',
+                                    }),
+                            },
                         ]);
                         $.SUBRULE($.variableValue, { LABEL: 'Var.value' });
                     },
@@ -204,10 +271,7 @@ class MacroParser extends CstParser {
 
         $.argumentAllowingColons = $.RULE('argumentAllowingColons', () => {
             $.AT_LEAST_ONE(() => {
-                $.OR([
-                    ...validArgumentTokens,
-                    { ALT: () => $.CONSUME(Tokens.Args.DoubleColon) },
-                ]);
+                $.OR([...validArgumentTokens, { ALT: () => $.CONSUME(Tokens.Args.DoubleColon) }]);
             });
         });
 
@@ -243,7 +307,12 @@ class MacroParser extends CstParser {
      */
     parseDocument(input: string) {
         if (!input) {
-            return { cst: null, errors: [{ message: 'Input is empty' }], lexingErrors: [], parserErrors: [] };
+            return {
+                cst: null,
+                errors: [{ message: 'Input is empty' }],
+                lexingErrors: [],
+                parserErrors: [],
+            };
         }
 
         const lexingResult = this.tokenizeInput(input);
@@ -251,10 +320,7 @@ class MacroParser extends CstParser {
         this.input = lexingResult.tokens;
         const cst = this.document();
 
-        const errors = [
-            ...lexingResult.errors,
-            ...this.errors,
-        ];
+        const errors = [...lexingResult.errors, ...this.errors];
 
         return { cst, errors, lexingErrors: lexingResult.errors, parserErrors: this.errors };
     }
@@ -265,8 +331,7 @@ class MacroParser extends CstParser {
         // "input" is a setter which will reset the parser's state.
         this.input = lexingResult.tokens;
         return this.macro();
-
-   }
+    }
 }
 
 instance = MacroParser.instance;

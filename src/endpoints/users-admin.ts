@@ -30,29 +30,37 @@ export const router = express.Router();
  * @returns {string} Slugified text
  */
 function slugify(text: string) {
-    return deburr(String(text ?? '').toLowerCase().trim()).replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    return deburr(
+        String(text ?? '')
+            .toLowerCase()
+            .trim(),
+    )
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
 }
 
 router.post('/get', requireAdminMiddleware, async (_request, response) => {
     try {
         /** @type {import('../users.js').User[]} */
-        const users = await storage.values(x => x.key.startsWith(KEY_PREFIX));
+        const users = await storage.values((x) => x.key.startsWith(KEY_PREFIX));
 
         /** @type {Promise<import('../users.js').UserViewModel>[]} */
-        const viewModelPromises = users
-            .map(user => new Promise(resolve => {
-                getUserAvatar(user.handle).then(avatar =>
-                    resolve({
-                        handle: user.handle,
-                        name: user.name,
-                        avatar: avatar,
-                        admin: user.admin,
-                        enabled: user.enabled,
-                        created: user.created,
-                        password: !!user.password,
-                    }),
-                );
-            }));
+        const viewModelPromises = users.map(
+            (user) =>
+                new Promise((resolve) => {
+                    getUserAvatar(user.handle).then((avatar) =>
+                        resolve({
+                            handle: user.handle,
+                            name: user.name,
+                            avatar: avatar,
+                            admin: user.admin,
+                            enabled: user.enabled,
+                            created: user.created,
+                            password: !!user.password,
+                        }),
+                    );
+                }),
+        );
 
         const viewModels = await Promise.all(viewModelPromises);
         // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
@@ -185,7 +193,7 @@ router.post('/create', requireAdminMiddleware, async (request, response) => {
             return response.status(400).json({ error: 'Invalid handle' });
         }
 
-        if (handles.some(x => x === handle)) {
+        if (handles.some((x) => x === handle)) {
             console.warn('Create user failed: User with that handle already exists');
             return response.status(409).json({ error: 'User already exists' });
         }
@@ -231,7 +239,11 @@ router.post('/delete', requireAdminMiddleware, async (request, response) => {
 
         if (request.body.handle === DEFAULT_USER.handle) {
             console.warn('Delete user failed: Cannot delete default user');
-            return response.status(400).json({ error: 'Sorry, but the default user cannot be deleted. It is required as a fallback.' });
+            return response
+                .status(400)
+                .json({
+                    error: 'Sorry, but the default user cannot be deleted. It is required as a fallback.',
+                });
         }
 
         await storage.removeItem(toKey(request.body.handle));

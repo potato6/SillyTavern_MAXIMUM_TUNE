@@ -30,7 +30,11 @@ import { loader } from './action-loader.js';
 import { getLastMessageId } from './macros.js';
 import { Popup } from './popup.js';
 import { SlashCommand } from './slash-commands/SlashCommand.js';
-import { ARGUMENT_TYPE, SlashCommandArgument, SlashCommandNamedArgument } from './slash-commands/SlashCommandArgument.js';
+import {
+    ARGUMENT_TYPE,
+    SlashCommandArgument,
+    SlashCommandNamedArgument,
+} from './slash-commands/SlashCommandArgument.js';
 import { commonEnumProviders } from './slash-commands/SlashCommandCommonEnumsProvider.js';
 import { SlashCommandParser } from './slash-commands/SlashCommandParser.js';
 import { createTagMapFromList } from './tags.js';
@@ -38,10 +42,7 @@ import { renderTemplateAsync } from './templates.js';
 import { compressRequest } from './request-compression.js';
 import { t } from './i18n.js';
 
-import {
-    getUniqueName,
-    isTrueBoolean,
-} from './utils.js';
+import { getUniqueName, isTrueBoolean } from './utils.js';
 
 const bookmarkNameToken = 'Checkpoint #';
 const cleanSuffixRegex = new RegExp(` - ${bookmarkNameToken}\\d+$`);
@@ -55,7 +56,7 @@ const branchPrefixRegex = /^Branch #\d+ - /;
  */
 async function getExistingChatNames() {
     if (selected_group) {
-        const group = groups.find(x => String(x.id) === String(selected_group));
+        const group = groups.find((x) => String(x.id) === String(selected_group));
         if (group && Array.isArray(group.chats)) {
             return group.chats;
         }
@@ -81,7 +82,7 @@ async function getExistingChatNames() {
     if (response.ok) {
         const data = await response.json();
         // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-        return Object.values(data).map(x => x.file_name.replace('.jsonl', ''));
+        return Object.values(data).map((x) => x.file_name.replace('.jsonl', ''));
     }
 
     return [];
@@ -94,7 +95,7 @@ async function getExistingChatNames() {
  * @param {string|null} root0.forceName
  */
 async function getBookmarkName({ isReplace = false, forceName = null } = {}) {
-    const mainChatName = (getCurrentChatDetails()).sessionName;
+    const mainChatName = getCurrentChatDetails().sessionName;
 
     /**
      * Builds a checkpoint name while preventing regex recompilation in loops
@@ -110,10 +111,17 @@ async function getBookmarkName({ isReplace = false, forceName = null } = {}) {
 
     const existingChats = await getExistingChatNames();
     // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
-    const suggestedName = getUniqueName(mainChatName, (x) => existingChats.includes(x), { nameBuilder: buildCheckpointName });
+    const suggestedName = getUniqueName(mainChatName, (x) => existingChats.includes(x), {
+        nameBuilder: buildCheckpointName,
+    });
 
-    const body = await renderTemplateAsync('createCheckpoint', { isReplace: isReplace, suggestedName: suggestedName });
-    let name = forceName ?? (await Popup.show.input('Create Checkpoint', body, suggestedName ?? undefined));
+    const body = await renderTemplateAsync('createCheckpoint', {
+        isReplace: isReplace,
+        suggestedName: suggestedName,
+    });
+    let name =
+        forceName ??
+        (await Popup.show.input('Create Checkpoint', body, suggestedName ?? undefined));
 
     if (name === '') {
         name = suggestedName;
@@ -160,7 +168,8 @@ export function showBookmarksButtons() {
         const hasMainChat = Boolean(chat_metadata?.main_chat);
         const hasCharChat = Boolean(this_chid !== undefined && characters[this_chid]?.chat);
 
-        if (optionConvertToGroup) optionConvertToGroup.style.display = hasSelectedGroup ? 'none' : '';
+        if (optionConvertToGroup)
+            optionConvertToGroup.style.display = hasSelectedGroup ? 'none' : '';
 
         if (hasMainChat) {
             if (optionBackToMain) optionBackToMain.style.display = '';
@@ -197,7 +206,10 @@ async function saveBookmarkMenu() {
  * @param {{swipeId?: number|null}} [options]
  * @returns {ChatMessage[]|null}
  */
-function getBranchChatSnapshot(mesId: number, { swipeId = null }: { swipeId?: number | null } = {}) {
+function getBranchChatSnapshot(
+    mesId: number,
+    { swipeId = null }: { swipeId?: number | null } = {},
+) {
     const sliceEnd = Number(mesId) + 1;
     const snapshot = structuredClone(chat.slice(0, sliceEnd));
 
@@ -233,11 +245,16 @@ export async function createBranch(mesId, { swipeId = null } = {}) {
     }
 
     const lastMes = chat[messageIndex];
-    const mainChatName = (getCurrentChatDetails()).sessionName;
+    const mainChatName = getCurrentChatDetails().sessionName;
     const newMetadata = { main_chat: mainChatName };
     const selectedSwipeId = swipeId === null ? null : Number(swipeId);
 
-    if (selectedSwipeId !== null && (!Number.isInteger(selectedSwipeId) || selectedSwipeId < 0 || selectedSwipeId >= (lastMes?.swipes?.length ?? 0))) {
+    if (
+        selectedSwipeId !== null &&
+        (!Number.isInteger(selectedSwipeId) ||
+            selectedSwipeId < 0 ||
+            selectedSwipeId >= (lastMes?.swipes?.length ?? 0))
+    ) {
         notyf.warning('Invalid swipe ID.', 'Branch creation failed');
         return;
     }
@@ -256,7 +273,9 @@ export async function createBranch(mesId, { swipeId = null } = {}) {
 
     const existingChats = await getExistingChatNames();
     // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
-    const name = getUniqueName(mainChatName, (x) => existingChats.includes(x), { nameBuilder: buildBranchName });
+    const name = getUniqueName(mainChatName, (x) => existingChats.includes(x), {
+        nameBuilder: buildBranchName,
+    });
     if (!name) {
         console.error('Could not generate a unique branch name.');
         notyf.error('Could not generate a unique branch name.', 'Branch creation failed');
@@ -265,15 +284,29 @@ export async function createBranch(mesId, { swipeId = null } = {}) {
 
     const branchChatSnapshot = getBranchChatSnapshot(messageIndex, { swipeId: selectedSwipeId });
     if (!branchChatSnapshot) {
-        notyf.warning('Could not prepare the selected swipe for branching.', 'Branch creation failed');
+        notyf.warning(
+            'Could not prepare the selected swipe for branching.',
+            'Branch creation failed',
+        );
         return;
     }
 
     if (selected_group) {
         // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
-        await saveGroupBookmarkChat(selected_group, name, newMetadata, messageIndex, branchChatSnapshot);
+        await saveGroupBookmarkChat(
+            selected_group,
+            name,
+            newMetadata,
+            messageIndex,
+            branchChatSnapshot,
+        );
     } else {
-        await saveChat({ chatName: name, withMetadata: newMetadata, mesId: messageIndex, chatData: branchChatSnapshot });
+        await saveChat({
+            chatName: name,
+            withMetadata: newMetadata,
+            mesId: messageIndex,
+            chatData: branchChatSnapshot,
+        });
     }
 
     if (!lastMes) return name;
@@ -325,7 +358,9 @@ export async function createNewBookmark(mesId, { forceName = null } = {}) {
         return null;
     }
 
-    const mainChat = selected_group ? groups?.find(x => String(x.id) === String(selected_group))?.chat_id : characters[this_chid].chat;
+    const mainChat = selected_group
+        ? groups?.find((x) => String(x.id) === String(selected_group))?.chat_id
+        : characters[this_chid].chat;
     const newMetadata = { main_chat: mainChat };
     await saveItemizedPrompts(name);
 
@@ -341,10 +376,13 @@ export async function createNewBookmark(mesId, { forceName = null } = {}) {
     if (mes) updateBookmarkDisplay(mes as HTMLElement, name as unknown as null | undefined);
 
     await saveChatConditional();
-    notyf.success('Click the flag icon next to the message to open the checkpoint chat.', 'Create Checkpoint', { timeOut: 10000 });
+    notyf.success(
+        'Click the flag icon next to the message to open the checkpoint chat.',
+        'Create Checkpoint',
+        { timeOut: 10000 },
+    );
     return name;
 }
-
 
 /**
  * Updates the display of the bookmark on a chat message.
@@ -363,7 +401,10 @@ export function updateBookmarkDisplay(mes, newBookmarkLink = null) {
     }
     const bookmarkFlag = mes.querySelector('.mes_bookmark');
     if (bookmarkFlag) {
-        bookmarkFlag.setAttribute('title', `Checkpoint\n${mes.getAttribute('bookmark_link') ?? ''}\n\n${bookmarkFlag.getAttribute('data-tooltip') ?? ''}`);
+        bookmarkFlag.setAttribute(
+            'title',
+            `Checkpoint\n${mes.getAttribute('bookmark_link') ?? ''}\n\n${bookmarkFlag.getAttribute('data-tooltip') ?? ''}`,
+        );
     }
 }
 
@@ -400,7 +441,12 @@ export async function convertSoloToGroupChat() {
         return;
     }
 
-    const confirm = await Popup.show.confirm(t`Convert to group chat`, t`Are you sure you want to convert this chat to a group chat?` + '<br />' + t`This cannot be reverted.`);
+    const confirm = await Popup.show.confirm(
+        t`Convert to group chat`,
+        t`Are you sure you want to convert this chat to a group chat?` +
+            '<br />' +
+            t`This cannot be reverted.`,
+    );
     if (!confirm) {
         return;
     }
@@ -408,7 +454,10 @@ export async function convertSoloToGroupChat() {
     const character = characters[this_chid];
 
     // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-    const name = getUniqueName(`Group: ${character.name}`, y => groups.findIndex(x => x.name === y) !== -1);
+    const name = getUniqueName(
+        `Group: ${character.name}`,
+        (y) => groups.findIndex((x) => x.name === y) !== -1,
+    );
     const avatar = getThumbnailUrl('avatar', character.avatar);
     const chatName = humanizedDateTime();
     const chats = [chatName];
@@ -466,7 +515,12 @@ export async function convertSoloToGroupChat() {
         groupChat[index] = message;
 
         // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-        if (message.is_user || message.is_system || message.extra?.type === system_message_types.NARRATOR || message.force_avatar !== undefined) {
+        if (
+            message.is_user ||
+            message.is_system ||
+            message.extra?.type === system_message_types.NARRATOR ||
+            message.force_avatar !== undefined
+        ) {
             continue;
         }
 
@@ -554,25 +608,26 @@ function registerBookmarksSlashCommands() {
         return true;
     }
 
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'branch-create',
-        returns: 'Name of the new branch',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
-        callback: async (args, text) => {
-            const mesId = Number(args.mesId ?? text ?? getLastMessageId());
-            if (!validateMessageId(mesId, 'Create Branch')) return '';
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'branch-create',
+            returns: 'Name of the new branch',
+            // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
+            callback: async (args, text) => {
+                const mesId = Number(args.mesId ?? text ?? getLastMessageId());
+                if (!validateMessageId(mesId, 'Create Branch')) return '';
 
-            const branchName = await branchChat(mesId);
-            return branchName ?? '';
-        },
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: 'Message ID',
-                typeList: [ARGUMENT_TYPE.NUMBER],
-                enumProvider: commonEnumProviders.messages(),
-            }),
-        ],
-        helpString: `
+                const branchName = await branchChat(mesId);
+                return branchName ?? '';
+            },
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: 'Message ID',
+                    typeList: [ARGUMENT_TYPE.NUMBER],
+                    enumProvider: commonEnumProviders.messages(),
+                }),
+            ],
+            helpString: `
         <div>
             Create a new branch from the selected message. If no message id is provided, will use the last message.
         </div>
@@ -583,39 +638,41 @@ function registerBookmarksSlashCommands() {
         <div>
             Use Checkpoints and <code>/checkpoint-create</code> instead if you do not want to jump to the new chat.
         </div>`,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'checkpoint-create',
-        returns: 'Name of the new checkpoint',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
-        callback: async (args, text) => {
-            const mesId = Number(args.mesId ?? getLastMessageId());
-            if (!validateMessageId(mesId, 'Create Checkpoint')) return '';
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'checkpoint-create',
+            returns: 'Name of the new checkpoint',
+            // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
+            callback: async (args, text) => {
+                const mesId = Number(args.mesId ?? getLastMessageId());
+                if (!validateMessageId(mesId, 'Create Checkpoint')) return '';
 
-            if (typeof text !== 'string') {
-                notyf.warning('Checkpoint name must be a string or empty', 'Create Checkpoint');
-                return '';
-            }
+                if (typeof text !== 'string') {
+                    notyf.warning('Checkpoint name must be a string or empty', 'Create Checkpoint');
+                    return '';
+                }
 
-            // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'null | un... Remove this comment to see the full error message
-            const checkPointName = await createNewBookmark(mesId, { forceName: text });
-            return checkPointName ?? '';
-        },
-        namedArgumentList: [
-            SlashCommandNamedArgument.fromProps({
-                name: 'mesId',
-                description: 'Message ID',
-                typeList: [ARGUMENT_TYPE.NUMBER],
-                enumProvider: commonEnumProviders.messages(),
-            }),
-        ],
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: 'Checkpoint name',
-                typeList: [ARGUMENT_TYPE.STRING],
-            }),
-        ],
-        helpString: `
+                // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'null | un... Remove this comment to see the full error message
+                const checkPointName = await createNewBookmark(mesId, { forceName: text });
+                return checkPointName ?? '';
+            },
+            namedArgumentList: [
+                SlashCommandNamedArgument.fromProps({
+                    name: 'mesId',
+                    description: 'Message ID',
+                    typeList: [ARGUMENT_TYPE.NUMBER],
+                    enumProvider: commonEnumProviders.messages(),
+                }),
+            ],
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: 'Checkpoint name',
+                    typeList: [ARGUMENT_TYPE.STRING],
+                }),
+            ],
+            helpString: `
         <div>
             Create a new checkpoint for the selected message with the provided name. If no message id is provided, will use the last message.<br />
             Leave the checkpoint name empty to auto-generate one.
@@ -638,117 +695,134 @@ function registerBookmarksSlashCommands() {
                 </li>
             </ul>
         </div>`,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'checkpoint-go',
-        returns: 'Name of the checkpoint',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
-        callback: async (args, text) => {
-            const mesId = Number(args.mesId ?? text ?? getLastMessageId());
-            if (!validateMessageId(mesId, 'Open Checkpoint')) return '';
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'checkpoint-go',
+            returns: 'Name of the checkpoint',
+            // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
+            callback: async (args, text) => {
+                const mesId = Number(args.mesId ?? text ?? getLastMessageId());
+                if (!validateMessageId(mesId, 'Open Checkpoint')) return '';
 
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-            const checkPointName = chat[mesId].extra?.bookmark_link;
-            if (!checkPointName) {
-                notyf.warning('No checkpoint is linked to the selected message', 'Open Checkpoint');
-                return '';
-            }
+                // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
+                const checkPointName = chat[mesId].extra?.bookmark_link;
+                if (!checkPointName) {
+                    notyf.warning(
+                        'No checkpoint is linked to the selected message',
+                        'Open Checkpoint',
+                    );
+                    return '';
+                }
 
-            if (selected_group) {
-                await openGroupChat(selected_group, checkPointName);
-            } else {
-                await openCharacterChat(checkPointName);
-            }
+                if (selected_group) {
+                    await openGroupChat(selected_group, checkPointName);
+                } else {
+                    await openCharacterChat(checkPointName);
+                }
 
-            return checkPointName;
-        },
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: 'Message ID',
-                typeList: [ARGUMENT_TYPE.NUMBER],
-                enumProvider: commonEnumProviders.messages(),
-            }),
-        ],
-        helpString: `
+                return checkPointName;
+            },
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: 'Message ID',
+                    typeList: [ARGUMENT_TYPE.NUMBER],
+                    enumProvider: commonEnumProviders.messages(),
+                }),
+            ],
+            helpString: `
         <div>
             Open the checkpoint linked to the selected message. If no message id is provided, will use the last message.
         </div>
         <div>
             Use <code>/checkpoint-get</code> if you want to make sure that the selected message has a checkpoint.
         </div>`,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'checkpoint-exit',
-        returns: 'The name of the chat exited to. Returns an empty string if not in a checkpoint chat.',
-        callback: async () => {
-            const mainChat = await backToMainChat();
-            return mainChat ?? '';
-        },
-        helpString: 'Exit the checkpoint chat.<br />If not in a checkpoint chat, returns empty string.',
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'checkpoint-parent',
-        returns: 'Name of the parent chat for this checkpoint',
-        callback: async () => {
-            const mainChatName = getMainChatName();
-            return mainChatName ?? '';
-        },
-        helpString: 'Get the name of the parent chat for this checkpoint.<br />If not in a checkpoint chat, returns empty string.',
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'checkpoint-get',
-        returns: 'Name of the chat',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
-        callback: async (args, text) => {
-            const mesId = Number(args.mesId ?? text ?? getLastMessageId());
-            if (!validateMessageId(mesId, 'Get Checkpoint')) return '';
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'checkpoint-exit',
+            returns:
+                'The name of the chat exited to. Returns an empty string if not in a checkpoint chat.',
+            callback: async () => {
+                const mainChat = await backToMainChat();
+                return mainChat ?? '';
+            },
+            helpString:
+                'Exit the checkpoint chat.<br />If not in a checkpoint chat, returns empty string.',
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'checkpoint-parent',
+            returns: 'Name of the parent chat for this checkpoint',
+            callback: async () => {
+                const mainChatName = getMainChatName();
+                return mainChatName ?? '';
+            },
+            helpString:
+                'Get the name of the parent chat for this checkpoint.<br />If not in a checkpoint chat, returns empty string.',
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'checkpoint-get',
+            returns: 'Name of the chat',
+            // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
+            callback: async (args, text) => {
+                const mesId = Number(args.mesId ?? text ?? getLastMessageId());
+                if (!validateMessageId(mesId, 'Get Checkpoint')) return '';
 
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-            const checkPointName = chat[mesId].extra?.bookmark_link;
-            return checkPointName ?? '';
-        },
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: 'Message ID',
-                typeList: [ARGUMENT_TYPE.NUMBER],
-                enumProvider: commonEnumProviders.messages(),
-            }),
-        ],
-        helpString: `
+                // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
+                const checkPointName = chat[mesId].extra?.bookmark_link;
+                return checkPointName ?? '';
+            },
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: 'Message ID',
+                    typeList: [ARGUMENT_TYPE.NUMBER],
+                    enumProvider: commonEnumProviders.messages(),
+                }),
+            ],
+            helpString: `
         <div>
             Get the name of the checkpoint linked to the selected message. If no message id is provided, will use the last message.<br />
             If no checkpoint is linked, the result will be empty.
         </div>`,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'checkpoint-list',
-        returns: 'JSON array of all existing checkpoints in this chat, as an array',
-        /**
-         * @param {{links?: string}} args @returns {Promise<string>}
-         * @param _
-         */
-        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
-        callback: async (args, _) => {
-            const useLinks = isTrueBoolean(args.links);
-            const result = [];
-            for (let i = 0; i < chat.length; i++) {
-                const message = chat[i];
-                if (message && message.extra && message.extra.bookmark_link) {
-                    result.push(useLinks ? message.extra.bookmark_link : i);
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'checkpoint-list',
+            returns: 'JSON array of all existing checkpoints in this chat, as an array',
+            /**
+             * @param {{links?: string}} args @returns {Promise<string>}
+             * @param _
+             */
+            // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
+            callback: async (args, _) => {
+                const useLinks = isTrueBoolean(args.links);
+                const result = [];
+                for (let i = 0; i < chat.length; i++) {
+                    const message = chat[i];
+                    if (message && message.extra && message.extra.bookmark_link) {
+                        result.push(useLinks ? message.extra.bookmark_link : i);
+                    }
                 }
-            }
-            return JSON.stringify(result);
-        },
-        namedArgumentList: [
-            SlashCommandNamedArgument.fromProps({
-                name: 'links',
-                description: 'Get a list of all links / chat names of the checkpoints, instead of the message ids',
-                typeList: [ARGUMENT_TYPE.BOOLEAN],
-                enumList: commonEnumProviders.boolean('trueFalse')(),
-                defaultValue: 'false',
-            }),
-        ],
-        helpString: `
+                return JSON.stringify(result);
+            },
+            namedArgumentList: [
+                SlashCommandNamedArgument.fromProps({
+                    name: 'links',
+                    description:
+                        'Get a list of all links / chat names of the checkpoints, instead of the message ids',
+                    typeList: [ARGUMENT_TYPE.BOOLEAN],
+                    enumList: commonEnumProviders.boolean('trueFalse')(),
+                    defaultValue: 'false',
+                }),
+            ],
+            helpString: `
         <div>
             List all existing checkpoints in this chat.
         </div>
@@ -756,7 +830,8 @@ function registerBookmarksSlashCommands() {
             Returns a list of all message ids that have a checkpoint, or all checkpoint links if <code>links</code> is set to <code>true</code>.<br />
             The value will be a JSON array.
         </div>`,
-    }));
+        }),
+    );
 }
 
 /**
@@ -765,7 +840,9 @@ function registerBookmarksSlashCommands() {
 export function initBookmarks() {
     document.getElementById('option_new_bookmark')?.addEventListener('click', saveBookmarkMenu);
     document.getElementById('option_back_to_main')?.addEventListener('click', backToMainChat);
-    document.getElementById('option_convert_to_group')?.addEventListener('click', convertSoloToGroupChat);
+    document
+        .getElementById('option_convert_to_group')
+        ?.addEventListener('click', convertSoloToGroupChat);
 
     document.addEventListener('click', async function (e) {
         if (!(e.target instanceof Element)) return;

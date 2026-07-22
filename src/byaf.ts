@@ -77,7 +77,9 @@ export class ByafParser {
         }
         const greetings = new Set();
         const firstScenarioFirstMessage = scenarios?.[0]?.firstMessages?.[0]?.text;
-        for (const scenario of scenarios.slice(1).filter(s => Array.isArray(s.firstMessages) && s.firstMessages.length > 0)) {
+        for (const scenario of scenarios
+            .slice(1)
+            .filter((s) => Array.isArray(s.firstMessages) && s.firstMessages.length > 0)) {
             // As per the BYAF spec, "firstMessages" array MUST contain AT MOST one message.
             // So we only consider the first one if it exists.
             const firstMessage = scenario?.firstMessages?.[0];
@@ -111,7 +113,10 @@ export class ByafParser {
             }
             // @ts-expect-error entries inferred as never[]
             book.entries.push({
-                keys: ByafParser.replaceMacros(item?.key).split(',').map(key => key.trim()).filter(Boolean),
+                keys: ByafParser.replaceMacros(item?.key)
+                    .split(',')
+                    .map((key) => key.trim())
+                    .filter(Boolean),
                 content: ByafParser.replaceMacros(item?.value),
                 extensions: {},
                 enabled: true,
@@ -140,7 +145,9 @@ export class ByafParser {
         }
 
         if (charactersArray.length > 1) {
-            console.warn('Warning: BYAF manifest contains more than one character, only the first one will be imported');
+            console.warn(
+                'Warning: BYAF manifest contains more than one character, only the first one will be imported',
+            );
         }
 
         const characterPath = charactersArray[0];
@@ -158,7 +165,7 @@ export class ByafParser {
             return { character, characterPath };
         } catch (error) {
             console.error('Failed to parse character JSON from BYAF:', error);
-            throw new Error('Invalid BYAF file: character is not a valid JSON');
+            throw new Error('Invalid BYAF file: character is not a valid JSON', { cause: error });
         }
     }
 
@@ -231,7 +238,11 @@ export class ByafParser {
                 continue;
             }
 
-            imageBuffers.push({ filename: path.basename(imagePath), image: imageBuffer, label: image?.label || '' });
+            imageBuffers.push({
+                filename: path.basename(imagePath),
+                image: imageBuffer,
+                label: image?.label || '',
+            });
         }
         if (imageBuffers.length === 0) {
             console.warn('Warning: BYAF character has no valid images');
@@ -248,7 +259,11 @@ export class ByafParser {
      * @returns {TavernCardV2} Character card object
      * @private
      */
-    getCharacterCard(manifest: ByafManifest, character: ByafCharacter, scenarios: Array<Partial<ByafScenario>>) {
+    getCharacterCard(
+        manifest: ByafManifest,
+        character: ByafCharacter,
+        scenarios: Array<Partial<ByafScenario>>,
+    ) {
         return {
             spec: 'chara_card_v2',
             spec_version: '2.0',
@@ -271,7 +286,9 @@ export class ByafParser {
                 tags: character?.isNSFW ? ['nsfw'] : [], // Since there are no tags in BYAF spec, we can use this to preserve the isNSFW flag.
                 creator: manifest?.author?.name || '',
                 character_version: '',
-                extensions: { ...(character?.displayName && { 'display_name': character?.displayName }) }, // Preserve display name unmodified using extensions. "display_name" is not used by SillyTavern currently.
+                extensions: {
+                    ...(character?.displayName && { display_name: character?.displayName }),
+                }, // Preserve display name unmodified using extensions. "display_name" is not used by SillyTavern currently.
             },
             create_date: new Date().toISOString(),
         };
@@ -292,7 +309,9 @@ export class ByafParser {
             if (bgImagePath) {
                 const data = await extractFileFromZipBuffer(this.#data, bgImagePath);
                 if (data) {
-                    const existingIndex = backgrounds.findIndex(bg => bg.data.compare(data) === 0);
+                    const existingIndex = backgrounds.findIndex(
+                        (bg) => bg.data.compare(data) === 0,
+                    );
                     if (existingIndex !== -1) {
                         // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                         backgrounds[existingIndex].paths.push(bgImagePath);
@@ -336,39 +355,58 @@ export class ByafParser {
      * @param {Array<ByafChatBackground>} chatBackgrounds Chat backgrounds
      * @returns {string} Chat data
      */
-    static getChatFromScenario(scenario: Partial<ByafScenario>, userName: string, characterName: string, chatBackgrounds: Array<ByafChatBackground>) {
+    static getChatFromScenario(
+        scenario: Partial<ByafScenario>,
+        userName: string,
+        characterName: string,
+        chatBackgrounds: Array<ByafChatBackground>,
+    ) {
         // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-        const chatStartDate = scenario?.messages?.length == 0 ? new Date().toISOString() : scenario?.messages?.filter((m: ByafHumanMessage | ByafAiMessage) => 'createdAt' in m)[0].createdAt;
-        const chatBackground = chatBackgrounds.find((bg: ByafChatBackground) => bg.paths.includes(scenario?.backgroundImage || ''))?.name || '';
+        const chatStartDate =
+            scenario?.messages?.length == 0
+                ? new Date().toISOString()
+                : scenario?.messages?.filter(
+                      (m: ByafHumanMessage | ByafAiMessage) => 'createdAt' in m,
+                  )[0].createdAt;
+        const chatBackground =
+            chatBackgrounds.find((bg: ByafChatBackground) =>
+                bg.paths.includes(scenario?.backgroundImage || ''),
+            )?.name || '';
         /** @type {object[]} */
-        const chat = [{
-            user_name: 'unused',
-            character_name: 'unused',
-            chat_metadata: {
-                scenario: scenario?.narrative ?? '',
-                // @ts-expect-error TS(2345) FIXME: Argument of type 'ByafExampleMessage[] | undefined... Remove this comment to see the full error message
-                mes_example: ByafParser.formatExampleMessages(scenario?.exampleMessages),
-                // @ts-expect-error TS(2345) FIXME: Argument of type 'string | undefined' is not assig... Remove this comment to see the full error message
-                system_prompt: ByafParser.replaceMacros(scenario?.formattingInstructions),
-                mes_examples_optional: scenario?.canDeleteExampleMessages ?? false,
-                byaf_model_settings: {
-                    model: scenario?.model ?? '',
-                    temperature: scenario?.temperature ?? 1.2,
-                    top_k: scenario?.topK ?? 40,
-                    top_p: scenario?.topP ?? 0.9,
-                    min_p: scenario?.minP ?? 0.1,
-                    min_p_enabled: scenario?.minPEnabled ?? true,
-                    repeat_penalty: scenario?.repeatPenalty ?? 1.05,
-                    repeat_penalty_tokens: scenario?.repeatLastN ?? 256,
-                    by_prompt_template: scenario?.promptTemplate ?? 'general',
-                    grammar: scenario?.grammar ?? null,
+        const chat = [
+            {
+                user_name: 'unused',
+                character_name: 'unused',
+                chat_metadata: {
+                    scenario: scenario?.narrative ?? '',
+                    // @ts-expect-error TS(2345) FIXME: Argument of type 'ByafExampleMessage[] | undefined... Remove this comment to see the full error message
+                    mes_example: ByafParser.formatExampleMessages(scenario?.exampleMessages),
+                    // @ts-expect-error TS(2345) FIXME: Argument of type 'string | undefined' is not assig... Remove this comment to see the full error message
+                    system_prompt: ByafParser.replaceMacros(scenario?.formattingInstructions),
+                    mes_examples_optional: scenario?.canDeleteExampleMessages ?? false,
+                    byaf_model_settings: {
+                        model: scenario?.model ?? '',
+                        temperature: scenario?.temperature ?? 1.2,
+                        top_k: scenario?.topK ?? 40,
+                        top_p: scenario?.topP ?? 0.9,
+                        min_p: scenario?.minP ?? 0.1,
+                        min_p_enabled: scenario?.minPEnabled ?? true,
+                        repeat_penalty: scenario?.repeatPenalty ?? 1.05,
+                        repeat_penalty_tokens: scenario?.repeatLastN ?? 256,
+                        by_prompt_template: scenario?.promptTemplate ?? 'general',
+                        grammar: scenario?.grammar ?? null,
+                    },
+                    chat_backgrounds: chatBackground ? [chatBackground] : [],
+                    custom_background: chatBackground ? `url("${encodeURI(chatBackground)}")` : '',
                 },
-                chat_backgrounds: chatBackground ? [chatBackground] : [],
-                custom_background: chatBackground ? `url("${encodeURI(chatBackground)}")` : '',
             },
-        }];
+        ];
         // Add the first message IF it exists.
-        if (scenario?.firstMessages?.length && scenario?.firstMessages?.length > 0 && scenario?.firstMessages?.[0]?.text) {
+        if (
+            scenario?.firstMessages?.length &&
+            scenario?.firstMessages?.length > 0 &&
+            scenario?.firstMessages?.[0]?.text
+        ) {
             chat.push({
                 // @ts-expect-error TS(2345) FIXME: Argument of type '{ name: string; is_user: boolean... Remove this comment to see the full error message
                 name: characterName,
@@ -378,7 +416,10 @@ export class ByafParser {
             });
         }
 
-        const sortByTimestamp = (newest: ByafAiMessage['outputs'][0], curr: ByafAiMessage['outputs'][0]) => {
+        const sortByTimestamp = (
+            newest: ByafAiMessage['outputs'][0],
+            curr: ByafAiMessage['outputs'][0],
+        ) => {
             const aTime = new Date(newest.activeTimestamp);
             const bTime = new Date(curr.activeTimestamp);
             return aTime >= bTime ? newest : curr;
@@ -391,15 +432,21 @@ export class ByafParser {
             return aiMessage.outputs.map((output: ByafAiMessage['outputs'][0]) => output.text);
         };
 
-        const userMessages = scenario?.messages?.filter((msg: ByafHumanMessage | ByafAiMessage): msg is ByafHumanMessage => msg.type === 'human');
-        const characterMessages = scenario?.messages?.filter((msg: ByafHumanMessage | ByafAiMessage): msg is ByafAiMessage => msg.type === 'ai');
+        const userMessages = scenario?.messages?.filter(
+            (msg: ByafHumanMessage | ByafAiMessage): msg is ByafHumanMessage =>
+                msg.type === 'human',
+        );
+        const characterMessages = scenario?.messages?.filter(
+            (msg: ByafHumanMessage | ByafAiMessage): msg is ByafAiMessage => msg.type === 'ai',
+        );
         /**
          * Reorders messages by interleaving user and character messages so that they are in correct chronological order.
          * This is only needed to import old chats from Backyard AI that were incorrectly imported by an earlier version
          * that completely messed up the order of messages. Backyard AI Windows frontend never supported creation of chats
          * with which were ordered like this in the first place, so for most users this is desired functionality.
          */
-        if (userMessages && characterMessages && userMessages.length === characterMessages.length) { // Only do the reordering if there are equal numbers of user and character messages, otherwise just import in existing order, because it's probably correct already.
+        if (userMessages && characterMessages && userMessages.length === characterMessages.length) {
+            // Only do the reordering if there are equal numbers of user and character messages, otherwise just import in existing order, because it's probably correct already.
             for (let i = 0; i < userMessages.length; i++) {
                 chat.push({
                     // @ts-expect-error TS(2345) FIXME: Argument of type '{ name: string; is_user: boolean... Remove this comment to see the full error message
@@ -448,7 +495,7 @@ export class ByafParser {
             console.warn('Warning: BYAF scenario contained no messages property.');
         }
 
-        return chat.map(obj => JSON.stringify(obj)).join('\n');
+        return chat.map((obj) => JSON.stringify(obj)).join('\n');
     }
 
     /**

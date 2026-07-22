@@ -76,7 +76,7 @@
     background-color: rgba(255, 0, 50, 0.4);
 }
 
-.logprobs_output_prefix:hover~.logprobs_output_prefix {
+.logprobs_output_prefix:hover ~ .logprobs_output_prefix {
     background-color: rgba(255, 0, 50, 0.4);
 }
 

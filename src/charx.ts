@@ -2,17 +2,32 @@ import fs from 'node:fs';
 import path from 'node:path';
 import sanitize from 'sanitize-filename';
 import { sync as writeFileAtomicSync } from 'write-file-atomic';
-import { extractFileFromZipBuffer, extractFilesFromZipBuffer, normalizeZipEntryPath, ensureDirectory } from './util.js';
+import {
+    extractFileFromZipBuffer,
+    extractFilesFromZipBuffer,
+    normalizeZipEntryPath,
+    ensureDirectory,
+} from './util.js';
 import { DEFAULT_AVATAR_PATH } from './constants.js';
 
 // 'embeded://' is intentional - RisuAI exports use this misspelling
 const CHARX_EMBEDDED_URI_PREFIXES = ['embeded://', 'embedded://', '__asset:'];
-const CHARX_IMAGE_EXTENSIONS = new Set(['png', 'jpg', 'jpeg', 'webp', 'gif', 'apng', 'avif', 'bmp', 'jfif']);
+const CHARX_IMAGE_EXTENSIONS = new Set([
+    'png',
+    'jpg',
+    'jpeg',
+    'webp',
+    'gif',
+    'apng',
+    'avif',
+    'bmp',
+    'jfif',
+]);
 const CHARX_SPRITE_TYPES = new Set(['emotion', 'expression']);
 const CHARX_BACKGROUND_TYPES = new Set(['background']);
 
 // ZIP local file header signature: PK\x03\x04
-const ZIP_SIGNATURE = Buffer.from([0x50, 0x4B, 0x03, 0x04]);
+const ZIP_SIGNATURE = Buffer.from([0x50, 0x4b, 0x03, 0x04]);
 
 /**
  * Find ZIP data start in buffer (handles SFX/self-extracting archives).
@@ -177,40 +192,47 @@ export class CharXParser {
             return [];
         }
 
-        return assets.map((asset, index) => {
-            if (!asset) {
-                return null;
-            }
+        return assets
+            .map((asset, index) => {
+                if (!asset) {
+                    return null;
+                }
 
-            const zipPath = this.getEmbeddedZipPathFromUri(asset.uri);
-            if (!zipPath) {
-                return null;
-            }
+                const zipPath = this.getEmbeddedZipPathFromUri(asset.uri);
+                if (!zipPath) {
+                    return null;
+                }
 
-            const ext = this.deriveCharXAssetExtension(asset.ext, zipPath);
-            const type = typeof asset.type === 'string' ? asset.type.toLowerCase() : '';
-            const name = typeof asset.name === 'string' ? asset.name : '';
+                const ext = this.deriveCharXAssetExtension(asset.ext, zipPath);
+                const type = typeof asset.type === 'string' ? asset.type.toLowerCase() : '';
+                const name = typeof asset.name === 'string' ? asset.name : '';
 
-            return {
-                type,
-                name,
-                ext,
-                zipPath,
-                order: index,
-            };
-        }).filter(Boolean);
+                return {
+                    type,
+                    name,
+                    ext,
+                    zipPath,
+                    order: index,
+                };
+            })
+            .filter(Boolean);
     }
 
     // @ts-expect-error TS(2304) FIXME: Cannot find name 'CharXAsset'.
     pickCharXIconAsset(assets: Array<CharXAsset>) {
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'CharXAsset'.
-        const iconAssets = assets.filter((asset: CharXAsset) => asset.type === 'icon' && CHARX_IMAGE_EXTENSIONS.has(asset.ext) && asset.zipPath);
+        const iconAssets = assets.filter(
+            (asset: CharXAsset) =>
+                asset.type === 'icon' && CHARX_IMAGE_EXTENSIONS.has(asset.ext) && asset.zipPath,
+        );
         if (iconAssets.length === 0) {
             return null;
         }
 
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'CharXAsset'.
-        const mainIcon = iconAssets.find((asset: CharXAsset) => asset.name?.toLowerCase() === 'main');
+        const mainIcon = iconAssets.find(
+            (asset: CharXAsset) => asset.name?.toLowerCase() === 'main',
+        );
         return mainIcon || iconAssets[0];
     }
 
@@ -222,7 +244,7 @@ export class CharXParser {
      * @returns {string} Normalized filename base (without extension)
      */
     getCharXAssetBaseName(name: string, fallback: string, useHyphens = false) {
-        const cleaned = (String(name ?? '').trim() || '');
+        const cleaned = String(name ?? '').trim() || '';
         if (!cleaned) {
             return fallback.toLowerCase();
         }
@@ -277,7 +299,11 @@ export class CharXParser {
                 ...asset,
                 ext,
                 storageCategory,
-                baseName: this.getCharXAssetBaseName(nameWithoutExt, `${storageCategory}-${asset.order ?? 0}`, useHyphens),
+                baseName: this.getCharXAssetBaseName(
+                    nameWithoutExt,
+                    `${storageCategory}-${asset.order ?? 0}`,
+                    useHyphens,
+                ),
             });
 
             return acc;
@@ -293,7 +319,10 @@ export class CharXParser {
  */
 function deleteExistingByBaseName(dirPath: string, baseName: string) {
     try {
-        const files = fs.readdirSync(dirPath, { withFileTypes: true }).filter(f => f.isFile()).map(f => f.name);
+        const files = fs
+            .readdirSync(dirPath, { withFileTypes: true })
+            .filter((f) => f.isFile())
+            .map((f) => f.name);
         for (const file of files) {
             if (path.parse(file).name === baseName) {
                 fs.unlinkSync(path.join(dirPath, file));
@@ -314,7 +343,12 @@ function deleteExistingByBaseName(dirPath: string, baseName: string) {
  * @returns {{sprites: number, backgrounds: number, misc: number}}
  */
 // @ts-expect-error TS(2304) FIXME: Cannot find name 'CharXAsset'.
-export function persistCharXAssets(assets: Array<CharXAsset>, bufferMap: Map<string, Buffer>, directories: Record<string, string>, characterFolder: string) {
+export function persistCharXAssets(
+    assets: Array<CharXAsset>,
+    bufferMap: Map<string, Buffer>,
+    directories: Record<string, string>,
+    characterFolder: string,
+) {
     /** @type {{sprites: number, backgrounds: number, misc: number}} */
     const summary = { sprites: 0, backgrounds: 0, misc: 0 };
     if (!Array.isArray(assets) || assets.length === 0) {
@@ -375,7 +409,11 @@ export function persistCharXAssets(assets: Array<CharXAsset>, bufferMap: Map<str
 
             if (asset.storageCategory === 'background') {
                 // Store in character-specific backgrounds folder: characters/{charName}/backgrounds/
-                const backgroundDir = path.join(directories.characters!, characterFolder, 'backgrounds');
+                const backgroundDir = path.join(
+                    directories.characters!,
+                    characterFolder,
+                    'backgrounds',
+                );
                 if (!ensureDirectory(backgroundDir)) {
                     continue;
                 }

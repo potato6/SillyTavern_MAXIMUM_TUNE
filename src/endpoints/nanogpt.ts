@@ -13,15 +13,15 @@ let _providersCacheTime = 0;
 
 router.get('/providers', async (_req, res) => {
     try {
-        if (_providersCache && (Date.now() - _providersCacheTime) < 3600_000) {
+        if (_providersCache && Date.now() - _providersCacheTime < 3600_000) {
             return res.json(_providersCache);
         }
         const response = await fetch(`${API_NANOGPT}/models/providers`, {
             method: 'GET',
-            headers: { 'Accept': 'application/json' },
+            headers: { Accept: 'application/json' },
         });
         if (!response.ok) return res.json(_providersCache ?? []);
-        const data = await response.json() as { providers?: { id: string; label: string }[] };
+        const data = (await response.json()) as { providers?: { id: string; label: string }[] };
         _providersCache = data?.providers ?? [];
         _providersCacheTime = Date.now();
         return res.json(_providersCache);
@@ -69,7 +69,7 @@ router.post('/credits', async (req, res) => {
         }
 
         const headers = {
-            'Accept': 'application/json',
+            Accept: 'application/json',
             'x-api-key': key,
         };
 
@@ -80,11 +80,14 @@ router.post('/credits', async (req, res) => {
         ]);
 
         if (balanceReq.status !== 'fulfilled' || !balanceReq.value.ok) {
-            console.warn('NanoGPT balance request failed', balanceReq.status === 'fulfilled' ? balanceReq.value.statusText : balanceReq.reason);
+            console.warn(
+                'NanoGPT balance request failed',
+                balanceReq.status === 'fulfilled' ? balanceReq.value.statusText : balanceReq.reason,
+            );
             return res.sendStatus(500);
         }
 
-        const balanceData = await balanceReq.value.json() as Record<string, unknown>;
+        const balanceData = (await balanceReq.value.json()) as Record<string, unknown>;
         const result = {
             usd_balance: parseNumber(balanceData.usd_balance),
             nano_balance: parseNumber(balanceData.nano_balance),
@@ -138,7 +141,7 @@ router.post('/models/providers', async (req, res) => {
         const response = await fetch(`${API_NANOGPT}/models/${encodedModel}/providers`, {
             method: 'GET',
             headers: {
-                'Accept': 'application/json',
+                Accept: 'application/json',
             },
         });
 
@@ -146,9 +149,12 @@ router.post('/models/providers', async (req, res) => {
             return res.json({ supportsProviderSelection: false, providers: [] });
         }
 
-        const data = await response.json() as Record<string, unknown>;
+        const data = (await response.json()) as Record<string, unknown>;
         const providers = Array.isArray(data?.providers)
-            ? data.providers.filter((p: Record<string, unknown>) => p?.available !== false).map((p: Record<string, unknown>) => p.provider).filter(Boolean)
+            ? data.providers
+                  .filter((p: Record<string, unknown>) => p?.available !== false)
+                  .map((p: Record<string, unknown>) => p.provider)
+                  .filter(Boolean)
             : [];
 
         return res.json({

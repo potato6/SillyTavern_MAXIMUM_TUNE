@@ -19,13 +19,22 @@ export default async function corsProxyMiddleware(req: Request, res: Response) {
     try {
         const headers = JSON.parse(JSON.stringify(req.headers));
         const headersToRemove = [
-            'x-csrf-token', 'host', 'referer', 'origin', 'cookie',
-            'x-forwarded-for', 'x-forwarded-protocol', 'x-forwarded-proto',
-            'x-forwarded-host', 'x-real-ip', 'sec-fetch-mode',
-            'sec-fetch-site', 'sec-fetch-dest',
+            'x-csrf-token',
+            'host',
+            'referer',
+            'origin',
+            'cookie',
+            'x-forwarded-for',
+            'x-forwarded-protocol',
+            'x-forwarded-proto',
+            'x-forwarded-host',
+            'x-real-ip',
+            'sec-fetch-mode',
+            'sec-fetch-site',
+            'sec-fetch-dest',
         ];
 
-        headersToRemove.forEach(header => delete headers[header]);
+        headersToRemove.forEach((header) => delete headers[header]);
 
         const bodyMethods = ['POST', 'PUT', 'PATCH'];
 

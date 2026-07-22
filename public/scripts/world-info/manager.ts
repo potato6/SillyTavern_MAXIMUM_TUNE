@@ -89,34 +89,44 @@ class WorldInfoManager {
      * Bulk-apply settings
      * @param settings
      */
-    applySettings(settings: Partial<{
-        depth: number;
-        minActivations: number;
-        minActivationsDepthMax: number;
-        budget: number;
-        includeNames: boolean;
-        recursive: boolean;
-        overflowAlert: boolean;
-        caseSensitive: boolean;
-        matchWholeWords: boolean;
-        characterStrategy: number;
-        budgetCap: number;
-        useGroupScoring: boolean;
-        maxRecursionSteps: number;
-    }>) {
+    applySettings(
+        settings: Partial<{
+            depth: number;
+            minActivations: number;
+            minActivationsDepthMax: number;
+            budget: number;
+            includeNames: boolean;
+            recursive: boolean;
+            overflowAlert: boolean;
+            caseSensitive: boolean;
+            matchWholeWords: boolean;
+            characterStrategy: number;
+            budgetCap: number;
+            useGroupScoring: boolean;
+            maxRecursionSteps: number;
+        }>,
+    ) {
         if (settings.depth !== undefined) this.depth = Number(settings.depth);
-        if (settings.minActivations !== undefined) this.minActivations = Number(settings.minActivations);
-        if (settings.minActivationsDepthMax !== undefined) this.minActivationsDepthMax = Number(settings.minActivationsDepthMax);
+        if (settings.minActivations !== undefined)
+            this.minActivations = Number(settings.minActivations);
+        if (settings.minActivationsDepthMax !== undefined)
+            this.minActivationsDepthMax = Number(settings.minActivationsDepthMax);
         if (settings.budget !== undefined) this.budget = Number(settings.budget);
         if (settings.includeNames !== undefined) this.includeNames = Boolean(settings.includeNames);
         if (settings.recursive !== undefined) this.recursive = Boolean(settings.recursive);
-        if (settings.overflowAlert !== undefined) this.overflowAlert = Boolean(settings.overflowAlert);
-        if (settings.caseSensitive !== undefined) this.caseSensitive = Boolean(settings.caseSensitive);
-        if (settings.matchWholeWords !== undefined) this.matchWholeWords = Boolean(settings.matchWholeWords);
-        if (settings.characterStrategy !== undefined) this.characterStrategy = Number(settings.characterStrategy);
+        if (settings.overflowAlert !== undefined)
+            this.overflowAlert = Boolean(settings.overflowAlert);
+        if (settings.caseSensitive !== undefined)
+            this.caseSensitive = Boolean(settings.caseSensitive);
+        if (settings.matchWholeWords !== undefined)
+            this.matchWholeWords = Boolean(settings.matchWholeWords);
+        if (settings.characterStrategy !== undefined)
+            this.characterStrategy = Number(settings.characterStrategy);
         if (settings.budgetCap !== undefined) this.budgetCap = Number(settings.budgetCap);
-        if (settings.useGroupScoring !== undefined) this.useGroupScoring = Boolean(settings.useGroupScoring);
-        if (settings.maxRecursionSteps !== undefined) this.maxRecursionSteps = Number(settings.maxRecursionSteps);
+        if (settings.useGroupScoring !== undefined)
+            this.useGroupScoring = Boolean(settings.useGroupScoring);
+        if (settings.maxRecursionSteps !== undefined)
+            this.maxRecursionSteps = Number(settings.maxRecursionSteps);
     }
 
     /**
@@ -128,10 +138,14 @@ class WorldInfoManager {
         const entryVal = (entry as unknown as Record<string, unknown>)[key];
         if (entryVal !== null && entryVal !== undefined) return entryVal;
         switch (key) {
-            case 'caseSensitive': return this.caseSensitive;
-            case 'matchWholeWords': return this.matchWholeWords;
-            case 'useGroupScoring': return this.useGroupScoring;
-            default: return entryVal;
+            case 'caseSensitive':
+                return this.caseSensitive;
+            case 'matchWholeWords':
+                return this.matchWholeWords;
+            case 'useGroupScoring':
+                return this.useGroupScoring;
+            default:
+                return entryVal;
         }
     }
 
@@ -229,7 +243,7 @@ class WorldInfoManager {
             cache: 'no-cache',
         });
         if (response.ok) {
-            const data = await response.json() as WorldInfoBook;
+            const data = (await response.json()) as WorldInfoBook;
             this.cache.set(name, data);
             return data;
         }

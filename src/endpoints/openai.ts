@@ -5,7 +5,12 @@ import express from 'express';
 import { getConfigValue, mergeObjectWithYaml, excludeKeysByYaml, trimV1, delay } from '../util.js';
 import { setAdditionalHeaders } from '../additional-headers.js';
 import { readSecret, SECRET_KEYS } from './secrets.js';
-import { AIMLAPI_HEADERS, OPENROUTER_HEADERS, SILICONFLOW_ENDPOINT, ZAI_ENDPOINT } from '../constants.js';
+import {
+    AIMLAPI_HEADERS,
+    OPENROUTER_HEADERS,
+    SILICONFLOW_ENDPOINT,
+    ZAI_ENDPOINT,
+} from '../constants.js';
 
 export const router = express.Router();
 
@@ -119,7 +124,7 @@ router.post('/caption-image', async (request, response) => {
                     role: 'user',
                     content: [
                         { type: 'text', text: request.body.prompt },
-                        { type: 'image_url', image_url: { 'url': request.body.image } },
+                        { type: 'image_url', image_url: { url: request.body.image } },
                     ],
                 },
             ],
@@ -202,16 +207,17 @@ router.post('/caption-image', async (request, response) => {
         }
 
         if (request.body.api === 'zai' && !request.body.reverse_proxy) {
-            apiUrl = request.body.zai_endpoint === ZAI_ENDPOINT.CODING
-                ? 'https://api.z.ai/api/coding/paas/v4/chat/completions'
-                : 'https://api.z.ai/api/paas/v4/chat/completions';
+            apiUrl =
+                request.body.zai_endpoint === ZAI_ENDPOINT.CODING
+                    ? 'https://api.z.ai/api/coding/paas/v4/chat/completions'
+                    : 'https://api.z.ai/api/paas/v4/chat/completions';
         }
 
         // Handle video inlining for Z.AI
         if (request.body.api === 'zai' && /data:video\/\w+;base64,/.test(request.body.image)) {
-            const message = body.messages.find(msg => Array.isArray(msg.content));
+            const message = body.messages.find((msg) => Array.isArray(msg.content));
             if (message) {
-                const imgContent = message.content.find(c => c.type === 'image_url');
+                const imgContent = message.content.find((c) => c.type === 'image_url');
                 if (imgContent) {
                     imgContent.type = 'video_url';
                     // @ts-expect-error TS(2339) FIXME: Property 'video_url' does not exist on type '{ typ... Remove this comment to see the full error message
@@ -224,7 +230,9 @@ router.post('/caption-image', async (request, response) => {
         if (request.body.api === 'workers_ai') {
             const accountId = String(request.body.workers_ai_account_id || '').trim();
             if (!accountId) {
-                return response.status(400).send({ error: 'Cloudflare Workers AI Account ID is required' });
+                return response
+                    .status(400)
+                    .send({ error: 'Cloudflare Workers AI Account ID is required' });
             }
             apiUrl = `https://api.cloudflare.com/client/v4/accounts/${encodeURIComponent(accountId)}/ai/v1/chat/completions`;
         }
@@ -353,17 +361,23 @@ router.post('/electronhub/generate-voice', async (request, response) => {
         // @ts-expect-error TS(2339) FIXME: Property 'instructions' does not exist on type '{ ... Remove this comment to see the full error message
         if (request.body.instructions) requestBody.instructions = request.body.instructions;
         // @ts-expect-error TS(2339) FIXME: Property 'speaker_transcript' does not exist on ty... Remove this comment to see the full error message
-        if (request.body.speaker_transcript) requestBody.speaker_transcript = request.body.speaker_transcript;
+        if (request.body.speaker_transcript)
+            requestBody.speaker_transcript = request.body.speaker_transcript;
         // @ts-expect-error TS(2339) FIXME: Property 'cfg_scale' does not exist on type '{ inp... Remove this comment to see the full error message
-        if (Number.isFinite(request.body.cfg_scale)) requestBody.cfg_scale = Number(request.body.cfg_scale);
+        if (Number.isFinite(request.body.cfg_scale))
+            requestBody.cfg_scale = Number(request.body.cfg_scale);
         // @ts-expect-error TS(2339) FIXME: Property 'cfg_filter_top_k' does not exist on type... Remove this comment to see the full error message
-        if (Number.isFinite(request.body.cfg_filter_top_k)) requestBody.cfg_filter_top_k = Number(request.body.cfg_filter_top_k);
+        if (Number.isFinite(request.body.cfg_filter_top_k))
+            requestBody.cfg_filter_top_k = Number(request.body.cfg_filter_top_k);
         // @ts-expect-error TS(2339) FIXME: Property 'speech_rate' does not exist on type '{ i... Remove this comment to see the full error message
-        if (Number.isFinite(request.body.speech_rate)) requestBody.speech_rate = Number(request.body.speech_rate);
+        if (Number.isFinite(request.body.speech_rate))
+            requestBody.speech_rate = Number(request.body.speech_rate);
         // @ts-expect-error TS(2339) FIXME: Property 'pitch_adjustment' does not exist on type... Remove this comment to see the full error message
-        if (Number.isFinite(request.body.pitch_adjustment)) requestBody.pitch_adjustment = Number(request.body.pitch_adjustment);
+        if (Number.isFinite(request.body.pitch_adjustment))
+            requestBody.pitch_adjustment = Number(request.body.pitch_adjustment);
         // @ts-expect-error TS(2339) FIXME: Property 'emotional_style' does not exist on type ... Remove this comment to see the full error message
-        if (request.body.emotional_style) requestBody.emotional_style = request.body.emotional_style;
+        if (request.body.emotional_style)
+            requestBody.emotional_style = request.body.emotional_style;
 
         // Handle dynamic parameters sent from the frontend
         const knownParams = new Set(Object.keys(requestBody));
@@ -376,7 +390,9 @@ router.post('/electronhub/generate-voice', async (request, response) => {
 
         // Clean undefineds
         // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        Object.keys(requestBody).forEach(k => requestBody[k] === undefined && delete requestBody[k]);
+        Object.keys(requestBody).forEach(
+            (k) => requestBody[k] === undefined && delete requestBody[k],
+        );
 
         console.debug('ElectronHub TTS request', requestBody);
 
@@ -427,7 +443,7 @@ router.post('/electronhub/models', async (request, response) => {
             console.warn('ElectronHub models request failed', result.statusText, text);
             return response.status(500).send(text);
         }
-        const data = await result.json() as Record<string, unknown>;
+        const data = (await result.json()) as Record<string, unknown>;
         const models = data && Array.isArray(data.data) ? data.data : [];
         return response.json(models);
     } catch (error) {
@@ -488,12 +504,15 @@ router.post('/chutes/models/embedding', async (request, response) => {
             return response.sendStatus(400);
         }
 
-        const result = await fetch('https://api.chutes.ai/chutes/?template=embedding&include_public=true&limit=999', {
-            method: 'GET',
-            headers: {
-                Authorization: `Bearer ${key}`,
+        const result = await fetch(
+            'https://api.chutes.ai/chutes/?template=embedding&include_public=true&limit=999',
+            {
+                method: 'GET',
+                headers: {
+                    Authorization: `Bearer ${key}`,
+                },
             },
-        });
+        );
 
         if (!result.ok) {
             const text = await result.text();
@@ -501,7 +520,7 @@ router.post('/chutes/models/embedding', async (request, response) => {
             return response.status(500).send(text);
         }
 
-        const data = await result.json() as Record<string, unknown>;
+        const data = (await result.json()) as Record<string, unknown>;
 
         if (!Array.isArray(data?.items)) {
             console.warn('Chutes embedding models response invalid', data);
@@ -526,7 +545,7 @@ router.post('/nanogpt/models/embedding', async (request, response) => {
         const result = await fetch('https://nano-gpt.com/api/v1/embedding-models', {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${key}`,
+                Authorization: `Bearer ${key}`,
                 'Accept-Encoding': 'identity',
             },
         });
@@ -537,7 +556,7 @@ router.post('/nanogpt/models/embedding', async (request, response) => {
             return response.status(500).send(text);
         }
 
-        const data = await result.json() as Record<string, unknown>;
+        const data = (await result.json()) as Record<string, unknown>;
 
         if (!Array.isArray(data?.data)) {
             console.warn('NanoGPT embedding models response invalid', data);
@@ -559,9 +578,10 @@ router.post('/siliconflow/models/embedding', async (request, response) => {
             return response.sendStatus(400);
         }
 
-        const apiUrl = request.body.siliconflow_endpoint === SILICONFLOW_ENDPOINT.CN
-            ? 'https://api.siliconflow.cn/v1/models?type=text&sub_type=embedding'
-            : 'https://api.siliconflow.com/v1/models?type=text&sub_type=embedding';
+        const apiUrl =
+            request.body.siliconflow_endpoint === SILICONFLOW_ENDPOINT.CN
+                ? 'https://api.siliconflow.cn/v1/models?type=text&sub_type=embedding'
+                : 'https://api.siliconflow.com/v1/models?type=text&sub_type=embedding';
 
         const result = await fetch(apiUrl, {
             method: 'GET',
@@ -576,7 +596,7 @@ router.post('/siliconflow/models/embedding', async (request, response) => {
             return response.status(500).send(text);
         }
 
-        const data = await result.json() as Record<string, unknown>;
+        const data = (await result.json()) as Record<string, unknown>;
 
         if (!Array.isArray(data?.data)) {
             console.warn('SiliconFlow embedding models response invalid', data);
@@ -619,17 +639,19 @@ router.post('/workers-ai/models/embedding', async (request, response) => {
             return response.status(500).send(text);
         }
 
-        const data = await result.json() as Record<string, unknown>;
+        const data = (await result.json()) as Record<string, unknown>;
 
         if (!Array.isArray(data?.result)) {
             console.warn('Workers AI embedding models response invalid', data);
             return response.sendStatus(500);
         }
 
-        return response.json(data.result.map((m: Record<string, unknown>) => ({
-            ...m,
-            id: m.name
-        })));
+        return response.json(
+            data.result.map((m: Record<string, unknown>) => ({
+                ...m,
+                id: m.name,
+            })),
+        );
     } catch (error) {
         console.error('Workers AI embedding models fetch failed', error);
         response.sendStatus(500);
@@ -662,7 +684,7 @@ router.post('/generate-image', async (request, response) => {
             return response.status(500).send(text);
         }
 
-        const data = await result.json() as Record<string, unknown>;
+        const data = (await result.json()) as Record<string, unknown>;
         return response.json(data);
     } catch (error) {
         console.error(error);
@@ -691,7 +713,7 @@ router.post('/generate-video', async (request, response) => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${key}`,
+                Authorization: `Bearer ${key}`,
             },
             body: JSON.stringify({
                 prompt: request.body.prompt,
@@ -703,11 +725,15 @@ router.post('/generate-video', async (request, response) => {
 
         if (!videoJobResponse.ok) {
             const text = await videoJobResponse.text();
-            console.warn('OpenAI video generation request failed', videoJobResponse.statusText, text);
+            console.warn(
+                'OpenAI video generation request failed',
+                videoJobResponse.statusText,
+                text,
+            );
             return response.status(500).send(text);
         }
 
-        const videoJob = await videoJobResponse.json() as Record<string, unknown>;
+        const videoJob = (await videoJobResponse.json()) as Record<string, unknown>;
 
         if (!videoJob || !videoJob.id) {
             console.warn('OpenAI video generation returned no job ID', videoJob);
@@ -727,7 +753,7 @@ router.post('/generate-video', async (request, response) => {
             const pollResponse = await fetch(`https://api.openai.com/v1/videos/${videoJob.id}`, {
                 method: 'GET',
                 headers: {
-                    'Authorization': `Bearer ${key}`,
+                    Authorization: `Bearer ${key}`,
                 },
             });
 
@@ -737,8 +763,10 @@ router.post('/generate-video', async (request, response) => {
                 return response.status(500).send(text);
             }
 
-            const pollResult = await pollResponse.json() as Record<string, unknown>;
-            console.debug(`OpenAI video job status: ${pollResult.status}, progress: ${pollResult.progress}`);
+            const pollResult = (await pollResponse.json()) as Record<string, unknown>;
+            console.debug(
+                `OpenAI video job status: ${pollResult.status}, progress: ${pollResult.progress}`,
+            );
 
             if (pollResult.status === 'failed') {
                 console.warn('OpenAI video generation failed', pollResult);
@@ -746,21 +774,31 @@ router.post('/generate-video', async (request, response) => {
             }
 
             if (pollResult.status === 'completed') {
-                const contentResponse = await fetch(`https://api.openai.com/v1/videos/${videoJob.id}/content`, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${key}`,
+                const contentResponse = await fetch(
+                    `https://api.openai.com/v1/videos/${videoJob.id}/content`,
+                    {
+                        method: 'GET',
+                        headers: {
+                            Authorization: `Bearer ${key}`,
+                        },
                     },
-                });
+                );
 
                 if (!contentResponse.ok) {
                     const text = await contentResponse.text();
-                    console.warn('OpenAI video content fetch failed', contentResponse.statusText, text);
+                    console.warn(
+                        'OpenAI video content fetch failed',
+                        contentResponse.statusText,
+                        text,
+                    );
                     return response.status(500).send(text);
                 }
 
                 const contentBuffer = await contentResponse.arrayBuffer();
-                return response.send({ format: 'mp4', data: Buffer.from(contentBuffer).toString('base64') });
+                return response.send({
+                    format: 'mp4',
+                    data: Buffer.from(contentBuffer).toString('base64'),
+                });
             }
         }
     } catch (error) {
@@ -824,7 +862,7 @@ router.use('/custom', custom);
 function createTranscribeHandler({
     secretKey,
     apiUrl,
-    providerName
+    providerName,
 }: {
     secretKey: string;
     apiUrl: string;
@@ -857,7 +895,7 @@ function createTranscribeHandler({
             const result = await fetch(apiUrl, {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${key}`,
+                    Authorization: `Bearer ${key}`,
                 },
                 body: formData,
             });
@@ -869,7 +907,7 @@ function createTranscribeHandler({
             }
 
             fs.unlinkSync(request.file.path);
-            const data = await result.json() as Record<string, unknown>;
+            const data = (await result.json()) as Record<string, unknown>;
             console.debug(`${providerName} transcription response`, data);
             return response.json(data);
         } catch (error) {
@@ -879,29 +917,41 @@ function createTranscribeHandler({
     };
 }
 
-router.post('/transcribe-audio', createTranscribeHandler({
-    secretKey: SECRET_KEYS.OPENAI,
-    apiUrl: 'https://api.openai.com/v1/audio/transcriptions',
-    providerName: 'OpenAI',
-}));
+router.post(
+    '/transcribe-audio',
+    createTranscribeHandler({
+        secretKey: SECRET_KEYS.OPENAI,
+        apiUrl: 'https://api.openai.com/v1/audio/transcriptions',
+        providerName: 'OpenAI',
+    }),
+);
 
-router.post('/groq/transcribe-audio', createTranscribeHandler({
-    secretKey: SECRET_KEYS.GROQ,
-    apiUrl: 'https://api.groq.com/openai/v1/audio/transcriptions',
-    providerName: 'Groq',
-}));
+router.post(
+    '/groq/transcribe-audio',
+    createTranscribeHandler({
+        secretKey: SECRET_KEYS.GROQ,
+        apiUrl: 'https://api.groq.com/openai/v1/audio/transcriptions',
+        providerName: 'Groq',
+    }),
+);
 
-router.post('/mistral/transcribe-audio', createTranscribeHandler({
-    secretKey: SECRET_KEYS.MISTRALAI,
-    apiUrl: 'https://api.mistral.ai/v1/audio/transcriptions',
-    providerName: 'MistralAI',
-}));
+router.post(
+    '/mistral/transcribe-audio',
+    createTranscribeHandler({
+        secretKey: SECRET_KEYS.MISTRALAI,
+        apiUrl: 'https://api.mistral.ai/v1/audio/transcriptions',
+        providerName: 'MistralAI',
+    }),
+);
 
-router.post('/zai/transcribe-audio', createTranscribeHandler({
-    secretKey: SECRET_KEYS.ZAI,
-    apiUrl: 'https://api.z.ai/api/paas/v4/audio/transcriptions',
-    providerName: 'Z.AI',
-}));
+router.post(
+    '/zai/transcribe-audio',
+    createTranscribeHandler({
+        secretKey: SECRET_KEYS.ZAI,
+        apiUrl: 'https://api.z.ai/api/paas/v4/audio/transcriptions',
+        providerName: 'Z.AI',
+    }),
+);
 
 router.post('/chutes/transcribe-audio', async (request, response) => {
     try {
@@ -923,7 +973,7 @@ router.post('/chutes/transcribe-audio', async (request, response) => {
         const result = await fetch(`https://${request.body.model}.chutes.ai/transcribe`, {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${key}`,
+                Authorization: `Bearer ${key}`,
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
@@ -938,7 +988,7 @@ router.post('/chutes/transcribe-audio', async (request, response) => {
         }
 
         fs.unlinkSync(request.file.path);
-        const data = await result.json() as Record<string, unknown>;
+        const data = (await result.json()) as Record<string, unknown>;
         console.debug('Chutes transcription response', data);
 
         if (!Array.isArray(data)) {
@@ -946,7 +996,10 @@ router.post('/chutes/transcribe-audio', async (request, response) => {
             return response.sendStatus(500);
         }
 
-        const fullText = data.map(chunk => chunk.text || '').join('').trim();
+        const fullText = data
+            .map((chunk) => chunk.text || '')
+            .join('')
+            .trim();
         return response.json({ text: fullText });
     } catch (error) {
         console.error('Chutes transcription failed', error);

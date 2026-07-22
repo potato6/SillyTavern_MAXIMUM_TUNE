@@ -3,20 +3,11 @@
  * Wires up all DOM events and the initTags() entry point.
  */
 
-import {
-    this_chid,
-    menu_type,
-    eventSource,
-    event_types,
-} from '../../script.js';
+import { this_chid, menu_type, eventSource, event_types } from '../../script.js';
 import { selected_group } from '../group-chats.js';
 
 // Store imports
-import {
-    tags, getTag, createNewTag,
-    getTagById,
-    copyTags,
-} from './store/tagStore.js';
+import { tags, getTag, createNewTag, getTagById, copyTags } from './store/tagStore.js';
 
 // Orchestrator imports (addTagsToEntity, removeTagFromEntity — separate to avoid circular deps)
 import { addTagsToEntity, removeTagFromEntity } from './orchestrator.js';
@@ -24,7 +15,13 @@ import { addTagsToEntity, removeTagFromEntity } from './orchestrator.js';
 // UI imports
 import { printTagList } from './ui/tagList.js';
 import { printTagFilters } from './ui/tagFilters.js';
-import { onViewTagsListClick, onTagDeleteClick, onTagCreateClick, onTagAsFolderClick, onTagRenameInput } from './ui/tagEditor.js';
+import {
+    onViewTagsListClick,
+    onTagDeleteClick,
+    onTagCreateClick,
+    onTagAsFolderClick,
+    onTagRenameInput,
+} from './ui/tagEditor.js';
 import { onTagsBackupClick, onBackupRestoreClick, onTagsPruneClick } from './import/importer.js';
 
 import { tag_filter_type } from './types.js';
@@ -69,7 +66,8 @@ function onTagRemoveClick(this: HTMLElement, event: Event) {
     if (!tag) return;
 
     // Optional, check for multiple character ids being present.
-    const characterData = ((event.target as Element).closest('#bulk_tags_div') as HTMLElement)?.dataset.characters;
+    const characterData = ((event.target as Element).closest('#bulk_tags_div') as HTMLElement)
+        ?.dataset.characters;
     const characterIds = characterData ? JSON.parse(characterData).characterIds : null;
 
     removeTagFromEntity(tag, characterIds, { tagElement: tagElement as HTMLElement | null });
@@ -81,7 +79,7 @@ function onTagRemoveClick(this: HTMLElement, event: Event) {
  * @param event
  */
 function onTagInput(this: HTMLInputElement, event: Event) {
-    const val = (this instanceof HTMLInputElement) ? this.value : '';
+    const val = this instanceof HTMLInputElement ? this.value : '';
     if (getTag(String(val))) return;
     if ((this as unknown as { tomSelect?: { open: () => void } }).tomSelect) {
         (this as unknown as { tomSelect?: { open: () => void } }).tomSelect!.open();
@@ -120,35 +118,55 @@ function onGroupCreateClick() {
  * @param listSelector
  * @param tagListOptions
  */
-export function createTagInput(inputSelector: string, listSelector: string, tagListOptions: Record<string, unknown> = {}) {
+export function createTagInput(
+    inputSelector: string,
+    listSelector: string,
+    tagListOptions: Record<string, unknown> = {},
+) {
     const el = document.querySelector(inputSelector);
     if (!el) return;
 
     // Lazy import to avoid circular dep
     import('./utils/search.js').then(({ findTag }) => {
-        (el as unknown as Record<string, unknown>).tomSelect = new TomSelect(el as HTMLInputElement, {
-            maxItems: null,
-            create: false,
-            minLength: 0,
-            valueField: 'value',
-            labelField: 'label',
-            searchField: ['label'],
-            load: function (query: string, loadCallback: (results: { value: string; label: string }[]) => void) {
-                findTag({ term: query }, function (results: string[]) {
-                    loadCallback(results.map((s: string) => ({ value: s, label: s })));
-                }, listSelector);
+        (el as unknown as Record<string, unknown>).tomSelect = new TomSelect(
+            el as HTMLInputElement,
+            {
+                maxItems: null,
+                create: false,
+                minLength: 0,
+                valueField: 'value',
+                labelField: 'label',
+                searchField: ['label'],
+                load: function (
+                    query: string,
+                    loadCallback: (results: { value: string; label: string }[]) => void,
+                ) {
+                    findTag(
+                        { term: query },
+                        function (results: string[]) {
+                            loadCallback(results.map((s: string) => ({ value: s, label: s })));
+                        },
+                        listSelector,
+                    );
+                },
+                onItemAdd: function (value: string) {
+                    let tag = getTag(value);
+                    if (!tag) {
+                        tag = createNewTag(value);
+                    }
+                    const characterData = ((el as Element).closest('#bulk_tags_div') as HTMLElement)
+                        ?.dataset.characters;
+                    const characterIds = characterData
+                        ? JSON.parse(characterData).characterIds
+                        : null;
+                    addTagsToEntity(tag, characterIds, {
+                        tagListSelector: listSelector,
+                        tagListOptions: tagListOptions,
+                    });
+                    applyCharacterTagsToMessageDivs();
+                },
             },
-            onItemAdd: function (value: string) {
-                let tag = getTag(value);
-                if (!tag) {
-                    tag = createNewTag(value);
-                }
-                const characterData = ((el as Element).closest('#bulk_tags_div') as HTMLElement)?.dataset.characters;
-                const characterIds = characterData ? JSON.parse(characterData).characterIds : null;
-                addTagsToEntity(tag, characterIds, { tagListSelector: listSelector, tagListOptions: tagListOptions });
-                applyCharacterTagsToMessageDivs();
-            },
-        });
+        );
 
         el.addEventListener('focus', onTagInputFocus);
     });
@@ -166,14 +184,23 @@ export function applyTagsOnCharacterSelect(chid: string | number | null = null) 
     if (menu_type === 'create') {
         const tagListEl = document.querySelector('#tagList');
         const tagEls = tagListEl?.querySelectorAll('.tag') ?? [];
-        const currentTagIds = Array.from(tagEls, (el: Element) => el.getAttribute('id'));
-        const currentTags = (tags as Record<string, unknown>[]).filter((x: Record<string, unknown>) => currentTagIds.includes(x.id as string));
-        printTagList(document.getElementById('tagList'), { forEntityOrKey: undefined, tags: currentTags, tagOptions: { removable: true } });
+        const currentTagIds = new Set(Array.from(tagEls, (el: Element) => el.getAttribute('id')));
+        const currentTags = (tags as Record<string, unknown>[]).filter(
+            (x: Record<string, unknown>) => currentTagIds.has(x.id as string),
+        );
+        printTagList(document.getElementById('tagList'), {
+            forEntityOrKey: undefined,
+            tags: currentTags,
+            tagOptions: { removable: true },
+        });
         return;
     }
 
     chid = chid ?? (this_chid !== undefined ? String(this_chid) : null);
-    printTagList(document.getElementById('tagList'), { forEntityOrKey: chid, tagOptions: { removable: true } });
+    printTagList(document.getElementById('tagList'), {
+        forEntityOrKey: chid,
+        tagOptions: { removable: true },
+    });
 }
 
 /**
@@ -184,14 +211,23 @@ export function applyTagsOnGroupSelect(groupId: string | number | null = null) {
     if (menu_type === 'group_create') {
         const tagListEl = document.querySelector('#groupTagList');
         const tagEls = tagListEl?.querySelectorAll('.tag') ?? [];
-        const currentTagIds = Array.from(tagEls, (el: Element) => el.getAttribute('id'));
-        const currentTags = (tags as Record<string, unknown>[]).filter((x: Record<string, unknown>) => currentTagIds.includes(x.id as string));
-        printTagList(document.getElementById('groupTagList'), { forEntityOrKey: undefined, tags: currentTags, tagOptions: { removable: true } });
+        const currentTagIds = new Set(Array.from(tagEls, (el: Element) => el.getAttribute('id')));
+        const currentTags = (tags as Record<string, unknown>[]).filter(
+            (x: Record<string, unknown>) => currentTagIds.has(x.id as string),
+        );
+        printTagList(document.getElementById('groupTagList'), {
+            forEntityOrKey: undefined,
+            tags: currentTags,
+            tagOptions: { removable: true },
+        });
         return;
     }
 
     groupId = groupId ?? (selected_group ? String(selected_group) : null);
-    printTagList(document.getElementById('groupTagList'), { forEntityOrKey: groupId, tagOptions: { removable: true } });
+    printTagList(document.getElementById('groupTagList'), {
+        forEntityOrKey: groupId,
+        tagOptions: { removable: true },
+    });
     printTagFilters(tag_filter_type.group_candidates_list);
     printTagFilters(tag_filter_type.group_members_list);
 }
@@ -264,7 +300,9 @@ export function initTags() {
     });
     eventSource.on(event_types.CHARACTER_DUPLICATED, copyTags);
 
-    eventSource.makeFirst(event_types.CHAT_CHANGED, () => selected_group ? applyTagsOnGroupSelect() : applyTagsOnCharacterSelect());
+    eventSource.makeFirst(event_types.CHAT_CHANGED, () =>
+        selected_group ? applyTagsOnGroupSelect() : applyTagsOnCharacterSelect(),
+    );
 
     document.addEventListener('focusout', function (event) {
         if (!(event.target instanceof Element)) return;
@@ -274,21 +312,31 @@ export function initTags() {
 
         const tagId = el.closest('.tag_view_item')?.getAttribute('id');
         const tagViewItems = document.querySelectorAll('#tag_view_list .tag_view_item');
-        const oldOrder = Array.from(tagViewItems, el => el.id);
+        const oldOrder = Array.from(tagViewItems, (el) => el.id);
 
-        import('./ui/tagEditor.js').then((mod: Record<string, unknown>) => { const printViewTagList = mod.printViewTagList as (el: Element | null) => void;
+        import('./ui/tagEditor.js').then((mod: Record<string, unknown>) => {
+            const printViewTagList = mod.printViewTagList as (el: Element | null) => void;
             printViewTagList(document.querySelector('#tag_view_list .tag_view_list_tags'));
 
-            if (event.relatedTarget instanceof HTMLElement && event.relatedTarget.closest('#tag_view_list')) {
-                (document.querySelector(`#tag_view_list .tag_view_item[id="${tagId}"] .tag_view_name`) as HTMLElement)?.focus();
+            if (
+                event.relatedTarget instanceof HTMLElement &&
+                event.relatedTarget.closest('#tag_view_list')
+            ) {
+                (
+                    document.querySelector(
+                        `#tag_view_list .tag_view_item[id="${tagId}"] .tag_view_name`,
+                    ) as HTMLElement
+                )?.focus();
             }
 
             const newTagViewItems = document.querySelectorAll('#tag_view_list .tag_view_item');
-            const newOrder = Array.from(newTagViewItems, el => el.id);
+            const newOrder = Array.from(newTagViewItems, (el) => el.id);
             const orderChanged = !oldOrder.every((id, index) => id === newOrder[index]);
             if (orderChanged) {
                 import('../utils.js').then(({ flashHighlight }) => {
-                    flashHighlight(document.querySelector(`#tag_view_list .tag_view_item[id="${tagId}"]`));
+                    flashHighlight(
+                        document.querySelector(`#tag_view_list .tag_view_item[id="${tagId}"]`),
+                    );
                 });
             }
         });

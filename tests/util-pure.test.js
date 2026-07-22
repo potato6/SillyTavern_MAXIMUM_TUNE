@@ -35,7 +35,9 @@ import {
 
 describe('keyToEnv', () => {
     test('should convert dotted key to env var format', () => {
-        expect(keyToEnv('extensions.models.speechToText')).toBe('SILLYTAVERN_EXTENSIONS_MODELS_SPEECHTOTEXT');
+        expect(keyToEnv('extensions.models.speechToText')).toBe(
+            'SILLYTAVERN_EXTENSIONS_MODELS_SPEECHTOTEXT',
+        );
     });
 
     test('should handle simple key without dots', () => {
@@ -131,7 +133,9 @@ describe('deepMerge', () => {
 describe('uuidv4', () => {
     test('should return a valid UUIDv4 format', () => {
         const uuid = uuidv4();
-        expect(uuid).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+        expect(uuid).toMatch(
+            /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
+        );
     });
 
     test('should return unique values', () => {
@@ -171,7 +175,9 @@ describe('tryParse', () => {
 
 describe('clientRelativePath', () => {
     test('should strip the root prefix and use forward slashes', () => {
-        expect(clientRelativePath('/data/user', '/data/user/images/pic.png')).toBe('/images/pic.png');
+        expect(clientRelativePath('/data/user', '/data/user/images/pic.png')).toBe(
+            '/images/pic.png',
+        );
     });
 
     test('should throw if path does not start with root', () => {
@@ -182,13 +188,13 @@ describe('clientRelativePath', () => {
 describe('getUniqueName', () => {
     test('should return base name with index when first try collides', () => {
         const existing = new Set(['Alice']);
-        const result = getUniqueName('Alice', name => existing.has(name));
+        const result = getUniqueName('Alice', (name) => existing.has(name));
         expect(result).toBe('Alice (1)');
     });
 
     test('should increment index until unique', () => {
         const existing = new Set(['Bob', 'Bob (1)', 'Bob (2)']);
-        const result = getUniqueName('Bob', name => existing.has(name));
+        const result = getUniqueName('Bob', (name) => existing.has(name));
         expect(result).toBe('Bob (3)');
     });
 
@@ -199,7 +205,7 @@ describe('getUniqueName', () => {
 
     test('should support custom nameBuilder', () => {
         const existing = new Set(['doc.txt']);
-        const result = getUniqueName('doc.txt', name => existing.has(name), {
+        const result = getUniqueName('doc.txt', (name) => existing.has(name), {
             nameBuilder: (base, i) => `doc (${i}).txt`,
         });
         expect(result).toBe('doc (1).txt');
@@ -358,7 +364,9 @@ describe('trimTrailingSlash', () => {
 
 describe('mutateJsonString', () => {
     test('should apply mutation and re-serialize', () => {
-        const result = mutateJsonString('{"a":1}', obj => { obj.b = 2; });
+        const result = mutateJsonString('{"a":1}', (obj) => {
+            obj.b = 2;
+        });
         expect(JSON.parse(result)).toEqual({ a: 1, b: 2 });
     });
 
@@ -420,7 +428,9 @@ describe('getRequestURL', () => {
     });
 
     test('should extract url from Request objects', () => {
-        expect(getRequestURL(new Request('https://example.com/path'))).toBe('https://example.com/path');
+        expect(getRequestURL(new Request('https://example.com/path'))).toBe(
+            'https://example.com/path',
+        );
     });
 
     test('should throw for invalid types', () => {
@@ -432,7 +442,9 @@ describe('delay', () => {
     test('should resolve after the specified time', async () => {
         jest.useFakeTimers();
         let resolved = false;
-        delay(50).then(() => { resolved = true; });
+        delay(50).then(() => {
+            resolved = true;
+        });
         expect(resolved).toBe(false);
         jest.advanceTimersByTime(50);
         await Promise.resolve();
@@ -636,7 +648,7 @@ describe('MemoryLimitedMap', () => {
 
     test('should update memory when overwriting a key', () => {
         const map = new MemoryLimitedMap('1 MB');
-        map.set('key', 'hi');    // 4 bytes
+        map.set('key', 'hi'); // 4 bytes
         map.set('key', 'hello'); // 10 bytes
         expect(map.totalMemory()).toBe(10);
         expect(map.get('key')).toBe('hello');
@@ -670,7 +682,10 @@ describe('MemoryLimitedMap', () => {
         map.set('b', '2');
         const entries = [];
         map.forEach((value, key) => entries.push([key, value]));
-        expect(entries).toEqual([['a', '1'], ['b', '2']]);
+        expect(entries).toEqual([
+            ['a', '1'],
+            ['b', '2'],
+        ]);
     });
 
     test('should expose keys and values iterators', () => {

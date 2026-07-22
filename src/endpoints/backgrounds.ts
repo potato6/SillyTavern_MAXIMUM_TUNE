@@ -5,7 +5,13 @@ import express from 'express';
 import sanitize from 'sanitize-filename';
 
 import { invalidateThumbnail } from './thumbnails.js';
-import { thumbnailDimensions, readMetadataIndex, renameMetadata, removeMetadata, getOrGenerateMetadataBatch } from './image-metadata.js';
+import {
+    thumbnailDimensions,
+    readMetadataIndex,
+    renameMetadata,
+    removeMetadata,
+    getOrGenerateMetadataBatch,
+} from './image-metadata.js';
 import { getImages } from '../util.js';
 import { getFileNameValidationFunction } from '../middleware/validateFileName.js';
 
@@ -17,11 +23,15 @@ router.post('/all', async function (request, response) {
         const config = { width: thumbnailDimensions.bg[0], height: thumbnailDimensions.bg[1] };
 
         // Get metadata for all images to provide isAnimated flag to client
-        const relativePaths = images.map(img => path.join('backgrounds', img));
-        const { results: metadataMap } = await getOrGenerateMetadataBatch(request.user.directories.root, relativePaths, 'bg');
+        const relativePaths = images.map((img) => path.join('backgrounds', img));
+        const { results: metadataMap } = await getOrGenerateMetadataBatch(
+            request.user.directories.root,
+            relativePaths,
+            'bg',
+        );
 
         // Build response with metadata for each image
-        const imagesWithMetadata = images.map(img => {
+        const imagesWithMetadata = images.map((img) => {
             const relativePath = path.join('backgrounds', img);
             // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             const metadata = metadataMap[relativePath];
@@ -89,7 +99,7 @@ router.post('/delete', getFileNameValidationFunction('bg'), async function (requ
 
         // Remove metadata for deleted image
         const relativePath = path.join('backgrounds', request.body.bg);
-        await removeMetadata(request.user.directories.root, relativePath).catch(err => {
+        await removeMetadata(request.user.directories.root, relativePath).catch((err) => {
             console.warn('[Backgrounds] Failed to remove metadata:', err.message);
         });
 
@@ -104,8 +114,14 @@ router.post('/rename', async function (request, response) {
     try {
         if (!request.body) return response.sendStatus(400);
 
-        const oldFileName = path.join(request.user.directories.backgrounds, sanitize(request.body.old_bg));
-        const newFileName = path.join(request.user.directories.backgrounds, sanitize(request.body.new_bg));
+        const oldFileName = path.join(
+            request.user.directories.backgrounds,
+            sanitize(request.body.old_bg),
+        );
+        const newFileName = path.join(
+            request.user.directories.backgrounds,
+            sanitize(request.body.new_bg),
+        );
 
         if (!fs.existsSync(oldFileName)) {
             console.error('BG file not found');
@@ -124,9 +140,11 @@ router.post('/rename', async function (request, response) {
         // Update metadata for renamed image
         const oldRelativePath = path.join('backgrounds', request.body.old_bg);
         const newRelativePath = path.join('backgrounds', request.body.new_bg);
-        await renameMetadata(request.user.directories.root, oldRelativePath, newRelativePath).catch(err => {
-            console.warn('[Backgrounds] Failed to rename metadata:', err.message);
-        });
+        await renameMetadata(request.user.directories.root, oldRelativePath, newRelativePath).catch(
+            (err) => {
+                console.warn('[Backgrounds] Failed to rename metadata:', err.message);
+            },
+        );
 
         return response.send('ok');
     } catch (err) {
@@ -147,9 +165,11 @@ router.post('/upload', async function (request, response) {
 
         // Generate metadata for the new image
         const relativePath = path.join('backgrounds', filename);
-        await getOrGenerateMetadataBatch(request.user.directories.root, [relativePath], 'bg').catch(err => {
-            console.warn('[Backgrounds] Failed to generate metadata for upload:', err.message);
-        });
+        await getOrGenerateMetadataBatch(request.user.directories.root, [relativePath], 'bg').catch(
+            (err) => {
+                console.warn('[Backgrounds] Failed to generate metadata for upload:', err.message);
+            },
+        );
 
         response.send(filename);
     } catch (err) {

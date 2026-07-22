@@ -182,7 +182,12 @@ class DataMaidDialog {
     async renderReport(report, resultsList) {
         for (const [prop, data] of Object.entries(this.DATA_MAID_CATEGORIES)) {
             // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-            const category = await this.renderCategory(prop, data.name, data.description, report.report[prop]);
+            const category = await this.renderCategory(
+                prop,
+                data.name,
+                data.description,
+                report.report[prop],
+            );
             if (!category) {
                 continue;
             }
@@ -229,27 +234,29 @@ class DataMaidDialog {
             description: description,
             totalSize: humanFileSize(items.reduce((sum, item) => sum + item.size, 0)),
             totalItems: items.length,
-            items: items.sort((a, b) => b.mtime - a.mtime).map(item => ({
-                ...item,
-                size: humanFileSize(item.size),
-                date: timestampToMoment(item.mtime).format('L LT'),
-            })),
+            items: items
+                .toSorted((a, b) => b.mtime - a.mtime)
+                .map((item) => ({
+                    ...item,
+                    size: humanFileSize(item.size),
+                    date: timestampToMoment(item.mtime).format('L LT'),
+                })),
         };
 
         const template = await renderTemplateAsync('dataMaidCategory', viewModel);
         const categoryElement = document.createElement('div');
         categoryElement.innerHTML = template;
-        categoryElement.querySelectorAll('.dataMaidItemView').forEach(button => {
+        categoryElement.querySelectorAll('.dataMaidItemView').forEach((button) => {
             button.addEventListener('click', async () => {
                 const item = button.closest('.dataMaidItem');
                 const hash = item?.getAttribute('data-hash');
-                const itemName = items.find(i => i.hash === hash)?.name;
+                const itemName = items.find((i) => i.hash === hash)?.name;
                 if (hash) {
                     await this.view(prop, hash, itemName);
                 }
             });
         });
-        categoryElement.querySelectorAll('.dataMaidItemDownload').forEach(button => {
+        categoryElement.querySelectorAll('.dataMaidItemDownload').forEach((button) => {
             button.addEventListener('click', async () => {
                 const item = button.closest('.dataMaidItem');
                 const hash = item?.getAttribute('data-hash');
@@ -258,34 +265,43 @@ class DataMaidDialog {
                 }
             });
         });
-        categoryElement.querySelectorAll('.dataMaidDeleteAll').forEach(button => {
+        categoryElement.querySelectorAll('.dataMaidDeleteAll').forEach((button) => {
             button.addEventListener('click', async (event) => {
                 event.stopPropagation();
-                const confirm = await Popup.show.confirm(t`Are you sure?`, t`This will permanently delete all files in this category. THIS CANNOT BE UNDONE!`);
+                const confirm = await Popup.show.confirm(
+                    t`Are you sure?`,
+                    t`This will permanently delete all files in this category. THIS CANNOT BE UNDONE!`,
+                );
                 if (!confirm) {
                     return;
                 }
 
-                const hashes = items.map(item => item.hash).filter(hash => hash);
+                const hashes = items.map((item) => item.hash).filter((hash) => hash);
                 await this.delete(hashes);
 
                 categoryElement.remove();
                 this.displayEmptyPlaceholder();
             });
         });
-        categoryElement.querySelectorAll('.dataMaidItemDelete').forEach(button => {
+        categoryElement.querySelectorAll('.dataMaidItemDelete').forEach((button) => {
             button.addEventListener('click', async () => {
                 const item = button.closest('.dataMaidItem');
                 const hash = item?.getAttribute('data-hash');
                 if (hash) {
-                    const confirm = await Popup.show.confirm(t`Are you sure?`, t`This will permanently delete the file. THIS CANNOT BE UNDONE!`);
+                    const confirm = await Popup.show.confirm(
+                        t`Are you sure?`,
+                        t`This will permanently delete the file. THIS CANNOT BE UNDONE!`,
+                    );
                     if (!confirm) {
                         return;
                     }
                     if (await this.delete([hash])) {
                         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                         item.remove();
-                        items.splice(items.findIndex(i => i.hash === hash), 1);
+                        items.splice(
+                            items.findIndex((i) => i.hash === hash),
+                            1,
+                        );
                         if (items.length === 0) {
                             categoryElement.remove();
                             this.displayEmptyPlaceholder();
@@ -318,7 +334,7 @@ class DataMaidDialog {
     // @ts-expect-error TS(7006) FIXME: Parameter 'items' implicitly has an 'any' type.
     async download(items, hash) {
         // @ts-expect-error TS(7006) FIXME: Parameter 'i' implicitly has an 'any' type.
-        const item = items.find(i => i.hash === hash);
+        const item = items.find((i) => i.hash === hash);
         if (!item) {
             return;
         }

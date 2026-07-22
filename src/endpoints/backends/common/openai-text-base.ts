@@ -48,7 +48,10 @@ export function createOAITextProvider(cfg: OAITextProviderConfig): BackendProvid
     const provider: BackendProvider = {
         type,
         secretKey,
-        endpoints: PROVIDER_ENDPOINTS[type] ?? { status: '/v1/models', generate: '/v1/completions' },
+        endpoints: PROVIDER_ENDPOINTS[type] ?? {
+            status: '/v1/models',
+            generate: '/v1/completions',
+        },
 
         buildGenerateBody(body: Record<string, unknown>): Record<string, unknown> {
             const filtered = pickBy(body, (_, key) => allowedKeys.includes(key));

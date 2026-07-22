@@ -23,8 +23,16 @@ export function getFileNameValidationFunction(fieldName: string) {
      * @param {import('express').Response} res Response object
      * @param {import('express').NextFunction} next Next middleware
      */
-    return function validateAvatarUrlMiddleware(req: import('express').Request, res: import('express').Response, next: import('express').NextFunction) {
-        if (req.body && fieldName in req.body && (typeof req.body[fieldName] === 'string' || hasToString(req.body[fieldName]))) {
+    return function validateAvatarUrlMiddleware(
+        req: import('express').Request,
+        res: import('express').Response,
+        next: import('express').NextFunction,
+    ) {
+        if (
+            req.body &&
+            fieldName in req.body &&
+            (typeof req.body[fieldName] === 'string' || hasToString(req.body[fieldName]))
+        ) {
             if (forbiddenRegExp.test(req.body[fieldName])) {
                 console.error('An error occurred while validating the request body', {
                     handle: req.user.profile.handle,

@@ -1,12 +1,7 @@
 import fs from 'node:fs';
 import yaml from 'yaml';
 import storage from 'node-persist';
-import {
-    initUserStorage,
-    getPasswordSalt,
-    getPasswordHash,
-    toKey,
-} from './users.js';
+import { initUserStorage, getPasswordSalt, getPasswordHash, toKey } from './users.js';
 
 /**
  * Initializes the storage with the data root specified in the config file.
@@ -30,7 +25,11 @@ async function initStorage(configPath: string) {
  * @param {string} userAccount - The username of the account to recover.
  * @param {string} [userPassword] - The new password for the account. If not provided, sets an empty password.
  */
-export async function recoverPassword(configPath: string, userAccount: string, userPassword?: string) {
+export async function recoverPassword(
+    configPath: string,
+    userAccount: string,
+    userPassword?: string,
+) {
     await initStorage(configPath);
 
     /**

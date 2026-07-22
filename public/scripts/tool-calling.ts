@@ -1,10 +1,31 @@
 import { DOMPurify } from '../lib.js';
 
-import { addOneMessage, chat, event_types, eventSource, getGeneratingApi, getGeneratingModel, main_api, saveChatConditional, system_avatar, systemUserName } from '../script.js';
-import { chat_completion_sources, custom_prompt_post_processing_types, getChatCompletionModel, model_list, oai_settings } from './openai.js';
+import {
+    addOneMessage,
+    chat,
+    event_types,
+    eventSource,
+    getGeneratingApi,
+    getGeneratingModel,
+    main_api,
+    saveChatConditional,
+    system_avatar,
+    systemUserName,
+} from '../script.js';
+import {
+    chat_completion_sources,
+    custom_prompt_post_processing_types,
+    getChatCompletionModel,
+    model_list,
+    oai_settings,
+} from './openai.js';
 import { Popup } from './popup.js';
 import { SlashCommand } from './slash-commands/SlashCommand.js';
-import { ARGUMENT_TYPE, SlashCommandArgument, SlashCommandNamedArgument } from './slash-commands/SlashCommandArgument.js';
+import {
+    ARGUMENT_TYPE,
+    SlashCommandArgument,
+    SlashCommandNamedArgument,
+} from './slash-commands/SlashCommandArgument.js';
 import { SlashCommandClosure } from './slash-commands/SlashCommandClosure.js';
 import { enumIcons } from './slash-commands/SlashCommandCommonEnumsProvider.js';
 import { enumTypes, SlashCommandEnumValue } from './slash-commands/SlashCommandEnumValue.js';
@@ -177,7 +198,16 @@ class ToolDefinition {
      * @param {boolean} stealth A tool call result will not be shown in the chat. No follow-up generation will be performed.
      */
     // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
-    constructor(name, displayName, description, parameters, action, formatMessage, shouldRegister, stealth) {
+    constructor(
+        name,
+        displayName,
+        description,
+        parameters,
+        action,
+        formatMessage,
+        shouldRegister,
+        stealth,
+    ) {
         this.#name = name;
         this.#displayName = displayName;
         this.#description = description;
@@ -229,9 +259,7 @@ class ToolDefinition {
     }
 
     async shouldRegister() {
-        return typeof this.#shouldRegister === 'function'
-            ? await this.#shouldRegister()
-            : true;
+        return typeof this.#shouldRegister === 'function' ? await this.#shouldRegister() : true;
     }
 
     get displayName() {
@@ -287,7 +315,9 @@ export class ToolManager {
         const stealth = hasConfigObject ? args[0].stealth : undefined;
 
         if (this.#tools.has(name)) {
-            console.warn(`[ToolManager] A tool with the name "${name}" has already been registered. The definition will be overwritten.`);
+            console.warn(
+                `[ToolManager] A tool with the name "${name}" has already been registered. The definition will be overwritten.`,
+            );
         }
 
         const definition = new ToolDefinition(
@@ -328,8 +358,8 @@ export class ToolManager {
         return parameters === ''
             ? {}
             : typeof parameters === 'string'
-                ? JSON.parse(parameters)
-                : parameters;
+              ? JSON.parse(parameters)
+              : parameters;
     }
 
     /**
@@ -350,7 +380,10 @@ export class ToolManager {
             const result = await tool.invoke(invokeParameters);
             return typeof result === 'string' ? result : JSON.stringify(result);
         } catch (error) {
-            console.error(`[ToolManager] An error occurred while invoking the tool "${name}":`, error);
+            console.error(
+                `[ToolManager] An error occurred while invoking the tool "${name}":`,
+                error,
+            );
 
             if (error instanceof Error) {
                 error.cause = name;
@@ -393,7 +426,10 @@ export class ToolManager {
             const formatParameters = this.#parseParameters(parameters);
             return await tool.formatMessage(formatParameters);
         } catch (error) {
-            console.error(`[ToolManager] An error occurred while formatting the tool call message for "${name}":`, error);
+            console.error(
+                `[ToolManager] An error occurred while formatting the tool call message for "${name}":`,
+                error,
+            );
             return `Invoking tool: ${name}`;
         }
     }
@@ -452,7 +488,7 @@ export class ToolManager {
         }
         if (Array.isArray(parsed?.choices)) {
             for (const choice of parsed.choices) {
-                const choiceIndex = (typeof choice.index === 'number') ? choice.index : null;
+                const choiceIndex = typeof choice.index === 'number' ? choice.index : null;
                 const choiceDelta = choice.delta;
 
                 if (choiceIndex === null || !choiceDelta) {
@@ -470,7 +506,10 @@ export class ToolManager {
                 }
 
                 for (const toolCallDelta of toolCallDeltas) {
-                    const toolCallIndex = toolCallDelta?.index >= 0 ? toolCallDelta.index : toolCallDeltas.indexOf(toolCallDelta);
+                    const toolCallIndex =
+                        toolCallDelta?.index >= 0
+                            ? toolCallDelta.index
+                            : toolCallDeltas.indexOf(toolCallDelta);
 
                     if (isNaN(toolCallIndex)) {
                         continue;
@@ -492,7 +531,12 @@ export class ToolManager {
                 }
             }
         }
-        const cohereToolEvents = ['message-start', 'tool-call-start', 'tool-call-delta', 'tool-call-end'];
+        const cohereToolEvents = [
+            'message-start',
+            'tool-call-start',
+            'tool-call-delta',
+            'tool-call-end',
+        ];
         if (cohereToolEvents.includes(parsed?.type) && typeof parsed?.delta?.message === 'object') {
             const choiceIndex = 0;
             const toolCallIndex = parsed?.index ?? 0;
@@ -558,7 +602,11 @@ export class ToolManager {
             for (let choiceIndex = 0; choiceIndex < parsed.candidates.length; choiceIndex++) {
                 const candidate = parsed.candidates[choiceIndex];
                 if (Array.isArray(candidate?.content?.parts)) {
-                    for (let partIndex = 0; partIndex < candidate.content.parts.length; partIndex++) {
+                    for (
+                        let partIndex = 0;
+                        partIndex < candidate.content.parts.length;
+                        partIndex++
+                    ) {
                         const part = candidate.content.parts[partIndex];
                         if (part.functionCall) {
                             if (!Array.isArray(toolCalls[choiceIndex])) {
@@ -611,7 +659,11 @@ export class ToolManager {
                     target[key] = deltaValue;
                 }
             } else if (typeof deltaValue === 'object' && !Array.isArray(deltaValue)) {
-                if (typeof targetValue !== 'object' || targetValue === null || Array.isArray(targetValue)) {
+                if (
+                    typeof targetValue !== 'object' ||
+                    targetValue === null ||
+                    Array.isArray(targetValue)
+                ) {
                     target[key] = {};
                 }
                 // Recursively apply deltas to nested objects
@@ -647,7 +699,9 @@ export class ToolManager {
             return false;
         }
 
-        const currentModel = Array.isArray(model_list) ? model_list.find(m => m.id === model) : null;
+        const currentModel = Array.isArray(model_list)
+            ? model_list.find((m) => m.id === model)
+            : null;
         if (currentModel) {
             // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             switch (settings.chat_completion_source) {
@@ -667,7 +721,12 @@ export class ToolManager {
                     return currentModel.metadata?.function_call;
                 case chat_completion_sources.WORKERS_AI:
                     // @ts-expect-error TS(2339) FIXME: Property 'properties' does not exist on type 'neve... Remove this comment to see the full error message
-                    return Array.isArray(currentModel.properties) && currentModel.properties.some(p => p.property_id === 'function_calling' && p.value === 'true');
+                    return (
+                        Array.isArray(currentModel.properties) &&
+                        currentModel.properties.some(
+                            (p) => p.property_id === 'function_calling' && p.value === 'true',
+                        )
+                    );
             }
         }
 
@@ -728,26 +787,41 @@ export class ToolManager {
     static #getToolCallsFromData(data) {
         const getRandomId = () => Math.random().toString(36).substring(2);
         // @ts-expect-error TS(7023) FIXME: 'isClaudeToolCall' implicitly has return type 'any... Remove this comment to see the full error message
-        const isClaudeToolCall = c => Array.isArray(c) ? c.filter(x => x).every(isClaudeToolCall) : c?.input && c?.name && c?.id;
+        const isClaudeToolCall = (c) =>
+            Array.isArray(c)
+                ? c.filter((x) => x).every(isClaudeToolCall)
+                : c?.input && c?.name && c?.id;
         // @ts-expect-error TS(7023) FIXME: 'isGoogleToolCall' implicitly has return type 'any... Remove this comment to see the full error message
-        const isGoogleToolCall = c => Array.isArray(c) ? c.filter(x => x).every(isGoogleToolCall) : c?.name && c?.args;
+        const isGoogleToolCall = (c) =>
+            Array.isArray(c) ? c.filter((x) => x).every(isGoogleToolCall) : c?.name && c?.args;
         // @ts-expect-error TS(7006) FIXME: Parameter 'c' implicitly has an 'any' type.
-        const convertClaudeToolCall = c => ({ id: c.id, function: { name: c.name, arguments: c.input } });
+        const convertClaudeToolCall = (c) => ({
+            id: c.id,
+            function: { name: c.name, arguments: c.input },
+        });
         // @ts-expect-error TS(7006) FIXME: Parameter 'c' implicitly has an 'any' type.
-        const convertGoogleToolCall = (c, signature = null) => ({ id: getRandomId(), function: { name: c.name, arguments: c.args }, signature });
+        const convertGoogleToolCall = (c, signature = null) => ({
+            id: getRandomId(),
+            function: { name: c.name, arguments: c.args },
+            signature,
+        });
 
         // Parsed tool calls from streaming data
         if (Array.isArray(data) && data.length > 0 && Array.isArray(data[0])) {
             if (isClaudeToolCall(data[0])) {
-                return data[0].filter(x => x).map(convertClaudeToolCall);
+                return data[0].filter((x) => x).map(convertClaudeToolCall);
             }
 
             if (isGoogleToolCall(data[0])) {
-                return data[0].filter(x => x).map((c) => convertGoogleToolCall(c, c.thoughtSignature));
+                return data[0]
+                    .filter((x) => x)
+                    .map((c) => convertGoogleToolCall(c, c.thoughtSignature));
             }
 
             if (typeof data[0]?.[0]?.tool_calls === 'object') {
-                return Array.isArray(data[0]?.[0]?.tool_calls) ? data[0][0].tool_calls : [data[0][0].tool_calls];
+                return Array.isArray(data[0]?.[0]?.tool_calls)
+                    ? data[0][0].tool_calls
+                    : [data[0][0].tool_calls];
             }
 
             return data[0];
@@ -756,22 +830,34 @@ export class ToolManager {
         // Google AI Studio tool calls
         if (Array.isArray(data?.responseContent?.parts)) {
             // @ts-expect-error TS(7006) FIXME: Parameter 'p' implicitly has an 'any' type.
-            return data.responseContent.parts.filter(p => p.functionCall).map(p => convertGoogleToolCall(p.functionCall, p.thoughtSignature));
+            return data.responseContent.parts
+                .filter((p) => p.functionCall)
+                .map((p) => convertGoogleToolCall(p.functionCall, p.thoughtSignature));
         }
 
         // Parsed tool calls from non-streaming data
         if (Array.isArray(data?.choices)) {
             // Find a choice with 0-index
             // @ts-expect-error TS(7006) FIXME: Parameter 'choice' implicitly has an 'any' type.
-            const choice = data.choices.find(choice => choice.index === 0);
+            const choice = data.choices.find((choice) => choice.index === 0);
 
-            if (choice && typeof choice.message === 'object' && Array.isArray(choice.message.tool_calls)) {
+            if (
+                choice &&
+                typeof choice.message === 'object' &&
+                Array.isArray(choice.message.tool_calls)
+            ) {
                 // Add OpenRouter signatures
                 if (Array.isArray(choice.message.reasoning_details)) {
                     for (const toolCall of choice.message.tool_calls) {
                         // @ts-expect-error TS(7006) FIXME: Parameter 'rd' implicitly has an 'any' type.
-                        const reasoningDetail = choice.message.reasoning_details.find(rd => rd.id === toolCall.id);
-                        if (reasoningDetail && reasoningDetail.type === 'reasoning.encrypted' && reasoningDetail.data) {
+                        const reasoningDetail = choice.message.reasoning_details.find(
+                            (rd) => rd.id === toolCall.id,
+                        );
+                        if (
+                            reasoningDetail &&
+                            reasoningDetail.type === 'reasoning.encrypted' &&
+                            reasoningDetail.data
+                        ) {
                             toolCall.signature = reasoningDetail.data;
                         }
                     }
@@ -784,7 +870,9 @@ export class ToolManager {
         // Claude tool calls to OpenAI tool calls
         if (Array.isArray(data?.content)) {
             // @ts-expect-error TS(7006) FIXME: Parameter 'c' implicitly has an 'any' type.
-            const content = data.content.filter(c => c.type === 'tool_use').map(convertClaudeToolCall);
+            const content = data.content
+                .filter((c) => c.type === 'tool_use')
+                .map(convertClaudeToolCall);
 
             if (content) {
                 return content;
@@ -793,7 +881,9 @@ export class ToolManager {
 
         // Cohere tool calls
         if (typeof data?.message?.tool_calls === 'object') {
-            return Array.isArray(data?.message?.tool_calls) ? data.message.tool_calls : [data.message.tool_calls];
+            return Array.isArray(data?.message?.tool_calls)
+                ? data.message.tool_calls
+                : [data.message.tool_calls];
         }
     }
 
@@ -905,7 +995,9 @@ export class ToolManager {
             return acc;
         }, {});
         // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-        return Object.entries(toolCounts).map(([name, count]) => count > 1 ? `${name} (${count})` : name).join(', ');
+        return Object.entries(toolCounts)
+            .map(([name, count]) => (count > 1 ? `${name} (${count})` : name))
+            .join(', ');
     }
 
     /**
@@ -922,13 +1014,13 @@ export class ToolManager {
         const codeElement = document.createElement('code');
         codeElement.classList.add('language-json');
         // @ts-expect-error TS(7006) FIXME: Parameter 'i' implicitly has an 'any' type.
-        data.forEach(i => {
+        data.forEach((i) => {
             i.parameters = tryParse(i.parameters);
             i.result = tryParse(i.result);
         });
         codeElement.textContent = JSON.stringify(data, null, 2);
         // @ts-expect-error TS(7006) FIXME: Parameter 'i' implicitly has an 'any' type.
-        const toolNames = data.map(i => i.displayName || i.name);
+        const toolNames = data.map((i) => i.displayName || i.name);
         summaryElement.textContent = `Tool calls: ${this.#groupToolNames(toolNames)}`;
         preElement.append(codeElement);
         detailsElement.append(summaryElement, preElement);
@@ -972,85 +1064,117 @@ export class ToolManager {
      */
     // @ts-expect-error TS(7006) FIXME: Parameter 'errors' implicitly has an 'any' type.
     static showToolCallError(errors) {
-        notyf.error('An error occurred while invoking function tools. Click here for more details.', 'Tool Calling', {
-            // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
-            onclick: () => Popup.show.text('Tool Calling Errors', DOMPurify.sanitize(errors.map(e => `${e.cause}: ${e.message}`).join('<br>'))),
-            timeOut: 5000,
-        });
+        notyf.error(
+            'An error occurred while invoking function tools. Click here for more details.',
+            'Tool Calling',
+            {
+                // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
+                onclick: () =>
+                    Popup.show.text(
+                        'Tool Calling Errors',
+                        DOMPurify.sanitize(
+                            errors.map((e) => `${e.cause}: ${e.message}`).join('<br>'),
+                        ),
+                    ),
+                timeOut: 5000,
+            },
+        );
     }
 
     static initToolSlashCommands() {
-        const toolsEnumProvider = () => ToolManager.tools.map(tool => {
-            const toolOpenAI = tool.toFunctionOpenAI();
-            return new SlashCommandEnumValue(toolOpenAI.function.name, toolOpenAI.function.description, enumTypes.enum, enumIcons.closure);
-        });
+        const toolsEnumProvider = () =>
+            ToolManager.tools.map((tool) => {
+                const toolOpenAI = tool.toFunctionOpenAI();
+                return new SlashCommandEnumValue(
+                    toolOpenAI.function.name,
+                    toolOpenAI.function.description,
+                    enumTypes.enum,
+                    enumIcons.closure,
+                );
+            });
 
-        SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-            name: 'tools-list',
-            aliases: ['tool-list'],
-            helpString: 'Gets a list of all registered tools in the OpenAI function JSON format. Use the <code>return</code> argument to specify the return value type.',
-            returns: 'A list of all registered tools.',
-            namedArgumentList: [
-                SlashCommandNamedArgument.fromProps({
-                    name: 'return',
-                    description: 'The way how you want the return value to be provided',
-                    typeList: [ARGUMENT_TYPE.STRING],
-                    defaultValue: 'none',
-                    enumList: slashCommandReturnHelper.enumList({ allowObject: true }),
-                    forceEnum: true,
-                }),
-            ],
-            // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
-            callback: async (args) => {
-                /** @type {any} */
-                const returnType = String(args?.return ?? 'popup-html').trim().toLowerCase();
-                // @ts-expect-error TS(7006) FIXME: Parameter 'tools' implicitly has an 'any' type.
-                const objectToStringFunc = (tools) => Array.isArray(tools) ? tools.map(x => x.toString()).join('\n\n') : tools.toString();
-                const tools = ToolManager.tools.map(tool => tool.toFunctionOpenAI());
-                return await slashCommandReturnHelper.doReturn(returnType ?? 'popup-html', tools ?? [], { objectToStringFunc });
-            },
-        }));
+        SlashCommandParser.addCommandObject(
+            SlashCommand.fromProps({
+                name: 'tools-list',
+                aliases: ['tool-list'],
+                helpString:
+                    'Gets a list of all registered tools in the OpenAI function JSON format. Use the <code>return</code> argument to specify the return value type.',
+                returns: 'A list of all registered tools.',
+                namedArgumentList: [
+                    SlashCommandNamedArgument.fromProps({
+                        name: 'return',
+                        description: 'The way how you want the return value to be provided',
+                        typeList: [ARGUMENT_TYPE.STRING],
+                        defaultValue: 'none',
+                        enumList: slashCommandReturnHelper.enumList({ allowObject: true }),
+                        forceEnum: true,
+                    }),
+                ],
+                // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
+                callback: async (args) => {
+                    /** @type {any} */
+                    const returnType = String(args?.return ?? 'popup-html')
+                        .trim()
+                        .toLowerCase();
+                    // @ts-expect-error TS(7006) FIXME: Parameter 'tools' implicitly has an 'any' type.
+                    const objectToStringFunc = (tools) =>
+                        Array.isArray(tools)
+                            ? tools.map((x) => x.toString()).join('\n\n')
+                            : tools.toString();
+                    const tools = ToolManager.tools.map((tool) => tool.toFunctionOpenAI());
+                    return await slashCommandReturnHelper.doReturn(
+                        returnType ?? 'popup-html',
+                        tools ?? [],
+                        { objectToStringFunc },
+                    );
+                },
+            }),
+        );
 
-        SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-            name: 'tools-invoke',
-            aliases: ['tool-invoke'],
-            helpString: 'Invokes a registered tool by name. The <code>parameters</code> argument MUST be a JSON-serialized object.',
-            namedArgumentList: [
-                SlashCommandNamedArgument.fromProps({
-                    name: 'parameters',
-                    description: 'The parameters to pass to the tool.',
-                    typeList: [ARGUMENT_TYPE.DICTIONARY],
-                    isRequired: true,
-                    acceptsMultiple: false,
-                }),
-            ],
-            unnamedArgumentList: [
-                SlashCommandArgument.fromProps({
-                    description: 'The name of the tool to invoke.',
-                    typeList: [ARGUMENT_TYPE.STRING],
-                    isRequired: true,
-                    acceptsMultiple: false,
-                    forceEnum: true,
-                    enumProvider: toolsEnumProvider,
-                }),
-            ],
-            // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
-            callback: async (args, name) => {
-                const { parameters } = args;
+        SlashCommandParser.addCommandObject(
+            SlashCommand.fromProps({
+                name: 'tools-invoke',
+                aliases: ['tool-invoke'],
+                helpString:
+                    'Invokes a registered tool by name. The <code>parameters</code> argument MUST be a JSON-serialized object.',
+                namedArgumentList: [
+                    SlashCommandNamedArgument.fromProps({
+                        name: 'parameters',
+                        description: 'The parameters to pass to the tool.',
+                        typeList: [ARGUMENT_TYPE.DICTIONARY],
+                        isRequired: true,
+                        acceptsMultiple: false,
+                    }),
+                ],
+                unnamedArgumentList: [
+                    SlashCommandArgument.fromProps({
+                        description: 'The name of the tool to invoke.',
+                        typeList: [ARGUMENT_TYPE.STRING],
+                        isRequired: true,
+                        acceptsMultiple: false,
+                        forceEnum: true,
+                        enumProvider: toolsEnumProvider,
+                    }),
+                ],
+                // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
+                callback: async (args, name) => {
+                    const { parameters } = args;
 
-                const result = await ToolManager.invokeFunctionTool(String(name), parameters);
-                if (result instanceof Error) {
-                    throw result;
-                }
+                    const result = await ToolManager.invokeFunctionTool(String(name), parameters);
+                    if (result instanceof Error) {
+                        throw result;
+                    }
 
-                return result;
-            },
-        }));
+                    return result;
+                },
+            }),
+        );
 
-        SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-            name: 'tools-register',
-            aliases: ['tool-register'],
-            helpString: `<div>Registers a new tool with the tool registry.</div>
+        SlashCommandParser.addCommandObject(
+            SlashCommand.fromProps({
+                name: 'tools-register',
+                aliases: ['tool-register'],
+                helpString: `<div>Registers a new tool with the tool registry.</div>
                 <ul>
                     <li>The <code>parameters</code> argument MUST be a JSON-serialized object with a valid JSON schema.</li>
                     <li>The unnamed argument MUST be a closure that accepts the function parameters as local script variables.</li>
@@ -1073,160 +1197,182 @@ export class ToolManager {
 }
 ||
 /tools-register name=Echo description="Echoes a message. Call when the user is asking to repeat something" parameters={{var::echoSchema}} {: /echo {{var::arg.message}} :}</code></pre>`,
-            namedArgumentList: [
-                SlashCommandNamedArgument.fromProps({
-                    name: 'name',
-                    description: 'The name of the tool.',
-                    typeList: [ARGUMENT_TYPE.STRING],
-                    isRequired: true,
-                    acceptsMultiple: false,
-                }),
-                SlashCommandNamedArgument.fromProps({
-                    name: 'description',
-                    description: 'A description of what the tool does.',
-                    typeList: [ARGUMENT_TYPE.STRING],
-                    isRequired: true,
-                    acceptsMultiple: false,
-                }),
-                SlashCommandNamedArgument.fromProps({
-                    name: 'parameters',
-                    description: 'The parameters for the tool.',
-                    typeList: [ARGUMENT_TYPE.DICTIONARY],
-                    isRequired: true,
-                    acceptsMultiple: false,
-                }),
-                SlashCommandNamedArgument.fromProps({
-                    name: 'displayName',
-                    description: 'The display name of the tool.',
-                    typeList: [ARGUMENT_TYPE.STRING],
-                    isRequired: false,
-                    acceptsMultiple: false,
-                }),
-                SlashCommandNamedArgument.fromProps({
-                    name: 'formatMessage',
-                    description: 'The closure to be executed to format the tool call message. Must return a string.',
-                    typeList: [ARGUMENT_TYPE.CLOSURE],
-                    isRequired: true,
-                    acceptsMultiple: false,
-                }),
-                SlashCommandNamedArgument.fromProps({
-                    name: 'shouldRegister',
-                    description: 'The closure to be executed to determine if the tool should be registered. Must return a boolean.',
-                    typeList: [ARGUMENT_TYPE.CLOSURE],
-                    isRequired: false,
-                    acceptsMultiple: false,
-                }),
-                SlashCommandNamedArgument.fromProps({
-                    name: 'stealth',
-                    description: 'If true, a tool call result will not be shown in the chat and no follow-up generation will be performed.',
-                    typeList: [ARGUMENT_TYPE.BOOLEAN],
-                    isRequired: false,
-                    acceptsMultiple: false,
-                    defaultValue: String(false),
-                }),
-            ],
-            unnamedArgumentList: [
-                SlashCommandArgument.fromProps({
-                    description: 'The closure to be executed when the tool is invoked.',
-                    typeList: [ARGUMENT_TYPE.CLOSURE],
-                    isRequired: true,
-                    acceptsMultiple: false,
-                }),
-            ],
-            // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
-            callback: async (args, action) => {
-                /**
-                 * Converts a slash command closure to a function.
-                 * @param {SlashCommandClosure} action Closure to convert to a function
-                 * @param {function(any): any} convertResult Function to convert the result
-                 * @returns {function} Function that executes the closure
-                 */
-                // @ts-expect-error TS(7006) FIXME: Parameter 'action' implicitly has an 'any' type.
-                function closureToFunction(action, convertResult) {
-                    // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
-                    return async (args) => {
-                        const localClosure = action.getCopy();
-                        localClosure.onProgress = () => { };
-                        const scope = localClosure.scope;
-                        if (typeof args === 'object' && args !== null) {
-                            assignNestedVariables(scope, args, 'arg');
-                        } else if (typeof args !== 'undefined') {
-                            scope.letVariable('arg', args);
-                        }
-                        const result = await localClosure.execute();
-                        return convertResult(result.pipe);
-                    };
-                }
+                namedArgumentList: [
+                    SlashCommandNamedArgument.fromProps({
+                        name: 'name',
+                        description: 'The name of the tool.',
+                        typeList: [ARGUMENT_TYPE.STRING],
+                        isRequired: true,
+                        acceptsMultiple: false,
+                    }),
+                    SlashCommandNamedArgument.fromProps({
+                        name: 'description',
+                        description: 'A description of what the tool does.',
+                        typeList: [ARGUMENT_TYPE.STRING],
+                        isRequired: true,
+                        acceptsMultiple: false,
+                    }),
+                    SlashCommandNamedArgument.fromProps({
+                        name: 'parameters',
+                        description: 'The parameters for the tool.',
+                        typeList: [ARGUMENT_TYPE.DICTIONARY],
+                        isRequired: true,
+                        acceptsMultiple: false,
+                    }),
+                    SlashCommandNamedArgument.fromProps({
+                        name: 'displayName',
+                        description: 'The display name of the tool.',
+                        typeList: [ARGUMENT_TYPE.STRING],
+                        isRequired: false,
+                        acceptsMultiple: false,
+                    }),
+                    SlashCommandNamedArgument.fromProps({
+                        name: 'formatMessage',
+                        description:
+                            'The closure to be executed to format the tool call message. Must return a string.',
+                        typeList: [ARGUMENT_TYPE.CLOSURE],
+                        isRequired: true,
+                        acceptsMultiple: false,
+                    }),
+                    SlashCommandNamedArgument.fromProps({
+                        name: 'shouldRegister',
+                        description:
+                            'The closure to be executed to determine if the tool should be registered. Must return a boolean.',
+                        typeList: [ARGUMENT_TYPE.CLOSURE],
+                        isRequired: false,
+                        acceptsMultiple: false,
+                    }),
+                    SlashCommandNamedArgument.fromProps({
+                        name: 'stealth',
+                        description:
+                            'If true, a tool call result will not be shown in the chat and no follow-up generation will be performed.',
+                        typeList: [ARGUMENT_TYPE.BOOLEAN],
+                        isRequired: false,
+                        acceptsMultiple: false,
+                        defaultValue: String(false),
+                    }),
+                ],
+                unnamedArgumentList: [
+                    SlashCommandArgument.fromProps({
+                        description: 'The closure to be executed when the tool is invoked.',
+                        typeList: [ARGUMENT_TYPE.CLOSURE],
+                        isRequired: true,
+                        acceptsMultiple: false,
+                    }),
+                ],
+                // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
+                callback: async (args, action) => {
+                    /**
+                     * Converts a slash command closure to a function.
+                     * @param {SlashCommandClosure} action Closure to convert to a function
+                     * @param {function(any): any} convertResult Function to convert the result
+                     * @returns {function} Function that executes the closure
+                     */
+                    // @ts-expect-error TS(7006) FIXME: Parameter 'action' implicitly has an 'any' type.
+                    function closureToFunction(action, convertResult) {
+                        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
+                        return async (args) => {
+                            const localClosure = action.getCopy();
+                            localClosure.onProgress = () => {};
+                            const scope = localClosure.scope;
+                            if (typeof args === 'object' && args !== null) {
+                                assignNestedVariables(scope, args, 'arg');
+                            } else if (typeof args !== 'undefined') {
+                                scope.letVariable('arg', args);
+                            }
+                            const result = await localClosure.execute();
+                            return convertResult(result.pipe);
+                        };
+                    }
 
-                const { name, displayName, description, parameters, formatMessage, shouldRegister, stealth } = args;
+                    const {
+                        name,
+                        displayName,
+                        description,
+                        parameters,
+                        formatMessage,
+                        shouldRegister,
+                        stealth,
+                    } = args;
 
-                if (!(action instanceof SlashCommandClosure)) {
-                    throw new Error('The unnamed argument must be a closure.');
-                }
-                if (typeof name !== 'string' || !name) {
-                    throw new Error('The "name" argument must be a non-empty string.');
-                }
-                if (typeof description !== 'string' || !description) {
-                    throw new Error('The "description" argument must be a non-empty string.');
-                }
-                if (typeof parameters !== 'string' || !isJson(parameters)) {
-                    throw new Error('The "parameters" argument must be a JSON-serialized object.');
-                }
-                if (displayName && typeof displayName !== 'string') {
-                    throw new Error('The "displayName" argument must be a string.');
-                }
-                if (formatMessage && !(formatMessage instanceof SlashCommandClosure)) {
-                    throw new Error('The "formatMessage" argument must be a closure.');
-                }
-                if (shouldRegister && !(shouldRegister instanceof SlashCommandClosure)) {
-                    throw new Error('The "shouldRegister" argument must be a closure.');
-                }
+                    if (!(action instanceof SlashCommandClosure)) {
+                        throw new Error('The unnamed argument must be a closure.');
+                    }
+                    if (typeof name !== 'string' || !name) {
+                        throw new Error('The "name" argument must be a non-empty string.');
+                    }
+                    if (typeof description !== 'string' || !description) {
+                        throw new Error('The "description" argument must be a non-empty string.');
+                    }
+                    if (typeof parameters !== 'string' || !isJson(parameters)) {
+                        throw new Error(
+                            'The "parameters" argument must be a JSON-serialized object.',
+                        );
+                    }
+                    if (displayName && typeof displayName !== 'string') {
+                        throw new Error('The "displayName" argument must be a string.');
+                    }
+                    if (formatMessage && !(formatMessage instanceof SlashCommandClosure)) {
+                        throw new Error('The "formatMessage" argument must be a closure.');
+                    }
+                    if (shouldRegister && !(shouldRegister instanceof SlashCommandClosure)) {
+                        throw new Error('The "shouldRegister" argument must be a closure.');
+                    }
 
-                // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
-                const actionFunc = closureToFunction(action, x => x);
-                // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
-                const formatMessageFunc = formatMessage instanceof SlashCommandClosure ? closureToFunction(formatMessage, x => String(x)) : null;
-                // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
-                const shouldRegisterFunc = shouldRegister instanceof SlashCommandClosure ? closureToFunction(shouldRegister, x => isTrueBoolean(x)) : null;
+                    // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
+                    const actionFunc = closureToFunction(action, (x) => x);
+                    // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
+                    const formatMessageFunc =
+                        formatMessage instanceof SlashCommandClosure
+                            ? closureToFunction(formatMessage, (x) => String(x))
+                            : null;
+                    // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
+                    const shouldRegisterFunc =
+                        shouldRegister instanceof SlashCommandClosure
+                            ? closureToFunction(shouldRegister, (x) => isTrueBoolean(x))
+                            : null;
 
-                ToolManager.registerFunctionTool({
-                    name: String(name ?? ''),
-                    displayName: String(displayName ?? ''),
-                    description: String(description ?? ''),
-                    parameters: JSON.parse(parameters ?? '{}'),
-                    action: actionFunc,
-                    formatMessage: formatMessageFunc,
-                    shouldRegister: shouldRegisterFunc,
-                    stealth: stealth && isTrueBoolean(String(stealth)),
-                });
+                    ToolManager.registerFunctionTool({
+                        name: String(name ?? ''),
+                        displayName: String(displayName ?? ''),
+                        description: String(description ?? ''),
+                        parameters: JSON.parse(parameters ?? '{}'),
+                        action: actionFunc,
+                        formatMessage: formatMessageFunc,
+                        shouldRegister: shouldRegisterFunc,
+                        stealth: stealth && isTrueBoolean(String(stealth)),
+                    });
 
-                return '';
-            },
-        }));
+                    return '';
+                },
+            }),
+        );
 
-        SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-            name: 'tools-unregister',
-            aliases: ['tool-unregister'],
-            helpString: 'Unregisters a tool from the tool registry.',
-            unnamedArgumentList: [
-                SlashCommandArgument.fromProps({
-                    description: 'The name of the tool to unregister.',
-                    typeList: [ARGUMENT_TYPE.STRING],
-                    isRequired: true,
-                    acceptsMultiple: false,
-                    forceEnum: true,
-                    enumProvider: toolsEnumProvider,
-                }),
-            ],
-            // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
-            callback: async (_, name) => {
-                if (typeof name !== 'string' || !name) {
-                    throw new Error('The unnamed argument must be a non-empty string.');
-                }
+        SlashCommandParser.addCommandObject(
+            SlashCommand.fromProps({
+                name: 'tools-unregister',
+                aliases: ['tool-unregister'],
+                helpString: 'Unregisters a tool from the tool registry.',
+                unnamedArgumentList: [
+                    SlashCommandArgument.fromProps({
+                        description: 'The name of the tool to unregister.',
+                        typeList: [ARGUMENT_TYPE.STRING],
+                        isRequired: true,
+                        acceptsMultiple: false,
+                        forceEnum: true,
+                        enumProvider: toolsEnumProvider,
+                    }),
+                ],
+                // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
+                callback: async (_, name) => {
+                    if (typeof name !== 'string' || !name) {
+                        throw new Error('The unnamed argument must be a non-empty string.');
+                    }
 
-                ToolManager.unregisterFunctionTool(name);
-                return '';
-            },
-        }));
+                    ToolManager.unregisterFunctionTool(name);
+                    return '';
+                },
+            }),
+        );
     }
 }

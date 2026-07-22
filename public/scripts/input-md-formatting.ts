@@ -8,10 +8,18 @@ export function initInputMarkdown() {
         if (!(e.target instanceof Element)) return;
         const textarea = e.target.closest('textarea.mdHotkeys') as HTMLTextAreaElement | null;
         if (!textarea) return;
-        if (!power_user.enable_md_hotkeys) { return; }
+        if (!power_user.enable_md_hotkeys) {
+            return;
+        }
 
         // Early return on only control or no control, alt key, and win/cmd key
-        if (e.key === 'Control' || !e.ctrlKey || e.altKey || e.metaKey || (e.shiftKey && !(e.ctrlKey && e.shiftKey && e.code === 'Backquote'))) {
+        if (
+            e.key === 'Control' ||
+            !e.ctrlKey ||
+            e.altKey ||
+            e.metaKey ||
+            (e.shiftKey && !(e.ctrlKey && e.shiftKey && e.code === 'Backquote'))
+        ) {
             return;
         }
         let charsToAdd = '';
@@ -55,9 +63,14 @@ export function initInputMarkdown() {
         let end = textarea.selectionEnd;
         const beforeCaret = textarea.value.substring(start - 1, start);
         const afterCaret = textarea.value.substring(end, end + 1);
-        const isTextSelected = (start !== end);
+        const isTextSelected = start !== end;
         let cursorShift = charsToAdd.length;
-        const selectedTextandPossibleFormatting = textarea.value.substring(start - possiblePreviousFormattingMargin, end + possiblePreviousFormattingMargin).trim();
+        const selectedTextandPossibleFormatting = textarea.value
+            .substring(
+                start - possiblePreviousFormattingMargin,
+                end + possiblePreviousFormattingMargin,
+            )
+            .trim();
 
         if (isTextSelected) {
             //if text is selected
@@ -89,45 +102,83 @@ export function initInputMarkdown() {
                 }
                 // To add the formatting, we need to select the text first
                 textarea.focus();
-                document.execCommand('insertText', false, charsToAdd + selectedText + charsToAdd + possibleAddedSpace);
+                document.execCommand(
+                    'insertText',
+                    false,
+                    charsToAdd + selectedText + charsToAdd + possibleAddedSpace,
+                );
             }
         } else {
             // No text is selected
             //check 1 character before and after the cursor for non-space characters
 
-            if (beforeCaret !== ' ' && afterCaret !== ' ' && afterCaret !== '' && beforeCaret !== '') { //look for caret in the middle of a word
+            if (
+                beforeCaret !== ' ' &&
+                afterCaret !== ' ' &&
+                afterCaret !== '' &&
+                beforeCaret !== ''
+            ) {
+                //look for caret in the middle of a word
                 //expand the selection range until the next space on both sides
                 let midCaretExpandedStart = start - 1;
                 let midCaretExpandedEnd = end + 1;
-                while (midCaretExpandedStart > 0 && textarea.value.substring(midCaretExpandedStart - 1, midCaretExpandedStart) !== ' ') {
+                while (
+                    midCaretExpandedStart > 0 &&
+                    textarea.value.substring(midCaretExpandedStart - 1, midCaretExpandedStart) !==
+                        ' '
+                ) {
                     midCaretExpandedStart--;
                 }
-                while (midCaretExpandedEnd < textarea.value.length && textarea.value.substring(midCaretExpandedEnd, midCaretExpandedEnd + 1) !== ' ') {
+                while (
+                    midCaretExpandedEnd < textarea.value.length &&
+                    textarea.value.substring(midCaretExpandedEnd, midCaretExpandedEnd + 1) !== ' '
+                ) {
                     midCaretExpandedEnd++;
                 }
                 //make a selection of the discovered word
                 textarea.setSelectionRange(midCaretExpandedStart, midCaretExpandedEnd);
                 //set variables for comparison
-                const discoveredWordWithPossibleFormatting = textarea.value.substring(midCaretExpandedStart, midCaretExpandedEnd).trim();
+                const discoveredWordWithPossibleFormatting = textarea.value
+                    .substring(midCaretExpandedStart, midCaretExpandedEnd)
+                    .trim();
                 let discoveredWord = '';
 
-                if (discoveredWordWithPossibleFormatting.endsWith(charsToAdd) && discoveredWordWithPossibleFormatting.startsWith(charsToAdd)) {
-                    discoveredWord = textarea.value.substring(midCaretExpandedStart + charsToAdd.length, midCaretExpandedEnd - charsToAdd.length).trim();
+                if (
+                    discoveredWordWithPossibleFormatting.endsWith(charsToAdd) &&
+                    discoveredWordWithPossibleFormatting.startsWith(charsToAdd)
+                ) {
+                    discoveredWord = textarea.value
+                        .substring(
+                            midCaretExpandedStart + charsToAdd.length,
+                            midCaretExpandedEnd - charsToAdd.length,
+                        )
+                        .trim();
                 } else {
-                    discoveredWord = textarea.value.substring(midCaretExpandedStart, midCaretExpandedEnd).trim();
+                    discoveredWord = textarea.value
+                        .substring(midCaretExpandedStart, midCaretExpandedEnd)
+                        .trim();
                 }
 
-                if (charsToAdd + discoveredWord + charsToAdd === discoveredWordWithPossibleFormatting) {
+                if (
+                    charsToAdd + discoveredWord + charsToAdd ===
+                    discoveredWordWithPossibleFormatting
+                ) {
                     // Replace the expanded selection with the original discovered word
                     textarea.focus();
                     document.execCommand('insertText', false, discoveredWord);
                     // Adjust cursor position
                     cursorShift = -charsToAdd.length;
-                } else { //format did not previously exist, so add it
+                } else {
+                    //format did not previously exist, so add it
                     textarea.focus();
-                    document.execCommand('insertText', false, charsToAdd + discoveredWord + charsToAdd);
+                    document.execCommand(
+                        'insertText',
+                        false,
+                        charsToAdd + discoveredWord + charsToAdd,
+                    );
                 }
-            } else { //caret is not inside a word, so just add the formatting
+            } else {
+                //caret is not inside a word, so just add the formatting
                 textarea.focus();
                 textarea.setSelectionRange(start, end);
                 selectedText = textarea.value.substring(start, end);

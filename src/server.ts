@@ -232,7 +232,10 @@ export class ServerStartup {
     app: import('express').Express;
     cliArgs: import('./command-line.js').CommandLineArguments;
 
-    constructor(app: import('express').Express, cliArgs: import('./command-line.js').CommandLineArguments) {
+    constructor(
+        app: import('express').Express,
+        cliArgs: import('./command-line.js').CommandLineArguments,
+    ) {
         this.app = app;
         this.cliArgs = cliArgs;
     }
@@ -243,7 +246,12 @@ export class ServerStartup {
     }
 
     #isAddressInUseError(error: unknown) {
-        return typeof error === 'object' && error !== null && 'code' in error && error.code === 'EADDRINUSE';
+        return (
+            typeof error === 'object' &&
+            error !== null &&
+            'code' in error &&
+            error.code === 'EADDRINUSE'
+        );
     }
 
     #getListenAddress(url: URL, ipVersion: number) {
@@ -258,9 +266,14 @@ export class ServerStartup {
 
     #verifySslOptions() {
         if (!this.cliArgs.ssl) return;
-        if (!this.cliArgs.certPath) this.#fatal('Error: SSL certificate path is required when using HTTPS. Check your config');
-        if (!this.cliArgs.keyPath) this.#fatal('Error: SSL key path is required when using HTTPS. Check your config');
-        if (!fs.existsSync(this.cliArgs.certPath)) this.#fatal('Error: SSL certificate path does not exist');
+        if (!this.cliArgs.certPath)
+            this.#fatal(
+                'Error: SSL certificate path is required when using HTTPS. Check your config',
+            );
+        if (!this.cliArgs.keyPath)
+            this.#fatal('Error: SSL key path is required when using HTTPS. Check your config');
+        if (!fs.existsSync(this.cliArgs.certPath))
+            this.#fatal('Error: SSL certificate path does not exist');
         if (!fs.existsSync(this.cliArgs.keyPath)) this.#fatal('Error: SSL key path does not exist');
     }
 
@@ -293,15 +306,21 @@ export class ServerStartup {
     }
 
     async #startHTTPorHTTPS(useIPv6: boolean, useIPv4: boolean) {
-        let v6Failed = false, v4Failed = false, v6Error, v4Error;
-        const createFunc = this.cliArgs.ssl ? this.#createHttpsServer.bind(this) : this.#createHttpServer.bind(this);
+        let v6Failed = false,
+            v4Failed = false,
+            v6Error,
+            v4Error;
+        const createFunc = this.cliArgs.ssl
+            ? this.#createHttpsServer.bind(this)
+            : this.#createHttpServer.bind(this);
 
         if (useIPv6) {
             try {
                 await createFunc(this.cliArgs.getIPv6ListenUrl(), 6);
             } catch (error) {
                 console.error('Warning: failed to start server on IPv6');
-                if (this.#isAddressInUseError(error)) console.error(this.#getAddressInUseMessage(this.cliArgs.getIPv6ListenUrl(), 6));
+                if (this.#isAddressInUseError(error))
+                    console.error(this.#getAddressInUseMessage(this.cliArgs.getIPv6ListenUrl(), 6));
                 else console.error(error);
                 v6Failed = true;
                 v6Error = error;
@@ -313,7 +332,8 @@ export class ServerStartup {
                 await createFunc(this.cliArgs.getIPv4ListenUrl(), 4);
             } catch (error) {
                 console.error('Warning: failed to start server on IPv4');
-                if (this.#isAddressInUseError(error)) console.error(this.#getAddressInUseMessage(this.cliArgs.getIPv4ListenUrl(), 4));
+                if (this.#isAddressInUseError(error))
+                    console.error(this.#getAddressInUseMessage(this.cliArgs.getIPv4ListenUrl(), 4));
                 else console.error(error);
                 v4Failed = true;
                 v4Error = error;
@@ -323,28 +343,45 @@ export class ServerStartup {
         return [v6Failed, v4Failed, v6Error, v4Error];
     }
 
-    #handleServerListenFail({ v6Failed, v4Failed, v6Error, v4Error, useIPv6, useIPv4 }: ServerStartupResult) {
+    #handleServerListenFail({
+        v6Failed,
+        v4Failed,
+        v6Error,
+        v4Error,
+        useIPv6,
+        useIPv4,
+    }: ServerStartupResult) {
         if (v6Failed && !useIPv4) {
-            if (this.#isAddressInUseError(v6Error)) this.#fatal('Error: Startup aborted because IPv6 is the only enabled protocol and its listen port is already in use.');
+            if (this.#isAddressInUseError(v6Error))
+                this.#fatal(
+                    'Error: Startup aborted because IPv6 is the only enabled protocol and its listen port is already in use.',
+                );
             this.#fatal('Error: Failed to start server on IPv6 and IPv4 disabled');
         }
         if (v4Failed && !useIPv6) {
-            if (this.#isAddressInUseError(v4Error)) this.#fatal('Error: Startup aborted because IPv4 is the only enabled protocol and its listen port is already in use.');
+            if (this.#isAddressInUseError(v4Error))
+                this.#fatal(
+                    'Error: Startup aborted because IPv4 is the only enabled protocol and its listen port is already in use.',
+                );
             this.#fatal('Error: Failed to start server on IPv4 and IPv6 disabled');
         }
         if (v6Failed && v4Failed) {
-            if (this.#isAddressInUseError(v6Error) && this.#isAddressInUseError(v4Error)) this.#fatal('Error: Failed to start server because the configured IPv6 and IPv4 listen ports are already in use.');
+            if (this.#isAddressInUseError(v6Error) && this.#isAddressInUseError(v4Error))
+                this.#fatal(
+                    'Error: Failed to start server because the configured IPv6 and IPv4 listen ports are already in use.',
+                );
             this.#fatal('Error: Failed to start server on both IPv6 and IPv4');
         }
     }
 
     async start() {
-        let useIPv6: boolean = (this.cliArgs.enableIPv6 === true);
-        let useIPv4: boolean = (this.cliArgs.enableIPv4 === true);
+        let useIPv6: boolean = this.cliArgs.enableIPv6 === true;
+        let useIPv4: boolean = this.cliArgs.enableIPv4 === true;
 
         if (this.cliArgs.enableIPv6 === 'auto' || this.cliArgs.enableIPv4 === 'auto') {
             const ipQuery = await getHasIP();
-            let hasIPv6 = false, hasIPv4 = false;
+            let hasIPv6 = false,
+                hasIPv4 = false;
             hasIPv6 = this.cliArgs.listen ? ipQuery.hasIPv6Any : ipQuery.hasIPv6Local;
             if (this.cliArgs.enableIPv6 === 'auto') useIPv6 = hasIPv6;
             if (hasIPv6) {
@@ -370,8 +407,18 @@ export class ServerStartup {
             process.exit(1);
         }
 
-        const [v6Failed, v4Failed, v6Error, v4Error] = await this.#startHTTPorHTTPS(useIPv6, useIPv4) as [boolean, boolean, unknown, unknown];
-        const result: ServerStartupResult = { v6Failed, v4Failed, v6Error, v4Error, useIPv6, useIPv4 };
+        const [v6Failed, v4Failed, v6Error, v4Error] = (await this.#startHTTPorHTTPS(
+            useIPv6,
+            useIPv4,
+        )) as [boolean, boolean, unknown, unknown];
+        const result: ServerStartupResult = {
+            v6Failed,
+            v4Failed,
+            v6Error,
+            v4Error,
+            useIPv6,
+            useIPv4,
+        };
         this.#handleServerListenFail(result);
         return result;
     }
@@ -400,7 +447,10 @@ import {
 import getLibServeMiddleware from './middleware/lib-serve.js';
 import basicAuthMiddleware from './middleware/basicAuth.js';
 import getWhitelistMiddleware from './middleware/whitelist.js';
-import accessLoggerMiddleware, { getAccessLogPath, migrateAccessLog } from './middleware/accessLogWriter.js';
+import accessLoggerMiddleware, {
+    getAccessLogPath,
+    migrateAccessLog,
+} from './middleware/accessLogWriter.js';
 import multerMonkeyPatch from './middleware/multerMonkeyPatch.js';
 import initRequestProxy from './request-proxy.js';
 import initPrivateRequestFilter from './private-request-filter.js';
@@ -440,7 +490,9 @@ util.inspect.defaultOptions.depth = 4;
 const cliArgs = globalThis.COMMAND_LINE_ARGS;
 
 if (!cliArgs.enableIPv6 && !cliArgs.enableIPv4) {
-    console.error("error: You can't disable all internet protocols: at least IPv6 or IPv4 must be enabled.");
+    console.error(
+        "error: You can't disable all internet protocols: at least IPv6 or IPv4 must be enabled.",
+    );
     process.exit(1);
 }
 
@@ -457,18 +509,41 @@ app.use(express.json({ limit: '500mb' }));
 app.use(express.urlencoded({ extended: true, limit: '500mb' }));
 
 // CORS Settings
-const corsEnabled = getConfigValue('cors.enabled', true as unknown as null, 'boolean' as unknown as null);
+const corsEnabled = getConfigValue(
+    'cors.enabled',
+    true as unknown as null,
+    'boolean' as unknown as null,
+);
 if (corsEnabled) {
     const corsOrigin = getConfigValue('cors.origin', 'null' as unknown as null) as string;
     const corsMethods = getConfigValue('cors.methods', ['OPTIONS'] as unknown as null) as string[];
-    const corsAllowedHeaders = getConfigValue('cors.allowedHeaders', [] as unknown as null) as string[];
-    const corsExposedHeaders = getConfigValue('cors.exposedHeaders', [] as unknown as null) as string[];
-    const corsCredentials = getConfigValue('cors.credentials', false as unknown as null, 'boolean' as unknown as null) as boolean;
-    const corsMaxAge = getConfigValue('cors.maxAge', null, 'number' as unknown as null) as number | null;
-    const corsOptions: cors.CorsOptions = { origin: corsOrigin, methods: corsMethods, credentials: corsCredentials };
-    if (Array.isArray(corsAllowedHeaders) && corsAllowedHeaders.length > 0) (corsOptions as Record<string, unknown>).allowedHeaders = corsAllowedHeaders;
-    if (Array.isArray(corsExposedHeaders) && corsExposedHeaders.length > 0) (corsOptions as Record<string, unknown>).exposedHeaders = corsExposedHeaders;
-    if (corsMaxAge !== null && Number.isInteger(corsMaxAge)) (corsOptions as Record<string, unknown>).maxAge = corsMaxAge;
+    const corsAllowedHeaders = getConfigValue(
+        'cors.allowedHeaders',
+        [] as unknown as null,
+    ) as string[];
+    const corsExposedHeaders = getConfigValue(
+        'cors.exposedHeaders',
+        [] as unknown as null,
+    ) as string[];
+    const corsCredentials = getConfigValue(
+        'cors.credentials',
+        false as unknown as null,
+        'boolean' as unknown as null,
+    ) as boolean;
+    const corsMaxAge = getConfigValue('cors.maxAge', null, 'number' as unknown as null) as
+        | number
+        | null;
+    const corsOptions: cors.CorsOptions = {
+        origin: corsOrigin,
+        methods: corsMethods,
+        credentials: corsCredentials,
+    };
+    if (Array.isArray(corsAllowedHeaders) && corsAllowedHeaders.length > 0)
+        (corsOptions as Record<string, unknown>).allowedHeaders = corsAllowedHeaders;
+    if (Array.isArray(corsExposedHeaders) && corsExposedHeaders.length > 0)
+        (corsOptions as Record<string, unknown>).exposedHeaders = corsExposedHeaders;
+    if (corsMaxAge !== null && Number.isInteger(corsMaxAge))
+        (corsOptions as Record<string, unknown>).maxAge = corsMaxAge;
     app.use(cors(corsOptions));
 }
 
@@ -479,13 +554,15 @@ app.use(hostWhitelistMiddleware);
 
 if (cliArgs.listen) app.use(accessLoggerMiddleware());
 
-app.use(bunSessionMiddleware({
-    name: getCookieSessionName(),
-    sameSite: 'lax',
-    httpOnly: true,
-    maxAge: getSessionCookieAge() ?? 400 * 24 * 60 * 60 * 1000,
-    secret: getCookieSecret(globalThis.DATA_ROOT),
-}));
+app.use(
+    bunSessionMiddleware({
+        name: getCookieSessionName(),
+        sameSite: 'lax',
+        httpOnly: true,
+        maxAge: getSessionCookieAge() ?? 400 * 24 * 60 * 60 * 1000,
+        secret: getCookieSecret(globalThis.DATA_ROOT),
+    }),
+);
 
 app.use(setUserDataMiddleware);
 
@@ -494,23 +571,33 @@ if (!cliArgs.disableCsrf) {
     const CSRF_SECRET = process.env['CSRF_SECRET'] || crypto.randomBytes(64).toString('hex');
     app.get('/csrf-token', (req, res) => {
         const sessionId = req.ip || 'anonymous';
-        const token = Bun.CSRF.generate(CSRF_SECRET, { sessionId, expiresIn: 24 * 60 * 60 * 1000 } as Record<string, unknown>);
+        const token = Bun.CSRF.generate(CSRF_SECRET, {
+            sessionId,
+            expiresIn: 24 * 60 * 60 * 1000,
+        } as Record<string, unknown>);
         res.json({ token });
     });
     app.use((req, res, next) => {
         if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) return next();
-        if (cliArgs.enableCorsProxy && /^\/proxy\//.test(req.path)) return next();
+        if (cliArgs.enableCorsProxy && req.path.startsWith('/proxy/')) return next();
         const token = req.headers['x-csrf-token']?.toString();
         const sessionId = req.ip || 'anonymous';
-        if (!token || !Bun.CSRF.verify(token, { secret: CSRF_SECRET, sessionId } as Record<string, unknown>)) {
+        if (
+            !token ||
+            !Bun.CSRF.verify(token, { secret: CSRF_SECRET, sessionId } as Record<string, unknown>)
+        ) {
             console.error(color.red('Invalid CSRF token. Please refresh the page and try again.'));
-            res.status(403).json({ error: 'Invalid CSRF token. Please refresh the page and try again.' });
+            res.status(403).json({
+                error: 'Invalid CSRF token. Please refresh the page and try again.',
+            });
             return;
         }
         next();
     });
 } else {
-    console.warn('\nCSRF protection is disabled. This will make your server vulnerable to CSRF attacks.\n');
+    console.warn(
+        '\nCSRF protection is disabled. This will make your server vulnerable to CSRF attacks.\n',
+    );
     app.get('/csrf-token', (req, res) => res.json({ token: 'disabled' }));
 }
 
@@ -553,7 +640,8 @@ if (cliArgs.enableCorsProxy) {
     app.use('/proxy', corsProxyMiddleware);
 } else {
     app.use('/proxy', async (_, res) => {
-        const message = 'CORS proxy is disabled. Enable it in config.yaml or use the --corsProxy flag.';
+        const message =
+            'CORS proxy is disabled. Enable it in config.yaml or use the --corsProxy flag.';
         console.log(message);
         res.status(404).send(message);
     });
@@ -589,7 +677,9 @@ async function preSetupTasks() {
         console.log(`Running '${version.gitBranch}' (${version.gitRevision}) - ${localDate}`);
         if (!version.isLatest && ['staging', 'release'].includes(version.gitBranch)) {
             console.log('INFO: Currently not on the latest commit.');
-            console.log("      Run 'git pull' to update. If you have any merge conflicts, run 'git reset --hard' and 'git pull' to reset your branch.");
+            console.log(
+                "      Run 'git pull' to update. If you have any merge conflicts, run 'git reset --hard' and 'git pull' to reset your branch.",
+            );
         }
     }
     console.log();
@@ -621,19 +711,47 @@ async function preSetupTasks() {
 
     process.on('SIGINT', exitProcess);
     process.on('SIGTERM', exitProcess);
-    process.on('uncaughtException', (err) => { console.error('Uncaught exception:', err); exitProcess(); });
+    process.on('uncaughtException', (err) => {
+        console.error('Uncaught exception:', err);
+        exitProcess();
+    });
 
     const requestFilterOptions = {
         listen: cliArgs.listen,
-        enabled: !!getConfigValue('privateAddressWhitelist.enabled', false as unknown as null, 'boolean' as unknown as null) as boolean,
-        privateAddressWhitelist: getConfigValue('privateAddressWhitelist.allowedRanges', ['127.0.0.0/8', '::1/128'] as unknown as null) as string[],
-        logBlocked: !!getConfigValue('privateAddressWhitelist.log.blockedRequests', true as unknown as null, 'boolean' as unknown as null) as boolean,
-        logAllowed: !!getConfigValue('privateAddressWhitelist.log.allowedRequests', false as unknown as null, 'boolean' as unknown as null) as boolean,
-        allowUnresolvedHosts: !!getConfigValue('privateAddressWhitelist.allowUnresolvedHosts', false as unknown as null, 'boolean' as unknown as null) as boolean,
+        enabled: !!getConfigValue(
+            'privateAddressWhitelist.enabled',
+            false as unknown as null,
+            'boolean' as unknown as null,
+        ) as boolean,
+        privateAddressWhitelist: getConfigValue('privateAddressWhitelist.allowedRanges', [
+            '127.0.0.0/8',
+            '::1/128',
+        ] as unknown as null) as string[],
+        logBlocked: !!getConfigValue(
+            'privateAddressWhitelist.log.blockedRequests',
+            true as unknown as null,
+            'boolean' as unknown as null,
+        ) as boolean,
+        logAllowed: !!getConfigValue(
+            'privateAddressWhitelist.log.allowedRequests',
+            false as unknown as null,
+            'boolean' as unknown as null,
+        ) as boolean,
+        allowUnresolvedHosts: !!getConfigValue(
+            'privateAddressWhitelist.allowUnresolvedHosts',
+            false as unknown as null,
+            'boolean' as unknown as null,
+        ) as boolean,
         enableKeepAlive: cliArgs.enableKeepAlive,
     };
     initPrivateRequestFilter(requestFilterOptions);
-    initRequestProxy({ enabled: cliArgs.requestProxyEnabled, url: cliArgs.requestProxyUrl, bypass: cliArgs.requestProxyBypass, enableKeepAlive: cliArgs.enableKeepAlive, privateRequestFilterEnabled: requestFilterOptions.enabled });
+    initRequestProxy({
+        enabled: cliArgs.requestProxyEnabled,
+        url: cliArgs.requestProxyUrl,
+        bypass: cliArgs.requestProxyBypass,
+        enableKeepAlive: cliArgs.enableKeepAlive,
+        privateRequestFilterEnabled: requestFilterOptions.enabled,
+    });
     await libMiddleware.runBunBuild({ pruneCache: true } as Record<string, unknown>);
 }
 
@@ -644,19 +762,30 @@ async function preSetupTasks() {
 async function postSetupTasks(result: ServerStartupResult) {
     const browserLaunchHostname = await cliArgs.getBrowserLaunchHostname(result);
     const browserLaunchUrl = cliArgs.getBrowserLaunchUrl(browserLaunchHostname);
-    const browserLaunchApp = String(getConfigValue('browserLaunch.browser', 'default' as unknown as null) ?? '');
+    const browserLaunchApp = String(
+        getConfigValue('browserLaunch.browser', 'default' as unknown as null) ?? '',
+    );
 
     if (cliArgs.browserLaunchEnabled) {
         try {
             const openModule = await import('open');
             const { default: open, apps } = openModule;
-            const validBrowsers: Record<string, unknown> = process.platform === 'android' ? {} : {
-                firefox: apps.firefox, chrome: apps.chrome, edge: apps.edge, brave: apps.brave,
-            };
+            const validBrowsers: Record<string, unknown> =
+                process.platform === 'android'
+                    ? {}
+                    : {
+                          firefox: apps.firefox,
+                          chrome: apps.chrome,
+                          edge: apps.edge,
+                          brave: apps.brave,
+                      };
             const appName = validBrowsers[browserLaunchApp.trim().toLowerCase()] as App | undefined;
             const openOptions: Record<string, unknown> = appName ? { app: { name: appName } } : {};
             console.log(`Launching in a browser: ${browserLaunchApp}...`);
-            await open(browserLaunchUrl.toString(), openOptions as unknown as Parameters<typeof open>[1]);
+            await open(
+                browserLaunchUrl.toString(),
+                openOptions as unknown as Parameters<typeof open>[1],
+            );
         } catch (error) {
             console.error('Failed to launch the browser. Open the URL manually.', error);
         }
@@ -665,10 +794,18 @@ async function postSetupTasks(result: ServerStartupResult) {
     if (cliArgs.heartbeatInterval > 0) {
         const intervalMs = cliArgs.heartbeatInterval * 1000;
         const heartbeatPath = path.join(globalThis.DATA_ROOT, 'heartbeat.json');
-        console.log(`Heartbeat enabled. Updating ${color.green(heartbeatPath)} every ${cliArgs.heartbeatInterval} seconds`);
+        console.log(
+            `Heartbeat enabled. Updating ${color.green(heartbeatPath)} every ${cliArgs.heartbeatInterval} seconds`,
+        );
         const writeHeartbeat = () => {
-            try { fs.writeFileSync(heartbeatPath, JSON.stringify({ timestamp: Date.now() })); }
-            catch (err) { console.error(`Failed to write heartbeat file at ${color.green(heartbeatPath)}:`, (err as Error).message); }
+            try {
+                fs.writeFileSync(heartbeatPath, JSON.stringify({ timestamp: Date.now() }));
+            } catch (err) {
+                console.error(
+                    `Failed to write heartbeat file at ${color.green(heartbeatPath)}:`,
+                    (err as Error).message,
+                );
+            }
         };
         writeHeartbeat();
         setInterval(writeHeartbeat, intervalMs).unref();
@@ -676,15 +813,22 @@ async function postSetupTasks(result: ServerStartupResult) {
 
     setWindowTitle('SillyTavern WebServer');
     let logListen = 'SillyTavern is listening on';
-    if (result.useIPv6 && !result.v6Failed) logListen += color.green(' IPv6: ' + cliArgs.getIPv6ListenUrl().host);
-    if (result.useIPv4 && !result.v4Failed) logListen += color.green(' IPv4: ' + cliArgs.getIPv4ListenUrl().host);
+    if (result.useIPv6 && !result.v6Failed)
+        logListen += color.green(' IPv6: ' + cliArgs.getIPv6ListenUrl().host);
+    if (result.useIPv4 && !result.v4Failed)
+        logListen += color.green(' IPv4: ' + cliArgs.getIPv4ListenUrl().host);
     const goToLog = `Go to: ${color.blue(browserLaunchUrl)} to open SillyTavern`;
     const plainGoToLog = removeColorFormatting(goToLog);
     console.log(logListen);
     if (cliArgs.listen) {
         console.log();
-        console.log('To limit connections to internal localhost only ([::1] or 127.0.0.1), change the setting in config.yaml to "listen: false".');
-        console.log('Check the "access.log" file in the data directory to inspect incoming connections:', color.green(getAccessLogPath()));
+        console.log(
+            'To limit connections to internal localhost only ([::1] or 127.0.0.1), change the setting in config.yaml to "listen: false".',
+        );
+        console.log(
+            'Check the "access.log" file in the data directory to inspect incoming connections:',
+            color.green(getAccessLogPath()),
+        );
     }
     console.log('\n' + getSeparator(plainGoToLog.length) + '\n');
     console.log(goToLog);
@@ -697,8 +841,11 @@ async function postSetupTasks(result: ServerStartupResult) {
  *
  */
 function apply404Middleware() {
-    const notFoundWebpage = safeReadFileSync(path.join(globalThis.DATA_ROOT, '_errors', 'url-not-found.html')) ?? '';
-    app.use((req, res) => { res.status(404).send(notFoundWebpage); });
+    const notFoundWebpage =
+        safeReadFileSync(path.join(globalThis.DATA_ROOT, '_errors', 'url-not-found.html')) ?? '';
+    app.use((req, res) => {
+        res.status(404).send(notFoundWebpage);
+    });
 }
 
 /**
@@ -706,9 +853,16 @@ function apply404Middleware() {
  */
 function setDnsResolutionOrder() {
     try {
-        if (cliArgs.dnsPreferIPv6) { dns.setDefaultResultOrder('ipv6first'); console.log('Preferring IPv6 for DNS resolution'); }
-        else { dns.setDefaultResultOrder('ipv4first'); console.log('Preferring IPv4 for DNS resolution'); }
-    } catch { /* ignore */ }
+        if (cliArgs.dnsPreferIPv6) {
+            dns.setDefaultResultOrder('ipv6first');
+            console.log('Preferring IPv6 for DNS resolution');
+        } else {
+            dns.setDefaultResultOrder('ipv4first');
+            console.log('Preferring IPv4 for DNS resolution');
+        }
+    } catch {
+        /* ignore */
+    }
 }
 
 // ── Boot sequence ─────────────────────────────────────────────────────────────

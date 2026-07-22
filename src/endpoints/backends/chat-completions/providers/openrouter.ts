@@ -1,10 +1,5 @@
-import {
-    CHAT_COMPLETION_SOURCES,
-    GEMINI_SAFETY,
-} from '../../../../constants.js';
-import {
-    getConfigValue,
-} from '../../../../util.js';
+import { CHAT_COMPLETION_SOURCES, GEMINI_SAFETY } from '../../../../constants.js';
+import { getConfigValue } from '../../../../util.js';
 import {
     embedOpenRouterMedia,
     addOpenRouterSignatures,
@@ -20,8 +15,14 @@ import type { ChatProvider, ModelEntry } from '../types.js';
 const API_OPENROUTER = 'https://openrouter.ai/api/v1';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-const cacheTTL: any = getConfigValue('claude.extendedTTL', false as any, 'boolean' as any) ? '1h' : '5m';
-const enableSystemPromptCache: any = getConfigValue('claude.enableSystemPromptCache', false as any, 'boolean' as any);
+const cacheTTL: any = getConfigValue('claude.extendedTTL', false as any, 'boolean' as any)
+    ? '1h'
+    : '5m';
+const enableSystemPromptCache: any = getConfigValue(
+    'claude.enableSystemPromptCache',
+    false as any,
+    'boolean' as any,
+);
 const cachingAtDepth = (() => {
     const value: any = getConfigValue('claude.cachingAtDepth', -1 as any, 'number' as any);
     return Number.isInteger(value) && value >= 0 ? value : -1;
@@ -38,17 +39,19 @@ async function isOpenRouterModelCacheable(modelId: string): Promise<boolean> {
     try {
         const response = await globalThis.fetch(`${API_OPENROUTER}/models`, {
             method: 'GET',
-            headers: { 'Accept': 'application/json' },
+            headers: { Accept: 'application/json' },
             signal: AbortSignal.timeout(5000),
         });
         if (!response.ok) return false;
-        const data = await response.json() as any;
+        const data = (await response.json()) as any;
         if (!Array.isArray(data?.data)) return false;
         const model = data.data.find((m: any) => m.id === modelId);
         const supportsCache = model?.pricing?.input_cache_write != null;
         if (supportsCache) openRouterCacheableModels.push(modelId);
         return supportsCache;
-    } catch { return false; }
+    } catch {
+        return false;
+    }
 }
 
 const provider: ChatProvider = {
@@ -75,13 +78,18 @@ const provider: ChatProvider = {
         const bodyParams: Record<string, unknown> = {
             transforms: undefined as any,
             plugins: [] as any[],
-            reasoning: { exclude: !Boolean(req.body.include_reasoning) },
+            reasoning: { exclude: !req.body.include_reasoning },
         };
 
         switch (req.body.middleout) {
-            case 'on': bodyParams.transforms = ['middle-out']; break;
-            case 'off': bodyParams.transforms = []; break;
-            case 'auto': break;
+            case 'on':
+                bodyParams.transforms = ['middle-out'];
+                break;
+            case 'off':
+                bodyParams.transforms = [];
+                break;
+            case 'auto':
+                break;
         }
 
         if (req.body.enable_web_search) (bodyParams.plugins as any[]).push({ id: 'web' });
@@ -94,7 +102,8 @@ const provider: ChatProvider = {
         const providerConfig = buildProviderConfig(req.body);
         if (providerConfig) bodyParams.provider = providerConfig;
         if (req.body.use_fallback) bodyParams.route = 'fallback';
-        if (req.body.reasoning_effort) (bodyParams.reasoning as any).effort = req.body.reasoning_effort;
+        if (req.body.reasoning_effort)
+            (bodyParams.reasoning as any).effort = req.body.reasoning_effort;
         if (req.body.verbosity) bodyParams.verbosity = req.body.verbosity;
 
         if (req.body.json_schema) {
@@ -108,7 +117,7 @@ const provider: ChatProvider = {
             };
         }
 
-        const isClaude = /^anthropic\/claude/.test(req.body.model);
+        const isClaude = req.body.model.startsWith('anthropic/claude');
         const isGemini = /google\/gemini/.test(req.body.model);
 
         if (Array.isArray(req.body.messages)) {
@@ -117,12 +126,18 @@ const provider: ChatProvider = {
 
             if (isClaude && enableSystemPromptCache) {
                 cachingSystemPromptForOpenRouter(req.body.messages, cacheTTL);
-                if (cachingAtDepth !== -1) cachingAtDepthForOpenRouterClaude(req.body.messages, cachingAtDepth, cacheTTL);
+                if (cachingAtDepth !== -1)
+                    cachingAtDepthForOpenRouterClaude(req.body.messages, cachingAtDepth, cacheTTL);
             }
 
-            const isCacheableGemini = isGemini && (await isOpenRouterModelCacheable(req.body.model));
-             
-            const enableGeminiSystemPromptCache: any = getConfigValue('gemini.enableSystemPromptCache', false as any, 'boolean' as any);
+            const isCacheableGemini =
+                isGemini && (await isOpenRouterModelCacheable(req.body.model));
+
+            const enableGeminiSystemPromptCache: any = getConfigValue(
+                'gemini.enableSystemPromptCache',
+                false as any,
+                'boolean' as any,
+            );
             if (isCacheableGemini && enableGeminiSystemPromptCache) {
                 cachingSystemPromptForOpenRouter(req.body.messages);
             }
@@ -158,7 +173,7 @@ const provider: ChatProvider = {
             body: JSON.stringify(requestBody),
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${apiKey}`,
+                Authorization: `Bearer ${apiKey}`,
                 ...OPENROUTER_HEADERS,
             },
             signal,
@@ -171,10 +186,10 @@ const provider: ChatProvider = {
         if (!apiKey) return [];
 
         const response = await globalThis.fetch(`${API_OPENROUTER}/models`, {
-            headers: { 'Authorization': `Bearer ${apiKey}`, ...OPENROUTER_HEADERS },
+            headers: { Authorization: `Bearer ${apiKey}`, ...OPENROUTER_HEADERS },
         });
         if (!response.ok) return [];
-        const data = await response.json() as any;
+        const data = (await response.json()) as any;
         if (Array.isArray(data?.data)) {
             const models: Record<string, any> = {};
             data.data.forEach((model: any) => {

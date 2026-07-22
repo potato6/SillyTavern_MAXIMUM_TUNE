@@ -27,10 +27,16 @@ export function isBogusFolder(tag: Record<string, unknown> | undefined | null): 
  * @returns {Tag[]} An array of open bogus folders
  */
 export function getOpenBogusFolders(): Record<string, unknown>[] {
-    const filterData = entitiesFilter.getFilterData(FILTER_TYPES.TAG) as { selected?: string[] } | undefined;
-    return (filterData?.selected ?? [])
-        .map((tagId: string) => getTagById(tagId))
-        .filter((tag): tag is NonNullable<typeof tag> => tag !== undefined && isBogusFolder(tag)) ?? [];
+    const filterData = entitiesFilter.getFilterData(FILTER_TYPES.TAG) as
+        | { selected?: string[] }
+        | undefined;
+    return (
+        (filterData?.selected ?? [])
+            .map((tagId: string) => getTagById(tagId))
+            .filter(
+                (tag): tag is NonNullable<typeof tag> => tag !== undefined && isBogusFolder(tag),
+            ) ?? []
+    );
 }
 
 /**
@@ -47,11 +53,17 @@ export function isBogusFolderOpen() {
  * @param {string} tagId The tag id that is behind the chosen folder
  * @param {boolean} remove Whether the given tag should be removed (otherwise it is added/chosen)
  */
-export function chooseBogusFolder(source: Element, tagId: string | null | undefined, remove = false) {
+export function chooseBogusFolder(
+    source: Element,
+    tagId: string | null | undefined,
+    remove = false,
+) {
     // If we are here via the 'back' action, we implicitly take the last filtered folder as one to remove
     const isBack = tagId === 'back';
     if (isBack) {
-        const drilldown = source.closest('#rm_characters_block')?.querySelector('.rm_tag_bogus_drilldown');
+        const drilldown = source
+            .closest('#rm_characters_block')
+            ?.querySelector('.rm_tag_bogus_drilldown');
         const drilldownTags = drilldown?.querySelectorAll('.tag');
         const lastTag = drilldownTags?.[drilldownTags.length - 1];
         tagId = lastTag?.getAttribute('id');
@@ -60,10 +72,15 @@ export function chooseBogusFolder(source: Element, tagId: string | null | undefi
 
     // Instead of manually updating the filter conditions, we just "click" on the filter tag
     // We search inside which filter block we are located in and use that one
-    const FILTER_SELECTOR = (source.closest('#rm_characters_block') ?? source.closest('#rm_group_chats_block'))?.querySelector('.rm_tag_filter');
+    const FILTER_SELECTOR = (
+        source.closest('#rm_characters_block') ?? source.closest('#rm_group_chats_block')
+    )?.querySelector('.rm_tag_filter');
     const tagElement = FILTER_SELECTOR?.querySelector(`.tag[id=${tagId}]`) as HTMLElement | null;
 
-    toggleTagThreeState(tagElement, { stateOverride: !remove ? FILTER_STATES.SELECTED.key : DEFAULT_FILTER_STATE, simulateClick: true });
+    toggleTagThreeState(tagElement, {
+        stateOverride: !remove ? FILTER_STATES.SELECTED.key : DEFAULT_FILTER_STATE,
+        simulateClick: true,
+    });
 }
 
 /**
@@ -74,7 +91,12 @@ export function chooseBogusFolder(source: Element, tagId: string | null | undefi
  * @param {boolean} isUseless Whether the tag is useless (should be displayed greyed out)
  * @returns The html for the tag block
  */
-export function getTagBlock(tag: Record<string, unknown>, entities: unknown[], hidden = 0, isUseless = false): Node {
+export function getTagBlock(
+    tag: Record<string, unknown>,
+    entities: unknown[],
+    hidden = 0,
+    isUseless = false,
+): Node {
     const count = entities.length;
 
     const tagFolder = getFolderType(tag);
@@ -99,7 +121,7 @@ export function getTagBlock(tag: Record<string, unknown>, entities: unknown[], h
     const counter = template.querySelector('.bogus_folder_counter');
     if (counter) counter.textContent = `${count} ` + (count != 1 ? t`characters` : t`character`);
     const icon = template.querySelector('.bogus_folder_icon');
-        if (icon && tagFolder) icon.classList.add(tagFolder.fa_icon!);
+    if (icon && tagFolder) icon.classList.add(tagFolder.fa_icon!);
     if (isUseless) template.classList.add('useless');
 
     // Fill inline character images

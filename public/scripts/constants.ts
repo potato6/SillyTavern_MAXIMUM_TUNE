@@ -60,15 +60,38 @@ export const inject_ids = {
 
 export const COMETAPI_IGNORE_PATTERNS = [
     // Image generation models
-    'dall-e', 'dalle', 'midjourney', 'mj_', 'stable-diffusion', 'sd-',
-    'flux-', 'playground-v', 'ideogram', 'recraft-', 'black-forest-labs',
-    '/recraft-v3', 'recraftv3', 'stability-ai/', 'sdxl',
+    'dall-e',
+    'dalle',
+    'midjourney',
+    'mj_',
+    'stable-diffusion',
+    'sd-',
+    'flux-',
+    'playground-v',
+    'ideogram',
+    'recraft-',
+    'black-forest-labs',
+    '/recraft-v3',
+    'recraftv3',
+    'stability-ai/',
+    'sdxl',
     // Audio generation models
-    'suno_', 'tts', 'whisper',
+    'suno_',
+    'tts',
+    'whisper',
     // Video generation models
-    'runway', 'luma_', 'luma-', 'veo', 'kling_', 'minimax_video', 'hunyuan-t1',
+    'runway',
+    'luma_',
+    'luma-',
+    'veo',
+    'kling_',
+    'minimax_video',
+    'hunyuan-t1',
     // Utility models
-    'embedding', 'search-gpts', 'files_retrieve', 'moderation',
+    'embedding',
+    'search-gpts',
+    'files_retrieve',
+    'moderation',
 ];
 
 /**

@@ -14,7 +14,8 @@ async function getLibOutputPath(forceDist = false) {
         ? path.resolve(process.cwd(), 'dist', '_webpack')
         : path.resolve(globalThis.DATA_ROOT || process.cwd(), '_webpack');
 
-    const cacheVersion = crypto.createHash('shake256', { outputLength: 8 })
+    const cacheVersion = crypto
+        .createHash('shake256', { outputLength: 8 })
         .update(JSON.stringify([appVersion.pkgVersion, appVersion.gitRevision, 'bun']))
         .digest('hex');
 

@@ -112,9 +112,7 @@ function createHtml(statsType, stats) {
     const timeStirng = humanizeGenTime(stats.total_gen_time);
     let chatAge = 'Never';
     if (stats.date_first_chat < Date.now()) {
-        chatAge = moment
-            .duration(stats.date_last_chat - stats.date_first_chat)
-            .humanize();
+        chatAge = moment.duration(stats.date_last_chat - stats.date_first_chat).humanize();
     }
     // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
     const statsTypeTranslated = translate(statsType, `stats_header_${statsType}`);
@@ -225,7 +223,6 @@ async function recreateStats() {
     }
 }
 
-
 /**
  * Calculates the generation time based on start and finish times.
  * @param {string} gen_started - The start time in ISO 8601 format.
@@ -300,10 +297,7 @@ async function statMesProcess(line, type, characters, this_chid, oldMessage) {
         };
     }
 
-    stat.total_gen_time += calculateGenTime(
-        line.gen_started,
-        line.gen_finished,
-    );
+    stat.total_gen_time += calculateGenTime(line.gen_started, line.gen_finished);
     if (line.is_user) {
         if (type != 'append' && type != 'continue' && type != 'appendFinal') {
             stat.user_msg_count++;
@@ -339,11 +333,18 @@ async function statMesProcess(line, type, characters, this_chid, oldMessage) {
  *
  */
 export function initStats() {
-    document.querySelector('.rm_stats_button')?.addEventListener('click', function (this: HTMLElement, e: Event) {
-        characterStatsHandler(characters, this_chid);
-    });
+    document
+        .querySelector('.rm_stats_button')
+        ?.addEventListener('click', function (this: HTMLElement, e: Event) {
+            characterStatsHandler(characters, this_chid);
+        });
     // Wait for debug functions to load, then add the refresh stats function
-    registerDebugFunction('refreshStats', 'Refresh Stat File', 'Recreates the stats file based on existing chat files', recreateStats);
+    registerDebugFunction(
+        'refreshStats',
+        'Refresh Stat File',
+        'Recreates the stats file based on existing chat files',
+        recreateStats,
+    );
 }
 
 export { userStatsHandler, characterStatsHandler, getStats, statMesProcess, charStats };

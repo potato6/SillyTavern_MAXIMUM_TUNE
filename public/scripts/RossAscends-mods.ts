@@ -21,21 +21,19 @@ import {
     doNavbarIconClick,
 } from '../script.js';
 
-import {
-    power_user,
-    send_on_enter_options,
-} from './power-user.js';
+import { power_user, send_on_enter_options } from './power-user.js';
 
 import { selected_group, is_group_generating, openGroupById } from './group-chats.js';
 import { getTagKeyForEntity, applyTagsOnCharacterSelect } from './tags.js';
-import {
-    SECRET_KEYS,
-    secret_state,
-} from './secrets.js';
+import { SECRET_KEYS, secret_state } from './secrets.js';
 import { debounce, getStringHash, isValidUrl } from './utils.js';
 import { chat_completion_sources, oai_settings } from './openai.js';
 import { getTokenCountAsync } from './tokenizers.js';
-import { textgen_types, textgenerationwebui_settings as textgen_settings, getTextGenServer } from './textgen-settings.js';
+import {
+    textgen_types,
+    textgenerationwebui_settings as textgen_settings,
+    getTextGenServer,
+} from './textgen-settings.js';
 import { debounce_timeout } from './constants.js';
 
 import { Popup } from './popup.js';
@@ -145,7 +143,8 @@ export function getParsedUA() {
  */
 export function isMobile() {
     const ua = getParsedUA();
-    const platformType = ((ua as Record<string, unknown>)?.platform as Record<string, unknown>)?.type as string;
+    const platformType = ((ua as Record<string, unknown>)?.platform as Record<string, unknown>)
+        ?.type as string;
     return platformType === 'mobile' || platformType === 'tablet';
 }
 
@@ -216,7 +215,11 @@ export async function RA_CountCharTokens() {
             continue;
         }
 
-        const value = String((input instanceof HTMLInputElement || input instanceof HTMLTextAreaElement) ? input.value : '');
+        const value = String(
+            input instanceof HTMLInputElement || input instanceof HTMLTextAreaElement
+                ? input.value
+                : '',
+        );
         if (!value) {
             input.dataset.lastValueHash = '';
             counter.textContent = '0';
@@ -256,21 +259,29 @@ export async function RA_CountCharTokens() {
 
 async function RA_autoloadchat() {
     if (active_character !== null && active_character !== undefined) {
-        const active_character_id = characters.findIndex(x => getTagKeyForEntity(x) === active_character);
+        const active_character_id = characters.findIndex(
+            (x) => getTagKeyForEntity(x) === active_character,
+        );
         if (active_character_id !== -1) {
             await selectCharacterById(active_character_id);
-            const selectedCharElement = document.querySelector(`#rm_print_characters_block .character_select[chid="${active_character_id}"]`);
+            const selectedCharElement = document.querySelector(
+                `#rm_print_characters_block .character_select[chid="${active_character_id}"]`,
+            );
             applyTagsOnCharacterSelect.call(selectedCharElement);
         } else {
             setActiveCharacter(null);
             saveSettingsDebounced();
-            console.warn(`Currently active character with ID ${active_character} not found. Resetting to no active character.`);
+            console.warn(
+                `Currently active character with ID ${active_character} not found. Resetting to no active character.`,
+            );
         }
     }
 
     if (active_group !== null && active_group !== undefined) {
         if (active_character) {
-            console.warn('Active character and active group are both set. Only active character will be loaded. Resetting active group.');
+            console.warn(
+                'Active character and active group are both set. Only active character will be loaded. Resetting active group.',
+            );
             setActiveGroup(null);
             saveSettingsDebounced();
         } else {
@@ -278,7 +289,9 @@ async function RA_autoloadchat() {
             if (!result) {
                 setActiveGroup(null);
                 saveSettingsDebounced();
-                console.warn(`Currently active group with ID ${active_group} not found. Resetting to no active group.`);
+                console.warn(
+                    `Currently active group with ID ${active_group} not found. Resetting to no active group.`,
+                );
             }
         }
     }
@@ -288,11 +301,13 @@ export async function favsToHotswap() {
     const entities = getEntitiesList({ doFilter: false });
     const container = document.querySelector('#right-nav-panel .hotswap')!;
     const FAVS_LIMIT = 25;
-    const favs = entities.filter(x => x.item.fav || x.item.fav === 'true').slice(0, FAVS_LIMIT);
+    const favs = entities.filter((x) => x.item.fav || x.item.fav === 'true').slice(0, FAVS_LIMIT);
 
     if (favs.length === 0) {
         const noFavsAttr = (container as HTMLElement).getAttribute('no_favs') ?? '';
-        container.innerHTML = DOMPurify.sanitize(`<small><span><i class="fa-solid fa-star"></i>&nbsp;${noFavsAttr}</span></small>`);
+        container.innerHTML = DOMPurify.sanitize(
+            `<small><span><i class="fa-solid fa-star"></i>&nbsp;${noFavsAttr}</span></small>`,
+        );
         return;
     }
 
@@ -346,7 +361,10 @@ type BuildSourceMapOptions = {
     skip?: string[];
     revProxySources?: string[];
     isRevProxy?: boolean;
-    overrides?: Record<string, (sourceValue: string, secrets: Record<string, string | undefined>) => string | undefined>;
+    overrides?: Record<
+        string,
+        (sourceValue: string, secrets: Record<string, string | undefined>) => string | undefined
+    >;
 };
 
 function buildSourceMap(
@@ -373,7 +391,7 @@ function RA_autoconnect(PrevApi?: string) {
 
     if (online_status === 'no_connection' && power_user.auto_connect) {
         const state = secret_state as Record<string, unknown>;
-        const getSecret = (key?: string) => key ? Boolean(state[key]) : false;
+        const getSecret = (key?: string) => (key ? Boolean(state[key]) : false);
 
         switch (main_api) {
             case 'kobold':
@@ -388,14 +406,17 @@ function RA_autoconnect(PrevApi?: string) {
                 break;
             case 'textgenerationwebui': {
                 const textgenType = textgen_settings.type;
-                const hasTypeSecret = (
+                const hasTypeSecret =
                     (textgenType === textgen_types.MANCER && getSecret(SECRET_KEYS.MANCER)) ||
-                    (textgenType === textgen_types.TOGETHERAI && getSecret(SECRET_KEYS.TOGETHERAI)) ||
-                    (textgenType === textgen_types.INFERMATICAI && getSecret(SECRET_KEYS.INFERMATICAI)) ||
+                    (textgenType === textgen_types.TOGETHERAI &&
+                        getSecret(SECRET_KEYS.TOGETHERAI)) ||
+                    (textgenType === textgen_types.INFERMATICAI &&
+                        getSecret(SECRET_KEYS.INFERMATICAI)) ||
                     (textgenType === textgen_types.DREAMGEN && getSecret(SECRET_KEYS.DREAMGEN)) ||
-                    (textgenType === textgen_types.OPENROUTER && getSecret(SECRET_KEYS.OPENROUTER)) ||
-                    (textgenType === textgen_types.FEATHERLESS && getSecret(SECRET_KEYS.FEATHERLESS))
-                );
+                    (textgenType === textgen_types.OPENROUTER &&
+                        getSecret(SECRET_KEYS.OPENROUTER)) ||
+                    (textgenType === textgen_types.FEATHERLESS &&
+                        getSecret(SECRET_KEYS.FEATHERLESS));
 
                 if (hasTypeSecret || isValidUrl(getTextGenServer())) {
                     triggerClick('api_button_textgenerationwebui');
@@ -426,10 +447,14 @@ function RA_autoconnect(PrevApi?: string) {
                     },
                 );
 
-                const isCustomValid = src === chat_completion_sources.CUSTOM && isValidUrl(oai_settings.custom_url);
-                const canConnect = isCustomValid || sourceSecretMap.some(([targetSrc, secretKey, allowFallback]) =>
-                    src === targetSrc && (getSecret(secretKey) || Boolean(allowFallback))
-                );
+                const isCustomValid =
+                    src === chat_completion_sources.CUSTOM && isValidUrl(oai_settings.custom_url);
+                const canConnect =
+                    isCustomValid ||
+                    sourceSecretMap.some(
+                        ([targetSrc, secretKey, allowFallback]) =>
+                            src === targetSrc && (getSecret(secretKey) || Boolean(allowFallback)),
+                    );
 
                 if (canConnect) {
                     triggerClick('api_button_openai');
@@ -455,7 +480,10 @@ function OpenNavPanels() {
 
     for (let i = 0; i < navPanels.length; i++) {
         const [lockKey, openKey, iconId] = navPanels[i]!;
-        if (accountStorage.getItem(lockKey) === 'true' && accountStorage.getItem(openKey) === 'true') {
+        if (
+            accountStorage.getItem(lockKey) === 'true' &&
+            accountStorage.getItem(openKey) === 'true'
+        ) {
             triggerClick(iconId);
         }
     }
@@ -493,9 +521,20 @@ export function dragElement(elmnt: HTMLElement) {
     let actionType: string | null = null;
     let isMouseDown = false;
 
-    let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-    let height = 0, width = 0, top = 0, left = 0, right = 0, bottom = 0;
-    let maxX = 0, maxY = 0, winHeight = 0, winWidth = 0;
+    let pos1 = 0,
+        pos2 = 0,
+        pos3 = 0,
+        pos4 = 0;
+    let height = 0,
+        width = 0,
+        top = 0,
+        left = 0,
+        right = 0,
+        bottom = 0;
+    let maxX = 0,
+        maxY = 0,
+        winHeight = 0,
+        winWidth = 0;
 
     const elmntName = elmnt.id;
 
@@ -579,18 +618,36 @@ export function dragElement(elmnt: HTMLElement) {
                             elmnt.style.height = `${elmnt.offsetWidth * imageAspectRatio}px`;
                         }
                         if (top + elmnt.offsetHeight >= winHeight) {
-                            elmnt.style.setProperty('height', `${winHeight - top - 1}px`, 'important');
-                            elmnt.style.setProperty('width', `${(winHeight - top - 1) / imageAspectRatio}px`, 'important');
+                            elmnt.style.setProperty(
+                                'height',
+                                `${winHeight - top - 1}px`,
+                                'important',
+                            );
+                            elmnt.style.setProperty(
+                                'width',
+                                `${(winHeight - top - 1) / imageAspectRatio}px`,
+                                'important',
+                            );
                         }
                         if (left + elmnt.offsetWidth >= winWidth) {
-                            elmnt.style.setProperty('width', `${winWidth - left - 1}px`, 'important');
-                            elmnt.style.setProperty('height', `${(winWidth - left - 1) * imageAspectRatio}px`, 'important');
+                            elmnt.style.setProperty(
+                                'width',
+                                `${winWidth - left - 1}px`,
+                                'important',
+                            );
+                            elmnt.style.setProperty(
+                                'height',
+                                `${(winWidth - left - 1) * imageAspectRatio}px`,
+                                'important',
+                            );
                         }
                     }
                 }
             } else {
-                if (top + elmnt.offsetHeight >= winHeight) elmnt.style.setProperty('height', `${winHeight - top - 1}px`, 'important');
-                if (left + elmnt.offsetWidth >= winWidth) elmnt.style.setProperty('width', `${winWidth - left - 1}px`, 'important');
+                if (top + elmnt.offsetHeight >= winHeight)
+                    elmnt.style.setProperty('height', `${winHeight - top - 1}px`, 'important');
+                if (left + elmnt.offsetWidth >= winWidth)
+                    elmnt.style.setProperty('width', `${winWidth - left - 1}px`, 'important');
             }
             elmnt.style.setProperty('left', `${left}px`, 'important');
             elmnt.style.setProperty('top', `${top}px`, 'important');
@@ -676,7 +733,15 @@ export function dragElement(elmnt: HTMLElement) {
 export async function initMovingUI() {
     if (!isMobile() && power_user.movingUI === true) {
         console.debug('START MOVING UI');
-        const ids = ['sheld', 'left-nav-panel', 'right-nav-panel', 'WorldInfo', 'floatingPrompt', 'logprobsViewer', 'cfgConfig'];
+        const ids = [
+            'sheld',
+            'left-nav-panel',
+            'right-nav-panel',
+            'WorldInfo',
+            'floatingPrompt',
+            'logprobsViewer',
+            'cfgConfig',
+        ];
         for (let i = 0; i < ids.length; i++) {
             const el = document.getElementById(ids[i]!);
             if (el) dragElement(el);
@@ -690,14 +755,16 @@ const isFirefox = navigator.userAgent.toLowerCase().includes('firefox');
 
 function autoFitSendTextArea() {
     if (!chatBlock || !sendTextArea) return;
-    const originalScrollBottom = chatBlock.scrollHeight - (chatBlock.scrollTop + chatBlock.offsetHeight);
+    const originalScrollBottom =
+        chatBlock.scrollHeight - (chatBlock.scrollTop + chatBlock.offsetHeight);
 
     sendTextArea.style.height = '1px';
     const newHeight = sendTextArea.scrollHeight;
     sendTextArea.style.height = `${newHeight}px`;
 
     if (!isFirefox) {
-        chatBlock.scrollTop = chatBlock.scrollHeight - (chatBlock.offsetHeight + originalScrollBottom);
+        chatBlock.scrollTop =
+            chatBlock.scrollHeight - (chatBlock.offsetHeight + originalScrollBottom);
     }
 }
 export const autoFitSendTextAreaDebounced = debounce(autoFitSendTextArea, debounce_timeout.short);
@@ -728,7 +795,7 @@ export function initRossMods() {
         storageKey: string,
         panelEl: HTMLElement,
         iconEl: HTMLElement,
-        toggleSelector: string
+        toggleSelector: string,
     ) => {
         const updateState = (isPinned: boolean) => {
             panelEl.classList.toggle('pinnedOpen', isPinned);
@@ -740,7 +807,11 @@ export function initRossMods() {
             accountStorage.setItem(storageKey, isChecked);
             updateState(isChecked);
 
-            if (!isChecked && panelEl.classList.contains('openDrawer') && document.querySelectorAll('.openDrawer').length > 1) {
+            if (
+                !isChecked &&
+                panelEl.classList.contains('openDrawer') &&
+                document.querySelectorAll('.openDrawer').length > 1
+            ) {
                 const toggle = document.querySelector(toggleSelector);
                 if (toggle) doNavbarIconClick.call(toggle as HTMLElement);
             }
@@ -754,8 +825,20 @@ export function initRossMods() {
     };
 
     setupPanelPin(RPanelPin, 'NavLockOn', RightNavPanel, RightNavDrawerIcon, '#unimportantYes');
-    setupPanelPin(LPanelPin, 'LNavLockOn', LeftNavPanel, LeftNavDrawerIcon, '#ai-config-button>.drawer-toggle');
-    setupPanelPin(WIPanelPin, 'WINavLockOn', WorldInfo, WIDrawerIcon, '#WI-SP-button>.drawer-toggle');
+    setupPanelPin(
+        LPanelPin,
+        'LNavLockOn',
+        LeftNavPanel,
+        LeftNavDrawerIcon,
+        '#ai-config-button>.drawer-toggle',
+    );
+    setupPanelPin(
+        WIPanelPin,
+        'WINavLockOn',
+        WorldInfo,
+        WIDrawerIcon,
+        '#WI-SP-button>.drawer-toggle',
+    );
 
     // Generic helper for recording drawer open/closed state
     const bindNavOpenState = (elementId: string, storageKey: string) => {
@@ -770,10 +853,16 @@ export function initRossMods() {
     bindNavOpenState('leftNavDrawerIcon', 'LNavOpened');
     bindNavOpenState('WorldInfo', 'WINavOpened');
 
-    setTimeout(() => { OpenNavPanels(); }, 300);
+    setTimeout(() => {
+        OpenNavPanels();
+    }, 300);
 
-    SelectedCharacterTab?.addEventListener('click', () => { accountStorage.setItem('SelectedNavTab', 'rm_button_selected_ch'); });
-    document.getElementById('rm_button_characters')?.addEventListener('click', () => { accountStorage.setItem('SelectedNavTab', 'rm_button_characters'); });
+    SelectedCharacterTab?.addEventListener('click', () => {
+        accountStorage.setItem('SelectedNavTab', 'rm_button_selected_ch');
+    });
+    document.getElementById('rm_button_characters')?.addEventListener('click', () => {
+        accountStorage.setItem('SelectedNavTab', 'rm_button_characters');
+    });
 
     // Delegated entity click helper
     const bindEntitySelect = (selector: string, isGroup: boolean) => {
@@ -782,7 +871,8 @@ export function initRossMods() {
             const el = event.target.closest(selector);
             if (!el) return;
 
-            const id = el.getAttribute('data-chid') || (isGroup ? el.getAttribute('data-grid') : null);
+            const id =
+                el.getAttribute('data-chid') || (isGroup ? el.getAttribute('data-grid') : null);
             setActiveCharacter(isGroup ? null : id);
             setActiveGroup(isGroup ? id : null);
             saveSettingsDebounced();
@@ -803,7 +893,8 @@ export function initRossMods() {
                 const threshold = 1;
                 const newHeight = chatBlock.offsetHeight;
                 const deltaHeight = newHeight - lastHeight;
-                const isScrollAtBottom = Math.abs(chatBlock.scrollHeight - chatBlock.scrollTop - newHeight) <= threshold;
+                const isScrollAtBottom =
+                    Math.abs(chatBlock.scrollHeight - chatBlock.scrollTop - newHeight) <= threshold;
 
                 if (!isScrollAtBottom && Math.abs(deltaHeight) > threshold) {
                     chatBlock.scrollTop -= deltaHeight;
@@ -828,7 +919,8 @@ export function initRossMods() {
         const fitsCurrentSize = sendTextArea.scrollHeight <= sendTextArea.offsetHeight;
         const isScrollbarShown = sendTextArea.clientWidth < sendTextArea.offsetWidth;
         const isHalfScreenHeight = sendTextArea.offsetHeight >= window.innerHeight / 2;
-        const needsDebounce = hasContent && (fitsCurrentSize || (isScrollbarShown && isHalfScreenHeight));
+        const needsDebounce =
+            hasContent && (fitsCurrentSize || (isScrollbarShown && isHalfScreenHeight));
 
         if (needsDebounce) autoFitSendTextAreaDebounced();
         else autoFitSendTextArea();
@@ -839,7 +931,12 @@ export function initRossMods() {
     // Swipe gestures
     const handleSwipe = (e: Event, selector: string) => {
         if (power_user.gestures === false || Popup.util.isPopupOpen()) return;
-        if (!(e.target instanceof Element) || !e.target.closest('#sheld') || document.getElementById('curEditTextarea')) return;
+        if (
+            !(e.target instanceof Element) ||
+            !e.target.closest('#sheld') ||
+            document.getElementById('curEditTextarea')
+        )
+            return;
 
         if (e.target.closest('.last_mes')) {
             const buttons = document.querySelectorAll(selector);
@@ -866,7 +963,14 @@ export function initRossMods() {
         if (Popup.util.isPopupOpen()) return;
 
         if (document.activeElement === hotkeyTargets.send_textarea) {
-            if (!event.isComposing && !event.shiftKey && !event.ctrlKey && !event.altKey && event.key === 'Enter' && shouldSendOnEnter()) {
+            if (
+                !event.isComposing &&
+                !event.shiftKey &&
+                !event.ctrlKey &&
+                !event.altKey &&
+                event.key === 'Enter' &&
+                shouldSendOnEnter()
+            ) {
                 event.preventDefault();
                 sendTextareaMessage();
                 return;
@@ -887,7 +991,10 @@ export function initRossMods() {
             const contextLine = document.querySelector('.lastInContext');
             if (chatEl && contextLine) {
                 chatEl.scrollTo({
-                    top: contextLine.getBoundingClientRect().top - chatEl.getBoundingClientRect().top + chatEl.scrollTop,
+                    top:
+                        contextLine.getBoundingClientRect().top -
+                        chatEl.getBoundingClientRect().top +
+                        chatEl.scrollTop,
                     behavior: 'smooth',
                 });
             } else if (typeof notyf !== 'undefined') {
@@ -914,8 +1021,12 @@ export function initRossMods() {
         }
 
         if (event.ctrlKey && event.key === 'Enter') {
-            const editMesDone = Array.from(document.querySelectorAll('.mes_edit_done')).find(e => (e as HTMLElement).offsetParent !== null) as HTMLElement;
-            const reasoningMesDone = Array.from(document.querySelectorAll('.mes_reasoning_edit_done')).find(e => (e as HTMLElement).offsetParent !== null) as HTMLElement;
+            const editMesDone = Array.from(document.querySelectorAll('.mes_edit_done')).find(
+                (e) => (e as HTMLElement).offsetParent !== null,
+            ) as HTMLElement;
+            const reasoningMesDone = Array.from(
+                document.querySelectorAll('.mes_reasoning_edit_done'),
+            ).find((e) => (e as HTMLElement).offsetParent !== null) as HTMLElement;
 
             if (editMesDone) {
                 triggerClick(editMesDone);

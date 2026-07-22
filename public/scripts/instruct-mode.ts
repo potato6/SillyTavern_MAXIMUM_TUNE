@@ -1,12 +1,16 @@
 'use strict';
 
-import { extension_prompt_types, name1, name2, online_status, saveSettingsDebounced, substituteParams } from '../script.js';
+import {
+    extension_prompt_types,
+    name1,
+    name2,
+    online_status,
+    saveSettingsDebounced,
+    substituteParams,
+} from '../script.js';
 import { selected_group } from './group-chats.js';
 import { parseExampleIntoIndividual } from './openai.js';
-import {
-    power_user,
-    context_presets,
-} from './power-user.js';
+import { power_user, context_presets } from './power-user.js';
 import { onlyUnique, regexFromString, resetScrollHeight } from './utils.js';
 
 /**
@@ -64,7 +68,9 @@ function migrateInstructModeSettings(settings) {
     if (settings.names !== undefined) {
         settings.names_behavior = settings.names
             ? names_behavior_types.ALWAYS
-            : (settings.names_force_groups ? names_behavior_types.FORCE : names_behavior_types.NONE);
+            : settings.names_force_groups
+              ? names_behavior_types.FORCE
+              : names_behavior_types.NONE;
         delete settings.names;
         delete settings.names_force_groups;
     }
@@ -118,10 +124,21 @@ export async function loadInstructMode(data) {
 
     migrateInstructModeSettings(power_user.instruct);
 
-    document.getElementById('instruct_enabled')?.parentElement?.querySelector('i')?.classList.toggle('toggleEnabled', !!power_user.instruct.enabled);
-    document.querySelectorAll('#instructSettingsBlock, #InstructSequencesColumn').forEach(el => el.classList.toggle('disabled', !power_user.instruct.enabled));
-    document.getElementById('instruct_derived')?.parentElement?.querySelector('i')?.classList.toggle('toggleEnabled', !!power_user.instruct_derived);
-    document.getElementById('instruct_bind_to_context')?.parentElement?.querySelector('i')?.classList.toggle('toggleEnabled', !!power_user.instruct.bind_to_context);
+    document
+        .getElementById('instruct_enabled')
+        ?.parentElement?.querySelector('i')
+        ?.classList.toggle('toggleEnabled', !!power_user.instruct.enabled);
+    document
+        .querySelectorAll('#instructSettingsBlock, #InstructSequencesColumn')
+        .forEach((el) => el.classList.toggle('disabled', !power_user.instruct.enabled));
+    document
+        .getElementById('instruct_derived')
+        ?.parentElement?.querySelector('i')
+        ?.classList.toggle('toggleEnabled', !!power_user.instruct_derived);
+    document
+        .getElementById('instruct_bind_to_context')
+        ?.parentElement?.querySelector('i')
+        ?.classList.toggle('toggleEnabled', !!power_user.instruct.bind_to_context);
 
     for (const [id, property] of Object.entries(bindings)) {
         const element = document.getElementById(id);
@@ -129,17 +146,30 @@ export async function loadInstructMode(data) {
 
         if (element instanceof HTMLInputElement && element.type === 'checkbox') {
             element.checked = Boolean((power_user.instruct as Record<string, unknown>)[property]);
-        } else if (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement || element instanceof HTMLSelectElement) {
-            element.value = String((power_user.instruct as Record<string, unknown>)[property] ?? '');
+        } else if (
+            element instanceof HTMLInputElement ||
+            element instanceof HTMLTextAreaElement ||
+            element instanceof HTMLSelectElement
+        ) {
+            element.value = String(
+                (power_user.instruct as Record<string, unknown>)[property] ?? '',
+            );
         }
 
         element.addEventListener('input', async () => {
             if (element instanceof HTMLInputElement && element.type === 'checkbox') {
                 (power_user.instruct as Record<string, unknown>)[property] = element.checked;
-            } else if (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement || element instanceof HTMLSelectElement) {
+            } else if (
+                element instanceof HTMLInputElement ||
+                element instanceof HTMLTextAreaElement ||
+                element instanceof HTMLSelectElement
+            ) {
                 (power_user.instruct as Record<string, unknown>)[property] = element.value;
             }
-            if (!CSS.supports('field-sizing', 'content') && element instanceof HTMLTextAreaElement) {
+            if (
+                !CSS.supports('field-sizing', 'content') &&
+                element instanceof HTMLTextAreaElement
+            ) {
                 await resetScrollHeight(element);
             }
             saveSettingsDebounced();
@@ -165,8 +195,15 @@ export async function loadInstructMode(data) {
  */
 export function updateBindModelTemplatesState() {
     // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-    const bindModelTemplates = power_user.model_templates_mappings[online_status] ?? power_user.model_templates_mappings[power_user.chat_template_hash];
-    const bindingsMatch = (bindModelTemplates && power_user.context.preset === bindModelTemplates.context && (!power_user.instruct.enabled || power_user.instruct.preset === bindModelTemplates.instruct)) ?? false;
+    const bindModelTemplates =
+        power_user.model_templates_mappings[online_status] ??
+        power_user.model_templates_mappings[power_user.chat_template_hash];
+    const bindingsMatch =
+        (bindModelTemplates &&
+            power_user.context.preset === bindModelTemplates.context &&
+            (!power_user.instruct.enabled ||
+                power_user.instruct.preset === bindModelTemplates.instruct)) ??
+        false;
     const bmt = document.getElementById('bind_model_templates');
     const currentState = bmt instanceof HTMLInputElement ? bmt.checked : false;
     if (bindingsMatch === currentState) {
@@ -184,7 +221,7 @@ export function updateBindModelTemplatesState() {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'preset' implicitly has an 'any' type.
 export function selectContextPreset(preset, { quiet = false, isAuto = false } = {}) {
-    const presetExists = context_presets.some(x => x.name === preset);
+    const presetExists = context_presets.some((x) => x.name === preset);
     if (!presetExists) {
         console.warn(`Context template "${preset}" not found`);
         return;
@@ -215,7 +252,7 @@ export function selectContextPreset(preset, { quiet = false, isAuto = false } = 
 // @ts-expect-error TS(7006) FIXME: Parameter 'preset' implicitly has an 'any' type.
 export function selectInstructPreset(preset, { quiet = false, isAuto = false } = {}) {
     // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
-    const presetExists = instruct_presets.some(x => x.name === preset);
+    const presetExists = instruct_presets.some((x) => x.name === preset);
     if (!presetExists) {
         console.warn(`Instruct template "${preset}" not found`);
         return;
@@ -326,7 +363,10 @@ export function autoSelectInstructPreset(modelId) {
  * @param {boolean?} [options.useStopStrings] - Decides whether to use "Chat Start" and "Example Separator"
  * @returns {string[]} Array of instruct mode stopping strings.
  */
-export function getInstructStoppingSequences({ customInstruct = null, useStopStrings = null } = {}) {
+export function getInstructStoppingSequences({
+    customInstruct = null,
+    useStopStrings = null,
+} = {}) {
     const instruct = structuredClone(customInstruct ?? power_user.instruct);
 
     /**
@@ -339,7 +379,7 @@ export function getInstructStoppingSequences({ customInstruct = null, useStopStr
         // Cohee: oobabooga's textgen always appends newline before the sequence as a stopping string
         // But it's a problem for Metharme which doesn't use newlines to separate them.
         // @ts-expect-error TS(7006) FIXME: Parameter 's' implicitly has an 'any' type.
-        const wrap = (s) => instruct.wrap ? '\n' + s : s;
+        const wrap = (s) => (instruct.wrap ? '\n' + s : s);
         // Sequence must be a non-empty string
         if (typeof sequence === 'string' && sequence.length > 0) {
             // If sequence is just a whitespace or newline - we don't want to make it a stopping string
@@ -347,7 +387,9 @@ export function getInstructStoppingSequences({ customInstruct = null, useStopStr
             if (sequence.trim().length > 0) {
                 const wrappedSequence = wrap(sequence);
                 // Need to respect "insert macro" setting
-                const stopString = instruct.macro ? substituteParams(wrappedSequence) : wrappedSequence;
+                const stopString = instruct.macro
+                    ? substituteParams(wrappedSequence)
+                    : wrappedSequence;
                 result.push(stopString);
             }
         }
@@ -360,14 +402,15 @@ export function getInstructStoppingSequences({ customInstruct = null, useStopStr
         const stop_sequence = instruct.stop_sequence || '';
         const input_sequence = instruct.input_sequence?.replace(/{{name}}/gi, name1) || '';
         const output_sequence = instruct.output_sequence?.replace(/{{name}}/gi, name2) || '';
-        const first_output_sequence = instruct.first_output_sequence?.replace(/{{name}}/gi, name2) || '';
-        const last_output_sequence = instruct.last_output_sequence?.replace(/{{name}}/gi, name2) || '';
+        const first_output_sequence =
+            instruct.first_output_sequence?.replace(/{{name}}/gi, name2) || '';
+        const last_output_sequence =
+            instruct.last_output_sequence?.replace(/{{name}}/gi, name2) || '';
         const system_sequence = instruct.system_sequence?.replace(/{{name}}/gi, 'System') || '';
-        const last_system_sequence = instruct.last_system_sequence?.replace(/{{name}}/gi, 'System') || '';
+        const last_system_sequence =
+            instruct.last_system_sequence?.replace(/{{name}}/gi, 'System') || '';
 
-        const combined_sequence = [
-            stop_sequence,
-        ];
+        const combined_sequence = [stop_sequence];
 
         if (instruct.sequences_as_stop_strings) {
             combined_sequence.push(
@@ -415,11 +458,25 @@ export const force_output_sequence = {
  * @returns {string} Formatted instruct mode chat message.
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
-export function formatInstructModeChat(name, mes, isUser, isNarrator, forceAvatar, name1, name2, forceOutputSequence, customInstruct = null) {
+export function formatInstructModeChat(
+    name,
+    mes,
+    isUser,
+    isNarrator,
+    forceAvatar,
+    name1,
+    name2,
+    forceOutputSequence,
+    customInstruct = null,
+) {
     const instruct = structuredClone(customInstruct ?? power_user.instruct);
     let includeNames = isNarrator ? false : instruct.names_behavior === names_behavior_types.ALWAYS;
 
-    if (!isNarrator && instruct.names_behavior === names_behavior_types.FORCE && ((selected_group && name !== name1) || (forceAvatar && name !== name1))) {
+    if (
+        !isNarrator &&
+        instruct.names_behavior === names_behavior_types.FORCE &&
+        ((selected_group && name !== name1) || (forceAvatar && name !== name1))
+    ) {
         includeNames = true;
     }
 
@@ -428,7 +485,9 @@ export function formatInstructModeChat(name, mes, isUser, isNarrator, forceAvata
      */
     function getPrefix() {
         if (isNarrator) {
-            return instruct.system_same_as_user ? instruct.input_sequence : instruct.system_sequence;
+            return instruct.system_same_as_user
+                ? instruct.input_sequence
+                : instruct.system_sequence;
         }
 
         if (isUser) {
@@ -487,8 +546,9 @@ export function formatInstructModeChat(name, mes, isUser, isNarrator, forceAvata
     const separator = instruct.wrap ? '\n' : '';
 
     // Don't include the name if it's empty
-    const textArray = includeNames && name ? [prefix, `${name}: ${mes}` + suffix] : [prefix, mes + suffix];
-    const text = textArray.filter(x => x).join(separator);
+    const textArray =
+        includeNames && name ? [prefix, `${name}: ${mes}` + suffix] : [prefix, mes + suffix];
+    const text = textArray.filter((x) => x).join(separator);
 
     return text;
 }
@@ -502,21 +562,28 @@ export function formatInstructModeChat(name, mes, isUser, isNarrator, forceAvata
  * @returns {string} Formatted instruct mode story string.
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'storyString' implicitly has an 'any' ty... Remove this comment to see the full error message
-export function formatInstructModeStoryString(storyString, { customContext = null, customInstruct = null } = {}) {
+export function formatInstructModeStoryString(
+    storyString,
+    { customContext = null, customInstruct = null } = {},
+) {
     if (!storyString) {
         return '';
     }
 
     const instructSettings = structuredClone(customInstruct ?? power_user.instruct);
     const contextSettings = structuredClone(customContext ?? power_user.context);
-    const storyStringPosition = contextSettings.story_string_position ?? extension_prompt_types.IN_PROMPT;
+    const storyStringPosition =
+        contextSettings.story_string_position ?? extension_prompt_types.IN_PROMPT;
 
     // Only wrap if not in-chat position (it will be wrapped by message sequences instead)
     const applySequences = storyStringPosition !== extension_prompt_types.IN_CHAT;
     const separator = instructSettings.wrap ? '\n' : '';
     if (applySequences && instructSettings.story_string_prefix) {
         // TODO: Replace with a proper 'System' prompt entity name input
-        const prefix = substituteParams(instructSettings.story_string_prefix).replace(/{{name}}/gi, 'System');
+        const prefix = substituteParams(instructSettings.story_string_prefix).replace(
+            /{{name}}/gi,
+            'System',
+        );
         storyString = prefix + separator + storyString;
     }
 
@@ -537,15 +604,21 @@ export function formatInstructModeStoryString(storyString, { customContext = nul
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'mesExamplesArray' implicitly has an 'an... Remove this comment to see the full error message
 export function formatInstructModeExamples(mesExamplesArray, name1, name2) {
-    const blockHeading = power_user.context.example_separator ? `${substituteParams(power_user.context.example_separator)}\n` : '';
+    const blockHeading = power_user.context.example_separator
+        ? `${substituteParams(power_user.context.example_separator)}\n`
+        : '';
 
     if (power_user.instruct.skip_examples) {
         // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
-        return mesExamplesArray.map(x => x.replace(/<START>\n/i, blockHeading));
+        return mesExamplesArray.map((x) => x.replace(/<START>\n/i, blockHeading));
     }
 
     const includeNames = power_user.instruct.names_behavior === names_behavior_types.ALWAYS;
-    const includeGroupNames = selected_group && [names_behavior_types.ALWAYS, names_behavior_types.FORCE].includes(power_user.instruct.names_behavior);
+    const includeGroupNames =
+        selected_group &&
+        [names_behavior_types.ALWAYS, names_behavior_types.FORCE].includes(
+            power_user.instruct.names_behavior,
+        );
 
     let inputPrefix = power_user.instruct.input_sequence || '';
     let outputPrefix = power_user.instruct.output_sequence || '';
@@ -554,9 +627,15 @@ export function formatInstructModeExamples(mesExamplesArray, name1, name2) {
 
     if (power_user.instruct.macro) {
         inputPrefix = substituteParams(inputPrefix, { name1Override: name1, name2Override: name2 });
-        outputPrefix = substituteParams(outputPrefix, { name1Override: name1, name2Override: name2 });
+        outputPrefix = substituteParams(outputPrefix, {
+            name1Override: name1,
+            name2Override: name2,
+        });
         inputSuffix = substituteParams(inputSuffix, { name1Override: name1, name2Override: name2 });
-        outputSuffix = substituteParams(outputSuffix, { name1Override: name1, name2Override: name2 });
+        outputSuffix = substituteParams(outputSuffix, {
+            name1Override: name1,
+            name2Override: name2,
+        });
 
         inputPrefix = inputPrefix.replace(/{{name}}/gi, name1);
         outputPrefix = outputPrefix.replace(/{{name}}/gi, name2);
@@ -577,7 +656,10 @@ export function formatInstructModeExamples(mesExamplesArray, name1, name2) {
 
     for (const item of mesExamplesArray) {
         const cleanedItem = item.replace(/<START>/i, '{Example Dialogue:}').replace(/\r/gm, '');
-        const blockExamples = parseExampleIntoIndividual(cleanedItem, includeGroupNames as boolean | undefined);
+        const blockExamples = parseExampleIntoIndividual(
+            cleanedItem,
+            includeGroupNames as boolean | undefined,
+        );
 
         if (blockExamples.length === 0) {
             continue;
@@ -590,20 +672,28 @@ export function formatInstructModeExamples(mesExamplesArray, name1, name2) {
         for (const example of blockExamples) {
             // If group names were included, we don't want to add any additional prefix as it already was applied.
             // Otherwise, if force group/persona names is set, we should override the include names for the user placeholder
-            const includeThisName = !includeGroupNames && (includeNames || (power_user.instruct.names_behavior === names_behavior_types.FORCE && example.name == 'example_user'));
+            const includeThisName =
+                !includeGroupNames &&
+                (includeNames ||
+                    (power_user.instruct.names_behavior === names_behavior_types.FORCE &&
+                        example.name == 'example_user'));
 
             const prefix = example.name == 'example_user' ? inputPrefix : outputPrefix;
             const suffix = example.name == 'example_user' ? inputSuffix : outputSuffix;
             const name = example.name == 'example_user' ? name1 : name2;
-            const messageContent = includeThisName ? `${name}: ${example.content}` : example.content;
-            const formattedMessage = [prefix, messageContent + suffix].filter(x => x).join(separator);
+            const messageContent = includeThisName
+                ? `${name}: ${example.content}`
+                : example.content;
+            const formattedMessage = [prefix, messageContent + suffix]
+                .filter((x) => x)
+                .join(separator);
             formattedExamples.push(formattedMessage);
         }
     }
 
     if (formattedExamples.length === 0) {
         // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
-        return mesExamplesArray.map(x => x.replace(/<START>\n/i, blockHeading));
+        return mesExamplesArray.map((x) => x.replace(/<START>\n/i, blockHeading));
     }
     return formattedExamples;
 }
@@ -621,9 +711,22 @@ export function formatInstructModeExamples(mesExamplesArray, name1, name2) {
  * @returns {string} Formatted instruct mode last prompt line.
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
-export function formatInstructModePrompt(name, isImpersonate, promptBias, name1, name2, isQuiet, isQuietToLoud, customInstruct = null) {
+export function formatInstructModePrompt(
+    name,
+    isImpersonate,
+    promptBias,
+    name1,
+    name2,
+    isQuiet,
+    isQuietToLoud,
+    customInstruct = null,
+) {
     const instruct = structuredClone(customInstruct ?? power_user.instruct);
-    const includeNames = name && (instruct.names_behavior === names_behavior_types.ALWAYS || (!!selected_group && instruct.names_behavior === names_behavior_types.FORCE)) && !(isQuiet && !isQuietToLoud);
+    const includeNames =
+        name &&
+        (instruct.names_behavior === names_behavior_types.ALWAYS ||
+            (!!selected_group && instruct.names_behavior === names_behavior_types.FORCE)) &&
+        !(isQuiet && !isQuietToLoud);
 
     /**
      *
@@ -670,7 +773,9 @@ export function formatInstructModePrompt(name, isImpersonate, promptBias, name1,
     }
 
     const separator = instruct.wrap ? '\n' : '';
-    let text = includeNames ? (separator + sequence + separator + nameFiller + `${name}:`) : (separator + sequence);
+    let text = includeNames
+        ? separator + sequence + separator + nameFiller + `${name}:`
+        : separator + sequence;
 
     // Quiet prompt already has a newline at the end
     if (isQuiet && separator) {
@@ -678,7 +783,7 @@ export function formatInstructModePrompt(name, isImpersonate, promptBias, name1,
     }
 
     if (!isImpersonate && promptBias) {
-        text += (includeNames ? promptBias : (separator + promptBias.trimStart()));
+        text += includeNames ? promptBias : separator + promptBias.trimStart();
     }
 
     return (instruct.wrap ? text.trimEnd() : text) + (includeNames ? '' : separator);
@@ -707,22 +812,31 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('instruct_system_sequence_block')?.classList.add('disabled');
             document.getElementById('instruct_system_suffix_block')?.classList.add('disabled');
             const seq = document.getElementById('instruct_system_sequence');
-            if (seq instanceof HTMLInputElement || seq instanceof HTMLTextAreaElement) seq.readOnly = true;
+            if (seq instanceof HTMLInputElement || seq instanceof HTMLTextAreaElement)
+                seq.readOnly = true;
             const suf = document.getElementById('instruct_system_suffix');
-            if (suf instanceof HTMLInputElement || suf instanceof HTMLTextAreaElement) suf.readOnly = true;
+            if (suf instanceof HTMLInputElement || suf instanceof HTMLTextAreaElement)
+                suf.readOnly = true;
         } else {
             document.getElementById('instruct_system_sequence_block')?.classList.remove('disabled');
             document.getElementById('instruct_system_suffix_block')?.classList.remove('disabled');
             const seq = document.getElementById('instruct_system_sequence');
-            if (seq instanceof HTMLInputElement || seq instanceof HTMLTextAreaElement) seq.readOnly = false;
+            if (seq instanceof HTMLInputElement || seq instanceof HTMLTextAreaElement)
+                seq.readOnly = false;
             const suf = document.getElementById('instruct_system_suffix');
-            if (suf instanceof HTMLInputElement || suf instanceof HTMLTextAreaElement) suf.readOnly = false;
+            if (suf instanceof HTMLInputElement || suf instanceof HTMLTextAreaElement)
+                suf.readOnly = false;
         }
     });
 
     document.getElementById('instruct_enabled')?.addEventListener('change', function () {
-        document.getElementById('instruct_enabled')?.parentElement?.querySelector('i')?.classList.toggle('toggleEnabled', !!power_user.instruct.enabled);
-        document.querySelectorAll('#instructSettingsBlock, #InstructSequencesColumn').forEach(el => el.classList.toggle('disabled', !power_user.instruct.enabled));
+        document
+            .getElementById('instruct_enabled')
+            ?.parentElement?.querySelector('i')
+            ?.classList.toggle('toggleEnabled', !!power_user.instruct.enabled);
+        document
+            .querySelectorAll('#instructSettingsBlock, #InstructSequencesColumn')
+            .forEach((el) => el.classList.toggle('disabled', !power_user.instruct.enabled));
 
         if (!power_user.instruct.bind_to_context) {
             return;
@@ -734,18 +848,24 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.getElementById('instruct_derived')?.addEventListener('change', function () {
-        document.getElementById('instruct_derived')?.parentElement?.querySelector('i')?.classList.toggle('toggleEnabled', !!power_user.instruct_derived);
+        document
+            .getElementById('instruct_derived')
+            ?.parentElement?.querySelector('i')
+            ?.classList.toggle('toggleEnabled', !!power_user.instruct_derived);
     });
 
     document.getElementById('instruct_bind_to_context')?.addEventListener('change', function () {
-        document.getElementById('instruct_bind_to_context')?.parentElement?.querySelector('i')?.classList.toggle('toggleEnabled', !!power_user.instruct.bind_to_context);
+        document
+            .getElementById('instruct_bind_to_context')
+            ?.parentElement?.querySelector('i')
+            ?.classList.toggle('toggleEnabled', !!power_user.instruct.bind_to_context);
     });
 
     document.getElementById('instruct_presets')?.addEventListener('change', function () {
         // @ts-expect-error TS(2339) FIXME: Property 'value' does not exist on type 'HTMLEleme... Remove this comment to see the full error message
         const name = String(this.value);
         // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
-        const preset = instruct_presets.find(x => x.name === name);
+        const preset = instruct_presets.find((x) => x.name === name);
 
         if (!preset) {
             return;
@@ -764,7 +884,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (element instanceof HTMLInputElement && element.type === 'checkbox') {
                 element.checked = Boolean(presetValue);
-            } else if (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement || element instanceof HTMLSelectElement) {
+            } else if (
+                element instanceof HTMLInputElement ||
+                element instanceof HTMLTextAreaElement ||
+                element instanceof HTMLSelectElement
+            ) {
                 element.value = String(presetValue ?? '');
             }
             element.dispatchEvent(new Event('input'));

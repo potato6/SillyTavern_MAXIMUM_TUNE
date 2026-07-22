@@ -15,15 +15,15 @@ let _providersCacheTime = 0;
 
 router.get('/providers', async (_req, res) => {
     try {
-        if (_providersCache && (Date.now() - _providersCacheTime) < 3600_000) {
+        if (_providersCache && Date.now() - _providersCacheTime < 3600_000) {
             return res.json(_providersCache);
         }
         const response = await fetch(`${API_OPENROUTER}/providers`, {
             method: 'GET',
-            headers: { 'Accept': 'application/json' },
+            headers: { Accept: 'application/json' },
         });
         if (!response.ok) return res.json(_providersCache ?? []);
-        const data = await response.json() as { data?: string[] };
+        const data = (await response.json()) as { data?: string[] };
         _providersCache = data?.data ?? [];
         _providersCacheTime = Date.now();
         return res.json(_providersCache);
@@ -39,7 +39,7 @@ router.post('/models/providers', async (req, res) => {
         const response = await fetch(`${API_OPENROUTER}/models/${model}/endpoints`, {
             method: 'GET',
             headers: {
-                'Accept': 'application/json',
+                Accept: 'application/json',
             },
         });
 
@@ -67,18 +67,26 @@ router.post('/models/providers', async (req, res) => {
  * @param {((model: any) => any) | null} [mapFn] - Optional mapping function to transform the results
  * @returns {Promise<any[]>} Filtered and/or mapped models
  */
-async function fetchModelsByModality(endpoint: string, inputModality: string, outputModality: string, mapFn: ((model: Record<string, unknown>) => unknown) | null = null) {
-    const response = await fetch(`${API_OPENROUTER}${endpoint}?output_modalities=${encodeURIComponent(outputModality)}`, {
-        method: 'GET',
-        headers: { 'Accept': 'application/json' },
-    });
+async function fetchModelsByModality(
+    endpoint: string,
+    inputModality: string,
+    outputModality: string,
+    mapFn: ((model: Record<string, unknown>) => unknown) | null = null,
+) {
+    const response = await fetch(
+        `${API_OPENROUTER}${endpoint}?output_modalities=${encodeURIComponent(outputModality)}`,
+        {
+            method: 'GET',
+            headers: { Accept: 'application/json' },
+        },
+    );
 
     if (!response.ok) {
         console.warn('OpenRouter API request failed', response.statusText);
         return [];
     }
 
-    const data = await response.json() as Record<string, unknown>;
+    const data = (await response.json()) as Record<string, unknown>;
 
     if (!Array.isArray(data?.data)) {
         console.warn('OpenRouter API response was not an array');
@@ -86,11 +94,25 @@ async function fetchModelsByModality(endpoint: string, inputModality: string, ou
     }
 
     const filtered = data.data
-        .filter((m: { architecture?: { input_modalities?: string[]; output_modalities?: string[] } }) => Array.isArray(m?.architecture?.input_modalities))
-        .filter((m: { architecture: { input_modalities: string[]; output_modalities?: string[] } }) => m.architecture.input_modalities.includes(inputModality))
-        .filter((m: { architecture?: { input_modalities?: string[]; output_modalities?: string[] } }) => Array.isArray(m?.architecture?.output_modalities))
-        .filter((m: { architecture: { input_modalities?: string[]; output_modalities: string[] } }) => m.architecture.output_modalities.includes(outputModality))
-        .sort((a: { id?: string }, b: { id?: string }) => a?.id && b?.id ? a.id.localeCompare(b.id) : 0);
+        .filter(
+            (m: { architecture?: { input_modalities?: string[]; output_modalities?: string[] } }) =>
+                Array.isArray(m?.architecture?.input_modalities),
+        )
+        .filter(
+            (m: { architecture: { input_modalities: string[]; output_modalities?: string[] } }) =>
+                m.architecture.input_modalities.includes(inputModality),
+        )
+        .filter(
+            (m: { architecture?: { input_modalities?: string[]; output_modalities?: string[] } }) =>
+                Array.isArray(m?.architecture?.output_modalities),
+        )
+        .filter(
+            (m: { architecture: { input_modalities?: string[]; output_modalities: string[] } }) =>
+                m.architecture.output_modalities.includes(outputModality),
+        )
+        .toSorted((a: { id?: string }, b: { id?: string }) =>
+            a?.id && b?.id ? a.id.localeCompare(b.id) : 0,
+        );
 
     return typeof mapFn === 'function' ? filtered.map(mapFn) : filtered;
 }
@@ -98,7 +120,12 @@ async function fetchModelsByModality(endpoint: string, inputModality: string, ou
 router.post('/models/multimodal', async (_req, res) => {
     try {
         // @ts-expect-error TS(2345) FIXME: Argument of type '(m: {    id: string;}) => string... Remove this comment to see the full error message
-        const models = await fetchModelsByModality('/models', 'image', 'text', (m: { id: string }) => m.id);
+        const models = await fetchModelsByModality(
+            '/models',
+            'image',
+            'text',
+            (m: { id: string }) => m.id,
+        );
         return res.json(models);
     } catch (error) {
         console.error(error);
@@ -109,10 +136,15 @@ router.post('/models/multimodal', async (_req, res) => {
 router.post('/models/embedding', async (_req, res) => {
     try {
         // @ts-expect-error TS(2345) FIXME: Argument of type '(m: {    id: string;    name?: s... Remove this comment to see the full error message
-        const models = await fetchModelsByModality('/models', 'text', 'embeddings', (m: { id: string; name?: string }) => ({
-            id: m.id,
-            name: m.name
-        }));
+        const models = await fetchModelsByModality(
+            '/models',
+            'text',
+            'embeddings',
+            (m: { id: string; name?: string }) => ({
+                id: m.id,
+                name: m.name,
+            }),
+        );
         return res.json(models);
     } catch (error) {
         console.error(error);
@@ -123,10 +155,15 @@ router.post('/models/embedding', async (_req, res) => {
 router.post('/models/image', async (_req, res) => {
     try {
         // @ts-expect-error TS(2345) FIXME: Argument of type '(m: {    id: string;    name?: s... Remove this comment to see the full error message
-        const models = await fetchModelsByModality('/models', 'text', 'image', (m: { id: string; name?: string }) => ({
-            value: m.id,
-            text: m.name || m.id
-        }));
+        const models = await fetchModelsByModality(
+            '/models',
+            'text',
+            'image',
+            (m: { id: string; name?: string }) => ({
+                value: m.id,
+                text: m.name || m.id,
+            }),
+        );
         return res.json(models);
     } catch (error) {
         console.error(error);
@@ -146,8 +183,8 @@ router.post('/credits', async (req, res) => {
         const response = await fetch(`${API_OPENROUTER}/credits`, {
             method: 'GET',
             headers: {
-                'Accept': 'application/json',
-                'Authorization': `Bearer ${key}`,
+                Accept: 'application/json',
+                Authorization: `Bearer ${key}`,
             },
         });
 
@@ -191,7 +228,7 @@ router.post('/image/generate', async (req, res) => {
             headers: {
                 ...OPENROUTER_HEADERS,
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${key}`,
+                Authorization: `Bearer ${key}`,
             },
             body: JSON.stringify({
                 model: model,

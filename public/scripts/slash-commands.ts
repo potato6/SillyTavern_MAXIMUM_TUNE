@@ -1,5 +1,11 @@
 import { Fuse, DOMPurify } from '../lib.js';
-import { canUseNegativeLookbehind, copyText, findPersona, flashHighlight, resolveAvatarData } from './utils.js';
+import {
+    canUseNegativeLookbehind,
+    copyText,
+    findPersona,
+    flashHighlight,
+    resolveAvatarData,
+} from './utils.js';
 
 import {
     Generate,
@@ -68,26 +74,80 @@ import { getMessageTimeStamp, isMobile } from './RossAscends-mods.js';
 import { hideChatMessageRange } from './chats.js';
 import { getContext, saveMetadataDebounced } from './extensions.js';
 import { getRegexedString, regex_placement } from './extensions/regex/engine.js';
-import { findGroupMemberId, groups, is_group_generating, openGroupById, regenerateGroup, resetSelectedGroup, saveGroupChat, selected_group, getGroupMembers } from './group-chats.js';
-import { chat_completion_sources, MINIMAX_ENDPOINT, oai_settings, promptManager, SILICONFLOW_ENDPOINT, ZAI_ENDPOINT } from './openai.js';
+import {
+    findGroupMemberId,
+    groups,
+    is_group_generating,
+    openGroupById,
+    regenerateGroup,
+    resetSelectedGroup,
+    saveGroupChat,
+    selected_group,
+    getGroupMembers,
+} from './group-chats.js';
+import {
+    chat_completion_sources,
+    MINIMAX_ENDPOINT,
+    oai_settings,
+    promptManager,
+    SILICONFLOW_ENDPOINT,
+    ZAI_ENDPOINT,
+} from './openai.js';
 import { user_avatar } from './personas.js';
-import { addEphemeralStoppingString, chat_styles, context_presets, flushEphemeralStoppingStrings, playMessageSound, power_user } from './power-user.js';
+import {
+    addEphemeralStoppingString,
+    chat_styles,
+    context_presets,
+    flushEphemeralStoppingStrings,
+    playMessageSound,
+    power_user,
+} from './power-user.js';
 import { SERVER_INPUTS, textgen_types, textgenerationwebui_settings } from './textgen-settings.js';
-import { decodeTextTokens, getAvailableTokenizers, getFriendlyTokenizerName, getTextTokens, getTokenCountAsync, selectTokenizer } from './tokenizers.js';
-import { debounce, delay, equalsIgnoreCaseAndAccents, findChar, getCharIndex, isFalseBoolean, isTrueBoolean, onlyUnique, regexFromString, showFontAwesomePicker, stringToRange, trimToEndSentence, trimToStartSentence, waitUntilCondition } from './utils.js';
+import {
+    decodeTextTokens,
+    getAvailableTokenizers,
+    getFriendlyTokenizerName,
+    getTextTokens,
+    getTokenCountAsync,
+    selectTokenizer,
+} from './tokenizers.js';
+import {
+    debounce,
+    delay,
+    equalsIgnoreCaseAndAccents,
+    findChar,
+    getCharIndex,
+    isFalseBoolean,
+    isTrueBoolean,
+    onlyUnique,
+    regexFromString,
+    showFontAwesomePicker,
+    stringToRange,
+    trimToEndSentence,
+    trimToStartSentence,
+    waitUntilCondition,
+} from './utils.js';
 import { registerVariableCommands, resolveVariable } from './variables.js';
 import { registerActionLoaderSlashCommands } from './action-loader-slashcommands.js';
 import { background_settings } from './backgrounds.js';
 import { SlashCommandClosure } from './slash-commands/SlashCommandClosure.js';
 import { SlashCommandClosureResult } from './slash-commands/SlashCommandClosureResult.js';
-import { ARGUMENT_TYPE, SlashCommandArgument, SlashCommandNamedArgument } from './slash-commands/SlashCommandArgument.js';
+import {
+    ARGUMENT_TYPE,
+    SlashCommandArgument,
+    SlashCommandNamedArgument,
+} from './slash-commands/SlashCommandArgument.js';
 import { AutoComplete, AUTOCOMPLETE_STATE } from './autocomplete/AutoComplete.js';
 import { SlashCommand } from './slash-commands/SlashCommand.js';
 import { SlashCommandAbortController } from './slash-commands/SlashCommandAbortController.js';
 import { SlashCommandNamedArgumentAssignment } from './slash-commands/SlashCommandNamedArgumentAssignment.js';
 import { SlashCommandEnumValue, enumTypes } from './slash-commands/SlashCommandEnumValue.js';
 import { POPUP_RESULT, POPUP_TYPE, Popup, callGenericPopup } from './popup.js';
-import { commonEnumProviders, enumIcons, commonEnumMatchProviders } from './slash-commands/SlashCommandCommonEnumsProvider.js';
+import {
+    commonEnumProviders,
+    enumIcons,
+    commonEnumMatchProviders,
+} from './slash-commands/SlashCommandCommonEnumsProvider.js';
 import { SlashCommandBreakController } from './slash-commands/SlashCommandBreakController.js';
 import { SlashCommandExecutionError } from './slash-commands/SlashCommandExecutionError.js';
 import { slashCommandReturnHelper } from './slash-commands/SlashCommandReturnHelper.js';
@@ -98,9 +158,7 @@ import { t } from './i18n.js';
 import { kai_settings } from './kai-settings.js';
 import { instruct_presets, selectContextPreset, selectInstructPreset } from './instruct-mode.js';
 import { debounce_timeout, SWIPE_DIRECTION, SWIPE_SOURCE } from './constants.js';
-export {
-    executeSlashCommandsWithOptions, getSlashCommandsHelp,
-};
+export { executeSlashCommandsWithOptions, getSlashCommandsHelp };
 
 export const parser = new SlashCommandParser();
 SlashCommandParser.registerBuiltinCommands();
@@ -116,7 +174,7 @@ function closureToFilter(closure) {
     return async () => {
         try {
             const localClosure = closure.getCopy();
-            localClosure.onProgress = () => { };
+            localClosure.onProgress = () => {};
             const result = await localClosure.execute();
             return isTrueBoolean(result.pipe);
         } catch (e) {
@@ -147,47 +205,47 @@ function setupConnectAPIMap() {
     /** @type {Record<string, ConnectAPIMap>} */
     const result = {
         // Default APIs not contained inside text gen / chat gen
-        'kobold': {
+        kobold: {
             selected: 'kobold',
             button: '#api_button',
         },
-        'horde': {
+        horde: {
             selected: 'koboldhorde',
         },
-        'novel': {
+        novel: {
             selected: 'novel',
             button: '#api_button_novel',
         },
-        'koboldcpp': {
+        koboldcpp: {
             selected: 'textgenerationwebui',
             button: '#api_button_textgenerationwebui',
             type: textgen_types.KOBOLDCPP,
         },
         // KoboldCpp alias
-        'kcpp': {
+        kcpp: {
             selected: 'textgenerationwebui',
             button: '#api_button_textgenerationwebui',
             type: textgen_types.KOBOLDCPP,
         },
-        'openai': {
+        openai: {
             selected: 'openai',
             button: '#api_button_openai',
             source: chat_completion_sources.OPENAI,
         },
         // OpenAI alias
-        'oai': {
+        oai: {
             selected: 'openai',
             button: '#api_button_openai',
             source: chat_completion_sources.OPENAI,
         },
         // Google alias
-        'google': {
+        google: {
             selected: 'openai',
             button: '#api_button_openai',
             source: chat_completion_sources.MAKERSUITE,
         },
         // OpenRouter special naming, to differentiate between chat comp and text comp
-        'openrouter': {
+        openrouter: {
             selected: 'openai',
             button: '#api_button_openai',
             source: chat_completion_sources.OPENROUTER,
@@ -224,7 +282,7 @@ function setupConnectAPIMap() {
 
     Object.assign(CONNECT_API_MAP, result);
     // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
-    UNIQUE_APIS.push(...new Set(Object.values(CONNECT_API_MAP).map(x => x.selected)));
+    UNIQUE_APIS.push(...new Set(Object.values(CONNECT_API_MAP).map((x) => x.selected)));
 }
 
 /**
@@ -238,7 +296,6 @@ export function initDefaultSlashCommands() {
      *
      */
     async function enableInstructCallback() {
-
         const instructEnabled = document.getElementById('instruct_enabled');
         if (instructEnabled instanceof HTMLInputElement) {
             instructEnabled.checked = true;
@@ -252,7 +309,6 @@ export function initDefaultSlashCommands() {
      *
      */
     async function disableInstructCallback() {
-
         const instructEnabled = document.getElementById('instruct_enabled');
         if (instructEnabled instanceof HTMLInputElement) {
             instructEnabled.checked = false;
@@ -262,179 +318,219 @@ export function initDefaultSlashCommands() {
         return '';
     }
 
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'api',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
-        callback: async function (args, text) {
-            if (!text?.toString()?.trim()) {
-                for (const [key, config] of Object.entries(CONNECT_API_MAP)) {
-                    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-                    if (config.selected !== main_api) continue;
-
-                    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-                    if (config.source) {
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'api',
+            // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
+            callback: async function (args, text) {
+                if (!text?.toString()?.trim()) {
+                    for (const [key, config] of Object.entries(CONNECT_API_MAP)) {
                         // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-                        if (oai_settings.chat_completion_source === config.source) {
-                            return key;
-                        } else {
-                            continue;
+                        if (config.selected !== main_api) continue;
+
+                        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+                        if (config.source) {
+                            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+                            if (oai_settings.chat_completion_source === config.source) {
+                                return key;
+                            } else {
+                                continue;
+                            }
                         }
+
+                        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+                        if (config.type) {
+                            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+                            if (textgenerationwebui_settings.type === config.type) {
+                                return key;
+                            } else {
+                                continue;
+                            }
+                        }
+
+                        return key;
                     }
 
-                    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-                    if (config.type) {
-                        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-                        if (textgenerationwebui_settings.type === config.type) {
-                            return key;
-                        } else {
-                            continue;
-                        }
+                    console.error('FIXME: The current API is not in the API map');
+                    return '';
+                }
+
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
+                const apiConfig = CONNECT_API_MAP[text?.toString()?.toLowerCase() ?? ''];
+                if (!apiConfig) {
+                    notyf.error(t`Error: ${text} is not a valid API`);
+                    return '';
+                }
+
+                let connectionRequired = false;
+
+                if (main_api !== apiConfig.selected) {
+                    const mainApiSelect = document.getElementById('main_api');
+                    if (mainApiSelect) {
+                        const option = mainApiSelect.querySelector(
+                            `option[value='${apiConfig.selected || text}']`,
+                        );
+                        if (option) (option as HTMLOptionElement).selected = true;
+                        mainApiSelect.dispatchEvent(new Event('change'));
                     }
-
-                    return key;
+                    connectionRequired = true;
                 }
 
-                console.error('FIXME: The current API is not in the API map');
-                return '';
-            }
-
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-            const apiConfig = CONNECT_API_MAP[text?.toString()?.toLowerCase() ?? ''];
-            if (!apiConfig) {
-                notyf.error(t`Error: ${text} is not a valid API`);
-                return '';
-            }
-
-            let connectionRequired = false;
-
-            if (main_api !== apiConfig.selected) {
-                const mainApiSelect = document.getElementById('main_api');
-                if (mainApiSelect) {
-                    const option = mainApiSelect.querySelector(`option[value='${apiConfig.selected || text}']`);
-                    if (option) (option as HTMLOptionElement).selected = true;
-                    mainApiSelect.dispatchEvent(new Event('change'));
+                if (apiConfig.source && oai_settings.chat_completion_source !== apiConfig.source) {
+                    const sourceSelect = document.getElementById('chat_completion_source');
+                    if (sourceSelect) {
+                        const option = sourceSelect.querySelector(
+                            `option[value='${apiConfig.source}']`,
+                        );
+                        if (option) (option as HTMLOptionElement).selected = true;
+                        sourceSelect.dispatchEvent(new Event('change'));
+                    }
+                    connectionRequired = true;
                 }
-                connectionRequired = true;
-            }
 
-            if (apiConfig.source && oai_settings.chat_completion_source !== apiConfig.source) {
-                const sourceSelect = document.getElementById('chat_completion_source');
-                if (sourceSelect) {
-                    const option = sourceSelect.querySelector(`option[value='${apiConfig.source}']`);
-                    if (option) (option as HTMLOptionElement).selected = true;
-                    sourceSelect.dispatchEvent(new Event('change'));
+                if (apiConfig.type && textgenerationwebui_settings.type !== apiConfig.type) {
+                    const typeSelect = document.getElementById('textgen_type');
+                    if (typeSelect) {
+                        const option = typeSelect.querySelector(
+                            `option[value='${apiConfig.type}']`,
+                        );
+                        if (option) (option as HTMLOptionElement).selected = true;
+                        typeSelect.dispatchEvent(new Event('change'));
+                    }
+                    connectionRequired = true;
                 }
-                connectionRequired = true;
-            }
 
-            if (apiConfig.type && textgenerationwebui_settings.type !== apiConfig.type) {
-                const typeSelect = document.getElementById('textgen_type');
-                if (typeSelect) {
-                    const option = typeSelect.querySelector(`option[value='${apiConfig.type}']`);
-                    if (option) (option as HTMLOptionElement).selected = true;
-                    typeSelect.dispatchEvent(new Event('change'));
+                if (connectionRequired && apiConfig.button) {
+                    const btn = document.querySelector(apiConfig.button);
+                    if (btn) (btn as HTMLElement).click();
                 }
-                connectionRequired = true;
-            }
 
-            if (connectionRequired && apiConfig.button) {
-                const btn = document.querySelector(apiConfig.button);
-                if (btn) (btn as HTMLElement).click();
-            }
+                const quiet = isTrueBoolean(args?.quiet?.toString());
+                // @ts-expect-error TS(2304) FIXME: Cannot find name 'jQuery'.
+                const toast = quiet
+                    ? jQuery()
+                    : notyf.info(t`API set to ${text}, trying to connect..`);
 
-            const quiet = isTrueBoolean(args?.quiet?.toString());
-            // @ts-expect-error TS(2304) FIXME: Cannot find name 'jQuery'.
-            const toast = quiet ? jQuery() : notyf.info(t`API set to ${text}, trying to connect..`);
-
-            try {
-                if (connectionRequired) {
-                    await waitUntilCondition(() => online_status !== 'no_connection', 5000, 100);
+                try {
+                    if (connectionRequired) {
+                        await waitUntilCondition(
+                            () => online_status !== 'no_connection',
+                            5000,
+                            100,
+                        );
+                    }
+                    console.log('Connection successful');
+                } catch {
+                    console.log('Could not connect after 5 seconds, skipping.');
                 }
-                console.log('Connection successful');
-            } catch {
-                console.log('Could not connect after 5 seconds, skipping.');
-            }
 
-            notyf.dismiss(toast);
-            return text?.toString()?.trim() ?? '';
-        },
-        returns: t`the current API`,
-        namedArgumentList: [
-            SlashCommandNamedArgument.fromProps({
-                name: 'quiet',
-                description: t`Suppress the toast message on connection`,
-                typeList: [ARGUMENT_TYPE.BOOLEAN],
-                defaultValue: 'false',
-                enumList: commonEnumProviders.boolean('trueFalse')(),
-            }),
-        ],
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: t`API to connect to`,
-                typeList: [ARGUMENT_TYPE.STRING],
-                // @ts-expect-error TS(2339) FIXME: Property 'selected' does not exist on type 'unknow... Remove this comment to see the full error message
-                enumList: Object.entries(CONNECT_API_MAP).sort(([a], [b]) => a.localeCompare(b)).map(([api, { selected }]) =>
-                    new SlashCommandEnumValue(api, selected, enumTypes.getBasedOnIndex(UNIQUE_APIS.findIndex(x => x === selected)),
-                        selected[0].toUpperCase() ?? enumIcons.default)),
-            }),
-        ],
-        helpString: `
+                notyf.dismiss(toast);
+                return text?.toString()?.trim() ?? '';
+            },
+            returns: t`the current API`,
+            namedArgumentList: [
+                SlashCommandNamedArgument.fromProps({
+                    name: 'quiet',
+                    description: t`Suppress the toast message on connection`,
+                    typeList: [ARGUMENT_TYPE.BOOLEAN],
+                    defaultValue: 'false',
+                    enumList: commonEnumProviders.boolean('trueFalse')(),
+                }),
+            ],
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: t`API to connect to`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    // @ts-expect-error TS(2339) FIXME: Property 'selected' does not exist on type 'unknow... Remove this comment to see the full error message
+                    enumList: Object.entries(CONNECT_API_MAP)
+                        .toSorted(([a], [b]) => a.localeCompare(b))
+                        .map(
+                            ([api, { selected }]) =>
+                                new SlashCommandEnumValue(
+                                    api,
+                                    selected,
+                                    enumTypes.getBasedOnIndex(
+                                        UNIQUE_APIS.findIndex((x) => x === selected),
+                                    ),
+                                    selected[0].toUpperCase() ?? enumIcons.default,
+                                ),
+                        ),
+                }),
+            ],
+            helpString: `
             <div>
                 ${t`Connect to an API. If no argument is provided, it will return the currently connected API.`}
             </div>
             <div>
                 <strong>${t`Available APIs:`}</strong>
-                <pre><code>${Object.keys(CONNECT_API_MAP).sort((a, b) => a.localeCompare(b)).join(', ')}</code></pre>
+                <pre><code>${Object.keys(CONNECT_API_MAP)
+                    .toSorted((a, b) => a.localeCompare(b))
+                    .join(', ')}</code></pre>
             </div>
         `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'impersonate',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
-        callback: async function (args, prompt) {
-            const options = prompt?.toString()?.trim() ? { quiet_prompt: prompt.toString().trim(), quietToLoud: true } : {};
-            const shouldAwait = isTrueBoolean(args?.await?.toString());
-            const outerPromise = new Promise((outerResolve) => setTimeout(async () => {
-                try {
-                    await waitUntilCondition(() => !is_send_press && !is_group_generating, 10000, 100);
-                } catch {
-                    console.warn('Timeout waiting for generation unlock');
-                    notyf.warning(t`Cannot run /impersonate command while the reply is being generated.`);
-                    return '';
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'impersonate',
+            // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
+            callback: async function (args, prompt) {
+                const options = prompt?.toString()?.trim()
+                    ? { quiet_prompt: prompt.toString().trim(), quietToLoud: true }
+                    : {};
+                const shouldAwait = isTrueBoolean(args?.await?.toString());
+                const outerPromise = new Promise((outerResolve) =>
+                    setTimeout(async () => {
+                        try {
+                            await waitUntilCondition(
+                                () => !is_send_press && !is_group_generating,
+                                10000,
+                                100,
+                            );
+                        } catch {
+                            console.warn('Timeout waiting for generation unlock');
+                            notyf.warning(
+                                t`Cannot run /impersonate command while the reply is being generated.`,
+                            );
+                            return '';
+                        }
+
+                        // Prevent generate recursion
+                        const ta = document.querySelector('#send_textarea') as HTMLTextAreaElement;
+                        ta.value = '';
+                        ta.dispatchEvent(new Event('input', { bubbles: true }));
+
+                        outerResolve(
+                            new Promise((innerResolve) =>
+                                setTimeout(() => innerResolve(Generate('impersonate', options)), 1),
+                            ),
+                        );
+                    }, 1),
+                );
+
+                if (shouldAwait) {
+                    const innerPromise = await outerPromise;
+                    await innerPromise;
                 }
 
-                // Prevent generate recursion
-                const ta = document.querySelector('#send_textarea') as HTMLTextAreaElement; ta.value = ''; ta.dispatchEvent(new Event('input', { bubbles: true }));
-
-                outerResolve(new Promise(innerResolve => setTimeout(() => innerResolve(Generate('impersonate', options)), 1)));
-            }, 1));
-
-            if (shouldAwait) {
-                const innerPromise = await outerPromise;
-                await innerPromise;
-            }
-
-            return '';
-        }
-        ,
-        aliases: ['imp'],
-        namedArgumentList: [
-            new SlashCommandNamedArgument(
-                'await',
-                t`Whether to await for the triggered generation before continuing`,
-                [ARGUMENT_TYPE.BOOLEAN],
-                false,
-                false,
-                // @ts-expect-error TS(2345) FIXME: Argument of type '"false"' is not assignable to pa... Remove this comment to see the full error message
-                'false',
-            ),
-        ],
-        unnamedArgumentList: [
-            new SlashCommandArgument(
-                'prompt', [ARGUMENT_TYPE.STRING], false,
-            ),
-        ],
-        helpString: `
+                return '';
+            },
+            aliases: ['imp'],
+            namedArgumentList: [
+                new SlashCommandNamedArgument(
+                    'await',
+                    t`Whether to await for the triggered generation before continuing`,
+                    [ARGUMENT_TYPE.BOOLEAN],
+                    false,
+                    false,
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '"false"' is not assignable to pa... Remove this comment to see the full error message
+                    'false',
+                ),
+            ],
+            unnamedArgumentList: [
+                new SlashCommandArgument('prompt', [ARGUMENT_TYPE.STRING], false),
+            ],
+            helpString: `
             <div>
                 ${t`Calls an impersonation response, with an optional additional prompt.`}
             </div>
@@ -450,177 +546,213 @@ export function initDefaultSlashCommands() {
                 </ul>
             </div>
         `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'delchat',
-        callback: async function () {
-            return displayPastChats().then(() => new Promise((resolve) => {
-                let resolved = false;
-                const timeOutId = setTimeout(() => {
-                    notyf.error(t`Chat deletion timed out. Please try again.`);
-                    setResolved();
-                }, 5000);
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'delchat',
+            callback: async function () {
+                return displayPastChats().then(
+                    () =>
+                        new Promise((resolve) => {
+                            let resolved = false;
+                            const timeOutId = setTimeout(() => {
+                                notyf.error(t`Chat deletion timed out. Please try again.`);
+                                setResolved();
+                            }, 5000);
 
-                const setResolved = () => {
-                    if (resolved) {
-                        return;
-                    }
-                    resolved = true;
-                    [event_types.CHAT_DELETED, event_types.GROUP_CHAT_DELETED].forEach((eventType) => {
-                        eventSource.removeListener(eventType, setResolved);
-                    });
-                    clearTimeout(timeOutId);
-                    resolve('');
-                };
+                            const setResolved = () => {
+                                if (resolved) {
+                                    return;
+                                }
+                                resolved = true;
+                                [event_types.CHAT_DELETED, event_types.GROUP_CHAT_DELETED].forEach(
+                                    (eventType) => {
+                                        eventSource.removeListener(eventType, setResolved);
+                                    },
+                                );
+                                clearTimeout(timeOutId);
+                                resolve('');
+                            };
 
-                [event_types.CHAT_DELETED, event_types.GROUP_CHAT_DELETED].forEach((eventType) => {
-                    eventSource.on(eventType, setResolved);
-                });
+                            [event_types.CHAT_DELETED, event_types.GROUP_CHAT_DELETED].forEach(
+                                (eventType) => {
+                                    eventSource.on(eventType, setResolved);
+                                },
+                            );
 
-                const currentChatDeleteButton = document.querySelector('.select_chat_block[highlight="true"]')?.parentElement?.querySelector('.PastChat_cross');
-                if (currentChatDeleteButton instanceof HTMLElement) {
-                    currentChatDeleteButton.dispatchEvent(new CustomEvent('click', { detail: { fromSlashCommand: true } }));
+                            const currentChatDeleteButton = document
+                                .querySelector('.select_chat_block[highlight="true"]')
+                                ?.parentElement?.querySelector('.PastChat_cross');
+                            if (currentChatDeleteButton instanceof HTMLElement) {
+                                currentChatDeleteButton.dispatchEvent(
+                                    new CustomEvent('click', {
+                                        detail: { fromSlashCommand: true },
+                                    }),
+                                );
+                            }
+                        }),
+                );
+            },
+            helpString: t`Deletes the current chat.`,
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'renamechat',
+            // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
+            callback: async function doRenameChat(_, chatName) {
+                if (!chatName) {
+                    notyf.warning(t`Name must be provided as an argument to rename this chat.`);
+                    return '';
                 }
-            }));
-        },
-        helpString: t`Deletes the current chat.`,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'renamechat',
-        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
-        callback: async function doRenameChat(_, chatName) {
-            if (!chatName) {
-                notyf.warning(t`Name must be provided as an argument to rename this chat.`);
+
+                const currentChatName = getCurrentChatId();
+                if (!currentChatName) {
+                    notyf.warning(t`No chat selected that can be renamed.`);
+                    return '';
+                }
+
+                await renameChat(currentChatName, chatName.toString());
+
+                notyf.success(t`Successfully renamed chat to: ${chatName}`);
                 return '';
-            }
-
-            const currentChatName = getCurrentChatId();
-            if (!currentChatName) {
-                notyf.warning(t`No chat selected that can be renamed.`);
-                return '';
-            }
-
-            await renameChat(currentChatName, chatName.toString());
-
-            notyf.success(t`Successfully renamed chat to: ${chatName}`);
-            return '';
-        },
-        unnamedArgumentList: [
-            new SlashCommandArgument(
-                t`new chat name`, [ARGUMENT_TYPE.STRING], true,
-            ),
-        ],
-        helpString: t`Renames the current chat.`,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'getchatname',
-        callback: async function doGetChatName() {
-            return getCurrentChatDetails().sessionName;
-        },
-        returns: t`chat file name`,
-        helpString: t`Returns the name of the current chat file into the pipe.`,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'closechat',
-        callback: function () {
-
-            document.getElementById('option_close_chat')?.click();
-            return '';
-        },
-        helpString: t`Closes the current chat.`,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'tempchat',
-        callback: () => {
-            return new Promise((resolve, reject) => {
-                // @ts-expect-error TS(7006) FIXME: Parameter 'chatId' implicitly has an 'any' type.
-                const eventCallback = async (chatId) => {
-                    if (chatId) {
-                        return reject(t`Not in a temporary chat`);
-                    }
-                    await newAssistantChat({ temporary: true });
-                    return resolve('');
-                };
-                eventSource.once(event_types.CHAT_CHANGED, eventCallback);
-
+            },
+            unnamedArgumentList: [
+                new SlashCommandArgument(t`new chat name`, [ARGUMENT_TYPE.STRING], true),
+            ],
+            helpString: t`Renames the current chat.`,
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'getchatname',
+            callback: async function doGetChatName() {
+                return getCurrentChatDetails().sessionName;
+            },
+            returns: t`chat file name`,
+            helpString: t`Returns the name of the current chat file into the pipe.`,
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'closechat',
+            callback: function () {
                 document.getElementById('option_close_chat')?.click();
-                setTimeout(() => {
-                    reject(t`Failed to open temporary chat`);
-                    eventSource.removeListener(event_types.CHAT_CHANGED, eventCallback);
-                }, debounce_timeout.relaxed);
-            });
-        },
-        helpString: t`Opens a temporary chat with Assistant.`,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'panels',
-        callback: function () {
-
-            document.getElementById('option_settings')?.click();
-            return '';
-        },
-        aliases: ['togglepanels'],
-        helpString: t`Toggle UI panels on/off`,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'forcesave',
-        callback: async function () {
-            await saveSettings();
-            await saveChatConditional();
-            notyf.success(t`Chat and settings saved.`);
-            return '';
-        },
-        helpString: t`Forces a save of the current chat and settings`,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'instruct',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
-        callback: async function (args, name) {
-            if (!name) {
-                return power_user.instruct.enabled || isTrueBoolean(args?.forceGet?.toString()) ? power_user.instruct.preset : '';
-            }
-
-            const quiet = isTrueBoolean(args?.quiet?.toString());
-            // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
-            const instructNames = instruct_presets.map(preset => preset.name);
-            const fuse = new Fuse(instructNames);
-            const result = fuse.search(name?.toString() ?? '');
-
-            if (result.length === 0) {
-                if (!quiet) notyf.warning(t`Instruct template '${name}' not found`);
                 return '';
-            }
+            },
+            helpString: t`Closes the current chat.`,
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'tempchat',
+            callback: () => {
+                return new Promise((resolve, reject) => {
+                    // @ts-expect-error TS(7006) FIXME: Parameter 'chatId' implicitly has an 'any' type.
+                    const eventCallback = async (chatId) => {
+                        if (chatId) {
+                            return reject(t`Not in a temporary chat`);
+                        }
+                        await newAssistantChat({ temporary: true });
+                        return resolve('');
+                    };
+                    eventSource.once(event_types.CHAT_CHANGED, eventCallback);
 
-            const foundName = result[0]!.item;
-            selectInstructPreset(foundName, { quiet: quiet });
-            return foundName;
-        },
-        returns: t`current template`,
-        namedArgumentList: [
-            SlashCommandNamedArgument.fromProps({
-                name: 'quiet',
-                description: t`Suppress the toast message on template change`,
-                typeList: [ARGUMENT_TYPE.BOOLEAN],
-                defaultValue: 'false',
-                enumList: commonEnumProviders.boolean('trueFalse')(),
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'forceGet',
-                description: t`Force getting a name even if instruct mode is disabled`,
-                typeList: [ARGUMENT_TYPE.BOOLEAN],
-                defaultValue: 'false',
-                enumList: commonEnumProviders.boolean('trueFalse')(),
-            }),
-        ],
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: t`instruct template name`,
-                typeList: [ARGUMENT_TYPE.STRING],
+                    document.getElementById('option_close_chat')?.click();
+                    setTimeout(() => {
+                        reject(t`Failed to open temporary chat`);
+                        eventSource.removeListener(event_types.CHAT_CHANGED, eventCallback);
+                    }, debounce_timeout.relaxed);
+                });
+            },
+            helpString: t`Opens a temporary chat with Assistant.`,
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'panels',
+            callback: function () {
+                document.getElementById('option_settings')?.click();
+                return '';
+            },
+            aliases: ['togglepanels'],
+            helpString: t`Toggle UI panels on/off`,
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'forcesave',
+            callback: async function () {
+                await saveSettings();
+                await saveChatConditional();
+                notyf.success(t`Chat and settings saved.`);
+                return '';
+            },
+            helpString: t`Forces a save of the current chat and settings`,
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'instruct',
+            // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
+            callback: async function (args, name) {
+                if (!name) {
+                    return power_user.instruct.enabled || isTrueBoolean(args?.forceGet?.toString())
+                        ? power_user.instruct.preset
+                        : '';
+                }
+
+                const quiet = isTrueBoolean(args?.quiet?.toString());
                 // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
-                enumProvider: () => instruct_presets.map(preset => new SlashCommandEnumValue(preset.name, null, enumTypes.enum, enumIcons.preset)),
-            }),
-        ],
-        helpString: `
+                const instructNames = instruct_presets.map((preset) => preset.name);
+                const fuse = new Fuse(instructNames);
+                const result = fuse.search(name?.toString() ?? '');
+
+                if (result.length === 0) {
+                    if (!quiet) notyf.warning(t`Instruct template '${name}' not found`);
+                    return '';
+                }
+
+                const foundName = result[0]!.item;
+                selectInstructPreset(foundName, { quiet: quiet });
+                return foundName;
+            },
+            returns: t`current template`,
+            namedArgumentList: [
+                SlashCommandNamedArgument.fromProps({
+                    name: 'quiet',
+                    description: t`Suppress the toast message on template change`,
+                    typeList: [ARGUMENT_TYPE.BOOLEAN],
+                    defaultValue: 'false',
+                    enumList: commonEnumProviders.boolean('trueFalse')(),
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'forceGet',
+                    description: t`Force getting a name even if instruct mode is disabled`,
+                    typeList: [ARGUMENT_TYPE.BOOLEAN],
+                    defaultValue: 'false',
+                    enumList: commonEnumProviders.boolean('trueFalse')(),
+                }),
+            ],
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: t`instruct template name`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
+                    enumProvider: () =>
+                        instruct_presets.map(
+                            (preset) =>
+                                new SlashCommandEnumValue(
+                                    preset.name,
+                                    null,
+                                    enumTypes.enum,
+                                    enumIcons.preset,
+                                ),
+                        ),
+                }),
+            ],
+            helpString: `
             <div>
                 ${t`Selects instruct mode template by name. Enables instruct mode if not already enabled.`}
                 ${t`Gets the current instruct template if no name is provided and instruct mode is enabled or <code>forceGet=true</code> is passed.`}
@@ -634,123 +766,167 @@ export function initDefaultSlashCommands() {
                 </ul>
             </div>
         `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'instruct-on',
-        callback: enableInstructCallback,
-        helpString: t`Enables instruct mode.`,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'instruct-off',
-        callback: disableInstructCallback,
-        helpString: t`Disables instruct mode`,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'instruct-state',
-        aliases: ['instruct-toggle'],
-        helpString: t`Gets the current instruct mode state. If an argument is provided, it will set the instruct mode state.`,
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: t`instruct mode state`,
-                typeList: [ARGUMENT_TYPE.BOOLEAN],
-                enumList: commonEnumProviders.boolean('trueFalse')(),
-            }),
-        ],
-        // @ts-expect-error TS(7006) FIXME: Parameter '_args' implicitly has an 'any' type.
-        callback: async (_args, state) => {
-            if (!state || typeof state !== 'string') {
-                return String(power_user.instruct.enabled);
-            }
-
-            const newState = isTrueBoolean(state);
-            if (newState) {
-                enableInstructCallback();
-            } else {
-                disableInstructCallback();
-            }
-            return String(power_user.instruct.enabled);
-        },
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'context',
-        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
-        callback: async function (args, name) {
-            if (!name) {
-                return power_user.context.preset;
-            }
-
-            const quiet = isTrueBoolean(args?.quiet?.toString());
-            const contextNames = context_presets.map(preset => preset.name);
-            const fuse = new Fuse(contextNames);
-            const result = fuse.search(name?.toString() ?? '');
-
-            if (result.length === 0) {
-                if (!quiet) notyf.warning(t`Context template '${name}' not found`);
-                return '';
-            }
-
-            const foundName = result[0]!.item;
-            selectContextPreset(foundName, { quiet: quiet });
-            return foundName;
-        },
-        returns: t`template name`,
-        namedArgumentList: [
-            SlashCommandNamedArgument.fromProps({
-                name: 'quiet',
-                description: t`Suppress the toast message on template change`,
-                typeList: [ARGUMENT_TYPE.BOOLEAN],
-                defaultValue: 'false',
-                enumList: commonEnumProviders.boolean('trueFalse')(),
-            }),
-        ],
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: t`context template name`,
-                typeList: [ARGUMENT_TYPE.STRING],
-                enumProvider: () => context_presets.map(preset => new SlashCommandEnumValue(preset.name ?? '', null, enumTypes.enum, enumIcons.preset)),
-            }),
-        ],
-        helpString: t`Selects context template by name. Gets the current template if no name is provided`,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'chat-manager',
-        callback: () => {
-
-            document.getElementById('option_select_chat')?.click();
-            return '';
-        },
-        aliases: ['chat-history', 'manage-chats'],
-        helpString: t`Opens the chat manager for the current character/group.`,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: '?',
-        callback: helpCommandCallback,
-        aliases: ['help'],
-        unnamedArgumentList: [SlashCommandArgument.fromProps({
-            description: t`help topic`,
-            typeList: [ARGUMENT_TYPE.STRING],
-            enumList: [
-                new SlashCommandEnumValue('slash', t`slash commands (STscript)`, enumTypes.command, '/'),
-                new SlashCommandEnumValue('macros', t`{{macros}} (text replacement)`, enumTypes.macro, enumIcons.macro),
-                new SlashCommandEnumValue('format', t`chat/text formatting`, enumTypes.name, '★'),
-                new SlashCommandEnumValue('hotkeys', t`keyboard shortcuts`, enumTypes.enum, '⏎'),
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'instruct-on',
+            callback: enableInstructCallback,
+            helpString: t`Enables instruct mode.`,
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'instruct-off',
+            callback: disableInstructCallback,
+            helpString: t`Disables instruct mode`,
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'instruct-state',
+            aliases: ['instruct-toggle'],
+            helpString: t`Gets the current instruct mode state. If an argument is provided, it will set the instruct mode state.`,
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: t`instruct mode state`,
+                    typeList: [ARGUMENT_TYPE.BOOLEAN],
+                    enumList: commonEnumProviders.boolean('trueFalse')(),
+                }),
             ],
-        })],
-        helpString: t`Get help on macros, chat formatting and commands.`,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'bg',
-        callback: setBackgroundCallback,
-        aliases: ['background'],
-        returns: t`the current background`,
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: t`background filename`,
-                typeList: [ARGUMENT_TYPE.STRING],
-                enumProvider: commonEnumProviders.backgrounds,
-            }),
-        ],
-        helpString: `
+            // @ts-expect-error TS(7006) FIXME: Parameter '_args' implicitly has an 'any' type.
+            callback: async (_args, state) => {
+                if (!state || typeof state !== 'string') {
+                    return String(power_user.instruct.enabled);
+                }
+
+                const newState = isTrueBoolean(state);
+                if (newState) {
+                    enableInstructCallback();
+                } else {
+                    disableInstructCallback();
+                }
+                return String(power_user.instruct.enabled);
+            },
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'context',
+            // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
+            callback: async function (args, name) {
+                if (!name) {
+                    return power_user.context.preset;
+                }
+
+                const quiet = isTrueBoolean(args?.quiet?.toString());
+                const contextNames = context_presets.map((preset) => preset.name);
+                const fuse = new Fuse(contextNames);
+                const result = fuse.search(name?.toString() ?? '');
+
+                if (result.length === 0) {
+                    if (!quiet) notyf.warning(t`Context template '${name}' not found`);
+                    return '';
+                }
+
+                const foundName = result[0]!.item;
+                selectContextPreset(foundName, { quiet: quiet });
+                return foundName;
+            },
+            returns: t`template name`,
+            namedArgumentList: [
+                SlashCommandNamedArgument.fromProps({
+                    name: 'quiet',
+                    description: t`Suppress the toast message on template change`,
+                    typeList: [ARGUMENT_TYPE.BOOLEAN],
+                    defaultValue: 'false',
+                    enumList: commonEnumProviders.boolean('trueFalse')(),
+                }),
+            ],
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: t`context template name`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    enumProvider: () =>
+                        context_presets.map(
+                            (preset) =>
+                                new SlashCommandEnumValue(
+                                    preset.name ?? '',
+                                    null,
+                                    enumTypes.enum,
+                                    enumIcons.preset,
+                                ),
+                        ),
+                }),
+            ],
+            helpString: t`Selects context template by name. Gets the current template if no name is provided`,
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'chat-manager',
+            callback: () => {
+                document.getElementById('option_select_chat')?.click();
+                return '';
+            },
+            aliases: ['chat-history', 'manage-chats'],
+            helpString: t`Opens the chat manager for the current character/group.`,
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: '?',
+            callback: helpCommandCallback,
+            aliases: ['help'],
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: t`help topic`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    enumList: [
+                        new SlashCommandEnumValue(
+                            'slash',
+                            t`slash commands (STscript)`,
+                            enumTypes.command,
+                            '/',
+                        ),
+                        new SlashCommandEnumValue(
+                            'macros',
+                            t`{{macros}} (text replacement)`,
+                            enumTypes.macro,
+                            enumIcons.macro,
+                        ),
+                        new SlashCommandEnumValue(
+                            'format',
+                            t`chat/text formatting`,
+                            enumTypes.name,
+                            '★',
+                        ),
+                        new SlashCommandEnumValue(
+                            'hotkeys',
+                            t`keyboard shortcuts`,
+                            enumTypes.enum,
+                            '⏎',
+                        ),
+                    ],
+                }),
+            ],
+            helpString: t`Get help on macros, chat formatting and commands.`,
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'bg',
+            callback: setBackgroundCallback,
+            aliases: ['background'],
+            returns: t`the current background`,
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: t`background filename`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    enumProvider: commonEnumProviders.backgrounds,
+                }),
+            ],
+            helpString: `
         <div>
             ${t`Sets a background according to the provided filename. Partial names allowed.`}
         </div>
@@ -769,51 +945,63 @@ export function initDefaultSlashCommands() {
             </ul>
         </div>
     `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'char-find',
-        aliases: ['findchar'],
-        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
-        callback: (args, name) => {
-            if (typeof name !== 'string') throw new Error(t`name must be a string`);
-            if (args.preferCurrent instanceof SlashCommandClosure || Array.isArray(args.preferCurrent)) throw new Error(t`preferCurrent cannot be a closure or array`);
-            if (args.quiet instanceof SlashCommandClosure || Array.isArray(args.quiet)) throw new Error(t`quiet cannot be a closure or array`);
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'char-find',
+            aliases: ['findchar'],
+            // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
+            callback: (args, name) => {
+                if (typeof name !== 'string') throw new Error(t`name must be a string`);
+                if (
+                    args.preferCurrent instanceof SlashCommandClosure ||
+                    Array.isArray(args.preferCurrent)
+                )
+                    throw new Error(t`preferCurrent cannot be a closure or array`);
+                if (args.quiet instanceof SlashCommandClosure || Array.isArray(args.quiet))
+                    throw new Error(t`quiet cannot be a closure or array`);
 
-            // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'null | un... Remove this comment to see the full error message
-            const char = findChar({ name: name, filteredByTags: validateArrayArgString(args.tag, 'tag'), preferCurrentChar: !isFalseBoolean(args.preferCurrent), quiet: isTrueBoolean(args.quiet) });
-            return char?.avatar ?? '';
-        },
-        returns: t`the avatar key (unique identifier) of the character`,
-        namedArgumentList: [
-            SlashCommandNamedArgument.fromProps({
-                name: 'tag',
-                description: t`Supply one or more tags to filter down to the correct character for the provided name, if multiple characters have the same name.`,
-                typeList: [ARGUMENT_TYPE.STRING],
-                enumProvider: commonEnumProviders.tags('assigned'),
-                acceptsMultiple: true,
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'preferCurrent',
-                description: t`Prefer current character or characters in a group, if multiple characters match`,
-                typeList: [ARGUMENT_TYPE.BOOLEAN],
-                defaultValue: 'true',
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'quiet',
-                description: t`Do not show warning if multiple charactrers are found`,
-                typeList: [ARGUMENT_TYPE.BOOLEAN],
-                defaultValue: 'false',
-                enumProvider: commonEnumProviders.boolean('trueFalse'),
-            }),
-        ],
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: t`Character name - or unique character identifier (avatar key)`,
-                typeList: [ARGUMENT_TYPE.STRING],
-                enumProvider: commonEnumProviders.characters('character'),
-            }),
-        ],
-        helpString: `
+                // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'null | un... Remove this comment to see the full error message
+                const char = findChar({
+                    name: name,
+                    filteredByTags: validateArrayArgString(args.tag, 'tag'),
+                    preferCurrentChar: !isFalseBoolean(args.preferCurrent),
+                    quiet: isTrueBoolean(args.quiet),
+                });
+                return char?.avatar ?? '';
+            },
+            returns: t`the avatar key (unique identifier) of the character`,
+            namedArgumentList: [
+                SlashCommandNamedArgument.fromProps({
+                    name: 'tag',
+                    description: t`Supply one or more tags to filter down to the correct character for the provided name, if multiple characters have the same name.`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    enumProvider: commonEnumProviders.tags('assigned'),
+                    acceptsMultiple: true,
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'preferCurrent',
+                    description: t`Prefer current character or characters in a group, if multiple characters match`,
+                    typeList: [ARGUMENT_TYPE.BOOLEAN],
+                    defaultValue: 'true',
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'quiet',
+                    description: t`Do not show warning if multiple charactrers are found`,
+                    typeList: [ARGUMENT_TYPE.BOOLEAN],
+                    defaultValue: 'false',
+                    enumProvider: commonEnumProviders.boolean('trueFalse'),
+                }),
+            ],
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: t`Character name - or unique character identifier (avatar key)`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    enumProvider: commonEnumProviders.characters('character'),
+                }),
+            ],
+            helpString: `
         <div>
             ${t`Searches for a character and returns its avatar key.`}
         </div>
@@ -835,7 +1023,8 @@ export function initDefaultSlashCommands() {
             </ul>
         </div>
         `,
-    }));
+        }),
+    );
 
     // Shared character field definitions for char CRUD commands
     const getCharacterFieldArgs = ({ requiredFields = [] as string[] } = {}) => [
@@ -924,12 +1113,52 @@ export function initDefaultSlashCommands() {
             typeList: [ARGUMENT_TYPE.STRING],
             isRequired: requiredFields.includes('avatar'),
             enumList: [
-                new SlashCommandEnumValue('prompt', 'Open file picker to select an image', 'enum', '📁'),
-                new SlashCommandEnumValue('characters/...', 'Character avatars path (e.g., characters/Name.png)', 'enum', '📄', (input) => commonEnumMatchProviders.folderEnum(input, 'characters/'), () => 'characters/'),
-                new SlashCommandEnumValue('backgrounds/...', 'Background image path', 'enum', '📄', (input) => commonEnumMatchProviders.folderEnum(input, 'backgrounds/'), () => 'backgrounds/'),
-                new SlashCommandEnumValue('User Avatars/...', 'User avatar path', 'enum', '📄', (input) => commonEnumMatchProviders.folderEnum(input, 'User Avatars/'), () => 'User Avatars/'),
-                new SlashCommandEnumValue('assets/...', 'Asset file path', 'enum', '📄', (input) => commonEnumMatchProviders.folderEnum(input, 'assets/'), () => 'assets/'),
-                new SlashCommandEnumValue('user/images/...', 'User image path', 'enum', '📄', (input) => commonEnumMatchProviders.folderEnum(input, 'user/images/'), () => 'user/images/'),
+                new SlashCommandEnumValue(
+                    'prompt',
+                    'Open file picker to select an image',
+                    'enum',
+                    '📁',
+                ),
+                new SlashCommandEnumValue(
+                    'characters/...',
+                    'Character avatars path (e.g., characters/Name.png)',
+                    'enum',
+                    '📄',
+                    (input) => commonEnumMatchProviders.folderEnum(input, 'characters/'),
+                    () => 'characters/',
+                ),
+                new SlashCommandEnumValue(
+                    'backgrounds/...',
+                    'Background image path',
+                    'enum',
+                    '📄',
+                    (input) => commonEnumMatchProviders.folderEnum(input, 'backgrounds/'),
+                    () => 'backgrounds/',
+                ),
+                new SlashCommandEnumValue(
+                    'User Avatars/...',
+                    'User avatar path',
+                    'enum',
+                    '📄',
+                    (input) => commonEnumMatchProviders.folderEnum(input, 'User Avatars/'),
+                    () => 'User Avatars/',
+                ),
+                new SlashCommandEnumValue(
+                    'assets/...',
+                    'Asset file path',
+                    'enum',
+                    '📄',
+                    (input) => commonEnumMatchProviders.folderEnum(input, 'assets/'),
+                    () => 'assets/',
+                ),
+                new SlashCommandEnumValue(
+                    'user/images/...',
+                    'User image path',
+                    'enum',
+                    '📄',
+                    (input) => commonEnumMatchProviders.folderEnum(input, 'user/images/'),
+                    () => 'user/images/',
+                ),
             ],
         }),
         SlashCommandNamedArgument.fromProps({
@@ -973,21 +1202,22 @@ export function initDefaultSlashCommands() {
         }),
     ];
 
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'char-create',
-        callback: createCharacterCallback,
-        returns: t`the avatar key (unique identifier) of the created character`,
-        namedArgumentList: [
-            ...getCharacterFieldArgs({ requiredFields: ['name'] }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'select',
-                description: t`Whether to select/open the character after creation (default: true)`,
-                typeList: [ARGUMENT_TYPE.BOOLEAN],
-                defaultValue: 'true',
-                enumProvider: commonEnumProviders.boolean('trueFalse'),
-            }),
-        ],
-        helpString: `
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'char-create',
+            callback: createCharacterCallback,
+            returns: t`the avatar key (unique identifier) of the created character`,
+            namedArgumentList: [
+                ...getCharacterFieldArgs({ requiredFields: ['name'] }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'select',
+                    description: t`Whether to select/open the character after creation (default: true)`,
+                    typeList: [ARGUMENT_TYPE.BOOLEAN],
+                    defaultValue: 'true',
+                    enumProvider: commonEnumProviders.boolean('trueFalse'),
+                }),
+            ],
+            helpString: `
         <div>
             ${t`Creates a new character with the specified attributes. Returns the avatar key of the created character.`}
         </div>
@@ -1019,21 +1249,23 @@ export function initDefaultSlashCommands() {
             </ul>
         </div>
         `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'char-update',
-        callback: updateCharacterCallback,
-        returns: t`the avatar key of the updated character`,
-        namedArgumentList: [
-            SlashCommandNamedArgument.fromProps({
-                name: 'char',
-                description: t`Character name or avatar key. If not provided, uses the currently selected character.`,
-                typeList: [ARGUMENT_TYPE.STRING],
-                enumProvider: commonEnumProviders.characters('character'),
-            }),
-            ...getCharacterFieldArgs(),
-        ],
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'char-update',
+            callback: updateCharacterCallback,
+            returns: t`the avatar key of the updated character`,
+            namedArgumentList: [
+                SlashCommandNamedArgument.fromProps({
+                    name: 'char',
+                    description: t`Character name or avatar key. If not provided, uses the currently selected character.`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    enumProvider: commonEnumProviders.characters('character'),
+                }),
+                ...getCharacterFieldArgs(),
+            ],
+            helpString: `
         <div>
             ${t`Updates an existing character's attributes. The character does not need to be currently selected.`}
         </div>
@@ -1064,28 +1296,30 @@ export function initDefaultSlashCommands() {
             </ul>
         </div>
         `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'char-duplicate',
-        aliases: ['dupe'],
-        callback: duplicateCharacterCallback,
-        returns: t`the avatar key (unique identifier) of the duplicated character`,
-        namedArgumentList: [
-            SlashCommandNamedArgument.fromProps({
-                name: 'char',
-                description: t`Character name or avatar key to duplicate. If not provided, uses the currently selected character.`,
-                typeList: [ARGUMENT_TYPE.STRING],
-                enumProvider: commonEnumProviders.characters('character'),
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'select',
-                description: t`Whether to select/open the duplicated character after creation (default: false)`,
-                typeList: [ARGUMENT_TYPE.BOOLEAN],
-                defaultValue: 'false',
-                enumProvider: commonEnumProviders.boolean('trueFalse'),
-            }),
-        ],
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'char-duplicate',
+            aliases: ['dupe'],
+            callback: duplicateCharacterCallback,
+            returns: t`the avatar key (unique identifier) of the duplicated character`,
+            namedArgumentList: [
+                SlashCommandNamedArgument.fromProps({
+                    name: 'char',
+                    description: t`Character name or avatar key to duplicate. If not provided, uses the currently selected character.`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    enumProvider: commonEnumProviders.characters('character'),
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'select',
+                    description: t`Whether to select/open the duplicated character after creation (default: false)`,
+                    typeList: [ARGUMENT_TYPE.BOOLEAN],
+                    defaultValue: 'false',
+                    enumProvider: commonEnumProviders.boolean('trueFalse'),
+                }),
+            ],
+            helpString: `
         <div>
             ${t`Duplicates a character. Returns the avatar key of the duplicated character.`}
         </div>
@@ -1110,50 +1344,94 @@ export function initDefaultSlashCommands() {
             </ul>
         </div>
         `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'char-get',
-        aliases: ['char-data'],
-        callback: getCharacterDataCallback,
-        returns: t`character data as JSON or a specific field value`,
-        namedArgumentList: [
-            SlashCommandNamedArgument.fromProps({
-                name: 'char',
-                description: t`Character name or avatar key. If not provided, uses the currently selected character.`,
-                typeList: [ARGUMENT_TYPE.STRING],
-                enumProvider: commonEnumProviders.characters('character'),
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'field',
-                description: t`Specific field to retrieve. If not provided, returns the entire character data.`,
-                typeList: [ARGUMENT_TYPE.STRING],
-                enumList: [
-                    new SlashCommandEnumValue('name', t`Character name`, enumTypes.enum),
-                    new SlashCommandEnumValue('description', t`Character description`, enumTypes.enum),
-                    new SlashCommandEnumValue('personality', t`Character personality`, enumTypes.enum),
-                    new SlashCommandEnumValue('scenario', t`Character scenario`, enumTypes.enum),
-                    new SlashCommandEnumValue('first_mes', t`First message`, enumTypes.enum),
-                    new SlashCommandEnumValue('mes_example', t`Message examples`, enumTypes.enum),
-                    new SlashCommandEnumValue('creator_notes', t`Creator notes`, enumTypes.enum),
-                    new SlashCommandEnumValue('system_prompt', t`System prompt`, enumTypes.enum),
-                    new SlashCommandEnumValue('post_history_instructions', t`Post-history instructions`, enumTypes.enum),
-                    new SlashCommandEnumValue('creator', t`Creator name`, enumTypes.enum),
-                    new SlashCommandEnumValue('character_version', t`Character version`, enumTypes.enum),
-                    new SlashCommandEnumValue('tags', t`Character tags`, enumTypes.enum),
-                    new SlashCommandEnumValue('talkativeness', t`Talkativeness`, enumTypes.enum),
-                    new SlashCommandEnumValue('avatar', t`Avatar filename`, enumTypes.enum),
-                    new SlashCommandEnumValue('fav', t`Favorite status`, enumTypes.enum),
-                ],
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'return',
-                description: t`The way to return the result`,
-                typeList: [ARGUMENT_TYPE.STRING],
-                defaultValue: 'pipe',
-                enumList: slashCommandReturnHelper.enumList({ allowPipe: true, allowObject: true, allowChat: false, allowPopup: true, allowTextVersion: false }),
-            }),
-        ],
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'char-get',
+            aliases: ['char-data'],
+            callback: getCharacterDataCallback,
+            returns: t`character data as JSON or a specific field value`,
+            namedArgumentList: [
+                SlashCommandNamedArgument.fromProps({
+                    name: 'char',
+                    description: t`Character name or avatar key. If not provided, uses the currently selected character.`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    enumProvider: commonEnumProviders.characters('character'),
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'field',
+                    description: t`Specific field to retrieve. If not provided, returns the entire character data.`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    enumList: [
+                        new SlashCommandEnumValue('name', t`Character name`, enumTypes.enum),
+                        new SlashCommandEnumValue(
+                            'description',
+                            t`Character description`,
+                            enumTypes.enum,
+                        ),
+                        new SlashCommandEnumValue(
+                            'personality',
+                            t`Character personality`,
+                            enumTypes.enum,
+                        ),
+                        new SlashCommandEnumValue(
+                            'scenario',
+                            t`Character scenario`,
+                            enumTypes.enum,
+                        ),
+                        new SlashCommandEnumValue('first_mes', t`First message`, enumTypes.enum),
+                        new SlashCommandEnumValue(
+                            'mes_example',
+                            t`Message examples`,
+                            enumTypes.enum,
+                        ),
+                        new SlashCommandEnumValue(
+                            'creator_notes',
+                            t`Creator notes`,
+                            enumTypes.enum,
+                        ),
+                        new SlashCommandEnumValue(
+                            'system_prompt',
+                            t`System prompt`,
+                            enumTypes.enum,
+                        ),
+                        new SlashCommandEnumValue(
+                            'post_history_instructions',
+                            t`Post-history instructions`,
+                            enumTypes.enum,
+                        ),
+                        new SlashCommandEnumValue('creator', t`Creator name`, enumTypes.enum),
+                        new SlashCommandEnumValue(
+                            'character_version',
+                            t`Character version`,
+                            enumTypes.enum,
+                        ),
+                        new SlashCommandEnumValue('tags', t`Character tags`, enumTypes.enum),
+                        new SlashCommandEnumValue(
+                            'talkativeness',
+                            t`Talkativeness`,
+                            enumTypes.enum,
+                        ),
+                        new SlashCommandEnumValue('avatar', t`Avatar filename`, enumTypes.enum),
+                        new SlashCommandEnumValue('fav', t`Favorite status`, enumTypes.enum),
+                    ],
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'return',
+                    description: t`The way to return the result`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    defaultValue: 'pipe',
+                    enumList: slashCommandReturnHelper.enumList({
+                        allowPipe: true,
+                        allowObject: true,
+                        allowChat: false,
+                        allowPopup: true,
+                        allowTextVersion: false,
+                    }),
+                }),
+            ],
+            helpString: `
         <div>
             ${t`Retrieves character data. Can get all data or a specific field.`}
         </div>
@@ -1175,34 +1453,36 @@ export function initDefaultSlashCommands() {
             </ul>
         </div>
         `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'char-delete',
-        callback: deleteCharacterCallback,
-        returns: t`true if the character was deleted, false otherwise`,
-        namedArgumentList: [
-            SlashCommandNamedArgument.fromProps({
-                name: 'char',
-                description: t`Character name or avatar key. If not provided, uses the currently selected character.`,
-                typeList: [ARGUMENT_TYPE.STRING],
-                enumProvider: commonEnumProviders.characters('character'),
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'deleteChats',
-                description: t`Whether to also delete all chats with this character`,
-                typeList: [ARGUMENT_TYPE.BOOLEAN],
-                defaultValue: 'false',
-                enumProvider: commonEnumProviders.boolean('trueFalse'),
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'silent',
-                description: t`Skip the confirmation popup`,
-                typeList: [ARGUMENT_TYPE.BOOLEAN],
-                defaultValue: 'false',
-                enumProvider: commonEnumProviders.boolean('trueFalse'),
-            }),
-        ],
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'char-delete',
+            callback: deleteCharacterCallback,
+            returns: t`true if the character was deleted, false otherwise`,
+            namedArgumentList: [
+                SlashCommandNamedArgument.fromProps({
+                    name: 'char',
+                    description: t`Character name or avatar key. If not provided, uses the currently selected character.`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    enumProvider: commonEnumProviders.characters('character'),
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'deleteChats',
+                    description: t`Whether to also delete all chats with this character`,
+                    typeList: [ARGUMENT_TYPE.BOOLEAN],
+                    defaultValue: 'false',
+                    enumProvider: commonEnumProviders.boolean('trueFalse'),
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'silent',
+                    description: t`Skip the confirmation popup`,
+                    typeList: [ARGUMENT_TYPE.BOOLEAN],
+                    defaultValue: 'false',
+                    enumProvider: commonEnumProviders.boolean('trueFalse'),
+                }),
+            ],
+            helpString: `
         <div>
             ${t`Deletes a character from the system.`}
         </div>
@@ -1226,29 +1506,32 @@ export function initDefaultSlashCommands() {
             </ul>
         </div>
         `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'message-role',
-        callback: messageRoleCallback,
-        returns: 'The role of the message sender',
-        namedArgumentList: [
-            SlashCommandNamedArgument.fromProps({
-                name: 'at',
-                description: 'the ID of the message to modify (index-based, corresponding to message id). If omitted, the last message is chosen.\nNegative values are accepted and will work similarly to how \'depth\' usually works. For example, -1 will modify the message right before the last message in chat. At must be nonzero.',
-                typeList: [ARGUMENT_TYPE.NUMBER],
-                defaultValue: '',
-                enumProvider: commonEnumProviders.messages({ allowIdAfter: true }),
-            }),
-        ],
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: 'Role to set for the message sender (user, assistant, system)',
-                typeList: [ARGUMENT_TYPE.STRING],
-                isRequired: false,
-                enumProvider: commonEnumProviders.messageRoles,
-            }),
-        ],
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'message-role',
+            callback: messageRoleCallback,
+            returns: 'The role of the message sender',
+            namedArgumentList: [
+                SlashCommandNamedArgument.fromProps({
+                    name: 'at',
+                    description:
+                        "the ID of the message to modify (index-based, corresponding to message id). If omitted, the last message is chosen.\nNegative values are accepted and will work similarly to how 'depth' usually works. For example, -1 will modify the message right before the last message in chat. At must be nonzero.",
+                    typeList: [ARGUMENT_TYPE.NUMBER],
+                    defaultValue: '',
+                    enumProvider: commonEnumProviders.messages({ allowIdAfter: true }),
+                }),
+            ],
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: 'Role to set for the message sender (user, assistant, system)',
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    isRequired: false,
+                    enumProvider: commonEnumProviders.messageRoles,
+                }),
+            ],
+            helpString: `
         <div>
             Changes the role of a message sender to one of your choice.
             If no role is provided, just gets the current role of the message sender.
@@ -1268,37 +1551,48 @@ export function initDefaultSlashCommands() {
             </ul>
         </div>
     `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'message-name',
-        callback: messageNameCallback,
-        returns: 'The name of the message sender',
-        namedArgumentList: [
-            SlashCommandNamedArgument.fromProps({
-                name: 'at',
-                description: 'the ID of the message to modify (index-based, corresponding to message id). If omitted, the last message is chosen.\nNegative values are accepted and will work similarly to how \'depth\' usually works. For example, -1 will modify the message right before the last message in chat. At must be nonzero.',
-                typeList: [ARGUMENT_TYPE.NUMBER],
-                defaultValue: '',
-                enumProvider: commonEnumProviders.messages({ allowIdAfter: true }),
-            }),
-        ],
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: 'Persona name, character name, or unique character identifier (avatar key)',
-                typeList: [ARGUMENT_TYPE.STRING],
-                isRequired: false,
-                enumProvider: (executor: unknown) => {
-                    let modifyAt = Number((executor as { namedArgumentList: Array<{ name: string; value: string }> }).namedArgumentList.find((arg: { name: string }) => arg.name === 'at')?.value ?? (chat.length - 1));
-                    if (!isNaN(modifyAt) && (modifyAt < 0 || Object.is(modifyAt, -0))) {
-                        modifyAt = chat.length + modifyAt;
-                    }
-                    return chat[modifyAt]?.is_user
-                        ? commonEnumProviders.personas()()
-                        : commonEnumProviders.characters('character')();
-                },
-            }),
-        ],
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'message-name',
+            callback: messageNameCallback,
+            returns: 'The name of the message sender',
+            namedArgumentList: [
+                SlashCommandNamedArgument.fromProps({
+                    name: 'at',
+                    description:
+                        "the ID of the message to modify (index-based, corresponding to message id). If omitted, the last message is chosen.\nNegative values are accepted and will work similarly to how 'depth' usually works. For example, -1 will modify the message right before the last message in chat. At must be nonzero.",
+                    typeList: [ARGUMENT_TYPE.NUMBER],
+                    defaultValue: '',
+                    enumProvider: commonEnumProviders.messages({ allowIdAfter: true }),
+                }),
+            ],
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description:
+                        'Persona name, character name, or unique character identifier (avatar key)',
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    isRequired: false,
+                    enumProvider: (executor: unknown) => {
+                        let modifyAt = Number(
+                            (
+                                executor as {
+                                    namedArgumentList: Array<{ name: string; value: string }>;
+                                }
+                            ).namedArgumentList.find((arg: { name: string }) => arg.name === 'at')
+                                ?.value ?? chat.length - 1,
+                        );
+                        if (!isNaN(modifyAt) && (modifyAt < 0 || Object.is(modifyAt, -0))) {
+                            modifyAt = chat.length + modifyAt;
+                        }
+                        return chat[modifyAt]?.is_user
+                            ? commonEnumProviders.personas()()
+                            : commonEnumProviders.characters('character')();
+                    },
+                }),
+            ],
+            helpString: `
         <div>
             Changes the name of a message sender to one of your choice.
             If no name is provided, just gets the current name of the message sender.
@@ -1318,61 +1612,59 @@ export function initDefaultSlashCommands() {
             </ul>
         </div>
     `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'sendas',
-        rawQuotes: true,
-        callback: sendMessageAs,
-        returns: t`Optionally the text of the sent message, if specified in the "return" argument`,
-        namedArgumentList: [
-            SlashCommandNamedArgument.fromProps({
-                name: 'name',
-                description: t`Character name - or unique character identifier (avatar key)`,
-                typeList: [ARGUMENT_TYPE.STRING],
-                isRequired: true,
-                enumProvider: commonEnumProviders.characters('character'),
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'avatar',
-                description: t`Character avatar override (Can be either avatar key or just the character name to pull the avatar from)`,
-                typeList: [ARGUMENT_TYPE.STRING],
-                enumProvider: commonEnumProviders.characters('character'),
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'compact',
-                description: t`Use compact layout`,
-                typeList: [ARGUMENT_TYPE.BOOLEAN],
-                defaultValue: 'false',
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'at',
-                description: t`position to insert the message (index-based, corresponding to message id). If not set, the message will be inserted at the end of the chat.\nNegative values (including -0) are accepted and will work similarly to how 'depth' usually works. For example, -1 will insert the message right before the last message in chat.`,
-                typeList: [ARGUMENT_TYPE.NUMBER],
-                enumProvider: commonEnumProviders.messages({ allowIdAfter: true }),
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'return',
-                description: t`The way how you want the return value to be provided`,
-                typeList: [ARGUMENT_TYPE.STRING],
-                defaultValue: 'none',
-                enumList: slashCommandReturnHelper.enumList({ allowObject: true }),
-                forceEnum: true,
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'raw',
-                description: t`If true, does not alter quoted literal unnamed arguments`,
-                typeList: [ARGUMENT_TYPE.BOOLEAN],
-                defaultValue: 'true',
-                enumProvider: commonEnumProviders.boolean('trueFalse'),
-                isRequired: false,
-            }),
-        ],
-        unnamedArgumentList: [
-            new SlashCommandArgument(
-                'text', [ARGUMENT_TYPE.STRING], true,
-            ),
-        ],
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'sendas',
+            rawQuotes: true,
+            callback: sendMessageAs,
+            returns: t`Optionally the text of the sent message, if specified in the "return" argument`,
+            namedArgumentList: [
+                SlashCommandNamedArgument.fromProps({
+                    name: 'name',
+                    description: t`Character name - or unique character identifier (avatar key)`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    isRequired: true,
+                    enumProvider: commonEnumProviders.characters('character'),
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'avatar',
+                    description: t`Character avatar override (Can be either avatar key or just the character name to pull the avatar from)`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    enumProvider: commonEnumProviders.characters('character'),
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'compact',
+                    description: t`Use compact layout`,
+                    typeList: [ARGUMENT_TYPE.BOOLEAN],
+                    defaultValue: 'false',
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'at',
+                    description: t`position to insert the message (index-based, corresponding to message id). If not set, the message will be inserted at the end of the chat.\nNegative values (including -0) are accepted and will work similarly to how 'depth' usually works. For example, -1 will insert the message right before the last message in chat.`,
+                    typeList: [ARGUMENT_TYPE.NUMBER],
+                    enumProvider: commonEnumProviders.messages({ allowIdAfter: true }),
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'return',
+                    description: t`The way how you want the return value to be provided`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    defaultValue: 'none',
+                    enumList: slashCommandReturnHelper.enumList({ allowObject: true }),
+                    forceEnum: true,
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'raw',
+                    description: t`If true, does not alter quoted literal unnamed arguments`,
+                    typeList: [ARGUMENT_TYPE.BOOLEAN],
+                    defaultValue: 'true',
+                    enumProvider: commonEnumProviders.boolean('trueFalse'),
+                    isRequired: false,
+                }),
+            ],
+            unnamedArgumentList: [new SlashCommandArgument('text', [ARGUMENT_TYPE.STRING], true)],
+            helpString: `
         <div>
             ${t`Sends a message as a specific character. Uses the character avatar if it exists in the characters list.`}
         </div>
@@ -1393,57 +1685,55 @@ export function initDefaultSlashCommands() {
             ${t`If "compact" is set to true, the message is sent using a compact layout.`}
         </div>
     `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'sys',
-        rawQuotes: true,
-        callback: sendNarratorMessage,
-        aliases: ['nar'],
-        returns: t`Optionally the text of the sent message, if specified in the "return" argument`,
-        namedArgumentList: [
-            new SlashCommandNamedArgument(
-                'compact',
-                t`compact layout`,
-                [ARGUMENT_TYPE.BOOLEAN],
-                false,
-                false,
-                // @ts-expect-error TS(2345) FIXME: Argument of type '"false"' is not assignable to pa... Remove this comment to see the full error message
-                'false',
-            ),
-            SlashCommandNamedArgument.fromProps({
-                name: 'at',
-                description: t`position to insert the message (index-based, corresponding to message id). If not set, the message will be inserted at the end of the chat.\nNegative values (including -0) are accepted and will work similarly to how 'depth' usually works. For example, -1 will insert the message right before the last message in chat.`,
-                typeList: [ARGUMENT_TYPE.NUMBER],
-                enumProvider: commonEnumProviders.messages({ allowIdAfter: true }),
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'name',
-                description: t`Optional custom display name to use for this system narrator message.`,
-                typeList: [ARGUMENT_TYPE.STRING],
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'return',
-                description: t`The way how you want the return value to be provided`,
-                typeList: [ARGUMENT_TYPE.STRING],
-                defaultValue: 'none',
-                enumList: slashCommandReturnHelper.enumList({ allowObject: true }),
-                forceEnum: true,
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'raw',
-                description: t`If true, does not alter quoted literal unnamed arguments`,
-                typeList: [ARGUMENT_TYPE.BOOLEAN],
-                defaultValue: 'true',
-                enumProvider: commonEnumProviders.boolean('trueFalse'),
-                isRequired: false,
-            }),
-        ],
-        unnamedArgumentList: [
-            new SlashCommandArgument(
-                'text', [ARGUMENT_TYPE.STRING], true,
-            ),
-        ],
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'sys',
+            rawQuotes: true,
+            callback: sendNarratorMessage,
+            aliases: ['nar'],
+            returns: t`Optionally the text of the sent message, if specified in the "return" argument`,
+            namedArgumentList: [
+                new SlashCommandNamedArgument(
+                    'compact',
+                    t`compact layout`,
+                    [ARGUMENT_TYPE.BOOLEAN],
+                    false,
+                    false,
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '"false"' is not assignable to pa... Remove this comment to see the full error message
+                    'false',
+                ),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'at',
+                    description: t`position to insert the message (index-based, corresponding to message id). If not set, the message will be inserted at the end of the chat.\nNegative values (including -0) are accepted and will work similarly to how 'depth' usually works. For example, -1 will insert the message right before the last message in chat.`,
+                    typeList: [ARGUMENT_TYPE.NUMBER],
+                    enumProvider: commonEnumProviders.messages({ allowIdAfter: true }),
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'name',
+                    description: t`Optional custom display name to use for this system narrator message.`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'return',
+                    description: t`The way how you want the return value to be provided`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    defaultValue: 'none',
+                    enumList: slashCommandReturnHelper.enumList({ allowObject: true }),
+                    forceEnum: true,
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'raw',
+                    description: t`If true, does not alter quoted literal unnamed arguments`,
+                    typeList: [ARGUMENT_TYPE.BOOLEAN],
+                    defaultValue: 'true',
+                    enumProvider: commonEnumProviders.boolean('trueFalse'),
+                    isRequired: false,
+                }),
+            ],
+            unnamedArgumentList: [new SlashCommandArgument('text', [ARGUMENT_TYPE.STRING], true)],
+            helpString: `
         <div>
             ${t`Sends a message as a system narrator.`}
         </div>
@@ -1462,63 +1752,57 @@ export function initDefaultSlashCommands() {
             </ul>
         </div>
     `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'sysname',
-        callback: setNarratorName,
-        unnamedArgumentList: [
-            new SlashCommandArgument(
-                t`name`, [ARGUMENT_TYPE.STRING], false,
-            ),
-        ],
-        helpString: t`Sets a name for future system narrator messages in this chat (display only). Default: System. Leave empty to reset.`,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'comment',
-        rawQuotes: true,
-        callback: sendCommentMessage,
-        returns: t`Optionally the text of the sent message, if specified in the "return" argument`,
-        namedArgumentList: [
-            new SlashCommandNamedArgument(
-                'compact',
-                t`Whether to use a compact layout`,
-                [ARGUMENT_TYPE.BOOLEAN],
-                false,
-                false,
-                // @ts-expect-error TS(2345) FIXME: Argument of type '"false"' is not assignable to pa... Remove this comment to see the full error message
-                'false',
-            ),
-            SlashCommandNamedArgument.fromProps({
-                name: 'at',
-                description: t`position to insert the message (index-based, corresponding to message id). If not set, the message will be inserted at the end of the chat.\nNegative values (including -0) are accepted and will work similarly to how 'depth' usually works. For example, -1 will insert the message right before the last message in chat.`,
-                typeList: [ARGUMENT_TYPE.NUMBER],
-                enumProvider: commonEnumProviders.messages({ allowIdAfter: true }),
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'return',
-                description: t`The way how you want the return value to be provided`,
-                typeList: [ARGUMENT_TYPE.STRING],
-                defaultValue: 'none',
-                enumList: slashCommandReturnHelper.enumList({ allowObject: true }),
-                forceEnum: true,
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'raw',
-                description: t`If true, does not alter quoted literal unnamed arguments`,
-                typeList: [ARGUMENT_TYPE.BOOLEAN],
-                defaultValue: 'true',
-                enumProvider: commonEnumProviders.boolean('trueFalse'),
-                isRequired: false,
-            }),
-        ],
-        unnamedArgumentList: [
-            new SlashCommandArgument(
-                'text',
-                [ARGUMENT_TYPE.STRING],
-                true,
-            ),
-        ],
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'sysname',
+            callback: setNarratorName,
+            unnamedArgumentList: [new SlashCommandArgument(t`name`, [ARGUMENT_TYPE.STRING], false)],
+            helpString: t`Sets a name for future system narrator messages in this chat (display only). Default: System. Leave empty to reset.`,
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'comment',
+            rawQuotes: true,
+            callback: sendCommentMessage,
+            returns: t`Optionally the text of the sent message, if specified in the "return" argument`,
+            namedArgumentList: [
+                new SlashCommandNamedArgument(
+                    'compact',
+                    t`Whether to use a compact layout`,
+                    [ARGUMENT_TYPE.BOOLEAN],
+                    false,
+                    false,
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '"false"' is not assignable to pa... Remove this comment to see the full error message
+                    'false',
+                ),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'at',
+                    description: t`position to insert the message (index-based, corresponding to message id). If not set, the message will be inserted at the end of the chat.\nNegative values (including -0) are accepted and will work similarly to how 'depth' usually works. For example, -1 will insert the message right before the last message in chat.`,
+                    typeList: [ARGUMENT_TYPE.NUMBER],
+                    enumProvider: commonEnumProviders.messages({ allowIdAfter: true }),
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'return',
+                    description: t`The way how you want the return value to be provided`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    defaultValue: 'none',
+                    enumList: slashCommandReturnHelper.enumList({ allowObject: true }),
+                    forceEnum: true,
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'raw',
+                    description: t`If true, does not alter quoted literal unnamed arguments`,
+                    typeList: [ARGUMENT_TYPE.BOOLEAN],
+                    defaultValue: 'true',
+                    enumProvider: commonEnumProviders.boolean('trueFalse'),
+                    isRequired: false,
+                }),
+            ],
+            unnamedArgumentList: [new SlashCommandArgument('text', [ARGUMENT_TYPE.STRING], true)],
+            helpString: `
         <div>
             ${t`Adds a note/comment message not part of the chat.`}
         </div>
@@ -1537,46 +1821,52 @@ export function initDefaultSlashCommands() {
             </ul>
         </div>
     `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'single',
-        callback: setStoryModeCallback,
-        aliases: ['story'],
-        helpString: t`Sets the message style to single document mode without names or avatars visible.`,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'bubble',
-        callback: setBubbleModeCallback,
-        aliases: ['bubbles'],
-        helpString: t`Sets the message style to bubble chat mode.`,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'flat',
-        callback: setFlatModeCallback,
-        aliases: ['default'],
-        helpString: t`Sets the message style to flat chat mode.`,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'continue',
-        callback: continueChatCallback,
-        aliases: ['cont'],
-        namedArgumentList: [
-            new SlashCommandNamedArgument(
-                'await',
-                t`Whether to await for the continued generation before proceeding`,
-                [ARGUMENT_TYPE.BOOLEAN],
-                false,
-                false,
-                // @ts-expect-error TS(2345) FIXME: Argument of type '"false"' is not assignable to pa... Remove this comment to see the full error message
-                'false',
-            ),
-        ],
-        unnamedArgumentList: [
-            new SlashCommandArgument(
-                'prompt', [ARGUMENT_TYPE.STRING], false,
-            ),
-        ],
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'single',
+            callback: setStoryModeCallback,
+            aliases: ['story'],
+            helpString: t`Sets the message style to single document mode without names or avatars visible.`,
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'bubble',
+            callback: setBubbleModeCallback,
+            aliases: ['bubbles'],
+            helpString: t`Sets the message style to bubble chat mode.`,
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'flat',
+            callback: setFlatModeCallback,
+            aliases: ['default'],
+            helpString: t`Sets the message style to flat chat mode.`,
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'continue',
+            callback: continueChatCallback,
+            aliases: ['cont'],
+            namedArgumentList: [
+                new SlashCommandNamedArgument(
+                    'await',
+                    t`Whether to await for the continued generation before proceeding`,
+                    [ARGUMENT_TYPE.BOOLEAN],
+                    false,
+                    false,
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '"false"' is not assignable to pa... Remove this comment to see the full error message
+                    'false',
+                ),
+            ],
+            unnamedArgumentList: [
+                new SlashCommandArgument('prompt', [ARGUMENT_TYPE.STRING], false),
+            ],
+            helpString: `
         <div>
             ${t`Continues the last message in the chat, with an optional additional prompt.`}
         </div>
@@ -1597,23 +1887,25 @@ export function initDefaultSlashCommands() {
             </ul>
         </div>
     `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'regenerate',
-        callback: regenerateChatCallback,
-        aliases: ['regen'],
-        namedArgumentList: [
-            new SlashCommandNamedArgument(
-                'await',
-                t`Whether to await for the regeneration before proceeding`,
-                [ARGUMENT_TYPE.BOOLEAN],
-                false,
-                false,
-                // @ts-expect-error TS(2345) FIXME: Argument of type '"false"' is not assignable to pa... Remove this comment to see the full error message
-                'false',
-            ),
-        ],
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'regenerate',
+            callback: regenerateChatCallback,
+            aliases: ['regen'],
+            namedArgumentList: [
+                new SlashCommandNamedArgument(
+                    'await',
+                    t`Whether to await for the regeneration before proceeding`,
+                    [ARGUMENT_TYPE.BOOLEAN],
+                    false,
+                    false,
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '"false"' is not assignable to pa... Remove this comment to see the full error message
+                    'false',
+                ),
+            ],
+            helpString: `
         <div>
             ${t`Regenerates the latest reply in the chat.`}
         </div>
@@ -1621,38 +1913,50 @@ export function initDefaultSlashCommands() {
             ${t`If <code>await=true</code> named argument is passed, the command will await for the regeneration before proceeding.`}
         </div>
     `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'swipe',
-        callback: swipeChatCallback,
-        namedArgumentList: [
-            new SlashCommandNamedArgument(
-                'direction',
-                t`Swipe direction`,
-                [ARGUMENT_TYPE.STRING],
-                false,
-                false,
-                // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
-                SWIPE_DIRECTION.RIGHT,
-                [
-                    new SlashCommandEnumValue(SWIPE_DIRECTION.RIGHT, t`Swipe to the next reply`, enumTypes.enum, enumIcons.default),
-                    new SlashCommandEnumValue(SWIPE_DIRECTION.LEFT, t`Swipe to the previous reply`, enumTypes.enum, enumIcons.default),
-                ],
-                [],
-                null,
-                true,
-            ),
-            new SlashCommandNamedArgument(
-                'await',
-                t`Whether to await for the swipe action before proceeding`,
-                [ARGUMENT_TYPE.BOOLEAN],
-                false,
-                false,
-                // @ts-expect-error TS(2345) FIXME: Argument of type '"false"' is not assignable to pa... Remove this comment to see the full error message
-                'false',
-            ),
-        ],
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'swipe',
+            callback: swipeChatCallback,
+            namedArgumentList: [
+                new SlashCommandNamedArgument(
+                    'direction',
+                    t`Swipe direction`,
+                    [ARGUMENT_TYPE.STRING],
+                    false,
+                    false,
+                    // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
+                    SWIPE_DIRECTION.RIGHT,
+                    [
+                        new SlashCommandEnumValue(
+                            SWIPE_DIRECTION.RIGHT,
+                            t`Swipe to the next reply`,
+                            enumTypes.enum,
+                            enumIcons.default,
+                        ),
+                        new SlashCommandEnumValue(
+                            SWIPE_DIRECTION.LEFT,
+                            t`Swipe to the previous reply`,
+                            enumTypes.enum,
+                            enumIcons.default,
+                        ),
+                    ],
+                    [],
+                    null,
+                    true,
+                ),
+                new SlashCommandNamedArgument(
+                    'await',
+                    t`Whether to await for the swipe action before proceeding`,
+                    [ARGUMENT_TYPE.BOOLEAN],
+                    false,
+                    false,
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '"false"' is not assignable to pa... Remove this comment to see the full error message
+                    'false',
+                ),
+            ],
+            helpString: `
         <div>
             ${t`Swipes the latest reply. Defaults to <code>direction=right</code>; use <code>direction=left</code> to go to the previous reply. If no next swipe exists, behavior depends on message context.`}
         </div>
@@ -1660,142 +1964,157 @@ export function initDefaultSlashCommands() {
             ${t`If <code>await=true</code> named argument is passed, the command will await for the swipe action before proceeding.`}
         </div>
     `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'go',
-        callback: goToCharacterCallback,
-        returns: t`The character/group name`,
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: t`Character name - or unique character identifier (avatar key)`,
-                typeList: [ARGUMENT_TYPE.STRING],
-                isRequired: true,
-                enumProvider: commonEnumProviders.characters('all'),
-            }),
-        ],
-        helpString: t`Opens up a chat with the character or group by its name`,
-        aliases: ['char'],
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'rename-char',
-        /**
-         * @param {{silent: string, chats: string}} options @param {string} name
-         * @param name
-         */
-        // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
-        callback: async ({ silent = 'true', chats = null }, name) => {
-            // @ts-expect-error TS(2322) FIXME: Type 'boolean | null' is not assignable to type 'n... Remove this comment to see the full error message
-            const renamed = await renameCharacter(name, { silent: isTrueBoolean(silent), renameChats: chats !== null ? isTrueBoolean(chats) : null });
-            return String(renamed);
-        },
-        returns: t`true/false - Whether the rename was successful`,
-        namedArgumentList: [
-            new SlashCommandNamedArgument(
-                // @ts-expect-error TS(2345) FIXME: Argument of type '"true"' is not assignable to par... Remove this comment to see the full error message
-                'silent', t`Hide any blocking popups. (if false, the name is optional. If not supplied, a popup asking for it will appear)`, [ARGUMENT_TYPE.BOOLEAN], false, false, 'true',
-            ),
-            new SlashCommandNamedArgument(
-                // @ts-expect-error TS(2345) FIXME: Argument of type '"<null>"' is not assignable to p... Remove this comment to see the full error message
-                'chats', t`Rename char in all previous chats`, [ARGUMENT_TYPE.BOOLEAN], false, false, '<null>',
-            ),
-        ],
-        unnamedArgumentList: [
-            new SlashCommandArgument(
-                t`new char name`, [ARGUMENT_TYPE.STRING], true,
-            ),
-        ],
-        helpString: t`Renames the current character.`,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'sysgen',
-        callback: generateSystemMessage,
-        namedArgumentList: [
-            SlashCommandNamedArgument.fromProps({
-                name: 'trim',
-                description: t`Trim the output by the last sentence boundary`,
-                typeList: [ARGUMENT_TYPE.BOOLEAN],
-                defaultValue: 'false',
-                isRequired: false,
-                enumProvider: commonEnumProviders.boolean('trueFalse'),
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'compact',
-                description: t`Use a compact layout for the message`,
-                typeList: [ARGUMENT_TYPE.BOOLEAN],
-                defaultValue: 'false',
-                isRequired: false,
-                acceptsMultiple: false,
-                enumProvider: commonEnumProviders.boolean('trueFalse'),
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'at',
-                description: t`Position to insert the message (index-based, corresponding to message id). If not set, the message will be inserted at the end of the chat.\nNegative values (including -0) are accepted and will work similarly to how 'depth' usually works. For example, -1 will insert the message right before the last message in chat.`,
-                typeList: [ARGUMENT_TYPE.NUMBER],
-                enumProvider: commonEnumProviders.messages({ allowIdAfter: true }),
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'name',
-                description: t`Optional custom display name to use for this system narrator message.`,
-                typeList: [ARGUMENT_TYPE.STRING],
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'return',
-                description: t`The way how you want the return value to be provided`,
-                typeList: [ARGUMENT_TYPE.STRING],
-                defaultValue: 'none',
-                enumList: slashCommandReturnHelper.enumList({ allowObject: true }),
-                forceEnum: true,
-            }),
-        ],
-        unnamedArgumentList: [
-            new SlashCommandArgument(
-                'prompt', [ARGUMENT_TYPE.STRING], true,
-            ),
-        ],
-        helpString: t`Generates a system message using a specified prompt.`,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'ask',
-        callback: askCharacter,
-        returns: t`Optionally the text of the sent message, if specified in the "return" argument`,
-        namedArgumentList: [
-            SlashCommandNamedArgument.fromProps({
-                name: 'name',
-                description: t`Character name - or unique character identifier (avatar key)`,
-                typeList: [ARGUMENT_TYPE.STRING],
-                isRequired: true,
-                enumProvider: commonEnumProviders.characters('character'),
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'return',
-                description: t`The way how you want the return value to be provided`,
-                typeList: [ARGUMENT_TYPE.STRING],
-                defaultValue: 'pipe',
-                enumList: slashCommandReturnHelper.enumList({ allowObject: true }),
-                forceEnum: true,
-            }),
-        ],
-        unnamedArgumentList: [
-            new SlashCommandArgument(
-                'prompt', [ARGUMENT_TYPE.STRING], false, false,
-            ),
-        ],
-        helpString: t`Asks a specified character card a prompt. Character name must be provided in a named argument.`,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'delname',
-        callback: deleteMessagesByNameCallback,
-        namedArgumentList: [],
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: t`Character name - or unique character identifier (avatar key)`,
-                typeList: [ARGUMENT_TYPE.STRING],
-                isRequired: true,
-                enumProvider: commonEnumProviders.characters('character'),
-            }),
-        ],
-        aliases: ['cancel'],
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'go',
+            callback: goToCharacterCallback,
+            returns: t`The character/group name`,
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: t`Character name - or unique character identifier (avatar key)`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    isRequired: true,
+                    enumProvider: commonEnumProviders.characters('all'),
+                }),
+            ],
+            helpString: t`Opens up a chat with the character or group by its name`,
+            aliases: ['char'],
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'rename-char',
+            /**
+             * @param {{silent: string, chats: string}} options @param {string} name
+             * @param name
+             */
+            // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
+            callback: async ({ silent = 'true', chats = null }, name) => {
+                // @ts-expect-error TS(2322) FIXME: Type 'boolean | null' is not assignable to type 'n... Remove this comment to see the full error message
+                const renamed = await renameCharacter(name, {
+                    silent: isTrueBoolean(silent),
+                    renameChats: chats !== null ? isTrueBoolean(chats) : null,
+                });
+                return String(renamed);
+            },
+            returns: t`true/false - Whether the rename was successful`,
+            namedArgumentList: [
+                new SlashCommandNamedArgument(
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '"true"' is not assignable to par... Remove this comment to see the full error message
+                    'silent',
+                    t`Hide any blocking popups. (if false, the name is optional. If not supplied, a popup asking for it will appear)`,
+                    [ARGUMENT_TYPE.BOOLEAN],
+                    false,
+                    false,
+                    'true',
+                ),
+                new SlashCommandNamedArgument(
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '"<null>"' is not assignable to p... Remove this comment to see the full error message
+                    'chats',
+                    t`Rename char in all previous chats`,
+                    [ARGUMENT_TYPE.BOOLEAN],
+                    false,
+                    false,
+                    '<null>',
+                ),
+            ],
+            unnamedArgumentList: [
+                new SlashCommandArgument(t`new char name`, [ARGUMENT_TYPE.STRING], true),
+            ],
+            helpString: t`Renames the current character.`,
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'sysgen',
+            callback: generateSystemMessage,
+            namedArgumentList: [
+                SlashCommandNamedArgument.fromProps({
+                    name: 'trim',
+                    description: t`Trim the output by the last sentence boundary`,
+                    typeList: [ARGUMENT_TYPE.BOOLEAN],
+                    defaultValue: 'false',
+                    isRequired: false,
+                    enumProvider: commonEnumProviders.boolean('trueFalse'),
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'compact',
+                    description: t`Use a compact layout for the message`,
+                    typeList: [ARGUMENT_TYPE.BOOLEAN],
+                    defaultValue: 'false',
+                    isRequired: false,
+                    acceptsMultiple: false,
+                    enumProvider: commonEnumProviders.boolean('trueFalse'),
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'at',
+                    description: t`Position to insert the message (index-based, corresponding to message id). If not set, the message will be inserted at the end of the chat.\nNegative values (including -0) are accepted and will work similarly to how 'depth' usually works. For example, -1 will insert the message right before the last message in chat.`,
+                    typeList: [ARGUMENT_TYPE.NUMBER],
+                    enumProvider: commonEnumProviders.messages({ allowIdAfter: true }),
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'name',
+                    description: t`Optional custom display name to use for this system narrator message.`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'return',
+                    description: t`The way how you want the return value to be provided`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    defaultValue: 'none',
+                    enumList: slashCommandReturnHelper.enumList({ allowObject: true }),
+                    forceEnum: true,
+                }),
+            ],
+            unnamedArgumentList: [new SlashCommandArgument('prompt', [ARGUMENT_TYPE.STRING], true)],
+            helpString: t`Generates a system message using a specified prompt.`,
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'ask',
+            callback: askCharacter,
+            returns: t`Optionally the text of the sent message, if specified in the "return" argument`,
+            namedArgumentList: [
+                SlashCommandNamedArgument.fromProps({
+                    name: 'name',
+                    description: t`Character name - or unique character identifier (avatar key)`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    isRequired: true,
+                    enumProvider: commonEnumProviders.characters('character'),
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'return',
+                    description: t`The way how you want the return value to be provided`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    defaultValue: 'pipe',
+                    enumList: slashCommandReturnHelper.enumList({ allowObject: true }),
+                    forceEnum: true,
+                }),
+            ],
+            unnamedArgumentList: [
+                new SlashCommandArgument('prompt', [ARGUMENT_TYPE.STRING], false, false),
+            ],
+            helpString: t`Asks a specified character card a prompt. Character name must be provided in a named argument.`,
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'delname',
+            callback: deleteMessagesByNameCallback,
+            namedArgumentList: [],
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: t`Character name - or unique character identifier (avatar key)`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    isRequired: true,
+                    enumProvider: commonEnumProviders.characters('character'),
+                }),
+            ],
+            aliases: ['cancel'],
+            helpString: `
         <div>
             ${t`Deletes all messages attributed to a specified name.`}
         </div>
@@ -1808,60 +2127,56 @@ export function initDefaultSlashCommands() {
             </ul>
         </div>
     `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'send',
-        rawQuotes: true,
-        callback: sendUserMessageCallback,
-        returns: t`Optionally the text of the sent message, if specified in the "return" argument`,
-        namedArgumentList: [
-            new SlashCommandNamedArgument(
-                'compact',
-                t`whether to use a compact layout`,
-                [ARGUMENT_TYPE.BOOLEAN],
-                false,
-                false,
-                // @ts-expect-error TS(2345) FIXME: Argument of type '"false"' is not assignable to pa... Remove this comment to see the full error message
-                'false',
-            ),
-            SlashCommandNamedArgument.fromProps({
-                name: 'at',
-                description: t`position to insert the message (index-based, corresponding to message id). If not set, the message will be inserted at the end of the chat.\nNegative values (including -0) are accepted and will work similarly to how 'depth' usually works. For example, -1 will insert the message right before the last message in chat.`,
-                typeList: [ARGUMENT_TYPE.NUMBER],
-                enumProvider: commonEnumProviders.messages({ allowIdAfter: true }),
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'name',
-                description: t`display name`,
-                typeList: [ARGUMENT_TYPE.STRING],
-                defaultValue: '{{user}}',
-                enumProvider: commonEnumProviders.personas({ allowPersonaKey: true }),
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'return',
-                description: t`The way how you want the return value to be provided`,
-                typeList: [ARGUMENT_TYPE.STRING],
-                defaultValue: 'none',
-                enumList: slashCommandReturnHelper.enumList({ allowObject: true }),
-                forceEnum: true,
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'raw',
-                description: t`If true, does not alter quoted literal unnamed arguments`,
-                typeList: [ARGUMENT_TYPE.BOOLEAN],
-                defaultValue: 'true',
-                enumProvider: commonEnumProviders.boolean('trueFalse'),
-                isRequired: false,
-            }),
-        ],
-        unnamedArgumentList: [
-            new SlashCommandArgument(
-                'text',
-                [ARGUMENT_TYPE.STRING],
-                true,
-            ),
-        ],
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'send',
+            rawQuotes: true,
+            callback: sendUserMessageCallback,
+            returns: t`Optionally the text of the sent message, if specified in the "return" argument`,
+            namedArgumentList: [
+                new SlashCommandNamedArgument(
+                    'compact',
+                    t`whether to use a compact layout`,
+                    [ARGUMENT_TYPE.BOOLEAN],
+                    false,
+                    false,
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '"false"' is not assignable to pa... Remove this comment to see the full error message
+                    'false',
+                ),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'at',
+                    description: t`position to insert the message (index-based, corresponding to message id). If not set, the message will be inserted at the end of the chat.\nNegative values (including -0) are accepted and will work similarly to how 'depth' usually works. For example, -1 will insert the message right before the last message in chat.`,
+                    typeList: [ARGUMENT_TYPE.NUMBER],
+                    enumProvider: commonEnumProviders.messages({ allowIdAfter: true }),
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'name',
+                    description: t`display name`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    defaultValue: '{{user}}',
+                    enumProvider: commonEnumProviders.personas({ allowPersonaKey: true }),
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'return',
+                    description: t`The way how you want the return value to be provided`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    defaultValue: 'none',
+                    enumList: slashCommandReturnHelper.enumList({ allowObject: true }),
+                    forceEnum: true,
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'raw',
+                    description: t`If true, does not alter quoted literal unnamed arguments`,
+                    typeList: [ARGUMENT_TYPE.BOOLEAN],
+                    defaultValue: 'true',
+                    enumProvider: commonEnumProviders.boolean('trueFalse'),
+                    isRequired: false,
+                }),
+            ],
+            unnamedArgumentList: [new SlashCommandArgument('text', [ARGUMENT_TYPE.STRING], true)],
+            helpString: `
         <div>
             ${t`Adds a user message to the chat log without triggering a generation.`}
         </div>
@@ -1883,30 +2198,32 @@ export function initDefaultSlashCommands() {
             </ul>
         </div>
     `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'trigger',
-        callback: triggerGenerationCallback,
-        namedArgumentList: [
-            new SlashCommandNamedArgument(
-                'await',
-                t`Whether to await for the triggered generation before continuing`,
-                [ARGUMENT_TYPE.BOOLEAN],
-                false,
-                false,
-                // @ts-expect-error TS(2345) FIXME: Argument of type '"false"' is not assignable to pa... Remove this comment to see the full error message
-                'false',
-            ),
-        ],
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: t`group member index (starts with 0) or name`,
-                typeList: [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.STRING],
-                isRequired: false,
-                enumProvider: commonEnumProviders.groupMembers(),
-            }),
-        ],
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'trigger',
+            callback: triggerGenerationCallback,
+            namedArgumentList: [
+                new SlashCommandNamedArgument(
+                    'await',
+                    t`Whether to await for the triggered generation before continuing`,
+                    [ARGUMENT_TYPE.BOOLEAN],
+                    false,
+                    false,
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '"false"' is not assignable to pa... Remove this comment to see the full error message
+                    'false',
+                ),
+            ],
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: t`group member index (starts with 0) or name`,
+                    typeList: [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.STRING],
+                    isRequired: false,
+                    enumProvider: commonEnumProviders.groupMembers(),
+                }),
+            ],
+            helpString: `
         <div>
             ${t`Triggers a message generation. If in group, can trigger a message for the specified group member index or name.`}
         </div>
@@ -1914,147 +2231,160 @@ export function initDefaultSlashCommands() {
             ${t`If <code>await=true</code> named argument is passed, the command will await for the triggered generation before continuing.`}
         </div>
     `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'hide',
-        callback: hideMessageCallback,
-        namedArgumentList: [
-            SlashCommandNamedArgument.fromProps({
-                name: 'name',
-                description: t`only hide messages from a certain character or persona`,
-                typeList: [ARGUMENT_TYPE.STRING],
-                enumProvider: commonEnumProviders.messageNames,
-                isRequired: false,
-                acceptsMultiple: false,
-            }),
-        ],
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: t`message index (starts with 0) or range, defaults to the last message index if not provided`,
-                typeList: [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.RANGE],
-                isRequired: false,
-                enumProvider: commonEnumProviders.messages(),
-            }),
-        ],
-        helpString: t`Hides a chat message from the prompt.`,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'unhide',
-        callback: unhideMessageCallback,
-        namedArgumentList: [
-            SlashCommandNamedArgument.fromProps({
-                name: 'name',
-                description: t`only unhide messages from a certain character or persona`,
-                typeList: [ARGUMENT_TYPE.STRING],
-                enumProvider: commonEnumProviders.messageNames,
-                isRequired: false,
-                acceptsMultiple: false,
-            }),
-        ],
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: t`message index (starts with 0) or range, defaults to the last message index if not provided`,
-                typeList: [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.RANGE],
-                isRequired: false,
-                enumProvider: commonEnumProviders.messages(),
-            }),
-        ],
-        helpString: t`Unhides a message from the prompt.`,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'member-get',
-        aliases: ['getmember', 'memberget'],
-        // @ts-expect-error TS(7006) FIXME: Parameter 'arg' implicitly has an 'any' type.
-        callback: (async ({ field = 'name' }, arg) => {
-            if (!selected_group) {
-                notyf.warning(t`Cannot run /member-get command outside of a group chat.`);
-                return '';
-            }
-            if (field === '') {
-                notyf.warning(t`'/member-get field=' argument required!`);
-                return '';
-            }
-            field = field.toString();
-            arg = arg.toString();
-            if (!['name', 'index', 'id', 'avatar'].includes(field)) {
-                notyf.warning(t`'/member-get field=' argument required!`);
-                return '';
-            }
-            const isId = !isNaN(parseInt(arg));
-            const groupMember = findGroupMemberId(arg, true);
-            if (!groupMember) {
-                notyf.warning(t`No group member found using ${isId ? 'id' : 'string'} ${arg}`);
-                return '';
-            }
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic group member field access
-            return (groupMember as any)[field];
         }),
-        namedArgumentList: [
-            SlashCommandNamedArgument.fromProps({
-                name: 'field',
-                description: t`Whether to retrieve the name, index, id, or avatar.`,
-                typeList: [ARGUMENT_TYPE.STRING],
-                isRequired: true,
-                defaultValue: 'name',
-                enumList: [
-                    new SlashCommandEnumValue('name', t`Character name`),
-                    new SlashCommandEnumValue('index', t`Group member index`),
-                    new SlashCommandEnumValue('avatar', t`Character avatar`),
-                    new SlashCommandEnumValue('id', t`Character index`),
-                ],
-            }),
-        ],
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: t`member index (starts with 0), name, or avatar`,
-                typeList: [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.STRING],
-                isRequired: true,
-                enumProvider: commonEnumProviders.groupMembers(),
-            }),
-        ],
-        helpString: t`Retrieves a group member's name, index, id, or avatar.`,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'member-disable',
-        callback: disableGroupMemberCallback,
-        aliases: ['disable', 'disablemember', 'memberdisable'],
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: t`member index (starts with 0) or name`,
-                typeList: [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.STRING],
-                isRequired: true,
-                enumProvider: commonEnumProviders.groupMembers(),
-            }),
-        ],
-        helpString: t`Disables a group member from being drafted for replies.`,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'member-enable',
-        aliases: ['enable', 'enablemember', 'memberenable'],
-        callback: enableGroupMemberCallback,
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: t`member index (starts with 0) or name`,
-                typeList: [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.STRING],
-                isRequired: true,
-                enumProvider: commonEnumProviders.groupMembers(),
-            }),
-        ],
-        helpString: t`Enables a group member to be drafted for replies.`,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'member-add',
-        callback: addGroupMemberCallback,
-        aliases: ['addmember', 'memberadd'],
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: t`Character name - or unique character identifier (avatar key)`,
-                typeList: [ARGUMENT_TYPE.STRING],
-                isRequired: true,
-                enumProvider: () => selected_group ? commonEnumProviders.characters('character')() : [],
-            }),
-        ],
-        helpString: `
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'hide',
+            callback: hideMessageCallback,
+            namedArgumentList: [
+                SlashCommandNamedArgument.fromProps({
+                    name: 'name',
+                    description: t`only hide messages from a certain character or persona`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    enumProvider: commonEnumProviders.messageNames,
+                    isRequired: false,
+                    acceptsMultiple: false,
+                }),
+            ],
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: t`message index (starts with 0) or range, defaults to the last message index if not provided`,
+                    typeList: [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.RANGE],
+                    isRequired: false,
+                    enumProvider: commonEnumProviders.messages(),
+                }),
+            ],
+            helpString: t`Hides a chat message from the prompt.`,
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'unhide',
+            callback: unhideMessageCallback,
+            namedArgumentList: [
+                SlashCommandNamedArgument.fromProps({
+                    name: 'name',
+                    description: t`only unhide messages from a certain character or persona`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    enumProvider: commonEnumProviders.messageNames,
+                    isRequired: false,
+                    acceptsMultiple: false,
+                }),
+            ],
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: t`message index (starts with 0) or range, defaults to the last message index if not provided`,
+                    typeList: [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.RANGE],
+                    isRequired: false,
+                    enumProvider: commonEnumProviders.messages(),
+                }),
+            ],
+            helpString: t`Unhides a message from the prompt.`,
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'member-get',
+            aliases: ['getmember', 'memberget'],
+            // @ts-expect-error TS(7006) FIXME: Parameter 'arg' implicitly has an 'any' type.
+            callback: async ({ field = 'name' }, arg) => {
+                if (!selected_group) {
+                    notyf.warning(t`Cannot run /member-get command outside of a group chat.`);
+                    return '';
+                }
+                if (field === '') {
+                    notyf.warning(t`'/member-get field=' argument required!`);
+                    return '';
+                }
+                field = field.toString();
+                arg = arg.toString();
+                if (!['name', 'index', 'id', 'avatar'].includes(field)) {
+                    notyf.warning(t`'/member-get field=' argument required!`);
+                    return '';
+                }
+                const isId = !isNaN(parseInt(arg));
+                const groupMember = findGroupMemberId(arg, true);
+                if (!groupMember) {
+                    notyf.warning(t`No group member found using ${isId ? 'id' : 'string'} ${arg}`);
+                    return '';
+                }
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic group member field access
+                return (groupMember as any)[field];
+            },
+            namedArgumentList: [
+                SlashCommandNamedArgument.fromProps({
+                    name: 'field',
+                    description: t`Whether to retrieve the name, index, id, or avatar.`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    isRequired: true,
+                    defaultValue: 'name',
+                    enumList: [
+                        new SlashCommandEnumValue('name', t`Character name`),
+                        new SlashCommandEnumValue('index', t`Group member index`),
+                        new SlashCommandEnumValue('avatar', t`Character avatar`),
+                        new SlashCommandEnumValue('id', t`Character index`),
+                    ],
+                }),
+            ],
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: t`member index (starts with 0), name, or avatar`,
+                    typeList: [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.STRING],
+                    isRequired: true,
+                    enumProvider: commonEnumProviders.groupMembers(),
+                }),
+            ],
+            helpString: t`Retrieves a group member's name, index, id, or avatar.`,
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'member-disable',
+            callback: disableGroupMemberCallback,
+            aliases: ['disable', 'disablemember', 'memberdisable'],
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: t`member index (starts with 0) or name`,
+                    typeList: [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.STRING],
+                    isRequired: true,
+                    enumProvider: commonEnumProviders.groupMembers(),
+                }),
+            ],
+            helpString: t`Disables a group member from being drafted for replies.`,
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'member-enable',
+            aliases: ['enable', 'enablemember', 'memberenable'],
+            callback: enableGroupMemberCallback,
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: t`member index (starts with 0) or name`,
+                    typeList: [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.STRING],
+                    isRequired: true,
+                    enumProvider: commonEnumProviders.groupMembers(),
+                }),
+            ],
+            helpString: t`Enables a group member to be drafted for replies.`,
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'member-add',
+            callback: addGroupMemberCallback,
+            aliases: ['addmember', 'memberadd'],
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: t`Character name - or unique character identifier (avatar key)`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    isRequired: true,
+                    enumProvider: () =>
+                        selected_group ? commonEnumProviders.characters('character')() : [],
+                }),
+            ],
+            helpString: `
         <div>
             ${t`Adds a new group member to the group chat.`}
         </div>
@@ -2067,20 +2397,22 @@ export function initDefaultSlashCommands() {
             </ul>
         </div>
     `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'member-remove',
-        callback: removeGroupMemberCallback,
-        aliases: ['removemember', 'memberremove'],
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: t`member index (starts with 0) or name`,
-                typeList: [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.STRING],
-                isRequired: true,
-                enumProvider: commonEnumProviders.groupMembers(),
-            }),
-        ],
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'member-remove',
+            callback: removeGroupMemberCallback,
+            aliases: ['removemember', 'memberremove'],
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: t`member index (starts with 0) or name`,
+                    typeList: [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.STRING],
+                    isRequired: true,
+                    enumProvider: commonEnumProviders.groupMembers(),
+                }),
+            ],
+            helpString: `
         <div>
             ${t`Removes a group member from the group chat.`}
         </div>
@@ -2094,48 +2426,54 @@ export function initDefaultSlashCommands() {
             </ul>
         </div>
     `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'member-up',
-        callback: moveGroupMemberUpCallback,
-        aliases: ['upmember', 'memberup'],
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: t`member index (starts with 0) or name`,
-                typeList: [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.STRING],
-                isRequired: true,
-                enumProvider: commonEnumProviders.groupMembers(),
-            }),
-        ],
-        helpString: t`Moves a group member up in the group chat list.`,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'member-down',
-        callback: moveGroupMemberDownCallback,
-        aliases: ['downmember', 'memberdown'],
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: t`member index (starts with 0) or name`,
-                typeList: [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.STRING],
-                isRequired: true,
-                enumProvider: commonEnumProviders.groupMembers(),
-            }),
-        ],
-        helpString: t`Moves a group member down in the group chat list.`,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'member-peek',
-        aliases: ['peek', 'memberpeek', 'peekmember'],
-        callback: peekCallback,
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: t`member index (starts with 0) or name`,
-                typeList: [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.STRING],
-                isRequired: true,
-                enumProvider: commonEnumProviders.groupMembers(),
-            }),
-        ],
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'member-up',
+            callback: moveGroupMemberUpCallback,
+            aliases: ['upmember', 'memberup'],
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: t`member index (starts with 0) or name`,
+                    typeList: [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.STRING],
+                    isRequired: true,
+                    enumProvider: commonEnumProviders.groupMembers(),
+                }),
+            ],
+            helpString: t`Moves a group member up in the group chat list.`,
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'member-down',
+            callback: moveGroupMemberDownCallback,
+            aliases: ['downmember', 'memberdown'],
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: t`member index (starts with 0) or name`,
+                    typeList: [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.STRING],
+                    isRequired: true,
+                    enumProvider: commonEnumProviders.groupMembers(),
+                }),
+            ],
+            helpString: t`Moves a group member down in the group chat list.`,
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'member-peek',
+            aliases: ['peek', 'memberpeek', 'peekmember'],
+            callback: peekCallback,
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: t`member index (starts with 0) or name`,
+                    typeList: [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.STRING],
+                    isRequired: true,
+                    enumProvider: commonEnumProviders.groupMembers(),
+                }),
+            ],
+            helpString: `
         <div>
             ${t`Shows a group member character card without switching chats.`}
         </div>
@@ -2149,30 +2487,43 @@ export function initDefaultSlashCommands() {
             </ul>
         </div>
     `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'member-count',
-        callback: countGroupMemberCallback,
-        aliases: ['countmember', 'membercount'],
-        helpString: t`Returns the total number of group members in the group chat list.`,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'delswipe',
-        callback: deleteSwipeCallback,
-        returns: t`the new, currently selected swipe id`,
-        aliases: ['swipedel'],
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: t`1-based swipe id`,
-                typeList: [ARGUMENT_TYPE.NUMBER],
-                isRequired: true,
-                enumProvider: () => Array.isArray(chat[chat.length - 1]?.swipes) ?
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    chat[chat.length - 1]?.swipes?.map((swipe: string, i: number) => new SlashCommandEnumValue(String(i + 1), swipe as any, enumTypes.enum as any, enumIcons.message as any))
-                    : [],
-            }),
-        ],
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'member-count',
+            callback: countGroupMemberCallback,
+            aliases: ['countmember', 'membercount'],
+            helpString: t`Returns the total number of group members in the group chat list.`,
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'delswipe',
+            callback: deleteSwipeCallback,
+            returns: t`the new, currently selected swipe id`,
+            aliases: ['swipedel'],
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: t`1-based swipe id`,
+                    typeList: [ARGUMENT_TYPE.NUMBER],
+                    isRequired: true,
+                    enumProvider: () =>
+                        Array.isArray(chat[chat.length - 1]?.swipes)
+                            ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                              chat[chat.length - 1]?.swipes?.map(
+                                  (swipe: string, i: number) =>
+                                      new SlashCommandEnumValue(
+                                          String(i + 1),
+                                          swipe as any,
+                                          enumTypes.enum as any,
+                                          enumIcons.message as any,
+                                      ),
+                              )
+                            : [],
+                }),
+            ],
+            helpString: `
         <div>
             ${t`Deletes a swipe from the last chat message. If swipe id is not provided, it deletes the current swipe.`}
         </div>
@@ -2190,90 +2541,91 @@ export function initDefaultSlashCommands() {
             </ul>
         </div>
     `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'echo',
-        rawQuotes: true,
-        callback: echoCallback,
-        returns: t`the text`,
-        namedArgumentList: [
-            new SlashCommandNamedArgument(
-                'title', t`title of the toast message`, [ARGUMENT_TYPE.STRING], false,
-            ),
-            SlashCommandNamedArgument.fromProps({
-                name: 'severity',
-                description: t`severity level of the toast message`,
-                typeList: [ARGUMENT_TYPE.STRING],
-                defaultValue: 'info',
-                enumProvider: () => [
-                    new SlashCommandEnumValue('info', 'info', enumTypes.macro, 'ℹ️'),
-                    new SlashCommandEnumValue('warning', 'warning', enumTypes.enum, '⚠️'),
-                    new SlashCommandEnumValue('error', 'error', enumTypes.enum, '❗'),
-                    new SlashCommandEnumValue('success', 'success', enumTypes.enum, '✅'),
-                ],
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'timeout',
-                description: t`time in milliseconds to display the toast message. Set this and 'extendedTimeout' to 0 to show indefinitely until dismissed.`,
-                typeList: [ARGUMENT_TYPE.NUMBER],
-                defaultValue: '4000',
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'extendedTimeout',
-                description: t`time in milliseconds to display the toast message. Set this and 'timeout' to 0 to show indefinitely until dismissed.`,
-                typeList: [ARGUMENT_TYPE.NUMBER],
-                defaultValue: '10000',
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'preventDuplicates',
-                description: t`prevent duplicate toasts with the same message from being displayed.`,
-                typeList: [ARGUMENT_TYPE.BOOLEAN],
-                defaultValue: 'false',
-                enumList: commonEnumProviders.boolean('trueFalse')(),
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'awaitDismissal',
-                description: t`wait for the toast to be dismissed before continuing.`,
-                typeList: [ARGUMENT_TYPE.BOOLEAN],
-                defaultValue: 'false',
-                enumList: commonEnumProviders.boolean('trueFalse')(),
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'cssClass',
-                description: t`additional CSS class to add to the toast message (e.g. for custom styling)`,
-                typeList: [ARGUMENT_TYPE.STRING],
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'color',
-                description: t`custom CSS color of the toast message. Accepts all valid CSS color values (e.g. 'red', '#FF0000', 'rgb(255, 0, 0)').<br />>Can be more customizable with the 'cssClass' argument and custom classes.`,
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'escapeHtml',
-                description: t`whether to escape HTML in the toast message.`,
-                typeList: [ARGUMENT_TYPE.BOOLEAN],
-                defaultValue: 'true',
-                enumList: commonEnumProviders.boolean('trueFalse')(),
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'onClick',
-                description: t`a closure to call when the toast is clicked. This executed closure receives scope as provided in the script. Careful about possible side effects when manipulating variables and more.`,
-                typeList: [ARGUMENT_TYPE.CLOSURE],
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'raw',
-                description: t`If true, does not alter quoted literal unnamed arguments`,
-                typeList: [ARGUMENT_TYPE.BOOLEAN],
-                defaultValue: 'true',
-                enumProvider: commonEnumProviders.boolean('trueFalse'),
-                isRequired: false,
-            }),
-        ],
-        unnamedArgumentList: [
-            new SlashCommandArgument(
-                'text', [ARGUMENT_TYPE.STRING], true,
-            ),
-        ],
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'echo',
+            rawQuotes: true,
+            callback: echoCallback,
+            returns: t`the text`,
+            namedArgumentList: [
+                new SlashCommandNamedArgument(
+                    'title',
+                    t`title of the toast message`,
+                    [ARGUMENT_TYPE.STRING],
+                    false,
+                ),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'severity',
+                    description: t`severity level of the toast message`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    defaultValue: 'info',
+                    enumProvider: () => [
+                        new SlashCommandEnumValue('info', 'info', enumTypes.macro, 'ℹ️'),
+                        new SlashCommandEnumValue('warning', 'warning', enumTypes.enum, '⚠️'),
+                        new SlashCommandEnumValue('error', 'error', enumTypes.enum, '❗'),
+                        new SlashCommandEnumValue('success', 'success', enumTypes.enum, '✅'),
+                    ],
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'timeout',
+                    description: t`time in milliseconds to display the toast message. Set this and 'extendedTimeout' to 0 to show indefinitely until dismissed.`,
+                    typeList: [ARGUMENT_TYPE.NUMBER],
+                    defaultValue: '4000',
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'extendedTimeout',
+                    description: t`time in milliseconds to display the toast message. Set this and 'timeout' to 0 to show indefinitely until dismissed.`,
+                    typeList: [ARGUMENT_TYPE.NUMBER],
+                    defaultValue: '10000',
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'preventDuplicates',
+                    description: t`prevent duplicate toasts with the same message from being displayed.`,
+                    typeList: [ARGUMENT_TYPE.BOOLEAN],
+                    defaultValue: 'false',
+                    enumList: commonEnumProviders.boolean('trueFalse')(),
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'awaitDismissal',
+                    description: t`wait for the toast to be dismissed before continuing.`,
+                    typeList: [ARGUMENT_TYPE.BOOLEAN],
+                    defaultValue: 'false',
+                    enumList: commonEnumProviders.boolean('trueFalse')(),
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'cssClass',
+                    description: t`additional CSS class to add to the toast message (e.g. for custom styling)`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'color',
+                    description: t`custom CSS color of the toast message. Accepts all valid CSS color values (e.g. 'red', '#FF0000', 'rgb(255, 0, 0)').<br />>Can be more customizable with the 'cssClass' argument and custom classes.`,
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'escapeHtml',
+                    description: t`whether to escape HTML in the toast message.`,
+                    typeList: [ARGUMENT_TYPE.BOOLEAN],
+                    defaultValue: 'true',
+                    enumList: commonEnumProviders.boolean('trueFalse')(),
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'onClick',
+                    description: t`a closure to call when the toast is clicked. This executed closure receives scope as provided in the script. Careful about possible side effects when manipulating variables and more.`,
+                    typeList: [ARGUMENT_TYPE.CLOSURE],
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'raw',
+                    description: t`If true, does not alter quoted literal unnamed arguments`,
+                    typeList: [ARGUMENT_TYPE.BOOLEAN],
+                    defaultValue: 'true',
+                    enumProvider: commonEnumProviders.boolean('trueFalse'),
+                    isRequired: false,
+                }),
+            ],
+            unnamedArgumentList: [new SlashCommandArgument('text', [ARGUMENT_TYPE.STRING], true)],
+            helpString: `
         <div>
             Echoes the provided text to a toast message. Can be used to display informational messages or for pipes debugging.
         </div>
@@ -2292,50 +2644,75 @@ export function initDefaultSlashCommands() {
             </ul>
         </div>
     `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'gen',
-        callback: generateCallback,
-        returns: t`generated text`,
-        namedArgumentList: [
-            SlashCommandNamedArgument.fromProps({
-                name: 'trim',
-                description: t`Trim the output by the last sentence boundary`,
-                typeList: [ARGUMENT_TYPE.BOOLEAN],
-                defaultValue: 'false',
-                isRequired: false,
-                enumProvider: commonEnumProviders.boolean('trueFalse'),
-            }),
-            new SlashCommandNamedArgument(
-                // @ts-expect-error TS(2345) FIXME: Argument of type 'SlashCommandEnumValue[]' is not ... Remove this comment to see the full error message
-                'lock', t`lock user input during generation`, [ARGUMENT_TYPE.BOOLEAN], false, false, null, commonEnumProviders.boolean('onOff')(),
-            ),
-            SlashCommandNamedArgument.fromProps({
-                name: 'name',
-                description: t`in-prompt character name for instruct mode (or unique character identifier (avatar key), which will be used as name)`,
-                typeList: [ARGUMENT_TYPE.STRING],
-                defaultValue: 'System',
-                enumProvider: () => [...commonEnumProviders.characters('character')(), new SlashCommandEnumValue('System', null, enumTypes.enum, enumIcons.assistant)],
-            }),
-            new SlashCommandNamedArgument(
-                'length', t`API response length in tokens`, [ARGUMENT_TYPE.NUMBER], false,
-            ),
-            SlashCommandNamedArgument.fromProps({
-                name: 'as',
-                description: t`role of the output prompt`,
-                typeList: [ARGUMENT_TYPE.STRING],
-                enumList: [
-                    new SlashCommandEnumValue('system', null, enumTypes.enum, enumIcons.assistant),
-                    new SlashCommandEnumValue('char', null, enumTypes.enum, enumIcons.character),
-                ],
-            }),
-        ],
-        unnamedArgumentList: [
-            new SlashCommandArgument(
-                'prompt', [ARGUMENT_TYPE.STRING], true,
-            ),
-        ],
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'gen',
+            callback: generateCallback,
+            returns: t`generated text`,
+            namedArgumentList: [
+                SlashCommandNamedArgument.fromProps({
+                    name: 'trim',
+                    description: t`Trim the output by the last sentence boundary`,
+                    typeList: [ARGUMENT_TYPE.BOOLEAN],
+                    defaultValue: 'false',
+                    isRequired: false,
+                    enumProvider: commonEnumProviders.boolean('trueFalse'),
+                }),
+                new SlashCommandNamedArgument(
+                    // @ts-expect-error TS(2345) FIXME: Argument of type 'SlashCommandEnumValue[]' is not ... Remove this comment to see the full error message
+                    'lock',
+                    t`lock user input during generation`,
+                    [ARGUMENT_TYPE.BOOLEAN],
+                    false,
+                    false,
+                    null,
+                    commonEnumProviders.boolean('onOff')(),
+                ),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'name',
+                    description: t`in-prompt character name for instruct mode (or unique character identifier (avatar key), which will be used as name)`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    defaultValue: 'System',
+                    enumProvider: () => [
+                        ...commonEnumProviders.characters('character')(),
+                        new SlashCommandEnumValue(
+                            'System',
+                            null,
+                            enumTypes.enum,
+                            enumIcons.assistant,
+                        ),
+                    ],
+                }),
+                new SlashCommandNamedArgument(
+                    'length',
+                    t`API response length in tokens`,
+                    [ARGUMENT_TYPE.NUMBER],
+                    false,
+                ),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'as',
+                    description: t`role of the output prompt`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    enumList: [
+                        new SlashCommandEnumValue(
+                            'system',
+                            null,
+                            enumTypes.enum,
+                            enumIcons.assistant,
+                        ),
+                        new SlashCommandEnumValue(
+                            'char',
+                            null,
+                            enumTypes.enum,
+                            enumIcons.character,
+                        ),
+                    ],
+                }),
+            ],
+            unnamedArgumentList: [new SlashCommandArgument('prompt', [ARGUMENT_TYPE.STRING], true)],
+            helpString: `
         <div>
             ${t`Generates text using the provided prompt and passes it to the next command through the pipe, optionally locking user input while generating and allowing to configure the in-prompt name for instruct mode (default = "System").`}
         </div>
@@ -2343,54 +2720,94 @@ export function initDefaultSlashCommands() {
             ${t`"as" argument controls the role of the output prompt: system (default) or char. If "length" argument is provided as a number in tokens, allows to temporarily override an API response length.`}
         </div>
     `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'genraw',
-        callback: generateRawCallback,
-        returns: t`generated text`,
-        namedArgumentList: [
-            new SlashCommandNamedArgument(
-                // @ts-expect-error TS(2345) FIXME: Argument of type '"off"' is not assignable to para... Remove this comment to see the full error message
-                'lock', t`lock user input during generation`, [ARGUMENT_TYPE.BOOLEAN], false, false, 'off', commonEnumProviders.boolean('onOff')(),
-            ),
-            new SlashCommandNamedArgument(
-                // @ts-expect-error TS(2345) FIXME: Argument of type '"on"' is not assignable to param... Remove this comment to see the full error message
-                'instruct', t`use instruct mode`, [ARGUMENT_TYPE.BOOLEAN], false, false, 'on', commonEnumProviders.boolean('onOff')(),
-            ),
-            new SlashCommandNamedArgument(
-                // @ts-expect-error TS(2345) FIXME: Argument of type '"[]"' is not assignable to param... Remove this comment to see the full error message
-                'stop', t`one-time custom stop strings`, [ARGUMENT_TYPE.LIST], false, false, '[]',
-            ),
-            SlashCommandNamedArgument.fromProps({
-                name: 'as',
-                description: t`role of the output prompt`,
-                defaultValue: 'system',
-                typeList: [ARGUMENT_TYPE.STRING],
-                enumList: [
-                    new SlashCommandEnumValue('system', null, enumTypes.enum, enumIcons.assistant),
-                    new SlashCommandEnumValue('char', null, enumTypes.enum, enumIcons.character),
-                ],
-            }),
-            new SlashCommandNamedArgument(
-                'system', t`system prompt at the start`, [ARGUMENT_TYPE.STRING, ARGUMENT_TYPE.VARIABLE_NAME], false,
-            ),
-            new SlashCommandNamedArgument(
-                'prefill', t`prefill prompt at the end`, [ARGUMENT_TYPE.STRING, ARGUMENT_TYPE.VARIABLE_NAME], false,
-            ),
-            new SlashCommandNamedArgument(
-                'length', t`API response length in tokens`, [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.VARIABLE_NAME], false,
-            ),
-            new SlashCommandNamedArgument(
-                // @ts-expect-error TS(2345) FIXME: Argument of type '"on"' is not assignable to param... Remove this comment to see the full error message
-                'trim', t`trim {{user}} and {{char}} prefixes from the output`, [ARGUMENT_TYPE.BOOLEAN], false, false, 'on', commonEnumProviders.boolean('onOff')(),
-            ),
-        ],
-        unnamedArgumentList: [
-            new SlashCommandArgument(
-                'prompt', [ARGUMENT_TYPE.STRING], true,
-            ),
-        ],
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'genraw',
+            callback: generateRawCallback,
+            returns: t`generated text`,
+            namedArgumentList: [
+                new SlashCommandNamedArgument(
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '"off"' is not assignable to para... Remove this comment to see the full error message
+                    'lock',
+                    t`lock user input during generation`,
+                    [ARGUMENT_TYPE.BOOLEAN],
+                    false,
+                    false,
+                    'off',
+                    commonEnumProviders.boolean('onOff')(),
+                ),
+                new SlashCommandNamedArgument(
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '"on"' is not assignable to param... Remove this comment to see the full error message
+                    'instruct',
+                    t`use instruct mode`,
+                    [ARGUMENT_TYPE.BOOLEAN],
+                    false,
+                    false,
+                    'on',
+                    commonEnumProviders.boolean('onOff')(),
+                ),
+                new SlashCommandNamedArgument(
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '"[]"' is not assignable to param... Remove this comment to see the full error message
+                    'stop',
+                    t`one-time custom stop strings`,
+                    [ARGUMENT_TYPE.LIST],
+                    false,
+                    false,
+                    '[]',
+                ),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'as',
+                    description: t`role of the output prompt`,
+                    defaultValue: 'system',
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    enumList: [
+                        new SlashCommandEnumValue(
+                            'system',
+                            null,
+                            enumTypes.enum,
+                            enumIcons.assistant,
+                        ),
+                        new SlashCommandEnumValue(
+                            'char',
+                            null,
+                            enumTypes.enum,
+                            enumIcons.character,
+                        ),
+                    ],
+                }),
+                new SlashCommandNamedArgument(
+                    'system',
+                    t`system prompt at the start`,
+                    [ARGUMENT_TYPE.STRING, ARGUMENT_TYPE.VARIABLE_NAME],
+                    false,
+                ),
+                new SlashCommandNamedArgument(
+                    'prefill',
+                    t`prefill prompt at the end`,
+                    [ARGUMENT_TYPE.STRING, ARGUMENT_TYPE.VARIABLE_NAME],
+                    false,
+                ),
+                new SlashCommandNamedArgument(
+                    'length',
+                    t`API response length in tokens`,
+                    [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.VARIABLE_NAME],
+                    false,
+                ),
+                new SlashCommandNamedArgument(
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '"on"' is not assignable to param... Remove this comment to see the full error message
+                    'trim',
+                    t`trim {{user}} and {{char}} prefixes from the output`,
+                    [ARGUMENT_TYPE.BOOLEAN],
+                    false,
+                    false,
+                    'on',
+                    commonEnumProviders.boolean('onOff')(),
+                ),
+            ],
+            unnamedArgumentList: [new SlashCommandArgument('prompt', [ARGUMENT_TYPE.STRING], true)],
+            helpString: `
         <div>
             ${t`Generates text using the provided prompt and passes it to the next command through the pipe, optionally locking user input while generating. Does not include chat history or character card.`}
         </div>
@@ -2407,41 +2824,41 @@ export function initDefaultSlashCommands() {
             ${t`If "length" argument is provided as a number in tokens, allows to temporarily override an API response length.`}
         </div>
     `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'addswipe',
-        callback: addSwipeCallback,
-        returns: t`the new swipe id`,
-        aliases: ['swipeadd'],
-        namedArgumentList: [
-            SlashCommandNamedArgument.fromProps({
-                name: 'switch',
-                description: t`switch to the new swipe`,
-                typeList: [ARGUMENT_TYPE.BOOLEAN],
-                enumList: commonEnumProviders.boolean()(),
-            }),
-        ],
-        unnamedArgumentList: [
-            new SlashCommandArgument(
-                'text', [ARGUMENT_TYPE.STRING], true,
-            ),
-        ],
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'addswipe',
+            callback: addSwipeCallback,
+            returns: t`the new swipe id`,
+            aliases: ['swipeadd'],
+            namedArgumentList: [
+                SlashCommandNamedArgument.fromProps({
+                    name: 'switch',
+                    description: t`switch to the new swipe`,
+                    typeList: [ARGUMENT_TYPE.BOOLEAN],
+                    enumList: commonEnumProviders.boolean()(),
+                }),
+            ],
+            unnamedArgumentList: [new SlashCommandArgument('text', [ARGUMENT_TYPE.STRING], true)],
+            helpString: `
         <div>
             ${t`Adds a swipe to the last chat message.`}
         </div>
         <div>
             ${t`Use switch=true to switch to directly switch to the new swipe.`}
         </div>`,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'stop',
-        callback: () => {
-            const stopped = stopGeneration();
-            return String(stopped);
-        },
-        returns: t`true/false, whether the generation was running and got stopped`,
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'stop',
+            callback: () => {
+                const stopped = stopGeneration();
+                return String(stopped);
+            },
+            returns: t`true/false, whether the generation was running and got stopped`,
+            helpString: `
             <div>
                 ${t`Stops the generation and any streaming if it is currently running.`}
             </div>
@@ -2449,67 +2866,79 @@ export function initDefaultSlashCommands() {
                 ${t`Note: This command cannot be executed from the chat input, as sending any message or script from there is blocked during generation. But it can be executed via automations or QR scripts/buttons.`}
             </div>
         `,
-        aliases: ['generate-stop'],
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'abort',
-        callback: abortCallback,
-        namedArgumentList: [
-            SlashCommandNamedArgument.fromProps({
-                name: 'quiet',
-                description: t`Whether to suppress the toast message notifying about the /abort call.`,
-                typeList: [ARGUMENT_TYPE.BOOLEAN],
-                defaultValue: 'true',
-            }),
-        ],
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: t`The reason for aborting command execution. Shown when quiet=false`,
-                typeList: [ARGUMENT_TYPE.STRING],
-            }),
-        ],
-        helpString: t`Aborts the slash command batch execution.`,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'fuzzy',
-        callback: fuzzyCallback,
-        returns: t`matching item`,
-        namedArgumentList: [
-            SlashCommandNamedArgument.fromProps({
-                name: 'list',
-                description: t`list of items to match against`,
-                acceptsMultiple: false,
-                isRequired: true,
-                typeList: [ARGUMENT_TYPE.LIST, ARGUMENT_TYPE.VARIABLE_NAME],
-                enumProvider: commonEnumProviders.variables('all'),
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'threshold',
-                description: t`fuzzy match threshold (0.0 to 1.0)`,
-                typeList: [ARGUMENT_TYPE.NUMBER],
-                isRequired: false,
-                defaultValue: '0.4',
-                acceptsMultiple: false,
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'mode',
-                description: t`fuzzy match mode`,
-                typeList: [ARGUMENT_TYPE.STRING],
-                isRequired: false,
-                defaultValue: 'first',
-                acceptsMultiple: false,
-                enumList: [
-                    new SlashCommandEnumValue('first', t`first match below the threshold`, enumTypes.enum, enumIcons.default),
-                    new SlashCommandEnumValue('best', t`best match below the threshold`, enumTypes.enum, enumIcons.default),
-                ],
-            }),
-        ],
-        unnamedArgumentList: [
-            new SlashCommandArgument(
-                t`text to search`, [ARGUMENT_TYPE.STRING], true,
-            ),
-        ],
-        helpString: `
+            aliases: ['generate-stop'],
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'abort',
+            callback: abortCallback,
+            namedArgumentList: [
+                SlashCommandNamedArgument.fromProps({
+                    name: 'quiet',
+                    description: t`Whether to suppress the toast message notifying about the /abort call.`,
+                    typeList: [ARGUMENT_TYPE.BOOLEAN],
+                    defaultValue: 'true',
+                }),
+            ],
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: t`The reason for aborting command execution. Shown when quiet=false`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                }),
+            ],
+            helpString: t`Aborts the slash command batch execution.`,
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'fuzzy',
+            callback: fuzzyCallback,
+            returns: t`matching item`,
+            namedArgumentList: [
+                SlashCommandNamedArgument.fromProps({
+                    name: 'list',
+                    description: t`list of items to match against`,
+                    acceptsMultiple: false,
+                    isRequired: true,
+                    typeList: [ARGUMENT_TYPE.LIST, ARGUMENT_TYPE.VARIABLE_NAME],
+                    enumProvider: commonEnumProviders.variables('all'),
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'threshold',
+                    description: t`fuzzy match threshold (0.0 to 1.0)`,
+                    typeList: [ARGUMENT_TYPE.NUMBER],
+                    isRequired: false,
+                    defaultValue: '0.4',
+                    acceptsMultiple: false,
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'mode',
+                    description: t`fuzzy match mode`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    isRequired: false,
+                    defaultValue: 'first',
+                    acceptsMultiple: false,
+                    enumList: [
+                        new SlashCommandEnumValue(
+                            'first',
+                            t`first match below the threshold`,
+                            enumTypes.enum,
+                            enumIcons.default,
+                        ),
+                        new SlashCommandEnumValue(
+                            'best',
+                            t`best match below the threshold`,
+                            enumTypes.enum,
+                            enumIcons.default,
+                        ),
+                    ],
+                }),
+            ],
+            unnamedArgumentList: [
+                new SlashCommandArgument(t`text to search`, [ARGUMENT_TYPE.STRING], true),
+            ],
+            helpString: `
         <div>
             ${t`Performs a fuzzy match of each item in the <code>list</code> against the <code>text to search</code>. If any item matches, then its name is returned. If no item matches the text, no value is returned.`}
         </div>
@@ -2537,24 +2966,36 @@ export function initDefaultSlashCommands() {
             </ul>
         </div>
     `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'pass',
-        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
-        callback: (_, arg) => {
-            // We do not support arrays of closures. Arrays of strings will be send as JSON
-            if (Array.isArray(arg) && arg.some(x => x instanceof SlashCommandClosure)) throw new Error(t`Command /pass does not support multiple closures`);
-            if (Array.isArray(arg)) return JSON.stringify(arg);
-            return arg;
-        },
-        returns: t`the provided value`,
-        unnamedArgumentList: [
-            new SlashCommandArgument(
-                t`text`, [ARGUMENT_TYPE.STRING, ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.BOOLEAN, ARGUMENT_TYPE.LIST, ARGUMENT_TYPE.DICTIONARY, ARGUMENT_TYPE.CLOSURE], true,
-            ),
-        ],
-        aliases: ['return'],
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'pass',
+            // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
+            callback: (_, arg) => {
+                // We do not support arrays of closures. Arrays of strings will be send as JSON
+                if (Array.isArray(arg) && arg.some((x) => x instanceof SlashCommandClosure))
+                    throw new Error(t`Command /pass does not support multiple closures`);
+                if (Array.isArray(arg)) return JSON.stringify(arg);
+                return arg;
+            },
+            returns: t`the provided value`,
+            unnamedArgumentList: [
+                new SlashCommandArgument(
+                    t`text`,
+                    [
+                        ARGUMENT_TYPE.STRING,
+                        ARGUMENT_TYPE.NUMBER,
+                        ARGUMENT_TYPE.BOOLEAN,
+                        ARGUMENT_TYPE.LIST,
+                        ARGUMENT_TYPE.DICTIONARY,
+                        ARGUMENT_TYPE.CLOSURE,
+                    ],
+                    true,
+                ),
+            ],
+            aliases: ['return'],
+            helpString: `
         <div>
             <pre><span class="monospace">/pass (text)</span> – ${t`passes the text to the next command through the pipe.`}</pre>
         </div>
@@ -2565,17 +3006,17 @@ export function initDefaultSlashCommands() {
             </ul>
         </div>
     `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'delay',
-        callback: delayCallback,
-        aliases: ['wait', 'sleep'],
-        unnamedArgumentList: [
-            new SlashCommandArgument(
-                t`milliseconds`, [ARGUMENT_TYPE.NUMBER], true,
-            ),
-        ],
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'delay',
+            callback: delayCallback,
+            aliases: ['wait', 'sleep'],
+            unnamedArgumentList: [
+                new SlashCommandArgument(t`milliseconds`, [ARGUMENT_TYPE.NUMBER], true),
+            ],
+            helpString: `
         <div>
             ${t`Delays the next command in the pipe by the specified number of milliseconds.`}
         </div>
@@ -2588,71 +3029,73 @@ export function initDefaultSlashCommands() {
             </ul>
         </div>
     `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'input',
-        aliases: ['prompt'],
-        callback: inputCallback,
-        returns: t`user input`,
-        namedArgumentList: [
-            SlashCommandNamedArgument.fromProps({
-                name: 'default',
-                description: t`default value of the input field`,
-                typeList: [ARGUMENT_TYPE.STRING],
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'large',
-                description: t`popup window will be shown larger in height, with more space for content (input field needs to be sized via 'rows' argument)`,
-                typeList: [ARGUMENT_TYPE.BOOLEAN],
-                defaultValue: 'off',
-                enumList: commonEnumProviders.boolean('onOff')(),
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'wide',
-                description: t`popup window will be shown wider, with a wider input field`,
-                typeList: [ARGUMENT_TYPE.BOOLEAN],
-                defaultValue: 'off',
-                enumList: commonEnumProviders.boolean('onOff')(),
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'okButton',
-                description: t`text for the ok button`,
-                typeList: [ARGUMENT_TYPE.STRING],
-                defaultValue: 'Ok',
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'rows',
-                description: t`number of rows for the input field (lines being displayed)`,
-                typeList: [ARGUMENT_TYPE.NUMBER],
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'placeholder',
-                description: t`placeholder text displayed in the input field when empty`,
-                typeList: [ARGUMENT_TYPE.STRING],
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'tooltip',
-                description: t`tooltip text shown when hovering over the input field`,
-                typeList: [ARGUMENT_TYPE.STRING],
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'onSuccess',
-                description: t`closure to execute when the ok button is clicked or the input is closed as successful (via Enter, etc)`,
-                typeList: [ARGUMENT_TYPE.CLOSURE],
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'onCancel',
-                description: t`closure to execute when the cancel button is clicked or the input is closed as cancelled (via Escape, etc)`,
-                typeList: [ARGUMENT_TYPE.CLOSURE],
-            }),
-        ],
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: t`text to display`,
-                typeList: [ARGUMENT_TYPE.STRING],
-            }),
-        ],
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'input',
+            aliases: ['prompt'],
+            callback: inputCallback,
+            returns: t`user input`,
+            namedArgumentList: [
+                SlashCommandNamedArgument.fromProps({
+                    name: 'default',
+                    description: t`default value of the input field`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'large',
+                    description: t`popup window will be shown larger in height, with more space for content (input field needs to be sized via 'rows' argument)`,
+                    typeList: [ARGUMENT_TYPE.BOOLEAN],
+                    defaultValue: 'off',
+                    enumList: commonEnumProviders.boolean('onOff')(),
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'wide',
+                    description: t`popup window will be shown wider, with a wider input field`,
+                    typeList: [ARGUMENT_TYPE.BOOLEAN],
+                    defaultValue: 'off',
+                    enumList: commonEnumProviders.boolean('onOff')(),
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'okButton',
+                    description: t`text for the ok button`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    defaultValue: 'Ok',
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'rows',
+                    description: t`number of rows for the input field (lines being displayed)`,
+                    typeList: [ARGUMENT_TYPE.NUMBER],
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'placeholder',
+                    description: t`placeholder text displayed in the input field when empty`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'tooltip',
+                    description: t`tooltip text shown when hovering over the input field`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'onSuccess',
+                    description: t`closure to execute when the ok button is clicked or the input is closed as successful (via Enter, etc)`,
+                    typeList: [ARGUMENT_TYPE.CLOSURE],
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'onCancel',
+                    description: t`closure to execute when the cancel button is clicked or the input is closed as cancelled (via Escape, etc)`,
+                    typeList: [ARGUMENT_TYPE.CLOSURE],
+                }),
+            ],
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: t`text to display`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                }),
+            ],
+            helpString: `
         <div>
             ${t`Shows a popup with the provided text and an input field.`}
             ${t`The <code>default</code> argument is the default value of the input field, and the text argument is the text to display.`}
@@ -2666,71 +3109,108 @@ export function initDefaultSlashCommands() {
             </ul>
         </div>
     `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'run',
-        aliases: ['call', 'exec'],
-        callback: runCallback,
-        returns: t`result of the executed closure of QR`,
-        namedArgumentList: [
-            new SlashCommandNamedArgument(
-                'args', t`named arguments`, [ARGUMENT_TYPE.STRING, ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.BOOLEAN, ARGUMENT_TYPE.LIST, ARGUMENT_TYPE.DICTIONARY], false, true,
-            ),
-        ],
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: t`scoped variable or qr label`,
-                typeList: [ARGUMENT_TYPE.VARIABLE_NAME, ARGUMENT_TYPE.STRING, ARGUMENT_TYPE.CLOSURE],
-                isRequired: true,
-                // @ts-expect-error TS(7006) FIXME: Parameter 'executor' implicitly has an 'any' type.
-                enumProvider: (executor, scope) => [
-                    ...commonEnumProviders.variables('scope')(executor, scope),
-                    // @ts-expect-error TS(7017) FIXME: Element implicitly has an 'any' type because type ... Remove this comment to see the full error message
-                    ...(typeof globalThis.qrEnumProviderExecutables === 'function' ? globalThis.qrEnumProviderExecutables() : []),
-                ],
-            }),
-        ],
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'run',
+            aliases: ['call', 'exec'],
+            callback: runCallback,
+            returns: t`result of the executed closure of QR`,
+            namedArgumentList: [
+                new SlashCommandNamedArgument(
+                    'args',
+                    t`named arguments`,
+                    [
+                        ARGUMENT_TYPE.STRING,
+                        ARGUMENT_TYPE.NUMBER,
+                        ARGUMENT_TYPE.BOOLEAN,
+                        ARGUMENT_TYPE.LIST,
+                        ARGUMENT_TYPE.DICTIONARY,
+                    ],
+                    false,
+                    true,
+                ),
+            ],
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: t`scoped variable or qr label`,
+                    typeList: [
+                        ARGUMENT_TYPE.VARIABLE_NAME,
+                        ARGUMENT_TYPE.STRING,
+                        ARGUMENT_TYPE.CLOSURE,
+                    ],
+                    isRequired: true,
+                    // @ts-expect-error TS(7006) FIXME: Parameter 'executor' implicitly has an 'any' type.
+                    enumProvider: (executor, scope) => [
+                        ...commonEnumProviders.variables('scope')(executor, scope),
+                        // @ts-expect-error TS(7017) FIXME: Element implicitly has an 'any' type because type ... Remove this comment to see the full error message
+                        ...(typeof globalThis.qrEnumProviderExecutables === 'function'
+                            ? globalThis.qrEnumProviderExecutables()
+                            : []),
+                    ],
+                }),
+            ],
+            helpString: `
         <div>
             ${t`Runs a closure from a scoped variable, or a Quick Reply with the specified name from a currently active preset or from another preset.`}
             ${t`Named arguments can be referenced in a QR with <code>{{arg::key}}</code>.`}
         </div>
     `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'messages',
-        callback: getMessagesCallback,
-        aliases: ['message'],
-        namedArgumentList: [
-            new SlashCommandNamedArgument(
-                // @ts-expect-error TS(2345) FIXME: Argument of type '"off"' is not assignable to para... Remove this comment to see the full error message
-                'names', t`show message author names`, [ARGUMENT_TYPE.BOOLEAN], false, false, 'off', commonEnumProviders.boolean('onOff')(),
-            ),
-            new SlashCommandNamedArgument(
-                // @ts-expect-error TS(2345) FIXME: Argument of type '"on"' is not assignable to param... Remove this comment to see the full error message
-                'hidden', t`include hidden messages`, [ARGUMENT_TYPE.BOOLEAN], false, false, 'on', commonEnumProviders.boolean('onOff')(),
-            ),
-            SlashCommandNamedArgument.fromProps({
-                name: 'role',
-                description: t`filter messages by role`,
-                typeList: [ARGUMENT_TYPE.STRING],
-                enumList: [
-                    new SlashCommandEnumValue('system', null, enumTypes.enum, enumIcons.system),
-                    new SlashCommandEnumValue('assistant', null, enumTypes.enum, enumIcons.assistant),
-                    new SlashCommandEnumValue('user', null, enumTypes.enum, enumIcons.user),
-                ],
-            }),
-        ],
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: t`message index (starts with 0) or range`,
-                typeList: [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.RANGE],
-                isRequired: true,
-                enumProvider: commonEnumProviders.messages(),
-            }),
-        ],
-        returns: t`the specified message or range of messages as a string`,
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'messages',
+            callback: getMessagesCallback,
+            aliases: ['message'],
+            namedArgumentList: [
+                new SlashCommandNamedArgument(
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '"off"' is not assignable to para... Remove this comment to see the full error message
+                    'names',
+                    t`show message author names`,
+                    [ARGUMENT_TYPE.BOOLEAN],
+                    false,
+                    false,
+                    'off',
+                    commonEnumProviders.boolean('onOff')(),
+                ),
+                new SlashCommandNamedArgument(
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '"on"' is not assignable to param... Remove this comment to see the full error message
+                    'hidden',
+                    t`include hidden messages`,
+                    [ARGUMENT_TYPE.BOOLEAN],
+                    false,
+                    false,
+                    'on',
+                    commonEnumProviders.boolean('onOff')(),
+                ),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'role',
+                    description: t`filter messages by role`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    enumList: [
+                        new SlashCommandEnumValue('system', null, enumTypes.enum, enumIcons.system),
+                        new SlashCommandEnumValue(
+                            'assistant',
+                            null,
+                            enumTypes.enum,
+                            enumIcons.assistant,
+                        ),
+                        new SlashCommandEnumValue('user', null, enumTypes.enum, enumIcons.user),
+                    ],
+                }),
+            ],
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: t`message index (starts with 0) or range`,
+                    typeList: [ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.RANGE],
+                    isRequired: true,
+                    enumProvider: commonEnumProviders.messages(),
+                }),
+            ],
+            returns: t`the specified message or range of messages as a string`,
+            helpString: `
         <div>
             ${t`Returns the specified message or range of messages as a string.`}
         </div>
@@ -2754,16 +3234,14 @@ export function initDefaultSlashCommands() {
             </ul>
         </div>
     `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'setinput',
-        callback: setInputCallback,
-        unnamedArgumentList: [
-            new SlashCommandArgument(
-                t`text`, [ARGUMENT_TYPE.STRING], true,
-            ),
-        ],
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'setinput',
+            callback: setInputCallback,
+            unnamedArgumentList: [new SlashCommandArgument(t`text`, [ARGUMENT_TYPE.STRING], true)],
+            helpString: `
         <div>
             ${t`Sets the user input to the specified text and passes it to the next command through the pipe.`}
         </div>
@@ -2776,79 +3254,81 @@ export function initDefaultSlashCommands() {
             </ul>
         </div>
     `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'popup',
-        callback: popupCallback,
-        returns: t`Popup text`,
-        namedArgumentList: [
-            SlashCommandNamedArgument.fromProps({
-                name: 'scroll',
-                description: t`allows vertical scrolling of the content`,
-                typeList: [ARGUMENT_TYPE.BOOLEAN],
-                enumList: commonEnumProviders.boolean('trueFalse')(),
-                defaultValue: 'true',
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'large',
-                description: t`show large popup`,
-                typeList: [ARGUMENT_TYPE.BOOLEAN],
-                enumList: commonEnumProviders.boolean('trueFalse')(),
-                defaultValue: 'false',
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'wide',
-                description: t`show wide popup`,
-                typeList: [ARGUMENT_TYPE.BOOLEAN],
-                enumList: commonEnumProviders.boolean('trueFalse')(),
-                defaultValue: 'false',
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'wider',
-                description: t`show wider popup`,
-                typeList: [ARGUMENT_TYPE.BOOLEAN],
-                enumList: commonEnumProviders.boolean('trueFalse')(),
-                defaultValue: 'false',
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'transparent',
-                description: t`show transparent popup`,
-                typeList: [ARGUMENT_TYPE.BOOLEAN],
-                enumList: commonEnumProviders.boolean('trueFalse')(),
-                defaultValue: 'false',
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'okButton',
-                description: t`text for the OK button`,
-                typeList: [ARGUMENT_TYPE.STRING],
-                defaultValue: 'OK',
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'cancelButton',
-                description: t`text for the Cancel button`,
-                typeList: [ARGUMENT_TYPE.STRING],
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'result',
-                description: t`if enabled, returns the popup result (as an integer) instead of the popup text. Resolves to 1 for OK and 0 cancel button, empty string for exiting out.`,
-                typeList: [ARGUMENT_TYPE.BOOLEAN],
-                enumList: commonEnumProviders.boolean('trueFalse')(),
-                defaultValue: 'false',
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'tooltip',
-                description: t`tooltip text shown when hovering over the popup content area`,
-                typeList: [ARGUMENT_TYPE.STRING],
-            }),
-        ],
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: t`popup text`,
-                typeList: [ARGUMENT_TYPE.STRING],
-                isRequired: true,
-            }),
-        ],
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'popup',
+            callback: popupCallback,
+            returns: t`Popup text`,
+            namedArgumentList: [
+                SlashCommandNamedArgument.fromProps({
+                    name: 'scroll',
+                    description: t`allows vertical scrolling of the content`,
+                    typeList: [ARGUMENT_TYPE.BOOLEAN],
+                    enumList: commonEnumProviders.boolean('trueFalse')(),
+                    defaultValue: 'true',
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'large',
+                    description: t`show large popup`,
+                    typeList: [ARGUMENT_TYPE.BOOLEAN],
+                    enumList: commonEnumProviders.boolean('trueFalse')(),
+                    defaultValue: 'false',
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'wide',
+                    description: t`show wide popup`,
+                    typeList: [ARGUMENT_TYPE.BOOLEAN],
+                    enumList: commonEnumProviders.boolean('trueFalse')(),
+                    defaultValue: 'false',
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'wider',
+                    description: t`show wider popup`,
+                    typeList: [ARGUMENT_TYPE.BOOLEAN],
+                    enumList: commonEnumProviders.boolean('trueFalse')(),
+                    defaultValue: 'false',
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'transparent',
+                    description: t`show transparent popup`,
+                    typeList: [ARGUMENT_TYPE.BOOLEAN],
+                    enumList: commonEnumProviders.boolean('trueFalse')(),
+                    defaultValue: 'false',
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'okButton',
+                    description: t`text for the OK button`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    defaultValue: 'OK',
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'cancelButton',
+                    description: t`text for the Cancel button`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'result',
+                    description: t`if enabled, returns the popup result (as an integer) instead of the popup text. Resolves to 1 for OK and 0 cancel button, empty string for exiting out.`,
+                    typeList: [ARGUMENT_TYPE.BOOLEAN],
+                    enumList: commonEnumProviders.boolean('trueFalse')(),
+                    defaultValue: 'false',
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'tooltip',
+                    description: t`tooltip text shown when hovering over the popup content area`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                }),
+            ],
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: t`popup text`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    isRequired: true,
+                }),
+            ],
+            helpString: `
         <div>
             ${t`Shows a blocking popup with the specified text and buttons.`}
             ${t`Returns the popup text.`}
@@ -2865,34 +3345,36 @@ export function initDefaultSlashCommands() {
             </ul>
         </div>
     `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'buttons',
-        callback: buttonsCallback,
-        returns: t`clicked button label (or array of labels if multiple is enabled)`,
-        namedArgumentList: [
-            SlashCommandNamedArgument.fromProps({
-                name: 'labels',
-                description: t`button labels - can be an array of strings or objects with text, tooltip, and icon properties`,
-                typeList: [ARGUMENT_TYPE.LIST],
-                isRequired: true,
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'multiple',
-                description: t`if enabled multiple buttons can be clicked/toggled, and all clicked buttons are returned as an array`,
-                typeList: [ARGUMENT_TYPE.BOOLEAN],
-                enumList: commonEnumProviders.boolean('trueFalse')(),
-                defaultValue: 'false',
-            }),
-        ],
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: t`text`,
-                typeList: [ARGUMENT_TYPE.STRING],
-                isRequired: true,
-            }),
-        ],
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'buttons',
+            callback: buttonsCallback,
+            returns: t`clicked button label (or array of labels if multiple is enabled)`,
+            namedArgumentList: [
+                SlashCommandNamedArgument.fromProps({
+                    name: 'labels',
+                    description: t`button labels - can be an array of strings or objects with text, tooltip, and icon properties`,
+                    typeList: [ARGUMENT_TYPE.LIST],
+                    isRequired: true,
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'multiple',
+                    description: t`if enabled multiple buttons can be clicked/toggled, and all clicked buttons are returned as an array`,
+                    typeList: [ARGUMENT_TYPE.BOOLEAN],
+                    enumList: commonEnumProviders.boolean('trueFalse')(),
+                    defaultValue: 'false',
+                }),
+            ],
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: t`text`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    isRequired: true,
+                }),
+            ],
+            helpString: `
         <div>
             ${t`Shows a blocking popup with the specified text and buttons.`}
             ${t`Returns the clicked button label into the pipe or empty string if canceled.`}
@@ -2912,32 +3394,33 @@ export function initDefaultSlashCommands() {
             </ul>
         </div>
     `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'trimtokens',
-        callback: trimTokensCallback,
-        returns: t`trimmed text`,
-        namedArgumentList: [
-            new SlashCommandNamedArgument(
-                'limit', t`number of tokens to keep`, [ARGUMENT_TYPE.NUMBER], true,
-            ),
-            SlashCommandNamedArgument.fromProps({
-                name: 'direction',
-                description: t`trim direction`,
-                typeList: [ARGUMENT_TYPE.STRING],
-                isRequired: true,
-                enumList: [
-                    new SlashCommandEnumValue('start', null, enumTypes.enum, '⏪'),
-                    new SlashCommandEnumValue('end', null, enumTypes.enum, '⏩'),
-                ],
-            }),
-        ],
-        unnamedArgumentList: [
-            new SlashCommandArgument(
-                t`text`, [ARGUMENT_TYPE.STRING], false,
-            ),
-        ],
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'trimtokens',
+            callback: trimTokensCallback,
+            returns: t`trimmed text`,
+            namedArgumentList: [
+                new SlashCommandNamedArgument(
+                    'limit',
+                    t`number of tokens to keep`,
+                    [ARGUMENT_TYPE.NUMBER],
+                    true,
+                ),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'direction',
+                    description: t`trim direction`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    isRequired: true,
+                    enumList: [
+                        new SlashCommandEnumValue('start', null, enumTypes.enum, '⏪'),
+                        new SlashCommandEnumValue('end', null, enumTypes.enum, '⏩'),
+                    ],
+                }),
+            ],
+            unnamedArgumentList: [new SlashCommandArgument(t`text`, [ARGUMENT_TYPE.STRING], false)],
+            helpString: `
         <div>
             ${t`Trims the start or end of text to the specified number of tokens.`}
         </div>
@@ -2950,17 +3433,15 @@ export function initDefaultSlashCommands() {
             </ul>
         </div>
     `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'trimstart',
-        callback: trimStartCallback,
-        returns: t`trimmed text`,
-        unnamedArgumentList: [
-            new SlashCommandArgument(
-                t`text`, [ARGUMENT_TYPE.STRING], true,
-            ),
-        ],
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'trimstart',
+            callback: trimStartCallback,
+            returns: t`trimmed text`,
+            unnamedArgumentList: [new SlashCommandArgument(t`text`, [ARGUMENT_TYPE.STRING], true)],
+            helpString: `
         <div>
             ${t`Trims the text to the start of the first full sentence.`}
         </div>
@@ -2973,174 +3454,222 @@ export function initDefaultSlashCommands() {
             </ul>
         </div>
     `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'trimend',
-        callback: trimEndCallback,
-        returns: t`trimmed text`,
-        unnamedArgumentList: [
-            new SlashCommandArgument(
-                t`text`, [ARGUMENT_TYPE.STRING], true,
-            ),
-        ],
-        helpString: t`Trims the text to the end of the last full sentence.`,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'inject',
-        returns: t`injection ID`,
-        callback: injectCallback,
-        namedArgumentList: [
-            SlashCommandNamedArgument.fromProps({
-                name: 'id',
-                description: t`injection ID`,
-                typeList: [ARGUMENT_TYPE.STRING],
-                isRequired: false,
-                enumProvider: commonEnumProviders.injects,
-            }),
-            new SlashCommandNamedArgument(
-                // @ts-expect-error TS(2345) FIXME: Argument of type '"after"' is not assignable to pa... Remove this comment to see the full error message
-                'position', t`injection position`, [ARGUMENT_TYPE.STRING], false, false, 'after', ['before', 'after', 'chat', 'none'],
-            ),
-            new SlashCommandNamedArgument(
-                // @ts-expect-error TS(2345) FIXME: Argument of type '"4"' is not assignable to parame... Remove this comment to see the full error message
-                'depth', t`injection depth`, [ARGUMENT_TYPE.NUMBER], false, false, '4',
-            ),
-            new SlashCommandNamedArgument(
-                // @ts-expect-error TS(2345) FIXME: Argument of type '"false"' is not assignable to pa... Remove this comment to see the full error message
-                'scan', t`include injection content into World Info scans`, [ARGUMENT_TYPE.BOOLEAN], false, false, 'false',
-            ),
-            SlashCommandNamedArgument.fromProps({
-                name: 'role',
-                description: t`role for in-chat injections`,
-                typeList: [ARGUMENT_TYPE.STRING],
-                isRequired: false,
-                enumList: [
-                    new SlashCommandEnumValue('system', null, enumTypes.enum, enumIcons.system),
-                    new SlashCommandEnumValue('assistant', null, enumTypes.enum, enumIcons.assistant),
-                    new SlashCommandEnumValue('user', null, enumTypes.enum, enumIcons.user),
-                ],
-            }),
-            new SlashCommandNamedArgument(
-                // @ts-expect-error TS(2345) FIXME: Argument of type '"false"' is not assignable to pa... Remove this comment to see the full error message
-                'ephemeral', t`remove injection after generation`, [ARGUMENT_TYPE.BOOLEAN], false, false, 'false',
-            ),
-            SlashCommandNamedArgument.fromProps({
-                name: 'filter',
-                description: t`if a filter is defined, an injection will only be performed if the closure returns true`,
-                typeList: [ARGUMENT_TYPE.CLOSURE],
-                isRequired: false,
-                acceptsMultiple: false,
-            }),
-        ],
-        unnamedArgumentList: [
-            new SlashCommandArgument(
-                t`text`, [ARGUMENT_TYPE.STRING], false,
-            ),
-        ],
-        helpString: t`Injects a text into the LLM prompt for the current chat. Requires a unique injection ID (will be auto-generated if not provided). Positions: "before" main prompt, "after" main prompt, in-"chat", hidden with "none" (default: after). Depth: injection depth for the prompt (default: 4). Role: role for in-chat injections (default: system). Scan: include injection content into World Info scans (default: false). Hidden injects in "none" position are not inserted into the prompt but can be used for triggering WI entries. Returns the injection ID.`,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'listinjects',
-        callback: listInjectsCallback,
-        helpString: t`Lists all script injections for the current chat. Displays injects in a popup by default. Use the <code>return</code> argument to change the return type.`,
-        returns: t`Optionally the JSON object of script injections`,
-        namedArgumentList: [
-            SlashCommandNamedArgument.fromProps({
-                name: 'return',
-                description: t`The way how you want the return value to be provided`,
-                typeList: [ARGUMENT_TYPE.STRING],
-                defaultValue: 'popup-html',
-                enumList: slashCommandReturnHelper.enumList({ allowPipe: false, allowObject: true, allowChat: true, allowPopup: true, allowTextVersion: false }),
-                forceEnum: true,
-            }),
-        ],
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'flushinject',
-        aliases: ['flushinjects'],
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: t`injection ID or a variable name pointing to ID`,
-                typeList: [ARGUMENT_TYPE.STRING],
-                defaultValue: '',
-                enumProvider: commonEnumProviders.injects,
-            }),
-        ],
-        callback: flushInjectsCallback,
-        helpString: t`Removes a script injection for the current chat. If no ID is provided, removes all script injections.`,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'tokens',
-        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
-        callback: (_, text) => {
-            if (text instanceof SlashCommandClosure || Array.isArray(text)) throw new Error(t`Unnamed argument cannot be a closure for command /tokens`);
-            return getTokenCountAsync(text).then(count => String(count));
-        },
-        returns: t`number of tokens`,
-        unnamedArgumentList: [
-            new SlashCommandArgument(
-                t`text`, [ARGUMENT_TYPE.STRING], true,
-            ),
-        ],
-        helpString: t`Counts the number of tokens in the provided text.`,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'model',
-        callback: modelCallback,
-        returns: t`current model`,
-        namedArgumentList: [
-            SlashCommandNamedArgument.fromProps({
-                name: 'quiet',
-                description: t`suppress the toast message on model change`,
-                typeList: [ARGUMENT_TYPE.BOOLEAN],
-                defaultValue: 'false',
-                enumList: commonEnumProviders.boolean('trueFalse')(),
-            }),
-        ],
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: t`model name`,
-                typeList: [ARGUMENT_TYPE.STRING],
-                enumProvider: () => getModelOptions(true)?.options?.map(option => new SlashCommandEnumValue(option.value, option.value !== option.text ? option.text : null)) ?? [],
-            }),
-        ],
-        helpString: t`Sets the model for the current API. Gets the current model name if no argument is provided.`,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'getpromptentry',
-        aliases: ['getpromptentries'],
-        callback: getPromptEntryCallback,
-        returns: t`true/false state of prompt(s)`,
-        namedArgumentList: [
-            SlashCommandNamedArgument.fromProps({
-                name: 'identifier',
-                description: t`Prompt entry identifier(s) to retrieve`,
-                typeList: [ARGUMENT_TYPE.STRING, ARGUMENT_TYPE.LIST],
-                acceptsMultiple: true,
-                enumProvider: () =>
-                    ((promptManager!.serviceSettings as Record<string, unknown>).prompts as Array<{ identifier: string }>)
-                        .map((prompt: { identifier: string }) => prompt.identifier)
-                        .map((identifier: string) => new SlashCommandEnumValue(identifier)),
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'name',
-                description: t`Prompt entry name(s) to retrieve`,
-                typeList: [ARGUMENT_TYPE.STRING, ARGUMENT_TYPE.LIST],
-                acceptsMultiple: true,
-                enumProvider: () =>
-                    ((promptManager!.serviceSettings as Record<string, unknown>).prompts as Array<{ name: string }>)
-                        .map((prompt: { name: string }) => prompt.name)
-                        .map((name: string) => new SlashCommandEnumValue(name)),
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'return',
-                description: t`Whether the return will be simple, a list, or a dict.`,
-                typeList: [ARGUMENT_TYPE.STRING],
-                defaultValue: 'simple',
-                enumList: ['simple', 'list', 'dict'],
-            }),
-        ],
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'trimend',
+            callback: trimEndCallback,
+            returns: t`trimmed text`,
+            unnamedArgumentList: [new SlashCommandArgument(t`text`, [ARGUMENT_TYPE.STRING], true)],
+            helpString: t`Trims the text to the end of the last full sentence.`,
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'inject',
+            returns: t`injection ID`,
+            callback: injectCallback,
+            namedArgumentList: [
+                SlashCommandNamedArgument.fromProps({
+                    name: 'id',
+                    description: t`injection ID`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    isRequired: false,
+                    enumProvider: commonEnumProviders.injects,
+                }),
+                new SlashCommandNamedArgument(
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '"after"' is not assignable to pa... Remove this comment to see the full error message
+                    'position',
+                    t`injection position`,
+                    [ARGUMENT_TYPE.STRING],
+                    false,
+                    false,
+                    'after',
+                    ['before', 'after', 'chat', 'none'],
+                ),
+                new SlashCommandNamedArgument(
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '"4"' is not assignable to parame... Remove this comment to see the full error message
+                    'depth',
+                    t`injection depth`,
+                    [ARGUMENT_TYPE.NUMBER],
+                    false,
+                    false,
+                    '4',
+                ),
+                new SlashCommandNamedArgument(
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '"false"' is not assignable to pa... Remove this comment to see the full error message
+                    'scan',
+                    t`include injection content into World Info scans`,
+                    [ARGUMENT_TYPE.BOOLEAN],
+                    false,
+                    false,
+                    'false',
+                ),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'role',
+                    description: t`role for in-chat injections`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    isRequired: false,
+                    enumList: [
+                        new SlashCommandEnumValue('system', null, enumTypes.enum, enumIcons.system),
+                        new SlashCommandEnumValue(
+                            'assistant',
+                            null,
+                            enumTypes.enum,
+                            enumIcons.assistant,
+                        ),
+                        new SlashCommandEnumValue('user', null, enumTypes.enum, enumIcons.user),
+                    ],
+                }),
+                new SlashCommandNamedArgument(
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '"false"' is not assignable to pa... Remove this comment to see the full error message
+                    'ephemeral',
+                    t`remove injection after generation`,
+                    [ARGUMENT_TYPE.BOOLEAN],
+                    false,
+                    false,
+                    'false',
+                ),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'filter',
+                    description: t`if a filter is defined, an injection will only be performed if the closure returns true`,
+                    typeList: [ARGUMENT_TYPE.CLOSURE],
+                    isRequired: false,
+                    acceptsMultiple: false,
+                }),
+            ],
+            unnamedArgumentList: [new SlashCommandArgument(t`text`, [ARGUMENT_TYPE.STRING], false)],
+            helpString: t`Injects a text into the LLM prompt for the current chat. Requires a unique injection ID (will be auto-generated if not provided). Positions: "before" main prompt, "after" main prompt, in-"chat", hidden with "none" (default: after). Depth: injection depth for the prompt (default: 4). Role: role for in-chat injections (default: system). Scan: include injection content into World Info scans (default: false). Hidden injects in "none" position are not inserted into the prompt but can be used for triggering WI entries. Returns the injection ID.`,
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'listinjects',
+            callback: listInjectsCallback,
+            helpString: t`Lists all script injections for the current chat. Displays injects in a popup by default. Use the <code>return</code> argument to change the return type.`,
+            returns: t`Optionally the JSON object of script injections`,
+            namedArgumentList: [
+                SlashCommandNamedArgument.fromProps({
+                    name: 'return',
+                    description: t`The way how you want the return value to be provided`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    defaultValue: 'popup-html',
+                    enumList: slashCommandReturnHelper.enumList({
+                        allowPipe: false,
+                        allowObject: true,
+                        allowChat: true,
+                        allowPopup: true,
+                        allowTextVersion: false,
+                    }),
+                    forceEnum: true,
+                }),
+            ],
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'flushinject',
+            aliases: ['flushinjects'],
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: t`injection ID or a variable name pointing to ID`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    defaultValue: '',
+                    enumProvider: commonEnumProviders.injects,
+                }),
+            ],
+            callback: flushInjectsCallback,
+            helpString: t`Removes a script injection for the current chat. If no ID is provided, removes all script injections.`,
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'tokens',
+            // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
+            callback: (_, text) => {
+                if (text instanceof SlashCommandClosure || Array.isArray(text))
+                    throw new Error(t`Unnamed argument cannot be a closure for command /tokens`);
+                return getTokenCountAsync(text).then((count) => String(count));
+            },
+            returns: t`number of tokens`,
+            unnamedArgumentList: [new SlashCommandArgument(t`text`, [ARGUMENT_TYPE.STRING], true)],
+            helpString: t`Counts the number of tokens in the provided text.`,
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'model',
+            callback: modelCallback,
+            returns: t`current model`,
+            namedArgumentList: [
+                SlashCommandNamedArgument.fromProps({
+                    name: 'quiet',
+                    description: t`suppress the toast message on model change`,
+                    typeList: [ARGUMENT_TYPE.BOOLEAN],
+                    defaultValue: 'false',
+                    enumList: commonEnumProviders.boolean('trueFalse')(),
+                }),
+            ],
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: t`model name`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    enumProvider: () =>
+                        getModelOptions(true)?.options?.map(
+                            (option) =>
+                                new SlashCommandEnumValue(
+                                    option.value,
+                                    option.value !== option.text ? option.text : null,
+                                ),
+                        ) ?? [],
+                }),
+            ],
+            helpString: t`Sets the model for the current API. Gets the current model name if no argument is provided.`,
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'getpromptentry',
+            aliases: ['getpromptentries'],
+            callback: getPromptEntryCallback,
+            returns: t`true/false state of prompt(s)`,
+            namedArgumentList: [
+                SlashCommandNamedArgument.fromProps({
+                    name: 'identifier',
+                    description: t`Prompt entry identifier(s) to retrieve`,
+                    typeList: [ARGUMENT_TYPE.STRING, ARGUMENT_TYPE.LIST],
+                    acceptsMultiple: true,
+                    enumProvider: () =>
+                        (
+                            (promptManager!.serviceSettings as Record<string, unknown>)
+                                .prompts as Array<{ identifier: string }>
+                        )
+                            .map((prompt: { identifier: string }) => prompt.identifier)
+                            .map((identifier: string) => new SlashCommandEnumValue(identifier)),
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'name',
+                    description: t`Prompt entry name(s) to retrieve`,
+                    typeList: [ARGUMENT_TYPE.STRING, ARGUMENT_TYPE.LIST],
+                    acceptsMultiple: true,
+                    enumProvider: () =>
+                        (
+                            (promptManager!.serviceSettings as Record<string, unknown>)
+                                .prompts as Array<{ name: string }>
+                        )
+                            .map((prompt: { name: string }) => prompt.name)
+                            .map((name: string) => new SlashCommandEnumValue(name)),
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'return',
+                    description: t`Whether the return will be simple, a list, or a dict.`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    defaultValue: 'simple',
+                    enumList: ['simple', 'list', 'dict'],
+                }),
+            ],
+            helpString: `
             <div>
                 ${t`Gets the state of the specified prompt entries.`}
             </div>
@@ -3148,68 +3677,91 @@ export function initDefaultSlashCommands() {
                 ${t`If <code>return</code> is <code>simple</code> (default) then the return will be a single value if only one value was retrieved; otherwise uses a dict (if the identifier parameter was used) or a list.`}
             </div>
         `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'setpromptentry',
-        aliases: ['setpromptentries'],
-        callback: setPromptEntryCallback,
-        namedArgumentList: [
-            SlashCommandNamedArgument.fromProps({
-                name: 'identifier',
-                description: t`Prompt entry identifier(s) to target`,
-                typeList: [ARGUMENT_TYPE.STRING, ARGUMENT_TYPE.LIST],
-                acceptsMultiple: true,
-                enumProvider: () => {
-                    const prompts = (promptManager!.serviceSettings as Record<string, unknown>).prompts as Array<{ identifier: string; name: string }>;
-                    return prompts.map((prompt: { identifier: string; name: string }) => new SlashCommandEnumValue(prompt.identifier, prompt.name, enumTypes.enum));
-                },
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'name',
-                description: t`Prompt entry name(s) to target`,
-                typeList: [ARGUMENT_TYPE.STRING, ARGUMENT_TYPE.LIST],
-                acceptsMultiple: true,
-                enumProvider: () => {
-                    const prompts = (promptManager!.serviceSettings as Record<string, unknown>).prompts as Array<{ name: string; identifier: string }>;
-                    return prompts.map((prompt: { name: string; identifier: string }) => new SlashCommandEnumValue(prompt.name, prompt.identifier, enumTypes.enum));
-                },
-            }),
-        ],
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: t`Set entry/entries on or off`,
-                typeList: [ARGUMENT_TYPE.STRING],
-                isRequired: true,
-                acceptsMultiple: false,
-                defaultValue: 'toggle', // unnamed arguments don't support default values yet
-                enumList: commonEnumProviders.boolean('onOffToggle')(),
-            }),
-        ],
-        helpString: t`Sets the specified prompt manager entry/entries on or off.`,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'pm-render',
-        callback: (args: Record<string, unknown>, _: unknown) => {
-            const dryRun = !isFalseBoolean(args?.refresh?.toString());
-            promptManager!.render(dryRun);
-            return '';
-        },
-        namedArgumentList: [
-            SlashCommandNamedArgument.fromProps({
-                name: 'refresh',
-                description: 'Perform a dry run of the generation to refresh token counters before rendering the prompt manager',
-                typeList: [ARGUMENT_TYPE.BOOLEAN],
-                defaultValue: 'true',
-                enumList: commonEnumProviders.boolean('trueFalse')(),
-            }),
-        ],
-        helpString: t`Rerenders the prompt manager content. Use this if you have made changes to the prompt entries through slash commands and want to see the changes reflected in the prompt manager UI.`,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'pick-icon',
-        callback: async () => ((await showFontAwesomePicker()) ?? false).toString(),
-        returns: t`The chosen icon name or false if cancelled.`,
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'setpromptentry',
+            aliases: ['setpromptentries'],
+            callback: setPromptEntryCallback,
+            namedArgumentList: [
+                SlashCommandNamedArgument.fromProps({
+                    name: 'identifier',
+                    description: t`Prompt entry identifier(s) to target`,
+                    typeList: [ARGUMENT_TYPE.STRING, ARGUMENT_TYPE.LIST],
+                    acceptsMultiple: true,
+                    enumProvider: () => {
+                        const prompts = (promptManager!.serviceSettings as Record<string, unknown>)
+                            .prompts as Array<{ identifier: string; name: string }>;
+                        return prompts.map(
+                            (prompt: { identifier: string; name: string }) =>
+                                new SlashCommandEnumValue(
+                                    prompt.identifier,
+                                    prompt.name,
+                                    enumTypes.enum,
+                                ),
+                        );
+                    },
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'name',
+                    description: t`Prompt entry name(s) to target`,
+                    typeList: [ARGUMENT_TYPE.STRING, ARGUMENT_TYPE.LIST],
+                    acceptsMultiple: true,
+                    enumProvider: () => {
+                        const prompts = (promptManager!.serviceSettings as Record<string, unknown>)
+                            .prompts as Array<{ name: string; identifier: string }>;
+                        return prompts.map(
+                            (prompt: { name: string; identifier: string }) =>
+                                new SlashCommandEnumValue(
+                                    prompt.name,
+                                    prompt.identifier,
+                                    enumTypes.enum,
+                                ),
+                        );
+                    },
+                }),
+            ],
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: t`Set entry/entries on or off`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    isRequired: true,
+                    acceptsMultiple: false,
+                    defaultValue: 'toggle', // unnamed arguments don't support default values yet
+                    enumList: commonEnumProviders.boolean('onOffToggle')(),
+                }),
+            ],
+            helpString: t`Sets the specified prompt manager entry/entries on or off.`,
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'pm-render',
+            callback: (args: Record<string, unknown>, _: unknown) => {
+                const dryRun = !isFalseBoolean(args?.refresh?.toString());
+                promptManager!.render(dryRun);
+                return '';
+            },
+            namedArgumentList: [
+                SlashCommandNamedArgument.fromProps({
+                    name: 'refresh',
+                    description:
+                        'Perform a dry run of the generation to refresh token counters before rendering the prompt manager',
+                    typeList: [ARGUMENT_TYPE.BOOLEAN],
+                    defaultValue: 'true',
+                    enumList: commonEnumProviders.boolean('trueFalse')(),
+                }),
+            ],
+            helpString: t`Rerenders the prompt manager content. Use this if you have made changes to the prompt entries through slash commands and want to see the changes reflected in the prompt manager UI.`,
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'pick-icon',
+            callback: async () => ((await showFontAwesomePicker()) ?? false).toString(),
+            returns: t`The chosen icon name or false if cancelled.`,
+            helpString: `
                 <div>${t`Opens a popup with all the available Font Awesome icons and returns the selected icon's name.`}</div>
                 <div>
                     <strong>${t`Example:`}</strong>
@@ -3220,49 +3772,101 @@ export function initDefaultSlashCommands() {
                     </ul>
                 </div>
             `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'api-url',
-        callback: setApiUrlCallback,
-        returns: t`the current API url`,
-        aliases: ['server'],
-        namedArgumentList: [
-            SlashCommandNamedArgument.fromProps({
-                name: 'api',
-                description: t`API to set/get the URL for - if not provided, current API is used`,
-                typeList: [ARGUMENT_TYPE.STRING],
-                enumList: [
-                    new SlashCommandEnumValue('custom', 'custom OpenAI-compatible', enumTypes.getBasedOnIndex(UNIQUE_APIS.findIndex(x => x === 'openai')), 'O'),
-                    new SlashCommandEnumValue('zai', 'Z.AI', enumTypes.getBasedOnIndex(UNIQUE_APIS.findIndex(x => x === 'zai')), 'Z'),
-                    new SlashCommandEnumValue('vertexai', 'Google Vertex AI', enumTypes.getBasedOnIndex(UNIQUE_APIS.findIndex(x => x === 'vertexai')), 'V'),
-                    new SlashCommandEnumValue('siliconflow', 'SiliconFlow', enumTypes.getBasedOnIndex(UNIQUE_APIS.findIndex(x => x === 'siliconflow')), 'S'),
-                    new SlashCommandEnumValue('minimax', 'MiniMax', enumTypes.getBasedOnIndex(UNIQUE_APIS.findIndex(x => x === 'minimax')), 'M'),
-                    new SlashCommandEnumValue('kobold', 'KoboldAI Classic', enumTypes.getBasedOnIndex(UNIQUE_APIS.findIndex(x => x === 'kobold')), 'K'),
-                    ...Object.values(textgen_types).filter(api => Object.keys(SERVER_INPUTS).includes(api)).map(api => new SlashCommandEnumValue(api, null, enumTypes.getBasedOnIndex(UNIQUE_APIS.findIndex(x => x === 'textgenerationwebui')), 'T')),
-                ],
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'connect',
-                description: t`Whether to auto-connect to the API after setting the URL`,
-                typeList: [ARGUMENT_TYPE.BOOLEAN],
-                defaultValue: 'true',
-                enumList: commonEnumProviders.boolean('trueFalse')(),
-            }),
-            SlashCommandNamedArgument.fromProps({
-                name: 'quiet',
-                description: t`suppress the toast message on API change`,
-                typeList: [ARGUMENT_TYPE.BOOLEAN],
-                defaultValue: 'false',
-                enumList: commonEnumProviders.boolean('trueFalse')(),
-            }),
-        ],
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: t`API url to connect to`,
-                typeList: [ARGUMENT_TYPE.STRING],
-            }),
-        ],
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'api-url',
+            callback: setApiUrlCallback,
+            returns: t`the current API url`,
+            aliases: ['server'],
+            namedArgumentList: [
+                SlashCommandNamedArgument.fromProps({
+                    name: 'api',
+                    description: t`API to set/get the URL for - if not provided, current API is used`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    enumList: [
+                        new SlashCommandEnumValue(
+                            'custom',
+                            'custom OpenAI-compatible',
+                            enumTypes.getBasedOnIndex(UNIQUE_APIS.findIndex((x) => x === 'openai')),
+                            'O',
+                        ),
+                        new SlashCommandEnumValue(
+                            'zai',
+                            'Z.AI',
+                            enumTypes.getBasedOnIndex(UNIQUE_APIS.findIndex((x) => x === 'zai')),
+                            'Z',
+                        ),
+                        new SlashCommandEnumValue(
+                            'vertexai',
+                            'Google Vertex AI',
+                            enumTypes.getBasedOnIndex(
+                                UNIQUE_APIS.findIndex((x) => x === 'vertexai'),
+                            ),
+                            'V',
+                        ),
+                        new SlashCommandEnumValue(
+                            'siliconflow',
+                            'SiliconFlow',
+                            enumTypes.getBasedOnIndex(
+                                UNIQUE_APIS.findIndex((x) => x === 'siliconflow'),
+                            ),
+                            'S',
+                        ),
+                        new SlashCommandEnumValue(
+                            'minimax',
+                            'MiniMax',
+                            enumTypes.getBasedOnIndex(
+                                UNIQUE_APIS.findIndex((x) => x === 'minimax'),
+                            ),
+                            'M',
+                        ),
+                        new SlashCommandEnumValue(
+                            'kobold',
+                            'KoboldAI Classic',
+                            enumTypes.getBasedOnIndex(UNIQUE_APIS.findIndex((x) => x === 'kobold')),
+                            'K',
+                        ),
+                        ...Object.values(textgen_types)
+                            .filter((api) => Object.keys(SERVER_INPUTS).includes(api))
+                            .map(
+                                (api) =>
+                                    new SlashCommandEnumValue(
+                                        api,
+                                        null,
+                                        enumTypes.getBasedOnIndex(
+                                            UNIQUE_APIS.findIndex(
+                                                (x) => x === 'textgenerationwebui',
+                                            ),
+                                        ),
+                                        'T',
+                                    ),
+                            ),
+                    ],
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'connect',
+                    description: t`Whether to auto-connect to the API after setting the URL`,
+                    typeList: [ARGUMENT_TYPE.BOOLEAN],
+                    defaultValue: 'true',
+                    enumList: commonEnumProviders.boolean('trueFalse')(),
+                }),
+                SlashCommandNamedArgument.fromProps({
+                    name: 'quiet',
+                    description: t`suppress the toast message on API change`,
+                    typeList: [ARGUMENT_TYPE.BOOLEAN],
+                    defaultValue: 'false',
+                    enumList: commonEnumProviders.boolean('trueFalse')(),
+                }),
+            ],
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: t`API url to connect to`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                }),
+            ],
+            helpString: `
             <div>
                 ${t`Set the API URL / server URL / endpoint for the currently selected API, including the port. If no argument is provided, it will return the current API url.`}
             </div>
@@ -3273,76 +3877,98 @@ export function initDefaultSlashCommands() {
                 ${t`This slash command works for most of the Text Completion sources, KoboldAI Classic, and also Custom OpenAI compatible, Z.AI, SiliconFlow, MiniMax, and Google Vertex AI for the Chat Completion sources. If unsure which APIs are supported, check the auto-completion of the optional <code>api</code> argument of this command.`}
             </div>
         `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'tokenizer',
-        callback: selectTokenizerCallback,
-        returns: t`current tokenizer`,
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: t`tokenizer name`,
-                typeList: [ARGUMENT_TYPE.STRING],
-                enumList: getAvailableTokenizers().map(tokenizer =>
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    new SlashCommandEnumValue(tokenizer.tokenizerKey, tokenizer.tokenizerName as any, enumTypes.enum as any, enumIcons.default as any)),
-            }),
-        ],
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'tokenizer',
+            callback: selectTokenizerCallback,
+            returns: t`current tokenizer`,
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: t`tokenizer name`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    enumList: getAvailableTokenizers().map(
+                        (tokenizer) =>
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            new SlashCommandEnumValue(
+                                tokenizer.tokenizerKey,
+                                tokenizer.tokenizerName as any,
+                                enumTypes.enum as any,
+                                enumIcons.default as any,
+                            ),
+                    ),
+                }),
+            ],
+            helpString: `
             <div>
                 ${t`Selects tokenizer by name. Gets the current tokenizer if no name is provided.`}
             </div>
             <div>
                 <strong>${t`Available tokenizers:`}</strong>
-                <pre><code>${getAvailableTokenizers().map(t => t.tokenizerKey).join(', ')}</code></pre>
+                <pre><code>${getAvailableTokenizers()
+                    .map((t) => t.tokenizerKey)
+                    .join(', ')}</code></pre>
             </div>
         `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'upper',
-        aliases: ['uppercase', 'to-upper'],
-        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
-        callback: (_, text) => typeof text === 'string' ? text.toUpperCase() : '',
-        returns: t`uppercase string`,
-        unnamedArgumentList: [
-            new SlashCommandArgument(
-                t`text to affect`, [ARGUMENT_TYPE.STRING], true, false,
-            ),
-        ],
-        helpString: t`Converts the provided string to uppercase.`,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'lower',
-        aliases: ['lowercase', 'to-lower'],
-        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
-        callback: (_, text) => typeof text === 'string' ? text.toLowerCase() : '',
-        returns: t`lowercase string`,
-        unnamedArgumentList: [
-            new SlashCommandArgument(
-                t`text to affect`, [ARGUMENT_TYPE.STRING], true, false,
-            ),
-        ],
-        helpString: t`Converts the provided string to lowercase.`,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'substr',
-        aliases: ['substring'],
-        // @ts-expect-error TS(7006) FIXME: Parameter 'arg' implicitly has an 'any' type.
-        callback: (arg, text) => typeof text === 'string' ? text.slice(...[Number(arg.start), arg.end && Number(arg.end)]) : '',
-        returns: t`substring`,
-        namedArgumentList: [
-            new SlashCommandNamedArgument(
-                'start', t`start index`, [ARGUMENT_TYPE.NUMBER], false, false,
-            ),
-            new SlashCommandNamedArgument(
-                'end', t`end index`, [ARGUMENT_TYPE.NUMBER], false, false,
-            ),
-        ],
-        unnamedArgumentList: [
-            new SlashCommandArgument(
-                t`text to affect`, [ARGUMENT_TYPE.STRING], true, false,
-            ),
-        ],
-        helpString: `
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'upper',
+            aliases: ['uppercase', 'to-upper'],
+            // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
+            callback: (_, text) => (typeof text === 'string' ? text.toUpperCase() : ''),
+            returns: t`uppercase string`,
+            unnamedArgumentList: [
+                new SlashCommandArgument(t`text to affect`, [ARGUMENT_TYPE.STRING], true, false),
+            ],
+            helpString: t`Converts the provided string to uppercase.`,
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'lower',
+            aliases: ['lowercase', 'to-lower'],
+            // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
+            callback: (_, text) => (typeof text === 'string' ? text.toLowerCase() : ''),
+            returns: t`lowercase string`,
+            unnamedArgumentList: [
+                new SlashCommandArgument(t`text to affect`, [ARGUMENT_TYPE.STRING], true, false),
+            ],
+            helpString: t`Converts the provided string to lowercase.`,
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'substr',
+            aliases: ['substring'],
+            // @ts-expect-error TS(7006) FIXME: Parameter 'arg' implicitly has an 'any' type.
+            callback: (arg, text) =>
+                typeof text === 'string'
+                    ? text.slice(Number(arg.start), arg.end && Number(arg.end))
+                    : '',
+            returns: t`substring`,
+            namedArgumentList: [
+                new SlashCommandNamedArgument(
+                    'start',
+                    t`start index`,
+                    [ARGUMENT_TYPE.NUMBER],
+                    false,
+                    false,
+                ),
+                new SlashCommandNamedArgument(
+                    'end',
+                    t`end index`,
+                    [ARGUMENT_TYPE.NUMBER],
+                    false,
+                    false,
+                ),
+            ],
+            unnamedArgumentList: [
+                new SlashCommandArgument(t`text to affect`, [ARGUMENT_TYPE.STRING], true, false),
+            ],
+            helpString: `
             <div>
                 ${t`Extracts text from the provided string.`}
             </div>
@@ -3363,91 +3989,106 @@ export function initDefaultSlashCommands() {
                 <pre>/substr start=4 end=-1 {{var::x}}   | /echo  |/# morning is upon us     ||</pre>
             </div>
         `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'is-mobile',
-        callback: () => String(isMobile()),
-        returns: ARGUMENT_TYPE.BOOLEAN,
-        helpString: t`Returns true if the current device is a mobile device, false otherwise. Equivalent to <code>{{isMobile}}</code> macro.`,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'chat-render',
-        helpString: t`Renders a specified number of messages into the chat window. Displays all messages if no argument is provided.`,
-        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
-        callback: async (args, number) => {
-            // @ts-expect-error TS(2345) FIXME: Argument of type 'number' is not assignable to par... Remove this comment to see the full error message
-            await showMoreMessages(number && !isNaN(Number(number)) ? Number(number) : Number.MAX_SAFE_INTEGER);
-            if (isTrueBoolean(String(args?.scroll ?? ''))) {
-                document.querySelector('#chat')!.scrollTop = 0;
-            }
-            return '';
-        },
-        namedArgumentList: [
-            SlashCommandNamedArgument.fromProps({
-                name: 'scroll',
-                description: t`scroll to the top after rendering`,
-                typeList: [ARGUMENT_TYPE.BOOLEAN],
-                defaultValue: 'false',
-                enumList: commonEnumProviders.boolean('trueFalse')(),
-            }),
-        ],
-        unnamedArgumentList: [
-            new SlashCommandArgument(
-                t`number of messages`, [ARGUMENT_TYPE.NUMBER], false,
-            ),
-        ],
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'chat-reload',
-        helpString: t`Reloads the current chat.`,
-        callback: async () => {
-            await reloadCurrentChat();
-            return '';
-        },
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'replace',
-        aliases: ['re'],
-        // @ts-expect-error TS(7031) FIXME: Binding element 'pattern' implicitly has an 'any' ... Remove this comment to see the full error message
-        callback: (async ({ mode = 'literal', pattern, replacer = '' }, text) => {
-            if (!pattern) {
-                throw new Error(t`Argument of 'pattern=' cannot be empty`);
-            }
-            text = text.toString();
-            pattern = pattern.toString();
-            replacer = replacer.toString();
-            switch (mode) {
-                case 'literal':
-                    return text.replaceAll(pattern, replacer);
-                case 'regex':
-                    return text.replace(regexFromString(pattern), replacer);
-                default:
-                    throw new Error(t`Invalid '/replace mode=' argument specified!`);
-            }
         }),
-        returns: t`replaced text`,
-        namedArgumentList: [
-            SlashCommandNamedArgument.fromProps({
-                name: 'mode',
-                description: t`Replaces occurrence(s) of a pattern`,
-                typeList: [ARGUMENT_TYPE.STRING],
-                defaultValue: 'literal',
-                enumList: ['literal', 'regex'],
-            }),
-            new SlashCommandNamedArgument(
-                'pattern', t`pattern to search with`, [ARGUMENT_TYPE.STRING], true, false,
-            ),
-            new SlashCommandNamedArgument(
-                // @ts-expect-error TS(2345) FIXME: Argument of type '""' is not assignable to paramet... Remove this comment to see the full error message
-                'replacer', t`replacement text for matches`, [ARGUMENT_TYPE.STRING], false, false, '',
-            ),
-        ],
-        unnamedArgumentList: [
-            new SlashCommandArgument(
-                t`text to affect`, [ARGUMENT_TYPE.STRING], true, false,
-            ),
-        ],
-        helpString: `
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'is-mobile',
+            callback: () => String(isMobile()),
+            returns: ARGUMENT_TYPE.BOOLEAN,
+            helpString: t`Returns true if the current device is a mobile device, false otherwise. Equivalent to <code>{{isMobile}}</code> macro.`,
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'chat-render',
+            helpString: t`Renders a specified number of messages into the chat window. Displays all messages if no argument is provided.`,
+            // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
+            callback: async (args, number) => {
+                // @ts-expect-error TS(2345) FIXME: Argument of type 'number' is not assignable to par... Remove this comment to see the full error message
+                await showMoreMessages(
+                    number && !isNaN(Number(number)) ? Number(number) : Number.MAX_SAFE_INTEGER,
+                );
+                if (isTrueBoolean(String(args?.scroll ?? ''))) {
+                    document.querySelector('#chat')!.scrollTop = 0;
+                }
+                return '';
+            },
+            namedArgumentList: [
+                SlashCommandNamedArgument.fromProps({
+                    name: 'scroll',
+                    description: t`scroll to the top after rendering`,
+                    typeList: [ARGUMENT_TYPE.BOOLEAN],
+                    defaultValue: 'false',
+                    enumList: commonEnumProviders.boolean('trueFalse')(),
+                }),
+            ],
+            unnamedArgumentList: [
+                new SlashCommandArgument(t`number of messages`, [ARGUMENT_TYPE.NUMBER], false),
+            ],
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'chat-reload',
+            helpString: t`Reloads the current chat.`,
+            callback: async () => {
+                await reloadCurrentChat();
+                return '';
+            },
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'replace',
+            aliases: ['re'],
+            // @ts-expect-error TS(7031) FIXME: Binding element 'pattern' implicitly has an 'any' ... Remove this comment to see the full error message
+            callback: async ({ mode = 'literal', pattern, replacer = '' }, text) => {
+                if (!pattern) {
+                    throw new Error(t`Argument of 'pattern=' cannot be empty`);
+                }
+                text = text.toString();
+                pattern = pattern.toString();
+                replacer = replacer.toString();
+                switch (mode) {
+                    case 'literal':
+                        return text.replaceAll(pattern, replacer);
+                    case 'regex':
+                        return text.replace(regexFromString(pattern), replacer);
+                    default:
+                        throw new Error(t`Invalid '/replace mode=' argument specified!`);
+                }
+            },
+            returns: t`replaced text`,
+            namedArgumentList: [
+                SlashCommandNamedArgument.fromProps({
+                    name: 'mode',
+                    description: t`Replaces occurrence(s) of a pattern`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    defaultValue: 'literal',
+                    enumList: ['literal', 'regex'],
+                }),
+                new SlashCommandNamedArgument(
+                    'pattern',
+                    t`pattern to search with`,
+                    [ARGUMENT_TYPE.STRING],
+                    true,
+                    false,
+                ),
+                new SlashCommandNamedArgument(
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '""' is not assignable to paramet... Remove this comment to see the full error message
+                    'replacer',
+                    t`replacement text for matches`,
+                    [ARGUMENT_TYPE.STRING],
+                    false,
+                    false,
+                    '',
+                ),
+            ],
+            unnamedArgumentList: [
+                new SlashCommandArgument(t`text to affect`, [ARGUMENT_TYPE.STRING], true, false),
+            ],
+            helpString: `
             <div>
                 ${t`Replaces text within the provided string based on the pattern.`}
             </div>
@@ -3466,32 +4107,38 @@ export function initDefaultSlashCommands() {
                 <pre><code class="language-stscript">/replace mode=regex pattern="/blue/gi" replacer="red" {{var::x}}  | /echo  |/# red house and red car   ||</code></pre>
             </div>
         `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'test',
-        // @ts-expect-error TS(7031) FIXME: Binding element 'pattern' implicitly has an 'any' ... Remove this comment to see the full error message
-        callback: (({ pattern }, text) => {
-            if (!pattern) {
-                throw new Error(t`Argument of 'pattern=' cannot be empty`);
-            }
-            const re = regexFromString(pattern.toString());
-            if (!re) {
-                throw new Error(t`The value of 'pattern' argument is not a valid regular expression.`);
-            }
-            return JSON.stringify(re.test(text.toString()));
         }),
-        returns: 'true | false',
-        namedArgumentList: [
-            new SlashCommandNamedArgument(
-                'pattern', t`pattern to find`, [ARGUMENT_TYPE.STRING], true, false,
-            ),
-        ],
-        unnamedArgumentList: [
-            new SlashCommandArgument(
-                t`text to test`, [ARGUMENT_TYPE.STRING], true, false,
-            ),
-        ],
-        helpString: `
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'test',
+            // @ts-expect-error TS(7031) FIXME: Binding element 'pattern' implicitly has an 'any' ... Remove this comment to see the full error message
+            callback: ({ pattern }, text) => {
+                if (!pattern) {
+                    throw new Error(t`Argument of 'pattern=' cannot be empty`);
+                }
+                const re = regexFromString(pattern.toString());
+                if (!re) {
+                    throw new Error(
+                        t`The value of 'pattern' argument is not a valid regular expression.`,
+                    );
+                }
+                return JSON.stringify(re.test(text.toString()));
+            },
+            returns: 'true | false',
+            namedArgumentList: [
+                new SlashCommandNamedArgument(
+                    'pattern',
+                    t`pattern to find`,
+                    [ARGUMENT_TYPE.STRING],
+                    true,
+                    false,
+                ),
+            ],
+            unnamedArgumentList: [
+                new SlashCommandArgument(t`text to test`, [ARGUMENT_TYPE.STRING], true, false),
+            ],
+            helpString: `
             <div>
                 ${t`Tests text for a regular expression match.`}
             </div>
@@ -3506,37 +4153,48 @@ export function initDefaultSlashCommands() {
                 <pre><code class="language-stscript">/test pattern="/blue/i" {{var::x}}  | /echo  |/# true   ||</code></pre>
             </div>
         `,
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'match',
-        // @ts-expect-error TS(7031) FIXME: Binding element 'pattern' implicitly has an 'any' ... Remove this comment to see the full error message
-        callback: (({ pattern }, text) => {
-            if (!pattern) {
-                throw new Error(t`Argument of 'pattern=' cannot be empty`);
-            }
-            const re = regexFromString(pattern.toString());
-            if (!re) {
-                throw new Error(t`The value of 'pattern' argument is not a valid regular expression.`);
-            }
-            if (re.flags.includes('g')) {
-                return JSON.stringify([...text.toString().matchAll(re)]);
-            } else {
-                const match = text.toString().match(re);
-                return match ? JSON.stringify(match) : '';
-            }
         }),
-        returns: t`group array for each match`,
-        namedArgumentList: [
-            new SlashCommandNamedArgument(
-                'pattern', t`pattern to find`, [ARGUMENT_TYPE.STRING], true, false,
-            ),
-        ],
-        unnamedArgumentList: [
-            new SlashCommandArgument(
-                t`text to match against`, [ARGUMENT_TYPE.STRING], true, false,
-            ),
-        ],
-        helpString: `
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'match',
+            // @ts-expect-error TS(7031) FIXME: Binding element 'pattern' implicitly has an 'any' ... Remove this comment to see the full error message
+            callback: ({ pattern }, text) => {
+                if (!pattern) {
+                    throw new Error(t`Argument of 'pattern=' cannot be empty`);
+                }
+                const re = regexFromString(pattern.toString());
+                if (!re) {
+                    throw new Error(
+                        t`The value of 'pattern' argument is not a valid regular expression.`,
+                    );
+                }
+                if (re.flags.includes('g')) {
+                    return JSON.stringify([...text.toString().matchAll(re)]);
+                } else {
+                    const match = text.toString().match(re);
+                    return match ? JSON.stringify(match) : '';
+                }
+            },
+            returns: t`group array for each match`,
+            namedArgumentList: [
+                new SlashCommandNamedArgument(
+                    'pattern',
+                    t`pattern to find`,
+                    [ARGUMENT_TYPE.STRING],
+                    true,
+                    false,
+                ),
+            ],
+            unnamedArgumentList: [
+                new SlashCommandArgument(
+                    t`text to match against`,
+                    [ARGUMENT_TYPE.STRING],
+                    true,
+                    false,
+                ),
+            ],
+            helpString: `
             <div>
                 ${t`Retrieves regular expression matches in the given text`}
             </div>
@@ -3553,60 +4211,73 @@ export function initDefaultSlashCommands() {
                 <pre><code class="language-stscript">/match pattern="/orange/g" {{var::x}}        | /echo  |/# []                                                        ||</code></pre>
             </div>
         `,
-    }));
+        }),
+    );
 
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'chat-jump',
-        aliases: ['chat-scrollto', 'floor-teleport'],
-        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
-        callback: async (_, index) => {
-            const messageIndex = Number(index);
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'chat-jump',
+            aliases: ['chat-scrollto', 'floor-teleport'],
+            // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
+            callback: async (_, index) => {
+                const messageIndex = Number(index);
 
-            if (isNaN(messageIndex) || messageIndex < 0 || messageIndex >= chat.length) {
-                notyf.warning(t`Invalid message index: ${index}. Please enter a number between 0 and ${chat.length}.`);
-                console.warn(`WARN: Invalid message index provided for /chat-jump: ${index}. Max index: ${chat.length}`);
+                if (isNaN(messageIndex) || messageIndex < 0 || messageIndex >= chat.length) {
+                    notyf.warning(
+                        t`Invalid message index: ${index}. Please enter a number between 0 and ${chat.length}.`,
+                    );
+                    console.warn(
+                        `WARN: Invalid message index provided for /chat-jump: ${index}. Max index: ${chat.length}`,
+                    );
+                    return '';
+                }
+
+                // Load more messages if needed
+                const firstDisplayedMessageId = getFirstDisplayedMessageId();
+                if (isFinite(firstDisplayedMessageId) && messageIndex < firstDisplayedMessageId) {
+                    const needToLoadCount = firstDisplayedMessageId - messageIndex;
+                    // @ts-expect-error TS(2345) FIXME: Argument of type 'number' is not assignable to par... Remove this comment to see the full error message
+                    await showMoreMessages(needToLoadCount);
+                    await delay(debounce_timeout.quick);
+                }
+
+                const chatContainer = document.getElementById('chat');
+                const messageElement = document.querySelector(
+                    `#chat .mes[mesid="${messageIndex}"]`,
+                );
+
+                if (messageElement instanceof HTMLElement && chatContainer instanceof HTMLElement) {
+                    const elementRect = messageElement.getBoundingClientRect();
+                    const containerRect = chatContainer.getBoundingClientRect();
+
+                    const scrollPosition =
+                        elementRect.top - containerRect.top + chatContainer.scrollTop;
+                    chatContainer.scrollTo({
+                        top: scrollPosition,
+                        behavior: 'smooth',
+                    });
+
+                    flashHighlight(messageElement, 2000);
+                } else {
+                    notyf.warning(
+                        t`Could not find element for message ${messageIndex}. It might not be rendered yet or the index is invalid.`,
+                    );
+                    console.warn(
+                        `WARN: Element not found for message index ${messageIndex} in /chat-jump.`,
+                    );
+                }
+
                 return '';
-            }
-
-            // Load more messages if needed
-            const firstDisplayedMessageId = getFirstDisplayedMessageId();
-            if (isFinite(firstDisplayedMessageId) && messageIndex < firstDisplayedMessageId) {
-                const needToLoadCount = firstDisplayedMessageId - messageIndex;
-                // @ts-expect-error TS(2345) FIXME: Argument of type 'number' is not assignable to par... Remove this comment to see the full error message
-                await showMoreMessages(needToLoadCount);
-                await delay(debounce_timeout.quick);
-            }
-
-            const chatContainer = document.getElementById('chat');
-            const messageElement = document.querySelector(`#chat .mes[mesid="${messageIndex}"]`);
-
-            if (messageElement instanceof HTMLElement && chatContainer instanceof HTMLElement) {
-                const elementRect = messageElement.getBoundingClientRect();
-                const containerRect = chatContainer.getBoundingClientRect();
-
-                const scrollPosition = elementRect.top - containerRect.top + chatContainer.scrollTop;
-                chatContainer.scrollTo({
-                    top: scrollPosition,
-                    behavior: 'smooth',
-                });
-
-                flashHighlight(messageElement, 2000);
-            } else {
-                notyf.warning(t`Could not find element for message ${messageIndex}. It might not be rendered yet or the index is invalid.`);
-                console.warn(`WARN: Element not found for message index ${messageIndex} in /chat-jump.`);
-            }
-
-            return '';
-        },
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: t`The message index (0-based) to scroll to.`,
-                typeList: [ARGUMENT_TYPE.NUMBER],
-                isRequired: true,
-                enumProvider: commonEnumProviders.messages(),
-            }),
-        ],
-        helpString: `
+            },
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: t`The message index (0-based) to scroll to.`,
+                    typeList: [ARGUMENT_TYPE.NUMBER],
+                    isRequired: true,
+                    enumProvider: commonEnumProviders.messages(),
+                }),
+            ],
+            helpString: `
         <div>
             ${t`Scrolls the chat view to the specified message index. Index starts at 0.`}
         </div>
@@ -3614,55 +4285,70 @@ export function initDefaultSlashCommands() {
             <strong>${t`Example:`}</strong> <pre><code>/chat-jump 10</code></pre> ${t`Scrolls to the 11th message (id=10).`}
         </div>
     `,
-    }));
+        }),
+    );
 
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'clipboard-get',
-        returns: t`clipboard text`,
-        callback: async () => {
-            if (!navigator.clipboard) {
-                notyf.warning(t`Clipboard API not available in this context.`);
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'clipboard-get',
+            returns: t`clipboard text`,
+            callback: async () => {
+                if (!navigator.clipboard) {
+                    notyf.warning(t`Clipboard API not available in this context.`);
+                    return '';
+                }
+
+                try {
+                    const text = await navigator.clipboard.readText();
+                    return text;
+                } catch (error) {
+                    console.error('Error reading clipboard:', error);
+                    notyf.warning(
+                        t`Failed to read clipboard text. Have you granted the permission?`,
+                    );
+                    return '';
+                }
+            },
+            helpString: t`Retrieves the text from the OS clipboard. Only works in secure contexts (HTTPS or localhost). Browser may ask for permission.`,
+        }),
+    );
+
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'clipboard-set',
+            // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
+            callback: async (_, text) => {
+                await copyText(text.toString());
                 return '';
-            }
+            },
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: t`text to copy to the clipboard`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    isRequired: true,
+                    acceptsMultiple: false,
+                }),
+            ],
+            helpString: t`Copies the provided text to the OS clipboard. Returns an empty string.`,
+        }),
+    );
 
-            try {
-                const text = await navigator.clipboard.readText();
-                return text;
-            } catch (error) {
-                console.error('Error reading clipboard:', error);
-                notyf.warning(t`Failed to read clipboard text. Have you granted the permission?`);
-                return '';
-            }
-        },
-        helpString: t`Retrieves the text from the OS clipboard. Only works in secure contexts (HTTPS or localhost). Browser may ask for permission.`,
-    }));
-
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'clipboard-set',
-        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
-        callback: async (_, text) => {
-            await copyText(text.toString());
-            return '';
-        },
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: t`text to copy to the clipboard`,
-                typeList: [ARGUMENT_TYPE.STRING],
-                isRequired: true,
-                acceptsMultiple: false,
-            }),
-        ],
-        helpString: t`Copies the provided text to the OS clipboard. Returns an empty string.`,
-    }));
-
-
-    const promptPostProcessingEnumProvider = () => Array
-        .from(document.getElementById('custom_prompt_post_processing')!.querySelectorAll('option'))
-        .map(option => new SlashCommandEnumValue(option.value || 'none', option.textContent ?? '', enumTypes.enum));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'prompt-post-processing',
-        aliases: ['ppp'],
-        helpString: `
+    const promptPostProcessingEnumProvider = () =>
+        Array.from(
+            document.getElementById('custom_prompt_post_processing')!.querySelectorAll('option'),
+        ).map(
+            (option) =>
+                new SlashCommandEnumValue(
+                    option.value || 'none',
+                    option.textContent ?? '',
+                    enumTypes.enum,
+                ),
+        );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'prompt-post-processing',
+            aliases: ['ppp'],
+            helpString: `
             <div>
                 ${t`Sets a "Prompt Post-Processing" type. Gets the current selection if no value is provided.`}
             </div>
@@ -3674,62 +4360,73 @@ export function initDefaultSlashCommands() {
                 <li><pre><code class="language-stscript">/prompt-post-processing single</code></pre></li>
             </ul>
         `,
-        namedArgumentList: [],
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: t`value`,
-                typeList: [ARGUMENT_TYPE.STRING],
-                acceptsMultiple: false,
-                isRequired: true,
-                forceEnum: true,
-                enumProvider: promptPostProcessingEnumProvider,
-            }),
-        ],
-        // @ts-expect-error TS(7006) FIXME: Parameter '_args' implicitly has an 'any' type.
-        callback: (_args, value) => {
-            const stringValue = String(value ?? '').trim().toLowerCase();
-            if (!stringValue) {
-                return oai_settings.custom_prompt_post_processing || 'none';
-            }
+            namedArgumentList: [],
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: t`value`,
+                    typeList: [ARGUMENT_TYPE.STRING],
+                    acceptsMultiple: false,
+                    isRequired: true,
+                    forceEnum: true,
+                    enumProvider: promptPostProcessingEnumProvider,
+                }),
+            ],
+            // @ts-expect-error TS(7006) FIXME: Parameter '_args' implicitly has an 'any' type.
+            callback: (_args, value) => {
+                const stringValue = String(value ?? '')
+                    .trim()
+                    .toLowerCase();
+                if (!stringValue) {
+                    return oai_settings.custom_prompt_post_processing || 'none';
+                }
 
-            const validValues = promptPostProcessingEnumProvider().map(option => option.value);
-            if (!validValues.includes(stringValue)) {
-                throw new Error(t`Invalid value "${stringValue}". Valid values are: ${validValues.join(', ')}`);
-            }
+                const validValues = promptPostProcessingEnumProvider().map(
+                    (option) => option.value,
+                );
+                if (!validValues.includes(stringValue)) {
+                    throw new Error(
+                        t`Invalid value "${stringValue}". Valid values are: ${validValues.join(', ')}`,
+                    );
+                }
 
-            // 'none' value must be coerced to an empty string
-            oai_settings.custom_prompt_post_processing = stringValue === 'none' ? '' : stringValue;
-            (document.querySelector('#custom_prompt_post_processing') as HTMLInputElement).value = oai_settings.custom_prompt_post_processing;
-            saveSettingsDebounced();
+                // 'none' value must be coerced to an empty string
+                oai_settings.custom_prompt_post_processing =
+                    stringValue === 'none' ? '' : stringValue;
+                (
+                    document.querySelector('#custom_prompt_post_processing') as HTMLInputElement
+                ).value = oai_settings.custom_prompt_post_processing;
+                saveSettingsDebounced();
 
-            return oai_settings.custom_prompt_post_processing;
-        },
-    }));
+                return oai_settings.custom_prompt_post_processing;
+            },
+        }),
+    );
 
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'reroll-pick',
-        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
-        callback: (_, value) => {
-            const currentSeed = chat_metadata.pick_reroll_seed ?? 0;
-            const parsedValue = value ? parseInt(String(value), 10) : NaN;
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'reroll-pick',
+            // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
+            callback: (_, value) => {
+                const currentSeed = chat_metadata.pick_reroll_seed ?? 0;
+                const parsedValue = value ? parseInt(String(value), 10) : NaN;
 
-            if (!isNaN(parsedValue)) {
-                chat_metadata.pick_reroll_seed = parsedValue;
-            } else {
-                chat_metadata.pick_reroll_seed = currentSeed + 1;
-            }
+                if (!isNaN(parsedValue)) {
+                    chat_metadata.pick_reroll_seed = parsedValue;
+                } else {
+                    chat_metadata.pick_reroll_seed = currentSeed + 1;
+                }
 
-            saveMetadataDebounced();
-            return String(chat_metadata.pick_reroll_seed);
-        },
-        returns: t`The new reroll seed value.`,
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: t`Optional seed value to set. If not provided, increments current seed by 1.`,
-                typeList: [ARGUMENT_TYPE.NUMBER],
-            }),
-        ],
-        helpString: `
+                saveMetadataDebounced();
+                return String(chat_metadata.pick_reroll_seed);
+            },
+            returns: t`The new reroll seed value.`,
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: t`Optional seed value to set. If not provided, increments current seed by 1.`,
+                    typeList: [ARGUMENT_TYPE.NUMBER],
+                }),
+            ],
+            helpString: `
             <div>
                 ${t`Rerolls all <code>{{pick}}</code> macro choices in the current chat.`}
             </div>
@@ -3747,142 +4444,171 @@ export function initDefaultSlashCommands() {
                 </ul>
             </div>
         `,
-    }));
+        }),
+    );
 
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'beep',
-        aliases: ['ding'],
-        returns: t`an empty string`,
-        callback: async () => {
-            playMessageSound({ force: true });
-            return '';
-        },
-        helpString: t`Plays the message received sound effect.`,
-    }));
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'beep',
+            aliases: ['ding'],
+            returns: t`an empty string`,
+            callback: async () => {
+                playMessageSound({ force: true });
+                return '';
+            },
+            helpString: t`Plays the message received sound effect.`,
+        }),
+    );
 
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'array-wrap',
-        aliases: ['list-wrap'],
-        returns: t`unnamed argument value wrapped into an array`,
-        helpString: t`Wraps a single unnamed argument into an array if it's not already an array. If the value is an empty string, returns an empty array.`,
-        namedArgumentList: [
-            SlashCommandNamedArgument.fromProps({
-                name: 'stringify',
-                description: t`Whether JSON primitives (numbers, booleans, nulls) should be treated as strings, i.e. ["null"] when stringify=true vs. [null] when stringify=false.`,
-                typeList: [ARGUMENT_TYPE.BOOLEAN],
-                defaultValue: 'true',
-                enumList: commonEnumProviders.boolean('trueFalse')(),
-            }),
-        ],
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: t`value`,
-                acceptsMultiple: false,
-                isRequired: true,
-                typeList: [ARGUMENT_TYPE.STRING, ARGUMENT_TYPE.DICTIONARY, ARGUMENT_TYPE.BOOLEAN, ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.LIST],
-            }),
-        ],
-        // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
-        callback: (args, value) => {
-            // Closures are not supported
-            if (value instanceof SlashCommandClosure) {
-                // @ts-expect-error TS(2554) FIXME: Expected 7 arguments, but got 1.
-                throw new SlashCommandExecutionError(t`Closures are not supported as unnamed arguments for /array-wrap. Did you forget to call the closure with parentheses?`);
-            }
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'array-wrap',
+            aliases: ['list-wrap'],
+            returns: t`unnamed argument value wrapped into an array`,
+            helpString: t`Wraps a single unnamed argument into an array if it's not already an array. If the value is an empty string, returns an empty array.`,
+            namedArgumentList: [
+                SlashCommandNamedArgument.fromProps({
+                    name: 'stringify',
+                    description: t`Whether JSON primitives (numbers, booleans, nulls) should be treated as strings, i.e. ["null"] when stringify=true vs. [null] when stringify=false.`,
+                    typeList: [ARGUMENT_TYPE.BOOLEAN],
+                    defaultValue: 'true',
+                    enumList: commonEnumProviders.boolean('trueFalse')(),
+                }),
+            ],
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: t`value`,
+                    acceptsMultiple: false,
+                    isRequired: true,
+                    typeList: [
+                        ARGUMENT_TYPE.STRING,
+                        ARGUMENT_TYPE.DICTIONARY,
+                        ARGUMENT_TYPE.BOOLEAN,
+                        ARGUMENT_TYPE.NUMBER,
+                        ARGUMENT_TYPE.LIST,
+                    ],
+                }),
+            ],
+            // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
+            callback: (args, value) => {
+                // Closures are not supported
+                if (value instanceof SlashCommandClosure) {
+                    // @ts-expect-error TS(2554) FIXME: Expected 7 arguments, but got 1.
+                    throw new SlashCommandExecutionError(
+                        t`Closures are not supported as unnamed arguments for /array-wrap. Did you forget to call the closure with parentheses?`,
+                    );
+                }
 
-            // Multiple unnamed arguments are not supported since acceptsMultiple is false, but check just in case
-            if (Array.isArray(value)) {
-                // @ts-expect-error TS(2554) FIXME: Expected 7 arguments, but got 1.
-                throw new SlashCommandExecutionError(t`/array-wrap does not support multiple unnamed arguments.`);
-            }
+                // Multiple unnamed arguments are not supported since acceptsMultiple is false, but check just in case
+                if (Array.isArray(value)) {
+                    // @ts-expect-error TS(2554) FIXME: Expected 7 arguments, but got 1.
+                    throw new SlashCommandExecutionError(
+                        t`/array-wrap does not support multiple unnamed arguments.`,
+                    );
+                }
 
-            // Empty string - empty arrays
-            if (value === '') {
-                return JSON.stringify([]);
-            }
+                // Empty string - empty arrays
+                if (value === '') {
+                    return JSON.stringify([]);
+                }
 
-            try {
-                // If the value is a valid JSON string, parse it
-                const parsedValue = JSON.parse(value);
+                try {
+                    // If the value is a valid JSON string, parse it
+                    const parsedValue = JSON.parse(value);
 
-                // Already an array - return as-is
-                if (Array.isArray(parsedValue)) {
+                    // Already an array - return as-is
+                    if (Array.isArray(parsedValue)) {
+                        return value;
+                    }
+
+                    // If it's an object, wrap it into an array and stringify
+                    if (typeof parsedValue === 'object' && parsedValue !== null) {
+                        return JSON.stringify([parsedValue]);
+                    }
+
+                    // For primitive values, check if we should take the parsed or original value based on the stringify argument
+                    const isJsonPrimitive =
+                        parsedValue === null ||
+                        ['string', 'number', 'boolean'].includes(typeof parsedValue);
+                    if (isJsonPrimitive && isFalseBoolean(String(args?.stringify?.toString()))) {
+                        return JSON.stringify([parsedValue]);
+                    }
+
+                    // Wrap the original value (string, number, boolean) into an array, preserving quotes for strings
+                    return JSON.stringify([value]);
+                } catch {
+                    // Not a valid JSON string - wrap the original value
+                    return JSON.stringify([value]);
+                }
+            },
+        }),
+    );
+    SlashCommandParser.addCommandObject(
+        SlashCommand.fromProps({
+            name: 'array-unwrap',
+            aliases: ['list-unwrap'],
+            returns: t`unnamed argument value unwrapped from an array`,
+            helpString: t`Unwraps the first element of an array provided as an unnamed argument. If the value is not an array, returns the value as-is. If the array is empty, returns an empty string.`,
+            unnamedArgumentList: [
+                SlashCommandArgument.fromProps({
+                    description: t`value`,
+                    acceptsMultiple: false,
+                    isRequired: true,
+                    typeList: [
+                        ARGUMENT_TYPE.STRING,
+                        ARGUMENT_TYPE.DICTIONARY,
+                        ARGUMENT_TYPE.BOOLEAN,
+                        ARGUMENT_TYPE.NUMBER,
+                        ARGUMENT_TYPE.LIST,
+                    ],
+                }),
+            ],
+            // @ts-expect-error TS(7006) FIXME: Parameter '_args' implicitly has an 'any' type.
+            callback: (_args, value) => {
+                // Closures are not supported
+                if (value instanceof SlashCommandClosure) {
+                    // @ts-expect-error TS(2554) FIXME: Expected 7 arguments, but got 1.
+                    throw new SlashCommandExecutionError(
+                        t`Closures are not supported as unnamed arguments for /array-unwrap. Did you forget to call the closure with parentheses?`,
+                    );
+                }
+
+                // Multiple unnamed arguments are not supported since acceptsMultiple is false, but check just in case
+                if (Array.isArray(value)) {
+                    // @ts-expect-error TS(2554) FIXME: Expected 7 arguments, but got 1.
+                    throw new SlashCommandExecutionError(
+                        t`/array-unwrap does not support multiple unnamed arguments.`,
+                    );
+                }
+
+                try {
+                    // If the value is a JSON array, get the first element
+                    const parsed = JSON.parse(value);
+
+                    if (Array.isArray(parsed)) {
+                        const unwrappedValue = parsed?.[0] ?? '';
+
+                        // If the first element is null or undefined, return an empty string
+                        if (unwrappedValue === null || unwrappedValue === undefined) {
+                            return '';
+                        }
+
+                        // If the first element is an object, stringify it.
+                        if (typeof unwrappedValue === 'object') {
+                            return JSON.stringify(unwrappedValue);
+                        }
+
+                        // Otherwise, return it as a string.
+                        return String(unwrappedValue);
+                    }
+                    return value;
+                } catch {
+                    // Not a valid JSON - return as-is
                     return value;
                 }
-
-                // If it's an object, wrap it into an array and stringify
-                if (typeof parsedValue === 'object' && parsedValue !== null) {
-                    return JSON.stringify([parsedValue]);
-                }
-
-                // For primitive values, check if we should take the parsed or original value based on the stringify argument
-                const isJsonPrimitive = parsedValue === null || ['string', 'number', 'boolean'].includes(typeof parsedValue);
-                if (isJsonPrimitive && isFalseBoolean(String(args?.stringify?.toString()))) {
-                    return JSON.stringify([parsedValue]);
-                }
-
-                // Wrap the original value (string, number, boolean) into an array, preserving quotes for strings
-                return JSON.stringify([value]);
-            } catch {
-                // Not a valid JSON string - wrap the original value
-                return JSON.stringify([value]);
-            }
-        },
-    }));
-    SlashCommandParser.addCommandObject(SlashCommand.fromProps({
-        name: 'array-unwrap',
-        aliases: ['list-unwrap'],
-        returns: t`unnamed argument value unwrapped from an array`,
-        helpString: t`Unwraps the first element of an array provided as an unnamed argument. If the value is not an array, returns the value as-is. If the array is empty, returns an empty string.`,
-        unnamedArgumentList: [
-            SlashCommandArgument.fromProps({
-                description: t`value`,
-                acceptsMultiple: false,
-                isRequired: true,
-                typeList: [ARGUMENT_TYPE.STRING, ARGUMENT_TYPE.DICTIONARY, ARGUMENT_TYPE.BOOLEAN, ARGUMENT_TYPE.NUMBER, ARGUMENT_TYPE.LIST],
-            }),
-        ],
-        // @ts-expect-error TS(7006) FIXME: Parameter '_args' implicitly has an 'any' type.
-        callback: (_args, value) => {
-            // Closures are not supported
-            if (value instanceof SlashCommandClosure) {
-                // @ts-expect-error TS(2554) FIXME: Expected 7 arguments, but got 1.
-                throw new SlashCommandExecutionError(t`Closures are not supported as unnamed arguments for /array-unwrap. Did you forget to call the closure with parentheses?`);
-            }
-
-            // Multiple unnamed arguments are not supported since acceptsMultiple is false, but check just in case
-            if (Array.isArray(value)) {
-                // @ts-expect-error TS(2554) FIXME: Expected 7 arguments, but got 1.
-                throw new SlashCommandExecutionError(t`/array-unwrap does not support multiple unnamed arguments.`);
-            }
-
-            try {
-                // If the value is a JSON array, get the first element
-                const parsed = JSON.parse(value);
-
-                if (Array.isArray(parsed)) {
-                    const unwrappedValue = parsed?.[0] ?? '';
-
-                    // If the first element is null or undefined, return an empty string
-                    if (unwrappedValue === null || unwrappedValue === undefined) {
-                        return '';
-                    }
-
-                    // If the first element is an object, stringify it.
-                    if (typeof unwrappedValue === 'object') {
-                        return JSON.stringify(unwrappedValue);
-                    }
-
-                    // Otherwise, return it as a string.
-                    return String(unwrappedValue);
-                }
-                return value;
-            } catch {
-                // Not a valid JSON - return as-is
-                return value;
-            }
-        },
-    }));
+            },
+        }),
+    );
 
     registerVariableCommands();
     registerActionLoaderSlashCommands();
@@ -3901,15 +4627,15 @@ const SCRIPT_PROMPT_KEY = 'script_inject_';
 // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 function injectCallback(args, value) {
     const positions = {
-        'before': extension_prompt_types.BEFORE_PROMPT,
-        'after': extension_prompt_types.IN_PROMPT,
-        'chat': extension_prompt_types.IN_CHAT,
-        'none': extension_prompt_types.NONE,
+        before: extension_prompt_types.BEFORE_PROMPT,
+        after: extension_prompt_types.IN_PROMPT,
+        chat: extension_prompt_types.IN_CHAT,
+        none: extension_prompt_types.NONE,
     };
     const roles = {
-        'system': extension_prompt_roles.SYSTEM,
-        'user': extension_prompt_roles.USER,
-        'assistant': extension_prompt_roles.ASSISTANT,
+        system: extension_prompt_roles.SYSTEM,
+        user: extension_prompt_roles.USER,
+        assistant: extension_prompt_roles.ASSISTANT,
     };
 
     const id = String(args?.id ?? '') || Math.random().toString(36).substring(2);
@@ -3922,15 +4648,21 @@ function injectCallback(args, value) {
     const position = positions[positionValue] ?? positions[defaultPosition];
     const depthValue = Number(args?.depth ?? defaultDepth);
     const depth = isNaN(depthValue) ? defaultDepth : depthValue;
-    const roleValue = typeof args?.role === 'string' ? args.role.toLowerCase().trim() : Number(args?.role ?? extension_prompt_roles.SYSTEM);
+    const roleValue =
+        typeof args?.role === 'string'
+            ? args.role.toLowerCase().trim()
+            : Number(args?.role ?? extension_prompt_roles.SYSTEM);
     // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     const role = roles[roleValue] ?? extension_prompt_roles.SYSTEM;
     const scan = isTrueBoolean(String(args?.scan));
     const filter = args?.filter instanceof SlashCommandClosure ? args.filter.rawText : null;
-    const filterFunction = args?.filter instanceof SlashCommandClosure ? closureToFilter(args.filter) : null;
+    const filterFunction =
+        args?.filter instanceof SlashCommandClosure ? closureToFilter(args.filter) : null;
     value = value || '';
     if (args?.filter && !String(filter ?? '').trim()) {
-        throw new Error(t`Failed to parse the filter argument. Make sure it is a valid non-empty closure.`);
+        throw new Error(
+            t`Failed to parse the filter argument. Make sure it is a valid non-empty closure.`,
+        );
     }
 
     const prefixedId = `${SCRIPT_PROMPT_KEY}${id}`;
@@ -3986,7 +4718,8 @@ async function listInjectsCallback(args) {
             .map(([id, inject]) => {
                 const position = Object.entries(extension_prompt_types);
                 // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-                const positionName = position.find(([_, value]) => value === inject.position)?.[0] ?? t`unknown`;
+                const positionName =
+                    position.find(([_, value]) => value === inject.position)?.[0] ?? t`unknown`;
                 // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 return `* **${id}**: <code>${inject.value}</code> (${positionName}, ${t`depth`}: ${inject.depth}, ${t`scan`}: ${inject.scan ?? false}, ${t`role`}: ${inject.role ?? extension_prompt_roles.SYSTEM})`;
             })
@@ -3994,7 +4727,11 @@ async function listInjectsCallback(args) {
         return `### ${t`Script injections:`}\n${injectsStr || t`No script injections for the current chat`}`;
     };
 
-    return await slashCommandReturnHelper.doReturn(returnType ?? 'popup-html', chat_metadata.script_injects ?? {}, { objectToStringFunc: buildTextValue });
+    return await slashCommandReturnHelper.doReturn(
+        returnType ?? 'popup-html',
+        chat_metadata.script_injects ?? {},
+        { objectToStringFunc: buildTextValue },
+    );
 }
 
 /**
@@ -4032,7 +4769,7 @@ function flushInjectsCallback(_, value) {
 export function processChatSlashCommands() {
     const context = getContext();
 
-    if (!(context.chatMetadata.script_injects)) {
+    if (!context.chatMetadata.script_injects) {
         return;
     }
 
@@ -4071,7 +4808,15 @@ export function processChatSlashCommands() {
         const filter = filterClosure ? closureToFilter(filterClosure) : null;
         console.log('Adding script injection', id);
         // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-        setExtensionPrompt(prefixedId, inject.value, inject.position, inject.depth, inject.scan, inject.role, filter);
+        setExtensionPrompt(
+            prefixedId,
+            inject.value,
+            inject.position,
+            inject.depth,
+            inject.scan,
+            inject.role,
+            filter,
+        );
     }
 }
 
@@ -4082,7 +4827,9 @@ export function processChatSlashCommands() {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
 function setInputCallback(_, value) {
-    const ta = document.querySelector('#send_textarea') as HTMLTextAreaElement; ta.value = value || ''; ta.dispatchEvent(new Event('input', { bubbles: true }));
+    const ta = document.querySelector('#send_textarea') as HTMLTextAreaElement;
+    ta.value = value || '';
+    ta.dispatchEvent(new Event('input', { bubbles: true }));
     return value;
 }
 
@@ -4152,19 +4899,28 @@ async function trimTokensCallback(arg, value) {
         const textTokens = getTextTokens(tokenizerId, value);
 
         if (!Array.isArray(textTokens) || !textTokens.length) {
-            console.warn('WARN: No tokens returned for /trimtokens command, falling back to estimation');
+            console.warn(
+                'WARN: No tokens returned for /trimtokens command, falling back to estimation',
+            );
             const percentage = limit / tokenCount;
             const trimIndex = Math.floor(value.length * percentage);
-            const trimmedText = direction === 'start' ? value.substring(trimIndex) : value.substring(0, value.length - trimIndex);
+            const trimmedText =
+                direction === 'start'
+                    ? value.substring(trimIndex)
+                    : value.substring(0, value.length - trimIndex);
             return trimmedText;
         }
 
-        const sliceTokens = direction === 'start' ? textTokens.slice(0, limit) : textTokens.slice(-limit);
+        const sliceTokens =
+            direction === 'start' ? textTokens.slice(0, limit) : textTokens.slice(-limit);
         // @ts-expect-error TS(2339) FIXME: decodeTextTokens now returns a Promise after Phase 7 conversion
         const { text } = decodeTextTokens(tokenizerId, sliceTokens);
         return text;
     } catch (error) {
-        console.warn('WARN: Tokenization failed for /trimtokens command, returning original', error);
+        console.warn(
+            'WARN: Tokenization failed for /trimtokens command, returning original',
+            error,
+        );
         return value;
     }
 }
@@ -4198,11 +4954,21 @@ async function buttonsCallback(args, text) {
 
         // Normalize buttons to ButtonLabel format for consistent handling
         /** @type {ButtonLabel[]} */
-        const buttons = rawButtons.map(btn => typeof btn === 'string' ? { text: btn } : btn);
+        const buttons = rawButtons.map((btn) => (typeof btn === 'string' ? { text: btn } : btn));
 
         // Validate raw buttons: each entry must be a string or a non-null object with a string `text` field that has content
-        if (!buttons.every(btn => typeof btn === 'object' && btn !== null && typeof btn.text === 'string' && btn.text)) {
-            console.warn('WARN: Invalid button label entry provided for /buttons command: each entry must be a string or an object with a "text" property');
+        if (
+            !buttons.every(
+                (btn) =>
+                    typeof btn === 'object' &&
+                    btn !== null &&
+                    typeof btn.text === 'string' &&
+                    btn.text,
+            )
+        ) {
+            console.warn(
+                'WARN: Invalid button label entry provided for /buttons command: each entry must be a string or an object with a "text" property',
+            );
             return '';
         }
 
@@ -4219,7 +4985,10 @@ async function buttonsCallback(args, text) {
 
             /** @type {Popup} */
             // @ts-expect-error TS(2448) FIXME: Block-scoped variable 'popupContainer' used before... Remove this comment to see the full error message
-            const popup = new Popup(popupContainer, POPUP_TYPE.TEXT, '', { okButton: multiple ? t`Ok` : t`Cancel`, allowVerticalScrolling: true });
+            const popup = new Popup(popupContainer, POPUP_TYPE.TEXT, '', {
+                okButton: multiple ? t`Ok` : t`Cancel`,
+                allowVerticalScrolling: true,
+            });
             const buttonContainer = document.createElement('div');
             buttonContainer.classList.add('flex-container', 'flexFlowColumn', 'wide100p');
 
@@ -4279,8 +5048,9 @@ async function buttonsCallback(args, text) {
             popupContainer.style.flexDirection = 'column';
             popupContainer.style.maxHeight = '80vh'; // Limit the overall height of the popup
 
-            popup.show()
-                .then((result => resolve(getResult(result))))
+            popup
+                .show()
+                .then((result) => resolve(getResult(result)))
                 .catch(() => resolve(''));
 
             /**
@@ -4291,10 +5061,17 @@ async function buttonsCallback(args, text) {
             function getResult(result) {
                 if (multiple) {
                     // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
-                    const array = result === POPUP_RESULT.AFFIRMATIVE ? Array.from(multipleToggledState).map(r => resultToButtonMap.get(r)?.text ?? '') : [];
+                    const array =
+                        result === POPUP_RESULT.AFFIRMATIVE
+                            ? Array.from(multipleToggledState).map(
+                                  (r) => resultToButtonMap.get(r)?.text ?? '',
+                              )
+                            : [];
                     return JSON.stringify(array);
                 }
-                return typeof result === 'number' ? resultToButtonMap.get(result)?.text ?? '' : '';
+                return typeof result === 'number'
+                    ? (resultToButtonMap.get(result)?.text ?? '')
+                    : '';
             }
         });
     } catch {
@@ -4310,7 +5087,8 @@ async function buttonsCallback(args, text) {
 // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 async function popupCallback(args, value) {
     const safeBody = DOMPurify.sanitize(value || '');
-    const safeHeader = args?.header && typeof args?.header === 'string' ? DOMPurify.sanitize(args.header) : null;
+    const safeHeader =
+        args?.header && typeof args?.header === 'string' ? DOMPurify.sanitize(args.header) : null;
     const requestedResult = isTrueBoolean(args?.result);
 
     /** @type {import('./popup.js').PopupOptions} */
@@ -4320,12 +5098,19 @@ async function popupCallback(args, value) {
         wide: isTrueBoolean(args?.wide),
         wider: isTrueBoolean(args?.wider),
         transparent: isTrueBoolean(args?.transparent),
-        okButton: args?.okButton !== undefined && typeof args?.okButton === 'string' ? args.okButton : t`OK`,
-        cancelButton: args?.cancelButton !== undefined && typeof args?.cancelButton === 'string' ? args.cancelButton : null,
-        tooltip: args?.tooltip !== undefined && typeof args?.tooltip === 'string' ? args.tooltip : null,
+        okButton:
+            args?.okButton !== undefined && typeof args?.okButton === 'string'
+                ? args.okButton
+                : t`OK`,
+        cancelButton:
+            args?.cancelButton !== undefined && typeof args?.cancelButton === 'string'
+                ? args.cancelButton
+                : null,
+        tooltip:
+            args?.tooltip !== undefined && typeof args?.tooltip === 'string' ? args.tooltip : null,
     };
     const result = await Popup.show.text(safeHeader, safeBody, popupOptions);
-    return String(requestedResult ? result ?? '' : value);
+    return String(requestedResult ? (result ?? '') : value);
 }
 
 /**
@@ -4365,7 +5150,9 @@ async function getMessagesCallback(args, value) {
             return !isNarrator && mes.is_user;
         }
 
-        throw new Error(t`Invalid role provided. Expected one of: system, assistant, user. Got: ${role}`);
+        throw new Error(
+            t`Invalid role provided. Expected one of: system, assistant, user. Got: ${role}`,
+        );
     };
 
     // @ts-expect-error TS(7006) FIXME: Parameter 'mesId' implicitly has an 'any' type.
@@ -4386,7 +5173,9 @@ async function getMessagesCallback(args, value) {
             return null;
         }
 
-        return includeNames ? `${(msg as ChatMessage).name}: ${(msg as ChatMessage).mes ?? ''}` : (msg as ChatMessage).mes ?? '';
+        return includeNames
+            ? `${(msg as ChatMessage).name}: ${(msg as ChatMessage).mes ?? ''}`
+            : ((msg as ChatMessage).mes ?? '');
     };
 
     const messagePromises: Promise<string | null>[] = [];
@@ -4428,7 +5217,7 @@ async function runCallback(args, name) {
             closure.debugController = args._debugController;
         }
         while (closure.providedArgumentList.pop());
-        closure.argumentList.forEach(arg => {
+        closure.argumentList.forEach((arg) => {
             // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
             if (Object.keys(args).includes(arg.name)) {
                 const providedArg = new SlashCommandNamedArgumentAssignment();
@@ -4460,7 +5249,7 @@ async function runCallback(args, name) {
         return await globalThis.executeQuickReplyByName(name, args, options);
     } catch (error) {
         // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-        throw new Error(t`Error running Quick Reply "${name}": ${error.message}`);
+        throw new Error(t`Error running Quick Reply "${name}": ${error.message}`, { cause: error });
     }
 }
 
@@ -4471,8 +5260,12 @@ async function runCallback(args, name) {
  */
 // @ts-expect-error TS(7031) FIXME: Binding element '_abortController' implicitly has ... Remove this comment to see the full error message
 function abortCallback({ _abortController, quiet }, reason) {
-    if (quiet instanceof SlashCommandClosure) throw new Error(t`argument 'quiet' cannot be a closure for command /abort`);
-    _abortController.abort((reason ?? '').toString().length == 0 ? t`/abort command executed` : reason, !isFalseBoolean(quiet?.toString() ?? 'true'));
+    if (quiet instanceof SlashCommandClosure)
+        throw new Error(t`argument 'quiet' cannot be a closure for command /abort`);
+    _abortController.abort(
+        (reason ?? '').toString().length == 0 ? t`/abort command executed` : reason,
+        !isFalseBoolean(quiet?.toString() ?? 'true'),
+    );
     return '';
 }
 
@@ -4497,7 +5290,6 @@ async function delayCallback(_, amount) {
     return '';
 }
 
-
 /**
  *
  * @param args
@@ -4506,14 +5298,27 @@ async function delayCallback(_, amount) {
 // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 async function inputCallback(args, prompt) {
     const safeValue = DOMPurify.sanitize(prompt || '');
-    const defaultInput = args?.default !== undefined && typeof args?.default === 'string' ? args.default : '';
+    const defaultInput =
+        args?.default !== undefined && typeof args?.default === 'string' ? args.default : '';
     const popupOptions = {
         large: isTrueBoolean(args?.large),
         wide: isTrueBoolean(args?.wide),
-        okButton: args?.okButton !== undefined && typeof args?.okButton === 'string' ? args.okButton : t`Ok`,
-        rows: args?.rows !== undefined && typeof args?.rows === 'string' ? isNaN(Number(args.rows)) ? 4 : Number(args.rows) : 4,
-        placeholder: args?.placeholder !== undefined && typeof args?.placeholder === 'string' ? args.placeholder : null,
-        tooltip: args?.tooltip !== undefined && typeof args?.tooltip === 'string' ? args.tooltip : null,
+        okButton:
+            args?.okButton !== undefined && typeof args?.okButton === 'string'
+                ? args.okButton
+                : t`Ok`,
+        rows:
+            args?.rows !== undefined && typeof args?.rows === 'string'
+                ? isNaN(Number(args.rows))
+                    ? 4
+                    : Number(args.rows)
+                : 4,
+        placeholder:
+            args?.placeholder !== undefined && typeof args?.placeholder === 'string'
+                ? args.placeholder
+                : null,
+        tooltip:
+            args?.tooltip !== undefined && typeof args?.tooltip === 'string' ? args.tooltip : null,
     };
     // Do not remove this delay, otherwise the prompt will not show up
     await delay(1);
@@ -4580,7 +5385,9 @@ function fuzzyCallback(args, searchInValue) {
         if ('threshold' in args) {
             params.threshold = parseFloat(args.threshold);
             if (isNaN(params.threshold)) {
-                console.warn('WARN: \'threshold\' argument must be a float between 0.0 and 1.0 for /fuzzy command');
+                console.warn(
+                    "WARN: 'threshold' argument must be a float between 0.0 and 1.0 for /fuzzy command",
+                );
                 return '';
             }
             if (params.threshold < 0) {
@@ -4649,7 +5456,7 @@ function setEphemeralStopStrings(value) {
         try {
             const stopStrings = JSON.parse(value);
             if (Array.isArray(stopStrings)) {
-                stopStrings.forEach(stopString => addEphemeralStoppingString(stopString));
+                stopStrings.forEach((stopString) => addEphemeralStoppingString(stopString));
             }
         } catch {
             // Do nothing
@@ -4670,7 +5477,9 @@ async function generateRawCallback(args, value) {
     }
 
     // Prevent generate recursion
-    const ta = document.querySelector('#send_textarea') as HTMLTextAreaElement; ta.value = ''; ta.dispatchEvent(new Event('input', { bubbles: true }));
+    const ta = document.querySelector('#send_textarea') as HTMLTextAreaElement;
+    ta.value = '';
+    ta.dispatchEvent(new Event('input', { bubbles: true }));
     const lock = isTrueBoolean(args?.lock);
     const as = args?.as || 'system';
     const quietToLoud = as === 'char';
@@ -4720,7 +5529,9 @@ async function generateRawCallback(args, value) {
 // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 async function generateCallback(args, value) {
     // Prevent generate recursion
-    const ta = document.querySelector('#send_textarea') as HTMLTextAreaElement; ta.value = ''; ta.dispatchEvent(new Event('input', { bubbles: true }));
+    const ta = document.querySelector('#send_textarea') as HTMLTextAreaElement;
+    ta.value = '';
+    ta.dispatchEvent(new Event('input', { bubbles: true }));
     const lock = isTrueBoolean(args?.lock);
     const trim = isTrueBoolean(args?.trim?.toString());
     const as = args?.as || 'system';
@@ -4790,11 +5601,13 @@ async function echoCallback(args, value) {
     // @ts-expect-error TS(2339) FIXME: Property 'timeOut' does not exist on type '{}'.
     if (args.timeout && !isNaN(parseInt(args.timeout))) options.timeOut = parseInt(args.timeout);
     // @ts-expect-error TS(2339) FIXME: Property 'extendedTimeOut' does not exist on type ... Remove this comment to see the full error message
-    if (args.extendedTimeout && !isNaN(parseInt(args.extendedTimeout))) options.extendedTimeOut = parseInt(args.extendedTimeout);
+    if (args.extendedTimeout && !isNaN(parseInt(args.extendedTimeout)))
+        options.extendedTimeOut = parseInt(args.extendedTimeout);
     // @ts-expect-error TS(2339) FIXME: Property 'preventDuplicates' does not exist on typ... Remove this comment to see the full error message
     if (isTrueBoolean(args.preventDuplicates)) options.preventDuplicates = true;
     // @ts-expect-error TS(2339) FIXME: Property 'toastClass' does not exist on type '{}'.
-    if (args.cssClass) options.toastClass = [options.toastClass, args.cssClass].filter(Boolean).join(' ');
+    if (args.cssClass)
+        options.toastClass = [options.toastClass, args.cssClass].filter(Boolean).join(' ');
     // @ts-expect-error TS(2339) FIXME: Property 'escapeHtml' does not exist on type '{}'.
     options.escapeHtml = args.escapeHtml !== undefined ? isTrueBoolean(args.escapeHtml) : true;
 
@@ -4845,7 +5658,11 @@ async function echoCallback(args, value) {
     }
 
     if (args.color) {
-        if (toast) (toast as unknown as { css: (prop: string, val: string) => void }).css('background-color', args.color);
+        if (toast)
+            (toast as unknown as { css: (prop: string, val: string) => void }).css(
+                'background-color',
+                args.color,
+            );
     }
 
     if (awaitDismissal) {
@@ -4914,7 +5731,9 @@ async function addSwipeCallback(args, value) {
         syncMesToSwipe();
         lastMessage.swipe_id = newSwipeId;
         lastMessage.mes = lastMessage.swipes[newSwipeId];
-        lastMessage.extra = structuredClone(lastMessage.swipe_info?.[newSwipeId]?.extra ?? lastMessage.extra ?? {});
+        lastMessage.extra = structuredClone(
+            lastMessage.swipe_info?.[newSwipeId]?.extra ?? lastMessage.extra ?? {},
+        );
     }
 
     await saveChatConditional();
@@ -4931,7 +5750,7 @@ async function addSwipeCallback(args, value) {
 // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
 async function deleteSwipeCallback(_, arg) {
     // Take the provided argument. Null if none provided, which will target the current swipe.
-    const swipeId = arg && !isNaN(Number(arg)) ? (Number(arg) - 1) : null;
+    const swipeId = arg && !isNaN(Number(arg)) ? Number(arg) - 1 : null;
 
     // @ts-expect-error TS(2345) FIXME: Argument of type 'number | null' is not assignable... Remove this comment to see the full error message
     const newSwipeId = await deleteSwipe(swipeId);
@@ -4947,7 +5766,9 @@ async function deleteSwipeCallback(_, arg) {
 // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 async function askCharacter(args, text) {
     // Prevent generate recursion
-    const ta = document.querySelector('#send_textarea') as HTMLTextAreaElement; ta.value = ''; ta.dispatchEvent(new Event('input', { bubbles: true }));
+    const ta = document.querySelector('#send_textarea') as HTMLTextAreaElement;
+    ta.value = '';
+    ta.dispatchEvent(new Event('input', { bubbles: true }));
 
     // Not supported in group chats
     // TODO: Maybe support group chats?
@@ -4982,7 +5803,10 @@ async function askCharacter(args, text) {
     // Override character and send a user message
     setCharacterId(String(chId));
 
-    const { name, force_avatar, original_avatar } = getNameAndAvatarForMessage(character, args?.name);
+    const { name, force_avatar, original_avatar } = getNameAndAvatarForMessage(
+        character,
+        args?.name,
+    );
 
     setCharacterName(name);
 
@@ -5028,7 +5852,9 @@ async function askCharacter(args, text) {
 
     const message = askResult ? chat[chat.length - 1] : null;
 
-    return await slashCommandReturnHelper.doReturn(args.return ?? 'pipe', message, { objectToStringFunc: x => x.mes });
+    return await slashCommandReturnHelper.doReturn(args.return ?? 'pipe', message, {
+        objectToStringFunc: (x) => x.mes,
+    });
 }
 
 /**
@@ -5038,7 +5864,9 @@ async function askCharacter(args, text) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 async function hideMessageCallback(args, value) {
-    const range = value ? stringToRange(value, 0, chat.length - 1) : { start: chat.length - 1, end: chat.length - 1 };
+    const range = value
+        ? stringToRange(value, 0, chat.length - 1)
+        : { start: chat.length - 1, end: chat.length - 1 };
 
     if (!range) {
         console.warn(`WARN: Invalid range provided for /hide command: ${value}`);
@@ -5057,7 +5885,9 @@ async function hideMessageCallback(args, value) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 async function unhideMessageCallback(args, value) {
-    const range = value ? stringToRange(value, 0, chat.length - 1) : { start: chat.length - 1, end: chat.length - 1 };
+    const range = value
+        ? stringToRange(value, 0, chat.length - 1)
+        : { start: chat.length - 1, end: chat.length - 1 };
 
     if (!range) {
         console.warn(`WARN: Invalid range provided for /unhide command: ${value}`);
@@ -5087,7 +5917,9 @@ function performGroupMemberAction(chid, action) {
 
     if (!document.querySelector(memberSelector)) {
         wasOffscreen = true;
-        paginationValue = Number((document.querySelector(pageSizeSelector) as HTMLSelectElement).value);
+        paginationValue = Number(
+            (document.querySelector(pageSizeSelector) as HTMLSelectElement).value,
+        );
         const paginationEl = document.querySelector(paginationSelector);
         const activePage = paginationEl?.querySelector('.paginationjs-page.active');
         pageValue = activePage ? Number(activePage.getAttribute('data-num')) : 1;
@@ -5104,14 +5936,15 @@ function performGroupMemberAction(chid, action) {
     document.querySelector(memberSelector)?.querySelector(`[data-action="${action}"]`)?.click();
 
     if (wasOffscreen) {
-
         const pageSizeEl = document.querySelector(pageSizeSelector) as HTMLSelectElement;
         if (pageSizeEl) {
             pageSizeEl.value = String(paginationValue);
             pageSizeEl.dispatchEvent(new Event('change'));
         }
         if (document.querySelector(paginationSelector)) {
-            const pageLink = document.querySelector(paginationSelector)?.querySelector(`.J-paginationjs-page[data-num="${pageValue}"]`);
+            const pageLink = document
+                .querySelector(paginationSelector)
+                ?.querySelector(`.J-paginationjs-page[data-num="${pageValue}"]`);
             if (pageLink) {
                 (pageLink as HTMLElement).click();
             }
@@ -5297,7 +6130,7 @@ async function addGroupMemberCallback(_, name) {
         return '';
     }
 
-    const group = groups.find(x => x.id === selected_group);
+    const group = groups.find((x) => x.id === selected_group);
 
     if (!group || !Array.isArray(group.members)) {
         console.warn(`WARN: No group found for ID ${selected_group}`);
@@ -5328,31 +6161,39 @@ async function addGroupMemberCallback(_, name) {
 // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 async function triggerGenerationCallback(args, value) {
     const shouldAwait = isTrueBoolean(args?.await);
-    const outerPromise = new Promise((outerResolve) => setTimeout(async () => {
-        try {
-            await waitUntilCondition(() => !is_send_press && !is_group_generating, 10000, 100);
-        } catch {
-            console.warn('Timeout waiting for generation unlock');
-            notyf.warning(t`Cannot run /trigger command while the reply is being generated.`);
-            outerResolve(Promise.resolve(''));
-            return '';
-        }
-
-        // Prevent generate recursion
-        const ta = document.querySelector('#send_textarea') as HTMLTextAreaElement; ta.value = ''; ta.dispatchEvent(new Event('input', { bubbles: true }));
-
-        let chid = undefined;
-
-        if (selected_group && value) {
-            chid = findGroupMemberId(value);
-
-            if (chid === undefined) {
-                console.warn(`WARN: No group member found for argument ${value}`);
+    const outerPromise = new Promise((outerResolve) =>
+        setTimeout(async () => {
+            try {
+                await waitUntilCondition(() => !is_send_press && !is_group_generating, 10000, 100);
+            } catch {
+                console.warn('Timeout waiting for generation unlock');
+                notyf.warning(t`Cannot run /trigger command while the reply is being generated.`);
+                outerResolve(Promise.resolve(''));
+                return '';
             }
-        }
 
-        outerResolve(new Promise(innerResolve => setTimeout(() => innerResolve(Generate('normal', { force_chid: chid })), 100)));
-    }, 1));
+            // Prevent generate recursion
+            const ta = document.querySelector('#send_textarea') as HTMLTextAreaElement;
+            ta.value = '';
+            ta.dispatchEvent(new Event('input', { bubbles: true }));
+
+            let chid = undefined;
+
+            if (selected_group && value) {
+                chid = findGroupMemberId(value);
+
+                if (chid === undefined) {
+                    console.warn(`WARN: No group member found for argument ${value}`);
+                }
+            }
+
+            outerResolve(
+                new Promise((innerResolve) =>
+                    setTimeout(() => innerResolve(Generate('normal', { force_chid: chid })), 100),
+                ),
+            );
+        }, 1),
+    );
 
     if (shouldAwait) {
         const innerPromise = await outerPromise;
@@ -5392,7 +6233,9 @@ async function sendUserMessageCallback(args, text) {
         message = await sendMessageAsUser(text, bias, insertAt, compact);
     }
 
-    return await slashCommandReturnHelper.doReturn(args.return ?? 'none', message, { objectToStringFunc: x => x.mes });
+    return await slashCommandReturnHelper.doReturn(args.return ?? 'none', message, {
+        objectToStringFunc: (x) => x.mes,
+    });
 }
 
 /**
@@ -5458,7 +6301,7 @@ async function goToCharacterCallback(_, name) {
         setActiveGroup(null);
         return character.name;
     }
-    const group = groups.find(it => equalsIgnoreCaseAndAccents(it.name, name));
+    const group = groups.find((it) => equalsIgnoreCaseAndAccents(it.name, name));
     if (group) {
         await openGroupById(group.id);
         setActiveCharacter(null);
@@ -5500,9 +6343,16 @@ async function uploadCharacterAvatar(avatarKey, base64Data, { resizePrompt = fal
     // Handle resize prompt
     if (resizePrompt) {
         if (power_user.never_resize_avatars) {
-            notyf.warning(t`Avatar resizing is disabled in settings. The image will be uploaded as-is.`);
+            notyf.warning(
+                t`Avatar resizing is disabled in settings. The image will be uploaded as-is.`,
+            );
         } else {
-            const dlg = new Popup(t`Set the crop position of the avatar image`, POPUP_TYPE.CROP, '', { cropImage: base64Data });
+            const dlg = new Popup(
+                t`Set the crop position of the avatar image`,
+                POPUP_TYPE.CROP,
+                '',
+                { cropImage: base64Data },
+            );
             const croppedImage = await dlg.show();
             if (!croppedImage) {
                 // User cancelled the crop dialog
@@ -5590,7 +6440,12 @@ async function createCharacterCallback(args) {
         creator: args.creator ?? '',
         character_version: args.characterVersion ?? '',
         // @ts-expect-error TS(7006) FIXME: Parameter 't' implicitly has an 'any' type.
-        tags: args.tags ? args.tags.split(',').map(t => t.trim()).filter(t => t) : [],
+        tags: args.tags
+            ? args.tags
+                  .split(',')
+                  .map((t) => t.trim())
+                  .filter((t) => t)
+            : [],
         talkativeness: args.talkativeness ?? '0.5',
         world: args.world ?? '',
         depth_prompt_prompt: args.depthPrompt ?? '',
@@ -5634,7 +6489,7 @@ async function createCharacterCallback(args) {
         // Select the character if requested (default: true)
         const shouldSelect = !isFalseBoolean(args.select);
         if (shouldSelect) {
-            const characterIndex = characters.findIndex(c => c.avatar === avatarKey);
+            const characterIndex = characters.findIndex((c) => c.avatar === avatarKey);
             if (characterIndex !== -1) {
                 // selectCharacterById handles group reset and active character setting
                 await selectCharacterById(characterIndex);
@@ -5706,7 +6561,10 @@ async function updateCharacterCallback(args) {
             let value = args[argName];
             // Handle tags as comma-separated array
             if (fieldName === 'tags' && typeof value === 'string') {
-                value = value.split(',').map(t => t.trim()).filter(t => t);
+                value = value
+                    .split(',')
+                    .map((t) => t.trim())
+                    .filter((t) => t);
             }
             // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             updateData[fieldName] = value;
@@ -5774,7 +6632,11 @@ async function updateCharacterCallback(args) {
     }
 
     // Handle depth prompt fields
-    if (args.depthPrompt !== undefined || args.depthPromptDepth !== undefined || args.depthPromptRole !== undefined) {
+    if (
+        args.depthPrompt !== undefined ||
+        args.depthPromptDepth !== undefined ||
+        args.depthPromptRole !== undefined
+    ) {
         // @ts-expect-error TS(2339) FIXME: Property 'data' does not exist on type '{ avatar: ... Remove this comment to see the full error message
         if (!updateData.data) updateData.data = {};
         // @ts-expect-error TS(2339) FIXME: Property 'data' does not exist on type '{ avatar: ... Remove this comment to see the full error message
@@ -5819,7 +6681,9 @@ async function updateCharacterCallback(args) {
         // Upload avatar if provided
         if (avatarData) {
             const resizePrompt = !isFalseBoolean(args.avatarPromptResize);
-            const uploaded = await uploadCharacterAvatar(character.avatar, avatarData, { resizePrompt });
+            const uploaded = await uploadCharacterAvatar(character.avatar, avatarData, {
+                resizePrompt,
+            });
             if (!uploaded && resizePrompt) {
                 // User cancelled the resize dialog
                 notyf.warning(t`Avatar update cancelled`);
@@ -5829,7 +6693,9 @@ async function updateCharacterCallback(args) {
         // Refresh the character data
         await getOneCharacter(character.avatar);
 
-        await eventSource.emit(event_types.CHARACTER_EDITED, { detail: { id: characterIndex, character: characters[characterIndex] } });
+        await eventSource.emit(event_types.CHARACTER_EDITED, {
+            detail: { id: characterIndex, character: characters[characterIndex] },
+        });
 
         // Update the side panel if this is the currently selected character
         if (characterIndex === this_chid) {
@@ -5874,7 +6740,7 @@ async function duplicateCharacterCallback(args) {
     // Select the character if requested (default: false)
     const shouldSelect = isTrueBoolean(args.select);
     if (shouldSelect) {
-        const characterIndex = characters.findIndex(c => c.avatar === newAvatarKey);
+        const characterIndex = characters.findIndex((c) => c.avatar === newAvatarKey);
         if (characterIndex !== -1) {
             await selectCharacterById(characterIndex);
         }
@@ -5929,7 +6795,9 @@ async function getCharacterDataCallback(args) {
             return '';
         }
 
-        return await slashCommandReturnHelper.doReturn(args.return ?? 'pipe', value, { objectToStringFunc: x => String(x) });
+        return await slashCommandReturnHelper.doReturn(args.return ?? 'pipe', value, {
+            objectToStringFunc: (x) => String(x),
+        });
     }
 
     // Return entire character data
@@ -5953,7 +6821,9 @@ async function getCharacterDataCallback(args) {
         create_date: character.create_date,
     };
 
-    return await slashCommandReturnHelper.doReturn(args.return ?? 'pipe', charData, { objectToStringFunc: x => JSON.stringify(x, null, 2) });
+    return await slashCommandReturnHelper.doReturn(args.return ?? 'pipe', charData, {
+        objectToStringFunc: (x) => JSON.stringify(x, null, 2),
+    });
 }
 
 /**
@@ -6027,9 +6897,13 @@ async function continueChatCallback(args, prompt) {
 
         try {
             // Prevent infinite recursion
-            const ta = document.querySelector('#send_textarea') as HTMLTextAreaElement; ta.value = ''; ta.dispatchEvent(new Event('input', { bubbles: true }));
+            const ta = document.querySelector('#send_textarea') as HTMLTextAreaElement;
+            ta.value = '';
+            ta.dispatchEvent(new Event('input', { bubbles: true }));
 
-            const options = prompt?.trim() ? { quiet_prompt: prompt.trim(), quietToLoud: true } : {};
+            const options = prompt?.trim()
+                ? { quiet_prompt: prompt.trim(), quietToLoud: true }
+                : {};
             await Generate('continue', options);
 
             // @ts-expect-error TS(2794) FIXME: Expected 1 arguments, but got 0. Did you forget to... Remove this comment to see the full error message
@@ -6055,26 +6929,34 @@ async function continueChatCallback(args, prompt) {
 async function regenerateChatCallback(args) {
     const shouldAwait = isTrueBoolean(args?.await);
 
-    const outerPromise = new Promise((outerResolve) => setTimeout(async () => {
-        try {
-            await waitUntilCondition(() => !is_send_press && !is_group_generating, 10000, 100);
-        } catch {
-            console.warn('Timeout waiting for generation unlock');
-            notyf.warning(t`Cannot run /regenerate command while the reply is being generated.`);
-            outerResolve(Promise.resolve(''));
-            return '';
-        }
+    const outerPromise = new Promise((outerResolve) =>
+        setTimeout(async () => {
+            try {
+                await waitUntilCondition(() => !is_send_press && !is_group_generating, 10000, 100);
+            } catch {
+                console.warn('Timeout waiting for generation unlock');
+                notyf.warning(
+                    t`Cannot run /regenerate command while the reply is being generated.`,
+                );
+                outerResolve(Promise.resolve(''));
+                return '';
+            }
 
-        if (selected_group) {
-            outerResolve(Promise.resolve(regenerateGroup()));
-            return '';
-        }
+            if (selected_group) {
+                outerResolve(Promise.resolve(regenerateGroup()));
+                return '';
+            }
 
-        outerResolve(new Promise(innerResolve => setTimeout(() => {
-            innerResolve(Generate('regenerate'));
-        }, 1)));
-        return '';
-    }, 1));
+            outerResolve(
+                new Promise((innerResolve) =>
+                    setTimeout(() => {
+                        innerResolve(Generate('regenerate'));
+                    }, 1),
+                ),
+            );
+            return '';
+        }, 1),
+    );
 
     if (shouldAwait) {
         const innerPromise = await outerPromise;
@@ -6091,21 +6973,28 @@ async function regenerateChatCallback(args) {
 // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 async function swipeChatCallback(args) {
     const shouldAwait = isTrueBoolean(args?.await);
-    const direction = args?.direction === SWIPE_DIRECTION.LEFT ? SWIPE_DIRECTION.LEFT : SWIPE_DIRECTION.RIGHT;
+    const direction =
+        args?.direction === SWIPE_DIRECTION.LEFT ? SWIPE_DIRECTION.LEFT : SWIPE_DIRECTION.RIGHT;
 
-    const outerPromise = new Promise((outerResolve) => setTimeout(async () => {
-        try {
-            await waitUntilCondition(() => !is_send_press && !is_group_generating, 10000, 100);
-        } catch {
-            console.warn('Timeout waiting for generation unlock');
-            notyf.warning(t`Cannot run /swipe command while the reply is being generated.`);
-            outerResolve(Promise.resolve(''));
+    const outerPromise = new Promise((outerResolve) =>
+        setTimeout(async () => {
+            try {
+                await waitUntilCondition(() => !is_send_press && !is_group_generating, 10000, 100);
+            } catch {
+                console.warn('Timeout waiting for generation unlock');
+                notyf.warning(t`Cannot run /swipe command while the reply is being generated.`);
+                outerResolve(Promise.resolve(''));
+                return '';
+            }
+
+            outerResolve(
+                Promise.resolve(
+                    swipe(null, direction, { source: SWIPE_SOURCE.SLASH_COMMAND, repeated: false }),
+                ),
+            );
             return '';
-        }
-
-        outerResolve(Promise.resolve(swipe(null, direction, { source: SWIPE_SOURCE.SLASH_COMMAND, repeated: false })));
-        return '';
-    }, 1));
+        }, 1),
+    );
 
     if (shouldAwait) {
         const innerPromise = await outerPromise;
@@ -6122,7 +7011,9 @@ async function swipeChatCallback(args) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 export async function generateSystemMessage(args, prompt) {
-    const ta = document.querySelector('#send_textarea') as HTMLTextAreaElement; ta.value = ''; ta.dispatchEvent(new Event('input', { bubbles: true }));
+    const ta = document.querySelector('#send_textarea') as HTMLTextAreaElement;
+    ta.value = '';
+    ta.dispatchEvent(new Event('input', { bubbles: true }));
 
     if (!prompt) {
         console.warn('WARN: No prompt provided for /sysgen command');
@@ -6137,14 +7028,16 @@ export async function generateSystemMessage(args, prompt) {
     const message = await generateQuietPrompt({ quietPrompt: prompt, trimToSentence: trim });
     notyf.dismiss(toast);
 
-    return await sendNarratorMessage(args, getRegexedString(message, regex_placement.SLASH_COMMAND));
+    return await sendNarratorMessage(
+        args,
+        getRegexedString(message, regex_placement.SLASH_COMMAND),
+    );
 }
 
 /**
  *
  */
 function setStoryModeCallback() {
-
     const chatDisplay = document.getElementById('chat_display');
     if (chatDisplay instanceof HTMLSelectElement) {
         chatDisplay.value = String(chat_styles.DOCUMENT);
@@ -6207,7 +7100,8 @@ export function validateArrayArgString(arg, name, { allowUndefined = true } = {}
         throw new Error(t`Argument "${name}" is undefined, but must be a string array`);
     }
     if (!Array.isArray(arg)) throw new Error(t`Argument "${name}" must be an array`);
-    if (!arg.every(x => typeof x === 'string')) throw new Error(t`Argument "${name}" must be an array of strings`);
+    if (!arg.every((x) => typeof x === 'string'))
+        throw new Error(t`Argument "${name}" must be an array of strings`);
     return arg;
 }
 
@@ -6224,13 +7118,15 @@ export function validateArrayArgString(arg, name, { allowUndefined = true } = {}
 export function validateArrayArg(arg, name, { allowUndefined = true } = {}) {
     if (arg === undefined) {
         if (allowUndefined) return [];
-        throw new Error(t`Argument "${name}" is undefined, but must be an array of strings or closures`);
+        throw new Error(
+            t`Argument "${name}" is undefined, but must be an array of strings or closures`,
+        );
     }
     if (!Array.isArray(arg)) throw new Error(t`Argument "${name}" must be an array`);
-    if (!arg.every(x => typeof x === 'string' || x instanceof SlashCommandClosure)) throw new Error(t`Argument "${name}" must be an array of strings or closures`);
+    if (!arg.every((x) => typeof x === 'string' || x instanceof SlashCommandClosure))
+        throw new Error(t`Argument "${name}" must be an array of strings or closures`);
     return arg;
 }
-
 
 /**
  * Retrieves the name and avatar information for a message
@@ -6243,7 +7139,8 @@ export function validateArrayArg(arg, name, { allowUndefined = true } = {}) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'character' implicitly has an 'any' type... Remove this comment to see the full error message
 export function getNameAndAvatarForMessage(character, name = null) {
-    const isNeutralCharacter = !character && name2 === neutralCharacterName && name === neutralCharacterName;
+    const isNeutralCharacter =
+        !character && name2 === neutralCharacterName && name === neutralCharacterName;
     const currentChar = characters[this_chid];
 
     let force_avatar, original_avatar;
@@ -6272,7 +7169,7 @@ export function getNameAndAvatarForMessage(character, name = null) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 async function messageRoleCallback(args, role) {
-    let modifyAt = Number(args?.at ?? (chat.length - 1));
+    let modifyAt = Number(args?.at ?? chat.length - 1);
     // Convert possible depth parameter to index
     if (!isNaN(modifyAt) && (modifyAt < 0 || Object.is(modifyAt, -0))) {
         // Negative value means going back from current chat length. (E.g.: 8 messages, Depth 1 means insert at index 7)
@@ -6285,11 +7182,15 @@ async function messageRoleCallback(args, role) {
         return '';
     }
 
-    role = String(role ?? '').trim().toLowerCase();
+    role = String(role ?? '')
+        .trim()
+        .toLowerCase();
     if (!role || !['user', 'assistant', 'system'].includes(role)) {
         return message?.extra?.type === system_message_types.NARRATOR
             ? 'system'
-            : message.is_user ? 'user' : 'assistant';
+            : message.is_user
+              ? 'user'
+              : 'assistant';
     }
 
     message.extra = message.extra || {};
@@ -6320,7 +7221,7 @@ async function messageRoleCallback(args, role) {
  * @returns {Promise<string>} The updated message name.
  */
 async function messageNameCallback(args: Record<string, unknown>, name: string) {
-    let modifyAt = Number(args?.at ?? (chat.length - 1));
+    let modifyAt = Number(args?.at ?? chat.length - 1);
     // Convert possible depth parameter to index
     if (!isNaN(modifyAt) && (modifyAt < 0 || Object.is(modifyAt, -0))) {
         // Negative value means going back from current chat length. (E.g.: 8 messages, Depth 1 means insert at index 7)
@@ -6390,7 +7291,11 @@ export async function sendMessageAs(args, text) {
     if (!name) {
         const namelessWarningKey = 'sendAsNamelessWarningShown';
         if (accountStorage.getItem(namelessWarningKey) !== 'true') {
-            notyf.warning(t`To avoid confusion, please use /sendas name="Character Name"`, t`Name defaulted to {{char}}`, { timeOut: 10000 });
+            notyf.warning(
+                t`To avoid confusion, please use /sendas name="Character Name"`,
+                t`Name defaulted to {{char}}`,
+                { timeOut: 10000 },
+            );
             accountStorage.setItem(namelessWarningKey, 'true');
         }
         name = name2;
@@ -6414,7 +7319,11 @@ export async function sendMessageAs(args, text) {
         return '';
     }
 
-    const { name: avatarCharName, force_avatar, original_avatar } = getNameAndAvatarForMessage(avatarCharacter, name);
+    const {
+        name: avatarCharName,
+        force_avatar,
+        original_avatar,
+    } = getNameAndAvatarForMessage(avatarCharacter, name);
 
     const message = {
         name: character?.name || name || avatarCharName,
@@ -6438,18 +7347,20 @@ export async function sendMessageAs(args, text) {
     // @ts-expect-error TS(2339) FIXME: Property 'swipes' does not exist on type '{ name: ... Remove this comment to see the full error message
     message.swipes = [message.mes];
     // @ts-expect-error TS(2339) FIXME: Property 'swipe_info' does not exist on type '{ na... Remove this comment to see the full error message
-    message.swipe_info = [{
-        send_date: message.send_date,
-        gen_started: null,
-        gen_finished: null,
-        extra: {
-            bias: message.extra.bias,
-            gen_id: message.extra.gen_id,
-            isSmallSys: compact,
-            api: 'manual',
-            model: 'slash command',
+    message.swipe_info = [
+        {
+            send_date: message.send_date,
+            gen_started: null,
+            gen_finished: null,
+            extra: {
+                bias: message.extra.bias,
+                gen_id: message.extra.gen_id,
+                isSmallSys: compact,
+                api: 'manual',
+                model: 'slash command',
+            },
         },
-    }];
+    ];
 
     let insertAt = Number(args.at);
 
@@ -6471,13 +7382,15 @@ export async function sendMessageAs(args, text) {
     } else {
         // @ts-expect-error TS(2345) FIXME: Argument of type '{ name: any; is_user: boolean; i... Remove this comment to see the full error message
         chat.push(message);
-        await eventSource.emit(event_types.MESSAGE_RECEIVED, (chat.length - 1), 'command');
+        await eventSource.emit(event_types.MESSAGE_RECEIVED, chat.length - 1, 'command');
         addOneMessage(message);
-        await eventSource.emit(event_types.CHARACTER_MESSAGE_RENDERED, (chat.length - 1), 'command');
+        await eventSource.emit(event_types.CHARACTER_MESSAGE_RENDERED, chat.length - 1, 'command');
         await saveChatConditional();
     }
 
-    return await slashCommandReturnHelper.doReturn(args.return ?? 'none', message, { objectToStringFunc: x => x.mes });
+    return await slashCommandReturnHelper.doReturn(args.return ?? 'none', message, {
+        objectToStringFunc: (x) => x.mes,
+    });
 }
 
 /**
@@ -6531,13 +7444,15 @@ export async function sendNarratorMessage(args, text) {
     } else {
         // @ts-expect-error TS(2345) FIXME: Argument of type '{ name: any; is_user: boolean; i... Remove this comment to see the full error message
         chat.push(message);
-        await eventSource.emit(event_types.MESSAGE_SENT, (chat.length - 1));
+        await eventSource.emit(event_types.MESSAGE_SENT, chat.length - 1);
         addOneMessage(message);
-        await eventSource.emit(event_types.USER_MESSAGE_RENDERED, (chat.length - 1));
+        await eventSource.emit(event_types.USER_MESSAGE_RENDERED, chat.length - 1);
         await saveChatConditional();
     }
 
-    return await slashCommandReturnHelper.doReturn(args.return ?? 'none', message, { objectToStringFunc: x => x.mes });
+    return await slashCommandReturnHelper.doReturn(args.return ?? 'none', message, {
+        objectToStringFunc: (x) => x.mes,
+    });
 }
 
 /**
@@ -6581,9 +7496,9 @@ export async function promptQuietForLoudResponse(who, text) {
     chat_metadata.tainted = true;
 
     chat.push(message);
-    await eventSource.emit(event_types.MESSAGE_SENT, (chat.length - 1));
+    await eventSource.emit(event_types.MESSAGE_SENT, chat.length - 1);
     addOneMessage(message);
-    await eventSource.emit(event_types.USER_MESSAGE_RENDERED, (chat.length - 1));
+    await eventSource.emit(event_types.USER_MESSAGE_RENDERED, chat.length - 1);
     await saveChatConditional();
 }
 
@@ -6629,13 +7544,15 @@ async function sendCommentMessage(args, text) {
         await eventSource.emit(event_types.USER_MESSAGE_RENDERED, insertAt);
     } else {
         chat.push(message);
-        await eventSource.emit(event_types.MESSAGE_SENT, (chat.length - 1));
+        await eventSource.emit(event_types.MESSAGE_SENT, chat.length - 1);
         addOneMessage(message);
-        await eventSource.emit(event_types.USER_MESSAGE_RENDERED, (chat.length - 1));
+        await eventSource.emit(event_types.USER_MESSAGE_RENDERED, chat.length - 1);
         await saveChatConditional();
     }
 
-    return await slashCommandReturnHelper.doReturn(args.return ?? 'none', message, { objectToStringFunc: x => x.mes });
+    return await slashCommandReturnHelper.doReturn(args.return ?? 'none', message, {
+        objectToStringFunc: (x) => x.mes,
+    });
 }
 
 /**
@@ -6706,7 +7623,10 @@ function setBackgroundCallback(_, bg) {
 
     console.log('Set background to ' + bg);
 
-    const bgElements = Array.from(document.querySelectorAll('.bg_example')).map((x) => ({ element: x, bgfile: x.getAttribute('bgfile') }));
+    const bgElements = Array.from(document.querySelectorAll('.bg_example')).map((x) => ({
+        element: x,
+        bgfile: x.getAttribute('bgfile'),
+    }));
 
     const fuse = new Fuse(bgElements, { keys: ['bgfile'] });
     const result = fuse.search(bg);
@@ -6734,11 +7654,27 @@ function setBackgroundCallback(_, bg) {
 function getModelOptions(quiet) {
     const nullResult = { control: null, options: null };
     const modelSelectMap = [
-        { id: 'generic_model_textgenerationwebui', api: 'textgenerationwebui', type: textgen_types.GENERIC },
-        { id: 'custom_model_textgenerationwebui', api: 'textgenerationwebui', type: textgen_types.OOBA },
-        { id: 'model_togetherai_select', api: 'textgenerationwebui', type: textgen_types.TOGETHERAI },
+        {
+            id: 'generic_model_textgenerationwebui',
+            api: 'textgenerationwebui',
+            type: textgen_types.GENERIC,
+        },
+        {
+            id: 'custom_model_textgenerationwebui',
+            api: 'textgenerationwebui',
+            type: textgen_types.OOBA,
+        },
+        {
+            id: 'model_togetherai_select',
+            api: 'textgenerationwebui',
+            type: textgen_types.TOGETHERAI,
+        },
         { id: 'openrouter_model', api: 'textgenerationwebui', type: textgen_types.OPENROUTER },
-        { id: 'model_infermaticai_select', api: 'textgenerationwebui', type: textgen_types.INFERMATICAI },
+        {
+            id: 'model_infermaticai_select',
+            api: 'textgenerationwebui',
+            type: textgen_types.INFERMATICAI,
+        },
         { id: 'model_dreamgen_select', api: 'textgenerationwebui', type: textgen_types.DREAMGEN },
         { id: 'mancer_model', api: 'textgenerationwebui', type: textgen_types.MANCER },
         { id: 'vllm_model', api: 'textgenerationwebui', type: textgen_types.VLLM },
@@ -6759,14 +7695,26 @@ function getModelOptions(quiet) {
         { id: 'model_perplexity_select', api: 'openai', type: chat_completion_sources.PERPLEXITY },
         { id: 'model_groq_select', api: 'openai', type: chat_completion_sources.GROQ },
         { id: 'model_chutes_select', api: 'openai', type: chat_completion_sources.CHUTES },
-        { id: 'model_siliconflow_select', api: 'openai', type: chat_completion_sources.SILICONFLOW },
+        {
+            id: 'model_siliconflow_select',
+            api: 'openai',
+            type: chat_completion_sources.SILICONFLOW,
+        },
         { id: 'model_minimax_select', api: 'openai', type: chat_completion_sources.MINIMAX },
-        { id: 'model_electronhub_select', api: 'openai', type: chat_completion_sources.ELECTRONHUB },
+        {
+            id: 'model_electronhub_select',
+            api: 'openai',
+            type: chat_completion_sources.ELECTRONHUB,
+        },
         { id: 'model_nanogpt_select', api: 'openai', type: chat_completion_sources.NANOGPT },
         { id: 'model_deepseek_select', api: 'openai', type: chat_completion_sources.DEEPSEEK },
         { id: 'model_aimlapi_select', api: 'openai', type: chat_completion_sources.AIMLAPI },
         { id: 'model_xai_select', api: 'openai', type: chat_completion_sources.XAI },
-        { id: 'model_pollinations_select', api: 'openai', type: chat_completion_sources.POLLINATIONS },
+        {
+            id: 'model_pollinations_select',
+            api: 'openai',
+            type: chat_completion_sources.POLLINATIONS,
+        },
         { id: 'model_moonshot_select', api: 'openai', type: chat_completion_sources.MOONSHOT },
         { id: 'model_fireworks_select', api: 'openai', type: chat_completion_sources.FIREWORKS },
         { id: 'model_cometapi_select', api: 'openai', type: chat_completion_sources.COMETAPI },
@@ -6791,16 +7739,22 @@ function getModelOptions(quiet) {
     }
 
     const apiSubType = getSubType();
-    const modelSelectItem = modelSelectMap.find(x => x.api == main_api && x.type == apiSubType)?.id;
+    const modelSelectItem = modelSelectMap.find(
+        (x) => x.api == main_api && x.type == apiSubType,
+    )?.id;
 
     if (!modelSelectItem) {
-        if (!quiet) notyf.info(t`Setting a model for your API is not supported or not implemented yet.`);
+        if (!quiet)
+            notyf.info(t`Setting a model for your API is not supported or not implemented yet.`);
         return nullResult;
     }
 
     const modelSelectControl = document.getElementById(modelSelectItem);
 
-    if (!(modelSelectControl instanceof HTMLSelectElement) && !(modelSelectControl instanceof HTMLInputElement)) {
+    if (
+        !(modelSelectControl instanceof HTMLSelectElement) &&
+        !(modelSelectControl instanceof HTMLInputElement)
+    ) {
         if (!quiet) notyf.error(t`Model select control not found: ${main_api}[${apiSubType}]`);
         return nullResult;
     }
@@ -6825,7 +7779,9 @@ function getModelOptions(quiet) {
         return [valueOption];
     };
 
-    const options = getOptions(modelSelectControl).filter(x => x.value).filter(onlyUnique);
+    const options = getOptions(modelSelectControl)
+        .filter((x) => x.value)
+        .filter(onlyUnique);
     return { control: modelSelectControl, options };
 }
 
@@ -6857,7 +7813,10 @@ function modelCallback(args, model) {
     const modelSelectControlAny = modelSelectControl as any;
     if (modelSelectControl instanceof HTMLInputElement) {
         modelSelectControl.value = model;
-        if (modelSelectControlAny instanceof HTMLInputElement || modelSelectControlAny instanceof HTMLSelectElement) {
+        if (
+            modelSelectControlAny instanceof HTMLInputElement ||
+            modelSelectControlAny instanceof HTMLSelectElement
+        ) {
             modelSelectControl.dispatchEvent(new Event('input'));
         }
         if (!quiet) notyf.success(t`Model set to "${model}"`);
@@ -6874,8 +7833,12 @@ function modelCallback(args, model) {
     const fuse = new Fuse(options, { keys: ['text', 'value'] });
     const fuzzySearchResult = fuse.search(model);
 
-    const exactValueMatch = options.find(x => x.value.trim().toLowerCase() === model.trim().toLowerCase());
-    const exactTextMatch = options.find(x => x.text.trim().toLowerCase() === model.trim().toLowerCase());
+    const exactValueMatch = options.find(
+        (x) => x.value.trim().toLowerCase() === model.trim().toLowerCase(),
+    );
+    const exactTextMatch = options.find(
+        (x) => x.text.trim().toLowerCase() === model.trim().toLowerCase(),
+    );
 
     if (exactValueMatch) {
         newSelectedOption = exactValueMatch;
@@ -6887,7 +7850,10 @@ function modelCallback(args, model) {
 
     if (newSelectedOption) {
         modelSelectControl.value = newSelectedOption.value;
-        if (modelSelectControl instanceof HTMLInputElement || modelSelectControl instanceof HTMLSelectElement) {
+        if (
+            modelSelectControl instanceof HTMLInputElement ||
+            modelSelectControl instanceof HTMLSelectElement
+        ) {
             modelSelectControl.dispatchEvent(new Event('change'));
         }
         if (!quiet) notyf.success(t`Model set to "${newSelectedOption.text}"`);
@@ -6907,7 +7873,10 @@ function modelCallback(args, model) {
  * @returns {object} An object containing the states of the requested prompt entries
  */
 function getPromptEntryCallback(args: Record<string, unknown>) {
-    const prompts = (promptManager!.serviceSettings as Record<string, unknown>).prompts as Array<{ identifier: string; name: string }>;
+    const prompts = (promptManager!.serviceSettings as Record<string, unknown>).prompts as Array<{
+        identifier: string;
+        name: string;
+    }>;
     let returnType = args.return ?? 'simple';
 
     /**
@@ -6932,7 +7901,9 @@ function getPromptEntryCallback(args: Record<string, unknown>) {
     const nameList = parseArgs(args.name);
 
     if (identifiersList.length !== 0) {
-        identifiersList = identifiersList.filter((identifier: unknown) => prompts.some((prompt: { identifier: unknown }) => prompt.identifier === identifier));
+        identifiersList = identifiersList.filter((identifier: unknown) =>
+            prompts.some((prompt: { identifier: unknown }) => prompt.identifier === identifier),
+        );
     }
 
     if (nameList.length !== 0) {
@@ -6946,7 +7917,10 @@ function getPromptEntryCallback(args: Record<string, unknown>) {
 
     const promptStates = new Map();
     identifiersList.forEach((identifier: unknown) => {
-        const promptOrderEntry = promptManager!.getPromptOrderEntry(promptManager!.activeCharacter, identifier);
+        const promptOrderEntry = promptManager!.getPromptOrderEntry(
+            promptManager!.activeCharacter,
+            identifier,
+        );
         if (promptOrderEntry) {
             promptStates.set(identifier, promptOrderEntry.enabled);
         }
@@ -6975,7 +7949,10 @@ function getPromptEntryCallback(args: Record<string, unknown>) {
  * @returns {string} empty string
  */
 function setPromptEntryCallback(args: Record<string, unknown>, targetState: string) {
-    const prompts = (promptManager!.serviceSettings as Record<string, unknown>).prompts as Array<{ identifier: string; name: string }>;
+    const prompts = (promptManager!.serviceSettings as Record<string, unknown>).prompts as Array<{
+        identifier: string;
+        name: string;
+    }>;
 
     /**
      *
@@ -6999,7 +7976,9 @@ function setPromptEntryCallback(args: Record<string, unknown>, targetState: stri
     const nameList = parseArgs(args.name);
 
     if (identifiersList.length !== 0) {
-        identifiersList = identifiersList.filter((identifier: unknown) => prompts.some((prompt: { identifier: unknown }) => prompt.identifier === identifier));
+        identifiersList = identifiersList.filter((identifier: unknown) =>
+            prompts.some((prompt: { identifier: unknown }) => prompt.identifier === identifier),
+        );
     }
 
     if (nameList.length !== 0) {
@@ -7034,8 +8013,13 @@ function setPromptEntryCallback(args: Record<string, unknown>, targetState: stri
     };
 
     identifiersList.forEach((promptID: unknown) => {
-        const promptOrderEntry = promptManager!.getPromptOrderEntry(promptManager!.activeCharacter, promptID as string);
-        const counts = (promptManager!.tokenHandler as unknown as { getCounts: () => Record<string, unknown> }).getCounts();
+        const promptOrderEntry = promptManager!.getPromptOrderEntry(
+            promptManager!.activeCharacter,
+            promptID as string,
+        );
+        const counts = (
+            promptManager!.tokenHandler as unknown as { getCounts: () => Record<string, unknown> }
+        ).getCounts();
 
         (counts as Record<string, unknown>)[promptID as string] = null;
         promptOrderEntry.enabled = getPromptOrderEntryState(promptOrderEntry);
@@ -7061,14 +8045,18 @@ async function setApiUrlCallback({ api = null, connect = 'true', quiet = 'false'
     const autoConnect = isTrueBoolean(connect);
 
     // Special handling for Chat Completion Custom OpenAI compatible, that one can also support API url handling
-    const isCurrentlyCustomOpenai = main_api === 'openai' && oai_settings.chat_completion_source === chat_completion_sources.CUSTOM;
+    const isCurrentlyCustomOpenai =
+        main_api === 'openai' &&
+        oai_settings.chat_completion_source === chat_completion_sources.CUSTOM;
     if (api === chat_completion_sources.CUSTOM || (!api && isCurrentlyCustomOpenai)) {
         if (!url) {
             return oai_settings.custom_url ?? '';
         }
 
         if (!isCurrentlyCustomOpenai && autoConnect) {
-            notyf.warning(t`Custom OpenAI API is not the currently selected API, so we cannot do an auto-connect. Consider switching to it via /api beforehand.`);
+            notyf.warning(
+                t`Custom OpenAI API is not the currently selected API, so we cannot do an auto-connect. Consider switching to it via /api beforehand.`,
+            );
             return '';
         }
 
@@ -7085,7 +8073,9 @@ async function setApiUrlCallback({ api = null, connect = 'true', quiet = 'false'
         return url;
     }
 
-    const isCurrentlyZAI = main_api === 'openai' && oai_settings.chat_completion_source === chat_completion_sources.ZAI;
+    const isCurrentlyZAI =
+        main_api === 'openai' &&
+        oai_settings.chat_completion_source === chat_completion_sources.ZAI;
     if (api === chat_completion_sources.ZAI || (!api && isCurrentlyZAI)) {
         if (!url) {
             return oai_settings.zai_endpoint || ZAI_ENDPOINT.COMMON;
@@ -7093,12 +8083,18 @@ async function setApiUrlCallback({ api = null, connect = 'true', quiet = 'false'
 
         const permittedValues = Object.values(ZAI_ENDPOINT);
         if (!permittedValues.includes(url)) {
-            if (!isQuiet) notyf.warning(t`Valid options are: ${permittedValues.join(', ')}`, t`ZAI endpoint '${url}' is not a valid option.`);
+            if (!isQuiet)
+                notyf.warning(
+                    t`Valid options are: ${permittedValues.join(', ')}`,
+                    t`ZAI endpoint '${url}' is not a valid option.`,
+                );
             return '';
         }
 
         if (!isCurrentlyZAI && autoConnect) {
-            notyf.warning(t`Z.AI is not the currently selected API, so we cannot do an auto-connect. Consider switching to it via /api beforehand.`);
+            notyf.warning(
+                t`Z.AI is not the currently selected API, so we cannot do an auto-connect. Consider switching to it via /api beforehand.`,
+            );
             return '';
         }
 
@@ -7115,7 +8111,9 @@ async function setApiUrlCallback({ api = null, connect = 'true', quiet = 'false'
         return oai_settings.zai_endpoint || ZAI_ENDPOINT.COMMON;
     }
 
-    const isCurrentlySiliconFlow = main_api === 'openai' && oai_settings.chat_completion_source === chat_completion_sources.SILICONFLOW;
+    const isCurrentlySiliconFlow =
+        main_api === 'openai' &&
+        oai_settings.chat_completion_source === chat_completion_sources.SILICONFLOW;
     if (api === chat_completion_sources.SILICONFLOW || (!api && isCurrentlySiliconFlow)) {
         if (!url) {
             return oai_settings.siliconflow_endpoint || SILICONFLOW_ENDPOINT.GLOBAL;
@@ -7123,12 +8121,18 @@ async function setApiUrlCallback({ api = null, connect = 'true', quiet = 'false'
 
         const permittedValues = Object.values(SILICONFLOW_ENDPOINT);
         if (!permittedValues.includes(url)) {
-            if (!isQuiet) notyf.warning(t`Valid options are: ${permittedValues.join(', ')}`, t`SiliconFlow endpoint '${url}' is not a valid option.`);
+            if (!isQuiet)
+                notyf.warning(
+                    t`Valid options are: ${permittedValues.join(', ')}`,
+                    t`SiliconFlow endpoint '${url}' is not a valid option.`,
+                );
             return '';
         }
 
         if (!isCurrentlySiliconFlow && autoConnect) {
-            notyf.warning(t`SiliconFlow is not the currently selected API, so we cannot do an auto-connect. Consider switching to it via /api beforehand.`);
+            notyf.warning(
+                t`SiliconFlow is not the currently selected API, so we cannot do an auto-connect. Consider switching to it via /api beforehand.`,
+            );
             return '';
         }
 
@@ -7145,7 +8149,9 @@ async function setApiUrlCallback({ api = null, connect = 'true', quiet = 'false'
         return oai_settings.siliconflow_endpoint || SILICONFLOW_ENDPOINT.GLOBAL;
     }
 
-    const isCurrentlyMinimax = main_api === 'openai' && oai_settings.chat_completion_source === chat_completion_sources.MINIMAX;
+    const isCurrentlyMinimax =
+        main_api === 'openai' &&
+        oai_settings.chat_completion_source === chat_completion_sources.MINIMAX;
     if (api === chat_completion_sources.MINIMAX || (!api && isCurrentlyMinimax)) {
         if (!url) {
             return oai_settings.minimax_endpoint || MINIMAX_ENDPOINT.GLOBAL;
@@ -7153,12 +8159,18 @@ async function setApiUrlCallback({ api = null, connect = 'true', quiet = 'false'
 
         const permittedValues = Object.values(MINIMAX_ENDPOINT);
         if (!permittedValues.includes(url)) {
-            if (!isQuiet) notyf.warning(t`Valid options are: ${permittedValues.join(', ')}`, t`MiniMax endpoint '${url}' is not a valid option.`);
+            if (!isQuiet)
+                notyf.warning(
+                    t`Valid options are: ${permittedValues.join(', ')}`,
+                    t`MiniMax endpoint '${url}' is not a valid option.`,
+                );
             return '';
         }
 
         if (!isCurrentlyMinimax && autoConnect) {
-            notyf.warning(t`MiniMax is not the currently selected API, so we cannot do an auto-connect. Consider switching to it via /api beforehand.`);
+            notyf.warning(
+                t`MiniMax is not the currently selected API, so we cannot do an auto-connect. Consider switching to it via /api beforehand.`,
+            );
             return '';
         }
 
@@ -7175,24 +8187,30 @@ async function setApiUrlCallback({ api = null, connect = 'true', quiet = 'false'
         return oai_settings.minimax_endpoint || MINIMAX_ENDPOINT.GLOBAL;
     }
 
-    const isCurrentlyVertexAI = main_api === 'openai' && oai_settings.chat_completion_source === chat_completion_sources.VERTEXAI;
+    const isCurrentlyVertexAI =
+        main_api === 'openai' &&
+        oai_settings.chat_completion_source === chat_completion_sources.VERTEXAI;
     if (api === chat_completion_sources.VERTEXAI || (!api && isCurrentlyVertexAI)) {
         const defaultRegion = 'us-central1';
-        const permittedValues = Array
-            .from(document.querySelectorAll('#vertexai_region_suggestions option'))
-            .map(e => e instanceof HTMLOptionElement ? e.value : '')
-            .filter(x => x);
+        const permittedValues = Array.from(
+            document.querySelectorAll('#vertexai_region_suggestions option'),
+        )
+            .map((e) => (e instanceof HTMLOptionElement ? e.value : ''))
+            .filter((x) => x);
 
         if (!url) {
             return oai_settings.vertexai_region || defaultRegion;
         }
 
         if (!permittedValues.includes(url)) {
-            if (!isQuiet) notyf.info(t`Generation requests may fail.`, t`Unknown VertexAI region '${url}'`);
+            if (!isQuiet)
+                notyf.info(t`Generation requests may fail.`, t`Unknown VertexAI region '${url}'`);
         }
 
         if (!isCurrentlyVertexAI && autoConnect) {
-            notyf.warning(t`VertexAI is not the currently selected API, so we cannot do an auto-connect. Consider switching to it via /api beforehand.`);
+            notyf.warning(
+                t`VertexAI is not the currently selected API, so we cannot do an auto-connect. Consider switching to it via /api beforehand.`,
+            );
             return '';
         }
 
@@ -7217,7 +8235,9 @@ async function setApiUrlCallback({ api = null, connect = 'true', quiet = 'false'
         }
 
         if (!isCurrentlyKoboldClassic && autoConnect) {
-            notyf.warning(t`Kobold Classic API is not the currently selected API, so we cannot do an auto-connect. Consider switching to it via /api beforehand.`);
+            notyf.warning(
+                t`Kobold Classic API is not the currently selected API, so we cannot do an auto-connect. Consider switching to it via /api beforehand.`,
+            );
             return '';
         }
 
@@ -7227,7 +8247,10 @@ async function setApiUrlCallback({ api = null, connect = 'true', quiet = 'false'
             apiUrlText.dispatchEvent(new Event('input'));
         }
         // trigger blur debounced, so we hide the autocomplete menu
-        setTimeout(() => document.getElementById('api_url_text')?.dispatchEvent(new Event('blur')), 1);
+        setTimeout(
+            () => document.getElementById('api_url_text')?.dispatchEvent(new Event('blur')),
+            1,
+        );
 
         if (autoConnect) {
             document.getElementById('api_button')?.click();
@@ -7241,19 +8264,30 @@ async function setApiUrlCallback({ api = null, connect = 'true', quiet = 'false'
         if (!isQuiet) notyf.warning(t`API '${api}' is not a valid text_gen API.`);
         return '';
     }
-    if (!api && !Object.values(textgen_types).includes(textgenerationwebui_settings.type as string)) {
-        if (!isQuiet) notyf.warning(t`API '${textgenerationwebui_settings.type}' is not a valid text_gen API.`);
+    if (
+        !api &&
+        !Object.values(textgen_types).includes(textgenerationwebui_settings.type as string)
+    ) {
+        if (!isQuiet)
+            notyf.warning(
+                t`API '${textgenerationwebui_settings.type}' is not a valid text_gen API.`,
+            );
         return '';
     }
     if (!api && main_api !== 'textgenerationwebui') {
-        if (!isQuiet) notyf.warning(t`API type '${main_api}' does not support setting the server URL.`);
+        if (!isQuiet)
+            notyf.warning(t`API type '${main_api}' does not support setting the server URL.`);
         return '';
     }
     if (api && url && autoConnect && api !== textgenerationwebui_settings.type) {
-        if (!isQuiet) notyf.warning(t`API '${api}' is not the currently selected API, so we cannot do an auto-connect. Consider switching to it via /api beforehand.`);
+        if (!isQuiet)
+            notyf.warning(
+                t`API '${api}' is not the currently selected API, so we cannot do an auto-connect. Consider switching to it via /api beforehand.`,
+            );
         return '';
     }
-    const type: string = (api as unknown as string) || (textgenerationwebui_settings.type as string);
+    const type: string =
+        (api as unknown as string) || (textgenerationwebui_settings.type as string);
 
     const inputSelector = SERVER_INPUTS[type];
     if (!inputSelector) {
@@ -7294,7 +8328,11 @@ async function setApiUrlCallback({ api = null, connect = 'true', quiet = 'false'
 // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
 async function selectTokenizerCallback(_, name) {
     if (!name) {
-        return getAvailableTokenizers().find(tokenizer => tokenizer.tokenizerId === power_user.tokenizer)?.tokenizerKey ?? '';
+        return (
+            getAvailableTokenizers().find(
+                (tokenizer) => tokenizer.tokenizerId === power_user.tokenizer,
+            )?.tokenizerKey ?? ''
+        );
     }
 
     const tokenizers = getAvailableTokenizers();
@@ -7415,12 +8453,15 @@ const clearCommandProgressDebounced = debounce(clearCommandProgress);
 export async function executeSlashCommandsOnChatInput(text, options = {}) {
     if (isExecutingCommandsFromChatInput) return null;
 
-    options = Object.assign({
-        scope: null,
-        parserFlags: null,
-        clearChatInput: false,
-        source: null,
-    }, options);
+    options = Object.assign(
+        {
+            scope: null,
+            parserFlags: null,
+            clearChatInput: false,
+            source: null,
+        },
+        options,
+    );
 
     isExecutingCommandsFromChatInput = true;
     commandsFromChatInputAbortController?.abort('processCommands was called');
@@ -7497,11 +8538,15 @@ export async function executeSlashCommandsOnChatInput(text, options = {}) {
                     <pre style="text-align:left;">${ex.hint}</pre>
                     `;
                 const clickHint = `<p>${t`Click to see details`}</p>`;
-                notyf.error(
-                    `${toast}${clickHint}`,
-                    'Slash Command Execution Error',
-                    { escapeHtml: false, timeOut: 10000, onclick: () => callGenericPopup(toast, POPUP_TYPE.TEXT, '', { allowHorizontalScrolling: true, allowVerticalScrolling: true }) },
-                );
+                notyf.error(`${toast}${clickHint}`, 'Slash Command Execution Error', {
+                    escapeHtml: false,
+                    timeOut: 10000,
+                    onclick: () =>
+                        callGenericPopup(toast, POPUP_TYPE.TEXT, '', {
+                            allowHorizontalScrolling: true,
+                            allowVerticalScrolling: true,
+                        }),
+                });
             } else {
                 notyf.error(result.errorMessage);
             }
@@ -7527,21 +8572,29 @@ async function executeSlashCommandsWithOptions(text, options = {}) {
     if (!text) {
         return null;
     }
-    options = Object.assign({
-        handleParserErrors: true,
-        scope: null,
-        handleExecutionErrors: false,
-        parserFlags: null,
-        abortController: null,
-        debugController: null,
-        onProgress: null,
-        source: null,
-    }, options);
+    options = Object.assign(
+        {
+            handleParserErrors: true,
+            scope: null,
+            handleExecutionErrors: false,
+            parserFlags: null,
+            abortController: null,
+            debugController: null,
+            onProgress: null,
+            source: null,
+        },
+        options,
+    );
 
     let closure;
     try {
         // @ts-expect-error TS(2339) FIXME: Property 'parserFlags' does not exist on type '{}'... Remove this comment to see the full error message
-        closure = parser.parse(text, true, options.parserFlags, options.abortController ?? new SlashCommandAbortController());
+        closure = parser.parse(
+            text,
+            true,
+            options.parserFlags,
+            options.abortController ?? new SlashCommandAbortController(),
+        );
         // @ts-expect-error TS(2339) FIXME: Property 'scope' does not exist on type '{}'.
         closure.scope.parent = options.scope;
         // @ts-expect-error TS(2339) FIXME: Property 'onProgress' does not exist on type '{}'.
@@ -7561,11 +8614,15 @@ async function executeSlashCommandsWithOptions(text, options = {}) {
                 <pre style="text-align:left;">${ex.hint}</pre>
                 `;
             const clickHint = `<p>${t`Click to see details`}</p>`;
-            notyf.error(
-                `${toast}${clickHint}`,
-                'SlashCommandParserError',
-                { escapeHtml: false, timeOut: 10000, onclick: () => callGenericPopup(toast, POPUP_TYPE.TEXT, '', { allowHorizontalScrolling: true, allowVerticalScrolling: true }) },
-            );
+            notyf.error(`${toast}${clickHint}`, 'SlashCommandParserError', {
+                escapeHtml: false,
+                timeOut: 10000,
+                onclick: () =>
+                    callGenericPopup(toast, POPUP_TYPE.TEXT, '', {
+                        allowHorizontalScrolling: true,
+                        allowVerticalScrolling: true,
+                    }),
+            });
             const result = new SlashCommandClosureResult();
             return result;
         } else {
@@ -7592,11 +8649,15 @@ async function executeSlashCommandsWithOptions(text, options = {}) {
                     <pre style="text-align:left;">${ex.hint}</pre>
                     `;
                 const clickHint = '<p>Click to see details</p>';
-                notyf.error(
-                    `${toast}${clickHint}`,
-                    'SlashCommandExecutionError',
-                    { escapeHtml: false, timeOut: 10000, onclick: () => callGenericPopup(toast, POPUP_TYPE.TEXT, '', { allowHorizontalScrolling: true, allowVerticalScrolling: true }) },
-                );
+                notyf.error(`${toast}${clickHint}`, 'SlashCommandExecutionError', {
+                    escapeHtml: false,
+                    timeOut: 10000,
+                    onclick: () =>
+                        callGenericPopup(toast, POPUP_TYPE.TEXT, '', {
+                            allowHorizontalScrolling: true,
+                            allowVerticalScrolling: true,
+                        }),
+                });
             } else {
                 // @ts-expect-error TS(2304) FIXME: Cannot find name 'toastr'.
                 notyf.error(e.message);
@@ -7627,7 +8688,11 @@ export async function setSlashCommandAutoComplete(textarea, isFloating = false) 
     const parser = new SlashCommandParser();
     const ac = new AutoComplete(
         textarea,
-        () => ac.text[0] == '/' && (power_user.stscript.autocomplete.state === AUTOCOMPLETE_STATE.ALWAYS || power_user.stscript.autocomplete.state === AUTOCOMPLETE_STATE.MIN_LENGTH && ac.text.length > 2),
+        () =>
+            ac.text[0] == '/' &&
+            (power_user.stscript.autocomplete.state === AUTOCOMPLETE_STATE.ALWAYS ||
+                (power_user.stscript.autocomplete.state === AUTOCOMPLETE_STATE.MIN_LENGTH &&
+                    ac.text.length > 2)),
         // @ts-expect-error TS(7006) FIXME: Parameter 'text' implicitly has an 'any' type.
         async (text, index) => await parser.getNameAt(text, index),
         isFloating,
@@ -7639,7 +8704,9 @@ export async function setSlashCommandAutoComplete(textarea, isFloating = false) 
  *
  */
 export async function initSlashCommandAutoComplete() {
-    const sendTextarea = /** @type {HTMLTextAreaElement} */ (document.querySelector('#send_textarea'));
+    const sendTextarea = /** @type {HTMLTextAreaElement} */ (
+        document.querySelector('#send_textarea')
+    );
     setSlashCommandAutoComplete(sendTextarea);
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     sendTextarea.addEventListener('input', () => {

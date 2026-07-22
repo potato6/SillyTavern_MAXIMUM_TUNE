@@ -1,4 +1,3 @@
-
 export class AutoCompleteOption {
     /** @type {string} */ name;
     /** @type {string} */ typeIcon;
@@ -32,7 +31,6 @@ export class AutoCompleteOption {
      */
     sortPriority = 100;
 
-
     /**
      * Used as a comparison value when removing duplicates (e.g., when a SlashCommand has aliases).
      * @type {any}
@@ -45,7 +43,6 @@ export class AutoCompleteOption {
         return this.makeSelectable || !this.valueProvider;
     }
 
-
     /**
      * @param {string} name
      * @param typeIcon
@@ -55,7 +52,14 @@ export class AutoCompleteOption {
      * @param makeSelectable
      */
     // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
-    constructor(name, typeIcon = ' ', type = '', matchProvider = null, valueProvider = null, makeSelectable = false) {
+    constructor(
+        name,
+        typeIcon = ' ',
+        type = '',
+        matchProvider = null,
+        valueProvider = null,
+        makeSelectable = false,
+    ) {
         this.name = name;
         this.typeIcon = typeIcon;
         this.type = type;
@@ -64,45 +68,63 @@ export class AutoCompleteOption {
         this.makeSelectable = makeSelectable;
     }
 
-
     // @ts-expect-error TS(7006) FIXME: Parameter 'key' implicitly has an 'any' type.
-    makeItem(key, typeIcon, noSlash, namedArguments = [], unnamedArguments = [], returnType = 'void', helpString = '', aliasList = []) {
-        const li = document.createElement('li'); {
+    makeItem(
+        key,
+        typeIcon,
+        noSlash,
+        namedArguments = [],
+        unnamedArguments = [],
+        returnType = 'void',
+        helpString = '',
+        aliasList = [],
+    ) {
+        const li = document.createElement('li');
+        {
             li.classList.add('item');
-            const type = document.createElement('span'); {
+            const type = document.createElement('span');
+            {
                 type.classList.add('type');
                 type.classList.add('monospace');
                 type.textContent = typeIcon;
                 li.append(type);
             }
-            const specs = document.createElement('span'); {
+            const specs = document.createElement('span');
+            {
                 specs.classList.add('specs');
-                const name = document.createElement('span'); {
+                const name = document.createElement('span');
+                {
                     name.classList.add('name');
                     name.classList.add('monospace');
                     name.textContent = noSlash ? '' : '/';
                     // @ts-expect-error TS(7006) FIXME: Parameter 'char' implicitly has an 'any' type.
-                    key.split('').forEach(char => {
-                        const span = document.createElement('span'); {
+                    key.split('').forEach((char) => {
+                        const span = document.createElement('span');
+                        {
                             span.textContent = char;
                             name.append(span);
                         }
                     });
                     specs.append(name);
                 }
-                const body = document.createElement('span'); {
+                const body = document.createElement('span');
+                {
                     body.classList.add('body');
-                    const args = document.createElement('span'); {
+                    const args = document.createElement('span');
+                    {
                         args.classList.add('arguments');
                         for (const arg of namedArguments) {
-                            const argItem = document.createElement('span'); {
+                            const argItem = document.createElement('span');
+                            {
                                 argItem.classList.add('argument');
                                 argItem.classList.add('namedArgument');
                                 // @ts-expect-error TS(2339) FIXME: Property 'isRequired' does not exist on type 'neve... Remove this comment to see the full error message
-                                if (!arg.isRequired || (arg.defaultValue ?? false)) argItem.classList.add('optional');
+                                if (!arg.isRequired || (arg.defaultValue ?? false))
+                                    argItem.classList.add('optional');
                                 // @ts-expect-error TS(2339) FIXME: Property 'acceptsMultiple' does not exist on type ... Remove this comment to see the full error message
                                 if (arg.acceptsMultiple) argItem.classList.add('multiple');
-                                const name = document.createElement('span'); {
+                                const name = document.createElement('span');
+                                {
                                     name.classList.add('argument-name');
                                     // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
                                     name.textContent = arg.name;
@@ -110,11 +132,13 @@ export class AutoCompleteOption {
                                 }
                                 // @ts-expect-error TS(2339) FIXME: Property 'enumList' does not exist on type 'never'... Remove this comment to see the full error message
                                 if (arg.enumList.length > 0) {
-                                    const enums = document.createElement('span'); {
+                                    const enums = document.createElement('span');
+                                    {
                                         enums.classList.add('argument-enums');
                                         // @ts-expect-error TS(2339) FIXME: Property 'enumList' does not exist on type 'never'... Remove this comment to see the full error message
                                         for (const e of arg.enumList) {
-                                            const enumItem = document.createElement('span'); {
+                                            const enumItem = document.createElement('span');
+                                            {
                                                 enumItem.classList.add('argument-enum');
                                                 enumItem.textContent = e;
                                                 enums.append(enumItem);
@@ -123,11 +147,13 @@ export class AutoCompleteOption {
                                         argItem.append(enums);
                                     }
                                 } else {
-                                    const types = document.createElement('span'); {
+                                    const types = document.createElement('span');
+                                    {
                                         types.classList.add('argument-types');
                                         // @ts-expect-error TS(2339) FIXME: Property 'typeList' does not exist on type 'never'... Remove this comment to see the full error message
                                         for (const t of arg.typeList) {
-                                            const type = document.createElement('span'); {
+                                            const type = document.createElement('span');
+                                            {
                                                 type.classList.add('argument-type');
                                                 type.textContent = t;
                                                 types.append(type);
@@ -140,20 +166,24 @@ export class AutoCompleteOption {
                             }
                         }
                         for (const arg of unnamedArguments) {
-                            const argItem = document.createElement('span'); {
+                            const argItem = document.createElement('span');
+                            {
                                 argItem.classList.add('argument');
                                 argItem.classList.add('unnamedArgument');
                                 // @ts-expect-error TS(2339) FIXME: Property 'isRequired' does not exist on type 'neve... Remove this comment to see the full error message
-                                if (!arg.isRequired || (arg.defaultValue ?? false)) argItem.classList.add('optional');
+                                if (!arg.isRequired || (arg.defaultValue ?? false))
+                                    argItem.classList.add('optional');
                                 // @ts-expect-error TS(2339) FIXME: Property 'acceptsMultiple' does not exist on type ... Remove this comment to see the full error message
                                 if (arg.acceptsMultiple) argItem.classList.add('multiple');
                                 // @ts-expect-error TS(2339) FIXME: Property 'enumList' does not exist on type 'never'... Remove this comment to see the full error message
                                 if (arg.enumList.length > 0) {
-                                    const enums = document.createElement('span'); {
+                                    const enums = document.createElement('span');
+                                    {
                                         enums.classList.add('argument-enums');
                                         // @ts-expect-error TS(2339) FIXME: Property 'enumList' does not exist on type 'never'... Remove this comment to see the full error message
                                         for (const e of arg.enumList) {
-                                            const enumItem = document.createElement('span'); {
+                                            const enumItem = document.createElement('span');
+                                            {
                                                 enumItem.classList.add('argument-enum');
                                                 enumItem.textContent = e;
                                                 enums.append(enumItem);
@@ -162,11 +192,13 @@ export class AutoCompleteOption {
                                         argItem.append(enums);
                                     }
                                 } else {
-                                    const types = document.createElement('span'); {
+                                    const types = document.createElement('span');
+                                    {
                                         types.classList.add('argument-types');
                                         // @ts-expect-error TS(2339) FIXME: Property 'typeList' does not exist on type 'never'... Remove this comment to see the full error message
                                         for (const t of arg.typeList) {
-                                            const type = document.createElement('span'); {
+                                            const type = document.createElement('span');
+                                            {
                                                 type.classList.add('argument-type');
                                                 type.textContent = t;
                                                 types.append(type);
@@ -180,7 +212,8 @@ export class AutoCompleteOption {
                         }
                         body.append(args);
                     }
-                    const returns = document.createElement('span'); {
+                    const returns = document.createElement('span');
+                    {
                         returns.classList.add('returns');
                         returns.textContent = returnType ?? 'void';
                         // body.append(returns);
@@ -189,14 +222,17 @@ export class AutoCompleteOption {
                 }
                 li.append(specs);
             }
-            const stopgap = document.createElement('span'); {
+            const stopgap = document.createElement('span');
+            {
                 stopgap.classList.add('stopgap');
                 stopgap.textContent = '';
                 li.append(stopgap);
             }
-            const help = document.createElement('span'); {
+            const help = document.createElement('span');
+            {
                 help.classList.add('help');
-                const content = document.createElement('span'); {
+                const content = document.createElement('span');
+                {
                     content.classList.add('helpContent');
                     content.innerHTML = helpString;
                     const text = content.textContent;
@@ -207,11 +243,13 @@ export class AutoCompleteOption {
                 li.append(help);
             }
             if (aliasList.length > 0) {
-                const aliases = document.createElement('span'); {
+                const aliases = document.createElement('span');
+                {
                     aliases.classList.add('aliases');
                     aliases.append(' (alias: ');
                     for (const aliasName of aliasList) {
-                        const alias = document.createElement('span'); {
+                        const alias = document.createElement('span');
+                        {
                             alias.classList.add('monospace');
                             alias.textContent = `/${aliasName}`;
                             aliases.append(alias);
@@ -225,7 +263,6 @@ export class AutoCompleteOption {
         return li;
     }
 
-
     /**
      * @returns {HTMLElement}
      */
@@ -237,16 +274,17 @@ export class AutoCompleteOption {
         return li;
     }
 
-
     /**
      * @returns {DocumentFragment}
      */
     renderDetails() {
         // throw new Error(`${this.constructor.name}.renderDetails() is not implemented`);
         const frag = document.createDocumentFragment();
-        const specs = document.createElement('div'); {
+        const specs = document.createElement('div');
+        {
             specs.classList.add('specs');
-            const name = document.createElement('div'); {
+            const name = document.createElement('div');
+            {
                 name.classList.add('name');
                 name.classList.add('monospace');
                 name.textContent = this.name;

@@ -86,7 +86,9 @@ router.post('/restore', function (request, response) {
         const name = sanitize(request.body.name);
         const defaultPresets = getDefaultPresets(request.user.directories);
 
-        const defaultPreset = defaultPresets.find(p => p.name === name && p.folder === settings.folder);
+        const defaultPreset = defaultPresets.find(
+            (p) => p.name === name && p.folder === settings.folder,
+        );
 
         const result = { isDefault: false, preset: {} };
 

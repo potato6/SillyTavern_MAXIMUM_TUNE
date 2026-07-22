@@ -36,7 +36,8 @@ let CONFIG_PATH: string | null = null;
  * @returns {string} Environment variable key
  * @example keyToEnv('extensions.models.speechToText') // 'SILLYTAVERN_EXTENSIONS_MODELS_SPEECHTOTEXT'
  */
-export const keyToEnv = (key: unknown) => 'SILLYTAVERN_' + String(key).toUpperCase().replace(/\./g, '_');
+export const keyToEnv = (key: unknown) =>
+    'SILLYTAVERN_' + String(key).toUpperCase().replace(/\./g, '_');
 
 /**
  * Set the config file path.
@@ -44,7 +45,11 @@ export const keyToEnv = (key: unknown) => 'SILLYTAVERN_' + String(key).toUpperCa
  */
 export function setConfigFilePath(configFilePath: string) {
     if (CONFIG_PATH !== null) {
-        console.error(color.red('Config file path already set. Please restart the server to change the config file path.'));
+        console.error(
+            color.red(
+                'Config file path already set. Please restart the server to change the config file path.',
+            ),
+        );
     }
     CONFIG_PATH = path.resolve(configFilePath);
 }
@@ -56,14 +61,22 @@ export function setConfigFilePath(configFilePath: string) {
 export function getConfig(): Record<string, unknown> {
     if (CONFIG_PATH === null) {
         console.trace();
-        console.error(color.red('No config file path set. Please set the config file path using setConfigFilePath().'));
+        console.error(
+            color.red(
+                'No config file path set. Please set the config file path using setConfigFilePath().',
+            ),
+        );
         process.exit(1);
     }
     if (CACHED_CONFIG) {
         return CACHED_CONFIG;
     }
     if (!fs.existsSync(CONFIG_PATH)) {
-        console.error(color.red('No config file found. Please create a config.yaml file. The default config file can be found in the /default folder.'));
+        console.error(
+            color.red(
+                'No config file found. Please create a config.yaml file. The default config file can be found in the /default folder.',
+            ),
+        );
         console.error(color.red('The program will now exit.'));
         process.exit(1);
     }
@@ -73,7 +86,11 @@ export function getConfig(): Record<string, unknown> {
         CACHED_CONFIG = config;
         return config;
     } catch (error) {
-        console.error(color.red('FATAL: Failed to read config.yaml. Please check the file for syntax errors.'));
+        console.error(
+            color.red(
+                'FATAL: Failed to read config.yaml. Please check the file for syntax errors.',
+            ),
+        );
         // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         console.error(error.message);
         process.exit(1);
@@ -97,7 +114,7 @@ export function getConfigValue(key: string, defaultValue = null, typeConverter =
         if (envKey in process.env) {
             const needsJsonParse = defaultValue && typeof defaultValue === 'object';
             const envValue = process.env[envKey];
-            return needsJsonParse ? (tryParse(envValue!) ?? defaultValue) : envValue!
+            return needsJsonParse ? (tryParse(envValue!) ?? defaultValue) : envValue!;
         }
         const config = getConfig();
         return get(config, key, defaultValue);
@@ -160,7 +177,14 @@ export async function getVersion() {
     }
 
     const agent = `SillyTavern:${pkgVersion}:Cohee#1207`;
-    return { agent, pkgVersion, gitRevision, gitBranch, commitDate: commitDate?.trim() ?? null, isLatest };
+    return {
+        agent,
+        pkgVersion,
+        gitRevision,
+        gitBranch,
+        commitDate: commitDate?.trim() ?? null,
+        isLatest,
+    };
 }
 
 /**
@@ -169,7 +193,7 @@ export async function getVersion() {
  * @returns {Promise<void>} Promise that resolves after the given amount of milliseconds
  */
 export function delay(ms: number) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 /**
@@ -202,7 +226,10 @@ export function formatBytes(numBytes: number) {
  * @param {string} fileExtension File extension to look for
  * @returns {Promise<Buffer|null>} Buffer containing the extracted file. Null if the file was not found.
  */
-export async function extractFileFromZipBuffer(archiveBuffer: ArrayBufferLike, fileExtension: string) {
+export async function extractFileFromZipBuffer(
+    archiveBuffer: ArrayBufferLike,
+    fileExtension: string,
+) {
     try {
         const zip = fflate.unzipSync(new Uint8Array(archiveBuffer));
         for (const [fileName, data] of Object.entries(zip)) {
@@ -252,7 +279,10 @@ export function normalizeZipEntryPath(entryName: unknown) {
  * @param {string[]} fileNames Array of file paths to extract
  * @returns {Promise<Map<string, Buffer>>} Map of normalized paths to their extracted buffers
  */
-export async function extractFilesFromZipBuffer(archiveBuffer: ArrayBufferLike, fileNames: unknown) {
+export async function extractFilesFromZipBuffer(
+    archiveBuffer: ArrayBufferLike,
+    fileNames: unknown,
+) {
     const targets = new Map();
 
     if (Array.isArray(fileNames)) {
@@ -363,7 +393,7 @@ export async function readAllChunks(readableStream: Readable) {
  * @returns {boolean} True if the item is an object and not an array
  */
 function isObject(item: unknown) {
-    return (item && typeof item === 'object' && !Array.isArray(item));
+    return item && typeof item === 'object' && !Array.isArray(item);
 }
 
 /**
@@ -375,7 +405,7 @@ function isObject(item: unknown) {
 export function deepMerge(target: Record<string, unknown>, source: Record<string, unknown>) {
     const output = Object.assign({}, target);
     if (isObject(target) && isObject(source)) {
-        Object.keys(source).forEach(key => {
+        Object.keys(source).forEach((key) => {
             if (isObject(source[key])) {
                 if (!(key in target)) {
                     Object.assign(output, { [key]: source[key] });
@@ -408,8 +438,8 @@ export function uuidv4() {
     }
     // Very insecure UUID generator, but it's better than nothing.
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-        const r = Math.random() * 16 | 0;
-        const v = c === 'x' ? r : (r & 0x3 | 0x8);
+        const r = (Math.random() * 16) | 0;
+        const v = c === 'x' ? r : (r & 0x3) | 0x8;
         return v.toString(16);
     });
 }
@@ -478,9 +508,13 @@ export function clientRelativePath(root: string, inputPath: string) {
  *        When set to 0, the intention is to also check if the basename (without applied index) is free.
  * @returns {string|null} A unique name. Null if no unique name could be found in `maxTries`.
  */
-export function getUniqueName(baseName: string, exists: (name: string) => boolean, { nameBuilder = null, maxTries = 1000, startIndex = 1 } = {}) {
+export function getUniqueName(
+    baseName: string,
+    exists: (name: string) => boolean,
+    { nameBuilder = null, maxTries = 1000, startIndex = 1 } = {},
+) {
     // @ts-expect-error TS(2322) FIXME: Type '(baseName: string, i: number) => string' is ... Remove this comment to see the full error message
-    nameBuilder ??= (baseName: string, i: number) => i === 0 ? baseName : `${baseName} (${i})`;
+    nameBuilder ??= (baseName: string, i: number) => (i === 0 ? baseName : `${baseName} (${i})`);
     let i = startIndex;
     let name;
     while (i < maxTries + startIndex) {
@@ -536,11 +570,12 @@ export function generateTimestamp() {
  */
 export function removeOldBackups(directory: string, prefix: string, limit = null) {
     // @ts-expect-error TS(2345) FIXME: Argument of type '50' is not assignable to paramet... Remove this comment to see the full error message
-    const MAX_BACKUPS = limit ?? Number(getConfigValue('backups.common.numberOfBackups', 50, 'number'));
+    const MAX_BACKUPS =
+        limit ?? Number(getConfigValue('backups.common.numberOfBackups', 50, 'number'));
 
-    let files = fs.readdirSync(directory).filter(f => f.startsWith(prefix));
+    let files = fs.readdirSync(directory).filter((f) => f.startsWith(prefix));
     if (files.length > MAX_BACKUPS) {
-        files = files.map(f => path.join(directory, f));
+        files = files.map((f) => path.join(directory, f));
         files.sort((a, b) => fs.statSync(a).mtimeMs - fs.statSync(b).mtimeMs);
 
         while (files.length > MAX_BACKUPS) {
@@ -571,7 +606,9 @@ export function getImages(directoryPath: string, sortBy = 'name', type = MEDIA_R
             case 'name':
                 return Intl.Collator().compare;
             case 'date':
-                return (a: string, b: string) => fs.statSync(path.join(directoryPath, a)).mtimeMs - fs.statSync(path.join(directoryPath, b)).mtimeMs;
+                return (a: string, b: string) =>
+                    fs.statSync(path.join(directoryPath, a)).mtimeMs -
+                    fs.statSync(path.join(directoryPath, b)).mtimeMs;
             default:
                 return (_a: string, _b: string) => 0;
         }
@@ -579,25 +616,25 @@ export function getImages(directoryPath: string, sortBy = 'name', type = MEDIA_R
 
     return fs
         .readdirSync(directoryPath, { withFileTypes: true })
-        .filter(dirent => dirent.isFile())
-        .map(dirent => dirent.name)
-        .filter(file => {
+        .filter((dirent) => dirent.isFile())
+        .map((dirent) => dirent.name)
+        .filter((file) => {
             const fileType = Bun.file(file).type;
             if (!fileType) {
                 return false;
             }
-            if ((type & MEDIA_REQUEST_TYPE.IMAGE) && fileType.startsWith('image/')) {
+            if (type & MEDIA_REQUEST_TYPE.IMAGE && fileType.startsWith('image/')) {
                 return true;
             }
-            if ((type & MEDIA_REQUEST_TYPE.VIDEO) && fileType.startsWith('video/')) {
+            if (type & MEDIA_REQUEST_TYPE.VIDEO && fileType.startsWith('video/')) {
                 return true;
             }
-            if ((type & MEDIA_REQUEST_TYPE.AUDIO) && fileType.startsWith('audio/')) {
+            if (type & MEDIA_REQUEST_TYPE.AUDIO && fileType.startsWith('audio/')) {
                 return true;
             }
             return false;
         })
-        .sort(getSortFunction());
+        .toSorted(getSortFunction());
 }
 
 /**
@@ -627,10 +664,14 @@ export async function forwardFetchResponse(from: Response, to: import('express')
             const rawErrorText = await from.text();
             const detail = rawErrorText || 'Unknown error occurred';
 
-            console.warn(`Streaming request failed with status ${from.status} ${statusText}: ${detail}`);
+            console.warn(
+                `Streaming request failed with status ${from.status} ${statusText}: ${detail}`,
+            );
             to.end(rawErrorText, 'utf-8');
         } catch {
-            console.warn(`Streaming request failed with status ${from.status} ${statusText}: Unknown error occurred`);
+            console.warn(
+                `Streaming request failed with status ${from.status} ${statusText}: Unknown error occurred`,
+            );
             to.end();
         }
 
@@ -640,9 +681,12 @@ export async function forwardFetchResponse(from: Response, to: import('express')
     if (from.body && to.socket) {
         // Bun: Response.body is a Web ReadableStream without .pipe().
         // Convert to Node.js Readable for cross-runtime compatibility.
-        const stream: Readable = typeof (from.body as unknown as { pipe?: unknown }).pipe === 'function'
-            ? from.body as unknown as Readable
-            : Readable.fromWeb(from.body as unknown as import('node:stream/web').ReadableStream<Uint8Array>);
+        const stream: Readable =
+            typeof (from.body as unknown as { pipe?: unknown }).pipe === 'function'
+                ? (from.body as unknown as Readable)
+                : Readable.fromWeb(
+                      from.body as unknown as import('node:stream/web').ReadableStream<Uint8Array>,
+                  );
 
         stream.pipe(to);
 
@@ -703,11 +747,11 @@ export function excludeKeysByYaml(obj: Record<string, unknown>, yamlString: stri
         const parsedObject = yaml.parse(yamlString);
 
         if (Array.isArray(parsedObject)) {
-            parsedObject.forEach(key => {
+            parsedObject.forEach((key) => {
                 delete obj[key];
             });
         } else if (typeof parsedObject === 'object') {
-            Object.keys(parsedObject).forEach(key => {
+            Object.keys(parsedObject).forEach((key) => {
                 delete obj[key];
             });
         } else if (typeof parsedObject === 'string') {
@@ -724,7 +768,9 @@ export function excludeKeysByYaml(obj: Record<string, unknown>, yamlString: stri
  * @returns {string} Trimmed string
  */
 export function trimV1(str: unknown) {
-    return String(str ?? '').replace(/\/$/, '').replace(/\/v1$/, '');
+    return String(str ?? '')
+        .replace(/\/$/, '')
+        .replace(/\/v1$/, '');
 }
 
 /**
@@ -740,7 +786,7 @@ export function trimTrailingSlash(str: unknown) {
  * Simple TTL memory cache.
  */
 export class Cache {
-    cache: Map<string, { value: unknown, expiry: number }>;
+    cache: Map<string, { value: unknown; expiry: number }>;
     ttl: number;
     /**
      * @param {number} ttl Time to live in milliseconds
@@ -859,18 +905,18 @@ export async function canResolve(name: string, useIPv6 = true, useIPv4 = true) {
             try {
                 await dnsPromise.resolve6(name);
                 v6Resolved = true;
-                } catch {
-                    v6Resolved = false;
-                }
+            } catch {
+                v6Resolved = false;
+            }
         }
 
         if (useIPv4) {
             try {
                 await dnsPromise.resolve(name);
                 v4Resolved = true;
-                } catch {
-                    v4Resolved = false;
-                }
+            } catch {
+                v4Resolved = false;
+            }
         }
 
         return v6Resolved || v4Resolved;
@@ -924,7 +970,6 @@ export async function getHasIP() {
     return { hasIPv6Any, hasIPv4Any, hasIPv6Local, hasIPv4Local };
 }
 
-
 /**
  * Converts various JavaScript primitives to boolean values.
  * Handles special case for "true"/"false" strings (case-insensitive)
@@ -964,10 +1009,10 @@ export function setupLogLevel() {
     // @ts-expect-error TS(2345) FIXME: Argument of type 'number' is not assignable to par... Remove this comment to see the full error message
     const logLevel = getConfigValue('logging.minLogLevel', LOG_LEVELS.DEBUG, 'number');
 
-    globalThis.console.debug = logLevel <= LOG_LEVELS.DEBUG ? console.debug : () => { };
-    globalThis.console.info = logLevel <= LOG_LEVELS.INFO ? console.info : () => { };
-    globalThis.console.warn = logLevel <= LOG_LEVELS.WARN ? console.warn : () => { };
-    globalThis.console.error = logLevel <= LOG_LEVELS.ERROR ? console.error : () => { };
+    globalThis.console.debug = logLevel <= LOG_LEVELS.DEBUG ? console.debug : () => {};
+    globalThis.console.info = logLevel <= LOG_LEVELS.INFO ? console.info : () => {};
+    globalThis.console.warn = logLevel <= LOG_LEVELS.WARN ? console.warn : () => {};
+    globalThis.console.error = logLevel <= LOG_LEVELS.ERROR ? console.error : () => {};
 }
 
 /**
@@ -1165,7 +1210,10 @@ export class MemoryLimitedMap {
  * @param {Parameters<typeof fs.readFileSync>[1]} options Options object to pass through to `fs.readFileSync()` (default: `{ encoding: 'utf-8' }`).
  * @returns {string | null} The contents at `filePath` if it exists, or `null` if not.
  */
-export function safeReadFileSync(filePath: string, options = { encoding: 'utf-8' as BufferEncoding }) {
+export function safeReadFileSync(
+    filePath: string,
+    options = { encoding: 'utf-8' as BufferEncoding },
+) {
     if (fs.existsSync(filePath)) return fs.readFileSync(filePath, options);
     return null;
 }
@@ -1247,7 +1295,11 @@ export function isPathUnderParent(parentPath: string, childPath: string) {
 
     const relativePath = path.relative(normalizedParent, normalizedChild);
 
-    return relativePath !== '..' && !relativePath.startsWith('..' + path.sep) && !path.isAbsolute(relativePath);
+    return (
+        relativePath !== '..' &&
+        !relativePath.startsWith('..' + path.sep) &&
+        !path.isAbsolute(relativePath)
+    );
 }
 
 /**
@@ -1299,7 +1351,10 @@ export function flattenSchema(schema: Record<string, unknown>, api: string) {
     }
 
     const schemaCopy = structuredClone(schema);
-    const isGoogleApi = [CHAT_COMPLETION_SOURCES.VERTEXAI, CHAT_COMPLETION_SOURCES.MAKERSUITE].includes(api);
+    const isGoogleApi = [
+        CHAT_COMPLETION_SOURCES.VERTEXAI,
+        CHAT_COMPLETION_SOURCES.MAKERSUITE,
+    ].includes(api);
 
     const definitions = schemaCopy.$defs || {};
     delete schemaCopy.$defs;
@@ -1315,7 +1370,7 @@ export function flattenSchema(schema: Record<string, unknown>, api: string) {
             return obj;
         }
         if (Array.isArray(obj)) {
-            return obj.map(item => resolve(item, parents));
+            return obj.map((item) => resolve(item, parents));
         }
 
         // 1. Resolve $refs first
@@ -1338,7 +1393,12 @@ export function flattenSchema(schema: Record<string, unknown>, api: string) {
             if (!Object.prototype.hasOwnProperty.call(obj, key)) continue;
 
             // For Google, filter unsupported top-level keywords
-            if (isGoogleApi && ['default', 'additionalProperties', 'exclusiveMinimum', 'propertyNames'].includes(key)) {
+            if (
+                isGoogleApi &&
+                ['default', 'additionalProperties', 'exclusiveMinimum', 'propertyNames'].includes(
+                    key,
+                )
+            ) {
                 continue;
             }
 
@@ -1411,14 +1471,14 @@ export function readFirstLine(filePath: string) {
     const rl = readline.createInterface({ input: stream });
     return new Promise((resolve, reject) => {
         let resolved = false;
-        rl.on('line', line => {
+        rl.on('line', (line) => {
             resolved = true;
             rl.close();
             stream.close();
             resolve(line);
         });
 
-        rl.on('error', error => {
+        rl.on('error', (error) => {
             resolved = true;
             reject(error);
         });
@@ -1441,7 +1501,11 @@ export function readFirstLine(filePath: string) {
  * @param {import('express').Request} request Request object
  * @param {import('express').Response} response Response object
  */
-export function invalidateFirefoxCache(file: string, request: import('express').Request, response: import('express').Response) {
+export function invalidateFirefoxCache(
+    file: string,
+    request: import('express').Request,
+    response: import('express').Response,
+) {
     const mimeType = isFirefox(request) && Bun.file(file).type;
     if (mimeType && mimeType.startsWith('image/')) {
         response.setHeader('Cache-Control', 'must-understand, no-store');

@@ -2728,7 +2728,7 @@
     "Auto Generation": "Автоматическая генерация",
     "Narrate by paragraphs (when streaming)": "Озвучивать по параграфу за раз (при вкл. стриминге)",
     "Narrate by paragraphs (when not streaming)": "Озвучивать по параграфу за раз (при выкл. стриминге)",
-    "Only narrate quotes":  "Озвучивать только текст \"в кавычках\"",
+    "Only narrate quotes": "Озвучивать только текст \"в кавычках\"",
     "Ignore text, even quotes, inside asterisk": "Не озвучивать *текст, даже \"в кавычках\", если он внутри звёздочек*",
     "Narrate only the translated text": "Озвучивать только переведённый текст",
     "Skip codeblocks": "Пропускать блоки кода",

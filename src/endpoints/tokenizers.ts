@@ -115,12 +115,17 @@ async function getPathToTokenizer(model: string, fallbackModel: string | undefin
         const getLastSegment = (str: string) => str?.split('/')?.pop() || '';
         if (fallbackModel) {
             // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-            console.error(`Could not get a tokenizer from ${getLastSegment(model)}. Reason: ${error.message}. Using a fallback model: ${getLastSegment(fallbackModel)}.`);
+            console.error(
+                `Could not get a tokenizer from ${getLastSegment(model)}. Reason: ${error.message}. Using a fallback model: ${getLastSegment(fallbackModel)}.`,
+            );
             return fallbackModel;
         }
 
         // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-        throw new Error(`Failed to instantiate a tokenizer and fallback is not provided. Reason: ${error.message}`);
+        throw new Error(
+            `Failed to instantiate a tokenizer and fallback is not provided. Reason: ${error.message}`,
+            { cause: error },
+        );
     }
 }
 
@@ -214,7 +219,12 @@ class WebTokenizer {
         try {
             const pathToModel = await getPathToTokenizer(this.#model, this.#fallbackModel);
             const fileBuffer = await fs.promises.readFile(pathToModel);
-            this.#instance = await Tokenizer.fromJSON(fileBuffer.buffer.slice(fileBuffer.byteOffset, fileBuffer.byteOffset + fileBuffer.byteLength));
+            this.#instance = await Tokenizer.fromJSON(
+                fileBuffer.buffer.slice(
+                    fileBuffer.byteOffset,
+                    fileBuffer.byteOffset + fileBuffer.byteLength,
+                ),
+            );
             console.info('Instantiated the tokenizer for', path.parse(pathToModel).name);
             return this.#instance;
         } catch (error) {
@@ -233,11 +243,26 @@ const spp_gemma = new SentencePieceTokenizer('src/tokenizers/gemma.model');
 const spp_jamba = new SentencePieceTokenizer('src/tokenizers/jamba.model');
 const claude_tokenizer = new WebTokenizer('src/tokenizers/claude.json');
 const llama3_tokenizer = new WebTokenizer('src/tokenizers/llama3.json');
-const commandRTokenizer = new WebTokenizer('https://github.com/SillyTavern/SillyTavern-Tokenizers/raw/main/command-r.json.gz', 'src/tokenizers/llama3.json');
-const commandATokenizer = new WebTokenizer('https://github.com/SillyTavern/SillyTavern-Tokenizers/raw/main/command-a.json.gz', 'src/tokenizers/llama3.json');
-const qwen2Tokenizer = new WebTokenizer('https://github.com/SillyTavern/SillyTavern-Tokenizers/raw/main/qwen2.json.gz', 'src/tokenizers/llama3.json');
-const nemoTokenizer = new WebTokenizer('https://github.com/SillyTavern/SillyTavern-Tokenizers/raw/main/nemo.json.gz', 'src/tokenizers/llama3.json');
-const deepseekTokenizer = new WebTokenizer('https://github.com/SillyTavern/SillyTavern-Tokenizers/raw/main/deepseek.json.gz', 'src/tokenizers/llama3.json');
+const commandRTokenizer = new WebTokenizer(
+    'https://github.com/SillyTavern/SillyTavern-Tokenizers/raw/main/command-r.json.gz',
+    'src/tokenizers/llama3.json',
+);
+const commandATokenizer = new WebTokenizer(
+    'https://github.com/SillyTavern/SillyTavern-Tokenizers/raw/main/command-a.json.gz',
+    'src/tokenizers/llama3.json',
+);
+const qwen2Tokenizer = new WebTokenizer(
+    'https://github.com/SillyTavern/SillyTavern-Tokenizers/raw/main/qwen2.json.gz',
+    'src/tokenizers/llama3.json',
+);
+const nemoTokenizer = new WebTokenizer(
+    'https://github.com/SillyTavern/SillyTavern-Tokenizers/raw/main/nemo.json.gz',
+    'src/tokenizers/llama3.json',
+);
+const deepseekTokenizer = new WebTokenizer(
+    'https://github.com/SillyTavern/SillyTavern-Tokenizers/raw/main/deepseek.json.gz',
+    'src/tokenizers/llama3.json',
+);
 
 export const sentencepieceTokenizers = [
     'llama',
@@ -359,7 +384,7 @@ async function countSentencepieceTokens(tokenizer: SentencePieceTokenizer, text:
     };
 }
 
- /* Counts the tokens in the given array of objects using the Sentencepiece tokenizer.
+/* Counts the tokens in the given array of objects using the Sentencepiece tokenizer.
  * @param {SentencePieceTokenizer} tokenizer Sentencepiece tokenizer instance
  * @param {object[]} array Array of objects to tokenize
  * @returns {Promise<number>} Number of tokens
@@ -426,11 +451,20 @@ function getWebTokenizersChunks(tokenizer: Tokenizer, ids: number[]) {
  * @returns {string} Tokenizer model to use
  */
 export function getTokenizerModel(requestModel: string) {
-    if (requestModel === 'o1' || requestModel.includes('o1-preview') || requestModel.includes('o1-mini') || requestModel.includes('o3-mini')) {
+    if (
+        requestModel === 'o1' ||
+        requestModel.includes('o1-preview') ||
+        requestModel.includes('o1-mini') ||
+        requestModel.includes('o3-mini')
+    ) {
         return 'o1';
     }
 
-    if (requestModel.includes('gpt-5') || requestModel.includes('o3') || requestModel.includes('o4-mini')) {
+    if (
+        requestModel.includes('gpt-5') ||
+        requestModel.includes('o3') ||
+        requestModel.includes('o4-mini')
+    ) {
         return 'o1';
     }
 
@@ -486,7 +520,11 @@ export function getTokenizerModel(requestModel: string) {
         return 'deepseek';
     }
 
-    if (requestModel.includes('gemma') || requestModel.includes('gemini') || requestModel.includes('learnlm')) {
+    if (
+        requestModel.includes('gemma') ||
+        requestModel.includes('gemini') ||
+        requestModel.includes('learnlm')
+    ) {
         return 'gemma';
     }
 
@@ -559,7 +597,9 @@ export function countWebTokenizerTokens(tokenizer: Tokenizer | null, messages: o
  * @returns {TokenizationHandler} Handler function
  */
 // @ts-expect-error TS(2304) FIXME: Cannot find name 'TokenizationHandler'.
-function createSentencepieceEncodingHandler(tokenizer: SentencePieceTokenizer): TokenizationHandler {
+function createSentencepieceEncodingHandler(
+    tokenizer: SentencePieceTokenizer,
+): TokenizationHandler {
     /**
      * Request handler for encoding Sentencepiece tokens.
      * @param {import('express').Request} request The Express request object The Express request object
@@ -590,7 +630,9 @@ function createSentencepieceEncodingHandler(tokenizer: SentencePieceTokenizer): 
  * @returns {TokenizationHandler} Handler function
  */
 // @ts-expect-error TS(2304) FIXME: Cannot find name 'TokenizationHandler'.
-function createSentencepieceDecodingHandler(tokenizer: SentencePieceTokenizer): TokenizationHandler {
+function createSentencepieceDecodingHandler(
+    tokenizer: SentencePieceTokenizer,
+): TokenizationHandler {
     /**
      * Request handler for decoding Sentencepiece tokens.
      * @param {import('express').Request} request The Express request object The Express request object
@@ -886,18 +928,44 @@ router.post('/count', async function (req, res) {
 router.get('/map', function (_req, res) {
     const nameToId: Record<string, number> = {
         gpt2: 1,
-        llama: 3, nerdstash: 4, nerdstash_v2: 5, mistral: 7, yi: 8,
-        claude: 11, llama3: 12, gemma: 13, jamba: 14,
-        qwen2: 15, 'command-r': 16, nemo: 17, deepseek: 18, 'command-a': 19,
+        llama: 3,
+        nerdstash: 4,
+        nerdstash_v2: 5,
+        mistral: 7,
+        yi: 8,
+        claude: 11,
+        llama3: 12,
+        gemma: 13,
+        jamba: 14,
+        qwen2: 15,
+        'command-r': 16,
+        nemo: 17,
+        deepseek: 18,
+        'command-a': 19,
     };
 
-    const tokenizers: { id: number; name: string; supportsEncode: boolean; supportsDecode: boolean }[] = [];
+    const tokenizers: {
+        id: number;
+        name: string;
+        supportsEncode: boolean;
+        supportsDecode: boolean;
+    }[] = [];
 
     for (const name of sentencepieceTokenizers) {
-        tokenizers.push({ id: nameToId[name] ?? -1, name, supportsEncode: true, supportsDecode: true });
+        tokenizers.push({
+            id: nameToId[name] ?? -1,
+            name,
+            supportsEncode: true,
+            supportsDecode: true,
+        });
     }
     for (const name of webTokenizers) {
-        tokenizers.push({ id: nameToId[name] ?? -1, name, supportsEncode: true, supportsDecode: true });
+        tokenizers.push({
+            id: nameToId[name] ?? -1,
+            name,
+            supportsEncode: true,
+            supportsDecode: true,
+        });
     }
     // Tiktoken-compatible — gpt2 maps to id 1, everything else uses the openai id (2)
     tokenizers.push({ id: 1, name: 'gpt2', supportsEncode: true, supportsDecode: true });
@@ -1097,74 +1165,74 @@ router.post('/openai/count', async function (req, res) {
             const instance = await claude_tokenizer.get();
             if (!instance) throw new Error('Failed to load the Claude tokenizer');
             num_tokens = countWebTokenizerTokens(instance, req.body);
-            return res.send({ 'token_count': num_tokens });
+            return res.send({ token_count: num_tokens });
         }
 
         if (model === 'llama3' || model === 'llama-3') {
             const instance = await llama3_tokenizer.get();
             if (!instance) throw new Error('Failed to load the Llama3 tokenizer');
             num_tokens = countWebTokenizerTokens(instance, req.body);
-            return res.send({ 'token_count': num_tokens });
+            return res.send({ token_count: num_tokens });
         }
 
         if (model === 'llama') {
             num_tokens = await countSentencepieceArrayTokens(spp_llama, req.body);
-            return res.send({ 'token_count': num_tokens });
+            return res.send({ token_count: num_tokens });
         }
 
         if (model === 'mistral') {
             num_tokens = await countSentencepieceArrayTokens(spp_mistral, req.body);
-            return res.send({ 'token_count': num_tokens });
+            return res.send({ token_count: num_tokens });
         }
 
         if (model === 'yi') {
             num_tokens = await countSentencepieceArrayTokens(spp_yi, req.body);
-            return res.send({ 'token_count': num_tokens });
+            return res.send({ token_count: num_tokens });
         }
 
         if (model === 'gemma' || model === 'gemini') {
             num_tokens = await countSentencepieceArrayTokens(spp_gemma, req.body);
-            return res.send({ 'token_count': num_tokens });
+            return res.send({ token_count: num_tokens });
         }
 
         if (model === 'jamba') {
             num_tokens = await countSentencepieceArrayTokens(spp_jamba, req.body);
-            return res.send({ 'token_count': num_tokens });
+            return res.send({ token_count: num_tokens });
         }
 
         if (model === 'qwen2') {
             const instance = await qwen2Tokenizer.get();
             if (!instance) throw new Error('Failed to load the Qwen2 tokenizer');
             num_tokens = countWebTokenizerTokens(instance, req.body);
-            return res.send({ 'token_count': num_tokens });
+            return res.send({ token_count: num_tokens });
         }
 
         if (model === 'command-r') {
             const instance = await commandRTokenizer.get();
             if (!instance) throw new Error('Failed to load the Command-R tokenizer');
             num_tokens = countWebTokenizerTokens(instance, req.body);
-            return res.send({ 'token_count': num_tokens });
+            return res.send({ token_count: num_tokens });
         }
 
         if (model === 'command-a') {
             const instance = await commandATokenizer.get();
             if (!instance) throw new Error('Failed to load the Command-A tokenizer');
             num_tokens = countWebTokenizerTokens(instance, req.body);
-            return res.send({ 'token_count': num_tokens });
+            return res.send({ token_count: num_tokens });
         }
 
         if (model === 'nemo') {
             const instance = await nemoTokenizer.get();
             if (!instance) throw new Error('Failed to load the Nemo tokenizer');
             num_tokens = countWebTokenizerTokens(instance, req.body);
-            return res.send({ 'token_count': num_tokens });
+            return res.send({ token_count: num_tokens });
         }
 
         if (model === 'deepseek') {
             const instance = await deepseekTokenizer.get();
             if (!instance) throw new Error('Failed to load the DeepSeek tokenizer');
             num_tokens = countWebTokenizerTokens(instance, req.body);
-            return res.send({ 'token_count': num_tokens });
+            return res.send({ token_count: num_tokens });
         }
 
         const tokensPerName = queryModel.includes('gpt-3.5-turbo-0301') ? -1 : 1;
@@ -1197,12 +1265,12 @@ router.post('/openai/count', async function (req, res) {
         // not needed for cached tokenizers
         //tokenizer.free();
 
-        res.send({ 'token_count': num_tokens });
+        res.send({ token_count: num_tokens });
     } catch (error) {
         console.error('An error counting tokens, using fallback estimation method', error);
         const jsonBody = JSON.stringify(req.body);
         const num_tokens = guesstimate(jsonBody);
-        res.send({ 'token_count': num_tokens });
+        res.send({ token_count: num_tokens });
     }
 });
 
@@ -1250,7 +1318,7 @@ router.post('/remote/kobold/count', async function (request, response) {
     try {
         const args = {
             method: 'POST',
-            body: JSON.stringify({ 'prompt': text }),
+            body: JSON.stringify({ prompt: text }),
             headers: { 'Content-Type': 'application/json' },
         };
 
@@ -1264,7 +1332,7 @@ router.post('/remote/kobold/count', async function (request, response) {
             return response.send({ error: true });
         }
 
-        const data = await result.json() as { value: unknown; ids: unknown };
+        const data = (await result.json()) as { value: unknown; ids: unknown };
         const count = data.value;
         const ids = data.ids ?? [];
         return response.send({ count, ids });
@@ -1297,32 +1365,36 @@ router.post('/remote/textgenerationwebui/encode', async function (request, respo
             case TEXTGEN_TYPES.TABBY:
                 url += '/v1/token/encode';
                 // @ts-expect-error TS(2339) FIXME: Property 'body' does not exist on type '{ method: ... Remove this comment to see the full error message
-                args.body = JSON.stringify({ 'text': text, 'add_bos_token': false, 'encode_special_tokens': false });
+                args.body = JSON.stringify({
+                    text: text,
+                    add_bos_token: false,
+                    encode_special_tokens: false,
+                });
                 break;
             case TEXTGEN_TYPES.KOBOLDCPP:
                 url += '/api/extra/tokencount';
                 // @ts-expect-error TS(2339) FIXME: Property 'body' does not exist on type '{ method: ... Remove this comment to see the full error message
-                args.body = JSON.stringify({ 'prompt': text, 'special': false });
+                args.body = JSON.stringify({ prompt: text, special: false });
                 break;
             case TEXTGEN_TYPES.LLAMACPP:
                 url += '/tokenize';
                 // @ts-expect-error TS(2339) FIXME: Property 'body' does not exist on type '{ method: ... Remove this comment to see the full error message
-                args.body = JSON.stringify({ 'model': model, 'content': text });
+                args.body = JSON.stringify({ model: model, content: text });
                 break;
             case TEXTGEN_TYPES.VLLM:
                 url += '/tokenize';
                 // @ts-expect-error TS(2339) FIXME: Property 'body' does not exist on type '{ method: ... Remove this comment to see the full error message
-                args.body = JSON.stringify({ 'model': model, 'prompt': text });
+                args.body = JSON.stringify({ model: model, prompt: text });
                 break;
             case TEXTGEN_TYPES.APHRODITE:
                 url += '/v1/tokenize';
                 // @ts-expect-error TS(2339) FIXME: Property 'body' does not exist on type '{ method: ... Remove this comment to see the full error message
-                args.body = JSON.stringify({ 'model': model, 'prompt': text });
+                args.body = JSON.stringify({ model: model, prompt: text });
                 break;
             default:
                 url += '/v1/internal/encode';
                 // @ts-expect-error TS(2339) FIXME: Property 'body' does not exist on type '{ method: ... Remove this comment to see the full error message
-                args.body = JSON.stringify({ 'text': text });
+                args.body = JSON.stringify({ text: text });
                 break;
         }
 
@@ -1333,9 +1405,15 @@ router.post('/remote/textgenerationwebui/encode', async function (request, respo
             return response.send({ error: true });
         }
 
-        const data = await result.json() as { length?: number; count?: number; value?: number; tokens?: { length?: number }; ids?: unknown[] };
-        const count = (data?.length ?? data?.count ?? data?.value ?? data?.tokens?.length);
-        const ids = (data?.tokens ?? data?.ids ?? []);
+        const data = (await result.json()) as {
+            length?: number;
+            count?: number;
+            value?: number;
+            tokens?: { length?: number };
+            ids?: unknown[];
+        };
+        const count = data?.length ?? data?.count ?? data?.value ?? data?.tokens?.length;
+        const ids = data?.tokens ?? data?.ids ?? [];
 
         return response.send({ count, ids });
     } catch (error) {

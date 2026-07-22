@@ -46,7 +46,9 @@ export default function accessLoggerMiddleware() {
 
             // Write to access log if enabled
             if (enableAccessLog) {
-                console.info(color.yellow(`New connection from ${clientIp}; User Agent: ${userAgent}\n`));
+                console.info(
+                    color.yellow(`New connection from ${clientIp}; User Agent: ${userAgent}\n`),
+                );
                 const logPath = getAccessLogPath();
                 const timestamp = new Date().toISOString();
                 const log = `${timestamp} ${clientIp} ${userAgent}\n`;

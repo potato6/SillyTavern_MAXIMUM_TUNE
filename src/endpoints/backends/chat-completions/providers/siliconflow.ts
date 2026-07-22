@@ -21,15 +21,19 @@ export default {
     ...base,
 
     async chat(req: import('express').Request, res: import('express').Response) {
-        const target = req.body.siliconflow_endpoint === SILICONFLOW_ENDPOINT.CN
-            ? API_SILICONFLOW_CN : API_SILICONFLOW;
+        const target =
+            req.body.siliconflow_endpoint === SILICONFLOW_ENDPOINT.CN
+                ? API_SILICONFLOW_CN
+                : API_SILICONFLOW;
         req.body.reverse_proxy = target;
         return base.chat(req, res);
     },
 
     async listModels(req: import('express').Request): Promise<ModelEntry[]> {
-        const target = req.body.siliconflow_endpoint === SILICONFLOW_ENDPOINT.CN
-            ? API_SILICONFLOW_CN : API_SILICONFLOW;
+        const target =
+            req.body.siliconflow_endpoint === SILICONFLOW_ENDPOINT.CN
+                ? API_SILICONFLOW_CN
+                : API_SILICONFLOW;
         req.body.reverse_proxy = target;
         return base.listModels(req);
     },

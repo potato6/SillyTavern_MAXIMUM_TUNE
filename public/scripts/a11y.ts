@@ -6,32 +6,35 @@
 const A11Y_RULES = [
     {
         role: 'button',
-        selector: '.menu_button,.right_menu_button,.mes_button,.drawer-icon,.inline-drawer-icon,.swipe_left,.swipe_right,.character_select,.tags .tag,.jg-menu .jg-button,.bg_example .mobile-only-menu-toggle,.paginationjs-pages li a,#show_more_messages'
+        selector:
+            '.menu_button,.right_menu_button,.mes_button,.drawer-icon,.inline-drawer-icon,.swipe_left,.swipe_right,.character_select,.tags .tag,.jg-menu .jg-button,.bg_example .mobile-only-menu-toggle,.paginationjs-pages li a,#show_more_messages',
     },
     {
         role: 'list',
-        selector: '.options-content,.list-group,#rm_print_characters_block,#rm_group_members,#rm_group_add_members,.tag_view_list_tags,.secretKeyManagerList,.recentChatList,.dataMaidCategoryContent,#userList,.bg_list'
+        selector:
+            '.options-content,.list-group,#rm_print_characters_block,#rm_group_members,#rm_group_add_members,.tag_view_list_tags,.secretKeyManagerList,.recentChatList,.dataMaidCategoryContent,#userList,.bg_list',
     },
     {
         role: 'listitem',
-        selector: '.options-content .list-group-item,.list-group .list-group-item,#rm_print_characters_block .entity_block,#rm_group_members .group_member,#rm_group_add_members .group_member,.tag_view_list_tags .tag_view_item,.secretKeyManagerList .secretKeyManagerItem,.recentChatList .recentChat,.dataMaidCategoryContent .dataMaidItem,#userList .userSelect,.bg_list .bg_example'
+        selector:
+            '.options-content .list-group-item,.list-group .list-group-item,#rm_print_characters_block .entity_block,#rm_group_members .group_member,#rm_group_add_members .group_member,.tag_view_list_tags .tag_view_item,.secretKeyManagerList .secretKeyManagerItem,.recentChatList .recentChat,.dataMaidCategoryContent .dataMaidItem,#userList .userSelect,.bg_list .bg_example',
     },
     {
         role: 'toolbar',
-        selector: '.jg-menu'
+        selector: '.jg-menu',
     },
     {
         role: 'tablist',
-        selector: '#bg_tabs .bg_tabs_list'
+        selector: '#bg_tabs .bg_tabs_list',
     },
     {
         role: 'tab',
-        selector: '#bg_tabs .bg_tabs_list .bg_tab_button'
+        selector: '#bg_tabs .bg_tabs_list .bg_tab_button',
     },
     {
         role: 'status',
-        selector: '#toast-container .toast'
-    }
+        selector: '#toast-container .toast',
+    },
 ];
 
 /**

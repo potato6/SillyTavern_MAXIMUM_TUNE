@@ -1,4 +1,10 @@
-import { name1, name2, characters, getCharacterCardFieldsLazy, getGeneratingModel } from '../../../script.js';
+import {
+    name1,
+    name2,
+    characters,
+    getCharacterCardFieldsLazy,
+    getGeneratingModel,
+} from '../../../script.js';
 import { groups, selected_group } from '../../../scripts/group-chats.js';
 import { logMacroGeneralError } from './MacroDiagnostics.js';
 // @ts-expect-error TS(2792) FIXME: Cannot find module '/scripts/utils.js'. Did you me... Remove this comment to see the full error message
@@ -42,12 +48,12 @@ export const env_provider_order = {
     LATEST: 100,
 };
 
-
-
 class MacroEnvBuilder {
     // @ts-expect-error TS(7008) FIXME: Member '#instance' implicitly has an 'any' type.
     /** @type {MacroEnvBuilder} */ static #instance;
-    /** @type {MacroEnvBuilder} */ static get instance() { return MacroEnvBuilder.#instance ?? (MacroEnvBuilder.#instance = new MacroEnvBuilder()); }
+    /** @type {MacroEnvBuilder} */ static get instance() {
+        return MacroEnvBuilder.#instance ?? (MacroEnvBuilder.#instance = new MacroEnvBuilder());
+    }
 
     /** @type {{ fn: MacroEnvProvider, order: env_provider_order }[]} */
     // @ts-expect-error TS(7008) FIXME: Member '#providers' implicitly has an 'any[]' type... Remove this comment to see the full error message
@@ -139,9 +145,16 @@ class MacroEnvBuilder {
         // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'null | un... Remove this comment to see the full error message
         env.names.group = getGroupValue(ctx, { currentChar: env.names.char, includeMuted: true });
         // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'null | un... Remove this comment to see the full error message
-        env.names.groupNotMuted = getGroupValue(ctx, { currentChar: env.names.char, includeMuted: false });
+        env.names.groupNotMuted = getGroupValue(ctx, {
+            currentChar: env.names.char,
+            includeMuted: false,
+        });
         // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'null | un... Remove this comment to see the full error message
-        env.names.notChar = getGroupValue(ctx, { currentChar: env.names.char, filterOutChar: true, includeUser: env.names.user });
+        env.names.notChar = getGroupValue(ctx, {
+            currentChar: env.names.char,
+            filterOutChar: true,
+            includeUser: env.names.user,
+        });
 
         // System
         // @ts-expect-error TS(2554) FIXME: Expected 1 arguments, but got 0.
@@ -158,7 +171,8 @@ class MacroEnvBuilder {
                 return ctx.original;
             };
         }
-        env.functions.postProcess = typeof ctx.postProcessFn === 'function' ? ctx.postProcessFn : (x) => x;
+        env.functions.postProcess =
+            typeof ctx.postProcessFn === 'function' ? ctx.postProcessFn : (x) => x;
 
         // Dynamic, per-call macros that should be visible only for this evaluation run.
         // Keys are normalized to lowercase for case-insensitive matching.
@@ -171,7 +185,7 @@ class MacroEnvBuilder {
 
         // Let providers augment the env, if any are registered. Apply them in order,
         // so callers can influence when their provider runs relative to others.
-        const orderedProviders = this.#providers.slice().sort((a, b) => a.order - b.order);
+        const orderedProviders = this.#providers.slice().toSorted((a, b) => a.order - b.order);
         for (const { fn } of orderedProviders) {
             try {
                 fn(env, ctx);
@@ -195,25 +209,32 @@ class MacroEnvBuilder {
  * @returns {string}
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'ctx' implicitly has an 'any' type.
-function getGroupValue(ctx, { currentChar = null, includeMuted = false, filterOutChar = false, includeUser = null }) {
+function getGroupValue(
+    ctx,
+    { currentChar = null, includeMuted = false, filterOutChar = false, includeUser = null },
+) {
     if (typeof ctx.groupOverride === 'string') {
         return ctx.groupOverride;
     }
 
-    if (!selected_group) return filterOutChar ? (includeUser || '') : (currentChar ?? '');
+    if (!selected_group) return filterOutChar ? includeUser || '' : (currentChar ?? '');
 
-    const groupEntry = Array.isArray(groups) ? groups.find(x => x && x.id === selected_group) : null;
+    const groupEntry = Array.isArray(groups)
+        ? groups.find((x) => x && x.id === selected_group)
+        : null;
     const members = /** @type {string[]} */ (groupEntry?.members ?? []);
     const disabledMembers = /** @type {string[]} */ (groupEntry?.disabled_members ?? []);
 
     const names = Array.isArray(members)
         ? members
-            .filter(((id) => includeMuted ? true : !disabledMembers.includes(id)))
-            .map(m => Array.isArray(characters) ? characters.find(c => c && c.avatar === m) : null)
-            .filter(c => !!c && typeof c.name === 'string')
-            .filter(c => !filterOutChar || c.name !== currentChar)
-            .map(c => c.name)
-            .join(', ')
+              .filter((id) => (includeMuted ? true : !disabledMembers.includes(id)))
+              .map((m) =>
+                  Array.isArray(characters) ? characters.find((c) => c && c.avatar === m) : null,
+              )
+              .filter((c) => !!c && typeof c.name === 'string')
+              .filter((c) => !filterOutChar || c.name !== currentChar)
+              .map((c) => c.name)
+              .join(', ')
         : '';
 
     return names;

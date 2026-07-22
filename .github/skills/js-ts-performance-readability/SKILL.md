@@ -1,10 +1,10 @@
 ---
 name: js-ts-performance-readability
-description: "Write JavaScript/TypeScript that is performant, readable, and easy to trust with minimal inspection. Use when generating or reviewing JS/TS code—scripts, utilities, data processing, or performance-sensitive logic—so outputs are correct, fast, and maintainable without heavy manual review."
-compatibility: "JavaScript or TypeScript; Node, Deno, or browser. Assumes ES2020+ (optional chaining, nullish coalescing, .at(), .findLast(), Promise.allSettled, etc.)."
+description: 'Write JavaScript/TypeScript that is performant, readable, and easy to trust with minimal inspection. Use when generating or reviewing JS/TS code—scripts, utilities, data processing, or performance-sensitive logic—so outputs are correct, fast, and maintainable without heavy manual review.'
+compatibility: 'JavaScript or TypeScript; Node, Deno, or browser. Assumes ES2020+ (optional chaining, nullish coalescing, .at(), .findLast(), Promise.allSettled, etc.).'
 metadata:
-  author: icyJoseph
-  version: "1.0"
+    author: icyJoseph
+    version: '1.0'
 ---
 
 # JavaScript/TypeScript performance, readability, and trust
@@ -32,7 +32,7 @@ Before writing code, understand what you're solving and what can go wrong.
 
 ### Identify edge cases upfront
 
-Think through edge cases *before* implementation—they're easier to handle when designed for, not patched in:
+Think through edge cases _before_ implementation—they're easier to handle when designed for, not patched in:
 
 - **Empty input**: Empty string, empty array, null/undefined. What should happen?
 - **Single element**: Does your logic assume at least 2 items? Handle the 1-item case.
@@ -50,6 +50,7 @@ Think through edge cases *before* implementation—they're easier to handle when
 ### When in doubt, ask
 
 If requirements are ambiguous, clarify before implementing. Questions like:
+
 - "What should happen if X is empty?"
 - "Should this throw or return a default for invalid input?"
 - "Is this expected to handle very large inputs?"
@@ -105,24 +106,24 @@ Getting alignment on edge cases early prevents rework.
 ### Async patterns: parallelize independent work
 
 - **`Promise.all`**: Use when you have independent async operations that can run concurrently. Fails fast—if any promise rejects, the whole result rejects.
-  ```ts
-  const [users, posts] = await Promise.all([fetchUsers(), fetchPosts()]);
-  ```
+    ```ts
+    const [users, posts] = await Promise.all([fetchUsers(), fetchPosts()]);
+    ```
 - **`Promise.allSettled`**: Use when you need results from all promises regardless of individual failures. Returns `{ status: 'fulfilled', value }` or `{ status: 'rejected', reason }` for each.
-  ```ts
-  const results = await Promise.allSettled(urls.map(fetch));
-  const succeeded = results.filter(r => r.status === 'fulfilled').map(r => r.value);
-  ```
+    ```ts
+    const results = await Promise.allSettled(urls.map(fetch));
+    const succeeded = results.filter((r) => r.status === 'fulfilled').map((r) => r.value);
+    ```
 - **`Promise.race`**: Use when you want the first promise to settle (e.g. timeout patterns).
 - **Avoid sequential awaits for independent work**:
-  ```ts
-  // Bad: sequential, takes sum of times
-  const a = await fetchA();
-  const b = await fetchB();
-  
-  // Good: parallel, takes max of times
-  const [a, b] = await Promise.all([fetchA(), fetchB()]);
-  ```
+    ```ts
+    // Bad: sequential, takes sum of times
+    const a = await fetchA();
+    const b = await fetchB();
+
+    // Good: parallel, takes max of times
+    const [a, b] = await Promise.all([fetchA(), fetchB()]);
+    ```
 
 ### Avoid common performance traps
 

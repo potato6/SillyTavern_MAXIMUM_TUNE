@@ -48,7 +48,6 @@ import {
     unshallowCharacter,
     deleteLastMessage,
     getCharacterCardFields,
-
     generateRaw,
     generateRawData,
     showSwipeButtons,
@@ -89,7 +88,11 @@ import { humanizedDateTime, isMobile, shouldSendOnEnter } from './RossAscends-mo
 import { ScraperManager } from './scrapers.js';
 import { executeSlashCommandsWithOptions } from './slash-commands.js';
 import { SlashCommand } from './slash-commands/SlashCommand.js';
-import { ARGUMENT_TYPE, SlashCommandArgument, SlashCommandNamedArgument } from './slash-commands/SlashCommandArgument.js';
+import {
+    ARGUMENT_TYPE,
+    SlashCommandArgument,
+    SlashCommandNamedArgument,
+} from './slash-commands/SlashCommandArgument.js';
 import { SlashCommandEnumValue } from './slash-commands/SlashCommandEnumValue.js';
 import { SlashCommandParser } from './slash-commands/SlashCommandParser.js';
 import { tag_map, tags, importTags } from './tags.js';
@@ -98,12 +101,38 @@ import { tokenizers, getTextTokens, getTokenCountAsync, getTokenizerModel } from
 import { ToolManager } from './tool-calling.js';
 import { accountStorage } from './util/AccountStorage.js';
 import { timestampToMoment, uuidv4, importFromExternalUrl } from './utils.js';
-import { addGlobalVariable, addLocalVariable, decrementGlobalVariable, decrementLocalVariable, deleteGlobalVariable, deleteLocalVariable, existsGlobalVariable, existsLocalVariable, getGlobalVariable, getLocalVariable, incrementGlobalVariable, incrementLocalVariable, setGlobalVariable, setLocalVariable } from './variables.js';
-import { convertCharacterBook, getWorldInfoPrompt, loadWorldInfo, reloadEditor, saveWorldInfo, updateWorldInfoList } from './world-info.js';
+import {
+    addGlobalVariable,
+    addLocalVariable,
+    decrementGlobalVariable,
+    decrementLocalVariable,
+    deleteGlobalVariable,
+    deleteLocalVariable,
+    existsGlobalVariable,
+    existsLocalVariable,
+    getGlobalVariable,
+    getLocalVariable,
+    incrementGlobalVariable,
+    incrementLocalVariable,
+    setGlobalVariable,
+    setLocalVariable,
+} from './variables.js';
+import {
+    convertCharacterBook,
+    getWorldInfoPrompt,
+    loadWorldInfo,
+    reloadEditor,
+    saveWorldInfo,
+    updateWorldInfoList,
+} from './world-info.js';
 import { wiManager } from './world-info/manager.js';
 import { ChatCompletionService, TextCompletionService } from './custom-request.js';
 import { ConnectionManagerRequestService } from './extensions/shared.js';
-import { updateReasoningUI, parseReasoningFromString, getReasoningTemplateByName } from './reasoning.js';
+import {
+    updateReasoningUI,
+    parseReasoningFromString,
+    getReasoningTemplateByName,
+} from './reasoning.js';
 import { IGNORE_SYMBOL, SWIPE_DIRECTION } from './constants.js';
 import { macros } from './macros/macro-system.js';
 
@@ -121,8 +150,8 @@ export function getContext() {
         characterId: this_chid,
         groupId: selected_group,
         chatId: selected_group
-            ? groups.find(x => x.id == selected_group)?.chat_id
-            : (characters[this_chid]?.chat),
+            ? groups.find((x) => x.id == selected_group)?.chat_id
+            : characters[this_chid]?.chat,
         getCurrentChatId,
         getRequestHeaders,
         reloadCurrentChat,
@@ -257,7 +286,8 @@ export function getContext() {
         updateWorldInfoList,
         convertCharacterBook,
         getWorldInfoPrompt,
-        getWorldInfoNames: () => Array.isArray(wiManager.worldNames) ? [...wiManager.worldNames] : [],
+        getWorldInfoNames: () =>
+            Array.isArray(wiManager.worldNames) ? [...wiManager.worldNames] : [],
         CONNECT_API_MAP,
         getTextGenServer,
         extractMessageFromData,

@@ -22,7 +22,7 @@ const requestCompressionConfig = {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'config' implicitly has an 'any' type.
 export function setRequestCompressionConfig(config) {
-    Object.assign(requestCompressionConfig, (config ?? {}));
+    Object.assign(requestCompressionConfig, config ?? {});
 }
 
 /**

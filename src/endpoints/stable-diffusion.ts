@@ -20,8 +20,8 @@ import { AIMLAPI_HEADERS } from '../constants.js';
 function getComfyWorkflows(directories: import('../users.js').UserDirectoryList) {
     return fs
         .readdirSync(directories.comfyWorkflows)
-        .filter(file => file[0] !== '.' && file.toLowerCase().endsWith('.json'))
-        .sort(Intl.Collator().compare);
+        .filter((file) => file[0] !== '.' && file.toLowerCase().endsWith('.json'))
+        .toSorted(Intl.Collator().compare);
 }
 
 export const router = express.Router();
@@ -34,7 +34,7 @@ router.post('/ping', async (request, response) => {
         const result = await fetch(url, {
             method: 'GET',
             headers: {
-                'Authorization': getBasicAuthHeader(request.body.auth),
+                Authorization: getBasicAuthHeader(request.body.auth),
             },
         });
 
@@ -61,7 +61,7 @@ router.post('/upscalers', async (request, response) => {
             const result = await fetch(url, {
                 method: 'GET',
                 headers: {
-                    'Authorization': getBasicAuthHeader(request.body.auth),
+                    Authorization: getBasicAuthHeader(request.body.auth),
                 },
             });
 
@@ -69,8 +69,8 @@ router.post('/upscalers', async (request, response) => {
                 throw new Error('SD WebUI returned an error.');
             }
 
-            const data = await result.json() as { name: string }[];
-            return data.map(x => x.name);
+            const data = (await result.json()) as { name: string }[];
+            return data.map((x) => x.name);
         }
 
         /**
@@ -83,7 +83,7 @@ router.post('/upscalers', async (request, response) => {
             const result = await fetch(url, {
                 method: 'GET',
                 headers: {
-                    'Authorization': getBasicAuthHeader(request.body.auth),
+                    Authorization: getBasicAuthHeader(request.body.auth),
                 },
             });
 
@@ -91,11 +91,14 @@ router.post('/upscalers', async (request, response) => {
                 throw new Error('SD WebUI returned an error.');
             }
 
-            const data = await result.json() as { name: string }[];
-            return data.map(x => x.name);
+            const data = (await result.json()) as { name: string }[];
+            return data.map((x) => x.name);
         }
 
-        const [upscalers, latentUpscalers] = await Promise.all([getUpscalerModels(), getLatentUpscalers()]);
+        const [upscalers, latentUpscalers] = await Promise.all([
+            getUpscalerModels(),
+            getLatentUpscalers(),
+        ]);
 
         // 0 = None, then Latent Upscalers, then Upscalers
         upscalers.splice(1, 0, ...latentUpscalers);
@@ -117,21 +120,25 @@ router.post('/vaes', async (request, response) => {
         const requestInit = {
             method: 'GET',
             headers: {
-                'Authorization': getBasicAuthHeader(request.body.auth),
+                Authorization: getBasicAuthHeader(request.body.auth),
             },
         };
         const results = await Promise.allSettled([
-            fetch(autoUrl, requestInit).then(r => r.ok ? r.json() : Promise.reject(r.statusText)),
-            fetch(forgeUrl, requestInit).then(r => r.ok ? r.json() : Promise.reject(r.statusText)),
+            fetch(autoUrl, requestInit).then((r) =>
+                r.ok ? r.json() : Promise.reject(r.statusText),
+            ),
+            fetch(forgeUrl, requestInit).then((r) =>
+                r.ok ? r.json() : Promise.reject(r.statusText),
+            ),
         ]);
 
-        const data = results.find(r => r.status === 'fulfilled')?.value;
+        const data = results.find((r) => r.status === 'fulfilled')?.value;
 
         if (!Array.isArray(data)) {
             throw new Error('SD WebUI returned an error.');
         }
 
-        const names = data.map(x => x.model_name);
+        const names = data.map((x) => x.model_name);
         return response.send(names);
     } catch (error) {
         console.error(error);
@@ -147,7 +154,7 @@ router.post('/samplers', async (request, response) => {
         const result = await fetch(url, {
             method: 'GET',
             headers: {
-                'Authorization': getBasicAuthHeader(request.body.auth),
+                Authorization: getBasicAuthHeader(request.body.auth),
             },
         });
 
@@ -155,8 +162,8 @@ router.post('/samplers', async (request, response) => {
             throw new Error('SD WebUI returned an error.');
         }
 
-        const data = await result.json() as { name: string }[];
-        const names = data.map(x => x.name);
+        const data = (await result.json()) as { name: string }[];
+        const names = data.map((x) => x.name);
         return response.send(names);
     } catch (error) {
         console.error(error);
@@ -172,7 +179,7 @@ router.post('/schedulers', async (request, response) => {
         const result = await fetch(url, {
             method: 'GET',
             headers: {
-                'Authorization': getBasicAuthHeader(request.body.auth),
+                Authorization: getBasicAuthHeader(request.body.auth),
             },
         });
 
@@ -180,8 +187,8 @@ router.post('/schedulers', async (request, response) => {
             throw new Error('SD WebUI returned an error.');
         }
 
-        const data = await result.json() as { name: string }[];
-        const names = data.map(x => x.name);
+        const data = (await result.json()) as { name: string }[];
+        const names = data.map((x) => x.name);
         return response.send(names);
     } catch (error) {
         console.error(error);
@@ -197,7 +204,7 @@ router.post('/models', async (request, response) => {
         const result = await fetch(url, {
             method: 'GET',
             headers: {
-                'Authorization': getBasicAuthHeader(request.body.auth),
+                Authorization: getBasicAuthHeader(request.body.auth),
             },
         });
 
@@ -205,10 +212,10 @@ router.post('/models', async (request, response) => {
             throw new Error('SD WebUI returned an error.');
         }
 
-        const data = await result.json() as { title: string }[];
-        const models = data.map(x => ({
+        const data = (await result.json()) as { title: string }[];
+        const models = data.map((x) => ({
             value: x.title,
-            text: x.title
+            text: x.title,
         }));
         return response.send(models);
     } catch (error) {
@@ -225,10 +232,10 @@ router.post('/get-model', async (request, response) => {
         const result = await fetch(url, {
             method: 'GET',
             headers: {
-                'Authorization': getBasicAuthHeader(request.body.auth),
+                Authorization: getBasicAuthHeader(request.body.auth),
             },
         });
-        const data = await result.json() as { sd_model_checkpoint: string };
+        const data = (await result.json()) as { sd_model_checkpoint: string };
         return response.send(data.sd_model_checkpoint);
     } catch (error) {
         console.error(error);
@@ -248,7 +255,7 @@ router.post('/set-model', async (request, response) => {
             const result = await fetch(url, {
                 method: 'GET',
                 headers: {
-                    'Authorization': getBasicAuthHeader(request.body.auth),
+                    Authorization: getBasicAuthHeader(request.body.auth),
                 },
             });
             return await result.json();
@@ -266,7 +273,7 @@ router.post('/set-model', async (request, response) => {
             body: JSON.stringify(options),
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': getBasicAuthHeader(request.body.auth),
+                Authorization: getBasicAuthHeader(request.body.auth),
             },
         });
 
@@ -278,7 +285,10 @@ router.post('/set-model', async (request, response) => {
         const CHECK_INTERVAL = 2000;
 
         for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
-            const progressState = await getProgress() as { progress: number; state: { job_count: number } };
+            const progressState = (await getProgress()) as {
+                progress: number;
+                state: { job_count: number };
+            };
 
             const progress = progressState.progress;
             const jobCount = progressState.state.job_count;
@@ -286,7 +296,9 @@ router.post('/set-model', async (request, response) => {
                 break;
             }
 
-            console.info(`Waiting for SD WebUI to finish model loading... Progress: ${progress}; Job count: ${jobCount}`);
+            console.info(
+                `Waiting for SD WebUI to finish model loading... Progress: ${progress}; Job count: ${jobCount}`,
+            );
             await delay(CHECK_INTERVAL);
         }
 
@@ -302,9 +314,11 @@ router.post('/generate', async (request, response) => {
         try {
             const optionsUrl = new URL(request.body.url);
             optionsUrl.pathname = '/sdapi/v1/options';
-            const optionsResult = await fetch(optionsUrl, { headers: { 'Authorization': getBasicAuthHeader(request.body.auth) } });
+            const optionsResult = await fetch(optionsUrl, {
+                headers: { Authorization: getBasicAuthHeader(request.body.auth) },
+            });
             if (optionsResult.ok) {
-                const optionsData = await optionsResult.json() as Record<string, unknown>;
+                const optionsData = (await optionsResult.json()) as Record<string, unknown>;
                 const isForge = 'forge_preset' in optionsData;
 
                 if (!isForge) {
@@ -321,7 +335,10 @@ router.post('/generate', async (request, response) => {
             if (!response.writableEnded) {
                 const interruptUrl = new URL(request.body.url);
                 interruptUrl.pathname = '/sdapi/v1/interrupt';
-                fetch(interruptUrl, { method: 'POST', headers: { 'Authorization': getBasicAuthHeader(request.body.auth) } });
+                fetch(interruptUrl, {
+                    method: 'POST',
+                    headers: { Authorization: getBasicAuthHeader(request.body.auth) },
+                });
             }
             controller.abort();
         });
@@ -334,7 +351,7 @@ router.post('/generate', async (request, response) => {
             body: JSON.stringify(request.body),
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': getBasicAuthHeader(request.body.auth),
+                Authorization: getBasicAuthHeader(request.body.auth),
             },
             signal: controller.signal,
         });
@@ -360,7 +377,7 @@ router.post('/sd-next/upscalers', async (request, response) => {
         const result = await fetch(url, {
             method: 'GET',
             headers: {
-                'Authorization': getBasicAuthHeader(request.body.auth),
+                Authorization: getBasicAuthHeader(request.body.auth),
             },
         });
 
@@ -369,10 +386,17 @@ router.post('/sd-next/upscalers', async (request, response) => {
         }
 
         // Vlad doesn't provide Latent Upscalers in the API, so we have to hardcode them here
-        const latentUpscalers = ['Latent', 'Latent (antialiased)', 'Latent (bicubic)', 'Latent (bicubic antialiased)', 'Latent (nearest)', 'Latent (nearest-exact)'];
+        const latentUpscalers = [
+            'Latent',
+            'Latent (antialiased)',
+            'Latent (bicubic)',
+            'Latent (bicubic antialiased)',
+            'Latent (nearest)',
+            'Latent (nearest-exact)',
+        ];
 
-        const data = await result.json() as { name: string }[];
-        const names = data.map(x => x.name);
+        const data = (await result.json()) as { name: string }[];
+        const names = data.map((x) => x.name);
 
         // 0 = None, then Latent Upscalers, then Upscalers
         names.splice(1, 0, ...latentUpscalers);
@@ -411,7 +435,9 @@ comfy.post('/samplers', async (request, response) => {
             throw new Error('ComfyUI returned an error.');
         }
 
-        const data = await result.json() as { KSampler: { input: { required: { sampler_name: [string[]] } } } };
+        const data = (await result.json()) as {
+            KSampler: { input: { required: { sampler_name: [string[]] } } };
+        };
         return response.send(data.KSampler.input.required.sampler_name[0]);
     } catch (error) {
         console.error(error);
@@ -427,30 +453,33 @@ comfy.post('/models', async (request, response) => {
         if (!result.ok) {
             throw new Error('ComfyUI returned an error.');
         }
-        const data = await result.json() as {
+        const data = (await result.json()) as {
             CheckpointLoaderSimple: { input: { required: { ckpt_name: [string[]] } } };
             UNETLoader: { input: { required: { unet_name: [string[]] } } };
             UnetLoaderGGUF?: { input: { required: { unet_name: [string[]] } } };
         };
 
-        const ckpts = data.CheckpointLoaderSimple.input.required.ckpt_name[0].map(it => ({
-            value: it,
-            text: it
-        })) || [];
-        const unets = data.UNETLoader.input.required.unet_name[0].map(it => ({
-            value: it,
-            text: `UNet: ${it}`
-        })) || [];
+        const ckpts =
+            data.CheckpointLoaderSimple.input.required.ckpt_name[0].map((it) => ({
+                value: it,
+                text: it,
+            })) || [];
+        const unets =
+            data.UNETLoader.input.required.unet_name[0].map((it) => ({
+                value: it,
+                text: `UNet: ${it}`,
+            })) || [];
 
         // load list of GGUF unets from diffusion_models if the loader node is available
-        const ggufs = data.UnetLoaderGGUF?.input.required.unet_name[0].map(it => ({
-            value: it,
-            text: `GGUF: ${it}`
-        })) || [];
+        const ggufs =
+            data.UnetLoaderGGUF?.input.required.unet_name[0].map((it) => ({
+                value: it,
+                text: `GGUF: ${it}`,
+            })) || [];
         const models = [...ckpts, ...unets, ...ggufs];
 
         // make the display names of the models somewhat presentable
-        models.forEach(it => it.text = it.text.replace(/\.[^.]*$/, '').replace(/_/g, ' '));
+        models.forEach((it) => (it.text = it.text.replace(/\.[^.]*$/, '').replace(/_/g, ' ')));
 
         return response.send(models);
     } catch (error) {
@@ -468,7 +497,9 @@ comfy.post('/schedulers', async (request, response) => {
             throw new Error('ComfyUI returned an error.');
         }
 
-        const data = await result.json() as { KSampler: { input: { required: { scheduler: [string[]] } } } };
+        const data = (await result.json()) as {
+            KSampler: { input: { required: { scheduler: [string[]] } } };
+        };
         return response.send(data.KSampler.input.required.scheduler[0]);
     } catch (error) {
         console.error(error);
@@ -485,7 +516,9 @@ comfy.post('/vaes', async (request, response) => {
             throw new Error('ComfyUI returned an error.');
         }
 
-        const data = await result.json() as { VAELoader: { input: { required: { vae_name: [string[]] } } } };
+        const data = (await result.json()) as {
+            VAELoader: { input: { required: { vae_name: [string[]] } } };
+        };
         return response.send(data.VAELoader.input.required.vae_name[0]);
     } catch (error) {
         console.error(error);
@@ -505,9 +538,15 @@ comfy.post('/workflows', async (request, response) => {
 
 comfy.post('/workflow', async (request, response) => {
     try {
-        let filePath = path.join(request.user.directories.comfyWorkflows, sanitize(String(request.body.file_name)));
+        let filePath = path.join(
+            request.user.directories.comfyWorkflows,
+            sanitize(String(request.body.file_name)),
+        );
         if (!fs.existsSync(filePath)) {
-            filePath = path.join(request.user.directories.comfyWorkflows, 'Default_Comfy_Workflow.json');
+            filePath = path.join(
+                request.user.directories.comfyWorkflows,
+                'Default_Comfy_Workflow.json',
+            );
         }
         const data = fs.readFileSync(filePath, { encoding: 'utf-8' });
         return response.send(JSON.stringify(data));
@@ -519,7 +558,10 @@ comfy.post('/workflow', async (request, response) => {
 
 comfy.post('/save-workflow', async (request, response) => {
     try {
-        const filePath = path.join(request.user.directories.comfyWorkflows, sanitize(String(request.body.file_name)));
+        const filePath = path.join(
+            request.user.directories.comfyWorkflows,
+            sanitize(String(request.body.file_name)),
+        );
         writeFileAtomicSync(filePath, request.body.workflow, 'utf8');
         const data = getComfyWorkflows(request.user.directories);
         return response.send(data);
@@ -531,7 +573,10 @@ comfy.post('/save-workflow', async (request, response) => {
 
 comfy.post('/delete-workflow', async (request, response) => {
     try {
-        const filePath = path.join(request.user.directories.comfyWorkflows, sanitize(String(request.body.file_name)));
+        const filePath = path.join(
+            request.user.directories.comfyWorkflows,
+            sanitize(String(request.body.file_name)),
+        );
         if (fs.existsSync(filePath)) {
             fs.unlinkSync(filePath);
         }
@@ -542,48 +587,64 @@ comfy.post('/delete-workflow', async (request, response) => {
     }
 });
 
-comfy.post('/rename-workflow', getFileNameValidationFunction('old_name'), getFileNameValidationFunction('new_name'), async (request, response) => {
-    try {
-        const oldName = sanitize(String(request.body.old_name));
-        const newName = sanitize(String(request.body.new_name));
+comfy.post(
+    '/rename-workflow',
+    getFileNameValidationFunction('old_name'),
+    getFileNameValidationFunction('new_name'),
+    async (request, response) => {
+        try {
+            const oldName = sanitize(String(request.body.old_name));
+            const newName = sanitize(String(request.body.new_name));
 
-        if (path.extname(oldName).toLowerCase() !== '.json' || path.extname(newName).toLowerCase() !== '.json') {
-            return response.status(400).send('Only JSON workflow files are allowed');
+            if (
+                path.extname(oldName).toLowerCase() !== '.json' ||
+                path.extname(newName).toLowerCase() !== '.json'
+            ) {
+                return response.status(400).send('Only JSON workflow files are allowed');
+            }
+
+            const oldPath = path.join(request.user.directories.comfyWorkflows, oldName);
+            const newPath = path.join(request.user.directories.comfyWorkflows, newName);
+
+            if (!fs.existsSync(oldPath)) {
+                return response.status(404).send('Workflow not found');
+            }
+
+            if (fs.existsSync(newPath)) {
+                return response.status(409).send('A workflow with that name already exists');
+            }
+
+            fs.renameSync(oldPath, newPath);
+            return response.sendStatus(204);
+        } catch (error) {
+            console.error('ComfyUI workflow rename failed', error);
+            return response.sendStatus(500);
         }
-
-        const oldPath = path.join(request.user.directories.comfyWorkflows, oldName);
-        const newPath = path.join(request.user.directories.comfyWorkflows, newName);
-
-        if (!fs.existsSync(oldPath)) {
-            return response.status(404).send('Workflow not found');
-        }
-
-        if (fs.existsSync(newPath)) {
-            return response.status(409).send('A workflow with that name already exists');
-        }
-
-        fs.renameSync(oldPath, newPath);
-        return response.sendStatus(204);
-    } catch (error) {
-        console.error('ComfyUI workflow rename failed', error);
-        return response.sendStatus(500);
-    }
-});
+    },
+);
 
 interface ComfyHistoryItem {
     status: {
         status_str: string;
-        messages?: Array<[string, {
-            node_type: string;
-            node_id: string;
-            exception_type: string;
-            exception_message: string;
-        }]>;
+        messages?: Array<
+            [
+                string,
+                {
+                    node_type: string;
+                    node_id: string;
+                    exception_type: string;
+                    exception_message: string;
+                },
+            ]
+        >;
     };
-    outputs: Record<string, {
-        images?: Array<{ filename: string; subfolder: string; type: string }>;
-        gifs?: Array<{ filename: string; subfolder: string; type: string }>;
-    }>;
+    outputs: Record<
+        string,
+        {
+            images?: Array<{ filename: string; subfolder: string; type: string }>;
+            gifs?: Array<{ filename: string; subfolder: string; type: string }>;
+        }
+    >;
 }
 
 comfy.post('/generate', async (request, response) => {
@@ -596,7 +657,10 @@ comfy.post('/generate', async (request, response) => {
         request.socket.on('close', function () {
             if (!response.writableEnded && !item) {
                 const interruptUrl = new URL(request.body.url.replace(/\/+$/, '') + '/interrupt');
-                fetch(interruptUrl, { method: 'POST', headers: { 'Authorization': getBasicAuthHeader(request.body.auth) } });
+                fetch(interruptUrl, {
+                    method: 'POST',
+                    headers: { Authorization: getBasicAuthHeader(request.body.auth) },
+                });
             }
             controller.abort();
         });
@@ -610,7 +674,7 @@ comfy.post('/generate', async (request, response) => {
             throw new Error('ComfyUI returned an error.', { cause: tryParse(text) });
         }
 
-        const data = await promptResult.json() as { prompt_id: string };
+        const data = (await promptResult.json()) as { prompt_id: string };
         const id = data.prompt_id;
         const historyUrl = new URL(request.body.url.replace(/\/+$/, '') + '/history');
         while (true) {
@@ -618,7 +682,7 @@ comfy.post('/generate', async (request, response) => {
             if (!result.ok) {
                 throw new Error('ComfyUI returned an error.');
             }
-            const history = await result.json() as Record<string, ComfyHistoryItem>;
+            const history = (await result.json()) as Record<string, ComfyHistoryItem>;
             item = history[id];
             if (item) {
                 break;
@@ -627,17 +691,34 @@ comfy.post('/generate', async (request, response) => {
         }
         if (item.status.status_str === 'error') {
             // Report node tracebacks if available
-            const errorMessages = item.status?.messages
-                ?.filter((it: [string, unknown]) => it[0] === 'execution_error')
-                .map((it: [string, { node_type: string; node_id: string; exception_type: string; exception_message: string }]) => it[1])
-                .map(it => `${it.node_type} [${it.node_id}] ${it.exception_type}: ${it.exception_message}`)
-                .join('\n') || '';
+            const errorMessages =
+                item.status?.messages
+                    ?.filter((it: [string, unknown]) => it[0] === 'execution_error')
+                    .map(
+                        (
+                            it: [
+                                string,
+                                {
+                                    node_type: string;
+                                    node_id: string;
+                                    exception_type: string;
+                                    exception_message: string;
+                                },
+                            ],
+                        ) => it[1],
+                    )
+                    .map(
+                        (it) =>
+                            `${it.node_type} [${it.node_id}] ${it.exception_type}: ${it.exception_message}`,
+                    )
+                    .join('\n') || '';
             throw new Error(`ComfyUI generation did not succeed.\n\n${errorMessages}`.trim());
         }
-        const outputs = Object.keys(item.outputs).map(it => item.outputs[it]);
+        const outputs = Object.keys(item.outputs).map((it) => item.outputs[it]);
         console.debug('ComfyUI outputs:', outputs);
         // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-        const imgInfo = outputs.map(it => it.images).flat()[0] ?? outputs.map(it => it.gifs).flat()[0];
+        const imgInfo =
+            outputs.flatMap((it) => it.images)[0] ?? outputs.flatMap((it) => it.gifs)[0];
         if (!imgInfo) {
             throw new Error('ComfyUI did not return any recognizable outputs.');
         }
@@ -673,12 +754,12 @@ comfyRunPod.post('/ping', async (request, response) => {
 
         const result = await fetch(url, {
             method: 'GET',
-            headers: { 'Authorization': `Bearer ${key}` },
+            headers: { Authorization: `Bearer ${key}` },
         });
         if (!result.ok) {
             throw new Error('ComfyUI returned an error.');
         }
-        const data = await result.json() as { workers: { ready: number } };
+        const data = (await result.json()) as { workers: { ready: number } };
         if (data.workers.ready <= 0) {
             console.warn(`No workers reported as ready. ${result}`);
         }
@@ -708,20 +789,27 @@ comfyRunPod.post('/generate', async (request, response) => {
         request.socket.removeAllListeners('close');
         request.socket.on('close', function () {
             if (!response.writableEnded && !item) {
-                const interruptUrl = new URL(request.body.url.replace(/\/+$/, '') + `/cancel/${jobId}`);
-                fetch(interruptUrl, { method: 'POST', headers: { 'Authorization': `Bearer ${key}` } });
+                const interruptUrl = new URL(
+                    request.body.url.replace(/\/+$/, '') + `/cancel/${jobId}`,
+                );
+                fetch(interruptUrl, {
+                    method: 'POST',
+                    headers: { Authorization: `Bearer ${key}` },
+                });
             }
             controller.abort();
         });
         const workflow = JSON.parse(request.body.prompt).prompt;
-        const wrappedWorkflow = workflow?.input?.workflow ? workflow : ({ input: { workflow: workflow } });
+        const wrappedWorkflow = workflow?.input?.workflow
+            ? workflow
+            : { input: { workflow: workflow } };
         const runpodPrompt = JSON.stringify(wrappedWorkflow);
 
         console.debug('ComfyUI RunPod request:', wrappedWorkflow);
 
         const promptResult = await fetch(url, {
             method: 'POST',
-            headers: { 'Authorization': `Bearer ${key}` },
+            headers: { Authorization: `Bearer ${key}` },
             body: runpodPrompt,
         });
         if (!promptResult.ok) {
@@ -729,18 +817,20 @@ comfyRunPod.post('/generate', async (request, response) => {
             throw new Error('ComfyUI returned an error.', { cause: tryParse(text) });
         }
 
-        const data = await promptResult.json() as { id: string };
+        const data = (await promptResult.json()) as { id: string };
         jobId = data.id;
         const statusUrl = new URL(request.body.url.replace(/\/+$/, '') + `/status/${jobId}`);
         while (true) {
             const result = await fetch(statusUrl, {
                 method: 'GET',
-                headers: { 'Authorization': `Bearer ${key}` },
+                headers: { Authorization: `Bearer ${key}` },
             });
             if (!result.ok) {
                 throw new Error('ComfyUI returned an error.');
             }
-            const status = await result.json() as { output?: { images: Array<{ filename: string; data: string }> } };
+            const status = (await result.json()) as {
+                output?: { images: Array<{ filename: string; data: string }> };
+            };
             if (status.output) {
                 item = status.output.images[0];
             }
@@ -773,7 +863,7 @@ together.post('/models', async (request, response) => {
         const modelsResponse = await fetch('https://api.together.xyz/api/models', {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${key}`,
+                Authorization: `Bearer ${key}`,
             },
         });
 
@@ -790,8 +880,8 @@ together.post('/models', async (request, response) => {
         }
 
         const models = data
-            .filter(x => x.type === 'image')
-            .map(x => ({ value: x.id, text: x.display_name }));
+            .filter((x) => x.type === 'image')
+            .map((x) => ({ value: x.id, text: x.display_name }));
 
         return response.send(models);
     } catch (error) {
@@ -822,11 +912,14 @@ together.post('/generate', async (request, response) => {
                 steps: request.body.steps,
                 n: 1,
                 // Limited to 10000 on playground, works fine with more.
-                seed: request.body.seed >= 0 ? request.body.seed : Math.floor(Math.random() * 10_000_000),
+                seed:
+                    request.body.seed >= 0
+                        ? request.body.seed
+                        : Math.floor(Math.random() * 10_000_000),
             }),
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${key}`,
+                Authorization: `Bearer ${key}`,
             },
         });
 
@@ -835,7 +928,7 @@ together.post('/generate', async (request, response) => {
             return response.sendStatus(500);
         }
 
-        const data = await result.json() as { data?: Array<{ b64_json?: string; url?: string }> };
+        const data = (await result.json()) as { data?: Array<{ b64_json?: string; url?: string }> };
         console.debug('TogetherAI response:', data);
 
         const choice = data?.data?.[0];
@@ -972,7 +1065,7 @@ drawthings.post('/get-model', async (request, response) => {
             method: 'GET',
         });
 
-        const data = await result.json() as { model: string };
+        const data = (await result.json()) as { model: string };
 
         return response.send(data.model);
     } catch (error) {
@@ -990,7 +1083,7 @@ drawthings.post('/get-upscaler', async (request, response) => {
             method: 'GET',
         });
 
-        const data = await result.json() as { upscaler: string };
+        const data = (await result.json()) as { upscaler: string };
 
         return response.send(data.upscaler);
     } catch (error) {
@@ -1016,7 +1109,7 @@ drawthings.post('/generate', async (request, response) => {
             body: JSON.stringify(body),
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': auth,
+                Authorization: auth,
             },
         });
 
@@ -1052,7 +1145,7 @@ pollinations.post('/models', async (_request, response) => {
             throw new Error('Pollinations request failed.');
         }
 
-        const models = data.map(x => ({ value: x.name, text: x.name }));
+        const models = data.map((x) => ({ value: x.name, text: x.name }));
         return response.send(models);
     } catch (error) {
         console.error(error);
@@ -1068,11 +1161,15 @@ pollinations.post('/generate', async (request, response) => {
             return response.sendStatus(400);
         }
 
-        const promptUrl = new URL(`https://gen.pollinations.ai/image/${encodeURIComponent(request.body.prompt)}`);
+        const promptUrl = new URL(
+            `https://gen.pollinations.ai/image/${encodeURIComponent(request.body.prompt)}`,
+        );
         const params = new URLSearchParams({
             model: String(request.body.model),
             negative_prompt: String(request.body.negative_prompt),
-            seed: String(request.body.seed >= 0 ? request.body.seed : Math.floor(Math.random() * 10_000_000)),
+            seed: String(
+                request.body.seed >= 0 ? request.body.seed : Math.floor(Math.random() * 10_000_000),
+            ),
             width: String(request.body.width ?? 1024),
             height: String(request.body.height ?? 1024),
         });
@@ -1086,7 +1183,7 @@ pollinations.post('/generate', async (request, response) => {
         const result = await fetch(promptUrl, {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${key}`,
+                Authorization: `Bearer ${key}`,
             },
         });
 
@@ -1098,7 +1195,10 @@ pollinations.post('/generate', async (request, response) => {
 
         const format = result.headers.get('Content-Type')?.toString() || 'image/jpeg';
         const buffer = await result.arrayBuffer();
-        return response.send({ image: Buffer.from(buffer).toString('base64'), format: mime.extension(format) || 'jpg' });
+        return response.send({
+            image: Buffer.from(buffer).toString('base64'),
+            format: mime.extension(format) || 'jpg',
+        });
     } catch (error) {
         console.error(error);
         return response.sendStatus(500);
@@ -1145,8 +1245,8 @@ stability.post('/generate', async (request, response) => {
         const result = await fetch(apiUrl, {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${key}`,
-                'Accept': 'image/*',
+                Authorization: `Bearer ${key}`,
+                Accept: 'image/*',
             },
             body: formData,
         });
@@ -1178,16 +1278,19 @@ huggingface.post('/generate', async (request, response) => {
 
         console.debug('Hugging Face request:', request.body);
 
-        const result = await fetch(`https://api-inference.huggingface.co/models/${request.body.model}`, {
-            method: 'POST',
-            body: JSON.stringify({
-                inputs: request.body.prompt,
-            }),
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${key}`,
+        const result = await fetch(
+            `https://api-inference.huggingface.co/models/${request.body.model}`,
+            {
+                method: 'POST',
+                body: JSON.stringify({
+                    inputs: request.body.prompt,
+                }),
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${key}`,
+                },
             },
-        });
+        );
 
         if (!result.ok) {
             console.warn('Hugging Face returned an error.');
@@ -1218,7 +1321,7 @@ electronhub.post('/models', async (request, response) => {
         const modelsResponse = await fetch('https://api.electronhub.ai/v1/models', {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${key}`,
+                Authorization: `Bearer ${key}`,
                 'Content-Type': 'application/json',
             },
         });
@@ -1228,7 +1331,9 @@ electronhub.post('/models', async (request, response) => {
             return response.sendStatus(500);
         }
 
-        const data = await modelsResponse.json() as { data?: Array<{ id: string; name: string; endpoints: string[] }> };
+        const data = (await modelsResponse.json()) as {
+            data?: Array<{ id: string; name: string; endpoints: string[] }>;
+        };
 
         if (!Array.isArray(data?.data)) {
             console.warn('Electron Hub returned invalid data.');
@@ -1236,12 +1341,17 @@ electronhub.post('/models', async (request, response) => {
         }
 
         const models = data.data
-            .filter(x => x && Array.isArray(x.endpoints) && x.endpoints.includes('/v1/images/generations'))
-            .map(x => ({
-            ...x,
-            value: x.id,
-            text: x.name
-        }));
+            .filter(
+                (x) =>
+                    x &&
+                    Array.isArray(x.endpoints) &&
+                    x.endpoints.includes('/v1/images/generations'),
+            )
+            .map((x) => ({
+                ...x,
+                value: x.id,
+                text: x.name,
+            }));
         return response.send(models);
     } catch (error) {
         console.error(error);
@@ -1279,7 +1389,7 @@ electronhub.post('/generate', async (request, response) => {
         const result = await fetch('https://api.electronhub.ai/v1/images/generations', {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${key}`,
+                Authorization: `Bearer ${key}`,
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
@@ -1289,11 +1399,16 @@ electronhub.post('/generate', async (request, response) => {
 
         if (!result.ok) {
             const errorText = await result.text();
-            console.warn('Electron Hub returned an error.', result.status, result.statusText, errorText);
+            console.warn(
+                'Electron Hub returned an error.',
+                result.status,
+                result.statusText,
+                errorText,
+            );
             return response.sendStatus(500);
         }
 
-        const data = await result.json() as { data?: Array<{ b64_json?: string }> };
+        const data = (await result.json()) as { data?: Array<{ b64_json?: string }> };
         const image = data?.data?.[0]?.b64_json;
 
         if (!image) {
@@ -1321,7 +1436,7 @@ electronhub.post('/sizes', async (request, response) => {
         return response.sendStatus(500);
     }
 
-    const data = await result.json() as { sizes?: unknown };
+    const data = (await result.json()) as { sizes?: unknown };
     const sizes = data.sizes;
 
     if (!sizes) {
@@ -1343,24 +1458,29 @@ chutes.post('/models', async (request, response) => {
             return response.sendStatus(400);
         }
 
-        const modelsResponse = await fetch('https://api.chutes.ai/chutes/?template=diffusion&include_public=true&limit=999', {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${key}`,
-                'Content-Type': 'application/json',
+        const modelsResponse = await fetch(
+            'https://api.chutes.ai/chutes/?template=diffusion&include_public=true&limit=999',
+            {
+                method: 'GET',
+                headers: {
+                    Authorization: `Bearer ${key}`,
+                    'Content-Type': 'application/json',
+                },
             },
-        });
+        );
 
         if (!modelsResponse.ok) {
             console.warn('Chutes returned an error.');
             return response.sendStatus(500);
         }
 
-        const data = await modelsResponse.json() as { items: Array<{ name: string }> };
-        const models = data.items.map(x => ({
-            value: x.name,
-            text: x.name
-        })).sort((a, b) => a?.text?.localeCompare(b?.text));
+        const data = (await modelsResponse.json()) as { items: Array<{ name: string }> };
+        const models = data.items
+            .map((x) => ({
+                value: x.name,
+                text: x.name,
+            }))
+            .toSorted((a, b) => a?.text?.localeCompare(b?.text));
         return response.send(models);
     } catch (error) {
         console.error(error);
@@ -1392,7 +1512,7 @@ chutes.post('/generate', async (request, response) => {
         const result = await fetch('https://image.chutes.ai/generate', {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${key}`,
+                Authorization: `Bearer ${key}`,
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify(bodyParams),
@@ -1438,7 +1558,9 @@ nanogpt.post('/models', async (request, response) => {
             return response.sendStatus(500);
         }
 
-        const data = await modelsResponse.json() as { models?: { image?: Record<string, { model: string; name: string }> } };
+        const data = (await modelsResponse.json()) as {
+            models?: { image?: Record<string, { model: string; name: string }> };
+        };
         const imageModels = data?.models?.image;
 
         if (!imageModels || typeof imageModels !== 'object') {
@@ -1446,7 +1568,7 @@ nanogpt.post('/models', async (request, response) => {
             return response.sendStatus(500);
         }
 
-        const models = Object.values(imageModels).map(x => ({ value: x.model, text: x.name }));
+        const models = Object.values(imageModels).map((x) => ({ value: x.model, text: x.name }));
         return response.send(models);
     } catch (error) {
         console.error(error);
@@ -1479,7 +1601,7 @@ nanogpt.post('/generate', async (request, response) => {
             return response.sendStatus(500);
         }
 
-        const data = await result.json() as { data?: Array<{ b64_json?: string }> };
+        const data = (await result.json()) as { data?: Array<{ b64_json?: string }> };
 
         const image = data?.data?.[0]?.b64_json;
         if (!image) {
@@ -1528,7 +1650,7 @@ bfl.post('/generate', async (request, response) => {
             const maxAspect = 21 / 9;
             const currentAspect = width / height;
 
-            const gcd = (a: number, b: number): number => b === 0 ? a : gcd(b, a % b);
+            const gcd = (a: number, b: number): number => (b === 0 ? a : gcd(b, a % b));
             const simplifyRatio = (w: number, h: number) => {
                 const divisor = gcd(w, h);
                 return `${w / divisor}:${h / divisor}`;
@@ -1547,7 +1669,10 @@ bfl.post('/generate', async (request, response) => {
 
         if (String(request.body.model).endsWith('-ultra')) {
             // @ts-expect-error TS(2339) FIXME: Property 'aspect_ratio' does not exist on type '{ ... Remove this comment to see the full error message
-            requestBody.aspect_ratio = getClosestAspectRatio(request.body.width, request.body.height);
+            requestBody.aspect_ratio = getClosestAspectRatio(
+                request.body.width,
+                request.body.height,
+            );
             delete requestBody.steps;
             delete requestBody.guidance;
             delete requestBody.width;
@@ -1576,7 +1701,7 @@ bfl.post('/generate', async (request, response) => {
             return response.sendStatus(500);
         }
 
-        const taskData = await result.json() as { id: string };
+        const taskData = (await result.json()) as { id: string };
         const { id } = taskData;
 
         const MAX_ATTEMPTS = 100;
@@ -1591,7 +1716,10 @@ bfl.post('/generate', async (request, response) => {
                 return response.sendStatus(500);
             }
 
-            const statusData = await statusResult.json() as { status?: string; result?: { sample: string } };
+            const statusData = (await statusResult.json()) as {
+                status?: string;
+                result?: { sample: string };
+            };
 
             if (statusData?.status === 'Pending') {
                 continue;
@@ -1620,7 +1748,11 @@ falai.post('/models', async (_request, response) => {
     try {
         const modelsUrl = new URL('https://fal.ai/api/models?categories=text-to-image');
         let page = 1;
-        let modelsResponse: { items?: Array<{ title: string; modelUrl: string }>; page?: number; pages?: number };
+        let modelsResponse: {
+            items?: Array<{ title: string; modelUrl: string }>;
+            page?: number;
+            pages?: number;
+        };
         let models: Array<{ title: string; modelUrl: string }> = [];
 
         do {
@@ -1632,7 +1764,11 @@ falai.post('/models', async (_request, response) => {
                 throw new Error('FAL.AI request failed.');
             }
 
-            modelsResponse = await result.json() as { items: Array<{ title: string; modelUrl: string }>; page: number; pages: number };
+            modelsResponse = (await result.json()) as {
+                items: Array<{ title: string; modelUrl: string }>;
+                page: number;
+                pages: number;
+            };
             if (!('items' in modelsResponse) || !Array.isArray(modelsResponse.items)) {
                 console.warn('FAL.AI returned invalid data.');
                 throw new Error('FAL.AI request failed.');
@@ -1640,22 +1776,23 @@ falai.post('/models', async (_request, response) => {
 
             models = models.concat(
                 modelsResponse.items.filter(
-                    x => !x.title.toLowerCase().includes('inpainting') &&
-                    !x.title.toLowerCase().includes('control') &&
-                    !x.title.toLowerCase().includes('upscale') &&
-                    !x.title.toLowerCase().includes('lora'),
+                    (x) =>
+                        !x.title.toLowerCase().includes('inpainting') &&
+                        !x.title.toLowerCase().includes('control') &&
+                        !x.title.toLowerCase().includes('upscale') &&
+                        !x.title.toLowerCase().includes('lora'),
                 ),
             );
 
             // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             page = modelsResponse.page + 1;
-        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
+            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         } while (modelsResponse != null && page < modelsResponse.pages);
 
         const modelOptions = models
-            .sort((a, b) => a.title.localeCompare(b.title))
-            .map(x => ({ value: x.modelUrl.split('fal-ai/')[1], text: x.title }))
-            .map(x => ({ ...x, text: `${x.text} (${x.value})` }));
+            .toSorted((a, b) => a.title.localeCompare(b.title))
+            .map((x) => ({ value: x.modelUrl.split('fal-ai/')[1], text: x.title }))
+            .map((x) => ({ ...x, text: `${x.text} (${x.value})` }));
         return response.send(modelOptions);
     } catch (error) {
         console.error(error);
@@ -1674,7 +1811,7 @@ falai.post('/generate', async (request, response) => {
 
         const requestBody = {
             prompt: request.body.prompt,
-            image_size: { 'width': request.body.width, 'height': request.body.height },
+            image_size: { width: request.body.width, height: request.body.height },
             num_inference_steps: request.body.steps,
             seed: request.body.seed ?? null,
             guidance_scale: request.body.guidance,
@@ -1689,7 +1826,7 @@ falai.post('/generate', async (request, response) => {
             body: JSON.stringify(requestBody),
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Key ${key}`,
+                Authorization: `Key ${key}`,
             },
         });
 
@@ -1698,7 +1835,7 @@ falai.post('/generate', async (request, response) => {
             return response.sendStatus(500);
         }
 
-        const taskData = await result.json() as { status_url: string };
+        const taskData = (await result.json()) as { status_url: string };
         const { status_url } = taskData;
 
         const MAX_ATTEMPTS = 100;
@@ -1707,7 +1844,7 @@ falai.post('/generate', async (request, response) => {
 
             const statusResult = await fetch(status_url, {
                 headers: {
-                    'Authorization': `Key ${key}`,
+                    Authorization: `Key ${key}`,
                 },
             });
 
@@ -1717,7 +1854,10 @@ falai.post('/generate', async (request, response) => {
                 return response.sendStatus(500);
             }
 
-            const statusData = await statusResult.json() as { status?: string; response_url?: string };
+            const statusData = (await statusResult.json()) as {
+                status?: string;
+                response_url?: string;
+            };
 
             if (statusData?.status === 'IN_QUEUE' || statusData?.status === 'IN_PROGRESS') {
                 continue;
@@ -1727,20 +1867,25 @@ falai.post('/generate', async (request, response) => {
                 const resultFetch = await fetch(statusData?.response_url as string, {
                     method: 'GET',
                     headers: {
-                        'Authorization': `Key ${key}`,
+                        Authorization: `Key ${key}`,
                     },
                 });
-                const resultData = await resultFetch.json() as { detail?: Array<{ loc: [string, string]; msg: string }>; images: Array<{ url: string }> };
+                const resultData = (await resultFetch.json()) as {
+                    detail?: Array<{ loc: [string, string]; msg: string }>;
+                    images: Array<{ url: string }>;
+                };
 
                 if (resultData.detail !== null && resultData.detail !== undefined) {
                     // @ts-expect-error TS(2769) FIXME: No overload matches this call.
-                    throw new Error('FAL.AI failed to generate image.', { cause: `${resultData.detail[0].loc[1]}: ${resultData.detail[0].msg}` });
+                    throw new Error('FAL.AI failed to generate image.', {
+                        cause: `${resultData.detail[0].loc[1]}: ${resultData.detail[0].msg}`,
+                    });
                 }
 
                 // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                 const imageFetch = await fetch(resultData?.images[0].url, {
                     headers: {
-                        'Authorization': `Key ${key}`,
+                        Authorization: `Key ${key}`,
                     },
                 });
 
@@ -1784,7 +1929,7 @@ xai.post('/generate', async (request, response) => {
             body: JSON.stringify(requestBody),
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${key}`,
+                Authorization: `Bearer ${key}`,
             },
         });
 
@@ -1794,7 +1939,7 @@ xai.post('/generate', async (request, response) => {
             return response.sendStatus(500);
         }
 
-        const data = await result.json() as { data?: Array<{ b64_json?: string }> };
+        const data = (await result.json()) as { data?: Array<{ b64_json?: string }> };
 
         // Can either be a base64 buffer (always JPEG) or a data URL (with MIME type)
         const encodedImage = String(data?.data?.[0]?.b64_json || '');
@@ -1838,16 +1983,20 @@ aimlapi.post('/models', async (request, response) => {
             return response.sendStatus(500);
         }
 
-        const data = await modelsResponse.json() as { data: Array<{ id: string; type: string; info?: { name?: string } }> };
+        const data = (await modelsResponse.json()) as {
+            data: Array<{ id: string; type: string; info?: { name?: string } }>;
+        };
         const models = (data.data || [])
-            .filter(model => model.type === 'image' &&
-        model.id !== 'triposr' &&
-        model.id !== 'flux/dev/image-to-image',
+            .filter(
+                (model) =>
+                    model.type === 'image' &&
+                    model.id !== 'triposr' &&
+                    model.id !== 'flux/dev/image-to-image',
             )
-            .map(model => ({
-            value: model.id,
-            text: model.info?.name || model.id
-        }));
+            .map((model) => ({
+                value: model.id,
+                text: model.info?.name || model.id,
+            }));
 
         return response.send({ data: models });
     } catch (error) {
@@ -1865,14 +2014,21 @@ aimlapi.post('/generate-image', async (req, res) => {
 
         const apiRes = await fetch('https://api.aimlapi.com/v1/images/generations', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}`, ...AIMLAPI_HEADERS },
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${key}`,
+                ...AIMLAPI_HEADERS,
+            },
             body: JSON.stringify(req.body),
         });
         if (!apiRes.ok) {
             const err = await apiRes.text();
             return res.status(500).send(err);
         }
-        const data = await apiRes.json() as { images?: Array<{ b64_json?: string; base64?: string; url?: string }>; data?: Array<{ b64_json?: string; base64?: string; url?: string }> };
+        const data = (await apiRes.json()) as {
+            images?: Array<{ b64_json?: string; base64?: string; url?: string }>;
+            data?: Array<{ b64_json?: string; base64?: string; url?: string }>;
+        };
 
         const imgObj = Array.isArray(data.images) ? data.images[0] : data.data?.[0];
         if (!imgObj) return res.status(500).send('No image returned');
@@ -1914,7 +2070,7 @@ zai.post('/generate', async (request, response) => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${key}`,
+                Authorization: `Bearer ${key}`,
             },
             body: JSON.stringify({
                 prompt: request.body.prompt,
@@ -1930,7 +2086,10 @@ zai.post('/generate', async (request, response) => {
             return response.sendStatus(500);
         }
 
-        const data = await generateResponse.json() as { data?: Array<{ url?: string }>; id?: string };
+        const data = (await generateResponse.json()) as {
+            data?: Array<{ url?: string }>;
+            id?: string;
+        };
         console.debug('Z.AI image response:', data);
 
         const urlString = String(data?.data?.[0]?.url ?? '');
@@ -1955,7 +2114,11 @@ zai.post('/generate', async (request, response) => {
                     continue;
                 }
 
-                console.warn('Z.AI image fetch returned an error. Status:', imageResponse.status, imageResponse.statusText);
+                console.warn(
+                    'Z.AI image fetch returned an error. Status:',
+                    imageResponse.status,
+                    imageResponse.statusText,
+                );
                 return response.sendStatus(500);
             }
 
@@ -1995,7 +2158,7 @@ zai.post('/generate-video', async (request, response) => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${key}`,
+                Authorization: `Bearer ${key}`,
             },
             body: JSON.stringify({
                 prompt: request.body.prompt,
@@ -2013,7 +2176,7 @@ zai.post('/generate-video', async (request, response) => {
             return response.sendStatus(500);
         }
 
-        const data = await generateResponse.json() as { id?: string };
+        const data = (await generateResponse.json()) as { id?: string };
         console.debug('Z.AI video response:', data);
 
         // Poll for video generation completion
@@ -2026,12 +2189,15 @@ zai.post('/generate-video', async (request, response) => {
             await delay(5000 + attempt * 1000);
             console.debug(`Polling Z.AI video job ${data.id}, attempt ${attempt + 1}`);
 
-            const pollResponse = await fetch(`https://api.z.ai/api/paas/v4/async-result/${data.id}`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${key}`,
+            const pollResponse = await fetch(
+                `https://api.z.ai/api/paas/v4/async-result/${data.id}`,
+                {
+                    method: 'GET',
+                    headers: {
+                        Authorization: `Bearer ${key}`,
+                    },
                 },
-            });
+            );
 
             if (!pollResponse.ok) {
                 const text = await pollResponse.text();
@@ -2039,7 +2205,10 @@ zai.post('/generate-video', async (request, response) => {
                 return response.status(500).send(text);
             }
 
-            const pollResult = await pollResponse.json() as { task_status?: string; video_result?: Array<{ url?: string }> };
+            const pollResult = (await pollResponse.json()) as {
+                task_status?: string;
+                video_result?: Array<{ url?: string }>;
+            };
             console.debug(`Z.AI video job status: ${pollResult.task_status}`);
 
             if (pollResult.task_status === 'FAIL') {
@@ -2059,12 +2228,19 @@ zai.post('/generate-video', async (request, response) => {
                 const contentResponse = await fetch(url);
                 if (!contentResponse.ok) {
                     const text = await contentResponse.text();
-                    console.warn('Z.AI video content fetch failed', contentResponse.statusText, text);
+                    console.warn(
+                        'Z.AI video content fetch failed',
+                        contentResponse.statusText,
+                        text,
+                    );
                     return response.status(500).send(text);
                 }
 
                 const contentBuffer = await contentResponse.arrayBuffer();
-                return response.send({ format: 'mp4', video: Buffer.from(contentBuffer).toString('base64') });
+                return response.send({
+                    format: 'mp4',
+                    video: Buffer.from(contentBuffer).toString('base64'),
+                });
             }
         }
         console.warn('Z.AI video was not available after multiple attempts.');
@@ -2092,13 +2268,15 @@ workersai.post('/models', async (request, response) => {
             return response.sendStatus(400);
         }
 
-        const apiUrl = new URL(`https://api.cloudflare.com/client/v4/accounts/${encodeURIComponent(accountId)}/ai/models/search`);
+        const apiUrl = new URL(
+            `https://api.cloudflare.com/client/v4/accounts/${encodeURIComponent(accountId)}/ai/models/search`,
+        );
         apiUrl.searchParams.set('task', 'Text-to-Image');
         apiUrl.searchParams.set('per_page', '1000');
         const result = await fetch(apiUrl, {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${key}`,
+                Authorization: `Bearer ${key}`,
             },
         });
 
@@ -2107,16 +2285,16 @@ workersai.post('/models', async (request, response) => {
             return response.sendStatus(500);
         }
 
-        const data = await result.json() as { success: boolean; result: Array<{ name: string }> };
+        const data = (await result.json()) as { success: boolean; result: Array<{ name: string }> };
 
         if (!data.success || !Array.isArray(data.result)) {
             console.warn('Cloudflare Workers AI returned invalid data.');
             return response.sendStatus(500);
         }
 
-        const models = data.result.map(x => ({
+        const models = data.result.map((x) => ({
             value: x.name,
-            text: x.name
+            text: x.name,
         }));
         return response.send(models);
     } catch (error) {
@@ -2173,7 +2351,7 @@ workersai.post('/generate', async (request, response) => {
         const apiRequest = {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${key}`,
+                Authorization: `Bearer ${key}`,
             },
         };
 
@@ -2194,7 +2372,12 @@ workersai.post('/generate', async (request, response) => {
         const result = await fetch(apiUrl, apiRequest);
         if (!result.ok) {
             const text = await result.text();
-            console.warn('Cloudflare Workers AI returned an error.', result.status, result.statusText, text);
+            console.warn(
+                'Cloudflare Workers AI returned an error.',
+                result.status,
+                result.statusText,
+                text,
+            );
             return response.status(500).send(text);
         }
 
@@ -2202,7 +2385,7 @@ workersai.post('/generate', async (request, response) => {
 
         // Partner models return JSON with base64 image
         if (contentType.includes('application/json')) {
-            const data = await result.json() as { result?: { image?: string }; image?: string };
+            const data = (await result.json()) as { result?: { image?: string }; image?: string };
             const image = data?.result?.image || data?.image;
             if (!image) {
                 console.warn('Cloudflare Workers AI returned JSON without image data.');

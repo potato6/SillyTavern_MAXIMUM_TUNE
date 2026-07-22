@@ -6,13 +6,14 @@ import { getRequestURL, isFileURL, isPathUnderParent } from './util.js';
 
 const originalFetch = globalThis.fetch;
 
-const ALLOWED_EXTENSIONS = [
-    '.wasm',
-];
+const ALLOWED_EXTENSIONS = new Set(['.wasm']);
 
 // Patched fetch function that handles file URLs
 // @ts-expect-error TS(2741) FIXME: Property 'preconnect' is missing in type '(request... Remove this comment to see the full error message
-globalThis.fetch = async (/** @type {string | URL | Request} */ request, /** @type {RequestInit | undefined} */ options) => {
+globalThis.fetch = async (
+    /** @type {string | URL | Request} */ request,
+    /** @type {RequestInit | undefined} */ options,
+) => {
     if (!isFileURL(request)) {
         return originalFetch(request, options);
     }
@@ -23,7 +24,7 @@ globalThis.fetch = async (/** @type {string | URL | Request} */ request, /** @ty
         throw new Error('Requested file path is outside of the server directory.');
     }
     const parsedPath = path.parse(filePath);
-    if (!ALLOWED_EXTENSIONS.includes(parsedPath.ext)) {
+    if (!ALLOWED_EXTENSIONS.has(parsedPath.ext)) {
         throw new Error('Unsupported file extension.');
     }
     const fileName = parsedPath.base;

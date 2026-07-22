@@ -6,9 +6,7 @@ const provider = createOAIChatProvider({
     defaultBase: 'https://api.moonshot.ai/v1',
     secretKey: { id: 'MOONSHOT', label: 'Moonshot AI', category: 'chat-completion' },
     supportsVision: true,
-    extraBodyParams: (req) => ({
-        ...(req.body.include_reasoning ? { thinking: { type: 'enabled' } } : {}),
-    }),
+    extraBodyParams: (req) => (req.body.include_reasoning ? { thinking: { type: 'enabled' } } : {}),
 });
 
 export default provider;

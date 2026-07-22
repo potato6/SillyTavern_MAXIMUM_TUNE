@@ -11,7 +11,7 @@ const provider: BackendProvider = {
         try {
             const reply = await fetch(`${baseUrl}/v1/model`, { headers });
             if (!reply.ok) return null;
-            const info = await reply.json() as Record<string, unknown>;
+            const info = (await reply.json()) as Record<string, unknown>;
             return (info?.id as string) ?? null;
         } catch {
             return null;

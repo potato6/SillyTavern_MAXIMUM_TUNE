@@ -71,10 +71,7 @@ export const CONTENT_SCOPE = {
  * @returns {CONTENT_SCOPE} Resolved content scope
  */
 function getScopeByType(type: string) {
-    const globalTypes = [
-        CONTENT_TYPES.ERROR_PAGE,
-        CONTENT_TYPES.STYLESHEET,
-    ];
+    const globalTypes = [CONTENT_TYPES.ERROR_PAGE, CONTENT_TYPES.STYLESHEET];
     return globalTypes.includes(type) ? CONTENT_SCOPE.GLOBAL : CONTENT_SCOPE.USER;
 }
 
@@ -89,7 +86,10 @@ export function getDefaultPresets(directories: UserDirectoryList) {
         const presets = [];
 
         for (const contentItem of contentIndex) {
-            if (contentItem.type.endsWith('_preset') || ['instruct', 'context', 'sysprompt', 'reasoning'].includes(contentItem.type)) {
+            if (
+                contentItem.type.endsWith('_preset') ||
+                ['instruct', 'context', 'sysprompt', 'reasoning'].includes(contentItem.type)
+            ) {
                 contentItem.name = path.parse(contentItem.filename).name;
                 contentItem.folder = getUserTargetByType(contentItem.type, directories);
                 presets.push(contentItem);
@@ -133,12 +133,20 @@ export function getDefaultPresetFile(filename: string) {
  * @returns {boolean} Whether any content was added
  */
 // @ts-expect-error TS(2304) FIXME: Cannot find name 'ContentItem'.
-function seedContent(contentIndex: ContentItem[], contentLogPath: string, resolveTarget: (type: string) => string | null, forceCategories?: string[]) {
+function seedContent(
+    contentIndex: ContentItem[],
+    contentLogPath: string,
+    resolveTarget: (type: string) => string | null,
+    forceCategories?: string[],
+) {
     let anyContentAdded = false;
     const contentLog = getContentLog(contentLogPath);
 
     for (const contentItem of contentIndex) {
-        if (contentLog.includes(contentItem.filename) && !forceCategories?.includes(contentItem.type)) {
+        if (
+            contentLog.includes(contentItem.filename) &&
+            !forceCategories?.includes(contentItem.type)
+        ) {
             continue;
         }
 
@@ -157,7 +165,9 @@ function seedContent(contentIndex: ContentItem[], contentLogPath: string, resolv
         const contentTarget = resolveTarget(contentItem.type);
 
         if (!contentTarget) {
-            console.warn(`Content file ${contentItem.filename} has unknown type ${contentItem.type}`);
+            console.warn(
+                `Content file ${contentItem.filename} has unknown type ${contentItem.type}`,
+            );
             continue;
         }
 
@@ -189,13 +199,22 @@ function seedContent(contentIndex: ContentItem[], contentLogPath: string, resolv
  * @returns {Promise<boolean>} Whether any content was added
  */
 // @ts-expect-error TS(2304) FIXME: Cannot find name 'ContentItem'.
-async function seedContentForUser(contentIndex: ContentItem[], directories: UserDirectoryList, forceCategories: string[]) {
+async function seedContentForUser(
+    contentIndex: ContentItem[],
+    directories: UserDirectoryList,
+    forceCategories: string[],
+) {
     if (!fs.existsSync(directories.root)) {
         fs.mkdirSync(directories.root, { recursive: true });
     }
 
     const contentLogPath = path.join(directories.root, 'content.log');
-    return seedContent(contentIndex, contentLogPath, (type: string) => getUserTargetByType(type, directories), forceCategories);
+    return seedContent(
+        contentIndex,
+        contentLogPath,
+        (type: string) => getUserTargetByType(type, directories),
+        forceCategories,
+    );
 }
 
 /**
@@ -215,7 +234,10 @@ async function seedGlobalContent(contentIndex: ContentItem[]) {
  * @param {string[]} forceCategories List of categories to force check (even if content check is skipped)
  * @returns {Promise<void>}
  */
-export async function checkForNewContent(directoriesList: UserDirectoryList[], forceCategories: string[] = []) {
+export async function checkForNewContent(
+    directoriesList: UserDirectoryList[],
+    forceCategories: string[] = [],
+) {
     try {
         // @ts-expect-error TS(2345) FIXME: Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
         const contentCheckSkip = getConfigValue('skipContentCheck', false, 'boolean');
@@ -233,7 +255,11 @@ export async function checkForNewContent(directoriesList: UserDirectoryList[], f
         }
 
         for (const directories of directoriesList) {
-            const userSeedResult = await seedContentForUser(userContentIndex, directories, forceCategories);
+            const userSeedResult = await seedContentForUser(
+                userContentIndex,
+                directories,
+                forceCategories,
+            );
 
             if (userSeedResult) {
                 anyContentAdded = true;
@@ -242,7 +268,9 @@ export async function checkForNewContent(directoriesList: UserDirectoryList[], f
 
         if (anyContentAdded && !contentCheckSkip && forceCategories?.length === 0) {
             console.info();
-            console.info(`${color.blue('If you don\'t want to receive content updates in the future, set')} ${color.yellow('skipContentCheck')} ${color.blue('to true in the config.yaml file.')}`);
+            console.info(
+                `${color.blue("If you don't want to receive content updates in the future, set")} ${color.yellow('skipContentCheck')} ${color.blue('to true in the config.yaml file.')}`,
+            );
             console.info();
         }
     } catch (err) {
@@ -292,7 +320,11 @@ function getContentIndex(scope = CONTENT_SCOPE.USER) {
  * @param {CONTENT_SCOPE} scope Scope of content to get
  * @returns {string[]|Buffer[]} Array of content
  */
-export function getContentOfType(type: string, format: 'json' | 'string' | 'raw', scope = CONTENT_SCOPE.USER) {
+export function getContentOfType(
+    type: string,
+    format: 'json' | 'string' | 'raw',
+    scope = CONTENT_SCOPE.USER,
+) {
     const contentIndex = getContentIndex(scope);
     const indexItems = contentIndex.filter((item) => item.type === type && item.folder);
     const files = [];
@@ -407,10 +439,13 @@ function getContentLog(contentLogPath: string) {
  */
 async function downloadChubLorebook(id: string) {
     const [lorebooks, creatorName, projectName] = id.split('/') as [string, string, string];
-    const result = await fetch(`https://api.chub.ai/api/${lorebooks}/${creatorName}/${projectName}`, {
-        method: 'GET',
-        headers: { 'Accept': 'application/json', 'User-Agent': USER_AGENT },
-    });
+    const result = await fetch(
+        `https://api.chub.ai/api/${lorebooks}/${creatorName}/${projectName}`,
+        {
+            method: 'GET',
+            headers: { Accept: 'application/json', 'User-Agent': USER_AGENT },
+        },
+    );
 
     if (!result.ok) {
         const text = await result.text();
@@ -419,7 +454,7 @@ async function downloadChubLorebook(id: string) {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- API response shape unknown
-    const metadata = await result.json() as any;
+    const metadata = (await result.json()) as any;
     const projectId = metadata.node?.id;
 
     if (!projectId) {
@@ -429,7 +464,7 @@ async function downloadChubLorebook(id: string) {
     const downloadUrl = `https://api.chub.ai/api/v4/projects/${projectId}/repository/files/raw%252Fsillytavern_raw.json/raw`;
     const downloadResult = await fetch(downloadUrl, {
         method: 'GET',
-        headers: { 'Accept': 'application/json', 'User-Agent': USER_AGENT },
+        headers: { Accept: 'application/json', 'User-Agent': USER_AGENT },
     });
 
     if (!downloadResult.ok) {
@@ -453,10 +488,13 @@ async function downloadChubLorebook(id: string) {
  */
 async function downloadChubCharacter(id: string) {
     const [creatorName, projectName] = id.split('/');
-    const result = await fetch(`https://api.chub.ai/api/characters/${creatorName}/${projectName}?full=true`, {
-        method: 'GET',
-        headers: { 'Accept': 'application/json', 'User-Agent': USER_AGENT },
-    });
+    const result = await fetch(
+        `https://api.chub.ai/api/characters/${creatorName}/${projectName}?full=true`,
+        {
+            method: 'GET',
+            headers: { Accept: 'application/json', 'User-Agent': USER_AGENT },
+        },
+    );
 
     if (!result.ok) {
         const text = await result.text();
@@ -464,7 +502,9 @@ async function downloadChubCharacter(id: string) {
         throw new Error('Failed to fetch character metadata');
     }
 
-    const metadata = await result.json() as { node: { definition: Record<string, unknown>; topics: string[]; max_res_url?: string } };
+    const metadata = (await result.json()) as {
+        node: { definition: Record<string, unknown>; topics: string[]; max_res_url?: string };
+    };
     const { definition, topics } = metadata.node;
 
     /** @type {TavernCardV2} */
@@ -525,7 +565,7 @@ async function downloadPygmalionCharacter(id: string) {
         throw new Error('Failed to download character');
     }
 
-    const jsonData = await result.json() as { character?: Record<string, unknown> };
+    const jsonData = (await result.json()) as { character?: Record<string, unknown> };
     const characterData = jsonData?.character;
 
     if (!characterData || typeof characterData !== 'object') {
@@ -578,7 +618,12 @@ function parseChubUrl(str: string) {
     let domainIndex = -1;
 
     splitStr.forEach((part: string, index: number) => {
-        if (part === 'www.chub.ai' || part === 'chub.ai' || part === 'www.characterhub.org' || part === 'characterhub.org') {
+        if (
+            part === 'www.chub.ai' ||
+            part === 'chub.ai' ||
+            part === 'www.characterhub.org' ||
+            part === 'characterhub.org'
+        ) {
             domainIndex = index;
         }
     });
@@ -618,13 +663,13 @@ async function downloadJannyCharacter(uuid: string) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            'characterId': uuid,
+            characterId: uuid,
         }),
     });
 
     if (result.ok) {
         /** @type {{ status: string; downloadUrl: string }} */
-        const downloadResult = await result.json() as { status: string; downloadUrl: string };
+        const downloadResult = (await result.json()) as { status: string; downloadUrl: string };
         if (downloadResult.status === 'ok') {
             const imageResult = await fetch(downloadResult.downloadUrl);
             const buffer = Buffer.from(await imageResult.arrayBuffer());
@@ -710,7 +755,7 @@ async function downloadGenericPng(url: string) {
         if (result.ok) {
             const buffer = Buffer.from(await result.arrayBuffer());
             // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-            let fileName = sanitize(result.url.split('?')[0].split('/').reverse()[0]);
+            let fileName = sanitize(result.url.split('?')[0].split('/').toReversed()[0]);
             const contentType = result.headers.get('content-type') || 'image/png'; //yoink it from AICC function lol
 
             // The `importCharacter()` function detects the MIME (content-type) of the file
@@ -757,7 +802,9 @@ function parseRisuUrl(url: string) {
  * @returns {Promise<{buffer: Buffer, fileName: string, fileType: string}>}
  */
 async function downloadRisuCharacter(uuid: string) {
-    const result = await fetch(`https://realm.risuai.net/api/v1/download/png-v3/${uuid}?non_commercial=true`);
+    const result = await fetch(
+        `https://realm.risuai.net/api/v1/download/png-v3/${uuid}?non_commercial=true`,
+    );
 
     if (!result.ok) {
         const text = await result.text();
@@ -845,7 +892,7 @@ async function downloadPerchanceCharacter(slug: string) {
                         slug: slug,
                         char_url: charURL,
                         uuid: perchanceChar.uuid || null,
-                        avatar_url: isAvatarBase64 ? null : (avatarUrl || null),
+                        avatar_url: isAvatarBase64 ? null : avatarUrl || null,
                         folder_path: perchanceChar.folderPath || null,
                         folder_name: perchanceChar.folderName || null,
                         custom_data: perchanceChar.customData || {},
@@ -856,11 +903,14 @@ async function downloadPerchanceCharacter(slug: string) {
             const avatarBuffer = await fetchPerchanceAvatar(avatarUrl, isAvatarBase64);
 
             // Character card
-            const buffer = write(avatarBuffer, JSON.stringify({
-                'spec': 'chara_card_v2',
-                'spec_version': '2.0',
-                'data': charData,
-            }));
+            const buffer = write(
+                avatarBuffer,
+                JSON.stringify({
+                    spec: 'chara_card_v2',
+                    spec_version: '2.0',
+                    data: charData,
+                }),
+            );
 
             const fileName = `${charData.name}.png`;
             const fileType = 'image/png';
@@ -913,7 +963,9 @@ async function fetchPerchanceAvatar(avatarUrl: string, isAvatarBase64: boolean) 
     const defaultAvatarBuffer = fs.readFileSync(defaultAvatarPath);
 
     if (!avatarUrl || (!isAvatarBase64 && !isValidUrl(avatarUrl))) {
-        console.warn('Perchance character does not have an avatar, it is not base64, or it is an invalid url, using default avatar');
+        console.warn(
+            'Perchance character does not have an avatar, it is not base64, or it is an invalid url, using default avatar',
+        );
         return defaultAvatarBuffer;
     }
 
@@ -944,7 +996,9 @@ async function fetchPerchanceAvatar(avatarUrl: string, isAvatarBase64: boolean) 
         if (avatarContentType === 'image/png') {
             return avatarBuffer;
         } else {
-            console.debug(`Perchance character avatar is not PNG: ${avatarContentType}. Converting to PNG...`);
+            console.debug(
+                `Perchance character avatar is not PNG: ${avatarContentType}. Converting to PNG...`,
+            );
 
             // use Bun.image to convert the image to PNG if it's not PNG
             return await new Bun.Image(avatarBuffer).png().buffer();
@@ -955,10 +1009,15 @@ async function fetchPerchanceAvatar(avatarUrl: string, isAvatarBase64: boolean) 
     const isPerchanceOrgFileUploader = avatarUrl.includes('https://user-uploads.perchance.org');
 
     if (isPerchanceOrgFileUploader) {
-        console.warn('Files from https://user-uploads.perchance.org are sometimes blocked by CloudFlare, try reuploading it in https://perchance.org/upload to get the new link from https://user-uploads.dev instead.');
+        console.warn(
+            'Files from https://user-uploads.perchance.org are sometimes blocked by CloudFlare, try reuploading it in https://perchance.org/upload to get the new link from https://user-uploads.dev instead.',
+        );
     }
 
-    console.warn('You can also download the avatar manually and assign it to the character:', avatarUrl);
+    console.warn(
+        'You can also download the avatar manually and assign it to the character:',
+        avatarUrl,
+    );
     return defaultAvatarBuffer;
 }
 
@@ -1077,7 +1136,9 @@ router.post('/importURL', async (request, response) => {
             type = 'character';
             result = await downloadGenericPng(url);
         } else {
-            console.error(`Received an import for "${getHostFromUrl(url)}", but site is not whitelisted. This domain must be added to the config key "whitelistImportDomains" to allow import from this source.`);
+            console.error(
+                `Received an import for "${getHostFromUrl(url)}", but site is not whitelisted. This domain must be added to the config key "whitelistImportDomains" to allow import from this source.`,
+            );
             return response.sendStatus(404);
         }
 
@@ -1105,7 +1166,7 @@ router.post('/importUUID', async (request, response) => {
         let result;
 
         const isJannny = uuid.includes('_character');
-        const isPygmalion = (!isJannny && uuid.length == 36);
+        const isPygmalion = !isJannny && uuid.length == 36;
         const isAICC = uuid.startsWith('AICC/');
         const isPerchance = isPerchanceUUID(uuid);
         const uuidType = uuid.includes('lorebook') ? 'lorebook' : 'character';

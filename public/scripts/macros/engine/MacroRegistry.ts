@@ -7,7 +7,12 @@ import { MACRO_IDENTIFIER_PATTERN } from './MacroLexer.js';
 
 import { isFalseBoolean, isTrueBoolean } from '../../utils.js';
 import { MacroEngine } from './MacroEngine.js';
-import { createMacroRuntimeError, logMacroRegisterError, logMacroRegisterWarning, logMacroRuntimeWarning } from './MacroDiagnostics.js';
+import {
+    createMacroRuntimeError,
+    logMacroRegisterError,
+    logMacroRegisterWarning,
+    logMacroRuntimeWarning,
+} from './MacroDiagnostics.js';
 
 /**
  * Enum of standard macro categories for grouping in documentation and autocomplete.
@@ -169,7 +174,9 @@ export const MacroValueType = Object.freeze({
 class MacroRegistry {
     // @ts-expect-error TS(7008) FIXME: Member '#instance' implicitly has an 'any' type.
     /** @type {MacroRegistry} */ static #instance;
-    /** @type {MacroRegistry} */ static get instance() { return MacroRegistry.#instance ?? (MacroRegistry.#instance = new MacroRegistry()); }
+    /** @type {MacroRegistry} */ static get instance() {
+        return MacroRegistry.#instance ?? (MacroRegistry.#instance = new MacroRegistry());
+    }
 
     /** @type {Map<string, MacroDefinition>} */
     #macros;
@@ -210,7 +217,10 @@ class MacroRegistry {
             // Register alias entries pointing to the same definition
             for (const { alias, visible } of definition.aliases) {
                 // @ts-expect-error TS(2322) FIXME: Type 'boolean' is not assignable to type 'null | u... Remove this comment to see the full error message
-                this.#registerMacroEntry(alias, definition, { primaryMacroName: name, aliasVisible: visible });
+                this.#registerMacroEntry(alias, definition, {
+                    primaryMacroName: name,
+                    aliasVisible: visible,
+                });
             }
 
             return definition;
@@ -238,18 +248,23 @@ class MacroRegistry {
     // @ts-expect-error TS(7006) FIXME: Parameter 'targetMacroName' implicitly has an 'any... Remove this comment to see the full error message
     registerMacroAlias(targetMacroName, aliasName, { visible = true } = {}) {
         // Extract names early for error logging
-        targetMacroName = typeof targetMacroName === 'string' ? targetMacroName.trim() : String(targetMacroName);
+        targetMacroName =
+            typeof targetMacroName === 'string' ? targetMacroName.trim() : String(targetMacroName);
         aliasName = typeof aliasName === 'string' ? aliasName.trim() : String(aliasName);
 
         try {
             // Validate alias name
             if (!isIdentifierValid(aliasName)) {
-                throw new Error(`Alias name "${aliasName}" is invalid. Must start with a letter, followed by alphanumeric characters or hyphens.`);
+                throw new Error(
+                    `Alias name "${aliasName}" is invalid. Must start with a letter, followed by alphanumeric characters or hyphens.`,
+                );
             }
 
             // Check that alias is not the same as target (case insensitive)
             if (aliasName.toLowerCase() === targetMacroName.toLowerCase()) {
-                throw new Error(`Alias name "${aliasName}" cannot be the same as the target macro name (case insensitive).`);
+                throw new Error(
+                    `Alias name "${aliasName}" cannot be the same as the target macro name (case insensitive).`,
+                );
             }
 
             // Check that target macro exists
@@ -259,9 +274,13 @@ class MacroRegistry {
             }
 
             // Get the primary definition (in case target is itself an alias)
-            const primaryDefinition = targetDefinition.aliasOf ? this.getMacro(targetDefinition.aliasOf) : targetDefinition;
+            const primaryDefinition = targetDefinition.aliasOf
+                ? this.getMacro(targetDefinition.aliasOf)
+                : targetDefinition;
             if (!primaryDefinition) {
-                throw new Error(`Could not resolve primary definition for target macro "${targetMacroName}".`);
+                throw new Error(
+                    `Could not resolve primary definition for target macro "${targetMacroName}".`,
+                );
             }
 
             // Detect extension/third-party status from call stack
@@ -275,7 +294,10 @@ class MacroRegistry {
 
             // Register the alias using the shared utility
             // @ts-expect-error TS(2322) FIXME: Type 'boolean' is not assignable to type 'null | u... Remove this comment to see the full error message
-            this.#registerMacroEntry(aliasName, aliasDefinition, { primaryMacroName: primaryDefinition.name, aliasVisible: visible });
+            this.#registerMacroEntry(aliasName, aliasDefinition, {
+                primaryMacroName: primaryDefinition.name,
+                aliasVisible: visible,
+            });
 
             return true;
         } catch (error) {
@@ -302,18 +324,27 @@ class MacroRegistry {
         const nameKey = name.toLowerCase();
 
         if (this.#macros.has(nameKey)) {
-            const warningType = primaryMacroName ? `Alias "${name}" for macro "${primaryMacroName}"` : `Macro "${name}"`;
-            const warningMessage = primaryMacroName ? 'overwrites an existing macro.' : 'is already registered and will be overwritten.';
-            logMacroRegisterWarning({ macroName: primaryMacroName || name, message: `${warningType} ${warningMessage}` });
+            const warningType = primaryMacroName
+                ? `Alias "${name}" for macro "${primaryMacroName}"`
+                : `Macro "${name}"`;
+            const warningMessage = primaryMacroName
+                ? 'overwrites an existing macro.'
+                : 'is already registered and will be overwritten.';
+            logMacroRegisterWarning({
+                macroName: primaryMacroName || name,
+                message: `${warningType} ${warningMessage}`,
+            });
         }
 
         /** @type {MacroDefinition} */
-        const entry = primaryMacroName ? {
-            ...definition,
-            name: name, // The lookup name is the alias (preserves original casing for display)
-            aliasOf: primaryMacroName,
-            aliasVisible: aliasVisible,
-        } : definition;
+        const entry = primaryMacroName
+            ? {
+                  ...definition,
+                  name: name, // The lookup name is the alias (preserves original casing for display)
+                  aliasOf: primaryMacroName,
+                  aliasVisible: aliasVisible,
+              }
+            : definition;
 
         this.#macros.set(nameKey, entry);
     }
@@ -325,7 +356,8 @@ class MacroRegistry {
      */
     // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
     unregisterMacro(name) {
-        if (typeof name !== 'string' || !name.trim()) throw new Error('Macro name must be a non-empty string');
+        if (typeof name !== 'string' || !name.trim())
+            throw new Error('Macro name must be a non-empty string');
         name = name.trim();
         return this.#macros.delete(name.toLowerCase());
     }
@@ -377,9 +409,9 @@ class MacroRegistry {
     getAllMacros({ excludeAliases = false, excludeHiddenAliases = false } = {}) {
         let macros = Array.from(this.#macros.values());
         if (excludeAliases) {
-            macros = macros.filter(m => !m.aliasOf);
+            macros = macros.filter((m) => !m.aliasOf);
         } else if (excludeHiddenAliases) {
-            macros = macros.filter(m => !m.aliasOf || m.aliasVisible !== false);
+            macros = macros.filter((m) => !m.aliasOf || m.aliasVisible !== false);
         }
         return macros;
     }
@@ -392,9 +424,7 @@ class MacroRegistry {
      * @returns {string}
      */
     // @ts-expect-error TS(7006) FIXME: Parameter 'call' implicitly has an 'any' type.
-    executeMacro(call, {
-        defOverride
-    }: { defOverride?: object } = {}) {
+    executeMacro(call, { defOverride }: { defOverride?: object } = {}) {
         const name = call.name;
         const def = defOverride || this.getMacro(name);
         if (!def) {
@@ -405,12 +435,16 @@ class MacroRegistry {
 
         if (!isArgsValid(def, args)) {
             const expectedMin = def.list ? def.minArgs + def.list.min : def.minArgs;
-            const expectedMax = def.list && def.list.max !== null
-                ? def.maxArgs + def.list.max
-                : (def.list ? null : def.maxArgs);
+            const expectedMax =
+                def.list && def.list.max !== null
+                    ? def.maxArgs + def.list.max
+                    : def.list
+                      ? null
+                      : def.maxArgs;
 
             const expectation = (() => {
-                if (expectedMax !== null && expectedMax !== expectedMin) return `between ${expectedMin} and ${expectedMax}`;
+                if (expectedMax !== null && expectedMax !== expectedMin)
+                    return `between ${expectedMin} and ${expectedMax}`;
                 if (expectedMax !== null && expectedMax === expectedMin) return `${expectedMin}`;
                 return `at least ${expectedMin}`;
             })();
@@ -427,7 +461,11 @@ class MacroRegistry {
         // Compute unnamed args (required + optional, up to maxArgs)
         const unnamedArgsCount = Math.min(args.length, def.maxArgs);
         const unnamedArgsValues = args.slice(0, unnamedArgsCount);
-        const listValues = !def.list ? null : args.length > def.maxArgs ? args.slice(def.maxArgs) : [];
+        const listValues = !def.list
+            ? null
+            : args.length > def.maxArgs
+              ? args.slice(def.maxArgs)
+              : [];
 
         // Perform best-effort type validation for documented positional arguments.
         // This can throw an error if the arguments are invalid.
@@ -454,11 +492,13 @@ class MacroRegistry {
             normalize: MacroEngine.normalizeMacroResult.bind(MacroEngine),
             trimContent: MacroEngine.trimScopedContent.bind(MacroEngine),
             // @ts-expect-error TS(7006) FIXME: Parameter 'text' implicitly has an 'any' type.
-            resolve: (text, { offsetDelta = 0 } = {}) => MacroEngine.evaluate(text, call.env, {
-                contextOffset: call.globalOffset + offsetDelta,
-            }),
+            resolve: (text, { offsetDelta = 0 } = {}) =>
+                MacroEngine.evaluate(text, call.env, {
+                    contextOffset: call.globalOffset + offsetDelta,
+                }),
             // @ts-expect-error TS(7006) FIXME: Parameter 'message' implicitly has an 'any' type.
-            warn: (message, error = undefined) => logMacroRuntimeWarning({ message, call, def, error }),
+            warn: (message, error = undefined) =>
+                logMacroRuntimeWarning({ message, call, def, error }),
         };
 
         const result = def.handler(executionContext);
@@ -486,13 +526,15 @@ class MacroRegistry {
      * @throws {Error} If validation fails.
      */
     // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
-    buildMacroDefFromOptions(name, options, {
-        source
-    }: { source?: string } = {}) {
+    buildMacroDefFromOptions(name, options, { source }: { source?: string } = {}) {
         name = typeof name === 'string' ? name.trim() : String(name);
 
-        if (!isIdentifierValid(name)) throw new Error(`Macro name "${name}" is invalid. Must start with a letter, followed by alphanumeric characters or hyphens.`);
-        if (!options || typeof options !== 'object') throw new Error(`Macro "${name}" options must be a non-null object.`);
+        if (!isIdentifierValid(name))
+            throw new Error(
+                `Macro name "${name}" is invalid. Must start with a letter, followed by alphanumeric characters or hyphens.`,
+            );
+        if (!options || typeof options !== 'object')
+            throw new Error(`Macro "${name}" options must be a non-null object.`);
 
         const {
             aliases: rawAliases,
@@ -509,18 +551,30 @@ class MacroRegistry {
             handler,
         } = options;
 
-        if (typeof handler !== 'function') throw new Error(`Macro "${name}" options.handler must be a function.`);
+        if (typeof handler !== 'function')
+            throw new Error(`Macro "${name}" options.handler must be a function.`);
 
         /** @type {MacroResolvedAlias[]} */
         const aliases = [];
         if (rawAliases !== undefined && rawAliases !== null) {
-            if (!Array.isArray(rawAliases)) throw new Error(`Macro "${name}" options.aliases must be an array.`);
+            if (!Array.isArray(rawAliases))
+                throw new Error(`Macro "${name}" options.aliases must be an array.`);
             for (const [i, aliasDef] of rawAliases.entries()) {
-                if (!aliasDef || typeof aliasDef !== 'object') throw new Error(`Macro "${name}" options.aliases[${i}] must be an object.`);
-                if (typeof aliasDef.alias !== 'string' || !aliasDef.alias.trim()) throw new Error(`Macro "${name}" options.aliases[${i}].alias must be a non-empty string.`);
+                if (!aliasDef || typeof aliasDef !== 'object')
+                    throw new Error(`Macro "${name}" options.aliases[${i}] must be an object.`);
+                if (typeof aliasDef.alias !== 'string' || !aliasDef.alias.trim())
+                    throw new Error(
+                        `Macro "${name}" options.aliases[${i}].alias must be a non-empty string.`,
+                    );
                 const aliasName = aliasDef.alias.trim();
-                if (!isIdentifierValid(aliasName)) throw new Error(`Macro "${name}" options.aliases[${i}].alias "${aliasName}" is invalid. Must start with a letter, followed by word chars or hyphens.`);
-                if (aliasName.toLowerCase() === name.toLowerCase()) throw new Error(`Macro "${name}" options.aliases[${i}].alias cannot be the same as the macro name (insensitive).`);
+                if (!isIdentifierValid(aliasName))
+                    throw new Error(
+                        `Macro "${name}" options.aliases[${i}].alias "${aliasName}" is invalid. Must start with a letter, followed by word chars or hyphens.`,
+                    );
+                if (aliasName.toLowerCase() === name.toLowerCase())
+                    throw new Error(
+                        `Macro "${name}" options.aliases[${i}].alias cannot be the same as the macro name (insensitive).`,
+                    );
                 const visible = aliasDef.visible !== false;
                 aliases.push({ alias: aliasName, visible });
             }
@@ -541,11 +595,19 @@ class MacroRegistry {
             if (Array.isArray(rawUnnamedArgs)) {
                 let foundOptional = false;
                 unnamedArgDefs = rawUnnamedArgs.map((def, index) => {
-                    if (!def || typeof def !== 'object') throw new Error(`Macro "${name}" options.unnamedArgs[${index}] must be an object when using argument definitions.`);
-                    if (typeof def.name !== 'string' || !def.name.trim()) throw new Error(`Macro "${name}" options.unnamedArgs[${index}].name must be a non-empty string when using argument definitions.`);
+                    if (!def || typeof def !== 'object')
+                        throw new Error(
+                            `Macro "${name}" options.unnamedArgs[${index}] must be an object when using argument definitions.`,
+                        );
+                    if (typeof def.name !== 'string' || !def.name.trim())
+                        throw new Error(
+                            `Macro "${name}" options.unnamedArgs[${index}].name must be a non-empty string when using argument definitions.`,
+                        );
 
                     if (foundOptional && !def.optional) {
-                        throw new Error(`Macro "${name}" options.unnamedArgs[${index}] is required but follows an optional argument. Optional args must be a suffix.`);
+                        throw new Error(
+                            `Macro "${name}" options.unnamedArgs[${index}] is required but follows an optional argument. Optional args must be a suffix.`,
+                        );
                     }
                     if (def.optional) foundOptional = true;
 
@@ -554,26 +616,36 @@ class MacroRegistry {
                         name: def.name.trim(),
                         optional: def.optional || false,
                         defaultValue: def.defaultValue?.trim(),
-                        type: Array.isArray(def.type) && def.type.length === 0 ? 'string' : def.type ?? 'string',
+                        type:
+                            Array.isArray(def.type) && def.type.length === 0
+                                ? 'string'
+                                : (def.type ?? 'string'),
                         sampleValue: def.sampleValue?.trim(),
-                        description: typeof def.description === 'string' ? def.description : undefined,
+                        description:
+                            typeof def.description === 'string' ? def.description : undefined,
                     };
 
-                    const validTypes = ['string', 'integer', 'number', 'boolean'];
-                    const type = Array.isArray(normalized.type) ? normalized.type : [normalized.type];
-                    if (type.some(t => !validTypes.includes(t))) {
-                        throw new Error(`Macro "${name}" options.unnamedArgs[${index}].type must be one of "string", "integer", "number", or "boolean" when provided.`);
+                    const validTypes = new Set(['string', 'integer', 'number', 'boolean']);
+                    const type = Array.isArray(normalized.type)
+                        ? normalized.type
+                        : [normalized.type];
+                    if (type.some((t) => !validTypes.has(t))) {
+                        throw new Error(
+                            `Macro "${name}" options.unnamedArgs[${index}].type must be one of "string", "integer", "number", or "boolean" when provided.`,
+                        );
                     }
 
                     return normalized;
                 });
 
                 maxArgs = unnamedArgDefs.length;
-                minArgs = unnamedArgDefs.findIndex(d => d.optional);
+                minArgs = unnamedArgDefs.findIndex((d) => d.optional);
                 if (minArgs === -1) minArgs = maxArgs;
             } else if (typeof rawUnnamedArgs === 'number') {
                 if (!Number.isInteger(rawUnnamedArgs) || rawUnnamedArgs < 0) {
-                    throw new Error(`Macro "${name}" options.unnamedArgs must be a non-negative integer when provided.`);
+                    throw new Error(
+                        `Macro "${name}" options.unnamedArgs must be a non-negative integer when provided.`,
+                    );
                 }
                 minArgs = rawUnnamedArgs;
                 maxArgs = rawUnnamedArgs;
@@ -584,7 +656,9 @@ class MacroRegistry {
                     sampleValue: `arg${i + 1}`,
                 }));
             } else {
-                throw new Error(`Macro "${name}" options.unnamedArgs must be a non-negative integer or an array of argument definitions when provided.`);
+                throw new Error(
+                    `Macro "${name}" options.unnamedArgs must be a non-negative integer or an array of argument definitions when provided.`,
+                );
             }
         }
 
@@ -594,49 +668,78 @@ class MacroRegistry {
             if (typeof rawList === 'boolean') {
                 list = rawList ? { min: 0, max: null } : null;
             } else if (typeof rawList === 'object' && rawList !== null) {
-                if (typeof rawList.min !== 'number' || rawList.min < 0) throw new Error(`Macro "${name}" options.list.min must be a non-negative integer when provided.`);
-                if (rawList.max !== undefined && typeof rawList.max !== 'number') throw new Error(`Macro "${name}" options.list.max must be a number when provided.`);
-                if (rawList.max !== undefined && rawList.max < rawList.min) throw new Error(`Macro "${name}" options.list.max must be greater than or equal to options.list.min.`);
+                if (typeof rawList.min !== 'number' || rawList.min < 0)
+                    throw new Error(
+                        `Macro "${name}" options.list.min must be a non-negative integer when provided.`,
+                    );
+                if (rawList.max !== undefined && typeof rawList.max !== 'number')
+                    throw new Error(
+                        `Macro "${name}" options.list.max must be a number when provided.`,
+                    );
+                if (rawList.max !== undefined && rawList.max < rawList.min)
+                    throw new Error(
+                        `Macro "${name}" options.list.max must be greater than or equal to options.list.min.`,
+                    );
                 list = { min: rawList.min, max: rawList.max ?? null };
             } else {
-                throw new Error(`Macro "${name}" options.list must be a boolean or an object with numeric min/max when provided.`);
+                throw new Error(
+                    `Macro "${name}" options.list must be a boolean or an object with numeric min/max when provided.`,
+                );
             }
         }
 
         let strictArgs = true;
         if (rawStrictArgs !== undefined) {
-            if (typeof rawStrictArgs !== 'boolean') throw new Error(`Macro "${name}" options.strictArgs must be a boolean when provided.`);
+            if (typeof rawStrictArgs !== 'boolean')
+                throw new Error(
+                    `Macro "${name}" options.strictArgs must be a boolean when provided.`,
+                );
             strictArgs = rawStrictArgs;
         }
 
         let description = '<no description>';
         if (rawDescription !== undefined) {
-            if (typeof rawDescription !== 'string') throw new Error(`Macro "${name}" options.description must be a string when provided.`);
+            if (typeof rawDescription !== 'string')
+                throw new Error(
+                    `Macro "${name}" options.description must be a string when provided.`,
+                );
             description = rawDescription;
         }
 
         let returns = null;
         if (rawReturns !== undefined && rawReturns !== null) {
-            if (typeof rawReturns !== 'string') throw new Error(`Macro "${name}" options.returns must be a string when provided.`);
+            if (typeof rawReturns !== 'string')
+                throw new Error(`Macro "${name}" options.returns must be a string when provided.`);
             returns = rawReturns || '<empty string>';
         }
 
-        const validTypes = ['string', 'integer', 'number', 'boolean'];
+        const validTypes = new Set(['string', 'integer', 'number', 'boolean']);
         let returnType = /** @type {MacroValueType|MacroValueType[]} */ ('string');
         if (rawReturnType !== undefined && rawReturnType !== null) {
-            returnType = Array.isArray(rawReturnType) && rawReturnType.length === 0 ? 'string' : rawReturnType;
+            returnType =
+                Array.isArray(rawReturnType) && rawReturnType.length === 0
+                    ? 'string'
+                    : rawReturnType;
             const typesToValidate = Array.isArray(returnType) ? returnType : [returnType];
-            if (typesToValidate.some(t => !validTypes.includes(t))) {
-                throw new Error(`Macro "${name}" options.returnType must be one of "string", "integer", "number", or "boolean" (or an array of these) when provided.`);
+            if (typesToValidate.some((t) => !validTypes.has(t))) {
+                throw new Error(
+                    `Macro "${name}" options.returnType must be one of "string", "integer", "number", or "boolean" (or an array of these) when provided.`,
+                );
             }
         }
 
         let displayOverride = null;
         if (rawDisplayOverride !== undefined && rawDisplayOverride !== null) {
-            if (typeof rawDisplayOverride !== 'string') throw new Error(`Macro "${name}" options.displayOverride must be a string when provided.`);
+            if (typeof rawDisplayOverride !== 'string')
+                throw new Error(
+                    `Macro "${name}" options.displayOverride must be a string when provided.`,
+                );
             displayOverride = rawDisplayOverride.trim();
             if (displayOverride && !displayOverride.startsWith('{{')) {
-                logMacroRegisterWarning({ macroName: name, message: `Macro "${name}" options.displayOverride should include curly braces. Auto-wrapping.` });
+                logMacroRegisterWarning({
+                    macroName: name,
+                    message: `Macro "${name}" options.displayOverride should include curly braces. Auto-wrapping.`,
+                });
                 displayOverride = `{{${displayOverride}}}`;
             }
         }
@@ -646,10 +749,14 @@ class MacroRegistry {
         if (rawExampleUsage !== undefined && rawExampleUsage !== null) {
             const examples = Array.isArray(rawExampleUsage) ? rawExampleUsage : [rawExampleUsage];
             for (const [i, ex] of examples.entries()) {
-                if (typeof ex !== 'string') throw new Error(`Macro "${name}" options.exampleUsage[${i}] must be a string.`);
+                if (typeof ex !== 'string')
+                    throw new Error(`Macro "${name}" options.exampleUsage[${i}] must be a string.`);
                 let trimmed = ex.trim();
                 if (trimmed && !trimmed.startsWith('{{')) {
-                    logMacroRegisterWarning({ macroName: name, message: `Macro "${name}" options.exampleUsage[${i}] should include curly braces. Auto-wrapping.` });
+                    logMacroRegisterWarning({
+                        macroName: name,
+                        message: `Macro "${name}" options.exampleUsage[${i}] should include curly braces. Auto-wrapping.`,
+                    });
                     trimmed = `{{${trimmed}}}`;
                 }
                 if (trimmed) exampleUsage.push(trimmed);
@@ -658,7 +765,10 @@ class MacroRegistry {
 
         let delayArgResolution = false;
         if (rawDelayArgResolution !== undefined) {
-            if (typeof rawDelayArgResolution !== 'boolean') throw new Error(`Macro "${name}" options.delayArgResolution must be a boolean when provided.`);
+            if (typeof rawDelayArgResolution !== 'boolean')
+                throw new Error(
+                    `Macro "${name}" options.delayArgResolution must be a boolean when provided.`,
+                );
             delayArgResolution = rawDelayArgResolution;
         }
 
@@ -753,12 +863,14 @@ function validateArgTypes(call, def, unnamedArgs) {
         const value = unnamedArgs[i];
         if (!argDef || !argDef.type || typeof value !== 'string') {
             // Misconfigured macro definition: always surface as an error.
-            throw new Error(`Macro "${call.name}" (position ${i + 1}) has invalid definition or type.`);
+            throw new Error(
+                `Macro "${call.name}" (position ${i + 1}) has invalid definition or type.`,
+            );
         }
 
         const types = Array.isArray(argDef.type) ? argDef.type : [argDef.type];
         // @ts-expect-error TS(7006) FIXME: Parameter 'type' implicitly has an 'any' type.
-        if (!types.some(type => isValueOfType(value, type))) {
+        if (!types.some((type) => isValueOfType(value, type))) {
             const argName = argDef.name || `Argument ${i + 1}`;
             const optionalLabel = argDef.optional ? ' (optional)' : '';
             const message = `Macro "${call.name}" (position ${i + 1}${optionalLabel}) argument "${argName}" expected type ${argDef.type} but got value "${value}".`;
@@ -806,26 +918,26 @@ function isValueOfType(value, type) {
  * @returns {{ isExtension: boolean, isThirdParty: boolean, source: string }}
  */
 function detectMacroSource() {
-    const stack = new Error().stack?.split('\n').map(line => line.trim()) ?? [];
+    const stack = new Error().stack?.split('\n').map((line) => line.trim()) ?? [];
 
-    const isExtension = stack.some(line => line.includes('/scripts/extensions/'));
-    const isThirdParty = stack.some(line => line.includes('/scripts/extensions/third-party/'));
+    const isExtension = stack.some((line) => line.includes('/scripts/extensions/'));
+    const isThirdParty = stack.some((line) => line.includes('/scripts/extensions/third-party/'));
 
     let source = 'unknown';
     if (isThirdParty) {
-        const match = stack.find(line => line.includes('/scripts/extensions/third-party/'));
+        const match = stack.find((line) => line.includes('/scripts/extensions/third-party/'));
         if (match) {
             source = match.replace(/^.*?\/scripts\/extensions\/third-party\/([^/]+)\/.*$/, '$1');
         }
     } else if (isExtension) {
-        const match = stack.find(line => line.includes('/scripts/extensions/'));
+        const match = stack.find((line) => line.includes('/scripts/extensions/'));
         if (match) {
             source = match.replace(/^.*?\/scripts\/extensions\/([^/]+)\/.*$/, '$1');
         }
     } else {
         // Find the first meaningful caller outside MacroRegistry
-        const callerIdx = stack.findIndex(line =>
-            line.includes('registerMacro') && line.includes('MacroRegistry'),
+        const callerIdx = stack.findIndex(
+            (line) => line.includes('registerMacro') && line.includes('MacroRegistry'),
         );
         if (callerIdx >= 0 && callerIdx + 1 < stack.length) {
             const callerLine = stack[callerIdx + 1];

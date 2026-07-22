@@ -29,13 +29,26 @@ import {
     updateRemoteChatName,
 } from '../script.js';
 import { getRegexedString, regex_placement } from './extensions/regex/engine.js';
-import { deleteGroupChatByName, getGroupAvatar, groups, is_group_generating, openGroupById, openGroupChat } from './group-chats.js';
+import {
+    deleteGroupChatByName,
+    getGroupAvatar,
+    groups,
+    is_group_generating,
+    openGroupById,
+    openGroupChat,
+} from './group-chats.js';
 import { t } from './i18n.js';
 import { callGenericPopup, POPUP_TYPE } from './popup.js';
 import { getMessageTimeStamp } from './RossAscends-mods.js';
 import { renderTemplateAsync } from './templates.js';
 import { accountStorage } from './util/AccountStorage.js';
-import { clamp, flashHighlight, isElementInViewport, sortMoments, timestampToMoment } from './utils.js';
+import {
+    clamp,
+    flashHighlight,
+    isElementInViewport,
+    sortMoments,
+    timestampToMoment,
+} from './utils.js';
 
 const assistantAvatarKey = 'assistant';
 const pinnedChatsKey = 'pinnedChats';
@@ -56,7 +69,10 @@ function getRecentChatsSettings() {
             const parsed = JSON.parse(value);
             return {
                 maxDisplayed: Math.max(1, parseInt(parsed.maxDisplayed) || DEFAULT_MAX_DISPLAYED),
-                collapsedDisplayed: Math.max(1, parseInt(parsed.collapsedDisplayed) || DEFAULT_COLLAPSED_DISPLAYED),
+                collapsedDisplayed: Math.max(
+                    1,
+                    parseInt(parsed.collapsedDisplayed) || DEFAULT_COLLAPSED_DISPLAYED,
+                ),
             };
         } catch {
             // Ignore parse errors
@@ -223,7 +239,7 @@ export function getPermanentAssistantAvatar() {
         return defaultAssistantAvatar;
     }
 
-    const character = characters.find(x => x.avatar === assistantAvatar);
+    const character = characters.find((x) => x.avatar === assistantAvatar);
     if (character === undefined) {
         accountStorage.removeItem(assistantAvatarKey);
         return defaultAssistantAvatar;
@@ -271,7 +287,7 @@ export async function openWelcomeScreen({ force = false, expand = false } = {}) 
  */
 async function unshallowPermanentAssistant() {
     const assistantAvatar = getPermanentAssistantAvatar();
-    const characterId = characters.findIndex(x => x.avatar === assistantAvatar);
+    const characterId = characters.findIndex((x) => x.avatar === assistantAvatar);
     if (characterId === -1) {
         return;
     }
@@ -286,13 +302,19 @@ async function unshallowPermanentAssistant() {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'character' implicitly has an 'any' type... Remove this comment to see the full error message
 function getAssistantGreeting(character) {
-    const defaultGreeting = t`If you're connected to an API, try asking me something!` + '\n***\n' + t`**Hint:** Set any character as your welcome page assistant from their "More..." menu.`;
+    const defaultGreeting =
+        t`If you're connected to an API, try asking me something!` +
+        '\n***\n' +
+        t`**Hint:** Set any character as your welcome page assistant from their "More..." menu.`;
 
     if (!character) {
         return defaultGreeting;
     }
 
-    return getRegexedString(character.first_mes || '', regex_placement.AI_OUTPUT, { depth: 0 }) || defaultGreeting;
+    return (
+        getRegexedString(character.first_mes || '', regex_placement.AI_OUTPUT, { depth: 0 }) ||
+        defaultGreeting
+    );
 }
 
 /**
@@ -300,7 +322,7 @@ function getAssistantGreeting(character) {
  */
 function sendAssistantMessage() {
     const currentAssistantAvatar = getPermanentAssistantAvatar();
-    const character = characters.find(x => x.avatar === currentAssistantAvatar);
+    const character = characters.find((x) => x.avatar === currentAssistantAvatar);
     const name = character ? character.name : neutralCharacterName;
     const avatar = character ? getThumbnailUrl('avatar', character.avatar) : system_avatar;
     const greeting = getAssistantGreeting(character);
@@ -350,7 +372,7 @@ async function sendWelcomePanel(chats, expand = false) {
             empty: !chats.length,
             version: displayVersion,
             // @ts-expect-error TS(7006) FIXME: Parameter 'chat' implicitly has an 'any' type.
-            more: chats.some(chat => chat.hidden),
+            more: chats.some((chat) => chat.hidden),
         };
         const template = await renderTemplateAsync('welcomePanel', templateData);
         const fragment = document.createRange().createContextualFragment(template);
@@ -417,14 +439,14 @@ async function sendWelcomePanel(chats, expand = false) {
         });
         fragment.querySelectorAll('.recentChat.group').forEach((groupChat) => {
             const groupId = groupChat.getAttribute('data-group');
-            const group = groups.find(x => x.id === groupId);
+            const group = groups.find((x) => x.id === groupId);
             if (group) {
                 const avatar = groupChat.querySelector('.avatar');
                 if (!avatar) {
                     return;
                 }
                 const groupAvatar = getGroupAvatar(group);
-                    avatar.replaceWith(groupAvatar);
+                avatar.replaceWith(groupAvatar);
             }
         });
         fragment.querySelectorAll('.recentChat .renameChat').forEach((renameButton) => {
@@ -474,7 +496,12 @@ async function sendWelcomePanel(chats, expand = false) {
                 const groupId = chatItem.getAttribute('data-group');
                 const fileName = chatItem.getAttribute('data-file');
                 // @ts-expect-error TS(7006) FIXME: Parameter 'c' implicitly has an 'any' type.
-                const recentChat = chats.find(c => c.chat_name === fileName && ((c.is_group && c.group === groupId) || (!c.is_group && c.avatar === avatarId)));
+                const recentChat = chats.find(
+                    (c) =>
+                        c.chat_name === fileName &&
+                        ((c.is_group && c.group === groupId) ||
+                            (!c.is_group && c.avatar === avatarId)),
+                );
                 if (!recentChat) {
                     console.error('Recent chat not found for pinning.');
                     return;
@@ -505,7 +532,7 @@ async function sendWelcomePanel(chats, expand = false) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'avatarId' implicitly has an 'any' type.
 async function openRecentCharacterChat(avatarId, fileName) {
-    const characterId = characters.findIndex(x => x.avatar === avatarId);
+    const characterId = characters.findIndex((x) => x.avatar === avatarId);
     if (characterId === -1) {
         console.error(`Character not found for avatar ID: ${avatarId}`);
         return;
@@ -534,7 +561,7 @@ async function openRecentCharacterChat(avatarId, fileName) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'groupId' implicitly has an 'any' type.
 async function openRecentGroupChat(groupId, fileName) {
-    const group = groups.find(x => x.id === groupId);
+    const group = groups.find((x) => x.id === groupId);
     if (!group) {
         console.error(`Group not found for ID: ${groupId}`);
         return;
@@ -563,7 +590,7 @@ async function openRecentGroupChat(groupId, fileName) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'avatarId' implicitly has an 'any' type.
 async function renameRecentCharacterChat(avatarId, fileName) {
-    const characterId = characters.findIndex(x => x.avatar === avatarId);
+    const characterId = characters.findIndex((x) => x.avatar === avatarId);
     if (characterId === -1) {
         console.error(`Character not found for avatar ID: ${avatarId}`);
         return;
@@ -598,7 +625,7 @@ async function renameRecentCharacterChat(avatarId, fileName) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'groupId' implicitly has an 'any' type.
 async function renameRecentGroupChat(groupId, fileName) {
-    const group = groups.find(x => x.id === groupId);
+    const group = groups.find((x) => x.id === groupId);
     if (!group) {
         console.error(`Group not found for ID: ${groupId}`);
         return;
@@ -632,7 +659,7 @@ async function renameRecentGroupChat(groupId, fileName) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'avatarId' implicitly has an 'any' type.
 async function deleteRecentCharacterChat(avatarId, fileName) {
-    const characterId = characters.findIndex(x => x.avatar === avatarId);
+    const characterId = characters.findIndex((x) => x.avatar === avatarId);
     if (characterId === -1) {
         console.error(`Character not found for avatar ID: ${avatarId}`);
         return;
@@ -659,7 +686,7 @@ async function deleteRecentCharacterChat(avatarId, fileName) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'groupId' implicitly has an 'any' type.
 async function deleteRecentGroupChat(groupId, fileName) {
-    const group = groups.find(x => x.id === groupId);
+    const group = groups.find((x) => x.id === groupId);
     if (!group) {
         console.error(`Group not found for ID: ${groupId}`);
         return;
@@ -701,25 +728,29 @@ async function refreshWelcomeScreen({ flashChat = null } = {}) {
 
     // Restore scroll position or flash specific chat
     if (flashChat) {
-                const recentChats = Array.from(chatEl.querySelectorAll('.recentChat'));
-        const chatToFlash = recentChats.find(el => {
+        const recentChats = Array.from(chatEl.querySelectorAll('.recentChat'));
+        const chatToFlash = recentChats.find((el) => {
             const file = el.getAttribute('data-file');
             const group = el.getAttribute('data-group');
             const avatar = el.getAttribute('data-avatar');
             // @ts-expect-error TS(2339) FIXME: Property 'chat_name' does not exist on type 'never... Remove this comment to see the full error message
-            return file === flashChat.chat_name &&
+            return (
+                file === flashChat.chat_name &&
                 // @ts-expect-error TS(2339) FIXME: Property 'is_group' does not exist on type 'never'... Remove this comment to see the full error message
-                ((flashChat.is_group && group === flashChat.group) || (!flashChat.is_group && avatar === flashChat.avatar));
+                ((flashChat.is_group && group === flashChat.group) ||
+                    (!flashChat.is_group && avatar === flashChat.avatar))
+            );
         });
         if (chatToFlash instanceof HTMLElement) {
             if (!isElementInViewport(chatToFlash)) {
-                                chatEl.scrollTop = chatToFlash.offsetTop - chatEl.offsetTop - (chatToFlash.clientHeight / 2);
+                chatEl.scrollTop =
+                    chatToFlash.offsetTop - chatEl.offsetTop - chatToFlash.clientHeight / 2;
             }
             flashHighlight(chatToFlash, 1000);
         }
     } else {
         // Restore scroll position
-                chatEl.scrollTop = scrollTop + (chatEl.scrollHeight - scrollHeight);
+        chatEl.scrollTop = scrollTop + (chatEl.scrollHeight - scrollHeight);
     }
 }
 
@@ -767,11 +798,23 @@ async function openRecentChatsSettingsPopup() {
                 return;
             }
 
-            const maxInputValue = popup.inputResults.get(maxRecentChatsInput.id)?.toString() ?? String(DEFAULT_MAX_DISPLAYED);
-            const collapsedInputValue = popup.inputResults.get(collapsedRecentChatsInput.id)?.toString() ?? String(DEFAULT_COLLAPSED_DISPLAYED);
+            const maxInputValue =
+                popup.inputResults.get(maxRecentChatsInput.id)?.toString() ??
+                String(DEFAULT_MAX_DISPLAYED);
+            const collapsedInputValue =
+                popup.inputResults.get(collapsedRecentChatsInput.id)?.toString() ??
+                String(DEFAULT_COLLAPSED_DISPLAYED);
 
-            const newMax = clamp(parseInt(maxInputValue) || DEFAULT_MAX_DISPLAYED, maxRecentChatsInput.min, maxRecentChatsInput.max);
-            const newCollapsed = clamp(parseInt(collapsedInputValue) || DEFAULT_COLLAPSED_DISPLAYED, collapsedRecentChatsInput.min, newMax);
+            const newMax = clamp(
+                parseInt(maxInputValue) || DEFAULT_MAX_DISPLAYED,
+                maxRecentChatsInput.min,
+                maxRecentChatsInput.max,
+            );
+            const newCollapsed = clamp(
+                parseInt(collapsedInputValue) || DEFAULT_COLLAPSED_DISPLAYED,
+                collapsedRecentChatsInput.min,
+                newMax,
+            );
 
             saveRecentChatsSettings({ maxDisplayed: newMax, collapsedDisplayed: newCollapsed });
         },
@@ -822,12 +865,19 @@ async function getRecentChats() {
     }
 
     const dataWithEntities = data
-        .map(chat => ({ chat, character: characters.find(x => x.avatar === chat.avatar), group: groups.find(x => x.id === chat.group) }))
-        .filter(t => t.character || t.group)
-        .sort((a, b) => {
+        .map((chat) => ({
+            chat,
+            character: characters.find((x) => x.avatar === chat.avatar),
+            group: groups.find((x) => x.id === chat.group),
+        }))
+        .filter((t) => t.character || t.group)
+        .toSorted((a, b) => {
             const isAPinned = PinnedChatsManager.isPinned(a.chat);
             const isBPinned = PinnedChatsManager.isPinned(b.chat);
-            const momentComparison = sortMoments(timestampToMoment(a.chat.last_mes), timestampToMoment(b.chat.last_mes));
+            const momentComparison = sortMoments(
+                timestampToMoment(a.chat.last_mes),
+                timestampToMoment(b.chat.last_mes),
+            );
 
             if (isAPinned && !isBPinned) {
                 return -1;
@@ -845,7 +895,9 @@ async function getRecentChats() {
         chat.date_short = chatTimestamp.format('l');
         chat.date_long = chatTimestamp.format('LL LT');
         chat.chat_name = chat.file_name.replace('.jsonl', '');
-        chat.char_thumbnail = character ? getThumbnailUrl('avatar', character.avatar) : system_avatar;
+        chat.char_thumbnail = character
+            ? getThumbnailUrl('avatar', character.avatar)
+            : system_avatar;
         chat.is_group = !!group;
         chat.hidden = index >= settings.collapsedDisplayed;
         chat.avatar = chat.avatar || '';
@@ -853,7 +905,7 @@ async function getRecentChats() {
         chat.pinned = PinnedChatsManager.isPinned(chat);
     });
 
-    return dataWithEntities.map(t => t.chat);
+    return dataWithEntities.map((t) => t.chat);
 }
 
 /**
@@ -865,7 +917,7 @@ async function getRecentChats() {
  */
 export async function openPermanentAssistantChat({ tryCreate = true, created = false } = {}) {
     const avatar = getPermanentAssistantAvatar();
-    const characterId = characters.findIndex(x => x.avatar === avatar);
+    const characterId = characters.findIndex((x) => x.avatar === avatar);
     if (characterId === -1) {
         if (!tryCreate) {
             console.error(`Character not found for avatar ID: ${avatar}. Cannot create.`);
@@ -888,7 +940,10 @@ export async function openPermanentAssistantChat({ tryCreate = true, created = f
         if (!created) {
             await doNewChat({ deleteCurrentChat: false });
         }
-        console.log(`Opened permanent assistant chat for ${neutralCharacterName}.`, getCurrentChatId());
+        console.log(
+            `Opened permanent assistant chat for ${neutralCharacterName}.`,
+            getCurrentChatId(),
+        );
     } catch (error) {
         console.error('Error opening permanent assistant chat:', error);
         notyf.error(t`Failed to open permanent assistant chat. See console for details.`);
@@ -935,7 +990,7 @@ async function createPermanentAssistant() {
  */
 export async function openPermanentAssistantCard() {
     const avatar = getPermanentAssistantAvatar();
-    const characterId = characters.findIndex(x => x.avatar === avatar);
+    const characterId = characters.findIndex((x) => x.avatar === avatar);
     if (characterId === -1) {
         notyf.info(t`Assistant not found. Try sending a chat message.`);
         return;
@@ -1003,7 +1058,13 @@ export function initWelcomeScreen() {
     });
 
     // @ts-expect-error TS(7031) FIXME: Binding element 'avatarId' implicitly has an 'any'... Remove this comment to see the full error message
-    eventSource.on(event_types.CHAT_RENAMED, async ({ avatarId, groupId, oldFileName, newFileName }) => {
-        PinnedChatsManager.rename({ avatar: avatarId, group: groupId, file_name: oldFileName }, newFileName);
-    });
+    eventSource.on(
+        event_types.CHAT_RENAMED,
+        async ({ avatarId, groupId, oldFileName, newFileName }) => {
+            PinnedChatsManager.rename(
+                { avatar: avatarId, group: groupId, file_name: oldFileName },
+                newFileName,
+            );
+        },
+    );
 }

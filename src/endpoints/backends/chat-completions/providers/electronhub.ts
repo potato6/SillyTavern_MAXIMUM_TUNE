@@ -23,12 +23,19 @@ export default createOAIChatProvider({
     supportsReasoning: true,
     tokenizer: (model) => {
         const m = model.toLowerCase();
-        if (m.includes('gpt-5') || m.includes('gpt-4o') || m.includes('gpt-4.1') || m.includes('gpt-4.5')) return 'gpt-4o';
+        if (
+            m.includes('gpt-5') ||
+            m.includes('gpt-4o') ||
+            m.includes('gpt-4.1') ||
+            m.includes('gpt-4.5')
+        )
+            return 'gpt-4o';
         if (m.includes('gpt-4')) return 'gpt-4';
         if (m.includes('gpt-3.5-turbo')) return 'gpt-3.5-turbo';
         if (m.includes('claude')) return 'claude';
         if (m.includes('jamba')) return 'jamba';
-        if (m.includes('deepseek') || m.includes('sonar-reasoning') || m.includes('r1')) return 'deepseek';
+        if (m.includes('deepseek') || m.includes('sonar-reasoning') || m.includes('r1'))
+            return 'deepseek';
         if (m.includes('qwen')) return 'qwen2';
         if (m.includes('gemma')) return 'gemma';
         if (m.includes('mistral')) return 'mistral';

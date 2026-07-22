@@ -2,7 +2,7 @@ import crypto from 'node:crypto';
 import { getConfigValue, tryParse } from './util.js';
 
 // @ts-expect-error TS(2345) FIXME: Argument of type '"Let's get started."' is not ass... Remove this comment to see the full error message
-const PROMPT_PLACEHOLDER = getConfigValue('promptPlaceholder', 'Let\'s get started.');
+const PROMPT_PLACEHOLDER = getConfigValue('promptPlaceholder', "Let's get started.");
 
 const REASONING_EFFORT = {
     auto: 'auto',
@@ -52,7 +52,9 @@ export function getPromptNames(request: import('express').Request) {
     return {
         charName: String(request.body.char_name || ''),
         userName: String(request.body.user_name || ''),
-        groupNames: Array.isArray(request.body.group_names) ? request.body.group_names.map(String) : [],
+        groupNames: Array.isArray(request.body.group_names)
+            ? request.body.group_names.map(String)
+            : [],
         startsWithGroupName: function (message: string) {
             return this.groupNames.some((name: string) => message.startsWith(`${name}: `));
         },
@@ -70,7 +72,9 @@ export function addAssistantPrefix(prompt: Message[], tools: object[], property:
     if (!prompt.length) {
         return prompt;
     }
-    const hasAnyTools = (Array.isArray(tools) && tools.length > 0) || prompt.some((x: Message) => x.role === 'tool');
+    const hasAnyTools =
+        (Array.isArray(tools) && tools.length > 0) ||
+        prompt.some((x: Message) => x.role === 'tool');
     // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     if (!hasAnyTools && prompt[prompt.length - 1].role === 'assistant') {
         // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
@@ -92,25 +96,60 @@ export function postProcessPrompt(messages: object[], type: string, names: Promp
         case PROMPT_PROCESSING_TYPE.MERGE:
         case PROMPT_PROCESSING_TYPE.CLAUDE:
             // @ts-expect-error TS(2345) FIXME: Argument of type 'object[]' is not assignable to p... Remove this comment to see the full error message
-            return mergeMessages(messages, names, { strict: false, placeholders: false, single: false, tools: false });
+            return mergeMessages(messages, names, {
+                strict: false,
+                placeholders: false,
+                single: false,
+                tools: false,
+            });
         case PROMPT_PROCESSING_TYPE.MERGE_TOOLS:
             // @ts-expect-error TS(2345) FIXME: Argument of type 'object[]' is not assignable to p... Remove this comment to see the full error message
-            return mergeMessages(messages, names, { strict: false, placeholders: false, single: false, tools: true });
+            return mergeMessages(messages, names, {
+                strict: false,
+                placeholders: false,
+                single: false,
+                tools: true,
+            });
         case PROMPT_PROCESSING_TYPE.SEMI:
             // @ts-expect-error TS(2345) FIXME: Argument of type 'object[]' is not assignable to p... Remove this comment to see the full error message
-            return mergeMessages(messages, names, { strict: true, placeholders: false, single: false, tools: false });
+            return mergeMessages(messages, names, {
+                strict: true,
+                placeholders: false,
+                single: false,
+                tools: false,
+            });
         case PROMPT_PROCESSING_TYPE.SEMI_TOOLS:
             // @ts-expect-error TS(2345) FIXME: Argument of type 'object[]' is not assignable to p... Remove this comment to see the full error message
-            return mergeMessages(messages, names, { strict: true, placeholders: false, single: false, tools: true });
+            return mergeMessages(messages, names, {
+                strict: true,
+                placeholders: false,
+                single: false,
+                tools: true,
+            });
         case PROMPT_PROCESSING_TYPE.STRICT:
             // @ts-expect-error TS(2345) FIXME: Argument of type 'object[]' is not assignable to p... Remove this comment to see the full error message
-            return mergeMessages(messages, names, { strict: true, placeholders: true, single: false, tools: false });
+            return mergeMessages(messages, names, {
+                strict: true,
+                placeholders: true,
+                single: false,
+                tools: false,
+            });
         case PROMPT_PROCESSING_TYPE.STRICT_TOOLS:
             // @ts-expect-error TS(2345) FIXME: Argument of type 'object[]' is not assignable to p... Remove this comment to see the full error message
-            return mergeMessages(messages, names, { strict: true, placeholders: true, single: false, tools: true });
+            return mergeMessages(messages, names, {
+                strict: true,
+                placeholders: true,
+                single: false,
+                tools: true,
+            });
         case PROMPT_PROCESSING_TYPE.SINGLE:
             // @ts-expect-error TS(2345) FIXME: Argument of type 'object[]' is not assignable to p... Remove this comment to see the full error message
-            return mergeMessages(messages, names, { strict: true, placeholders: false, single: true, tools: false });
+            return mergeMessages(messages, names, {
+                strict: true,
+                placeholders: false,
+                single: true,
+                tools: false,
+            });
         default:
             return messages;
     }
@@ -129,7 +168,15 @@ export function postProcessPrompt(messages: object[], type: string, names: Promp
  * @returns {string} Prompt for Claude
  * @copyright Prompt Conversion script taken from RisuAI by kwaroran (GPLv3).
  */
-export function convertClaudePrompt(messages: Message[], addAssistantPostfix: boolean, addAssistantPrefill: string, withSysPromptSupport: boolean, useSystemPrompt: boolean, addSysHumanMsg: string, excludePrefixes: boolean) {
+export function convertClaudePrompt(
+    messages: Message[],
+    addAssistantPostfix: boolean,
+    addAssistantPrefill: string,
+    withSysPromptSupport: boolean,
+    useSystemPrompt: boolean,
+    addSysHumanMsg: string,
+    excludePrefixes: boolean,
+) {
     //Prepare messages for claude.
     //When 'Exclude Human/Assistant prefixes' checked, setting messages role to the 'system'(last message is exception).
     if (messages.length > 0) {
@@ -142,7 +189,7 @@ export function convertClaudePrompt(messages: Message[], addAssistantPostfix: bo
             }
         });
         if (excludePrefixes) {
-            messages.slice(0, -1).forEach((message: Message) => message.role = 'system');
+            messages.slice(0, -1).forEach((message: Message) => (message.role = 'system'));
         } else {
             // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             messages[0].role = 'system';
@@ -181,24 +228,40 @@ export function convertClaudePrompt(messages: Message[], addAssistantPostfix: bo
             // Fix messages order for default message format when(messages > Context Size) by merging two messages with "\n\nHuman: " prefixes into one, before the first Assistant's message.
             if (firstAssistantIndex > 0 && !excludePrefixes) {
                 // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-                messages[firstAssistantIndex - 1].role = firstAssistantIndex - 1 !== 0 && messages[firstAssistantIndex - 1].role === 'user' ? 'FixHumMsg' : messages[firstAssistantIndex - 1].role;
+                messages[firstAssistantIndex - 1].role =
+                    firstAssistantIndex - 1 !== 0 &&
+                    messages[firstAssistantIndex - 1].role === 'user'
+                        ? 'FixHumMsg'
+                        : messages[firstAssistantIndex - 1].role;
             }
         }
     }
 
     // Convert messages to the prompt.
-    const requestPrompt = messages.map((v: Message, i: number) => {
-        // Set prefix according to the role. Also, when "Exclude Human/Assistant prefixes" is checked, names are added via the system prefix.
-        const prefix = {
-            'assistant': '\n\nAssistant: ',
-            'user': '\n\nHuman: ',
-            'system': i === 0 ? '' : v.name === 'example_assistant' ? '\n\nA: ' : v.name === 'example_user' ? '\n\nH: ' : excludePrefixes && v.name ? `\n\n${v.name}: ` : '\n\n',
-            'FixHumMsg': '\n\nFirst message: ',
-        // @ts-expect-error TS(2538) FIXME: Type 'unknown' cannot be used as an index type.
-        }[v.role] ?? '';
-        // Claude doesn't support message names, so we'll just add them to the message content.
-        return `${prefix}${v.name && v.role !== 'system' ? `${v.name}: ` : ''}${v.content}`;
-    }).join('');
+    const requestPrompt = messages
+        .map((v: Message, i: number) => {
+            // Set prefix according to the role. Also, when "Exclude Human/Assistant prefixes" is checked, names are added via the system prefix.
+            const prefix =
+                {
+                    assistant: '\n\nAssistant: ',
+                    user: '\n\nHuman: ',
+                    system:
+                        i === 0
+                            ? ''
+                            : v.name === 'example_assistant'
+                              ? '\n\nA: '
+                              : v.name === 'example_user'
+                                ? '\n\nH: '
+                                : excludePrefixes && v.name
+                                  ? `\n\n${v.name}: `
+                                  : '\n\n',
+                    FixHumMsg: '\n\nFirst message: ',
+                    // @ts-expect-error TS(2538) FIXME: Type 'unknown' cannot be used as an index type.
+                }[v.role] ?? '';
+            // Claude doesn't support message names, so we'll just add them to the message content.
+            return `${prefix}${v.name && v.role !== 'system' ? `${v.name}: ` : ''}${v.content}`;
+        })
+        .join('');
 
     return requestPrompt;
 }
@@ -213,7 +276,13 @@ export function convertClaudePrompt(messages: Message[], addAssistantPostfix: bo
  * @returns {{messages: object[], systemPrompt: object[]}} Prompt for Anthropic
  */
 // @ts-expect-error TS(2304) FIXME: Cannot find name 'PromptNames'.
-export function convertClaudeMessages(messages: Message[], prefillString: string, useSysPrompt: boolean, useTools: boolean, names: PromptNames) {
+export function convertClaudeMessages(
+    messages: Message[],
+    prefillString: string,
+    useSysPrompt: boolean,
+    useTools: boolean,
+    names: PromptNames,
+) {
     const systemPrompt: Message[] = [];
     if (useSysPrompt) {
         // Collect all the system messages up until the first instance of a non-system message, and then remove them from the messages array.
@@ -235,7 +304,10 @@ export function convertClaudeMessages(messages: Message[], prefillString: string
             // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             if (names.charName && messages[i].name === 'example_assistant') {
                 // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-                if (!messages[i].content.startsWith(`${names.charName}: `) && !names.startsWithGroupName(messages[i].content)) {
+                if (
+                    !messages[i].content.startsWith(`${names.charName}: `) &&
+                    !names.startsWithGroupName(messages[i].content)
+                ) {
                     // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                     messages[i].content = `${names.charName}: ${messages[i].content}`;
                 }
@@ -257,7 +329,7 @@ export function convertClaudeMessages(messages: Message[], prefillString: string
     }
 
     // Now replace all further messages that have the role 'system' with the role 'user'. (or all if we're not using one)
-    const parse = (str: string) => typeof str === 'string' ? JSON.parse(str) : str;
+    const parse = (str: string) => (typeof str === 'string' ? JSON.parse(str) : str);
     messages.forEach((message: Message) => {
         if (message.role === 'assistant' && message.tool_calls) {
             message.content = (message.tool_calls as Message[]).map((tc: Message) => ({
@@ -266,17 +338,19 @@ export function convertClaudeMessages(messages: Message[], prefillString: string
                 // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 name: tc.function.name,
                 // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-                input: parse(tc.function.arguments)
+                input: parse(tc.function.arguments),
             }));
         }
 
         if (message.role === 'tool') {
             message.role = 'user';
-            message.content = [{
-                type: 'tool_result',
-                tool_use_id: message.tool_call_id,
-                content: message.content,
-            }];
+            message.content = [
+                {
+                    type: 'tool_result',
+                    tool_use_id: message.tool_call_id,
+                    content: message.content,
+                },
+            ];
         }
 
         if (message.role === 'system') {
@@ -288,7 +362,10 @@ export function convertClaudeMessages(messages: Message[], prefillString: string
             }
             if (names.charName && message.name === 'example_assistant') {
                 // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-                if (!message.content.startsWith(`${names.charName}: `) && !names.startsWithGroupName(message.content)) {
+                if (
+                    !message.content.startsWith(`${names.charName}: `) &&
+                    !names.startsWithGroupName(message.content)
+                ) {
                     message.content = `${names.charName}: ${message.content}`;
                 }
             }
@@ -346,7 +423,10 @@ export function convertClaudeMessages(messages: Message[], prefillString: string
 
     // Images in assistant messages should be moved to the next user message
     for (let i = 0; i < messages.length; i++) {
-        if ((messages[i] as Message).role === 'assistant' && ((messages[i] as Message).content as Message[]).some((c: Message) => c.type === 'image')) {
+        if (
+            (messages[i] as Message).role === 'assistant' &&
+            ((messages[i] as Message).content as Message[]).some((c: Message) => c.type === 'image')
+        ) {
             // Find the next user message
             let j = i + 1;
             // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
@@ -360,8 +440,14 @@ export function convertClaudeMessages(messages: Message[], prefillString: string
                 messages.splice(i + 1, 0, { role: 'user', content: [] });
             }
 
-            ((messages[j] as Message).content as Message[]).push(...((messages[i] as Message).content as Message[]).filter((c: Message) => c.type === 'image'));
-            (messages[i] as Message).content = ((messages[i] as Message).content as Message[]).filter((c: Message) => c.type !== 'image');
+            ((messages[j] as Message).content as Message[]).push(
+                ...((messages[i] as Message).content as Message[]).filter(
+                    (c: Message) => c.type === 'image',
+                ),
+            );
+            (messages[i] as Message).content = (
+                (messages[i] as Message).content as Message[]
+            ).filter((c: Message) => c.type !== 'image');
         }
     }
 
@@ -379,7 +465,10 @@ export function convertClaudeMessages(messages: Message[], prefillString: string
     const mergedMessages: Message[] = [];
     messages.forEach((message: Message) => {
         // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-        if (mergedMessages.length > 0 && mergedMessages[mergedMessages.length - 1].role === message.role) {
+        if (
+            mergedMessages.length > 0 &&
+            mergedMessages[mergedMessages.length - 1].role === message.role
+        ) {
             // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             mergedMessages[mergedMessages.length - 1].content.push(...message.content);
         } else {
@@ -439,7 +528,11 @@ export function convertCohereMessages(messages: Message[], names: PromptNames) {
         if (msg.name) {
             if (msg.role == 'system' && msg.name == 'example_assistant') {
                 // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-                if (names.charName && !msg.content.startsWith(`${names.charName}: `) && !names.startsWithGroupName(msg.content)) {
+                if (
+                    names.charName &&
+                    !msg.content.startsWith(`${names.charName}: `) &&
+                    !names.startsWithGroupName(msg.content)
+                ) {
                     msg.content = `${names.charName}: ${msg.content}`;
                 }
             }
@@ -469,7 +562,12 @@ export function convertCohereMessages(messages: Message[], names: PromptNames) {
  * @returns {{contents: object[], system_instruction: {parts: {text: string}[]}}} Prompt for Google MakerSuite models
  */
 // @ts-expect-error TS(2304) FIXME: Cannot find name 'PromptNames'.
-export function convertGooglePrompt(messages: Message[], model: string, useSysPrompt: boolean, names: PromptNames) {
+export function convertGooglePrompt(
+    messages: Message[],
+    model: string,
+    useSysPrompt: boolean,
+    names: PromptNames,
+) {
     const sysPrompt: string[] = [];
 
     if (useSysPrompt) {
@@ -487,7 +585,10 @@ export function convertGooglePrompt(messages: Message[], model: string, useSysPr
             // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             if (names.charName && messages[0].name === 'example_assistant') {
                 // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-                if (!messages[0].content.startsWith(`${names.charName}: `) && !names.startsWithGroupName(messages[0].content)) {
+                if (
+                    !messages[0].content.startsWith(`${names.charName}: `) &&
+                    !names.startsWithGroupName(messages[0].content)
+                ) {
                     // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                     messages[0].content = `${names.charName}: ${messages[0].content}`;
                 }
@@ -498,7 +599,7 @@ export function convertGooglePrompt(messages: Message[], model: string, useSysPr
         }
     }
 
-    const system_instruction = { parts: sysPrompt.map(text => ({ text })) };
+    const system_instruction = { parts: sysPrompt.map((text) => ({ text })) };
     const toolNameMap: Record<string, string> = {};
 
     const contents: Message[] = [];
@@ -513,15 +614,21 @@ export function convertGooglePrompt(messages: Message[], model: string, useSysPr
         // Convert the content to an array of parts
         if (!Array.isArray(message.content)) {
             const content = (() => {
-                const hasToolCalls = Array.isArray(message.tool_calls) && message.tool_calls.length > 0;
-                const hasToolCallId = typeof message.tool_call_id === 'string' && message.tool_call_id.length > 0;
+                const hasToolCalls =
+                    Array.isArray(message.tool_calls) && message.tool_calls.length > 0;
+                const hasToolCallId =
+                    typeof message.tool_call_id === 'string' && message.tool_call_id.length > 0;
 
                 if (hasToolCalls) {
                     return { type: 'tool_calls', tool_calls: message.tool_calls };
                 }
 
                 if (hasToolCallId) {
-                    return { type: 'tool_call_id', tool_call_id: message.tool_call_id, content: String(message.content ?? '') };
+                    return {
+                        type: 'tool_call_id',
+                        tool_call_id: message.tool_call_id,
+                        content: String(message.content ?? ''),
+                    };
                 }
 
                 return { type: 'text', text: String(message.content ?? '') };
@@ -542,7 +649,11 @@ export function convertGooglePrompt(messages: Message[], model: string, useSysPr
                     }
                 } else if (message.name === 'example_assistant') {
                     // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-                    if (names.charName && !part.text.startsWith(`${names.charName}: `) && !names.startsWithGroupName(part.text)) {
+                    if (
+                        names.charName &&
+                        !part.text.startsWith(`${names.charName}: `) &&
+                        !names.startsWithGroupName(part.text)
+                    ) {
                         part.text = `${names.charName}: ${part.text}`;
                     }
                 } else {
@@ -559,7 +670,11 @@ export function convertGooglePrompt(messages: Message[], model: string, useSysPr
         //create the prompt parts
         const parts: Message[] = [];
         (message.content as Message[]).forEach((part: Message) => {
-            const addDataUrlPart = (url: string, defaultMimeType: string, detail: string | null = null) => {
+            const addDataUrlPart = (
+                url: string,
+                defaultMimeType: string,
+                detail: string | null = null,
+            ) => {
                 if (url && url.startsWith('data:')) {
                     const [header, base64Data] = url.split(',');
                     // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
@@ -604,7 +719,9 @@ export function convertGooglePrompt(messages: Message[], model: string, useSysPr
                             // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                             name: toolCall.function.name,
                             // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-                            args: tryParse(toolCall.function.arguments) ?? toolCall.function.arguments,
+                            args:
+                                tryParse(toolCall.function.arguments) ??
+                                toolCall.function.arguments,
                         },
                         ...(toolCall.signature ? { thoughtSignature: toolCall.signature } : {}),
                     });
@@ -660,7 +777,9 @@ export function convertGooglePrompt(messages: Message[], model: string, useSysPr
         if (index > 0 && message.role === contents[contents.length - 1].role) {
             parts.forEach((part) => {
                 if (part.text) {
-                    const textPart = ((contents[contents.length - 1] as Message).parts as Message[]).find((p: Message) => typeof p.text === 'string');
+                    const textPart = (
+                        (contents[contents.length - 1] as Message).parts as Message[]
+                    ).find((p: Message) => typeof p.text === 'string');
                     if (textPart) {
                         textPart.text += '\n\n' + part.text;
                     } else {
@@ -668,7 +787,13 @@ export function convertGooglePrompt(messages: Message[], model: string, useSysPr
                         contents[contents.length - 1].parts.push(part);
                     }
                 }
-                if (part.inlineData || part.functionCall || part.functionResponse || part.thoughtSignature || part.mediaResolution) {
+                if (
+                    part.inlineData ||
+                    part.functionCall ||
+                    part.functionResponse ||
+                    part.thoughtSignature ||
+                    part.mediaResolution
+                ) {
                     // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                     contents[contents.length - 1].parts.push(part);
                 }
@@ -697,7 +822,8 @@ export function convertAI21Messages(messages: Message[], names: PromptNames) {
     }
 
     // Collect all the system messages up until the first instance of a non-system message, and then remove them from the messages array.
-    let i = 0, systemPrompt = '';
+    let i = 0,
+        systemPrompt = '';
 
     for (i = 0; i < messages.length; i++) {
         // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
@@ -716,7 +842,10 @@ export function convertAI21Messages(messages: Message[], names: PromptNames) {
         // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         if (names.charName && messages[i].name === 'example_assistant') {
             // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-            if (!messages[i].content.startsWith(`${names.charName}: `) && !names.startsWithGroupName(messages[i].content)) {
+            if (
+                !messages[i].content.startsWith(`${names.charName}: `) &&
+                !names.startsWithGroupName(messages[i].content)
+            ) {
                 // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                 messages[i].content = `${names.charName}: ${messages[i].content}`;
             }
@@ -743,7 +872,7 @@ export function convertAI21Messages(messages: Message[], names: PromptNames) {
     }
 
     // Doesn't support completion names, so prepend if not already done by the frontend (e.g. for group chats).
-    messages.forEach(msg => {
+    messages.forEach((msg) => {
         if ('name' in msg) {
             // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             if (msg.role !== 'system' && !msg.content.startsWith(`${msg.name}: `)) {
@@ -756,8 +885,14 @@ export function convertAI21Messages(messages: Message[], names: PromptNames) {
     // Since the messaging endpoint only supports alternating turns, we have to merge messages with the same role if they follow each other
     const mergedMessages: Message[] = [];
     messages.forEach((message: Message) => {
-        if (mergedMessages.length > 0 && (mergedMessages[mergedMessages.length - 1] as Message).role === message.role) {
-            (mergedMessages[mergedMessages.length - 1] as Message).content = ((mergedMessages[mergedMessages.length - 1] as Message).content as string) + '\n\n' + (message.content as string);
+        if (
+            mergedMessages.length > 0 &&
+            (mergedMessages[mergedMessages.length - 1] as Message).role === message.role
+        ) {
+            (mergedMessages[mergedMessages.length - 1] as Message).content =
+                ((mergedMessages[mergedMessages.length - 1] as Message).content as string) +
+                '\n\n' +
+                (message.content as string);
         } else {
             mergedMessages.push(message);
         }
@@ -786,10 +921,11 @@ export function convertMistralMessages(messages: Message[], names: PromptNames) 
         lastMsg.prefix = true;
     }
 
-    const sanitizeToolId = (id: string) => crypto.createHash('sha512').update(id).digest('hex').slice(0, 9);
+    const sanitizeToolId = (id: string) =>
+        crypto.createHash('sha512').update(id).digest('hex').slice(0, 9);
 
     // Doesn't support completion names, so prepend if not already done by the frontend (e.g. for group chats).
-    messages.forEach(msg => {
+    messages.forEach((msg) => {
         if ('tool_calls' in msg && Array.isArray(msg.tool_calls)) {
             (msg.tool_calls as Message[]).forEach((tool: Message) => {
                 // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
@@ -802,7 +938,11 @@ export function convertMistralMessages(messages: Message[], names: PromptNames) 
         }
         if (msg.role === 'system' && msg.name === 'example_assistant') {
             // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-            if (names.charName && !msg.content.startsWith(`${names.charName}: `) && !names.startsWithGroupName(msg.content)) {
+            if (
+                names.charName &&
+                !msg.content.startsWith(`${names.charName}: `) &&
+                !names.startsWithGroupName(msg.content)
+            ) {
                 msg.content = `${names.charName}: ${msg.content}`;
             }
             delete msg.name;
@@ -834,7 +974,9 @@ export function convertMistralMessages(messages: Message[], names: PromptNames) 
                 }
                 // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                 if (message.role === 'tool' && messages[i + 1].role === 'user') {
-                    const lastUserMessage = messages.slice(0, i).findLastIndex((m: Message) => m.role === 'user' && m.content);
+                    const lastUserMessage = messages
+                        .slice(0, i)
+                        .findLastIndex((m: Message) => m.role === 'user' && m.content);
                     if (lastUserMessage !== -1) {
                         // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                         messages[lastUserMessage].content += '\n\n' + messages[i + 1].content;
@@ -871,26 +1013,47 @@ export function convertXAIMessages(messages: Message[], names: PromptNames) {
         return [];
     }
 
-    messages.forEach(msg => {
+    messages.forEach((msg) => {
         if (!msg.name || msg.role === 'user') {
             return;
         }
 
         const needsCharNamePrefix = [
             // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-            { role: 'assistant', condition: names.charName && !msg.content.startsWith(`${names.charName}: `) && !names.startsWithGroupName(msg.content) },
+            {
+                role: 'assistant',
+                condition:
+                    names.charName &&
+                    !msg.content.startsWith(`${names.charName}: `) &&
+                    !names.startsWithGroupName(msg.content),
+            },
             // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-            { role: 'system', name: 'example_assistant', condition: names.charName && !msg.content.startsWith(`${names.charName}: `) && !names.startsWithGroupName(msg.content) },
+            {
+                role: 'system',
+                name: 'example_assistant',
+                condition:
+                    names.charName &&
+                    !msg.content.startsWith(`${names.charName}: `) &&
+                    !names.startsWithGroupName(msg.content),
+            },
             // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-            { role: 'system', name: 'example_user', condition: names.userName && !msg.content.startsWith(`${names.userName}: `) },
+            {
+                role: 'system',
+                name: 'example_user',
+                condition: names.userName && !msg.content.startsWith(`${names.userName}: `),
+            },
         ];
 
-        const matchingRule = needsCharNamePrefix.find(rule =>
-            msg.role === rule.role && (!rule.name || msg.name === rule.name) && rule.condition,
+        const matchingRule = needsCharNamePrefix.find(
+            (rule) =>
+                msg.role === rule.role && (!rule.name || msg.name === rule.name) && rule.condition,
         );
 
         if (matchingRule) {
-            const prefix = msg.role === 'system' && msg.name === 'example_user' ? names.userName : names.charName;
+            const prefix =
+                msg.role === 'system' && msg.name === 'example_user'
+                    ? names.userName
+                    : names.charName;
             msg.content = `${prefix}: ${msg.content}`;
         }
 
@@ -912,7 +1075,11 @@ export function convertXAIMessages(messages: Message[], names: PromptNames) {
  * @returns {object[]} Merged messages
  */
 // @ts-expect-error TS(7023) FIXME: 'mergeMessages' implicitly has return type 'any' b... Remove this comment to see the full error message
-export function mergeMessages(messages: Message[], names: PromptNames, { strict = false, placeholders = false, single = false, tools = false } = {}) {
+export function mergeMessages(
+    messages: Message[],
+    names: PromptNames,
+    { strict = false, placeholders = false, single = false, tools = false } = {},
+) {
     const mergedMessages: Message[] = [];
 
     /** @type {Map<string,Message>} */
@@ -925,23 +1092,29 @@ export function mergeMessages(messages: Message[], names: PromptNames, { strict 
         }
         // Flatten contents and replace image URLs with random tokens
         if (Array.isArray(message.content)) {
-            const text = (message.content as Message[]).map((content: Message) => {
-                if (content.type === 'text') {
-                    return content.text as string;
-                }
-                // Could be extended with other non-text types
-                if (['image_url', 'video_url', 'audio_url'].includes((content.type as string))) {
-                    const token = crypto.randomBytes(32).toString('base64');
-                    contentTokens.set(token, content);
-                    return token;
-                }
-                return '';
-            }).join('\n\n');
+            const text = (message.content as Message[])
+                .map((content: Message) => {
+                    if (content.type === 'text') {
+                        return content.text as string;
+                    }
+                    // Could be extended with other non-text types
+                    if (['image_url', 'video_url', 'audio_url'].includes(content.type as string)) {
+                        const token = crypto.randomBytes(32).toString('base64');
+                        contentTokens.set(token, content);
+                        return token;
+                    }
+                    return '';
+                })
+                .join('\n\n');
             message.content = text;
         }
         if (message.role === 'system' && message.name === 'example_assistant') {
             // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-            if (names.charName && !message.content.startsWith(`${names.charName}: `) && !names.startsWithGroupName(message.content)) {
+            if (
+                names.charName &&
+                !message.content.startsWith(`${names.charName}: `) &&
+                !names.startsWithGroupName(message.content)
+            ) {
                 message.content = `${names.charName}: ${message.content}`;
             }
         }
@@ -963,7 +1136,11 @@ export function mergeMessages(messages: Message[], names: PromptNames, { strict 
         if (single) {
             if (message.role === 'assistant') {
                 // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-                if (names.charName && !message.content.startsWith(`${names.charName}: `) && !names.startsWithGroupName(message.content)) {
+                if (
+                    names.charName &&
+                    !message.content.startsWith(`${names.charName}: `) &&
+                    !names.startsWithGroupName(message.content)
+                ) {
                     message.content = `${names.charName}: ${message.content}`;
                 }
             }
@@ -985,8 +1162,16 @@ export function mergeMessages(messages: Message[], names: PromptNames, { strict 
 
     // Squash consecutive messages with the same role
     messages.forEach((message: Message) => {
-        if (mergedMessages.length > 0 && (mergedMessages[mergedMessages.length - 1] as Message).role === message.role && message.content && message.role !== 'tool') {
-            (mergedMessages[mergedMessages.length - 1] as Message).content = ((mergedMessages[mergedMessages.length - 1] as Message).content as string) + '\n\n' + (message.content as string);
+        if (
+            mergedMessages.length > 0 &&
+            (mergedMessages[mergedMessages.length - 1] as Message).role === message.role &&
+            message.content &&
+            message.role !== 'tool'
+        ) {
+            (mergedMessages[mergedMessages.length - 1] as Message).content =
+                ((mergedMessages[mergedMessages.length - 1] as Message).content as string) +
+                '\n\n' +
+                (message.content as string);
         } else {
             mergedMessages.push(message);
         }
@@ -1004,7 +1189,9 @@ export function mergeMessages(messages: Message[], names: PromptNames, { strict 
     if (contentTokens.size > 0) {
         mergedMessages.forEach((message) => {
             // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-            const hasValidToken = Array.from(contentTokens.keys()).some(token => message.content.includes(token));
+            const hasValidToken = Array.from(contentTokens.keys()).some((token) =>
+                message.content.includes(token),
+            );
 
             if (hasValidToken) {
                 // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
@@ -1015,8 +1202,13 @@ export function mergeMessages(messages: Message[], names: PromptNames, { strict 
                     if (contentTokens.has(content)) {
                         mergedContent.push(contentTokens.get(content) as Message);
                     } else {
-                        if (mergedContent.length > 0 && (mergedContent[mergedContent.length - 1] as Message).type === 'text') {
-                            (mergedContent[mergedContent.length - 1] as Message).text = ((mergedContent[mergedContent.length - 1] as Message).text as string) + `\n\n${content}`;
+                        if (
+                            mergedContent.length > 0 &&
+                            (mergedContent[mergedContent.length - 1] as Message).type === 'text'
+                        ) {
+                            (mergedContent[mergedContent.length - 1] as Message).text =
+                                ((mergedContent[mergedContent.length - 1] as Message)
+                                    .text as string) + `\n\n${content}`;
                         } else {
                             mergedContent.push({ type: 'text', text: content } as Message);
                         }
@@ -1039,14 +1231,22 @@ export function mergeMessages(messages: Message[], names: PromptNames, { strict 
         }
         if (mergedMessages.length && placeholders) {
             // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-            if (mergedMessages[0].role === 'system' && (mergedMessages.length === 1 || mergedMessages[1].role !== 'user')) {
+            if (
+                mergedMessages[0].role === 'system' &&
+                (mergedMessages.length === 1 || mergedMessages[1].role !== 'user')
+            ) {
                 mergedMessages.splice(1, 0, { role: 'user', content: PROMPT_PLACEHOLDER });
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
+                // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             } else if (mergedMessages[0].role !== 'system' && mergedMessages[0].role !== 'user') {
                 mergedMessages.unshift({ role: 'user', content: PROMPT_PLACEHOLDER });
             }
         }
-        return mergeMessages(mergedMessages, names, { strict: false, placeholders, single: false, tools });
+        return mergeMessages(mergedMessages, names, {
+            strict: false,
+            placeholders,
+            single: false,
+            tools,
+        });
     }
 
     return mergedMessages;
@@ -1121,7 +1321,11 @@ export function cachingAtDepthForClaude(messages: Message[], cachingAtDepth: num
  * @param {number} cachingAtDepth Depth at which caching is supposed to occur
  * @param {string} ttl TTL value
  */
-export function cachingAtDepthForOpenRouterClaude(messages: Message[], cachingAtDepth: number, ttl: string) {
+export function cachingAtDepthForOpenRouterClaude(
+    messages: Message[],
+    cachingAtDepth: number,
+    ttl: string,
+) {
     //caching the prefill is a terrible idea in general
     let passedThePrefill = false;
     //depth here is the number of message role switches
@@ -1148,12 +1352,14 @@ export function cachingAtDepthForOpenRouterClaude(messages: Message[], cachingAt
                 const content = messages[i].content;
                 if (typeof content === 'string') {
                     // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-                    messages[i].content = [{
-                        type: 'text',
-                        text: content,
-                        cache_control: { type: 'ephemeral', ttl: ttl },
-                    }];
-                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+                    messages[i].content = [
+                        {
+                            type: 'text',
+                            text: content,
+                            cache_control: { type: 'ephemeral', ttl: ttl },
+                        },
+                    ];
+                    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 } else if (content?.length > 0) {
                     // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                     const contentPartCount = content.length;
@@ -1187,7 +1393,7 @@ export function cachingSystemPromptForOpenRouter(messages: Message[], ttl?: stri
     }
 
     // Find the first system message
-    const systemMessage = messages.find(msg => msg.role === 'system');
+    const systemMessage = messages.find((msg) => msg.role === 'system');
     if (!systemMessage) {
         return;
     }
@@ -1197,12 +1403,12 @@ export function cachingSystemPromptForOpenRouter(messages: Message[], ttl?: stri
         return;
     }
 
-    const cacheControl = ttl
-        ? { type: 'ephemeral', ttl }
-        : { type: 'ephemeral' };
+    const cacheControl = ttl ? { type: 'ephemeral', ttl } : { type: 'ephemeral' };
 
     if (Array.isArray(systemMessage.content)) {
-        const hasExistingCacheControl = (systemMessage.content as Message[]).some((part: Message) => part?.cache_control);
+        const hasExistingCacheControl = (systemMessage.content as Message[]).some(
+            (part: Message) => part?.cache_control,
+        );
         if (hasExistingCacheControl) {
             return;
         }
@@ -1233,7 +1439,12 @@ export function cachingSystemPromptForOpenRouter(messages: Message[], ttl?: stri
  * @param {boolean} isAdaptiveModel If the model supports adaptive thinking (Opus 4.6+)
  * @returns {number|string|null} Budget tokens, effort string, or null
  */
-export function calculateClaudeBudgetTokens(maxTokens: number, reasoningEffort: string, stream: boolean, isAdaptiveModel: boolean) {
+export function calculateClaudeBudgetTokens(
+    maxTokens: number,
+    reasoningEffort: string,
+    stream: boolean,
+    isAdaptiveModel: boolean,
+) {
     // Adaptive thinking for Opus 4.6+: return effort string (like Gemini 3)
     if (isAdaptiveModel) {
         switch (reasoningEffort) {
@@ -1291,7 +1502,11 @@ export function calculateClaudeBudgetTokens(maxTokens: number, reasoningEffort: 
  * @param {string} model Model name
  * @returns {number|string|null} Budget tokens
  */
-export function calculateGoogleBudgetTokens(maxTokens: number, reasoningEffort: string, model: string) {
+export function calculateGoogleBudgetTokens(
+    maxTokens: number,
+    reasoningEffort: string,
+    model: string,
+) {
     /**
      * @returns {number} Budget tokens
      */
@@ -1458,7 +1673,10 @@ export function calculateGoogleBudgetTokens(maxTokens: number, reasoningEffort: 
  * @param {boolean} [options.video] Enable video embedding (default: true)
  * @returns {void}
  */
-export function embedOpenRouterMedia(messages: Message[], { audio = true, video = true } = { audio: true, video: true }) {
+export function embedOpenRouterMedia(
+    messages: Message[],
+    { audio = true, video = true } = { audio: true, video: true },
+) {
     if (!Array.isArray(messages)) {
         return;
     }
@@ -1469,11 +1687,19 @@ export function embedOpenRouterMedia(messages: Message[], { audio = true, video 
         }
 
         for (const contentPart of message.content) {
-            if (video && contentPart?.type === 'video_url' && contentPart.video_url?.url?.startsWith('data:')) {
+            if (
+                video &&
+                contentPart?.type === 'video_url' &&
+                contentPart.video_url?.url?.startsWith('data:')
+            ) {
                 contentPart.type = 'video_url';
             }
 
-            if (audio && contentPart?.type === 'audio_url' && contentPart.audio_url?.url?.startsWith('data:')) {
+            if (
+                audio &&
+                contentPart?.type === 'audio_url' &&
+                contentPart.audio_url?.url?.startsWith('data:')
+            ) {
                 const formatMap = {
                     'audio/mpeg': 'mp3',
                     'audio/wav': 'wav',

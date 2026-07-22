@@ -72,7 +72,6 @@ async function _save(name: string, data: Record<string, unknown>) {
     await eventSource.emit(event_types.WORLDINFO_UPDATED, name, data);
 }
 
-
 /** Immediately syncs the current selection to wiManager.info and saves all settings. */
 export function saveSettingsNow() {
     Object.assign(wiManager.info, { globalSelect: wiManager.selectedWorlds });
@@ -132,12 +131,18 @@ export const newWorldInfoEntryDefinition = {
     characterFilterTags: { default: [], type: 'array', excludeFromTemplate: true },
     characterFilterExclude: { default: false, type: 'boolean', excludeFromTemplate: true },
     // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
-    triggers: { default: [], type: 'array', arrayFilter: (value) => GENERATION_TYPE_TRIGGERS.includes(value) },
+    triggers: {
+        default: [],
+        type: 'array',
+        arrayFilter: (value) => GENERATION_TYPE_TRIGGERS.includes(value),
+    },
 };
 
 export const newWorldInfoEntryTemplate = Object.fromEntries(
     // @ts-expect-error TS(2339) FIXME: Property 'excludeFromTemplate' does not exist on type ...
-    Object.entries(newWorldInfoEntryDefinition).filter(([_, value]) => !value.excludeFromTemplate).map(([key, value]) => [key, value.default]),
+    Object.entries(newWorldInfoEntryDefinition)
+        .filter(([_, value]) => !value.excludeFromTemplate)
+        .map(([key, value]) => [key, value.default]),
 );
 
 // ═══════════════════════════════════════════════════════════════
@@ -153,11 +158,14 @@ export async function createWorldInfoEntry(store: WorldInfoStore) {
     const newUid = await store.getFreeUid();
 
     if (!Number.isInteger(newUid)) {
-        console.error('Couldn\'t assign UID to a new entry');
+        console.error("Couldn't assign UID to a new entry");
         return;
     }
 
-    const newEntry = { uid: newUid as number, ...structuredClone(newWorldInfoEntryTemplate) } as WorldInfoEntryData;
+    const newEntry = {
+        uid: newUid as number,
+        ...structuredClone(newWorldInfoEntryTemplate),
+    } as WorldInfoEntryData;
     await store.addEntry(newEntry);
 
     return newEntry;
@@ -180,7 +188,7 @@ export async function duplicateWorldInfoEntry(store: WorldInfoStore, uid: number
 
     const newUid = await store.getFreeUid();
     if (!Number.isInteger(newUid)) {
-        console.error('Couldn\'t assign UID to duplicated entry');
+        console.error("Couldn't assign UID to duplicated entry");
         return;
     }
 
@@ -197,7 +205,11 @@ export async function duplicateWorldInfoEntry(store: WorldInfoStore, uid: number
  * @param {boolean} [options.silent] - Whether to prompt the user for deletion or just do it
  * @returns {Promise<boolean>} Whether the entry deletion was successful
  */
-export async function deleteWorldInfoEntry(store: WorldInfoStore, uid: number, { silent = false } = {}) {
+export async function deleteWorldInfoEntry(
+    store: WorldInfoStore,
+    uid: number,
+    { silent = false } = {},
+) {
     const entry = await store.getEntry(uid);
     if (!entry) return false;
 
@@ -248,8 +260,8 @@ export async function saveWorldInfo(name: string, bookData = {}, immediately = f
     if (bookData && typeof bookData === 'object' && 'entries' in bookData) {
         // @ts-expect-error TS(2571) entries is dynamic at runtime
         const entryList = Object.values(bookData.entries).filter(Boolean) as WorldInfoEntryData[];
-                if (entryList.length > 0) {
-                    await store.replaceAllEntries(entryList);
+        if (entryList.length > 0) {
+            await store.replaceAllEntries(entryList);
         }
     }
 
@@ -375,9 +387,9 @@ export function convertRisuLorebook(inputObj) {
             ...newWorldInfoEntryTemplate,
             uid: index,
             // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
-            key: entry.key.split(',').map(x => x.trim()),
+            key: entry.key.split(',').map((x) => x.trim()),
             // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
-            keysecondary: entry.secondkey ? entry.secondkey.split(',').map(x => x.trim()) : [],
+            keysecondary: entry.secondkey ? entry.secondkey.split(',').map((x) => x.trim()) : [],
             comment: entry.comment,
             content: entry.content,
             constant: entry.alwaysActive,
@@ -497,7 +509,11 @@ export function convertCharacterBook(characterBook) {
             constant: entry.constant || false,
             selective: entry.selective || false,
             order: entry.insertion_order,
-            position: entry.extensions?.position ?? (entry.position === 'before_char' ? world_info_position.before : world_info_position.after),
+            position:
+                entry.extensions?.position ??
+                (entry.position === 'before_char'
+                    ? world_info_position.before
+                    : world_info_position.after),
             excludeRecursion: entry.extensions?.exclude_recursion ?? false,
             preventRecursion: entry.extensions?.prevent_recursion ?? false,
             delayUntilRecursion: entry.extensions?.delay_until_recursion ?? false,
@@ -556,7 +572,10 @@ export async function renameWorldInfo(name, data) {
         return;
     }
     if (equalsIgnoreCaseAndAccents(oldName, newName)) {
-        notyf.warning(t`Name not accepted, as it is the same as before (ignoring case and accents).`, t`Rename World Info`);
+        notyf.warning(
+            t`Name not accepted, as it is the same as before (ignoring case and accents).`,
+            t`Rename World Info`,
+        );
         return;
     }
 
@@ -585,7 +604,9 @@ export async function renameWorldInfo(name, data) {
     if (entryPreviouslySelected !== -1) {
         const wiElement = getWIElement(newName);
         if (wiElement instanceof HTMLOptionElement) wiElement.selected = true;
-        document.getElementById('world_info')?.dispatchEvent(new Event('change', {bubbles: true}));
+        document
+            .getElementById('world_info')
+            ?.dispatchEvent(new Event('change', { bubbles: true }));
     }
 
     const selectedIndex = wiManager.worldNames.indexOf(newName);
@@ -637,12 +658,16 @@ export async function deleteWorldInfo(worldInfoName) {
     }
 
     await updateWorldInfoList();
-    document.getElementById('world_editor_select')?.dispatchEvent(new Event('change', {bubbles: true}));
+    document
+        .getElementById('world_editor_select')
+        ?.dispatchEvent(new Event('change', { bubbles: true }));
 
     const charWorldEl = document.getElementById('character_world') as HTMLSelectElement | null;
     if (charWorldEl && charWorldEl.value === worldInfoName) {
         charWorldEl.value = '';
-        document.getElementById('character_world')?.dispatchEvent(new Event('change', { bubbles: true }));
+        document
+            .getElementById('character_world')
+            ?.dispatchEvent(new Event('change', { bubbles: true }));
         setWorldInfoButtonClass(undefined, false);
         if (menu_type != 'create') {
             saveCharacterDebounced();
@@ -680,7 +705,16 @@ export async function createNewWorldInfo(worldName, { interactive = false } = {}
     const sanitizedWorldName = await getSanitizedFilename(worldName);
 
     // @ts-expect-error TS(2322) FIXME: Type '(existingName: any) => Promise<boolean>' is ... Remove this comment to see the full error message
-    const allowed = await checkOverwriteExistingData('World Info', wiManager.worldNames, sanitizedWorldName, { interactive: interactive, actionName: 'Create', deleteAction: (existingName) => deleteWorldInfo(existingName) });
+    const allowed = await checkOverwriteExistingData(
+        'World Info',
+        wiManager.worldNames,
+        sanitizedWorldName,
+        {
+            interactive: interactive,
+            actionName: 'Create',
+            deleteAction: (existingName) => deleteWorldInfo(existingName),
+        },
+    );
     if (!allowed) {
         return false;
     }
@@ -698,7 +732,9 @@ export async function createNewWorldInfo(worldName, { interactive = false } = {}
         // Sync the TomSelect display with the programmatic value change
         // @ts-expect-error TS(2339) FIXME: Property 'tomselect' does not exist on type 'HTMLElement'.
         document.getElementById('world_editor_select')?.tomselect?.setValue(String(selectedIndex));
-        document.getElementById('world_editor_select')?.dispatchEvent(new Event('change', { bubbles: true }));
+        document
+            .getElementById('world_editor_select')
+            ?.dispatchEvent(new Event('change', { bubbles: true }));
     } else {
         await hideWorldEditor();
     }
@@ -724,10 +760,17 @@ export async function importEmbeddedWorldInfo(skipPopup = false) {
         return;
     }
 
-    const bookName = characters[Number(chid)]?.data?.character_book?.name || `${characters[Number(chid)]?.name}'s Lorebook`;
+    const bookName =
+        characters[Number(chid)]?.data?.character_book?.name ||
+        `${characters[Number(chid)]?.name}'s Lorebook`;
 
     if (!skipPopup) {
-        const confirmation = await Popup.show.confirm(t`Are you sure you want to import '${bookName}'?`, wiManager.worldNames.includes(bookName) ? t`It will overwrite the World/Lorebook with the same name.` : '');
+        const confirmation = await Popup.show.confirm(
+            t`Are you sure you want to import '${bookName}'?`,
+            wiManager.worldNames.includes(bookName)
+                ? t`It will overwrite the World/Lorebook with the same name.`
+                : '',
+        );
         if (!confirmation) {
             return;
         }
@@ -746,19 +789,28 @@ export async function importEmbeddedWorldInfo(skipPopup = false) {
     await updateWorldInfoList();
     // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     document.getElementById('character_world').value = bookName;
-    document.getElementById('character_world')?.dispatchEvent(new Event('change', { bubbles: true }));
+    document
+        .getElementById('character_world')
+        ?.dispatchEvent(new Event('change', { bubbles: true }));
 
-    notyf.success(t`The world '${bookName}' has been imported and linked to the character successfully.`, t`World/Lorebook imported`);
+    notyf.success(
+        t`The world '${bookName}' has been imported and linked to the character successfully.`,
+        t`World/Lorebook imported`,
+    );
 
     const newIndex = wiManager.worldNames.indexOf(bookName);
     if (newIndex >= 0) {
         //show&draw the WI panel before..
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        document.getElementById('WIDrawerIcon').dispatchEvent(new Event('click', { bubbles: true }));
+        document
+            .getElementById('WIDrawerIcon')
+            .dispatchEvent(new Event('click', { bubbles: true }));
         //..auto-opening the new imported WI
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         document.getElementById('world_editor_select').value = String(newIndex);
-    document.getElementById('world_editor_select')?.dispatchEvent(new Event('change', { bubbles: true }));
+        document
+            .getElementById('world_editor_select')
+            ?.dispatchEvent(new Event('change', { bubbles: true }));
     }
 
     setWorldInfoButtonClass(chid, true);
@@ -819,7 +871,16 @@ export async function importWorldInfo(file) {
     const worldName = file.name.substr(0, file.name.lastIndexOf('.'));
     const sanitizedWorldName = await getSanitizedFilename(worldName);
     // @ts-expect-error TS(2322) FIXME: Type '(existingName: any) => Promise<boolean>' is ... Remove this comment to see the full error message
-    const allowed = await checkOverwriteExistingData('World Info', wiManager.worldNames, sanitizedWorldName, { interactive: true, actionName: 'Import', deleteAction: (existingName) => deleteWorldInfo(existingName) });
+    const allowed = await checkOverwriteExistingData(
+        'World Info',
+        wiManager.worldNames,
+        sanitizedWorldName,
+        {
+            interactive: true,
+            actionName: 'Import',
+            deleteAction: (existingName) => deleteWorldInfo(existingName),
+        },
+    );
     if (!allowed) {
         return false;
     }
@@ -847,8 +908,12 @@ export async function importWorldInfo(file) {
                 document.getElementById('world_editor_select').value = String(newIndex);
                 // Sync the TomSelect display with the programmatic value change
                 // @ts-expect-error TS(2339) FIXME: Property 'tomselect' does not exist on type 'HTMLElement'.
-                document.getElementById('world_editor_select')?.tomselect?.setValue(String(newIndex));
-    document.getElementById('world_editor_select')?.dispatchEvent(new Event('change', { bubbles: true }));
+                document
+                    .getElementById('world_editor_select')
+                    ?.tomselect?.setValue(String(newIndex));
+                document
+                    .getElementById('world_editor_select')
+                    ?.dispatchEvent(new Event('change', { bubbles: true }));
             }
 
             notyf.success(t`World Info "${data.name}" imported successfully!`);
@@ -869,7 +934,12 @@ export async function importWorldInfo(file) {
  * @returns {Promise<boolean>} True if the move was successful, false otherwise.
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'sourceName' implicitly has an 'any' typ... Remove this comment to see the full error message
-export async function moveWorldInfoEntry(sourceName, targetName, uid, { deleteOriginal = true } = {}) {
+export async function moveWorldInfoEntry(
+    sourceName,
+    targetName,
+    uid,
+    { deleteOriginal = true } = {},
+) {
     if (sourceName === targetName) {
         return false;
     }
@@ -925,7 +995,10 @@ export async function moveWorldInfoEntry(sourceName, targetName, uid, { deleteOr
         entryToMove.uid = newUid;
         // Place the entry at the end of the target lorebook
         const allTarget = await targetStore.getAllEntries();
-        const maxDisplayIndex = allTarget.reduce((max, entry) => Math.max(max, entry.displayIndex ?? -1), -1);
+        const maxDisplayIndex = allTarget.reduce(
+            (max, entry) => Math.max(max, entry.displayIndex ?? -1),
+            -1,
+        );
         entryToMove.displayIndex = maxDisplayIndex + 1;
 
         await targetStore.addEntry(entryToMove);
@@ -936,7 +1009,9 @@ export async function moveWorldInfoEntry(sourceName, targetName, uid, { deleteOr
             delete sourceBook.entries[entryUidString];
             // Remove from originalData if it exists
             deleteWIOriginalDataValue(sourceBook, entryUidString);
-            console.debug(`[WI Move] Removed entry UID ${entryUidString} from source '${sourceName}'.`);
+            console.debug(
+                `[WI Move] Removed entry UID ${entryUidString} from source '${sourceName}'.`,
+            );
         }
 
         // Persist both books via their stores
@@ -945,21 +1020,30 @@ export async function moveWorldInfoEntry(sourceName, targetName, uid, { deleteOr
         await saveWorldInfo(sourceName, sourceBook, true);
         console.debug(`[WI Move] Saved source lorebook '${sourceName}'.`);
 
-        console.log(`[WI Move] ${entryToMove.comment} ${deleteOriginal ? 'moved' : 'copied'} successfully to '${targetName}'.`);
+        console.log(
+            `[WI Move] ${entryToMove.comment} ${deleteOriginal ? 'moved' : 'copied'} successfully to '${targetName}'.`,
+        );
 
         // Check if the currently viewed book in the editor is the source or target and reload it
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        const currentEditorBookIndex = Number(document.getElementById('world_editor_select').value = String());
+        const currentEditorBookIndex = Number(
+            (document.getElementById('world_editor_select').value = String()),
+        );
         if (!isNaN(currentEditorBookIndex)) {
             const currentEditorBookName = wiManager.worldNames[currentEditorBookIndex];
-            if (currentEditorBookName && (currentEditorBookName === sourceName || currentEditorBookName === targetName)) {
+            if (
+                currentEditorBookName &&
+                (currentEditorBookName === sourceName || currentEditorBookName === targetName)
+            ) {
                 reloadEditor(currentEditorBookName);
             }
         }
 
-        notyf.success(deleteOriginal
-            ? t`Entry moved successfully from '${sourceName}' to '${targetName}'.`
-            : t`Entry copied successfully to '${targetName}'.`);
+        notyf.success(
+            deleteOriginal
+                ? t`Entry moved successfully from '${sourceName}' to '${targetName}'.`
+                : t`Entry copied successfully to '${targetName}'.`,
+        );
 
         return true;
     } catch (error) {

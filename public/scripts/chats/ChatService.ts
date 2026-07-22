@@ -128,7 +128,10 @@ export class ChatService {
      * @param id
      * @param patch
      */
-    async update(id: string, patch: Partial<Pick<ChatEntity, 'title' | 'metadata'>>): Promise<boolean> {
+    async update(
+        id: string,
+        patch: Partial<Pick<ChatEntity, 'title' | 'metadata'>>,
+    ): Promise<boolean> {
         return chatStore.update(id, { ...patch, modified: Date.now() });
     }
 

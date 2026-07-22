@@ -108,7 +108,9 @@ export class CommandLineParser {
      */
     parse(args: string[]) {
         const cliArguments = yargs(hideBin(args))
-            .usage('Usage: <your-start-script> [options]\nOptions that are not provided will be filled with config values.')
+            .usage(
+                'Usage: <your-start-script> [options]\nOptions that are not provided will be filled with config values.',
+            )
             .option('global', {
                 type: 'boolean',
                 default: null,
@@ -137,7 +139,8 @@ export class CommandLineParser {
             .option('dnsPreferIPv6', {
                 type: 'boolean',
                 default: null,
-                describe: 'Prefers IPv6 for DNS\nYou should probably have the enabled if you\'re on an IPv6 only network',
+                describe:
+                    "Prefers IPv6 for DNS\nYou should probably have the enabled if you're on an IPv6 only network",
             })
             .option('browserLaunchEnabled', {
                 type: 'boolean',
@@ -147,17 +150,20 @@ export class CommandLineParser {
             .option('browserLaunchHostname', {
                 type: 'string',
                 default: null,
-                describe: 'Sets the browser launch hostname, best left on \'auto\'.\nUse values like \'localhost\', \'st.example.com\'',
+                describe:
+                    "Sets the browser launch hostname, best left on 'auto'.\nUse values like 'localhost', 'st.example.com'",
             })
             .option('browserLaunchPort', {
                 type: 'number',
                 default: null,
-                describe: 'Overrides the port for browser launch with open your browser with this port and ignore what port the server is running on. -1 is use server port',
+                describe:
+                    'Overrides the port for browser launch with open your browser with this port and ignore what port the server is running on. -1 is use server port',
             })
             .option('browserLaunchAvoidLocalhost', {
                 type: 'boolean',
                 default: null,
-                describe: 'Avoids using \'localhost\' for browser launch in auto mode.\nUse if you don\'t have \'localhost\' in your hosts file',
+                describe:
+                    "Avoids using 'localhost' for browser launch in auto mode.\nUse if you don't have 'localhost' in your hosts file",
             })
             .option('listen', {
                 type: 'boolean',
@@ -270,7 +276,9 @@ export class CommandLineParser {
         const defaultConfig = this.getDefaultConfig(isGlobal);
 
         if (isGlobal && cliArguments.configPath) {
-            console.warn(color.yellow('Warning: "--configPath" argument is ignored in global mode'));
+            console.warn(
+                color.yellow('Warning: "--configPath" argument is ignored in global mode'),
+            );
         }
 
         if (isGlobal && cliArguments.dataRoot) {
@@ -287,14 +295,19 @@ export class CommandLineParser {
 
         const dataRoot = isGlobal
             ? defaultConfig.dataRoot
-            // @ts-expect-error getConfigValue defaultValue type is null
-            : (cliArguments.dataRoot ?? getConfigValue('dataRoot', defaultConfig.dataRoot));
+            : // @ts-expect-error getConfigValue defaultValue type is null
+              (cliArguments.dataRoot ?? getConfigValue('dataRoot', defaultConfig.dataRoot));
         try {
             if (!fs.existsSync(dataRoot)) {
                 fs.mkdirSync(dataRoot, { recursive: true });
             }
         } catch (err) {
-            console.warn(color.yellow(`Warning: Failed to create data root directory at ${dataRoot}. Please make sure the path is correct and writable.`), err);
+            console.warn(
+                color.yellow(
+                    `Warning: Failed to create data root directory at ${dataRoot}. Please make sure the path is correct and writable.`,
+                ),
+                err,
+            );
         }
 
         /** @type {CommandLineArguments} */
@@ -304,70 +317,132 @@ export class CommandLineParser {
             // @ts-expect-error TS(2345) FIXME: Argument of type 'number' is not assignable to par... Remove this comment to see the full error message
             port: cliArguments.port ?? getConfigValue('port', defaultConfig.port, 'number'),
             // @ts-expect-error TS(2345) FIXME: Argument of type 'boolean' is not assignable to pa... Remove this comment to see the full error message
-            listen: cliArguments.listen ?? getConfigValue('listen', defaultConfig.listen, 'boolean'),
+            listen:
+                cliArguments.listen ?? getConfigValue('listen', defaultConfig.listen, 'boolean'),
             // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
-            listenAddressIPv6: cliArguments.listenAddressIPv6 ?? getConfigValue('listenAddress.ipv6', defaultConfig.listenAddressIPv6),
+            listenAddressIPv6:
+                cliArguments.listenAddressIPv6 ??
+                getConfigValue('listenAddress.ipv6', defaultConfig.listenAddressIPv6),
             // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
-            listenAddressIPv4: cliArguments.listenAddressIPv4 ?? getConfigValue('listenAddress.ipv4', defaultConfig.listenAddressIPv4),
+            listenAddressIPv4:
+                cliArguments.listenAddressIPv4 ??
+                getConfigValue('listenAddress.ipv4', defaultConfig.listenAddressIPv4),
             // @ts-expect-error TS(2345) FIXME: Argument of type 'boolean' is not assignable to pa... Remove this comment to see the full error message
-            enableIPv4: stringToBool(cliArguments.enableIPv4) ?? stringToBool(getConfigValue('protocol.ipv4', defaultConfig.enableIPv4)) ?? defaultConfig.enableIPv4,
+            enableIPv4:
+                stringToBool(cliArguments.enableIPv4) ??
+                stringToBool(getConfigValue('protocol.ipv4', defaultConfig.enableIPv4)) ??
+                defaultConfig.enableIPv4,
             // @ts-expect-error TS(2345) FIXME: Argument of type 'boolean' is not assignable to pa... Remove this comment to see the full error message
-            enableIPv6: stringToBool(cliArguments.enableIPv6) ?? stringToBool(getConfigValue('protocol.ipv6', defaultConfig.enableIPv6)) ?? defaultConfig.enableIPv6,
+            enableIPv6:
+                stringToBool(cliArguments.enableIPv6) ??
+                stringToBool(getConfigValue('protocol.ipv6', defaultConfig.enableIPv6)) ??
+                defaultConfig.enableIPv6,
             // @ts-expect-error TS(2345) FIXME: Argument of type 'boolean' is not assignable to pa... Remove this comment to see the full error message
-            dnsPreferIPv6: cliArguments.dnsPreferIPv6 ?? getConfigValue('dnsPreferIPv6', defaultConfig.dnsPreferIPv6, 'boolean'),
+            dnsPreferIPv6:
+                cliArguments.dnsPreferIPv6 ??
+                getConfigValue('dnsPreferIPv6', defaultConfig.dnsPreferIPv6, 'boolean'),
             // @ts-expect-error TS(2345) FIXME: Argument of type 'number' is not assignable to par... Remove this comment to see the full error message
-            heartbeatInterval: cliArguments.heartbeatInterval ?? getConfigValue('heartbeatInterval', defaultConfig.heartbeatInterval, 'number'),
+            heartbeatInterval:
+                cliArguments.heartbeatInterval ??
+                getConfigValue('heartbeatInterval', defaultConfig.heartbeatInterval, 'number'),
             // @ts-expect-error TS(2345) FIXME: Argument of type 'boolean' is not assignable to pa... Remove this comment to see the full error message
-            browserLaunchEnabled: cliArguments.browserLaunchEnabled ?? cliArguments.autorun ?? getConfigValue('browserLaunch.enabled', defaultConfig.browserLaunchEnabled, 'boolean'),
+            browserLaunchEnabled:
+                cliArguments.browserLaunchEnabled ??
+                cliArguments.autorun ??
+                getConfigValue(
+                    'browserLaunch.enabled',
+                    defaultConfig.browserLaunchEnabled,
+                    'boolean',
+                ),
             // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
-            browserLaunchHostname: cliArguments.browserLaunchHostname ?? cliArguments.autorunHostname ?? getConfigValue('browserLaunch.hostname', defaultConfig.browserLaunchHostname),
+            browserLaunchHostname:
+                cliArguments.browserLaunchHostname ??
+                cliArguments.autorunHostname ??
+                getConfigValue('browserLaunch.hostname', defaultConfig.browserLaunchHostname),
             // @ts-expect-error TS(2345) FIXME: Argument of type 'number' is not assignable to par... Remove this comment to see the full error message
-            browserLaunchPort: cliArguments.browserLaunchPort ?? cliArguments.autorunPortOverride ?? getConfigValue('browserLaunch.port', defaultConfig.browserLaunchPort, 'number'),
+            browserLaunchPort:
+                cliArguments.browserLaunchPort ??
+                cliArguments.autorunPortOverride ??
+                getConfigValue('browserLaunch.port', defaultConfig.browserLaunchPort, 'number'),
             // @ts-expect-error TS(2345) FIXME: Argument of type 'boolean' is not assignable to pa... Remove this comment to see the full error message
-            browserLaunchAvoidLocalhost: cliArguments.browserLaunchAvoidLocalhost ?? cliArguments.avoidLocalhost ?? getConfigValue('browserLaunch.avoidLocalhost', defaultConfig.browserLaunchAvoidLocalhost, 'boolean'),
+            browserLaunchAvoidLocalhost:
+                cliArguments.browserLaunchAvoidLocalhost ??
+                cliArguments.avoidLocalhost ??
+                getConfigValue(
+                    'browserLaunch.avoidLocalhost',
+                    defaultConfig.browserLaunchAvoidLocalhost,
+                    'boolean',
+                ),
             // @ts-expect-error TS(2345) FIXME: Argument of type 'boolean' is not assignable to pa... Remove this comment to see the full error message
-            enableCorsProxy: cliArguments.corsProxy ?? getConfigValue('enableCorsProxy', defaultConfig.enableCorsProxy, 'boolean'),
+            enableCorsProxy:
+                cliArguments.corsProxy ??
+                getConfigValue('enableCorsProxy', defaultConfig.enableCorsProxy, 'boolean'),
             // @ts-expect-error TS(2345) FIXME: Argument of type 'boolean' is not assignable to pa... Remove this comment to see the full error message
-            disableCsrf: cliArguments.disableCsrf ?? getConfigValue('disableCsrfProtection', defaultConfig.disableCsrf, 'boolean'),
+            disableCsrf:
+                cliArguments.disableCsrf ??
+                getConfigValue('disableCsrfProtection', defaultConfig.disableCsrf, 'boolean'),
             // @ts-expect-error TS(2345) FIXME: Argument of type 'boolean' is not assignable to pa... Remove this comment to see the full error message
             ssl: cliArguments.ssl ?? getConfigValue('ssl.enabled', defaultConfig.ssl, 'boolean'),
             // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
-            certPath: cliArguments.certPath ?? getConfigValue('ssl.certPath', defaultConfig.certPath),
+            certPath:
+                cliArguments.certPath ?? getConfigValue('ssl.certPath', defaultConfig.certPath),
             // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
             keyPath: cliArguments.keyPath ?? getConfigValue('ssl.keyPath', defaultConfig.keyPath),
             // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
-            keyPassphrase: cliArguments.keyPassphrase ?? getConfigValue('ssl.keyPassphrase', defaultConfig.keyPassphrase),
+            keyPassphrase:
+                cliArguments.keyPassphrase ??
+                getConfigValue('ssl.keyPassphrase', defaultConfig.keyPassphrase),
             // @ts-expect-error TS(2345) FIXME: Argument of type 'boolean' is not assignable to pa... Remove this comment to see the full error message
-            whitelistMode: cliArguments.whitelist ?? getConfigValue('whitelistMode', defaultConfig.whitelistMode, 'boolean'),
+            whitelistMode:
+                cliArguments.whitelist ??
+                getConfigValue('whitelistMode', defaultConfig.whitelistMode, 'boolean'),
             // @ts-expect-error TS(2345) FIXME: Argument of type 'boolean' is not assignable to pa... Remove this comment to see the full error message
-            basicAuthMode: cliArguments.basicAuthMode ?? getConfigValue('basicAuthMode', defaultConfig.basicAuthMode, 'boolean'),
+            basicAuthMode:
+                cliArguments.basicAuthMode ??
+                getConfigValue('basicAuthMode', defaultConfig.basicAuthMode, 'boolean'),
             // @ts-expect-error TS(2345) FIXME: Argument of type 'boolean' is not assignable to pa... Remove this comment to see the full error message
-            enableKeepAlive: cliArguments.enableKeepAlive ?? getConfigValue('enableKeepAlive', defaultConfig.enableKeepAlive, 'boolean'),
+            enableKeepAlive:
+                cliArguments.enableKeepAlive ??
+                getConfigValue('enableKeepAlive', defaultConfig.enableKeepAlive, 'boolean'),
             // @ts-expect-error TS(2345) FIXME: Argument of type 'boolean' is not assignable to pa... Remove this comment to see the full error message
-            requestProxyEnabled: cliArguments.requestProxyEnabled ?? getConfigValue('requestProxy.enabled', defaultConfig.requestProxyEnabled, 'boolean'),
+            requestProxyEnabled:
+                cliArguments.requestProxyEnabled ??
+                getConfigValue(
+                    'requestProxy.enabled',
+                    defaultConfig.requestProxyEnabled,
+                    'boolean',
+                ),
             // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
-            requestProxyUrl: cliArguments.requestProxyUrl ?? getConfigValue('requestProxy.url', defaultConfig.requestProxyUrl),
+            requestProxyUrl:
+                cliArguments.requestProxyUrl ??
+                getConfigValue('requestProxy.url', defaultConfig.requestProxyUrl),
             // @ts-expect-error TS(2345) FIXME: Argument of type 'never[]' is not assignable to pa... Remove this comment to see the full error message
-            requestProxyBypass: cliArguments.requestProxyBypass ?? getConfigValue('requestProxy.bypass', defaultConfig.requestProxyBypass),
+            requestProxyBypass:
+                cliArguments.requestProxyBypass ??
+                getConfigValue('requestProxy.bypass', defaultConfig.requestProxyBypass),
             getIPv4ListenUrl: function () {
                 const isValid = ipRegex.v4({ exact: true }).test(this.listenAddressIPv4);
                 return new URL(
                     (this.ssl ? 'https://' : 'http://') +
-                    (this.listen ? (isValid ? this.listenAddressIPv4 : '0.0.0.0') : '127.0.0.1') +
-                    (':' + this.port),
+                        (this.listen
+                            ? isValid
+                                ? this.listenAddressIPv4
+                                : '0.0.0.0'
+                            : '127.0.0.1') +
+                        (':' + this.port),
                 );
             },
             getIPv6ListenUrl: function () {
                 const isValid = ipRegex.v6({ exact: true }).test(this.listenAddressIPv6);
                 return new URL(
                     (this.ssl ? 'https://' : 'http://') +
-                    (this.listen ? (isValid ? this.listenAddressIPv6 : '[::]') : '[::1]') +
-                    (':' + this.port),
+                        (this.listen ? (isValid ? this.listenAddressIPv6 : '[::]') : '[::1]') +
+                        (':' + this.port),
                 );
             },
             getBrowserLaunchHostname: async function ({
                 useIPv6,
-                useIPv4
+                useIPv4,
             }: {
                 useIPv6: boolean;
                 useIPv4: boolean;
@@ -389,25 +464,35 @@ export class CommandLineParser {
                 return this.browserLaunchHostname;
             },
             getBrowserLaunchUrl: function (hostname: string) {
-                const browserLaunchPort = (this.browserLaunchPort >= 0) ? this.browserLaunchPort : this.port;
+                const browserLaunchPort =
+                    this.browserLaunchPort >= 0 ? this.browserLaunchPort : this.port;
                 return new URL(
-                    (this.ssl ? 'https://' : 'http://') +
-                    (hostname) +
-                    (':') +
-                    (browserLaunchPort),
+                    (this.ssl ? 'https://' : 'http://') + hostname + ':' + browserLaunchPort,
                 );
             },
         };
 
         // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
         if (!this.booleanAutoOptions.includes(result.enableIPv6)) {
-            console.warn(color.red('`protocol: ipv6` option invalid'), '\n use:', this.booleanAutoOptions, '\n setting to:', defaultConfig.enableIPv6);
+            console.warn(
+                color.red('`protocol: ipv6` option invalid'),
+                '\n use:',
+                this.booleanAutoOptions,
+                '\n setting to:',
+                defaultConfig.enableIPv6,
+            );
             result.enableIPv6 = defaultConfig.enableIPv6;
         }
 
         // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
         if (!this.booleanAutoOptions.includes(result.enableIPv4)) {
-            console.warn(color.red('`protocol: ipv4` option invalid'), '\n use:', this.booleanAutoOptions, '\n setting to:', defaultConfig.enableIPv4);
+            console.warn(
+                color.red('`protocol: ipv4` option invalid'),
+                '\n use:',
+                this.booleanAutoOptions,
+                '\n setting to:',
+                defaultConfig.enableIPv4,
+            );
             result.enableIPv4 = defaultConfig.enableIPv4;
         }
 

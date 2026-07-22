@@ -5,11 +5,12 @@ import { getVersion } from '../src/util.js';
 const appVersion = await getVersion();
 
 function getOutputDirectory(forceDist = false) {
-    const webpackRoot = forceDist 
-        ? path.resolve(process.cwd(), 'dist', '_webpack') 
+    const webpackRoot = forceDist
+        ? path.resolve(process.cwd(), 'dist', '_webpack')
         : path.resolve(globalThis.DATA_ROOT || process.cwd(), '_webpack');
-    
-    const cacheVersion = crypto.createHash('shake256', { outputLength: 8 })
+
+    const cacheVersion = crypto
+        .createHash('shake256', { outputLength: 8 })
         .update(JSON.stringify([appVersion.pkgVersion, appVersion.gitRevision, 'bun']))
         .digest('hex');
 
@@ -18,7 +19,7 @@ function getOutputDirectory(forceDist = false) {
 
 async function build() {
     const outdir = getOutputDirectory(process.env.FORCE_DIST === 'true');
-    
+
     console.log(`Compiling frontend libraries to ${outdir}...`);
 
     const result = await Bun.build({

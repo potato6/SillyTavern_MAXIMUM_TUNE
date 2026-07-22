@@ -1,18 +1,12 @@
 {
     "compilerOptions": {
-        "lib": [
-            "ESNext",
-            "DOM",
-            "DOM.Iterable"
-        ],
+        "lib": ["ESNext", "DOM", "DOM.Iterable"],
         "target": "ESNext",
         "module": "Preserve",
         "moduleDetection": "force",
         "jsx": "react-jsx",
         "allowJs": true,
-        "types": [
-            "bun"
-        ],
+        "types": ["bun"],
         // Bundler mode
         "moduleResolution": "bundler",
         "allowImportingTsExtensions": true,
@@ -29,11 +23,7 @@
         "noUnusedParameters": false,
         "noPropertyAccessFromIndexSignature": false
     },
-    "include": [
-        "src/**/*",
-        "public/**/*",
-        "*.ts"
-    ],
+    "include": ["src/**/*", "public/**/*", "*.ts"],
     "exclude": [
         "node_modules",
         "public/dist",

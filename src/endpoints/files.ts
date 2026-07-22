@@ -37,8 +37,7 @@ router.post('/upload', async (request, response) => {
 
         // Validate filename
         const validation = validateAssetFileName(request.body.name);
-        if (validation.error)
-            return response.status(400).send(validation.message);
+        if (validation.error) return response.status(400).send(validation.message);
 
         const pathToUpload = path.join(request.user.directories.files, request.body.name);
         const fileBuffer = Buffer.from(request.body.data, 'base64');

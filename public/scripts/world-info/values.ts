@@ -13,4 +13,3 @@ import { wiManager } from './manager.js';
 export function getWorldNames(): string[] {
     return wiManager.worldNames;
 }
-

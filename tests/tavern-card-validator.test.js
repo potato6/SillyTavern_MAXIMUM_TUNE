@@ -4,13 +4,24 @@ import { TavernCardValidator } from '../src/validator/TavernCardValidator';
 const V1_FIELDS = ['name', 'description', 'personality', 'scenario', 'first_mes', 'mes_example'];
 
 const V2_DATA_FIELDS = [
-    'name', 'description', 'personality', 'scenario', 'first_mes', 'mes_example',
-    'creator_notes', 'system_prompt', 'post_history_instructions',
-    'alternate_greetings', 'tags', 'creator', 'character_version', 'extensions',
+    'name',
+    'description',
+    'personality',
+    'scenario',
+    'first_mes',
+    'mes_example',
+    'creator_notes',
+    'system_prompt',
+    'post_history_instructions',
+    'alternate_greetings',
+    'tags',
+    'creator',
+    'character_version',
+    'extensions',
 ];
 
 function makeV1Card() {
-    return Object.fromEntries(V1_FIELDS.map(f => [f, '']));
+    return Object.fromEntries(V1_FIELDS.map((f) => [f, '']));
 }
 
 function makeV2Card() {
@@ -18,7 +29,7 @@ function makeV2Card() {
         spec: 'chara_card_v2',
         spec_version: '2.0',
         data: {
-            ...Object.fromEntries(V2_DATA_FIELDS.map(f => [f, ''])),
+            ...Object.fromEntries(V2_DATA_FIELDS.map((f) => [f, ''])),
             alternate_greetings: [],
             tags: [],
             extensions: {},

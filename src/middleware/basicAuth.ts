@@ -25,9 +25,14 @@ const basicAuthLimiter = new RateLimiterMemory({
     duration: 60,
 });
 
-const basicAuthMiddleware = async function (request: Request, response: Response, callback: NextFunction) {
+const basicAuthMiddleware = async function (
+    request: Request,
+    response: Response,
+    callback: NextFunction,
+) {
     const unauthorizedResponse = (res: Response) => {
-        const unauthorizedWebpage = safeReadFileSync(path.join(globalThis.DATA_ROOT, '_errors', 'unauthorized.html')) ?? '';
+        const unauthorizedWebpage =
+            safeReadFileSync(path.join(globalThis.DATA_ROOT, '_errors', 'unauthorized.html')) ?? '';
         res.set('WWW-Authenticate', 'Basic realm="SillyTavern", charset="UTF-8"');
         return res.status(401).send(unauthorizedWebpage);
     };
@@ -61,7 +66,11 @@ const basicAuthMiddleware = async function (request: Request, response: Response
             .split(':');
         const password = passwordParts.join(':');
 
-        if (!usePerUserAuth && username === basicAuthUserName && password === basicAuthUserPassword) {
+        if (
+            !usePerUserAuth &&
+            username === basicAuthUserName &&
+            password === basicAuthUserPassword
+        ) {
             await basicAuthLimiter.delete(ip);
             return callback();
         } else if (usePerUserAuth) {
@@ -69,7 +78,12 @@ const basicAuthMiddleware = async function (request: Request, response: Response
             for (const userHandle of userHandles) {
                 if (username === userHandle) {
                     const user = await storage.getItem(toKey(userHandle));
-                    if (user && user.enabled && (user.password && user.password === getPasswordHash(password, user.salt))) {
+                    if (
+                        user &&
+                        user.enabled &&
+                        user.password &&
+                        user.password === getPasswordHash(password, user.salt)
+                    ) {
                         await basicAuthLimiter.delete(ip);
                         return callback();
                     }
@@ -81,7 +95,12 @@ const basicAuthMiddleware = async function (request: Request, response: Response
         return unauthorizedResponse(response);
     } catch (error) {
         if (error instanceof RateLimiterRes) {
-            console.error('Basic auth failed: Rate limited from', getIpAddress(request, PREFER_REAL_IP_HEADER), request.method, request.originalUrl);
+            console.error(
+                'Basic auth failed: Rate limited from',
+                getIpAddress(request, PREFER_REAL_IP_HEADER),
+                request.method,
+                request.originalUrl,
+            );
             return retryAfter(response, error).sendStatus(429);
         }
         console.error('Basic auth error:', error);

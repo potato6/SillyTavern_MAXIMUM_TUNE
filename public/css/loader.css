@@ -46,7 +46,9 @@
     cursor: pointer;
     font-size: 1.2em;
     opacity: 0.8;
-    transition: opacity 0.15s ease, color 0.15s ease;
+    transition:
+        opacity 0.15s ease,
+        color 0.15s ease;
 }
 
 .action-loader-stop:hover {

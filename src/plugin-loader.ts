@@ -9,7 +9,11 @@ import { getConfigValue, color } from './util.js';
 // @ts-expect-error TS(2345) FIXME: Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
 const enableServerPlugins = !!getConfigValue('enableServerPlugins', false, 'boolean');
 // @ts-expect-error TS(2345) FIXME: Argument of type 'true' is not assignable to param... Remove this comment to see the full error message
-const enableServerPluginsAutoUpdate = !!getConfigValue('enableServerPluginsAutoUpdate', true, 'boolean');
+const enableServerPluginsAutoUpdate = !!getConfigValue(
+    'enableServerPluginsAutoUpdate',
+    true,
+    'boolean',
+);
 
 interface PluginInfo {
     id: string;
@@ -54,7 +58,7 @@ const isESModule = (file: string) => path.extname(file) === '.mjs';
 export async function loadPlugins(app: express.Express, pluginsPath: string) {
     try {
         const exitHooks: Array<() => unknown> = [];
-        const emptyFn = () => { };
+        const emptyFn = () => {};
 
         // Server plugins are disabled.
         if (!enableServerPlugins) {
@@ -92,14 +96,16 @@ export async function loadPlugins(app: express.Express, pluginsPath: string) {
         }
 
         if (loadedPlugins.size > 0) {
-            console.log(`${loadedPlugins.size} server plugin(s) are currently loaded. Make sure you know exactly what they do, and only install plugins from trusted sources!`);
+            console.log(
+                `${loadedPlugins.size} server plugin(s) are currently loaded. Make sure you know exactly what they do, and only install plugins from trusted sources!`,
+            );
         }
 
         // Call all plugin "exit" functions at once and wait for them to finish
-        return () => Promise.all(exitHooks.map(exitFn => exitFn()));
+        return () => Promise.all(exitHooks.map((exitFn) => exitFn()));
     } catch (error) {
         console.error('Plugin loading failed.', error);
-        return () => { };
+        return () => {};
     }
 }
 
@@ -109,7 +115,11 @@ export async function loadPlugins(app: express.Express, pluginsPath: string) {
  * @param {string} pluginDirectoryPath Path to plugin directory
  * @param {Array<() => unknown>} exitHooks Array of cleanup functions to be called on plugin exit
  */
-async function loadFromDirectory(app: express.Express, pluginDirectoryPath: string, exitHooks: Array<() => unknown>) {
+async function loadFromDirectory(
+    app: express.Express,
+    pluginDirectoryPath: string,
+    exitHooks: Array<() => unknown>,
+) {
     const files = fs.readdirSync(pluginDirectoryPath);
 
     // No plugins to load.
@@ -146,7 +156,11 @@ async function loadFromDirectory(app: express.Express, pluginDirectoryPath: stri
  * an "exit" function.
  * @returns {Promise<boolean>} Promise that resolves to true if plugin was loaded successfully
  */
-async function loadFromPackage(app: express.Express, packageJsonPath: string, exitHooks: Array<() => unknown>) {
+async function loadFromPackage(
+    app: express.Express,
+    packageJsonPath: string,
+    exitHooks: Array<() => unknown>,
+) {
     try {
         const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
         if (packageJson.main) {
@@ -167,7 +181,11 @@ async function loadFromPackage(app: express.Express, packageJsonPath: string, ex
  * an "exit" function.
  * @returns {Promise<boolean>} Promise that resolves to true if plugin was loaded successfully
  */
-async function loadFromFile(app: express.Express, pluginFilePath: string, exitHooks: Array<() => unknown>) {
+async function loadFromFile(
+    app: express.Express,
+    pluginFilePath: string,
+    exitHooks: Array<() => unknown>,
+) {
     try {
         const fileUrl = url.pathToFileURL(pluginFilePath).toString();
         const plugin = await import(fileUrl);
@@ -196,7 +214,11 @@ function isValidPluginID(id: string) {
  * an "exit" function.
  * @returns {Promise<boolean>} Promise that resolves to true if plugin was initialized successfully
  */
-async function initPlugin(app: express.Express, plugin: PluginModule, exitHooks: Array<() => unknown>) {
+async function initPlugin(
+    app: express.Express,
+    plugin: PluginModule,
+    exitHooks: Array<() => unknown>,
+) {
     const info = plugin.info || plugin.default?.info;
     if (typeof info !== 'object') {
         console.error('Failed to load plugin module; plugin info not found');
@@ -260,18 +282,27 @@ async function updatePlugins(pluginsPath: string) {
         return;
     }
 
-    const directories = fs.readdirSync(pluginsPath)
-        .filter(file => !file.startsWith('.'))
-        .filter(file => fs.statSync(path.join(pluginsPath, file)).isDirectory());
+    const directories = fs
+        .readdirSync(pluginsPath)
+        .filter((file) => !file.startsWith('.'))
+        .filter((file) => fs.statSync(path.join(pluginsPath, file)).isDirectory());
 
     if (directories.length === 0) {
         return;
     }
 
-    console.log(color.blue('Auto-updating server plugins... Set'), color.yellow('enableServerPluginsAutoUpdate: false'), color.blue('in config.yaml to disable this feature.'));
+    console.log(
+        color.blue('Auto-updating server plugins... Set'),
+        color.yellow('enableServerPluginsAutoUpdate: false'),
+        color.blue('in config.yaml to disable this feature.'),
+    );
 
     if (!Bun.which('git')) {
-        console.error(color.red('Git is not installed. Please install Git to enable auto-updating of server plugins.'));
+        console.error(
+            color.red(
+                'Git is not installed. Please install Git to enable auto-updating of server plugins.',
+            ),
+        );
         return;
     }
 
@@ -302,7 +333,9 @@ async function updatePlugins(pluginsPath: string) {
             pluginsToUpdate++;
             await pluginRepo.pull();
             const latestCommit = await pluginRepo.revparse(['HEAD']);
-            console.log(`Plugin ${color.green(directory)} updated to commit ${color.cyan(latestCommit)}`);
+            console.log(
+                `Plugin ${color.green(directory)} updated to commit ${color.cyan(latestCommit)}`,
+            );
         } catch (error) {
             // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             console.error(color.red(`Failed to update plugin ${directory}: ${error.message}`));

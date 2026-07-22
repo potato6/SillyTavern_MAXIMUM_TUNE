@@ -19,9 +19,13 @@ function warnOnGroupMetadata(groupData: Record<string, unknown>) {
     if (typeof groupData !== 'object' || groupData === null) {
         return;
     }
-    ['chat_metadata', 'past_metadata'].forEach(key => {
+    ['chat_metadata', 'past_metadata'].forEach((key) => {
         if (Object.hasOwn(groupData, key)) {
-            console.warn(color.yellow(`Group JSON data for "${groupData.id}" contains deprecated key "${key}".`));
+            console.warn(
+                color.yellow(
+                    `Group JSON data for "${groupData.id}" contains deprecated key "${key}".`,
+                ),
+            );
             delete groupData[key];
         }
     });
@@ -37,17 +41,22 @@ export async function migrateGroupChatsMetadataFormat(userDirectories: Record<st
             let anyDataMigrated = false;
             const backupPath = path.join(userDirs.backups!, '_group_metadata_update');
             const groupFiles = await fsPromises.readdir(userDirs.groups!, { withFileTypes: true });
-            const groupChatFiles = await fsPromises.readdir(userDirs.groupChats!, { withFileTypes: true });
+            const groupChatFiles = await fsPromises.readdir(userDirs.groupChats!, {
+                withFileTypes: true,
+            });
             for (const groupFile of groupFiles) {
                 try {
-                    const isJsonFile = groupFile.isFile() && path.extname(groupFile.name) === '.json';
+                    const isJsonFile =
+                        groupFile.isFile() && path.extname(groupFile.name) === '.json';
                     if (!isJsonFile) {
                         continue;
                     }
                     const groupFilePath = path.join(userDirs.groups ?? '', groupFile.name);
                     const groupDataRaw = await fsPromises.readFile(groupFilePath, 'utf8');
                     const groupData = tryParse(groupDataRaw) || {};
-                    const needsMigration = ['chat_metadata', 'past_metadata'].some(key => Object.hasOwn(groupData, key));
+                    const needsMigration = ['chat_metadata', 'past_metadata'].some((key) =>
+                        Object.hasOwn(groupData, key),
+                    );
                     if (!needsMigration) {
                         continue;
                     }
@@ -56,56 +65,101 @@ export async function migrateGroupChatsMetadataFormat(userDirectories: Record<st
                     }
                     await fsPromises.copyFile(groupFilePath, path.join(backupPath, groupFile.name));
                     const allMetadata = {
-                        ...(groupData.past_metadata || {}),
-                        [groupData.chat_id]: (groupData.chat_metadata || {}),
+                        ...groupData.past_metadata,
+                        [groupData.chat_id]: groupData.chat_metadata || {},
                     };
                     if (!Array.isArray(groupData.chats)) {
-                        console.warn(color.yellow(`Group ${groupFile.name} has no chats array, skipping migration.`));
+                        console.warn(
+                            color.yellow(
+                                `Group ${groupFile.name} has no chats array, skipping migration.`,
+                            ),
+                        );
                         continue;
                     }
                     for (const chatId of groupData.chats) {
                         try {
                             const chatFileName = sanitize(`${chatId}.jsonl`);
-                            const chatFileDirent = groupChatFiles.find(f => f.isFile() && f.name === chatFileName);
+                            const chatFileDirent = groupChatFiles.find(
+                                (f) => f.isFile() && f.name === chatFileName,
+                            );
                             if (!chatFileDirent) {
-                                console.warn(color.yellow(`Group chat file ${chatId} not found, skipping migration.`));
+                                console.warn(
+                                    color.yellow(
+                                        `Group chat file ${chatId} not found, skipping migration.`,
+                                    ),
+                                );
                                 continue;
                             }
                             const chatFilePath = path.join(userDirs.groupChats!, chatFileName);
                             const chatMetadata = allMetadata[chatId] || {};
                             const chatDataRaw = await fsPromises.readFile(chatFilePath, 'utf8');
-                            const chatData = chatDataRaw.split('\n').filter(line => line.trim()).map(line => tryParse(line)).filter(Boolean);
-                            const alreadyHasMetadata = chatData.length > 0 && Object.hasOwn(chatData[0], 'chat_metadata');
+                            const chatData = chatDataRaw
+                                .split('\n')
+                                .filter((line) => line.trim())
+                                .map((line) => tryParse(line))
+                                .filter(Boolean);
+                            const alreadyHasMetadata =
+                                chatData.length > 0 && Object.hasOwn(chatData[0], 'chat_metadata');
                             if (alreadyHasMetadata) {
-                                console.log(color.yellow(`Group chat ${chatId} already has chat metadata, skipping update.`));
+                                console.log(
+                                    color.yellow(
+                                        `Group chat ${chatId} already has chat metadata, skipping update.`,
+                                    ),
+                                );
                                 continue;
                             }
-                            await fsPromises.copyFile(chatFilePath, path.join(backupPath, chatFileName));
-                            const chatHeader = { chat_metadata: chatMetadata, user_name: 'unused', character_name: 'unused' };
+                            await fsPromises.copyFile(
+                                chatFilePath,
+                                path.join(backupPath, chatFileName),
+                            );
+                            const chatHeader = {
+                                chat_metadata: chatMetadata,
+                                user_name: 'unused',
+                                character_name: 'unused',
+                            };
                             const newChatData = [chatHeader, ...chatData];
-                            const newChatDataRaw = newChatData.map(entry => JSON.stringify(entry)).join('\n');
+                            const newChatDataRaw = newChatData
+                                .map((entry) => JSON.stringify(entry))
+                                .join('\n');
                             await writeFileAtomic(chatFilePath, newChatDataRaw, 'utf8');
                             console.log(`Updated group chat data format for ${chatId}`);
                             anyDataMigrated = true;
                         } catch (chatError) {
-                            console.error(color.red(`Could not update existing chat data for ${chatId}`), chatError);
+                            console.error(
+                                color.red(`Could not update existing chat data for ${chatId}`),
+                                chatError,
+                            );
                         }
                     }
                     delete groupData.chat_metadata;
                     delete groupData.past_metadata;
-                    await writeFileAtomic(groupFilePath, JSON.stringify(groupData, null, 4), 'utf8');
+                    await writeFileAtomic(
+                        groupFilePath,
+                        JSON.stringify(groupData, null, 4),
+                        'utf8',
+                    );
                     console.log(`Migrated group chats metadata for group: ${groupData.id}`);
                     anyDataMigrated = true;
                 } catch (groupError) {
-                    console.error(color.red(`Could not process group file ${groupFile.name}`), groupError);
+                    console.error(
+                        color.red(`Could not process group file ${groupFile.name}`),
+                        groupError,
+                    );
                 }
             }
             if (anyDataMigrated) {
-                console.log(color.green(`Completed migration of group chats metadata for user at ${userDirs.root}`));
+                console.log(
+                    color.green(
+                        `Completed migration of group chats metadata for user at ${userDirs.root}`,
+                    ),
+                );
                 console.log(color.cyan(`Backups of modified files are located at ${backupPath}`));
             }
         } catch (directoryError) {
-            console.error(color.red(`Error migrating group chats metadata for user at ${userDirs.root}`), directoryError);
+            console.error(
+                color.red(`Error migrating group chats metadata for user at ${userDirs.root}`),
+                directoryError,
+            );
         }
     }
 }
@@ -117,8 +171,12 @@ router.post('/all', (request, response) => {
         fs.mkdirSync(request.user.directories.groups);
     }
 
-    const files = fs.readdirSync(request.user.directories.groups).filter(x => path.extname(x) === '.json');
-    const chats = fs.readdirSync(request.user.directories.groupChats).filter(x => path.extname(x) === '.jsonl');
+    const files = fs
+        .readdirSync(request.user.directories.groups)
+        .filter((x) => path.extname(x) === '.json');
+    const chats = fs
+        .readdirSync(request.user.directories.groupChats)
+        .filter((x) => path.extname(x) === '.jsonl');
 
     files.forEach(function (file) {
         try {
@@ -135,7 +193,9 @@ router.post('/all', (request, response) => {
             if (Array.isArray(group.chats) && Array.isArray(chats)) {
                 for (const chat of chats) {
                     if (group.chats.includes(path.parse(chat).name)) {
-                        const chatStat = fs.statSync(path.join(request.user.directories.groupChats, chat));
+                        const chatStat = fs.statSync(
+                            path.join(request.user.directories.groupChats, chat),
+                        );
                         chat_size += chatStat.size;
                         date_last_chat = Math.max(date_last_chat, chatStat.mtimeMs);
                     }
@@ -215,7 +275,10 @@ router.post('/delete', getFileNameValidationFunction('id'), async (request, resp
         if (group && Array.isArray(group.chats)) {
             for (const chat of group.chats) {
                 console.info('Deleting group chat', chat);
-                const pathToFile = path.join(request.user.directories.groupChats, sanitize(`${chat}.jsonl`));
+                const pathToFile = path.join(
+                    request.user.directories.groupChats,
+                    sanitize(`${chat}.jsonl`),
+                );
 
                 if (fs.existsSync(pathToFile)) {
                     fs.unlinkSync(pathToFile);

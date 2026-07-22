@@ -1,4 +1,3 @@
-
 export class AutoCompleteNameResultBase {
     /**@type {string} */ name;
     /**@type {number} */ start;
@@ -6,7 +5,6 @@ export class AutoCompleteNameResultBase {
     /**@type {boolean} */ canBeQuoted = false;
     /**@type {()=>string} */ makeNoMatchText = () => `No matches found for "${this.name}"`;
     /**@type {()=>string} */ makeNoOptionsText = () => 'No options';
-
 
     /**
      * @param {string} name Name (potentially partial) of the name at the requested index.
@@ -17,7 +15,14 @@ export class AutoCompleteNameResultBase {
      * @param {()=>string} makeNoOptionsText Function that returns text to show when no options are available to match against.
      */
     // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
-    constructor(name, start, optionList = [], canBeQuoted = false, makeNoMatchText = null, makeNoOptionsText = null) {
+    constructor(
+        name,
+        start,
+        optionList = [],
+        canBeQuoted = false,
+        makeNoMatchText = null,
+        makeNoOptionsText = null,
+    ) {
         this.name = name;
         this.start = start;
         this.optionList = optionList;

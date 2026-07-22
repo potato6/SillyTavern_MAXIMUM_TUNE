@@ -20,9 +20,11 @@ const converters: Record<string, (file: File) => Promise<string>> = {
     'text/html': extractTextFromHTML,
     'text/markdown': extractTextFromMarkdown,
     'application/epub+zip': extractTextFromEpub,
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': extractTextFromOffice,
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+        extractTextFromOffice,
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': extractTextFromOffice,
-    'application/vnd.openxmlformats-officedocument.presentationml.presentation': extractTextFromOffice,
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation':
+        extractTextFromOffice,
     'application/vnd.oasis.opendocument.text': extractTextFromOffice,
     'application/vnd.oasis.opendocument.presentation': extractTextFromOffice,
     'application/vnd.oasis.opendocument.spreadsheet': extractTextFromOffice,
@@ -61,7 +63,10 @@ export function getConverter(mimeType: string): ((file: File) => Promise<string>
  * @param mimeType MIME type to register
  * @param converterFn Converter function
  */
-export function registerFileConverter(mimeType: string, converterFn: (file: File) => Promise<string>): void {
+export function registerFileConverter(
+    mimeType: string,
+    converterFn: (file: File) => Promise<string>,
+): void {
     if (typeof mimeType !== 'string' || typeof converterFn !== 'function') {
         console.error('Invalid converter registration');
         return;

@@ -28,24 +28,36 @@ function deriveKey(name: string): string {
 }
 
 const STANDARD_EXTRAS = [
-    'HORDE', 'NOVEL', 'SERPAPI', 'STABILITY', 'AZURE_TTS',
-    'CUSTOM_OPENAI_TTS', 'TAVILY', 'BFL', 'COMFY_RUNPOD',
-    'FALAI', 'SERPER', 'ELEVENLABS', 'NOMICAI',
+    'HORDE',
+    'NOVEL',
+    'SERPAPI',
+    'STABILITY',
+    'AZURE_TTS',
+    'CUSTOM_OPENAI_TTS',
+    'TAVILY',
+    'BFL',
+    'COMFY_RUNPOD',
+    'FALAI',
+    'SERPER',
+    'ELEVENLABS',
+    'NOMICAI',
 ] as const;
 
 type ChatSourceKey = keyof typeof CHAT_COMPLETION_SOURCES;
 type TextgenKey = keyof typeof TEXTGEN_TYPES;
 type OverrideKey = keyof typeof KEY_OVERRIDES;
-type ExtraKey = typeof STANDARD_EXTRAS[number];
+type ExtraKey = (typeof STANDARD_EXTRAS)[number];
 type SecretKeyName = ChatSourceKey | TextgenKey | OverrideKey | ExtraKey;
 
 export const SECRET_KEYS = Object.fromEntries(
-    [...new Set([
-        ...(Object.keys(CHAT_COMPLETION_SOURCES) as ChatSourceKey[]),
-        ...(Object.keys(TEXTGEN_TYPES) as TextgenKey[]),
-        ...(Object.keys(KEY_OVERRIDES) as OverrideKey[]),
-        ...(STANDARD_EXTRAS as unknown as ExtraKey[]),
-    ])].map(name => [name as string, deriveKey(name as string)])
+    [
+        ...new Set([
+            ...(Object.keys(CHAT_COMPLETION_SOURCES) as ChatSourceKey[]),
+            ...(Object.keys(TEXTGEN_TYPES) as TextgenKey[]),
+            ...(Object.keys(KEY_OVERRIDES) as OverrideKey[]),
+            ...(STANDARD_EXTRAS as unknown as ExtraKey[]),
+        ]),
+    ].map((name) => [name as string, deriveKey(name as string)]),
 ) as { [K in SecretKeyName]: string } & Record<string, string>;
 
 /**
@@ -74,12 +86,12 @@ export const SECRET_KEYS = Object.fromEntries(
  */
 
 // These are the keys that are safe to expose, even if allowKeysExposure is false
-const EXPORTABLE_KEYS = [
+const EXPORTABLE_KEYS = new Set([
     SECRET_KEYS.LIBRE_URL,
     SECRET_KEYS.LINGVA_URL,
     SECRET_KEYS.ONERING_URL,
     SECRET_KEYS.DEEPLX_URL,
-];
+]);
 
 // @ts-expect-error TS(2345) FIXME: Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
 export const allowKeysExposure = !!getConfigValue('allowKeysExposure', false, 'boolean');
@@ -164,7 +176,7 @@ export class SecretManager {
      */
     getMaskedValue(value: string, key: string) {
         // No masking if exposure is allowed
-        if (allowKeysExposure || EXPORTABLE_KEYS.includes(key)) {
+        if (allowKeysExposure || EXPORTABLE_KEYS.has(key)) {
             return value;
         }
         const threshold = 10;
@@ -224,7 +236,9 @@ export class SecretManager {
 
         const secretArray = secrets[key];
         // @ts-expect-error TS(2304) FIXME: Cannot find name 'SecretValue'.
-        const targetIndex = secretArray.findIndex((s: SecretValue) => id ? s.id === id : s.active);
+        const targetIndex = secretArray.findIndex((s: SecretValue) =>
+            id ? s.id === id : s.active,
+        );
 
         // Delete the secret if found
         if (targetIndex !== -1) {
@@ -260,7 +274,7 @@ export class SecretManager {
         const secretArray = secrets[key];
 
         if (Array.isArray(secretArray) && secretArray.length > 0) {
-            const activeSecret = secretArray.find(s => id ? s.id === id : s.active);
+            const activeSecret = secretArray.find((s) => (id ? s.id === id : s.active));
             return activeSecret?.value || '';
         }
 
@@ -341,7 +355,7 @@ export class SecretManager {
             const value = secrets[key];
             if (value && Array.isArray(value) && value.length > 0) {
                 // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                state[key] = value.map(secret => ({
+                state[key] = value.map((secret) => ({
                     id: secret.id,
                     value: this.getMaskedValue(secret.value, key),
                     label: secret.label,
@@ -378,7 +392,11 @@ export class SecretManager {
         const values = Object.values(secrets);
 
         // Check if already migrated
-        if (secrets[SECRET_KEYS._MIGRATED] || values.length === 0 || values.some(v => Array.isArray(v))) {
+        if (
+            secrets[SECRET_KEYS._MIGRATED] ||
+            values.length === 0 ||
+            values.some((v) => Array.isArray(v))
+        ) {
             return;
         }
 
@@ -388,12 +406,14 @@ export class SecretManager {
         for (const [key, value] of Object.entries(secrets)) {
             if (typeof value === 'string' && value.trim()) {
                 // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                migratedSecrets[key] = [{
-                    id: uuidv4(),
-                    value: value,
-                    label: key,
-                    active: true,
-                }];
+                migratedSecrets[key] = [
+                    {
+                        id: uuidv4(),
+                        value: value,
+                        label: key,
+                        active: true,
+                    },
+                ];
             }
         }
 
@@ -402,11 +422,17 @@ export class SecretManager {
         migratedSecrets[SECRET_KEYS._MIGRATED] = [];
 
         // Save backup of the old secrets file
-        const backupFilePath = path.join(this.directories.backups, `secrets_migration_${Date.now()}.json`);
+        const backupFilePath = path.join(
+            this.directories.backups,
+            `secrets_migration_${Date.now()}.json`,
+        );
         fs.cpSync(this.filePath, backupFilePath);
 
         this._writeSecretsFile(migratedSecrets);
-        console.info(color.green('Secrets migrated successfully, old secrets backed up to:'), backupFilePath);
+        console.info(
+            color.green('Secrets migrated successfully, old secrets backed up to:'),
+            backupFilePath,
+        );
     }
 }
 
@@ -476,7 +502,7 @@ export function getAllSecrets(directories: UserDirectoryList) {
             continue;
         }
         if (Array.isArray(values) && values.length > 0) {
-            const activeSecret = values.find(secret => secret.active);
+            const activeSecret = values.find((secret) => secret.active);
             if (activeSecret) {
                 // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 result[key] = activeSecret.value;
@@ -536,7 +562,9 @@ router.post('/read', (request, response) => {
 router.post('/view', (request, response) => {
     try {
         if (!allowKeysExposure) {
-            console.error('secrets.json could not be viewed unless allowKeysExposure in config.yaml is set to true');
+            console.error(
+                'secrets.json could not be viewed unless allowKeysExposure in config.yaml is set to true',
+            );
             return response.sendStatus(403);
         }
 
@@ -561,8 +589,10 @@ router.post('/find', (request, response) => {
             return response.status(400).send('Key is required');
         }
 
-        if (!allowKeysExposure && !EXPORTABLE_KEYS.includes(key)) {
-            console.error('Cannot fetch secrets unless allowKeysExposure in config.yaml is set to true');
+        if (!allowKeysExposure && !EXPORTABLE_KEYS.has(key)) {
+            console.error(
+                'Cannot fetch secrets unless allowKeysExposure in config.yaml is set to true',
+            );
             return response.sendStatus(403);
         }
 

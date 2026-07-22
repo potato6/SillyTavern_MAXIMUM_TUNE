@@ -41,7 +41,11 @@ export class AudioPlayer implements EventListenerObject {
      * @param {HTMLElement} containerElement - The container element with player controls
      * @param {AudioPlayerOptions} options - Configuration options
      */
-    constructor(audioElement: HTMLAudioElement, containerElement: HTMLElement, options: AudioPlayerOptions = {}) {
+    constructor(
+        audioElement: HTMLAudioElement,
+        containerElement: HTMLElement,
+        options: AudioPlayerOptions = {},
+    ) {
         if (!(audioElement instanceof HTMLAudioElement)) {
             throw new Error('First argument must be an HTMLAudioElement');
         }
@@ -111,10 +115,19 @@ export class AudioPlayer implements EventListenerObject {
             volumeBtn: this.container.querySelector('.audio-player-volume'),
         };
 
-        const required = ['playPauseBtn', 'currentTime', 'totalTime', 'progress', 'progressBar', 'volumeBtn'] as const;
+        const required = [
+            'playPauseBtn',
+            'currentTime',
+            'totalTime',
+            'progress',
+            'progressBar',
+            'volumeBtn',
+        ] as const;
         for (const key of required) {
             if (!this.elements[key]) {
-                console.warn(`AudioPlayer: Required element .audio-player-${key.replace(/([A-Z])/g, '-$1').toLowerCase()} not found`);
+                console.warn(
+                    `AudioPlayer: Required element .audio-player-${key.replace(/([A-Z])/g, '-$1').toLowerCase()} not found`,
+                );
             }
         }
     }
@@ -140,25 +153,39 @@ export class AudioPlayer implements EventListenerObject {
      */
     handleEvent(e: Event) {
         switch (e.type) {
-            case 'loadedmetadata': return this.onAudioLoadedMetadata();
-            case 'timeupdate': return this.onAudioTimeUpdate();
-            case 'play': return this.onAudioPlay();
-            case 'pause': return this.onAudioPause();
-            case 'ended': return this.onAudioEnded();
-            case 'volumechange': return this.onAudioVolumeChange();
+            case 'loadedmetadata':
+                return this.onAudioLoadedMetadata();
+            case 'timeupdate':
+                return this.onAudioTimeUpdate();
+            case 'play':
+                return this.onAudioPlay();
+            case 'pause':
+                return this.onAudioPause();
+            case 'ended':
+                return this.onAudioEnded();
+            case 'volumechange':
+                return this.onAudioVolumeChange();
             case 'click':
-                if (e.currentTarget === this.elements.playPauseBtn) return this.onPlayPauseClick(e as MouseEvent);
-                if (e.currentTarget === this.elements.volumeBtn) return this.onVolumeClick(e as MouseEvent);
-                if (e.currentTarget === this.elements.progress) return this.onProgressClick(e as MouseEvent);
+                if (e.currentTarget === this.elements.playPauseBtn)
+                    return this.onPlayPauseClick(e as MouseEvent);
+                if (e.currentTarget === this.elements.volumeBtn)
+                    return this.onVolumeClick(e as MouseEvent);
+                if (e.currentTarget === this.elements.progress)
+                    return this.onProgressClick(e as MouseEvent);
                 break;
-            case 'input': return this.onVolumeInput(e as Event);
-            case 'mousedown': return this.onProgressMouseDown(e as MouseEvent);
+            case 'input':
+                return this.onVolumeInput(e as Event);
+            case 'mousedown':
+                return this.onProgressMouseDown(e as MouseEvent);
             case 'mousemove':
                 if (e.currentTarget === document) return this.onDocumentMouseMove(e as MouseEvent);
                 return this.onProgressMouseMove(e as MouseEvent);
-            case 'mouseup': return this.onDocumentMouseUp();
-            case 'mouseenter': return this.onProgressMouseEnter();
-            case 'mouseleave': return this.onProgressMouseLeave();
+            case 'mouseup':
+                return this.onDocumentMouseUp();
+            case 'mouseenter':
+                return this.onProgressMouseEnter();
+            case 'mouseleave':
+                return this.onProgressMouseLeave();
         }
     }
 
@@ -369,7 +396,10 @@ export class AudioPlayer implements EventListenerObject {
         const offsetX = e.clientX - rect.left;
         const percent = Math.max(0, Math.min(100, (offsetX / rect.width) * 100));
 
-        this.elements.progress.setAttribute('title', formatTime((percent / 100) * this.audio.duration));
+        this.elements.progress.setAttribute(
+            'title',
+            formatTime((percent / 100) * this.audio.duration),
+        );
     }
 
     play() {
@@ -377,7 +407,7 @@ export class AudioPlayer implements EventListenerObject {
 
         const playPromise = this.audio.play();
         if (playPromise !== undefined) {
-            playPromise.catch(error => console.error('Audio play failed:', error));
+            playPromise.catch((error) => console.error('Audio play failed:', error));
         }
     }
 

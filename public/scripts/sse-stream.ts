@@ -41,7 +41,8 @@ class EventSourceStream {
                     if (colonIndex !== -1) {
                         const field = line.substring(0, colonIndex);
                         let value = line.substring(colonIndex + 1);
-                        if (value.charCodeAt(0) === 32) { // check for space ' '
+                        if (value.charCodeAt(0) === 32) {
+                            // check for space ' '
                             value = value.substring(1);
                         }
 
@@ -64,11 +65,15 @@ class EventSourceStream {
 
                 if (eventData === '') continue;
 
-                if (eventData.charCodeAt(eventData.length - 1) === 10) { // '\n'
+                if (eventData.charCodeAt(eventData.length - 1) === 10) {
+                    // '\n'
                     eventData = eventData.slice(0, -1);
                 }
 
-                const event = new MessageEvent(eventType || 'message', { data: eventData, lastEventId });
+                const event = new MessageEvent(eventType || 'message', {
+                    data: eventData,
+                    lastEventId,
+                });
                 controller.enqueue(event);
             }
         }
@@ -121,7 +126,11 @@ async function* parseStreamData(json) {
      * Generic helper to mutate the parsed JSON instance and yield character by character.
      * Prevents massive heap allocations by mutating instead of deeply cloning objects.
      */
-    function* emitChars(text: string, updateFn: (char: string, index: number, length: number) => void, reasoning = false) {
+    function* emitChars(
+        text: string,
+        updateFn: (char: string, index: number, length: number) => void,
+        reasoning = false,
+    ) {
         if (!text) return;
         for (let i = 0; i < text.length; i++) {
             const char = text[i]!;
@@ -135,20 +144,33 @@ async function* parseStreamData(json) {
     const c0 = choices?.[0];
 
     // Cohere
-    if (delta?.message?.content?.text !== undefined && (json.type === 'tool-plan-delta' || json.type === 'content-delta')) {
-        yield* emitChars(delta.message.content.text, c => { delta.message.content.text = c; });
+    if (
+        delta?.message?.content?.text !== undefined &&
+        (json.type === 'tool-plan-delta' || json.type === 'content-delta')
+    ) {
+        yield* emitChars(delta.message.content.text, (c) => {
+            delta.message.content.text = c;
+        });
         return;
     }
 
     // Claude
     if (delta?.text !== undefined) {
-        yield* emitChars(delta.text, c => { delta.text = c; });
+        yield* emitChars(delta.text, (c) => {
+            delta.text = c;
+        });
         return;
     }
 
     // Claude (reasoning content)
     if (delta?.thinking !== undefined) {
-        yield* emitChars(delta.thinking, c => { delta.thinking = c; }, true);
+        yield* emitChars(
+            delta.thinking,
+            (c) => {
+                delta.thinking = c;
+            },
+            true,
+        );
         return;
     }
 
@@ -159,7 +181,12 @@ async function* parseStreamData(json) {
         const parts = json.candidates[0]?.content?.parts;
         if (!parts) return;
 
-        if (parts.some((p: { functionCall?: unknown; inlineData?: unknown }) => p?.functionCall || p?.inlineData)) {
+        if (
+            parts.some(
+                (p: { functionCall?: unknown; inlineData?: unknown }) =>
+                    p?.functionCall || p?.inlineData,
+            )
+        ) {
             yield { data: json, chunk: '', reasoning: false };
             return;
         }
@@ -170,14 +197,20 @@ async function* parseStreamData(json) {
                 const isReasoning = parts[j].thought ?? false;
                 const originalParts = parts;
 
-                yield* emitChars(text, (c, i, len) => {
-                    const isLastSymbol = i === len - 1;
-                    const moreThanOnePart = originalParts.length > 1;
-                    const isNotLastPart = j !== originalParts.length - 1;
-                    const addNewline = moreThanOnePart && isNotLastPart && isLastSymbol;
+                yield* emitChars(
+                    text,
+                    (c, i, len) => {
+                        const isLastSymbol = i === len - 1;
+                        const moreThanOnePart = originalParts.length > 1;
+                        const isNotLastPart = j !== originalParts.length - 1;
+                        const addNewline = moreThanOnePart && isNotLastPart && isLastSymbol;
 
-                    json.candidates[0].content.parts = [{ ...originalParts[j], text: c + (addNewline ? '\n\n' : '') }];
-                }, isReasoning);
+                        json.candidates[0].content.parts = [
+                            { ...originalParts[j], text: c + (addNewline ? '\n\n' : '') },
+                        ];
+                    },
+                    isReasoning,
+                );
             }
         }
         return;
@@ -185,14 +218,22 @@ async function* parseStreamData(json) {
 
     // NovelAI / KoboldCpp Classic
     if (typeof json.token === 'string' && json.token.length > 0) {
-        yield* emitChars(json.token, c => { json.token = c; });
+        yield* emitChars(json.token, (c) => {
+            json.token = c;
+        });
         return;
     }
 
     // llama.cpp
-    if (typeof json.content === 'string' && json.content.length > 0 && json.object !== 'chat.completion.chunk') {
+    if (
+        typeof json.content === 'string' &&
+        json.content.length > 0 &&
+        json.object !== 'chat.completion.chunk'
+    ) {
         if (json?.index > 0) throw new Error('Not a primary swipe', { cause: NOT_PRIMARY });
-        yield* emitChars(json.content, c => { json.content = c; });
+        yield* emitChars(json.content, (c) => {
+            json.content = c;
+        });
         return;
     }
 
@@ -203,59 +244,93 @@ async function* parseStreamData(json) {
         }
 
         if (typeof c0.text === 'string' && c0.text.length > 0) {
-            yield* emitChars(c0.text, c => { c0.text = c; json.choices = [c0]; });
+            yield* emitChars(c0.text, (c) => {
+                c0.text = c;
+                json.choices = [c0];
+            });
             return;
         }
 
         if (typeof c0.thinking === 'string' && c0.thinking.length > 0) {
-            yield* emitChars(c0.thinking, c => { c0.thinking = c; json.choices = [c0]; }, true);
+            yield* emitChars(
+                c0.thinking,
+                (c) => {
+                    c0.thinking = c;
+                    json.choices = [c0];
+                },
+                true,
+            );
             return;
         }
 
         const c0Delta = c0.delta;
         if (c0Delta) {
             if (typeof c0Delta.text === 'string' && c0Delta.text.length > 0) {
-                yield* emitChars(c0Delta.text, c => { c0Delta.text = c; json.choices = [c0]; });
+                yield* emitChars(c0Delta.text, (c) => {
+                    c0Delta.text = c;
+                    json.choices = [c0];
+                });
                 return;
             }
 
-            if (typeof c0Delta.reasoning_content === 'string' && c0Delta.reasoning_content.length > 0) {
-                yield* emitChars(c0Delta.reasoning_content, (c, i, len) => {
-                    c0Delta.reasoning_content = c;
-                    c0Delta.content = (i === len - 1) ? c0Delta.content : '';
-                    json.choices = [c0];
-                }, true);
+            if (
+                typeof c0Delta.reasoning_content === 'string' &&
+                c0Delta.reasoning_content.length > 0
+            ) {
+                yield* emitChars(
+                    c0Delta.reasoning_content,
+                    (c, i, len) => {
+                        c0Delta.reasoning_content = c;
+                        c0Delta.content = i === len - 1 ? c0Delta.content : '';
+                        json.choices = [c0];
+                    },
+                    true,
+                );
                 return;
             }
 
             if (typeof c0Delta.reasoning === 'string' && c0Delta.reasoning.length > 0) {
-                yield* emitChars(c0Delta.reasoning, (c, i, len) => {
-                    c0Delta.reasoning = c;
-                    c0Delta.content = (i === len - 1) ? c0Delta.content : '';
-                    json.choices = [c0];
-                }, true);
+                yield* emitChars(
+                    c0Delta.reasoning,
+                    (c, i, len) => {
+                        c0Delta.reasoning = c;
+                        c0Delta.content = i === len - 1 ? c0Delta.content : '';
+                        json.choices = [c0];
+                    },
+                    true,
+                );
                 return;
             }
 
             if (typeof c0Delta.content === 'string' && c0Delta.content.length > 0) {
-                yield* emitChars(c0Delta.content, c => { c0Delta.content = c; json.choices = [c0]; });
+                yield* emitChars(c0Delta.content, (c) => {
+                    c0Delta.content = c;
+                    json.choices = [c0];
+                });
                 return;
             }
 
             if (Array.isArray(c0Delta.content) && c0Delta.content.length > 0) {
                 const thinkingText = c0Delta.content[0]?.thinking?.[0]?.text;
                 if (typeof thinkingText === 'string' && thinkingText.length > 0) {
-                    yield* emitChars(thinkingText, c => {
-                        c0Delta.content[0].thinking[0].text = c;
-                        json.choices = [c0];
-                    }, true);
+                    yield* emitChars(
+                        thinkingText,
+                        (c) => {
+                            c0Delta.content[0].thinking[0].text = c;
+                            json.choices = [c0];
+                        },
+                        true,
+                    );
                     return;
                 }
             }
         }
 
         if (typeof c0.message?.content === 'string' && c0.message.content.length > 0) {
-            yield* emitChars(c0.message.content, c => { c0.message.content = c; json.choices = [c0]; });
+            yield* emitChars(c0.message.content, (c) => {
+                c0.message.content = c;
+                json.choices = [c0];
+            });
             return;
         }
     }
@@ -294,10 +369,15 @@ export class SmoothEventSourceStream extends EventSourceStream {
                     }
 
                     for await (const parsed of parseStreamData(json)) {
-                        if (!(power_user.smooth_streaming_no_think && parsed.reasoning) && hasFocus) {
+                        if (
+                            !(power_user.smooth_streaming_no_think && parsed.reasoning) &&
+                            hasFocus
+                        ) {
                             await delay(getDelay(lastStr));
                         }
-                        controller.enqueue(new MessageEvent(event.type, { data: JSON.stringify(parsed.data) }));
+                        controller.enqueue(
+                            new MessageEvent(event.type, { data: JSON.stringify(parsed.data) }),
+                        );
                         lastStr = parsed.chunk;
                     }
                 } catch (error) {

@@ -81,7 +81,7 @@ async function getCurrentUser() {
 
         currentUser = await response.json();
         const adminBtn = document.getElementById('admin_button');
-        if (adminBtn) adminBtn.style.display = (accountsEnabled && isAdmin()) ? '' : 'none';
+        if (adminBtn) adminBtn.style.display = accountsEnabled && isAdmin() ? '' : 'none';
     } catch (error) {
         console.error('Error getting current user:', error);
     }
@@ -271,7 +271,7 @@ async function createUser(form: HTMLFormElement, callback: () => void) {
  */
 async function backupUserData(handle: string, callback: () => void) {
     try {
-            notyf.info('Please wait for the download to start.', 'Backup Requested');
+        notyf.info('Please wait for the download to start.', 'Backup Requested');
         const response = await fetch('/api/users/backup', {
             method: 'POST',
             headers: getRequestHeaders(),
@@ -280,19 +280,22 @@ async function backupUserData(handle: string, callback: () => void) {
 
         if (!response.ok) {
             const data = await response.json();
-                    notyf.error(data.error || 'Unknown error', 'Failed to backup user data');
+            notyf.error(data.error || 'Unknown error', 'Failed to backup user data');
             throw new Error('Failed to backup user data');
         }
 
         const includesSecrets = await canViewSecrets();
         if (includesSecrets === false) {
-                    notyf.warning('The backup will not include secrets due to a server configuration.', 'Secrets Not Included');
+            notyf.warning(
+                'The backup will not include secrets due to a server configuration.',
+                'Secrets Not Included',
+            );
         }
 
         const blob = await response.blob();
         const header = response.headers.get('Content-Disposition');
-            const parts = header!.split(';');
-            const filename = parts[1]!.split('=')[1]!.replaceAll('"', '');
+        const parts = header!.split(';');
+        const filename = parts[1]!.split('=')[1]!.replaceAll('"', '');
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
@@ -316,27 +319,39 @@ async function changePassword(handle: string, callback: () => void) {
         wrapper.innerHTML = await renderTemplateAsync('changePassword');
         const template = wrapper;
         const currentPasswordBlock = template.querySelector('.currentPasswordBlock');
-        if (currentPasswordBlock instanceof HTMLElement) currentPasswordBlock.style.display = isAdmin() ? 'none' : '';
+        if (currentPasswordBlock instanceof HTMLElement)
+            currentPasswordBlock.style.display = isAdmin() ? 'none' : '';
         let newPassword = '';
         let confirmPassword = '';
         let oldPassword = '';
-        template.querySelector('input[name="current"]')!.addEventListener('input', function (this: HTMLInputElement) {
-            oldPassword = String(this.value);
+        template
+            .querySelector('input[name="current"]')!
+            .addEventListener('input', function (this: HTMLInputElement) {
+                oldPassword = String(this.value);
+            });
+        template
+            .querySelector('input[name="password"]')!
+            .addEventListener('input', function (this: HTMLInputElement) {
+                newPassword = String(this.value);
+            });
+        template
+            .querySelector('input[name="confirm"]')!
+            .addEventListener('input', function (this: HTMLInputElement) {
+                confirmPassword = String(this.value);
+            });
+        const result = await callGenericPopup(template, POPUP_TYPE.CONFIRM, '', {
+            okButton: 'Change',
+            cancelButton: 'Cancel',
+            wide: false,
+            large: false,
         });
-        template.querySelector('input[name="password"]')!.addEventListener('input', function (this: HTMLInputElement) {
-            newPassword = String(this.value);
-        });
-        template.querySelector('input[name="confirm"]')!.addEventListener('input', function (this: HTMLInputElement) {
-            confirmPassword = String(this.value);
-        });
-        const result = await callGenericPopup(template, POPUP_TYPE.CONFIRM, '', { okButton: 'Change', cancelButton: 'Cancel', wide: false, large: false });
         if (result === POPUP_RESULT.CANCELLED || result === POPUP_RESULT.NEGATIVE) {
             throw new Error('Change password cancelled');
         }
 
         if (newPassword !== confirmPassword) {
-                notyf.error('Passwords do not match', 'Failed to change password');
-                throw new Error('Passwords do not match');
+            notyf.error('Passwords do not match', 'Failed to change password');
+            throw new Error('Passwords do not match');
         }
 
         const response = await fetch('/api/users/change-password', {
@@ -347,7 +362,7 @@ async function changePassword(handle: string, callback: () => void) {
 
         if (!response.ok) {
             const data = await response.json();
-                notyf.error(data.error || 'Unknown error', 'Failed to change password');
+            notyf.error(data.error || 'Unknown error', 'Failed to change password');
             throw new Error('Failed to change password');
         }
 
@@ -377,22 +392,31 @@ async function deleteUser(handle: string, callback: () => void) {
         wrapper.innerHTML = await renderTemplateAsync('deleteUser');
         const template = wrapper;
         template.querySelector('#deleteUserName')!.textContent = handle;
-        template.querySelector('input[name="deleteUserData"]')!.addEventListener('input', function (this: HTMLInputElement) {
-            purge = this.checked;
-        });
-        template.querySelector('input[name="deleteUserHandle"]')!.addEventListener('input', function (this: HTMLInputElement) {
-            confirmHandle = String(this.value);
-        });
+        template
+            .querySelector('input[name="deleteUserData"]')!
+            .addEventListener('input', function (this: HTMLInputElement) {
+                purge = this.checked;
+            });
+        template
+            .querySelector('input[name="deleteUserHandle"]')!
+            .addEventListener('input', function (this: HTMLInputElement) {
+                confirmHandle = String(this.value);
+            });
 
-        const result = await callGenericPopup(template, POPUP_TYPE.CONFIRM, '', { okButton: 'Delete', cancelButton: 'Cancel', wide: false, large: false });
+        const result = await callGenericPopup(template, POPUP_TYPE.CONFIRM, '', {
+            okButton: 'Delete',
+            cancelButton: 'Cancel',
+            wide: false,
+            large: false,
+        });
 
         if (result !== POPUP_RESULT.AFFIRMATIVE) {
             throw new Error('Delete user cancelled');
         }
 
         if (handle !== confirmHandle) {
-                notyf.error('Handles do not match', 'Failed to delete user');
-                throw new Error('Handles do not match');
+            notyf.error('Handles do not match', 'Failed to delete user');
+            throw new Error('Handles do not match');
         }
 
         const response = await fetch('/api/users/delete', {
@@ -403,11 +427,11 @@ async function deleteUser(handle: string, callback: () => void) {
 
         if (!response.ok) {
             const data = await response.json();
-                notyf.error(data.error || 'Unknown error', 'Failed to delete user');
-                throw new Error('Failed to delete user');
-            }
+            notyf.error(data.error || 'Unknown error', 'Failed to delete user');
+            throw new Error('Failed to delete user');
+        }
 
-            notyf.success('User deleted successfully', 'User Deleted');
+        notyf.success('User deleted successfully', 'User Deleted');
         callback();
     } catch (error) {
         console.error('Error deleting user:', error);
@@ -425,10 +449,17 @@ async function resetSettings(handle: string, callback: () => void) {
         const wrapper = document.createElement('div');
         wrapper.innerHTML = await renderTemplateAsync('resetSettings');
         const template = wrapper;
-        template.querySelector('input[name="password"]')!.addEventListener('input', function (this: HTMLInputElement) {
-            password = String(this.value);
+        template
+            .querySelector('input[name="password"]')!
+            .addEventListener('input', function (this: HTMLInputElement) {
+                password = String(this.value);
+            });
+        const result = await callGenericPopup(template, POPUP_TYPE.CONFIRM, '', {
+            okButton: 'Reset',
+            cancelButton: 'Cancel',
+            wide: false,
+            large: false,
         });
-        const result = await callGenericPopup(template, POPUP_TYPE.CONFIRM, '', { okButton: 'Reset', cancelButton: 'Cancel', wide: false, large: false });
 
         if (result !== POPUP_RESULT.AFFIRMATIVE) {
             throw new Error('Reset settings cancelled');
@@ -442,11 +473,11 @@ async function resetSettings(handle: string, callback: () => void) {
 
         if (!response.ok) {
             const data = await response.json();
-                notyf.error(data.error || 'Unknown error', 'Failed to reset settings');
-                throw new Error('Failed to reset settings');
-            }
+            notyf.error(data.error || 'Unknown error', 'Failed to reset settings');
+            throw new Error('Failed to reset settings');
+        }
 
-            notyf.success('Settings reset successfully', 'Settings Reset');
+        notyf.success('Settings reset successfully', 'Settings Reset');
         callback();
     } catch (error) {
         console.error('Error resetting settings:', error);
@@ -464,7 +495,12 @@ async function changeName(handle: string, name: string, callback: () => void) {
         const wrapper = document.createElement('div');
         wrapper.innerHTML = await renderTemplateAsync('changeName');
         const template = wrapper;
-        const result = await callGenericPopup(template, POPUP_TYPE.INPUT, name, { okButton: 'Change', cancelButton: 'Cancel', wide: false, large: false });
+        const result = await callGenericPopup(template, POPUP_TYPE.INPUT, name, {
+            okButton: 'Change',
+            cancelButton: 'Cancel',
+            wide: false,
+            large: false,
+        });
 
         if (!result) {
             throw new Error('Change name cancelled');
@@ -621,28 +657,50 @@ async function viewSettingsSnapshots() {
         const snapshots = await getSnapshots();
         (template.querySelector('.snapshotList') as HTMLElement).innerHTML = '';
 
-        for (const snapshot of snapshots.sort((a: { date: number }, b: { date: number }) => b.date - a.date)) {
-            const snapshotBlock = template.querySelector('.snapshotTemplate .snapshot')!.cloneNode(true) as HTMLElement;
-            (snapshotBlock.querySelector('.snapshotName') as HTMLElement).textContent = snapshot.name;
-            (snapshotBlock.querySelector('.snapshotDate') as HTMLElement).textContent = new Date(snapshot.date).toLocaleString();
-            (snapshotBlock.querySelector('.snapshotSize') as HTMLElement).textContent = humanFileSize(snapshot.size);
-            snapshotBlock.querySelector('.snapshotRestoreButton')!.addEventListener('click', async (e: Event) => {
-                e.stopPropagation();
-                restoreSnapshot(snapshot.name, () => location.reload());
-            });
-            (snapshotBlock.querySelector('.inline-drawer-toggle') as HTMLElement).addEventListener('click', async () => {
-                const contentBlock = snapshotBlock.querySelector('.snapshotContent') as HTMLInputElement | null;
-                if (contentBlock && !contentBlock.value) {
-                    const content = await loadSnapshotContent(snapshot.name);
-                    contentBlock.value = content ?? '';
-                }
-            });
+        for (const snapshot of snapshots.toSorted(
+            (a: { date: number }, b: { date: number }) => b.date - a.date,
+        )) {
+            const snapshotBlock = template
+                .querySelector('.snapshotTemplate .snapshot')!
+                .cloneNode(true) as HTMLElement;
+            (snapshotBlock.querySelector('.snapshotName') as HTMLElement).textContent =
+                snapshot.name;
+            (snapshotBlock.querySelector('.snapshotDate') as HTMLElement).textContent = new Date(
+                snapshot.date,
+            ).toLocaleString();
+            (snapshotBlock.querySelector('.snapshotSize') as HTMLElement).textContent =
+                humanFileSize(snapshot.size);
+            snapshotBlock
+                .querySelector('.snapshotRestoreButton')!
+                .addEventListener('click', async (e: Event) => {
+                    e.stopPropagation();
+                    restoreSnapshot(snapshot.name, () => location.reload());
+                });
+            (snapshotBlock.querySelector('.inline-drawer-toggle') as HTMLElement).addEventListener(
+                'click',
+                async () => {
+                    const contentBlock = snapshotBlock.querySelector(
+                        '.snapshotContent',
+                    ) as HTMLInputElement | null;
+                    if (contentBlock && !contentBlock.value) {
+                        const content = await loadSnapshotContent(snapshot.name);
+                        contentBlock.value = content ?? '';
+                    }
+                },
+            );
             (template.querySelector('.snapshotList') as HTMLElement).append(snapshotBlock);
         }
     }
 
-    callGenericPopup(template, POPUP_TYPE.TEXT, '', { okButton: 'Close', wide: false, large: false, allowVerticalScrolling: true });
-    template.querySelector('.makeSnapshotButton')!.addEventListener('click', () => makeSnapshot(renderSnapshots));
+    callGenericPopup(template, POPUP_TYPE.TEXT, '', {
+        okButton: 'Close',
+        wide: false,
+        large: false,
+        allowVerticalScrolling: true,
+    });
+    template
+        .querySelector('.makeSnapshotButton')!
+        .addEventListener('click', () => makeSnapshot(renderSnapshots));
     renderSnapshots();
 }
 
@@ -669,18 +727,22 @@ async function resetEverything(callback: () => void) {
         const wrapper = document.createElement('div');
         wrapper.innerHTML = await renderTemplateAsync('userReset');
         const template = wrapper;
-        template.querySelector('input[name="password"]')!.addEventListener('input', function (this: HTMLInputElement) {
-            password = String(this.value);
+        template
+            .querySelector('input[name="password"]')!
+            .addEventListener('input', function (this: HTMLInputElement) {
+                password = String(this.value);
+            });
+        template
+            .querySelector('input[name="code"]')!
+            .addEventListener('input', function (this: HTMLInputElement) {
+                code = String(this.value);
+            });
+        const confirm = await callGenericPopup(template, POPUP_TYPE.CONFIRM, '', {
+            okButton: 'Reset',
+            cancelButton: 'Cancel',
+            wide: false,
+            large: false,
         });
-        template.querySelector('input[name="code"]')!.addEventListener('input', function (this: HTMLInputElement) {
-            code = String(this.value);
-        });
-        const confirm = await callGenericPopup(
-            template,
-            POPUP_TYPE.CONFIRM,
-            '',
-            { okButton: 'Reset', cancelButton: 'Cancel', wide: false, large: false },
-        );
 
         if (confirm !== POPUP_RESULT.AFFIRMATIVE) {
             throw new Error('Reset everything cancelled');
@@ -716,58 +778,101 @@ async function openUserProfile() {
     (template.querySelector('.userName') as HTMLElement).textContent = currentUser!.name;
     (template.querySelector('.userHandle') as HTMLElement).textContent = currentUser!.handle;
     (template.querySelector('.avatar img') as HTMLElement).setAttribute('src', currentUser!.avatar);
-    (template.querySelector('.userRole') as HTMLElement).textContent = currentUser!.admin ? 'Admin' : 'User';
-    (template.querySelector('.userCreated') as HTMLElement).textContent = new Date(currentUser!.created!).toLocaleString();
+    (template.querySelector('.userRole') as HTMLElement).textContent = currentUser!.admin
+        ? 'Admin'
+        : 'User';
+    (template.querySelector('.userCreated') as HTMLElement).textContent = new Date(
+        currentUser!.created!,
+    ).toLocaleString();
     const hasPasswordEl = template.querySelector('.hasPassword');
-    if (hasPasswordEl instanceof HTMLElement) hasPasswordEl.style.display = currentUser!.password ? '' : 'none';
+    if (hasPasswordEl instanceof HTMLElement)
+        hasPasswordEl.style.display = currentUser!.password ? '' : 'none';
     const noPasswordEl = template.querySelector('.noPassword');
-    if (noPasswordEl instanceof HTMLElement) noPasswordEl.style.display = !currentUser!.password ? '' : 'none';
-    template.querySelector('.userSettingsSnapshotsButton')!.addEventListener('click', () => viewSettingsSnapshots());
-    (template.querySelector('.userChangeNameButton') as HTMLElement).addEventListener('click', async () => changeName(currentUser!.handle, currentUser!.name, async () => {
-        await getCurrentUser();
-        (template.querySelector('.userName') as HTMLElement).textContent = currentUser!.name;
-    }));
-    (template.querySelector('.userChangePasswordButton') as HTMLElement).addEventListener('click', () => changePassword(currentUser!.handle, async () => {
-        await getCurrentUser();
-        const hasPasswordEl = template.querySelector('.hasPassword');
-        const noPasswordEl = template.querySelector('.noPassword');
-        if (hasPasswordEl) (hasPasswordEl as HTMLElement).style.display = currentUser!.password ? '' : 'none';
-        if (noPasswordEl) (noPasswordEl as HTMLElement).style.display = !currentUser!.password ? '' : 'none';
-    }));
-    (template.querySelector('.userBackupButton') as HTMLElement).addEventListener('click', function (this: HTMLElement) {
-        this.classList.add('disabled');
-        backupUserData(currentUser!.handle, () => {
-            this.classList.remove('disabled');
-        });
-    });
-    (template.querySelector('.userResetSettingsButton') as HTMLElement).addEventListener('click', () => resetSettings(currentUser!.handle, () => location.reload()));
-    (template.querySelector('.userResetAllButton') as HTMLElement).addEventListener('click', () => resetEverything(() => location.reload()));
-    (template.querySelector('.userAvatarChange') as HTMLElement).addEventListener('click', () => (template.querySelector('.avatarUpload') as HTMLElement).dispatchEvent(new Event('click')));
-    (template.querySelector('.avatarUpload') as HTMLElement).addEventListener('change', async function (this: HTMLInputElement) {
-        if (!(this instanceof HTMLInputElement)) {
-            return;
-        }
+    if (noPasswordEl instanceof HTMLElement)
+        noPasswordEl.style.display = !currentUser!.password ? '' : 'none';
+    template
+        .querySelector('.userSettingsSnapshotsButton')!
+        .addEventListener('click', () => viewSettingsSnapshots());
+    (template.querySelector('.userChangeNameButton') as HTMLElement).addEventListener(
+        'click',
+        async () =>
+            changeName(currentUser!.handle, currentUser!.name, async () => {
+                await getCurrentUser();
+                (template.querySelector('.userName') as HTMLElement).textContent =
+                    currentUser!.name;
+            }),
+    );
+    (template.querySelector('.userChangePasswordButton') as HTMLElement).addEventListener(
+        'click',
+        () =>
+            changePassword(currentUser!.handle, async () => {
+                await getCurrentUser();
+                const hasPasswordEl = template.querySelector('.hasPassword');
+                const noPasswordEl = template.querySelector('.noPassword');
+                if (hasPasswordEl)
+                    (hasPasswordEl as HTMLElement).style.display = currentUser!.password
+                        ? ''
+                        : 'none';
+                if (noPasswordEl)
+                    (noPasswordEl as HTMLElement).style.display = !currentUser!.password
+                        ? ''
+                        : 'none';
+            }),
+    );
+    (template.querySelector('.userBackupButton') as HTMLElement).addEventListener(
+        'click',
+        function (this: HTMLElement) {
+            this.classList.add('disabled');
+            backupUserData(currentUser!.handle, () => {
+                this.classList.remove('disabled');
+            });
+        },
+    );
+    (template.querySelector('.userResetSettingsButton') as HTMLElement).addEventListener(
+        'click',
+        () => resetSettings(currentUser!.handle, () => location.reload()),
+    );
+    (template.querySelector('.userResetAllButton') as HTMLElement).addEventListener('click', () =>
+        resetEverything(() => location.reload()),
+    );
+    (template.querySelector('.userAvatarChange') as HTMLElement).addEventListener('click', () =>
+        (template.querySelector('.avatarUpload') as HTMLElement).dispatchEvent(new Event('click')),
+    );
+    (template.querySelector('.avatarUpload') as HTMLElement).addEventListener(
+        'change',
+        async function (this: HTMLInputElement) {
+            if (!(this instanceof HTMLInputElement)) {
+                return;
+            }
 
-        const file = this.files?.[0];
-        if (!file) {
-            return;
-        }
+            const file = this.files?.[0];
+            if (!file) {
+                return;
+            }
 
-        await cropAndUploadAvatar(currentUser!.handle, file);
-        await getCurrentUser();
-        const avatarImg = template.querySelector('.avatar img');
-        if (avatarImg) avatarImg.setAttribute('src', currentUser!.avatar);
-    });
-    (template.querySelector('.userAvatarRemove') as HTMLElement).addEventListener('click', async function (this: HTMLElement) {
-        await changeAvatar(currentUser!.handle, '');
-        await getCurrentUser();
-        const avatarImg = template.querySelector('.avatar img');
-        if (avatarImg) avatarImg.setAttribute('src', currentUser!.avatar);
-    });
+            await cropAndUploadAvatar(currentUser!.handle, file);
+            await getCurrentUser();
+            const avatarImg = template.querySelector('.avatar img');
+            if (avatarImg) avatarImg.setAttribute('src', currentUser!.avatar);
+        },
+    );
+    (template.querySelector('.userAvatarRemove') as HTMLElement).addEventListener(
+        'click',
+        async function (this: HTMLElement) {
+            await changeAvatar(currentUser!.handle, '');
+            await getCurrentUser();
+            const avatarImg = template.querySelector('.avatar img');
+            if (avatarImg) avatarImg.setAttribute('src', currentUser!.avatar);
+        },
+    );
 
     if (!accountsEnabled) {
-        template.querySelectorAll('[data-require-accounts]').forEach(el => (el as HTMLElement).style.display = 'none');
-        const accountsDisabledHint = template.querySelector('.accountsDisabledHint') as HTMLElement | null;
+        template
+            .querySelectorAll('[data-require-accounts]')
+            .forEach((el) => ((el as HTMLElement).style.display = 'none'));
+        const accountsDisabledHint = template.querySelector(
+            '.accountsDisabledHint',
+        ) as HTMLElement | null;
         if (accountsDisabledHint) accountsDisabledHint.style.display = '';
     }
 
@@ -789,7 +894,12 @@ async function openUserProfile() {
  */
 async function cropAndUploadAvatar(handle: string, file: File) {
     const dataUrl = await getBase64Async(await ensureImageFormatSupported(file));
-    const croppedImage = await callGenericPopup('Set the crop position of the avatar image', POPUP_TYPE.CROP, '', { cropAspect: 1, cropImage: dataUrl });
+    const croppedImage = await callGenericPopup(
+        'Set the crop position of the avatar image',
+        POPUP_TYPE.CROP,
+        '',
+        { cropAspect: 1, cropImage: dataUrl },
+    );
     if (!croppedImage) {
         return;
     }
@@ -835,15 +945,28 @@ async function openAdminPanel() {
         if (!users) return;
         (template.querySelector('.usersList') as HTMLElement).innerHTML = '';
         for (const user of users) {
-            const userBlock = template.querySelector('.userAccountTemplate .userAccount')!.cloneNode(true) as HTMLElement;
+            const userBlock = template
+                .querySelector('.userAccountTemplate .userAccount')!
+                .cloneNode(true) as HTMLElement;
             (userBlock.querySelector('.userName') as HTMLElement).textContent = user.name;
             (userBlock.querySelector('.userHandle') as HTMLElement).textContent = user.handle;
-            (userBlock.querySelector('.userStatus') as HTMLElement).textContent = user.enabled ? 'Enabled' : 'Disabled';
-            (userBlock.querySelector('.userRole') as HTMLElement).textContent = user.admin ? 'Admin' : 'User';
-            (userBlock.querySelector('.avatar img') as HTMLElement).setAttribute('src', user.avatar);
-            const _hpEl = userBlock.querySelector('.hasPassword') as HTMLElement; if (_hpEl) _hpEl.style.display = user.password ? '' : 'none';
-            const _npEl = userBlock.querySelector('.noPassword') as HTMLElement; if (_npEl) _npEl.style.display = !user.password ? '' : 'none';
-            (userBlock.querySelector('.userCreated') as HTMLElement).textContent = new Date(user.created!).toLocaleString();
+            (userBlock.querySelector('.userStatus') as HTMLElement).textContent = user.enabled
+                ? 'Enabled'
+                : 'Disabled';
+            (userBlock.querySelector('.userRole') as HTMLElement).textContent = user.admin
+                ? 'Admin'
+                : 'User';
+            (userBlock.querySelector('.avatar img') as HTMLElement).setAttribute(
+                'src',
+                user.avatar,
+            );
+            const _hpEl = userBlock.querySelector('.hasPassword') as HTMLElement;
+            if (_hpEl) _hpEl.style.display = user.password ? '' : 'none';
+            const _npEl = userBlock.querySelector('.noPassword') as HTMLElement;
+            if (_npEl) _npEl.style.display = !user.password ? '' : 'none';
+            (userBlock.querySelector('.userCreated') as HTMLElement).textContent = new Date(
+                user.created!,
+            ).toLocaleString();
             const enableBtn = userBlock.querySelector('.userEnableButton') as HTMLElement;
             enableBtn.style.display = !user.enabled ? '' : 'none';
             enableBtn.addEventListener('click', () => enableUser(user.handle, renderUsers));
@@ -856,33 +979,56 @@ async function openAdminPanel() {
             const demoteBtn = userBlock.querySelector('.userDemoteButton') as HTMLElement;
             demoteBtn.style.display = user.admin ? '' : 'none';
             demoteBtn.addEventListener('click', () => demoteUser(user.handle, renderUsers));
-            (userBlock.querySelector('.userChangePasswordButton') as HTMLElement).addEventListener('click', () => changePassword(user.handle, renderUsers));
-            (userBlock.querySelector('.userDelete') as HTMLElement).addEventListener('click', () => deleteUser(user.handle, renderUsers));
-            (userBlock.querySelector('.userChangeNameButton') as HTMLElement).addEventListener('click', async () => changeName(user.handle, user.name, renderUsers));
-            (userBlock.querySelector('.userBackupButton') as HTMLElement).addEventListener('click', function (this: HTMLElement) {
-                this.classList.add('disabled');
-                // Remove any existing listeners to prevent double-click
-                // (original used .off('click'))
-                backupUserData(user.handle, renderUsers);
-            });
-            (userBlock.querySelector('.userAvatarChange') as HTMLElement).addEventListener('click', () => (userBlock.querySelector('.avatarUpload') as HTMLElement).dispatchEvent(new Event('click')));
-            (userBlock.querySelector('.avatarUpload') as HTMLElement).addEventListener('change', async function (this: HTMLInputElement) {
-                if (!(this instanceof HTMLInputElement)) {
-                    return;
-                }
+            (userBlock.querySelector('.userChangePasswordButton') as HTMLElement).addEventListener(
+                'click',
+                () => changePassword(user.handle, renderUsers),
+            );
+            (userBlock.querySelector('.userDelete') as HTMLElement).addEventListener('click', () =>
+                deleteUser(user.handle, renderUsers),
+            );
+            (userBlock.querySelector('.userChangeNameButton') as HTMLElement).addEventListener(
+                'click',
+                async () => changeName(user.handle, user.name, renderUsers),
+            );
+            (userBlock.querySelector('.userBackupButton') as HTMLElement).addEventListener(
+                'click',
+                function (this: HTMLElement) {
+                    this.classList.add('disabled');
+                    // Remove any existing listeners to prevent double-click
+                    // (original used .off('click'))
+                    backupUserData(user.handle, renderUsers);
+                },
+            );
+            (userBlock.querySelector('.userAvatarChange') as HTMLElement).addEventListener(
+                'click',
+                () =>
+                    (userBlock.querySelector('.avatarUpload') as HTMLElement).dispatchEvent(
+                        new Event('click'),
+                    ),
+            );
+            (userBlock.querySelector('.avatarUpload') as HTMLElement).addEventListener(
+                'change',
+                async function (this: HTMLInputElement) {
+                    if (!(this instanceof HTMLInputElement)) {
+                        return;
+                    }
 
-                const file = this.files?.[0];
-                if (!file) {
-                    return;
-                }
+                    const file = this.files?.[0];
+                    if (!file) {
+                        return;
+                    }
 
-                await cropAndUploadAvatar(user.handle, file);
-                renderUsers();
-            });
-            (userBlock.querySelector('.userAvatarRemove') as HTMLElement).addEventListener('click', async function (this: HTMLElement) {
-                await changeAvatar(user.handle, '');
-                renderUsers();
-            });
+                    await cropAndUploadAvatar(user.handle, file);
+                    renderUsers();
+                },
+            );
+            (userBlock.querySelector('.userAvatarRemove') as HTMLElement).addEventListener(
+                'click',
+                async function (this: HTMLElement) {
+                    await changeAvatar(user.handle, '');
+                    renderUsers();
+                },
+            );
             (template.querySelector('.usersList') as HTMLElement).append(userBlock);
         }
     }
@@ -891,31 +1037,47 @@ async function openAdminPanel() {
     wrapper.innerHTML = await renderTemplateAsync('admin');
     const template = wrapper;
 
-    template.querySelectorAll('.adminNav > button').forEach((el: Element) => el.addEventListener('click', function (this: HTMLElement) {
-    const target = String(this.dataset.targetTab);
-    template.querySelectorAll('.navTab').forEach((tab: Element) => {
-        (tab as HTMLElement).style.display = tab.classList.contains(target) ? '' : 'none';
-        });
-    }));
+    template.querySelectorAll('.adminNav > button').forEach((el: Element) =>
+        el.addEventListener('click', function (this: HTMLElement) {
+            const target = String(this.dataset.targetTab);
+            template.querySelectorAll('.navTab').forEach((tab: Element) => {
+                (tab as HTMLElement).style.display = tab.classList.contains(target) ? '' : 'none';
+            });
+        }),
+    );
 
-    (template.querySelector('.createUserDisplayName') as HTMLElement).addEventListener('input', async function (this: HTMLInputElement) {
-        const slug = await slugify(String(this.value));
-        (template.querySelector('.createUserHandle') as HTMLInputElement).value = slug;
+    (template.querySelector('.createUserDisplayName') as HTMLElement).addEventListener(
+        'input',
+        async function (this: HTMLInputElement) {
+            const slug = await slugify(String(this.value));
+            (template.querySelector('.createUserHandle') as HTMLInputElement).value = slug;
+        },
+    );
+
+    (template.querySelector('.userCreateForm') as HTMLElement).addEventListener(
+        'submit',
+        function (event: Event) {
+            if (!(event.target instanceof HTMLFormElement)) {
+                return;
+            }
+
+            event.preventDefault();
+            createUser(event.target, () => {
+                (template.querySelector('.manageUsersButton') as HTMLElement).dispatchEvent(
+                    new Event('click'),
+                );
+                renderUsers();
+            });
+        },
+    );
+
+    callGenericPopup(template, POPUP_TYPE.TEXT, '', {
+        okButton: 'Close',
+        wide: false,
+        large: false,
+        allowVerticalScrolling: true,
+        allowHorizontalScrolling: false,
     });
-
-    (template.querySelector('.userCreateForm') as HTMLElement).addEventListener('submit', function (event: Event) {
-        if (!(event.target instanceof HTMLFormElement)) {
-            return;
-        }
-
-        event.preventDefault();
-        createUser(event.target, () => {
-            (template.querySelector('.manageUsersButton') as HTMLElement).dispatchEvent(new Event('click'));
-            renderUsers();
-        });
-    });
-
-    callGenericPopup(template, POPUP_TYPE.TEXT, '', { okButton: 'Close', wide: false, large: false, allowVerticalScrolling: true, allowHorizontalScrolling: false });
     renderUsers();
 }
 

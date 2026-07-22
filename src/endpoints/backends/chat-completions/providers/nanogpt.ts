@@ -21,7 +21,10 @@ export default createOAIChatProvider({
             params.repetition_penalty = req.body.repetition_penalty;
         }
         if (req.body.reasoning_effort) {
-            const effort = NANOGPT_REASONING_EFFORT_MAP[req.body.reasoning_effort as keyof typeof NANOGPT_REASONING_EFFORT_MAP];
+            const effort =
+                NANOGPT_REASONING_EFFORT_MAP[
+                    req.body.reasoning_effort as keyof typeof NANOGPT_REASONING_EFFORT_MAP
+                ];
             if (effort) {
                 params.reasoning = { effort };
             }

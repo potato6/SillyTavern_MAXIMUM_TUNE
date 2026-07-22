@@ -71,13 +71,28 @@ class PrivateRequestAgent extends Agent {
      * @param {boolean} options.allowUnresolvedHosts Whether to allow requests to hosts that cannot be resolved.
      * @param {boolean} options.enableKeepAlive Whether to enable HTTP/HTTPS keep-alive.
      */
-    constructor(options = { privateAddressWhitelist: [], logBlocked: true, logAllowed: false, allowUnresolvedHosts: false, enableKeepAlive: false }) {
+    constructor(
+        options = {
+            privateAddressWhitelist: [],
+            logBlocked: true,
+            logAllowed: false,
+            allowUnresolvedHosts: false,
+            enableKeepAlive: false,
+        },
+    ) {
         super({ keepAlive: options.enableKeepAlive });
 
-        const logEntryWarning = (entry: string, message: string) => `${color.red('Warning')}: Ignoring invalid private whitelist entry ${color.yellow(entry)} - ${message}`;
-        const whitelistArray = Array.isArray(options.privateAddressWhitelist) ? options.privateAddressWhitelist : [];
+        const logEntryWarning = (entry: string, message: string) =>
+            `${color.red('Warning')}: Ignoring invalid private whitelist entry ${color.yellow(entry)} - ${message}`;
+        const whitelistArray = Array.isArray(options.privateAddressWhitelist)
+            ? options.privateAddressWhitelist
+            : [];
         // @ts-expect-error TS(4104) FIXME: The type 'readonly any[]' is 'readonly' and cannot... Remove this comment to see the full error message
-        this.privateAddressWhitelist = Object.freeze(filterValidIpPatterns(whitelistArray, logEntryWarning).map((pattern: string) => ipMatch.getMatch(pattern)));
+        this.privateAddressWhitelist = Object.freeze(
+            filterValidIpPatterns(whitelistArray, logEntryWarning).map((pattern: string) =>
+                ipMatch.getMatch(pattern),
+            ),
+        );
         this.allowUnresolvedHosts = options.allowUnresolvedHosts;
         this.logBlocked = options.logBlocked;
         this.logAllowed = options.logAllowed;
@@ -89,7 +104,7 @@ class PrivateRequestAgent extends Agent {
      * @returns {boolean} Whether the given address is a private IP address.
      */
     #isPrivateIp(address: string) {
-        return privateIpRanges.some(range => range.matches(address));
+        return privateIpRanges.some((range) => range.matches(address));
     }
 
     /**
@@ -100,7 +115,7 @@ class PrivateRequestAgent extends Agent {
     #isAllowedPrivateAddress(address: string) {
         // Permit the request if the private IP address is in the whitelist
         // @ts-expect-error TS(2339) FIXME: Property 'matches' does not exist on type 'never'.
-        return this.privateAddressWhitelist.some(match => match.matches(address));
+        return this.privateAddressWhitelist.some((match) => match.matches(address));
     }
 
     /**
@@ -153,7 +168,11 @@ class PrivateRequestAgent extends Agent {
             // Private IP address, check if it's allowed in the whitelist
             if (this.#isAllowedPrivateAddress(ip)) {
                 if (this.logAllowed) {
-                    console.info(color.green(LOG_HEADER), 'Allowed request to private IP address:', color.blue(ip));
+                    console.info(
+                        color.green(LOG_HEADER),
+                        'Allowed request to private IP address:',
+                        color.blue(ip),
+                    );
                 }
 
                 // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
@@ -182,7 +201,8 @@ class PrivateRequestAgent extends Agent {
             return raiseError('No host specified in request options', true);
         }
 
-        const isIp = ipRegex.v4({ exact: true }).test(host) || ipRegex.v6({ exact: true }).test(host);
+        const isIp =
+            ipRegex.v4({ exact: true }).test(host) || ipRegex.v6({ exact: true }).test(host);
 
         if (isIp) {
             return validateIpAddress(host);
@@ -192,7 +212,10 @@ class PrivateRequestAgent extends Agent {
                 if (this.allowUnresolvedHosts) {
                     return connect();
                 } else {
-                    return raiseError(`Unable to resolve host: ${host}. Set privateAddressWhitelist.allowUnresolvedHosts to true to bypass this check.`, true);
+                    return raiseError(
+                        `Unable to resolve host: ${host}. Set privateAddressWhitelist.allowUnresolvedHosts to true to bypass this check.`,
+                        true,
+                    );
                 }
             }
 
@@ -229,19 +252,33 @@ export default function initPrivateRequestFilter({
     logBlocked,
     logAllowed,
     allowUnresolvedHosts,
-    enableKeepAlive
+    enableKeepAlive,
 }: InitPrivateRequestFilterOptions) {
     if (!enabled) {
         if (listen) {
             console.warn();
-            console.warn(color.yellow('Warning: listen is enabled but private request filter is disabled. This may expose your server to SSRF attacks.'));
-            console.warn(color.blue('To enable, provide trusted addresses in privateAddressWhitelist.allowedRanges and set privateAddressWhitelist.enabled to true in config.yaml and restart the server.'));
+            console.warn(
+                color.yellow(
+                    'Warning: listen is enabled but private request filter is disabled. This may expose your server to SSRF attacks.',
+                ),
+            );
+            console.warn(
+                color.blue(
+                    'To enable, provide trusted addresses in privateAddressWhitelist.allowedRanges and set privateAddressWhitelist.enabled to true in config.yaml and restart the server.',
+                ),
+            );
         }
         return;
     }
 
     // @ts-expect-error TS(2322) FIXME: Type 'string[]' is not assignable to type 'never[]... Remove this comment to see the full error message
-    const agent = new PrivateRequestAgent({ privateAddressWhitelist, logBlocked, logAllowed, allowUnresolvedHosts, enableKeepAlive });
+    const agent = new PrivateRequestAgent({
+        privateAddressWhitelist,
+        logBlocked,
+        logAllowed,
+        allowUnresolvedHosts,
+        enableKeepAlive,
+    });
 
     http.globalAgent = agent;
     https.globalAgent = agent;
@@ -249,7 +286,11 @@ export default function initPrivateRequestFilter({
     console.info();
     console.info(color.green(LOG_HEADER), 'Enabled');
     if (agent.privateAddressWhitelist.length > 0) {
-        console.info(color.green(LOG_HEADER), 'Allowed private addresses:', color.blue(agent.privateAddressWhitelist.join(', ')));
+        console.info(
+            color.green(LOG_HEADER),
+            'Allowed private addresses:',
+            color.blue(agent.privateAddressWhitelist.join(', ')),
+        );
     }
     console.info();
 }

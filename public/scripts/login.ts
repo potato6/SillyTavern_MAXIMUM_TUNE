@@ -157,17 +157,24 @@ async function onUserSelected(user: { password?: string; handle: string }) {
     (document.getElementById('passwordRecoveryBlock') as HTMLElement).style.display = 'none';
     (document.getElementById('passwordEntryBlock') as HTMLElement).style.display = '';
     (document.getElementById('loginButton') as HTMLElement).addEventListener('click', async () => {
-        const password = String((document.getElementById('userPassword') as HTMLInputElement).value);
+        const password = String(
+            (document.getElementById('userPassword') as HTMLInputElement).value,
+        );
         await performLogin(user.handle, password);
     });
 
-    (document.getElementById('recoverPassword') as HTMLElement).addEventListener('click', async () => {
-        await sendRecoveryPart1(user.handle);
-    });
+    (document.getElementById('recoverPassword') as HTMLElement).addEventListener(
+        'click',
+        async () => {
+            await sendRecoveryPart1(user.handle);
+        },
+    );
 
     (document.getElementById('sendRecovery') as HTMLElement).addEventListener('click', async () => {
         const code = String((document.getElementById('recoveryCode') as HTMLInputElement).value);
-        const newPassword = String((document.getElementById('newPassword') as HTMLInputElement).value);
+        const newPassword = String(
+            (document.getElementById('newPassword') as HTMLInputElement).value,
+        );
         await sendRecoveryPart2(user.handle, code, newPassword);
     });
 
@@ -207,8 +214,10 @@ function redirectToHome() {
  * Hides the password entry block and shows the password recovery block.
  */
 function showRecoveryBlock() {
-    const pwEntryBlock = document.getElementById('passwordEntryBlock'); if (pwEntryBlock) pwEntryBlock.style.display = 'none';
-    const pwRecoveryBlock = document.getElementById('passwordRecoveryBlock'); if (pwRecoveryBlock) pwRecoveryBlock.style.display = '';
+    const pwEntryBlock = document.getElementById('passwordEntryBlock');
+    if (pwEntryBlock) pwEntryBlock.style.display = 'none';
+    const pwRecoveryBlock = document.getElementById('passwordRecoveryBlock');
+    if (pwRecoveryBlock) pwRecoveryBlock.style.display = '';
     displayError('');
 }
 
@@ -216,8 +225,10 @@ function showRecoveryBlock() {
  * Hides the password recovery block and shows the password entry block.
  */
 function onCancelRecoveryClick() {
-    const pwRecoveryBlock = document.getElementById('passwordRecoveryBlock'); if (pwRecoveryBlock) pwRecoveryBlock.style.display = 'none';
-    const pwEntryBlock = document.getElementById('passwordEntryBlock'); if (pwEntryBlock) pwEntryBlock.style.display = '';
+    const pwRecoveryBlock = document.getElementById('passwordRecoveryBlock');
+    if (pwRecoveryBlock) pwRecoveryBlock.style.display = 'none';
+    const pwEntryBlock = document.getElementById('passwordEntryBlock');
+    if (pwEntryBlock) pwEntryBlock.style.display = '';
     displayError('');
 }
 
@@ -228,9 +239,12 @@ function onCancelRecoveryClick() {
 // @ts-expect-error TS(7006) FIXME: Parameter 'userList' implicitly has an 'any' type.
 function configureNormalLogin(userList) {
     console.log('Discreet login is disabled');
-    const handleEntryBlock = document.getElementById('handleEntryBlock'); if (handleEntryBlock) handleEntryBlock.style.display = 'none';
-    const normalLoginPrompt = document.getElementById('normalLoginPrompt'); if (normalLoginPrompt) normalLoginPrompt.style.display = '';
-    const discreetLoginPrompt = document.getElementById('discreetLoginPrompt'); if (discreetLoginPrompt) discreetLoginPrompt.style.display = 'none';
+    const handleEntryBlock = document.getElementById('handleEntryBlock');
+    if (handleEntryBlock) handleEntryBlock.style.display = 'none';
+    const normalLoginPrompt = document.getElementById('normalLoginPrompt');
+    if (normalLoginPrompt) normalLoginPrompt.style.display = '';
+    const discreetLoginPrompt = document.getElementById('discreetLoginPrompt');
+    if (discreetLoginPrompt) discreetLoginPrompt.style.display = 'none';
     console.log(userList);
     for (const user of userList) {
         const userBlock = document.createElement('div');
@@ -267,19 +281,28 @@ function configureDiscreetLogin() {
     (document.getElementById('passwordEntryBlock') as HTMLElement).style.display = '';
     (document.getElementById('loginButton') as HTMLElement).addEventListener('click', async () => {
         const handle = String((document.getElementById('userHandle') as HTMLInputElement).value);
-        const password = String((document.getElementById('userPassword') as HTMLInputElement).value);
+        const password = String(
+            (document.getElementById('userPassword') as HTMLInputElement).value,
+        );
         await performLogin(handle, password);
     });
 
-    (document.getElementById('recoverPassword') as HTMLElement).addEventListener('click', async () => {
-        const handle = String((document.getElementById('userHandle') as HTMLInputElement).value);
-        await sendRecoveryPart1(handle);
-    });
+    (document.getElementById('recoverPassword') as HTMLElement).addEventListener(
+        'click',
+        async () => {
+            const handle = String(
+                (document.getElementById('userHandle') as HTMLInputElement).value,
+            );
+            await sendRecoveryPart1(handle);
+        },
+    );
 
     (document.getElementById('sendRecovery') as HTMLElement).addEventListener('click', async () => {
         const handle = String((document.getElementById('userHandle') as HTMLInputElement).value);
         const code = String((document.getElementById('recoveryCode') as HTMLInputElement).value);
-        const newPassword = String((document.getElementById('newPassword') as HTMLInputElement).value);
+        const newPassword = String(
+            (document.getElementById('newPassword') as HTMLInputElement).value,
+        );
         await sendRecoveryPart2(handle, code, newPassword);
     });
 }
@@ -296,13 +319,23 @@ function configureDiscreetLogin() {
         configureNormalLogin(userList);
     }
     (document.getElementById('shadow_popup') as HTMLElement).style.opacity = '';
-    (document.getElementById('cancelRecovery') as HTMLElement).addEventListener('click', onCancelRecoveryClick);
+    (document.getElementById('cancelRecovery') as HTMLElement).addEventListener(
+        'click',
+        onCancelRecoveryClick,
+    );
     document.addEventListener('keydown', (evt) => {
         if (evt.key === 'Enter' && document.activeElement?.tagName === 'INPUT') {
-            if ((document.getElementById('passwordRecoveryBlock') as HTMLElement).offsetParent !== null) {
-                (document.getElementById('sendRecovery') as HTMLElement).dispatchEvent(new Event('click'));
+            if (
+                (document.getElementById('passwordRecoveryBlock') as HTMLElement).offsetParent !==
+                null
+            ) {
+                (document.getElementById('sendRecovery') as HTMLElement).dispatchEvent(
+                    new Event('click'),
+                );
             } else {
-                (document.getElementById('loginButton') as HTMLElement).dispatchEvent(new Event('click'));
+                (document.getElementById('loginButton') as HTMLElement).dispatchEvent(
+                    new Event('click'),
+                );
             }
         }
     });

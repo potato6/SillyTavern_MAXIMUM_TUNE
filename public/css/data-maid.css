@@ -108,7 +108,7 @@
     margin: 10px 0;
 }
 
-.dataMaidCategoryContent>.info-block {
+.dataMaidCategoryContent > .info-block {
     white-space: pre-wrap;
 }
 
@@ -144,6 +144,6 @@
     gap: 5px;
 }
 
-.dataMaidItemActions>button {
+.dataMaidItemActions > button {
     font-size: 0.9em;
 }

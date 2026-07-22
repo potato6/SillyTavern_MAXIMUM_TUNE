@@ -90,8 +90,8 @@ export class MockServer {
                 return reject(new Error('Server is not running.'));
             }
             this.server.closeAllConnections();
-            this.server.close(( /** @type {NodeJS.ErrnoException|undefined} */ err) => {
-                if (err && (err?.code !== 'ERR_SERVER_NOT_RUNNING')) {
+            this.server.close((/** @type {NodeJS.ErrnoException|undefined} */ err) => {
+                if (err && err?.code !== 'ERR_SERVER_NOT_RUNNING') {
                     return reject(err);
                 }
                 resolve();
