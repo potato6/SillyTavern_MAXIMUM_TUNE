@@ -292,6 +292,101 @@ import $, { Cash } from 'cash-dom';
 import { Notyf, NotyfNotification } from 'notyf';
 import type { INotyfPosition } from 'notyf';
 
+// Apply cash-dom polyfills (normally defined in index.html) to the bundled copy of cash-dom.
+// The bundle gets its own separate instance via import, so the index.html polyfills don't carry over.
+(function () {
+    if ($.fn.transition) return; // already applied
+
+    $.fn.sortable = $.fn.sortable || function () { return this; };
+
+    $.fn.fadeIn = $.fn.fadeIn || function (opts) {
+        this.each(function () { this.style.display = ''; });
+        if (opts && typeof opts.complete === 'function') opts.complete();
+        return this;
+    };
+
+    $.fn.fadeOut = $.fn.fadeOut || function (opts) {
+        this.each(function () { this.style.display = 'none'; });
+        if (opts && typeof opts.complete === 'function') opts.complete();
+        return this;
+    };
+
+    $.fn.transition = $.fn.transition || function (opts) {
+        const duration = (opts && opts.duration) || 0;
+        const easing = (opts && opts.easing) || 'ease';
+        const props = Object.assign({}, opts);
+        delete props.duration;
+        delete props.easing;
+        delete props.complete;
+        const complete = opts && opts.complete;
+        this.each(function () {
+            const el = this;
+            if (duration > 0) {
+                el.style.transition = `all ${duration}ms ${easing}`;
+            }
+            for (const [key, value] of Object.entries(props)) {
+                (el.style)[key] = value;
+            }
+            if (duration > 0) {
+                const handler = () => {
+                    el.style.transition = '';
+                    el.removeEventListener('transitionend', handler);
+                    if (typeof complete === 'function') complete.call(el);
+                };
+                el.addEventListener('transitionend', handler);
+            } else if (typeof complete === 'function') {
+                complete.call(el);
+            }
+        });
+        return this;
+    };
+
+    $.fn.stop = $.fn.stop || function () { return this; };
+
+    $.fn.scrollTop = $.fn.scrollTop || function (v) {
+        return v === void 0 ? this[0]?.scrollTop : (this.each(function () { this.scrollTop = v; }), this);
+    };
+
+    $.fn.hover = $.fn.hover || function (fnIn, fnOut) {
+        return this.on('mouseenter', fnIn).on('mouseleave', fnOut || fnIn);
+    };
+
+    $.fn.bind = $.fn.bind || function () { return this; };
+
+    $.fn.pagination = $.fn.pagination || function (options) {
+        if (typeof options === 'object' && options.dataSource) {
+            const dataSource = options.dataSource;
+            const pageSize = options.pageSize || 50;
+            const pageNum = options.pageNumber || 1;
+            const start = (pageNum - 1) * pageSize;
+            const end = Math.min(start + pageSize, dataSource.length);
+            const pageData = dataSource.slice(start, end);
+            const totalPages = Math.ceil(dataSource.length / pageSize) || 1;
+            if (typeof options.callback === 'function') {
+                options.callback(pageData, {
+                    pageNumber: pageNum,
+                    totalPages: totalPages,
+                    totalNumber: dataSource.length,
+                    startIndex: start,
+                    endIndex: end - 1,
+                    showPageNumbers: false,
+                });
+            }
+        }
+        return this;
+    };
+
+    // Event shorthand methods (cash-dom 8.x doesn't have all jQuery event shorthands)
+    const eventShorthands = ['click', 'change', 'submit', 'focus', 'blur', 'keydown', 'keyup', 'keypress', 'mouseenter', 'mouseleave', 'dblclick', 'focusin', 'focusout'];
+    for (const ev of eventShorthands) {
+        if (!$.fn[ev]) {
+            $.fn[ev] = function (handler) {
+                return handler ? this.on(ev, handler) : this.trigger(ev);
+            };
+        }
+    }
+})();
+
 // Type declarations for modules without published types
 // @ts-expect-error No types for markdown-it-emoji
 declare module 'markdown-it-emoji';

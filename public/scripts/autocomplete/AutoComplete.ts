@@ -731,12 +731,20 @@ export class AutoComplete {
             this.clone.style.position = 'fixed';
             this.clone.style.visibility = 'hidden';
             document.body.append(this.clone);
+            const parent = this.textarea.parentElement;
+            if (!parent) {
+                // textarea is already detached; clean up clone and skip observer
+                this.clone.remove();
+                this.clone = null;
+                return;
+            }
             const mo = new MutationObserver(muts => {
                 if (muts.find(it => Array.from(it.removedNodes).includes(this.textarea))) {
-                    this.clone.remove();
+                    this.clone?.remove();
+                    this.clone = null;
                 }
             });
-            mo.observe(this.textarea.parentElement, { childList: true });
+            mo.observe(parent, { childList: true });
         }
         this.clone.style.height = `${inputRect.height}px`;
         this.clone.style.left = `${inputRect.left}px`;
