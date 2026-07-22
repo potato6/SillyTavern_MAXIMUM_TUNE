@@ -105,7 +105,7 @@ declare global {
         media_display?: string;
         media_index?: number;
         media?: MediaAttachment[],
-    type MediaAttachment = MediaAttachmentProps & ImageGenerationAttachmentProps & ImageCaptionAttachmentProps;
+    }
 
     interface MediaAttachmentProps {
         url: string;
@@ -127,6 +127,8 @@ declare global {
         /** Marker for captioned images to prevent auto-caption from firing again. */
         captioned?: boolean;
     }
+
+    type MediaAttachment = MediaAttachmentProps & ImageGenerationAttachmentProps & ImageCaptionAttachmentProps;
 
     /** Media playback state */
     interface MediaState {
