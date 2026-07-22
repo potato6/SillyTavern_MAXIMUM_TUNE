@@ -19,6 +19,16 @@
         "require-yield": "off",
         "no-unused-vars": ["error", { "args": "none" }],
         "no-undef": "off",
+        "no-const-assign": "error",
+        "no-duplicate-imports": "error",
+        "no-unreachable": "error",
+        "prefer-const": "warn",
+        "eqeqeq": "warn",
+        "no-param-reassign": "warn",
+        "@typescript-eslint/no-explicit-any": "warn",
+        "@typescript-eslint/no-floating-promises": "warn",
+        "@typescript-eslint/await-thenable": "warn",
+        "@typescript-eslint/no-misused-promises": "warn",
         "import/no-cycle": "warn"
     },
     "env": {
