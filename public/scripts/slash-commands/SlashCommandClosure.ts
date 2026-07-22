@@ -1,6 +1,5 @@
 import { substituteParams } from '../../script.js';
-import { power_user } from '../power-user.js';
-import { delay, escapeRegex, uuidv4 } from '../utils.js';
+import { delay, uuidv4 } from '../utils.js';
 import { SlashCommandBreak } from './SlashCommandBreak.js';
 import { SlashCommandBreakPoint } from './SlashCommandBreakPoint.js';
 import { SlashCommandClosureResult } from './SlashCommandClosureResult.js';
@@ -169,20 +168,8 @@ export class SlashCommandClosure {
      */
     // @ts-expect-error TS(7023) FIXME: 'substituteParams' implicitly has return type 'any... Remove this comment to see the full error message
     substituteParams(text, scope = null) {
-        let isList = false;
-        const listValues = [];
         // @ts-expect-error TS(2322) FIXME: Type 'SlashCommandScope' is not assignable to type... Remove this comment to see the full error message
         scope = scope ?? this.scope;
-        // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
-        const escapeMacro = (it, isAnchored = false) => {
-            const regexText = escapeRegex(it.key.replace(/\*/g, '~~~WILDCARD~~~'))
-                .replaceAll('~~~WILDCARD~~~', '(?:(?:(?!(?:::|}})).)*)')
-            ;
-            if (isAnchored) {
-                return `^${regexText}$`;
-            }
-            return regexText;
-        };
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         const macroList = scope.macroList.toSorted((a, b) => {
             if (a.key.includes('*') && !b.key.includes('*')) return 1;
@@ -190,56 +177,7 @@ export class SlashCommandClosure {
             if (a.key.includes('*') && b.key.includes('*')) return b.key.indexOf('*') - a.key.indexOf('*');
             return 0;
         });
-        if (power_user.experimental_macro_engine) {
-            return this.substituteWithMacroEngine(text, scope, macroList);
-        }
-        // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
-        const macros = macroList.map(it => escapeMacro(it)).join('|');
-        const re = new RegExp(`(?<pipe>{{pipe}})|(?:{{var::(?<var>[^\\s]+?)(?:::(?<varIndex>(?!}}).+))?}})|(?:{{(?<macro>${macros})}})`);
-        let done = '';
-        let remaining = text;
-        while (re.test(remaining)) {
-            const match = re.exec(remaining);
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-            const before = substituteParams(remaining.slice(0, match.index));
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-            const after = remaining.slice(match.index + match[0].length);
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-            const replacer = match.groups.pipe ? scope.pipe : match.groups.var ? scope.getVariable(match.groups.var, match.groups.index) : macroList.find(it => it.key == match.groups.macro || new RegExp(escapeMacro(it, true)).test(match.groups.macro))?.value;
-            if (replacer instanceof SlashCommandClosure) {
-                replacer.abortController = this.abortController;
-                replacer.breakController = this.breakController;
-                replacer.scope.parent = this.scope;
-                if (this.debugController && !replacer.debugController) {
-                    replacer.debugController = this.debugController;
-                }
-                isList = true;
-                // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-                if (match.index > 0) {
-                    listValues.push(before);
-                }
-                listValues.push(replacer);
-                // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-                if (match.index + match[0].length + 1 < remaining.length) {
-                    // @ts-expect-error TS(7022) FIXME: 'rest' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-                    const rest = this.substituteParams(after, scope);
-                    listValues.push(...(Array.isArray(rest) ? rest : [rest]));
-                }
-                break;
-            } else {
-                done = `${done}${before}${replacer}`;
-                remaining = after;
-            }
-        }
-        if (!isList) {
-            text = `${done}${substituteParams(remaining)}`;
-        }
-
-        if (isList) {
-            if (listValues.length > 1) return listValues;
-            return listValues[0];
-        }
-        return text;
+        return this.substituteWithMacroEngine(text, scope, macroList);
     }
 
     getCopy() {

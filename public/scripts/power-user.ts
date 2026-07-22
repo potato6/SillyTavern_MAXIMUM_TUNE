@@ -6,7 +6,7 @@ declare let toastr: any;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare const noUiSlider: any;
 /* eslint-enable @typescript-eslint/no-unused-vars */
- 
+
 interface Notyf {
     success(msg: string, title?: string): void;
     error(msg: string, title?: string): void;
@@ -78,7 +78,7 @@ import { t } from './i18n.js';
 
 import { persona_description_positions as _persona_description_positions } from './personas.js';
 
- 
+
 interface noUiSliderInstance {
     get(): string | string[];
     set(value: number | string | (number | string)[]): void;
@@ -86,7 +86,7 @@ interface noUiSliderInstance {
     destroy(): void;
 }
 
- 
+
 interface noUiSliderElement {
     noUiSlider?: noUiSliderInstance;
 }
@@ -323,7 +323,6 @@ export const power_user = {
     custom_stopping_strings_macro: true,
     fuzzy_search: false,
     encode_tags: false,
-    experimental_macro_engine: true,
     servers: [],
     bogus_folders: false,
     zoomed_avatar_magnification: false,

@@ -245,7 +245,8 @@ import { BulkEditOverlay } from './scripts/BulkEditOverlay.js';
 import { initTextGenModels } from './scripts/textgen-models.js';
 import { appendFileContent, hasPendingFileAttachment, populateFileAttachment, decodeStyleTags, encodeStyleTags, isExternalMediaAllowed, preserveNeutralChat, restoreNeutralChat, formatCreatorNotes, initChatUtilities, addDOMPurifyHooks } from './scripts/chats.js';
 import { getPresetManager, initPresetManager } from './scripts/preset-manager.js';
-import { evaluateMacros, getLastMessageId, initMacros } from './scripts/macros.js';
+import { getLastMessageId } from './scripts/macros.js';
+import { initRegisterMacros } from './scripts/macros/macro-system.js';
 import { currentUser, setUserControls } from './scripts/user.js';
 import { POPUP_RESULT, POPUP_TYPE, Popup, callGenericPopup } from './scripts/popup.js';
 import { renderTemplate, renderTemplateAsync } from './scripts/templates.js';
@@ -283,7 +284,6 @@ import { AudioPlayer } from './scripts/audio-player.js';
 import { MacroEnvBuilder } from './scripts/macros/engine/MacroEnvBuilder.js';
 import { MacroEngine } from './scripts/macros/engine/MacroEngine.js';
 import { addChatBackupsBrowser } from './scripts/chat-backups.js';
-import { onboardingExperimentalMacroEngine } from './scripts/macros/engine/MacroDiagnostics.js';
 import { compressRequest, setRequestCompressionConfig } from './scripts/request-compression.js';
 import { canJumpToSwipeForMessage, canOpenSwipePickerForMessage, initSwipePicker } from './scripts/swipe-picker.js';
 import { range } from 'es-toolkit';
@@ -3041,172 +3041,6 @@ export function substituteParamsExtended(content, additionalMacro = {}, postProc
     return substituteParams(content, { dynamicMacros: additionalMacro, postProcessFn });
 }
 
-/**
- * Substitutes {{macro}} parameters in a string.
- * @param {string} content - The string to substitute parameters in.
- * @param {string} [_name1] - The name of the user. Uses global name1 if not provided.
- * @param {string} [_name2] - The name of the character. Uses global name2 if not provided.
- * @param {string} [_original] - The original message for {{original}} substitution.
- * @param {string} [_group] - The group members list for {{group}} substitution.
- * @param {boolean} [_replaceCharacterCard] - Whether to replace character card macros.
- * @param {Record<string,any>} [additionalMacro] - Additional environment variables for substitution.
- * @param {(x: string) => string} [postProcessFn] - Post-processing function for each substituted macro.
- * @returns {string} The string with substituted parameters.
- */
-// @ts-expect-error TS(7023) FIXME: 'substituteParamsLegacy' implicitly has return typ... Remove this comment to see the full error message
-export function substituteParamsLegacy(content, _name1, _name2, _original, _group, _replaceCharacterCard = true, additionalMacro = {}, postProcessFn = (x) => x) {
-    if (!content) {
-        return '';
-    }
-
-    // If experimental macro engine is enabled, use it. This code will be cleaned up in the future.
-    if (power_user?.experimental_macro_engine) {
-        return substituteParams(content, {
-            name1Override: _name1,
-            name2Override: _name2,
-            original: _original,
-            groupOverride: _group,
-            replaceCharacterCard: _replaceCharacterCard ?? true,
-            dynamicMacros: additionalMacro ?? {},
-            postProcessFn: postProcessFn ?? ((x) => x),
-        });
-    }
-
-    // Try to roughly detect experimental macro features to show the onboarding if needed.
-    // This does not have to be 100% accurate, only best effort what we can quickly check.
-    // Only do this if the warning wasn't shown yet, to prevent needless regex checks.
-    if (accountStorage.getItem('slash_command_experimental_engine_warning_shown') !== 'true') {
-        let feature = /** @type {string|null} */ (null);
-        if (/{{\s*if/.test(content)) feature = '{{if}} macro';
-        else if (/{{\s*\//.test(content)) feature = 'scoped macro';
-        else if (/{{\s*[!?~#/]/.test(content)) feature = 'macro flags';
-        else if (/{{\s*[.$]/.test(content)) feature = 'variable shorthands';
-        else if (/\{\{(?:(?!\}\}).)*\{\{(?=[\s\S]*?\}\}[\s\S]*?\}\})/.test(content)) feature = 'nested macro';
-        else if (/{{(?:greeting|charFirstMessage)(?:::\d+)?}}/i.test(content)) feature = 'greeting macro';
-
-        if (feature) void onboardingExperimentalMacroEngine(feature);
-    }
-
-    const environment = {};
-
-    if (typeof _original === 'string') {
-        let originalSubstituted = false;
-        // @ts-expect-error TS(2339) FIXME: Property 'original' does not exist on type '{}'.
-        environment.original = () => {
-            if (originalSubstituted) {
-                return '';
-            }
-
-            originalSubstituted = true;
-            return _original;
-        };
-    }
-
-    // @ts-expect-error TS(7006) FIXME: Parameter 'includeMuted' implicitly has an 'any' t... Remove this comment to see the full error message
-    const getGroupValue = (includeMuted) => {
-        if (typeof _group === 'string') {
-            return _group;
-        }
-
-        if (selected_group) {
-            const members = groups.find(x => x.id === selected_group)?.members;
-            /** @type {string[]} */
-            const disabledMembers = groups.find(x => x.id === selected_group)?.disabled_members ?? [];
-            // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
-            const isMuted = x => includeMuted ? true : !disabledMembers.includes(x);
-            const names = Array.isArray(members)
-                ? members.filter(isMuted).map(m => characters.find(c => c.avatar === m)?.name).filter(Boolean).join(', ')
-                : '';
-            return names;
-        } else {
-            return _name2 ?? name2;
-        }
-    };
-
-    const getNotCharValue = () => {
-        const currentUser = _name1 ?? name1;
-        const currentSpeaker = _name2 ?? name2;
-
-        // Single character chat
-        if (!selected_group) {
-            return currentUser;
-        }
-
-        // Group chat
-        const members = groups.find(x => x.id === selected_group)?.members;
-
-        if (!Array.isArray(members)) {
-            return currentUser;
-        }
-
-        const memberNames = members
-            .map(m => characters.find(c => c.avatar === m)?.name)
-            .filter(Boolean); // Filter out any null/undefined names
-
-        // Filter out the current speaker and add the user
-        const otherMembers = memberNames.filter(name => name !== currentSpeaker);
-        otherMembers.push(currentUser);
-
-        return otherMembers.join(', ');
-    };
-
-    if (_replaceCharacterCard) {
-        const fields = getCharacterCardFields();
-        // @ts-expect-error TS(2339) FIXME: Property 'charPrompt' does not exist on type '{}'.
-        environment.charPrompt = fields.system || '';
-        // @ts-expect-error TS(2339) FIXME: Property 'charInstruction' does not exist on type ... Remove this comment to see the full error message
-        environment.charInstruction = environment.charJailbreak = fields.jailbreak || '';
-        // @ts-expect-error TS(2339) FIXME: Property 'description' does not exist on type '{}'... Remove this comment to see the full error message
-        environment.description = fields.description || '';
-        // @ts-expect-error TS(2339) FIXME: Property 'personality' does not exist on type '{}'... Remove this comment to see the full error message
-        environment.personality = fields.personality || '';
-        // @ts-expect-error TS(2339) FIXME: Property 'scenario' does not exist on type '{}'.
-        environment.scenario = fields.scenario || '';
-        // @ts-expect-error TS(2339) FIXME: Property 'persona' does not exist on type '{}'.
-        environment.persona = fields.persona || '';
-        // @ts-expect-error TS(2339) FIXME: Property 'mesExamples' does not exist on type '{}'... Remove this comment to see the full error message
-        environment.mesExamples = () => {
-            const isInstruct = power_user.instruct.enabled && main_api !== 'openai';
-            const mesExamplesArray = parseMesExamples(fields.mesExamples, isInstruct);
-            if (isInstruct) {
-                const instructExamples = formatInstructModeExamples(mesExamplesArray, name1, name2);
-                return instructExamples.join('');
-            }
-            return mesExamplesArray.join('');
-        };
-        // @ts-expect-error TS(2339) FIXME: Property 'mesExamplesRaw' does not exist on type '... Remove this comment to see the full error message
-        environment.mesExamplesRaw = fields.mesExamples || '';
-        // @ts-expect-error TS(2339) FIXME: Property 'charVersion' does not exist on type '{}'... Remove this comment to see the full error message
-        environment.charVersion = fields.version || '';
-        // @ts-expect-error TS(2339) FIXME: Property 'char_version' does not exist on type '{}... Remove this comment to see the full error message
-        environment.char_version = fields.version || '';
-        // @ts-expect-error TS(2339) FIXME: Property 'charDepthPrompt' does not exist on type ... Remove this comment to see the full error message
-        environment.charDepthPrompt = fields.charDepthPrompt || '';
-        // @ts-expect-error TS(2339) FIXME: Property 'creatorNotes' does not exist on type '{}... Remove this comment to see the full error message
-        environment.creatorNotes = fields.creatorNotes || '';
-    }
-
-    // Must be substituted last so that they're replaced inside {{description}}
-    // @ts-expect-error TS(2339) FIXME: Property 'user' does not exist on type '{}'.
-    environment.user = _name1 ?? name1;
-    // @ts-expect-error TS(2339) FIXME: Property 'char' does not exist on type '{}'.
-    environment.char = _name2 ?? name2;
-    // @ts-expect-error TS(2339) FIXME: Property 'group' does not exist on type '{}'.
-    environment.group = environment.charIfNotGroup = getGroupValue(true);
-    // @ts-expect-error TS(2339) FIXME: Property 'groupNotMuted' does not exist on type '{... Remove this comment to see the full error message
-    environment.groupNotMuted = getGroupValue(false);
-    // @ts-expect-error TS(2339) FIXME: Property 'notChar' does not exist on type '{}'.
-    environment.notChar = getNotCharValue();
-    // @ts-expect-error TS(2339) FIXME: Property 'model' does not exist on type '{}'.
-    environment.model = getGeneratingModel();
-
-    if (additionalMacro && typeof additionalMacro === 'object') {
-        Object.assign(environment, additionalMacro);
-    }
-
-    return evaluateMacros(content, environment, postProcessFn);
-}
-
 /** @typedef {import('./scripts/macros/engine/MacroRegistry.js').MacroHandler} MacroHandler */
 
 /**
@@ -3224,7 +3058,6 @@ export function substituteParamsLegacy(content, _name1, _name2, _original, _grou
  * @param {(x: string) => string} [options.postProcessFn] - Post-processing function for each substituted macro.
  * @returns {string} The string with substituted parameters.
  */
-// @ts-expect-error TS(7023) FIXME: 'substituteParams' implicitly has return type 'any... Remove this comment to see the full error message
 export function substituteParams(content, options = {}) {
     if (!content) return '';
 
@@ -3233,37 +3066,16 @@ export function substituteParams(content, options = {}) {
         content = String(content);
     }
 
-    // Handle legacy signature calls to substituteParams
-    // We'll simply re-route them to a temporary legacy function. In the future, we'll remove this and cleanly build the options object ourselves.
-    const isOptionsObject = options && typeof options === 'object' && !Array.isArray(options);
-    if (!isOptionsObject) {
-        // @ts-expect-error TS(2554) FIXME: Expected 6-9 arguments, but got 3.
-        return substituteParamsLegacy.call(this, content, options);
-    }
-
-    // Keep the new macro engine behind a feature switch for now
-    if (!power_user?.experimental_macro_engine) {
-        // @ts-expect-error TS(2339) FIXME: Property 'name1Override' does not exist on type '{... Remove this comment to see the full error message
-        return substituteParamsLegacy(content, options.name1Override, options.name2Override, options.original, options.groupOverride, options.replaceCharacterCard, options.dynamicMacros, options.postProcessFn);
-    }
-
-    const ctx = /** @type {import('./scripts/macros/engine/MacroEnvBuilder.js').MacroEnvRawContext} */ ({
+    const ctx = {
         content,
-        // @ts-expect-error TS(2339) FIXME: Property 'name1Override' does not exist on type '{... Remove this comment to see the full error message
         name1Override: options.name1Override,
-        // @ts-expect-error TS(2339) FIXME: Property 'name2Override' does not exist on type '{... Remove this comment to see the full error message
         name2Override: options.name2Override,
-        // @ts-expect-error TS(2339) FIXME: Property 'original' does not exist on type '{}'.
         original: options.original,
-        // @ts-expect-error TS(2339) FIXME: Property 'groupOverride' does not exist on type '{... Remove this comment to see the full error message
         groupOverride: options.groupOverride,
-        // @ts-expect-error TS(2339) FIXME: Property 'replaceCharacterCard' does not exist on ... Remove this comment to see the full error message
         replaceCharacterCard: options.replaceCharacterCard ?? true,
-        // @ts-expect-error TS(2339) FIXME: Property 'dynamicMacros' does not exist on type '{... Remove this comment to see the full error message
         dynamicMacros: options.dynamicMacros ?? {},
-        // @ts-expect-error TS(2339) FIXME: Property 'postProcessFn' does not exist on type '{... Remove this comment to see the full error message
         postProcessFn: options.postProcessFn ?? ((x) => x),
-    });
+    };
 
     const env = MacroEnvBuilder.buildFromRawEnv(ctx);
     const result = MacroEngine.evaluate(content, env);
@@ -8955,9 +8767,7 @@ export async function getSettings(initLoaderHandle = null) {
 
         selected_button = settings.selected_button;
 
-        // TODO: Move me into firstLoadInit when experimental toggle is removed
-        // power_user.experimental_macro_engine
-        initMacros();
+        initRegisterMacros();
 
         if (data.enable_extensions) {
             const enableAutoUpdate = Boolean(data.enable_extensions_auto_update);

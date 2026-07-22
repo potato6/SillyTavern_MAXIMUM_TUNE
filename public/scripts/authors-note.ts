@@ -20,8 +20,6 @@ import { ARGUMENT_TYPE, SlashCommandArgument } from './slash-commands/SlashComma
 export { MODULE_NAME as NOTE_MODULE_NAME };
 import { t } from './i18n.js';
 import { macros, MacroCategory } from './macros/macro-system.js';
-import { MacrosParser } from './macros.js';
-import { power_user } from './power-user.js';
 
 const MODULE_NAME = '2_floating_prompt'; // <= Deliberate, for sorting lower than memory
 
@@ -521,13 +519,7 @@ function registerAuthorsNoteMacros() {
     const getDefaultNote = () => getSettings().default ?? '';
     const getNote = () => getMeta()[metadata_keys.prompt] ?? '';
 
-    if (power_user.experimental_macro_engine) {
-        macros.register('authorsNote', { category: MacroCategory.PROMPTS, description: t`The contents of the Author's Note`, handler: getNote });
-        macros.register('charAuthorsNote', { category: MacroCategory.PROMPTS, description: t`The contents of the Character Author's Note`, handler: getCharaNotePrompt });
-        macros.register('defaultAuthorsNote', { category: MacroCategory.PROMPTS, description: t`The contents of the Default Author's Note`, handler: getDefaultNote });
-    } else {
-        MacrosParser.registerMacro('authorsNote', getNote, t`The contents of the Author's Note`);
-        MacrosParser.registerMacro('charAuthorsNote', getCharaNotePrompt, t`The contents of the Character Author's Note`);
-        MacrosParser.registerMacro('defaultAuthorsNote', getDefaultNote, t`The contents of the Default Author's Note`);
-    }
+    macros.register('authorsNote', { category: MacroCategory.PROMPTS, description: t`The contents of the Author's Note`, handler: getNote });
+    macros.register('charAuthorsNote', { category: MacroCategory.PROMPTS, description: t`The contents of the Character Author's Note`, handler: getCharaNotePrompt });
+    macros.register('defaultAuthorsNote', { category: MacroCategory.PROMPTS, description: t`The contents of the Default Author's Note`, handler: getDefaultNote });
 }

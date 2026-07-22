@@ -85,7 +85,6 @@ import { groups, openGroupChat, selected_group, unshallowGroupMembers } from './
 import { addLocaleData, getCurrentLocale, t, translate } from './i18n.js';
 import { hideLoader, showLoader } from './loader.js';
 import { loader } from './action-loader.js';
-import { MacrosParser } from './macros.js';
 import { getChatCompletionModel, oai_settings } from './openai.js';
 import { callGenericPopup, Popup, POPUP_RESULT, POPUP_TYPE } from './popup.js';
 import { power_user, registerDebugFunction } from './power-user.js';
@@ -179,9 +178,9 @@ export function getContext() {
         /** @deprecated Handlebars for extensions are no longer supported. */
         registerHelper: () => { },
         /** @deprecated Use `macros.register(name, { handler, description })` from scripts/macros/macro-system.js instead. */
-        registerMacro: MacrosParser.registerMacro.bind(MacrosParser),
+        registerMacro: macros.register.bind(macros),
         /** @deprecated Use `macros.registry.unregisterMacro(name)` from scripts/macros/macro-system.js instead. */
-        unregisterMacro: MacrosParser.unregisterMacro.bind(MacrosParser),
+        unregisterMacro: macros.registry.unregisterMacro.bind(macros.registry),
         registerFunctionTool: ToolManager.registerFunctionTool.bind(ToolManager),
         unregisterFunctionTool: ToolManager.unregisterFunctionTool.bind(ToolManager),
         isToolCallingSupported: ToolManager.isToolCallingSupported.bind(ToolManager),

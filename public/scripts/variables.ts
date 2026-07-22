@@ -312,45 +312,6 @@ export function resolveVariable(name, scope = null) {
 }
 
 /**
- * Returns built-in variable macros.
- * @returns {import('./macros.js').Macro[]}
- */
-export function getVariableMacros() {
-    return [
-        // Replace {{setvar::name::value}} with empty string and set the variable name to value
-        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
-        { regex: /{{setvar::([^:]+)::([^}]*)}}/gi, replace: (_, name, value) => { setLocalVariable(name.trim(), value); return ''; } },
-        // Replace {{addvar::name::value}} with empty string and add value to the variable value
-        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
-        { regex: /{{addvar::([^:]+)::([^}]+)}}/gi, replace: (_, name, value) => { addLocalVariable(name.trim(), value); return ''; } },
-        // Replace {{incvar::name}} with empty string and increment the variable name by 1
-        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
-        { regex: /{{incvar::([^}]+)}}/gi, replace: (_, name) => incrementLocalVariable(name.trim()) },
-        // Replace {{decvar::name}} with empty string and decrement the variable name by 1
-        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
-        { regex: /{{decvar::([^}]+)}}/gi, replace: (_, name) => decrementLocalVariable(name.trim()) },
-        // Replace {{getvar::name}} with the value of the variable name
-        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
-        { regex: /{{getvar::([^}]+)}}/gi, replace: (_, name) => getLocalVariable(name.trim()) },
-        // Replace {{setglobalvar::name::value}} with empty string and set the global variable name to value
-        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
-        { regex: /{{setglobalvar::([^:]+)::([^}]*)}}/gi, replace: (_, name, value) => { setGlobalVariable(name.trim(), value); return ''; } },
-        // Replace {{addglobalvar::name::value}} with empty string and add value to the global variable value
-        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
-        { regex: /{{addglobalvar::([^:]+)::([^}]+)}}/gi, replace: (_, name, value) => { addGlobalVariable(name.trim(), value); return ''; } },
-        // Replace {{incglobalvar::name}} with empty string and increment the global variable name by 1
-        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
-        { regex: /{{incglobalvar::([^}]+)}}/gi, replace: (_, name) => incrementGlobalVariable(name.trim()) },
-        // Replace {{decglobalvar::name}} with empty string and decrement the global variable name by 1
-        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
-        { regex: /{{decglobalvar::([^}]+)}}/gi, replace: (_, name) => decrementGlobalVariable(name.trim()) },
-        // Replace {{getglobalvar::name}} with the value of the global variable name
-        // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
-        { regex: /{{getglobalvar::([^}]+)}}/gi, replace: (_, name) => getGlobalVariable(name.trim()) },
-    ];
-}
-
-/**
  *
  * @param args
  */

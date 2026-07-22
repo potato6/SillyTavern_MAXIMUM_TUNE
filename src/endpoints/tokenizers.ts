@@ -16,6 +16,7 @@ import { convertClaudePrompt } from '../prompt-converters.js';
 import { TEXTGEN_TYPES } from '../constants.js';
 import { setAdditionalHeaders } from '../additional-headers.js';
 import { getConfigValue, isValidUrl } from '../util.js';
+import { TEXT_COMPLETION_MODELS } from './text-completion-models.js';
 
 /**
  * @typedef { (req: import('express').Request, res: import('express').Response) => Promise<import('express').Response> } TokenizationHandler
@@ -25,37 +26,6 @@ import { getConfigValue, isValidUrl } from '../util.js';
  * @type {{[key: string]: import('tiktoken').Tiktoken}} Tokenizers cache
  */
 const tokenizersCache = {};
-
-/**
- * @type {string[]}
- */
-export const TEXT_COMPLETION_MODELS = [
-    'gpt-3.5-turbo-instruct',
-    'gpt-3.5-turbo-instruct-0914',
-    'text-davinci-003',
-    'text-davinci-002',
-    'text-davinci-001',
-    'text-curie-001',
-    'text-babbage-001',
-    'text-ada-001',
-    'code-davinci-002',
-    'code-davinci-001',
-    'code-cushman-002',
-    'code-cushman-001',
-    'text-davinci-edit-001',
-    'code-davinci-edit-001',
-    'text-embedding-ada-002',
-    'text-similarity-davinci-001',
-    'text-similarity-curie-001',
-    'text-similarity-babbage-001',
-    'text-similarity-ada-001',
-    'text-search-davinci-doc-001',
-    'text-search-curie-doc-001',
-    'text-search-babbage-doc-001',
-    'text-search-ada-doc-001',
-    'code-search-babbage-code-001',
-    'code-search-ada-code-001',
-];
 
 const BYTES_PER_TOKEN = 3.35;
 // @ts-expect-error TS(2345) FIXME: Argument of type 'true' is not assignable to param... Remove this comment to see the full error message

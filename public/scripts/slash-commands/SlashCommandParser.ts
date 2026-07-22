@@ -700,71 +700,7 @@ export class SlashCommandParser {
     // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
     replaceGetvar(value) {
         // Not needed with the new parser.
-        if (power_user.experimental_macro_engine) {
-            return value;
-        }
-        // @ts-expect-error TS(7006) FIXME: Parameter 'match' implicitly has an 'any' type.
-        return value.replace(/{{(get(?:global)?var)::([^}]+)}}/gi, (match, cmd, name, idx) => {
-            name = name.trim();
-            cmd = cmd.toLowerCase();
-            const startIdx = this.index - value.length + idx;
-            const endIdx = this.index - value.length + idx + match.length;
-            // store pipe
-            const pipeName = `_PARSER_PIPE_${uuidv4()}`;
-            const storePipe = new SlashCommandExecutor(startIdx); {
-                storePipe.end = endIdx;
-                // @ts-expect-error TS(2339) FIXME: Property 'let' does not exist on type '{}'.
-                storePipe.command = this.commands.let;
-                storePipe.name = 'let';
-                const nameAss = new SlashCommandUnnamedArgumentAssignment();
-                nameAss.value = pipeName;
-                const valAss = new SlashCommandUnnamedArgumentAssignment();
-                valAss.value = '{{pipe}}';
-                // @ts-expect-error TS(2322) FIXME: Type 'SlashCommandUnnamedArgumentAssignment' is no... Remove this comment to see the full error message
-                storePipe.unnamedArgumentList = [nameAss, valAss];
-                this.closure.executorList.push(storePipe);
-            }
-            // getvar / getglobalvar
-            const getvar = new SlashCommandExecutor(startIdx); {
-                getvar.end = endIdx;
-                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                getvar.command = this.commands[cmd];
-                getvar.name = cmd;
-                const nameAss = new SlashCommandUnnamedArgumentAssignment();
-                nameAss.value = name;
-                // @ts-expect-error TS(2322) FIXME: Type 'SlashCommandUnnamedArgumentAssignment' is no... Remove this comment to see the full error message
-                getvar.unnamedArgumentList = [nameAss];
-                this.closure.executorList.push(getvar);
-            }
-            // set to temp scoped var
-            const varName = `_PARSER_VAR_${uuidv4()}`;
-            const setvar = new SlashCommandExecutor(startIdx); {
-                setvar.end = endIdx;
-                // @ts-expect-error TS(2339) FIXME: Property 'let' does not exist on type '{}'.
-                setvar.command = this.commands.let;
-                setvar.name = 'let';
-                const nameAss = new SlashCommandUnnamedArgumentAssignment();
-                nameAss.value = varName;
-                const valAss = new SlashCommandUnnamedArgumentAssignment();
-                valAss.value = '{{pipe}}';
-                // @ts-expect-error TS(2322) FIXME: Type 'SlashCommandUnnamedArgumentAssignment' is no... Remove this comment to see the full error message
-                setvar.unnamedArgumentList = [nameAss, valAss];
-                this.closure.executorList.push(setvar);
-            }
-            // return pipe
-            const returnPipe = new SlashCommandExecutor(startIdx); {
-                returnPipe.end = endIdx;
-                // @ts-expect-error TS(2339) FIXME: Property 'return' does not exist on type '{}'.
-                returnPipe.command = this.commands.return;
-                returnPipe.name = 'return';
-                const varAss = new SlashCommandUnnamedArgumentAssignment();
-                varAss.value = `{{var::${pipeName}}}`;
-                // @ts-expect-error TS(2322) FIXME: Type 'SlashCommandUnnamedArgumentAssignment' is no... Remove this comment to see the full error message
-                returnPipe.unnamedArgumentList = [varAss];
-                this.closure.executorList.push(returnPipe);
-            }
-            return `{{var::${varName}}}`;
-        });
+        return value;
     }
 
 

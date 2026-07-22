@@ -30,9 +30,6 @@ import { ARGUMENT_TYPE, SlashCommandArgument, SlashCommandNamedArgument } from '
 import { macros, MacroCategory } from '../../macros/macro-system.js';
 import { countWebLlmTokens, generateWebLlmChatPrompt, getWebLlmContextSize, isWebLlmSupported } from '../shared.js';
 import { commonEnumProviders } from '../../slash-commands/SlashCommandCommonEnumsProvider.js';
-import { removeReasoningFromString } from '../../reasoning.js';
-// @ts-expect-error TS(2792): Cannot find module '/scripts/macros.js'. Did you m... Remove this comment to see the full error message
-import { MacrosParser } from '/scripts/macros.js';
 export { MODULE_NAME };
 
 const MODULE_NAME = '1_memory';
@@ -1277,16 +1274,9 @@ export async function init() {
         // Fallback to scanning the chat for the latest summary if the UI summary box is empty
         return getLatestMemoryFromChat(getContext().chat);
     };
-    if (power_user.experimental_macro_engine) {
-        macros.register('summary', {
-            category: MacroCategory.CHAT,
-            description: 'Returns the latest memory/summary from the current chat.',
-            handler: () => summaryMacroHandler(),
-        });
-    } else {
-        // TODO: Remove this when the experimental macro engine is replacing the old macro engine
-        MacrosParser.registerMacro('summary',
-            () => summaryMacroHandler(),
-            'Returns the latest memory/summary from the current chat.');
-    }
+    macros.register('summary', {
+        category: MacroCategory.CHAT,
+        description: 'Returns the latest memory/summary from the current chat.',
+        handler: () => summaryMacroHandler(),
+    });
 }

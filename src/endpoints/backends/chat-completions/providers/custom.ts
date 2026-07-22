@@ -29,7 +29,7 @@ const provider: ChatProvider = {
 
         const isTextCompletion = Boolean(req.body.model && (
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (await import('../../../tokenizers.js')).TEXT_COMPLETION_MODELS as any as string[]
+            (await import('../../../text-completion-models.js')).TEXT_COMPLETION_MODELS as any as string[]
         ).includes(req.body.model)) || typeof req.body.messages === 'string';
 
         if (!isTextCompletion && bodyParams.logprobs > 0) {
@@ -37,7 +37,7 @@ const provider: ChatProvider = {
             bodyParams.logprobs = true;
         }
 
-         
+
         const { embedOpenRouterMedia } = await import('../../../../prompt-converters.js');
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         embedOpenRouterMedia(req.body.messages, { audio: true, video: false } as any);
@@ -60,7 +60,7 @@ const provider: ChatProvider = {
 
         if (req.body.reasoning_effort) {
             if (OPENAI_REASONING_EFFORT_MODELS.includes(req.body.model)) {
-                 
+
                 bodyParams.reasoning_effort = (OPENAI_FIXED_REASONING_EFFORT as Record<string, string | undefined>)[req.body.model]
                     ?? (OPENAI_REASONING_EFFORT_MAP as Record<string, string | undefined>)[req.body.reasoning_effort]
                     ?? req.body.reasoning_effort;
@@ -112,7 +112,7 @@ const provider: ChatProvider = {
             ...(apiKey ? { 'Authorization': 'Bearer ' + apiKey } : {}),
         };
 
-         
+
         const { mergeObjectWithYaml, excludeKeysByYaml } = await import('../../../../util.js');
         mergeObjectWithYaml(bodyParams, req.body.custom_include_body);
         mergeObjectWithYaml(headers, req.body.custom_include_headers);

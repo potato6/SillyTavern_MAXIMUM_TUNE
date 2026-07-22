@@ -45,7 +45,7 @@ const provider: ChatProvider = {
         const { signal } = createSocketAbortController(req.socket);
 
         const isTextCompletion = Boolean(req.body.model && (
-            (await import('../../../tokenizers.js')).TEXT_COMPLETION_MODELS as string[]
+            (await import('../../../text-completion-models.js')).TEXT_COMPLETION_MODELS as string[]
         ).includes(req.body.model)) || typeof req.body.messages === 'string';
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

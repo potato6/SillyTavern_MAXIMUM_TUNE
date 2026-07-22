@@ -25,7 +25,6 @@ import { macros as macroSystem } from '../macros/macro-system.js';
 import { MacroFlagDefinitions, MacroFlagType } from '../macros/engine/MacroFlags.js';
 import { MacroParser } from '../macros/engine/MacroParser.js';
 import { MacroCstWalker } from '../macros/engine/MacroCstWalker.js';
-import { onboardingExperimentalMacroEngine } from '../macros/engine/MacroDiagnostics.js';
 // @ts-expect-error TS(2792) FIXME: Cannot find module '/script.js'. Did you mean to s... Remove this comment to see the full error message
 import { chat_metadata } from '/script.js';
 import { extension_settings } from '../extensions.js';
@@ -964,8 +963,6 @@ export async function buildMacroAutoCompleteResult(text, cursorPos, {
                     scopedMacroName: scopedMacro.name,
                 };
 
-                await onboardingExperimentalMacroEngine('scoped macros');
-
                 const macroDef = macroSystem.registry.getPrimaryMacro(scopedMacro.name);
                 if (macroDef) {
                     // @ts-expect-error TS(2345) FIXME: Argument of type '{ currentArgIndex: number; isInS... Remove this comment to see the full error message
@@ -1135,7 +1132,7 @@ export async function buildMacroAutoCompleteResult(text, cursorPos, {
             resultStart = conditionStartInText + macroNameStart;
         }
 
-        await onboardingExperimentalMacroEngine('{{if}} macro');
+        await new Promise(r => setTimeout(r, 0)); // yield to allow rendering
 
         return new AutoCompleteNameResult(
             resultIdentifier,
