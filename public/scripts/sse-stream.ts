@@ -20,55 +20,54 @@ class EventSourceStream {
          *
          * @param controller
          */
-        // @ts-expect-error TS(7006) FIXME: Parameter 'controller' implicitly has an 'any' typ... Remove this comment to see the full error message
+        // @ts-expect-error TS(7006) FIXME: Parameter 'controller' implicitly has an 'any' type.
         function processChunk(controller) {
-            // Events are separated by two newlines
             const events = streamBuffer.split(/\r\n\r\n|\r\r|\n\n/g);
             if (events.length === 0) return;
 
-            // The leftover text to remain in the buffer is whatever doesn't have two newlines after it. If the buffer ended
-            // with two newlines, this will be an empty string.
-            // @ts-expect-error TS(2322) FIXME: Type 'string | undefined' is not assignable to typ... Remove this comment to see the full error message
+            // @ts-expect-error TS(2322)
             streamBuffer = events.pop();
 
-            for (const eventChunk of events) {
+            for (let i = 0; i < events.length; i++) {
+                const eventChunk = events[i]!;
                 let eventType = '';
-                // Split up by single newlines.
                 const lines = eventChunk.split(/\n|\r|\r\n/g);
                 let eventData = '';
-                for (const line of lines) {
-                    const lineMatch = /([^:]+)(?:: ?(.*))?/.exec(line);
-                    if (lineMatch) {
-                        const field = lineMatch[1];
-                        const value = lineMatch[2] || '';
 
-                        switch (field) {
-                            case 'event':
-                                eventType = value;
-                                break;
-                            case 'data':
-                                eventData += value;
-                                eventData += '\n';
-                                break;
-                            case 'id':
-                                // The ID field cannot contain null, per the spec
-                                if (!value.includes('\0')) lastEventId = value;
-                                break;
-                            // We do nothing for the `delay` type, and other types are explicitly ignored
+                for (let j = 0; j < lines.length; j++) {
+                    const line = lines[j]!;
+                    const colonIndex = line.indexOf(':');
+
+                    if (colonIndex !== -1) {
+                        const field = line.substring(0, colonIndex);
+                        let value = line.substring(colonIndex + 1);
+                        if (value.charCodeAt(0) === 32) { // check for space ' '
+                            value = value.substring(1);
+                        }
+
+                        if (field === 'event') {
+                            eventType = value;
+                        } else if (field === 'data') {
+                            eventData += value + '\n';
+                        } else if (field === 'id') {
+                            if (!value.includes('\0')) lastEventId = value;
+                        }
+                    } else if (line.length > 0) {
+                        // Field name only, no colon
+                        if (line === 'event') {
+                            eventType = '';
+                        } else if (line === 'data') {
+                            eventData += '\n';
                         }
                     }
                 }
 
-
-                // https://html.spec.whatwg.org/multipage/server-sent-events.html#dispatchMessage
-                // Skip the event if the data buffer is the empty string.
                 if (eventData === '') continue;
 
-                if (eventData[eventData.length - 1] === '\n') {
+                if (eventData.charCodeAt(eventData.length - 1) === 10) { // '\n'
                     eventData = eventData.slice(0, -1);
                 }
 
-                // Trim the *last* trailing newline only.
                 const event = new MessageEvent(eventType || 'message', { data: eventData, lastEventId });
                 controller.enqueue(event);
             }
@@ -95,20 +94,17 @@ class EventSourceStream {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 's' implicitly has an 'any' type.
 function getDelay(s) {
-    if (!s) {
-        return 0;
-    }
+    if (!s) return 0;
 
     const speedFactor = Math.max(100 - power_user.smooth_streaming_speed, 1);
     const defaultDelayMs = speedFactor * 0.4;
-    const punctuationDelayMs = defaultDelayMs * 25;
 
-    if ([',', '\n'].includes(s)) {
-        return punctuationDelayMs / 2;
+    if (s === ',' || s === '\n') {
+        return (defaultDelayMs * 25) / 2;
     }
 
-    if (['.', '!', '?'].includes(s)) {
-        return punctuationDelayMs;
+    if (s === '.' || s === '!' || s === '?') {
+        return defaultDelayMs * 25;
     }
 
     return defaultDelayMs;
@@ -117,229 +113,150 @@ function getDelay(s) {
 /**
  * Parses the stream data and returns the parsed data and the chunk to be sent.
  * @param {object} json The JSON data.
- * @returns {AsyncGenerator<{data: object, chunk: string, reasoning?: boolean}>} The parsed data and the chunk to be sent.
+ * @returns {AsyncGenerator<{data: object, chunk: string, reasoning: boolean}>}
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'json' implicitly has an 'any' type.
 async function* parseStreamData(json) {
-    if (typeof json.delta === 'object' && typeof json.delta.message === 'object' && ['tool-plan-delta', 'content-delta'].includes(json.type)) {
-        // Cohere
-        const text = json?.delta?.message?.content?.text ?? '';
+    /**
+     * Generic helper to mutate the parsed JSON instance and yield character by character.
+     * Prevents massive heap allocations by mutating instead of deeply cloning objects.
+     */
+    function* emitChars(text: string, updateFn: (char: string, index: number, length: number) => void, reasoning = false) {
+        if (!text) return;
         for (let i = 0; i < text.length; i++) {
-            const str = json.delta.message.content.text[i];
-            yield {
-                data: { ...json, delta: { message: { content: { text: str } } } },
-                chunk: str,
-            };
+            const char = text[i]!;
+            updateFn(char, i, text.length);
+            yield { data: json, chunk: char, reasoning };
         }
+    }
+
+    const delta = json?.delta;
+    const choices = json?.choices;
+    const c0 = choices?.[0];
+
+    // Cohere
+    if (delta?.message?.content?.text !== undefined && (json.type === 'tool-plan-delta' || json.type === 'content-delta')) {
+        yield* emitChars(delta.message.content.text, c => { delta.message.content.text = c; });
         return;
-    } else if (typeof json.delta === 'object' && typeof json.delta.text === 'string') {
-        // Claude
-        if (json.delta.text.length > 0) {
-            for (let i = 0; i < json.delta.text.length; i++) {
-                const str = json.delta.text[i];
-                yield {
-                    data: { ...json, delta: { text: str } },
-                    chunk: str,
-                };
+    }
+
+    // Claude
+    if (delta?.text !== undefined) {
+        yield* emitChars(delta.text, c => { delta.text = c; });
+        return;
+    }
+
+    // Claude (reasoning content)
+    if (delta?.thinking !== undefined) {
+        yield* emitChars(delta.thinking, c => { delta.thinking = c; }, true);
+        return;
+    }
+
+    // Google VertexAI / AI Studio
+    if (Array.isArray(json.candidates)) {
+        if (json.candidates.length === 0 || json.candidates[0]?.index > 0) return null;
+
+        const parts = json.candidates[0]?.content?.parts;
+        if (!parts) return;
+
+        if (parts.some((p: { functionCall?: unknown; inlineData?: unknown }) => p?.functionCall || p?.inlineData)) {
+            yield { data: json, chunk: '', reasoning: false };
+            return;
+        }
+
+        for (let j = 0; j < parts.length; j++) {
+            const text = parts[j]?.text;
+            if (typeof text === 'string') {
+                const isReasoning = parts[j].thought ?? false;
+                const originalParts = parts;
+
+                yield* emitChars(text, (c, i, len) => {
+                    const isLastSymbol = i === len - 1;
+                    const moreThanOnePart = originalParts.length > 1;
+                    const isNotLastPart = j !== originalParts.length - 1;
+                    const addNewline = moreThanOnePart && isNotLastPart && isLastSymbol;
+
+                    json.candidates[0].content.parts = [{ ...originalParts[j], text: c + (addNewline ? '\n\n' : '') }];
+                }, isReasoning);
             }
         }
         return;
-    } else if (typeof json.delta === 'object' && typeof json.delta.thinking === 'string') {
-        // Claude (reasoning content)
-        if (json.delta.thinking.length > 0) {
-            for (let i = 0; i < json.delta.thinking.length; i++) {
-                const str = json.delta.thinking[i];
-                yield {
-                    data: { ...json, delta: { thinking: str } },
-                    chunk: str,
-                    reasoning: true,
-                };
-            }
-        }
+    }
+
+    // NovelAI / KoboldCpp Classic
+    if (typeof json.token === 'string' && json.token.length > 0) {
+        yield* emitChars(json.token, c => { json.token = c; });
         return;
-    } else if (Array.isArray(json.candidates)) {
-        // Google VertexAI / AI Studio
-        for (let i = 0; i < json.candidates.length; i++) {
-            const isNotPrimary = json.candidates?.[0]?.index > 0;
-            // @ts-expect-error TS(7006) FIXME: Parameter 'p' implicitly has an 'any' type.
-            const hasToolCalls = json?.candidates?.[0]?.content?.parts?.some(p => p?.functionCall);
-            // @ts-expect-error TS(7006) FIXME: Parameter 'p' implicitly has an 'any' type.
-            const hasInlineData = json?.candidates?.[0]?.content?.parts?.some(p => p?.inlineData);
-            if (isNotPrimary || json.candidates.length === 0) {
-                return null;
-            }
-            if (hasToolCalls || hasInlineData) {
-                yield { data: json, chunk: '' };
-                return;
-            }
-            if (typeof json.candidates[0].content === 'object' && Array.isArray(json.candidates[i].content.parts)) {
-                for (let j = 0; j < json.candidates[i].content.parts.length; j++) {
-                    if (typeof json.candidates[i].content.parts[j].text === 'string') {
-                        for (let k = 0; k < json.candidates[i].content.parts[j].text.length; k++) {
-                            const moreThanOnePart = json.candidates[i].content.parts.length > 1;
-                            const isNotLastPart = j !== json.candidates[i].content.parts.length - 1;
-                            const isLastSymbol = k === json.candidates[i].content.parts[j].text.length - 1;
-                            const addNewline = moreThanOnePart && isNotLastPart && isLastSymbol;
-                            const str = json.candidates[i].content.parts[j].text[k] + (addNewline ? '\n\n' : '');
-                            const candidateClone = structuredClone(json.candidates[0]);
-                            candidateClone.content.parts[j].text = str;
-                            candidateClone.content.parts = [candidateClone.content.parts[j]];
-                            const candidates = [candidateClone];
-                            const reasoning = json.candidates[i].content.parts[j].thought ?? false;
-                            yield {
-                                data: { ...json, candidates },
-                                chunk: str,
-                                reasoning,
-                            };
-                        }
-                    }
-                }
-            }
-        }
+    }
+
+    // llama.cpp
+    if (typeof json.content === 'string' && json.content.length > 0 && json.object !== 'chat.completion.chunk') {
+        if (json?.index > 0) throw new Error('Not a primary swipe', { cause: NOT_PRIMARY });
+        yield* emitChars(json.content, c => { json.content = c; });
         return;
-    } else if (typeof json.token === 'string' && json.token.length > 0) {
-        // NovelAI / KoboldCpp Classic
-        for (let i = 0; i < json.token.length; i++) {
-            const str = json.token[i];
-            yield {
-                data: { ...json, token: str },
-                chunk: str,
-            };
-        }
-        return;
-    } else if (typeof json.content === 'string' && json.content.length > 0 && json.object !== 'chat.completion.chunk') {
-        // llama.cpp?
-        const isNotPrimary = json?.index > 0;
-        if (isNotPrimary) {
-            throw new Error('Not a primary swipe', { cause: NOT_PRIMARY });
-        }
-        for (let i = 0; i < json.content.length; i++) {
-            const str = json.content[i];
-            yield {
-                data: { ...json, content: str },
-                chunk: str,
-            };
-        }
-        return;
-    } else if (Array.isArray(json.choices)) {
-        // OpenAI-likes and friends
-        const isNotPrimary = json?.choices?.[0]?.index > 0;
-        if (isNotPrimary || json.choices.length === 0) {
+    }
+
+    // OpenAI-likes and friends
+    if (Array.isArray(choices)) {
+        if (choices.length === 0 || c0?.index > 0) {
             throw new Error('Not a primary swipe', { cause: NOT_PRIMARY });
         }
 
-        if (typeof json.choices[0].text === 'string' && json.choices[0].text.length > 0) {
-            for (let j = 0; j < json.choices[0].text.length; j++) {
-                const str = json.choices[0].text[j];
-                const choiceClone = structuredClone(json.choices[0]);
-                choiceClone.text = str;
-                const choices = [choiceClone];
-                yield {
-                    data: { ...json, choices },
-                    chunk: str,
-                };
-            }
+        if (typeof c0.text === 'string' && c0.text.length > 0) {
+            yield* emitChars(c0.text, c => { c0.text = c; json.choices = [c0]; });
             return;
-        } else if (typeof json.choices[0].thinking === 'string' && json.choices[0].thinking.length > 0) {
-            for (let j = 0; j < json.choices[0].thinking.length; j++) {
-                const str = json.choices[0].thinking[j];
-                const choiceClone = structuredClone(json.choices[0]);
-                choiceClone.thinking = str;
-                const choices = [choiceClone];
-                yield {
-                    data: { ...json, choices },
-                    chunk: str,
-                    reasoning: true,
-                };
-            }
+        }
+
+        if (typeof c0.thinking === 'string' && c0.thinking.length > 0) {
+            yield* emitChars(c0.thinking, c => { c0.thinking = c; json.choices = [c0]; }, true);
             return;
-        } else if (typeof json.choices[0].delta === 'object') {
-            if (typeof json.choices[0].delta.text === 'string' && json.choices[0].delta.text.length > 0) {
-                for (let j = 0; j < json.choices[0].delta.text.length; j++) {
-                    const str = json.choices[0].delta.text[j];
-                    const choiceClone = structuredClone(json.choices[0]);
-                    choiceClone.delta.text = str;
-                    const choices = [choiceClone];
-                    yield {
-                        data: { ...json, choices },
-                        chunk: str,
-                    };
-                }
-                return;
-            } else if (typeof json.choices[0].delta.reasoning_content === 'string' && json.choices[0].delta.reasoning_content.length > 0) {
-                for (let j = 0; j < json.choices[0].delta.reasoning_content.length; j++) {
-                    const str = json.choices[0].delta.reasoning_content[j];
-                    const isLastSymbol = j === json.choices[0].delta.reasoning_content.length - 1;
-                    const choiceClone = structuredClone(json.choices[0]);
-                    choiceClone.delta.reasoning_content = str;
-                    choiceClone.delta.content = isLastSymbol ? choiceClone.delta.content : '';
-                    const choices = [choiceClone];
-                    yield {
-                        data: { ...json, choices },
-                        chunk: str,
-                        reasoning: true,
-                    };
-                }
-                return;
-            } else if (typeof json.choices[0].delta.reasoning === 'string' && json.choices[0].delta.reasoning.length > 0) {
-                for (let j = 0; j < json.choices[0].delta.reasoning.length; j++) {
-                    const str = json.choices[0].delta.reasoning[j];
-                    const isLastSymbol = j === json.choices[0].delta.reasoning.length - 1;
-                    const choiceClone = structuredClone(json.choices[0]);
-                    choiceClone.delta.reasoning = str;
-                    choiceClone.delta.content = isLastSymbol ? choiceClone.delta.content : '';
-                    const choices = [choiceClone];
-                    yield {
-                        data: { ...json, choices },
-                        chunk: str,
-                        reasoning: true,
-                    };
-                }
-                return;
-            } else if (typeof json.choices[0].delta.content === 'string' && json.choices[0].delta.content.length > 0) {
-                for (let j = 0; j < json.choices[0].delta.content.length; j++) {
-                    const str = json.choices[0].delta.content[j];
-                    const choiceClone = structuredClone(json.choices[0]);
-                    choiceClone.delta.content = str;
-                    const choices = [choiceClone];
-                    yield {
-                        data: { ...json, choices },
-                        chunk: str,
-                    };
-                }
-                return;
-            } else if (Array.isArray(json.choices[0].delta.content) && json.choices[0].delta.content.length > 0) {
-                if (Array.isArray(json.choices[0].delta.content[0].thinking) && json.choices[0].delta.content[0].thinking.length > 0) {
-                    if (typeof json.choices[0].delta.content[0].thinking[0].text === 'string' && json.choices[0].delta.content[0].thinking[0].text.length > 0) {
-                        for (let j = 0; j < json.choices[0].delta.content[0].thinking[0].text.length; j++) {
-                            const str = json.choices[0].delta.content[0].thinking[0].text[j];
-                            const choiceClone = structuredClone(json.choices[0]);
-                            choiceClone.delta.content[0].thinking[0].text = str;
-                            const choices = [choiceClone];
-                            yield {
-                                data: { ...json, choices },
-                                chunk: str,
-                                reasoning: true,
-                            };
-                        }
-                        return;
-                    }
-                }
-            }
-        } else if (typeof json.choices[0].message === 'object') {
-            if (typeof json.choices[0].message.content === 'string' && json.choices[0].message.content.length > 0) {
-                for (let j = 0; j < json.choices[0].message.content.length; j++) {
-                    const str = json.choices[0].message.content[j];
-                    const choiceClone = structuredClone(json.choices[0]);
-                    choiceClone.message.content = str;
-                    const choices = [choiceClone];
-                    yield {
-                        data: { ...json, choices },
-                        chunk: str,
-                    };
-                }
+        }
+
+        const c0Delta = c0.delta;
+        if (c0Delta) {
+            if (typeof c0Delta.text === 'string' && c0Delta.text.length > 0) {
+                yield* emitChars(c0Delta.text, c => { c0Delta.text = c; json.choices = [c0]; });
                 return;
             }
+
+            if (typeof c0Delta.reasoning_content === 'string' && c0Delta.reasoning_content.length > 0) {
+                yield* emitChars(c0Delta.reasoning_content, (c, i, len) => {
+                    c0Delta.reasoning_content = c;
+                    c0Delta.content = (i === len - 1) ? c0Delta.content : '';
+                    json.choices = [c0];
+                }, true);
+                return;
+            }
+
+            if (typeof c0Delta.reasoning === 'string' && c0Delta.reasoning.length > 0) {
+                yield* emitChars(c0Delta.reasoning, (c, i, len) => {
+                    c0Delta.reasoning = c;
+                    c0Delta.content = (i === len - 1) ? c0Delta.content : '';
+                    json.choices = [c0];
+                }, true);
+                return;
+            }
+
+            if (typeof c0Delta.content === 'string' && c0Delta.content.length > 0) {
+                yield* emitChars(c0Delta.content, c => { c0Delta.content = c; json.choices = [c0]; });
+                return;
+            }
+
+            if (Array.isArray(c0Delta.content) && c0Delta.content.length > 0) {
+                const thinkingText = c0Delta.content[0]?.thinking?.[0]?.text;
+                if (typeof thinkingText === 'string' && thinkingText.length > 0) {
+                    yield* emitChars(thinkingText, c => {
+                        c0Delta.content[0].thinking[0].text = c;
+                        json.choices = [c0];
+                    }, true);
+                    return;
+                }
+            }
+        }
+
+        if (typeof c0.message?.content === 'string' && c0.message.content.length > 0) {
+            yield* emitChars(c0.message.content, c => { c0.message.content = c; json.choices = [c0]; });
+            return;
         }
     }
 
@@ -350,8 +267,9 @@ async function* parseStreamData(json) {
  * Like the default one, but multiplies the events by the number of letters in the event data.
  */
 export class SmoothEventSourceStream extends EventSourceStream {
-    // @ts-expect-error TS(4114) FIXME: This member must have an 'override' modifier becau... Remove this comment to see the full error message
+    // @ts-expect-error TS(4114) FIXME: This member must have an 'override' modifier becau...
     readable: ReadableStream | null;
+
     constructor() {
         super();
         let lastStr = '';
@@ -359,6 +277,7 @@ export class SmoothEventSourceStream extends EventSourceStream {
             async transform(chunk, controller) {
                 const event = chunk;
                 const data = event.data;
+
                 try {
                     const hasFocus = document.hasFocus();
 
@@ -376,8 +295,8 @@ export class SmoothEventSourceStream extends EventSourceStream {
 
                     for await (const parsed of parseStreamData(json)) {
                         if (!(power_user.smooth_streaming_no_think && parsed.reasoning) && hasFocus) {
-                        await delay(getDelay(lastStr));
-                    }
+                            await delay(getDelay(lastStr));
+                        }
                         controller.enqueue(new MessageEvent(event.type, { data: JSON.stringify(parsed.data) }));
                         lastStr = parsed.chunk;
                     }
