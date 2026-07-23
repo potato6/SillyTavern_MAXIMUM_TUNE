@@ -1,37 +1,43 @@
-import { Router } from 'express';
-import { Readable } from 'node:stream';
-
+import { Buffer } from 'node:buffer';
+import { Elysia } from 'elysia';
 import { readSecret, SECRET_KEYS } from './secrets.js';
 
-export const router = Router();
+export const router = new Elysia({ prefix: '/api/volcengine' });
 
-router.post('/generate-voice', async (req, res) => {
+router.post('/generate-voice', async (context) => {
+    const { set } = context;
+    const body = context.body as Record<string, unknown>;
+    const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+    const directories = user?.directories as Record<string, string> | undefined;
+
     try {
-        let provider_endpoint = req.body.provider_endpoint;
+        let provider_endpoint = body.provider_endpoint as string | undefined;
         if (!provider_endpoint) {
             console.warn('Volcengine endpoint not set, use default endpoint instead');
             provider_endpoint = 'https://openspeech.bytedance.com/api/v3/tts/unidirectional';
         }
 
-        const appId = readSecret(req.user.directories, SECRET_KEYS.VOLCENGINE_APP_ID);
-        const accessKey = readSecret(req.user.directories, SECRET_KEYS.VOLCENGINE_ACCESS_KEY);
+        const appId = directories ? readSecret(directories as any, SECRET_KEYS.VOLCENGINE_APP_ID) : '';
+        const accessKey = directories ? readSecret(directories as any, SECRET_KEYS.VOLCENGINE_ACCESS_KEY) : '';
 
         if (!appId || !accessKey) {
             console.warn(
                 'Volcengine generate-voice request missing required parameters appId or accessKey',
             );
-            return res.sendStatus(403);
+            set.status = 403;
+            return;
         }
 
-        const resourceId = req.body.resource_id;
-        const text = req.body.text;
-        const voice_speaker = req.body.voice_speaker;
+        const resourceId = body.resource_id as string;
+        const text = body.text as string;
+        const voice_speaker = body.voice_speaker as string;
 
         if (!resourceId || !text || !voice_speaker) {
             console.warn(
                 'Volcengine generate-voice request missing required parameters resourceId or text or voice_speaker',
             );
-            return res.sendStatus(400);
+            set.status = 400;
+            return;
         }
 
         const response = await fetch(provider_endpoint, {
@@ -48,7 +54,7 @@ router.post('/generate-voice', async (req, res) => {
                     speaker: voice_speaker,
                     audio_params: {
                         format: 'mp3',
-                        speech_rate: Number.parseInt(req.body.speed || '0'),
+                        speech_rate: Number.parseInt((body.speed as string) || '0'),
                     },
                     additions: JSON.stringify({
                         mute_cut_threshold: '400',
@@ -68,75 +74,78 @@ router.post('/generate-voice', async (req, res) => {
         if (!response.ok) {
             const logid = response.headers.get('X-Tt-Logid') || '';
             console.warn('Volcengine Request failed', response.status, response.statusText, logid);
-            return res
-                .header('X-Tt-Logid', logid)
-                .status(500)
-                .send(`TTS Generation Failed: ${response.statusText}`);
+            set.status = 500;
+            set.headers['X-Tt-Logid'] = logid;
+            return `TTS Generation Failed: ${response.statusText}`;
         }
+
         const decoder = new TextDecoder();
+        const audioChunks: Buffer[] = [];
+        let buffer = '';
+        const reader = response.body?.getReader();
+        if (!reader) {
+            set.status = 500;
+            return 'No response body';
+        }
 
-        const result = await new Promise((resolve, reject) => {
-            const audioChunks_: Buffer[] = [];
-            let buffer = '';
-            const bodyStream = Readable.fromWeb(
-                response.body as unknown as import('node:stream/web').ReadableStream<Uint8Array>,
-            );
-            bodyStream.on('data', (chunk) => {
-                buffer += decoder.decode(chunk, { stream: true });
-
+        // Read the stream manually
+        let done = false;
+        while (!done) {
+            const result = await reader.read();
+            done = result.done;
+            if (result.value) {
+                buffer += decoder.decode(result.value, { stream: !done });
                 const lines = buffer.split('\n');
                 buffer = lines.pop() || '';
 
                 for (const line of lines) {
                     if (!line.trim()) continue;
-
                     try {
-                        const { data, code, message } = JSON.parse(line);
+                        const parsed = JSON.parse(line);
+                        const { data, code, message } = parsed;
                         if (code !== 0 && code !== 20000000) {
-                            reject(`Volcengine TTS stream line code ${code}, ${message}`);
-                            return;
+                            throw new Error(`Volcengine TTS stream line code ${code}, ${message}`);
                         }
                         if (data) {
-                            const audioData = Buffer.from(data, 'base64');
-                            audioChunks_.push(audioData);
+                            const audioData = Buffer.from(data as string, 'base64');
+                            audioChunks.push(audioData);
                         }
                     } catch (e) {
-                        console.error('Error parsing Volcengine TTS stream line:', e);
+                        if (e instanceof SyntaxError) {
+                            // individual JSON parse error, continue
+                        } else {
+                            throw e;
+                        }
                     }
                 }
-            });
+            }
+        }
 
-            bodyStream.on('end', () => {
-                if (buffer.trim()) {
-                    try {
-                        const { code, data, message } = JSON.parse(buffer);
-                        if (code !== 0 && code !== 20000000) {
-                            reject(`Volcengine TTS stream line code ${code}, ${message}`);
-                            return;
-                        }
-                        if (data) {
-                            const audioData = Buffer.from(data, 'base64');
-                            audioChunks_.push(audioData);
-                        }
-                    } catch (e) {
-                        reject(`Error parsing final Volcengine TTS stream line: ${e}`);
-                    }
+        // Process remaining buffer
+        if (buffer.trim()) {
+            try {
+                const { code, data, message } = JSON.parse(buffer);
+                if (code !== 0 && code !== 20000000) {
+                    throw new Error(`Volcengine TTS stream line code ${code}, ${message}`);
                 }
-                resolve(audioChunks_);
-            });
+                if (data) {
+                    const audioData = Buffer.from(data as string, 'base64');
+                    audioChunks.push(audioData);
+                }
+            } catch (e) {
+                if (!(e instanceof SyntaxError)) {
+                    console.error('Error parsing final Volcengine TTS stream line:', e);
+                }
+            }
+        }
 
-            bodyStream.on('error', (error) => {
-                reject(`Error reading Volcengine TTS stream: ${error}`);
-            });
+        const finalAudioData = Buffer.concat(audioChunks);
+        return new Response(finalAudioData, {
+            headers: { 'Content-Type': 'audio/mpeg' },
         });
-
-        // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
-        const finalAudioData = Buffer.concat(result);
-
-        res.set('Content-Type', 'audio/mpeg');
-        res.status(200).send(finalAudioData);
     } catch (error) {
         console.error('Volcengine generate-voice fetch failed', error);
-        res.status(500).send(`TTS Generation Failed: ${error}`);
+        set.status = 500;
+        return `TTS Generation Failed: ${error}`;
     }
 });

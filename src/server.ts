@@ -195,7 +195,7 @@ export function setupPrivateEndpoints(app: import('express').Express) {
     app.use('/api/novelai', novelAiRouter);
     app.use('/api/extensions', extensionsRouter);
     app.use('/api/assets', assetsRouter);
-    app.use('/api/files', filesRouter);
+    app.use(mountElysia(filesRouter));
     app.use('/api/characters', charactersRouter);
     app.use('/api/chats', chatsRouter);
     app.use('/api/groups', groupsRouter);
@@ -218,7 +218,7 @@ export function setupPrivateEndpoints(app: import('express').Express) {
     app.use(mountElysia(backendsKeysRouter));
     app.use('/api/speech', speechRouter);
     app.use(mountElysia(azureRouter));
-    app.use('/api/volcengine', volcengineRouter);
+    app.use(mountElysia(volcengineRouter));
     app.use(mountElysia(minimaxRouter));
     app.use('/api/data-maid', dataMaidRouter);
     app.use(mountElysia(backupsRouter));

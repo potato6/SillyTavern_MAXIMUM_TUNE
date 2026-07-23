@@ -1,102 +1,115 @@
 import path from 'node:path';
 import fs from 'node:fs';
-
-import express from 'express';
+import { Elysia } from 'elysia';
 import sanitize from 'sanitize-filename';
 import { sync as writeFileSyncAtomic } from 'write-file-atomic';
 
 import { validateAssetFileName } from './assets.js';
 import { clientRelativePath } from '../util.js';
 
-export const router = express.Router();
-
-router.post('/sanitize-filename', async (request, response) => {
-    try {
-        const fileName = String(request.body.fileName);
-        if (!fileName) {
-            return response.status(400).send('No fileName specified');
-        }
-
-        const sanitizedFilename = sanitize(fileName);
-        return response.send({ fileName: sanitizedFilename });
-    } catch (error) {
-        console.error(error);
-        return response.sendStatus(500);
-    }
-});
-
-router.post('/upload', async (request, response) => {
-    try {
-        if (!request.body.name) {
-            return response.status(400).send('No upload name specified');
-        }
-
-        if (!request.body.data) {
-            return response.status(400).send('No upload data specified');
-        }
-
-        // Validate filename
-        const validation = validateAssetFileName(request.body.name);
-        if (validation.error) return response.status(400).send(validation.message);
-
-        const pathToUpload = path.join(request.user.directories.files, request.body.name);
-        const fileBuffer = Buffer.from(request.body.data, 'base64');
-        writeFileSyncAtomic(pathToUpload, fileBuffer);
-        const url = clientRelativePath(request.user.directories.root, pathToUpload);
-        console.info(`Uploaded file: ${url} from ${request.user.profile.handle}`);
-        return response.send({ path: url });
-    } catch (error) {
-        console.error(error);
-        return response.sendStatus(500);
-    }
-});
-
-router.post('/delete', async (request, response) => {
-    try {
-        if (!request.body.path) {
-            return response.status(400).send('No path specified');
-        }
-
-        const pathToDelete = path.join(request.user.directories.root, request.body.path);
-        if (!pathToDelete.startsWith(request.user.directories.files)) {
-            return response.status(400).send('Invalid path');
-        }
-
-        if (!fs.existsSync(pathToDelete)) {
-            return response.status(404).send('File not found');
-        }
-
-        fs.unlinkSync(pathToDelete);
-        console.info(`Deleted file: ${request.body.path} from ${request.user.profile.handle}`);
-        return response.sendStatus(200);
-    } catch (error) {
-        console.error(error);
-        return response.sendStatus(500);
-    }
-});
-
-router.post('/verify', async (request, response) => {
-    try {
-        if (!Array.isArray(request.body.urls)) {
-            return response.status(400).send('No URLs specified');
-        }
-
-        const verified = {};
-
-        for (const url of request.body.urls) {
-            const pathToVerify = path.join(request.user.directories.root, url);
-            if (!pathToVerify.startsWith(request.user.directories.files)) {
-                console.warn(`File verification: Invalid path: ${pathToVerify}`);
-                continue;
+export const router = new Elysia({ prefix: '/api/files' })
+    .post('/sanitize-filename', (context) => {
+        const body = context.body as Record<string, unknown>;
+        try {
+            const fileName = String(body.fileName ?? '');
+            if (!fileName) {
+                return new Response('No fileName specified', { status: 400 });
             }
-            const fileExists = fs.existsSync(pathToVerify);
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-            verified[url] = fileExists;
+            return { fileName: sanitize(fileName) };
+        } catch (error) {
+            console.error(error);
+            return new Response(null, { status: 500 });
         }
+    })
+    .post('/upload', (context) => {
+        const { set } = context;
+        const body = context.body as Record<string, unknown>;
+        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const directories = user?.directories as Record<string, string> | undefined;
+        const profile = user?.profile as Record<string, unknown> | undefined;
 
-        return response.send(verified);
-    } catch (error) {
-        console.error(error);
-        return response.sendStatus(500);
-    }
-});
+        try {
+            const name = body.name as string;
+            const data = body.data as string;
+
+            if (!name) {
+                return new Response('No upload name specified', { status: 400 });
+            }
+
+            if (!data) {
+                return new Response('No upload data specified', { status: 400 });
+            }
+
+            const validation = validateAssetFileName(name);
+            if (validation.error) return new Response(validation.message, { status: 400 });
+
+            const pathToUpload = path.join(directories?.files ?? '', name);
+            const fileBuffer = Buffer.from(data, 'base64');
+            writeFileSyncAtomic(pathToUpload, fileBuffer);
+            const url = clientRelativePath(directories?.root ?? '', pathToUpload);
+            console.info(`Uploaded file: ${url} from ${profile?.handle}`);
+            return { path: url };
+        } catch (error) {
+            console.error(error);
+            set.status = 500;
+        }
+    })
+    .post('/delete', (context) => {
+        const { set } = context;
+        const body = context.body as Record<string, unknown>;
+        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const directories = user?.directories as Record<string, string> | undefined;
+
+        try {
+            const reqPath = body.path as string;
+
+            if (!reqPath) {
+                return new Response('No path specified', { status: 400 });
+            }
+
+            const pathToDelete = path.join(directories?.root ?? '', reqPath);
+            if (!pathToDelete.startsWith(directories?.files ?? '')) {
+                return new Response('Invalid path', { status: 400 });
+            }
+
+            if (!fs.existsSync(pathToDelete)) {
+                return new Response('File not found', { status: 404 });
+            }
+
+            fs.unlinkSync(pathToDelete);
+            set.status = 204;
+        } catch (error) {
+            console.error(error);
+            set.status = 500;
+        }
+    })
+    .post('/verify', (context) => {
+        const { set } = context;
+        const body = context.body as Record<string, unknown>;
+        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const directories = user?.directories as Record<string, string> | undefined;
+
+        try {
+            const urls = body.urls as string[];
+            if (!Array.isArray(urls)) {
+                return new Response('No URLs specified', { status: 400 });
+            }
+
+            const verified: Record<string, boolean> = {};
+
+            for (const url of urls) {
+                const pathToVerify = path.join(directories?.root ?? '', url);
+                if (!pathToVerify.startsWith(directories?.files ?? '')) {
+                    console.warn(`File verification: Invalid path: ${pathToVerify}`);
+                    continue;
+                }
+                const fileExists = fs.existsSync(pathToVerify);
+                verified[url] = fileExists;
+            }
+
+            return verified;
+        } catch (error) {
+            console.error(error);
+            set.status = 500;
+        }
+    });
