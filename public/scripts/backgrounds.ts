@@ -1462,10 +1462,37 @@ const onBackgroundFilterInput = debounce(() => {
     }
 }, debounce_timeout.standard);
 
+function switchBgTab(tabHref: string): void {
+    const tabs = document.getElementById('bg_tabs');
+    if (!tabs) return;
+
+    const targetId = tabHref.replace('#', '');
+    const targetPanel = document.getElementById(targetId);
+    if (!targetPanel) return;
+
+    // Hide all panels, show target
+    tabs.querySelectorAll<HTMLElement>('.bg_tab_panel').forEach((panel) => {
+        panel.style.display = 'none';
+    });
+    targetPanel.style.display = '';
+
+    // Toggle active class on buttons
+    tabs.querySelectorAll('.bg_tab_button').forEach((btn) => {
+        btn.classList.remove('ui-tabs-active');
+    });
+    const activeButton = tabs.querySelector<HTMLAnchorElement>(`.bg_tab_button a[href="${tabHref}"]`);
+    activeButton?.closest('.bg_tab_button')?.classList.add('ui-tabs-active');
+
+    tabs.dispatchEvent(new CustomEvent('tabsactivate', { bubbles: true }));
+}
+
 export function getActiveBackgroundTab(): number {
-    return document.getElementById('bg_tabs')?.dataset.uiTabs
-        ? BG_SOURCES.GLOBAL
-        : BG_SOURCES.GLOBAL;
+    const tabs = document.getElementById('bg_tabs');
+    if (!tabs) return BG_SOURCES.GLOBAL;
+    const activeButton = tabs.querySelector('.bg_tab_button.ui-tabs-active');
+    if (!activeButton) return BG_SOURCES.GLOBAL;
+    const href = activeButton.querySelector('a')?.getAttribute('href');
+    return href === '#bg_chat_tab' ? BG_SOURCES.CHAT : BG_SOURCES.GLOBAL;
 }
 
 export function initBackgrounds(): void {
@@ -1651,6 +1678,18 @@ export function initBackgrounds(): void {
             drawerId: 'Backgrounds',
         }),
     );
+
+    // Native tab switching (replaces jQuery UI tabs)
+    document.querySelectorAll<HTMLElement>('.bg_tabs_list .bg_tab_button a').forEach((link) => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const href = (e.currentTarget as HTMLAnchorElement).getAttribute('href');
+            if (href) switchBgTab(href);
+        });
+    });
+
+    // Activate Global tab by default
+    switchBgTab('#bg_global_tab');
 
     document
         .getElementById('bg_tabs')
