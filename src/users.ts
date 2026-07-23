@@ -1163,7 +1163,12 @@ function createRouteHandler(directoryFn: (context: any) => string) {
     return async (context: any) => {
         try {
             const directory = directoryFn(context);
-            const filePath = (context.params['*'] as string) ?? '';
+            const rawWildcard = context.params['*'] as string | undefined;
+            const filePath = decodeURIComponent(rawWildcard ?? '');
+            if (!filePath) {
+                context.set.status = 404;
+                return;
+            }
             const fullPath = path.join(directory, filePath);
             if (!isPathUnderParent(directory, path.resolve(fullPath))) {
                 context.set.status = 403;
@@ -1197,7 +1202,7 @@ function createExtensionsRouteHandler(directoryFn: (context: any) => string) {
     return async (context: any) => {
         try {
             const directory = directoryFn(context);
-            const filePath = (context.params['*'] as string) ?? '';
+            const filePath = decodeURIComponent((context.params['*'] as string) ?? '');
             const localPath = path.join(directory, filePath);
             if (!isPathUnderParent(directory, path.resolve(localPath))) {
                 context.set.status = 403;
