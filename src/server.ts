@@ -189,7 +189,7 @@ export function setupPrivateEndpoints(app: import('express').Express) {
     app.use('/api/google', googleRouter);
     app.use(mountElysia(anthropicRouter));
     app.use('/api/tokenizers', tokenizersRouter);
-    app.use('/api/presets', presetsRouter);
+    app.use(mountElysia(presetsRouter));
     app.use('/api/secrets', secretsRouter);
     app.use('/thumbnail', thumbnailRouter);
     app.use('/api/novelai', novelAiRouter);
@@ -217,7 +217,7 @@ export function setupPrivateEndpoints(app: import('express').Express) {
     app.use('/api/backends/chat-completions', chatCompletionsRouter);
     app.use(mountElysia(backendsKeysRouter));
     app.use('/api/speech', speechRouter);
-    app.use('/api/azure', azureRouter);
+    app.use(mountElysia(azureRouter));
     app.use('/api/volcengine', volcengineRouter);
     app.use('/api/minimax', minimaxRouter);
     app.use('/api/data-maid', dataMaidRouter);

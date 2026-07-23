@@ -1,7 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-
-import express from 'express';
+import { Elysia } from 'elysia';
 import sanitize from 'sanitize-filename';
 import { sync as writeFileAtomicSync } from 'write-file-atomic';
 
@@ -9,9 +8,6 @@ import { getDefaultPresetFile, getDefaultPresets } from './content-manager.js';
 
 /**
  * Gets the folder and extension for the preset settings based on the API source ID.
- * @param {string} apiId API source ID
- * @param {import('../users.js').UserDirectoryList} directories User directories
- * @returns {{folder: string?, extension: string?}} Object containing the folder and extension for the preset settings
  */
 function getPresetSettingsByAPI(apiId: string, directories: Record<string, string>) {
     switch (apiId) {
@@ -37,69 +33,85 @@ function getPresetSettingsByAPI(apiId: string, directories: Record<string, strin
     }
 }
 
-export const router = express.Router();
+export const router = new Elysia({ prefix: '/api/presets' })
+    .post('/save', (context) => {
+        const { body, set } = context;
+        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const directories = user?.directories as Record<string, string> | undefined;
+        const bodyAny = body as Record<string, unknown> | null;
 
-router.post('/save', function (request, response) {
-    const name = sanitize(request.body.name);
-    if (!request.body.preset || !name) {
-        return response.sendStatus(400);
-    }
-
-    const settings = getPresetSettingsByAPI(request.body.apiId, request.user.directories);
-    const filename = name + settings.extension;
-
-    if (!settings.folder) {
-        return response.sendStatus(400);
-    }
-
-    const fullpath = path.join(settings.folder, filename);
-    writeFileAtomicSync(fullpath, JSON.stringify(request.body.preset, null, 4), 'utf-8');
-    return response.send({ name });
-});
-
-router.post('/delete', function (request, response) {
-    const name = sanitize(request.body.name);
-    if (!name) {
-        return response.sendStatus(400);
-    }
-
-    const settings = getPresetSettingsByAPI(request.body.apiId, request.user.directories);
-    const filename = name + settings.extension;
-
-    if (!settings.folder) {
-        return response.sendStatus(400);
-    }
-
-    const fullpath = path.join(settings.folder, filename);
-
-    if (fs.existsSync(fullpath)) {
-        fs.unlinkSync(fullpath);
-        return response.sendStatus(200);
-    } else {
-        return response.sendStatus(404);
-    }
-});
-
-router.post('/restore', function (request, response) {
-    try {
-        const settings = getPresetSettingsByAPI(request.body.apiId, request.user.directories);
-        const name = sanitize(request.body.name);
-        const defaultPresets = getDefaultPresets(request.user.directories);
-
-        const defaultPreset = defaultPresets.find(
-            (p) => p.name === name && p.folder === settings.folder,
-        );
-
-        const result = { isDefault: false, preset: {} };
-
-        if (defaultPreset) {
-            result.isDefault = true;
-            result.preset = getDefaultPresetFile(defaultPreset.filename) || {};
+        const name = sanitize(bodyAny?.name as string);
+        if (!bodyAny?.preset || !name) {
+            set.status = 400;
+            return;
         }
 
-        return response.send(result);
-    } catch (error) {
-        console.error(error);
-        return response.sendStatus(500);
-    }
-});
+        const settings = getPresetSettingsByAPI(bodyAny.apiId as string, directories ?? {});
+        const filename = name + settings.extension;
+
+        if (!settings.folder) {
+            set.status = 400;
+            return;
+        }
+
+        const fullpath = path.join(settings.folder, filename);
+        writeFileAtomicSync(fullpath, JSON.stringify(bodyAny.preset, null, 4), 'utf-8');
+        return { name };
+    })
+    .post('/delete', (context) => {
+        const { body, set } = context;
+        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const directories = user?.directories as Record<string, string> | undefined;
+        const bodyAny = body as Record<string, unknown> | null;
+
+        const name = sanitize(bodyAny?.name as string);
+        if (!name) {
+            set.status = 400;
+            return;
+        }
+
+        const settings = getPresetSettingsByAPI(bodyAny?.apiId as string, directories ?? {});
+        const filename = name + settings.extension;
+
+        if (!settings.folder) {
+            set.status = 400;
+            return;
+        }
+
+        const fullpath = path.join(settings.folder, filename);
+
+        if (fs.existsSync(fullpath)) {
+            fs.unlinkSync(fullpath);
+            set.status = 204;
+        } else {
+            set.status = 404;
+        }
+    })
+    .post('/restore', (context) => {
+        const { body, set } = context;
+        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const directories = user?.directories as Record<string, string> | undefined;
+        const bodyAny = body as Record<string, unknown> | null;
+
+        try {
+            const settings = getPresetSettingsByAPI(bodyAny?.apiId as string, directories ?? {});
+            const name = sanitize(bodyAny?.name as string);
+            const defaultPresets = getDefaultPresets(directories as any);
+
+            const defaultPreset = defaultPresets.find(
+                (p: Record<string, unknown>) => p.name === name && p.folder === settings.folder,
+            );
+
+            const result: Record<string, unknown> = { isDefault: false, preset: {} };
+
+            if (defaultPreset) {
+                result.isDefault = true;
+                result.preset = getDefaultPresetFile((defaultPreset as Record<string, unknown>).filename as string) || {};
+            }
+
+            return result;
+        } catch (error) {
+            console.error(error);
+            set.status = 500;
+        }
+    });
