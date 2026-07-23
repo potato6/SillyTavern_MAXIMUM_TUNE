@@ -1163,11 +1163,7 @@ function createRouteHandler(directoryFn: (context: any) => string) {
     return async (context: any) => {
         try {
             const directory = directoryFn(context);
-            const filePath = path.join(
-                ...(Array.isArray(context.params.filePath)
-                    ? context.params.filePath
-                    : [context.params.filePath ?? '']),
-            );
+            const filePath = (context.params['*'] as string) ?? '';
             const fullPath = path.join(directory, filePath);
             if (!isPathUnderParent(directory, path.resolve(fullPath))) {
                 context.set.status = 403;
@@ -1201,11 +1197,7 @@ function createExtensionsRouteHandler(directoryFn: (context: any) => string) {
     return async (context: any) => {
         try {
             const directory = directoryFn(context);
-            const filePath = path.join(
-                ...(Array.isArray(context.params.filePath)
-                    ? context.params.filePath
-                    : [context.params.filePath ?? '']),
-            );
+            const filePath = (context.params['*'] as string) ?? '';
             const localPath = path.join(directory, filePath);
             if (!isPathUnderParent(directory, path.resolve(localPath))) {
                 context.set.status = 403;
@@ -1332,31 +1324,31 @@ export async function getAllEnabledUsers() {
  */
 export const router = new Elysia();
 router.all(
-    '/backgrounds/:filePath*',
+    '/backgrounds/*',
     createRouteHandler((context: any) => (context as any).user.directories.backgrounds),
 );
 router.all(
-    '/characters/:filePath*',
+    '/characters/*',
     createRouteHandler((context: any) => (context as any).user.directories.characters),
 );
 router.all(
-    '/User%20Avatars/:filePath*',
+    '/User%20Avatars/*',
     createRouteHandler((context: any) => (context as any).user.directories.avatars),
 );
 router.all(
-    '/assets/:filePath*',
+    '/assets/*',
     createRouteHandler((context: any) => (context as any).user.directories.assets),
 );
 router.all(
-    '/user/images/:filePath*',
+    '/user/images/*',
     createRouteHandler((context: any) => (context as any).user.directories.userImages),
 );
 router.all(
-    '/user/files/:filePath*',
+    '/user/files/*',
     createRouteHandler((context: any) => (context as any).user.directories.files),
 );
 router.all(
-    '/scripts/extensions/third-party/:filePath*',
+    '/scripts/extensions/third-party/*',
     async (context: any) => {
         const enabled = !!getConfigValue('extensions.enabled', true, 'boolean');
         if (!enabled) {
