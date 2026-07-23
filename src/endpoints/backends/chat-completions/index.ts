@@ -383,7 +383,7 @@ router.post('/status', async (context: Record<string, unknown>) => {
         }
         if (source === CHAT_COMPLETION_SOURCES.CUSTOM) {
             const { mergeObjectWithYaml } = await import('../../../util.js');
-            mergeObjectWithYaml(headers, body.custom_include_headers as Record<string, unknown>);
+            mergeObjectWithYaml(headers, body.custom_include_headers as string);
         }
 
         const modelsUrl = new URL(apiUrl.replace(/\/+$/, '') + '/models');

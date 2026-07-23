@@ -1377,14 +1377,22 @@ export const router = new Elysia({ prefix: '/api/characters' })
     .post('/create', async (context) => {
         const { set } = context;
         const body = context.body as Record<string, unknown>;
-        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
         const directories = user?.directories as Record<string, string> | undefined;
-        const uploadedFile = (context as unknown as Record<string, unknown>).file as Record<string, unknown> | null;
+        const uploadedFile = (context as unknown as Record<string, unknown>).file as Record<
+            string,
+            unknown
+        > | null;
         const query = context.query as Record<string, string>;
         const mockRequest = {
             user: {
                 directories: directories,
-                profile: { handle: (user?.profile as Record<string, unknown>)?.handle as string ?? '' },
+                profile: {
+                    handle: ((user?.profile as Record<string, unknown>)?.handle as string) ?? '',
+                },
             },
         } as any;
 
@@ -1395,14 +1403,18 @@ export const router = new Elysia({ prefix: '/api/characters' })
             }
 
             // Inline getFileNameValidationFunction('file_name')
-            if (body.file_name && typeof body.file_name === 'string' && forbiddenRegExp.test(body.file_name as string)) {
+            if (
+                body.file_name &&
+                typeof body.file_name === 'string' &&
+                forbiddenRegExp.test(body.file_name as string)
+            ) {
                 set.status = 400;
                 return;
             }
 
             body.ch_name = sanitize(body.ch_name as string);
 
-            const char = JSON.stringify(charaFormatData(body, directories));
+            const char = JSON.stringify(charaFormatData(body, directories as any));
             const internalName =
                 (body.file_name as string) ||
                 getPngName(body.ch_name as string, directories as any);
@@ -1416,7 +1428,10 @@ export const router = new Elysia({ prefix: '/api/characters' })
                 return avatarName;
             } else {
                 const crop = tryParse(query.crop as string);
-                const uploadPath = path.join(uploadedFile.destination as string, uploadedFile.filename as string);
+                const uploadPath = path.join(
+                    uploadedFile.destination as string,
+                    uploadedFile.filename as string,
+                );
                 await writeCharacterData(uploadPath, char, internalName, mockRequest, crop);
                 fs.unlinkSync(uploadPath);
                 return avatarName;
@@ -1427,14 +1442,19 @@ export const router = new Elysia({ prefix: '/api/characters' })
         }
     })
     .post('/rename', async (context) => {
-        const { set } = context;
+        const { set: elysiaSet } = context;
         const body = context.body as Record<string, unknown>;
-        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
         const directories = user?.directories as Record<string, string> | undefined;
         const mockRequest = {
             user: {
                 directories: directories,
-                profile: { handle: (user?.profile as Record<string, unknown>)?.handle as string ?? '' },
+                profile: {
+                    handle: ((user?.profile as Record<string, unknown>)?.handle as string) ?? '',
+                },
             },
         } as any;
 
@@ -1445,12 +1465,12 @@ export const router = new Elysia({ prefix: '/api/characters' })
             (typeof body.avatar_url === 'string' || body.avatar_url?.toString) &&
             forbiddenRegExp.test(body.avatar_url as string)
         ) {
-            set.status = 400;
+            elysiaSet.status = 400;
             return;
         }
 
         if (!body?.avatar_url || !body?.new_name) {
-            set.status = 400;
+            elysiaSet.status = 400;
             return;
         }
 
@@ -1491,21 +1511,29 @@ export const router = new Elysia({ prefix: '/api/characters' })
             return { avatar: newAvatarName };
         } catch (err) {
             console.error(err);
-            set.status = 500;
+            elysiaSet.status = 500;
         }
     })
 
     .post('/edit', async (context) => {
         const { set } = context;
         const body = context.body as Record<string, unknown>;
-        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
         const directories = user?.directories as Record<string, string> | undefined;
-        const uploadedFile = (context as unknown as Record<string, unknown>).file as Record<string, unknown> | null;
+        const uploadedFile = (context as unknown as Record<string, unknown>).file as Record<
+            string,
+            unknown
+        > | null;
         const query = context.query as Record<string, string>;
         const mockRequest = {
             user: {
                 directories: directories,
-                profile: { handle: (user?.profile as Record<string, unknown>)?.handle as string ?? '' },
+                profile: {
+                    handle: ((user?.profile as Record<string, unknown>)?.handle as string) ?? '',
+                },
             },
         } as any;
 
@@ -1526,17 +1554,13 @@ export const router = new Elysia({ prefix: '/api/characters' })
             return 'Error: no response body detected';
         }
 
-        if (
-            body.ch_name === '' ||
-            body.ch_name === undefined ||
-            body.ch_name === '.'
-        ) {
+        if (body.ch_name === '' || body.ch_name === undefined || body.ch_name === '.') {
             console.warn('Error: invalid name.');
             set.status = 400;
             return 'Error: invalid name.';
         }
 
-        let char = charaFormatData(body, directories);
+        let char = charaFormatData(body, directories as any);
         char.chat = body.chat;
         char.create_date = body.create_date;
         char = JSON.stringify(char);
@@ -1551,7 +1575,10 @@ export const router = new Elysia({ prefix: '/api/characters' })
                 await writeCharacterData(avatarPath, char, targetFile, mockRequest);
             } else {
                 const crop = tryParse(query.crop as string);
-                const newAvatarPath = path.join(uploadedFile.destination as string, uploadedFile.filename as string);
+                const newAvatarPath = path.join(
+                    uploadedFile.destination as string,
+                    uploadedFile.filename as string,
+                );
                 invalidateThumbnail(directories as any, 'avatar', body.avatar_url as string);
                 await writeCharacterData(newAvatarPath, char, targetFile, mockRequest, crop);
                 fs.unlinkSync(newAvatarPath);
@@ -1572,14 +1599,22 @@ export const router = new Elysia({ prefix: '/api/characters' })
     .post('/edit-avatar', async (context) => {
         const { set } = context;
         const body = context.body as Record<string, unknown>;
-        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
         const directories = user?.directories as Record<string, string> | undefined;
-        const uploadedFile = (context as unknown as Record<string, unknown>).file as Record<string, unknown> | null;
+        const uploadedFile = (context as unknown as Record<string, unknown>).file as Record<
+            string,
+            unknown
+        > | null;
         const query = context.query as Record<string, string>;
         const mockRequest = {
             user: {
                 directories: directories,
-                profile: { handle: (user?.profile as Record<string, unknown>)?.handle as string ?? '' },
+                profile: {
+                    handle: ((user?.profile as Record<string, unknown>)?.handle as string) ?? '',
+                },
             },
         } as any;
 
@@ -1605,7 +1640,10 @@ export const router = new Elysia({ prefix: '/api/characters' })
                 return 'Error: no avatar_url in request body';
             }
 
-            const uploadPath = path.join(uploadedFile.destination as string, uploadedFile.filename as string);
+            const uploadPath = path.join(
+                uploadedFile.destination as string,
+                uploadedFile.filename as string,
+            );
             if (!fs.existsSync(uploadPath)) {
                 set.status = 400;
                 return 'Error: uploaded file does not exist';
@@ -1644,12 +1682,17 @@ export const router = new Elysia({ prefix: '/api/characters' })
     .post('/edit-attribute', async (context) => {
         const { set } = context;
         const body = context.body as Record<string, unknown>;
-        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
         const directories = user?.directories as Record<string, string> | undefined;
         const mockRequest = {
             user: {
                 directories: directories,
-                profile: { handle: (user?.profile as Record<string, unknown>)?.handle as string ?? '' },
+                profile: {
+                    handle: ((user?.profile as Record<string, unknown>)?.handle as string) ?? '',
+                },
             },
         } as any;
 
@@ -1671,11 +1714,7 @@ export const router = new Elysia({ prefix: '/api/characters' })
             return 'Error: no response body detected';
         }
 
-        if (
-            body.ch_name === '' ||
-            body.ch_name === undefined ||
-            body.ch_name === '.'
-        ) {
+        if (body.ch_name === '' || body.ch_name === undefined || body.ch_name === '.') {
             console.warn('Error: invalid name.');
             set.status = 400;
             return 'Error: invalid name.';
@@ -1694,7 +1733,10 @@ export const router = new Elysia({ prefix: '/api/characters' })
 
             const char = JSON.parse(charJSON);
             //check if the field exists
-            if (char[body.field as string] === undefined && char.data?.[body.field as string] === undefined) {
+            if (
+                char[body.field as string] === undefined &&
+                char.data?.[body.field as string] === undefined
+            ) {
                 console.warn('Error: invalid field.');
                 set.status = 400;
                 return 'Error: invalid field.';
@@ -1713,12 +1755,17 @@ export const router = new Elysia({ prefix: '/api/characters' })
     .post('/merge-attributes', async (context) => {
         const { set } = context;
         const body = context.body as Record<string, unknown>;
-        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
         const directories = user?.directories as Record<string, string> | undefined;
         const mockRequest = {
             user: {
                 directories: directories,
-                profile: { handle: (user?.profile as Record<string, unknown>)?.handle as string ?? '' },
+                profile: {
+                    handle: ((user?.profile as Record<string, unknown>)?.handle as string) ?? '',
+                },
             },
         } as any;
 
@@ -1778,7 +1825,8 @@ export const router = new Elysia({ prefix: '/api/characters' })
 
                     try {
                         /** @type {(character: object) => boolean} */
-                        let shouldSkip: ((character: Record<string, unknown>) => boolean) = () => false;
+                        let shouldSkip: (character: Record<string, unknown>) => boolean = () =>
+                            false;
 
                         // Apply optional server-side filter before updating the card
                         if (filter && typeof filter.path === 'string') {
@@ -1822,7 +1870,12 @@ export const router = new Elysia({ prefix: '/api/characters' })
             const update = body;
             const avatarPath = path.join(directories?.characters ?? '', (update as any).avatar);
 
-            const result = await mergeCharacterUpdate(avatarPath, (update as any).avatar, update, mockRequest);
+            const result = await mergeCharacterUpdate(
+                avatarPath,
+                (update as any).avatar,
+                update,
+                mockRequest,
+            );
             if (result.ok) {
                 return;
             } else {
@@ -1844,7 +1897,10 @@ export const router = new Elysia({ prefix: '/api/characters' })
     .post('/delete', async (context) => {
         const { set } = context;
         const body = context.body as Record<string, unknown>;
-        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
         const directories = user?.directories as Record<string, string> | undefined;
 
         // Inline validateAvatarUrlMiddleware
@@ -1902,7 +1958,10 @@ export const router = new Elysia({ prefix: '/api/characters' })
     })
     .post('/all', async (context) => {
         const { set } = context;
-        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
         const directories = user?.directories as Record<string, string> | undefined;
 
         try {
@@ -1923,7 +1982,10 @@ export const router = new Elysia({ prefix: '/api/characters' })
     .post('/get', async (context) => {
         const { set } = context;
         const body = context.body as Record<string, unknown>;
-        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
         const directories = user?.directories as Record<string, string> | undefined;
 
         // Inline validateAvatarUrlMiddleware
@@ -1961,7 +2023,10 @@ export const router = new Elysia({ prefix: '/api/characters' })
     .post('/chats', async (context) => {
         const { set } = context;
         const body = context.body as Record<string, unknown>;
-        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
         const directories = user?.directories as Record<string, string> | undefined;
 
         // Inline validateAvatarUrlMiddleware
@@ -1998,7 +2063,10 @@ export const router = new Elysia({ prefix: '/api/characters' })
             }
 
             if (body.simple) {
-                return jsonFiles.map((file: string) => ({ file_name: file, file_id: path.parse(file).name }));
+                return jsonFiles.map((file: string) => ({
+                    file_name: file,
+                    file_id: path.parse(file).name,
+                }));
             }
 
             const jsonFilesPromise = jsonFiles.map((file: string) => {
@@ -2010,7 +2078,6 @@ export const router = new Elysia({ prefix: '/api/characters' })
             const chatData = (await Promise.allSettled(jsonFilesPromise))
                 .filter((x) => x.status === 'fulfilled')
                 .map((x) => (x as PromiseFulfilledResult<any>).value);
-            // @ts-expect-error TS(7006) FIXME: Parameter 'i' implicitly has an 'any' type.
             const validFiles = chatData.filter((i: any) => i.file_name);
 
             return validFiles;
@@ -2022,13 +2089,21 @@ export const router = new Elysia({ prefix: '/api/characters' })
     .post('/import', async (context) => {
         const { set } = context;
         const body = context.body as Record<string, unknown>;
-        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
         const directories = user?.directories as Record<string, string> | undefined;
-        const uploadedFile = (context as unknown as Record<string, unknown>).file as Record<string, unknown> | null;
+        const uploadedFile = (context as unknown as Record<string, unknown>).file as Record<
+            string,
+            unknown
+        > | null;
         const mockRequest = {
             user: {
                 directories: directories,
-                profile: { handle: (user?.profile as Record<string, unknown>)?.handle as string ?? '' },
+                profile: {
+                    handle: ((user?.profile as Record<string, unknown>)?.handle as string) ?? '',
+                },
             },
         } as any;
 
@@ -2037,7 +2112,10 @@ export const router = new Elysia({ prefix: '/api/characters' })
             return;
         }
 
-        const uploadPath = path.join(uploadedFile.destination as string, uploadedFile.filename as string);
+        const uploadPath = path.join(
+            uploadedFile.destination as string,
+            uploadedFile.filename as string,
+        );
         const format = body.file_type as string;
         const preservedFileName = getPreservedName({ body } as any);
 
@@ -2057,7 +2135,11 @@ export const router = new Elysia({ prefix: '/api/characters' })
                 throw new Error(`Unsupported format: ${format}`);
             }
 
-            const fileName = await importFunction(uploadPath, { request: mockRequest, response: {} }, preservedFileName);
+            const fileName = await importFunction(
+                uploadPath,
+                { request: mockRequest, response: {} },
+                preservedFileName,
+            );
 
             if (!fileName) {
                 console.warn('Failed to import character');
@@ -2078,7 +2160,10 @@ export const router = new Elysia({ prefix: '/api/characters' })
     .post('/duplicate', async (context) => {
         const { set } = context;
         const body = context.body as Record<string, unknown>;
-        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
         const directories = user?.directories as Record<string, string> | undefined;
 
         // Inline validateAvatarUrlMiddleware
@@ -2149,7 +2234,10 @@ export const router = new Elysia({ prefix: '/api/characters' })
     .post('/export', async (context) => {
         const { set } = context;
         const body = context.body as Record<string, unknown>;
-        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
         const directories = user?.directories as Record<string, string> | undefined;
 
         // Inline validateAvatarUrlMiddleware
@@ -2188,7 +2276,8 @@ export const router = new Elysia({ prefix: '/api/characters' })
                     const mutatedBuffer = write(rawBuffer, mutatedData);
                     const contentType = Bun.file(filename).type;
                     set.headers['Content-Type'] = contentType;
-                    set.headers['Content-Disposition'] = `attachment; filename="${encodeURI(path.basename(filename))}"`;
+                    set.headers['Content-Disposition'] =
+                        `attachment; filename="${encodeURI(path.basename(filename))}"`;
                     return new Response(new Uint8Array(mutatedBuffer));
                 }
                 case 'json': {

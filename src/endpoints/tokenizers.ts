@@ -703,7 +703,7 @@ function createWebTokenizerEncodingHandler(tokenizer: WebTokenizer): any {
             const instance = await tokenizer?.get();
             if (!instance) throw new Error('Failed to load the Web tokenizer');
             const tokens = Array.from(instance.encode(text));
-            const chunks = getWebTokenizersChunks(instance, tokens);
+            const chunks = getWebTokenizersChunks(instance, tokens as number[]);
             return { ids: tokens, count: tokens.length, chunks };
         } catch (error) {
             console.error(error);
@@ -1128,74 +1128,74 @@ router.post('/openai/count', async (context: Record<string, unknown>) => {
         if (model === 'claude') {
             const instance = await claude_tokenizer.get();
             if (!instance) throw new Error('Failed to load the Claude tokenizer');
-            num_tokens = countWebTokenizerTokens(instance, body as object[]);
+            num_tokens = countWebTokenizerTokens(instance, body as unknown as object[]);
             return { token_count: num_tokens };
         }
 
         if (model === 'llama3' || model === 'llama-3') {
             const instance = await llama3_tokenizer.get();
             if (!instance) throw new Error('Failed to load the Llama3 tokenizer');
-            num_tokens = countWebTokenizerTokens(instance, body as object[]);
+            num_tokens = countWebTokenizerTokens(instance, body as unknown as object[]);
             return { token_count: num_tokens };
         }
 
         if (model === 'llama') {
-            num_tokens = await countSentencepieceArrayTokens(spp_llama, body as object[]);
+            num_tokens = await countSentencepieceArrayTokens(spp_llama, body as unknown as object[]);
             return { token_count: num_tokens };
         }
 
         if (model === 'mistral') {
-            num_tokens = await countSentencepieceArrayTokens(spp_mistral, body as object[]);
+            num_tokens = await countSentencepieceArrayTokens(spp_mistral, body as unknown as object[]);
             return { token_count: num_tokens };
         }
 
         if (model === 'yi') {
-            num_tokens = await countSentencepieceArrayTokens(spp_yi, body as object[]);
+            num_tokens = await countSentencepieceArrayTokens(spp_yi, body as unknown as object[]);
             return { token_count: num_tokens };
         }
 
         if (model === 'gemma' || model === 'gemini') {
-            num_tokens = await countSentencepieceArrayTokens(spp_gemma, body as object[]);
+            num_tokens = await countSentencepieceArrayTokens(spp_gemma, body as unknown as object[]);
             return { token_count: num_tokens };
         }
 
         if (model === 'jamba') {
-            num_tokens = await countSentencepieceArrayTokens(spp_jamba, body as object[]);
+            num_tokens = await countSentencepieceArrayTokens(spp_jamba, body as unknown as object[]);
             return { token_count: num_tokens };
         }
 
         if (model === 'qwen2') {
             const instance = await qwen2Tokenizer.get();
             if (!instance) throw new Error('Failed to load the Qwen2 tokenizer');
-            num_tokens = countWebTokenizerTokens(instance, body as object[]);
+            num_tokens = countWebTokenizerTokens(instance, body as unknown as object[]);
             return { token_count: num_tokens };
         }
 
         if (model === 'command-r') {
             const instance = await commandRTokenizer.get();
             if (!instance) throw new Error('Failed to load the Command-R tokenizer');
-            num_tokens = countWebTokenizerTokens(instance, body as object[]);
+            num_tokens = countWebTokenizerTokens(instance, body as unknown as object[]);
             return { token_count: num_tokens };
         }
 
         if (model === 'command-a') {
             const instance = await commandATokenizer.get();
             if (!instance) throw new Error('Failed to load the Command-A tokenizer');
-            num_tokens = countWebTokenizerTokens(instance, body as object[]);
+            num_tokens = countWebTokenizerTokens(instance, body as unknown as object[]);
             return { token_count: num_tokens };
         }
 
         if (model === 'nemo') {
             const instance = await nemoTokenizer.get();
             if (!instance) throw new Error('Failed to load the Nemo tokenizer');
-            num_tokens = countWebTokenizerTokens(instance, body as object[]);
+            num_tokens = countWebTokenizerTokens(instance, body as unknown as object[]);
             return { token_count: num_tokens };
         }
 
         if (model === 'deepseek') {
             const instance = await deepseekTokenizer.get();
             if (!instance) throw new Error('Failed to load the DeepSeek tokenizer');
-            num_tokens = countWebTokenizerTokens(instance, body as object[]);
+            num_tokens = countWebTokenizerTokens(instance, body as unknown as object[]);
             return { token_count: num_tokens };
         }
 
@@ -1205,7 +1205,7 @@ router.post('/openai/count', async (context: Record<string, unknown>) => {
 
         const tokenizer = getTiktokenTokenizer(model);
 
-        for (const msg of body as object[]) {
+        for (const msg of body as unknown as object[]) {
             try {
                 num_tokens += tokensPerMessage;
                 for (const [key, value] of Object.entries(msg)) {

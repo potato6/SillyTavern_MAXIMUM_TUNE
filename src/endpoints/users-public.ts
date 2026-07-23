@@ -197,7 +197,7 @@ router.post('/recover-step1', async (context: Record<string, unknown>) => {
             code: recoveryHash,
             created: Date.now(),
         });
-        storage.setTTL(recoveryKey, 10 * 60 * 1000); // 10 min TTL
+        (storage as any).setTTL(recoveryKey, 10 * 60 * 1000); // 10 min TTL
 
         console.log(color.yellow(`Recovery code for ${handle}: ${recoveryCode}`));
 

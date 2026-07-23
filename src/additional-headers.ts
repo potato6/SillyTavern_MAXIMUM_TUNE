@@ -287,7 +287,7 @@ export function setAdditionalHeadersByType(
     type: string,
     server: string | null,
     directories: import('./users.js').UserDirectoryList,
-    secretId = null,
+    secretId: string | null = null,
 ) {
     const headerGetters = {
         [TEXTGEN_TYPES.MANCER]: getMancerHeaders,
