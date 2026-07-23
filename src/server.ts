@@ -616,7 +616,6 @@ if (cliArgs.enableCorsProxy) {
 }
 
 const uploadsPath = path.join(cliArgs.dataRoot, UPLOADS_DIRECTORY);
-// @ts-expect-error TS(2769) Bun/Express multer type mismatch
 app.use(multer({ dest: uploadsPath, limits: { fieldSize: 500 * 1024 * 1024 } }).single('avatar'));
 app.use(multerMonkeyPatch);
 
