@@ -29,9 +29,6 @@ export const router = new Elysia({ prefix: '/api/sd' });
 router.post('/ping', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
-    const req = context.request;
-    const user = (context as any).user;
-    const headers = context.headers;
     try {
         const url = new URL((body.url as string));
         url.pathname = '/sdapi/v1/options';
@@ -59,9 +56,6 @@ router.post('/ping', async (context: any) => {
 router.post('/upscalers', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
-    const req = context.request;
-    const user = (context as any).user;
-    const headers = context.headers;
     try {
         /**
          *
@@ -126,9 +120,6 @@ router.post('/upscalers', async (context: any) => {
 router.post('/vaes', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
-    const req = context.request;
-    const user = (context as any).user;
-    const headers = context.headers;
     try {
         const autoUrl = new URL((body.url as string));
         autoUrl.pathname = '/sdapi/v1/sd-vae';
@@ -168,9 +159,6 @@ router.post('/vaes', async (context: any) => {
 router.post('/samplers', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
-    const req = context.request;
-    const user = (context as any).user;
-    const headers = context.headers;
     try {
         const url = new URL((body.url as string));
         url.pathname = '/sdapi/v1/samplers';
@@ -199,9 +187,6 @@ router.post('/samplers', async (context: any) => {
 router.post('/schedulers', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
-    const req = context.request;
-    const user = (context as any).user;
-    const headers = context.headers;
     try {
         const url = new URL((body.url as string));
         url.pathname = '/sdapi/v1/schedulers';
@@ -230,9 +215,6 @@ router.post('/schedulers', async (context: any) => {
 router.post('/models', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
-    const req = context.request;
-    const user = (context as any).user;
-    const headers = context.headers;
     try {
         const url = new URL((body.url as string));
         url.pathname = '/sdapi/v1/sd-models';
@@ -264,9 +246,6 @@ router.post('/models', async (context: any) => {
 router.post('/get-model', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
-    const req = context.request;
-    const user = (context as any).user;
-    const headers = context.headers;
     try {
         const url = new URL((body.url as string));
         url.pathname = '/sdapi/v1/options';
@@ -289,9 +268,6 @@ router.post('/get-model', async (context: any) => {
 router.post('/set-model', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
-    const req = context.request;
-    const user = (context as any).user;
-    const headers = context.headers;
     try {
         /**
          *
@@ -363,8 +339,6 @@ router.post('/generate', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
     const req = context.request;
-    const user = (context as any).user;
-    const headers = context.headers;
     const response = context as any;
     try {
         try {
@@ -429,9 +403,6 @@ router.post('/generate', async (context: any) => {
 router.post('/sd-next/upscalers', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
-    const req = context.request;
-    const user = (context as any).user;
-    const headers = context.headers;
     try {
         const url = new URL((body.url as string));
         url.pathname = '/sdapi/v1/upscalers';
@@ -476,9 +447,6 @@ const comfy = new Elysia({ prefix: '/comfy' });
 comfy.post('/ping', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
-    const req = context.request;
-    const user = (context as any).user;
-    const headers = context.headers;
     try {
         const url = new URL((body.url as string).replace(/\/+$/, '') + '/system_stats');
 
@@ -499,9 +467,6 @@ comfy.post('/ping', async (context: any) => {
 comfy.post('/samplers', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
-    const req = context.request;
-    const user = (context as any).user;
-    const headers = context.headers;
     try {
         const url = new URL((body.url as string).replace(/\/+$/, '') + '/object_info');
 
@@ -524,9 +489,6 @@ comfy.post('/samplers', async (context: any) => {
 comfy.post('/models', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
-    const req = context.request;
-    const user = (context as any).user;
-    const headers = context.headers;
     try {
         const url = new URL((body.url as string).replace(/\/+$/, '') + '/object_info');
 
@@ -573,9 +535,6 @@ comfy.post('/models', async (context: any) => {
 comfy.post('/schedulers', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
-    const req = context.request;
-    const user = (context as any).user;
-    const headers = context.headers;
     try {
         const url = new URL((body.url as string).replace(/\/+$/, '') + '/object_info');
 
@@ -598,9 +557,6 @@ comfy.post('/schedulers', async (context: any) => {
 comfy.post('/vaes', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
-    const req = context.request;
-    const user = (context as any).user;
-    const headers = context.headers;
     try {
         const url = new URL((body.url as string).replace(/\/+$/, '') + '/object_info');
 
@@ -621,11 +577,8 @@ comfy.post('/vaes', async (context: any) => {
 });
 
 comfy.post('/workflows', async (context: any) => {
-    const body = context.body as Record<string, unknown>;
     const set = context.set;
-    const req = context.request;
     const user = (context as any).user;
-    const headers = context.headers;
     try {
         const data = getComfyWorkflows(user.directories);
         return data;
@@ -639,9 +592,7 @@ comfy.post('/workflows', async (context: any) => {
 comfy.post('/workflow', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
-    const req = context.request;
     const user = (context as any).user;
-    const headers = context.headers;
     try {
         let filePath = path.join(user.directories.comfyWorkflows, sanitize(String(body.file_name)));
         if (!fs.existsSync(filePath)) {
@@ -659,9 +610,7 @@ comfy.post('/workflow', async (context: any) => {
 comfy.post('/save-workflow', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
-    const req = context.request;
     const user = (context as any).user;
-    const headers = context.headers;
     try {
         const filePath = path.join(
             user.directories.comfyWorkflows,
@@ -680,9 +629,7 @@ comfy.post('/save-workflow', async (context: any) => {
 comfy.post('/delete-workflow', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
-    const req = context.request;
     const user = (context as any).user;
-    const headers = context.headers;
     try {
         const filePath = path.join(
             user.directories.comfyWorkflows,
@@ -705,9 +652,7 @@ comfy.post(
     async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
-    const req = context.request;
     const user = (context as any).user;
-    const headers = context.headers;
         try {
             const oldName = sanitize(String(body.old_name));
             const newName = sanitize(String(body.new_name));
@@ -784,8 +729,6 @@ comfy.post('/generate', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
     const req = context.request;
-    const user = (context as any).user;
-    const headers = context.headers;
     const response = context as any;
     try {
         let item: ComfyHistoryItem | undefined;
@@ -881,9 +824,7 @@ const comfyRunPod = new Elysia({ prefix: '/comfyrunpod' });
 comfyRunPod.post('/ping', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
-    const req = context.request;
     const user = (context as any).user;
-    const headers = context.headers;
     try {
         const key = readSecret(user.directories, SECRET_KEYS.COMFY_RUNPOD);
 
@@ -921,7 +862,6 @@ comfyRunPod.post('/generate', async (context: any) => {
     const set = context.set;
     const req = context.request;
     const user = (context as any).user;
-    const headers = context.headers;
     const response = context as any;
     try {
         const key = readSecret(user.directories, SECRET_KEYS.COMFY_RUNPOD);
@@ -1001,11 +941,8 @@ comfyRunPod.post('/generate', async (context: any) => {
 const together = new Elysia({ prefix: '/together' });
 
 together.post('/models', async (context: any) => {
-    const body = context.body as Record<string, unknown>;
     const set = context.set;
-    const req = context.request;
     const user = (context as any).user;
-    const headers = context.headers;
     try {
         const key = readSecret(user.directories, SECRET_KEYS.TOGETHERAI);
 
@@ -1051,9 +988,7 @@ together.post('/models', async (context: any) => {
 together.post('/generate', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
-    const req = context.request;
     const user = (context as any).user;
-    const headers = context.headers;
     try {
         const key = readSecret(user.directories, SECRET_KEYS.TOGETHERAI);
 
@@ -1116,9 +1051,6 @@ const sdcpp = new Elysia({ prefix: '/sdcpp' });
 sdcpp.post('/ping', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
-    const req = context.request;
-    const user = (context as any).user;
-    const headers = context.headers;
     try {
         const url = new URL((body.url as string).replace(/\/+$/, '') + '/v1/images/generations');
 
@@ -1139,9 +1071,6 @@ sdcpp.post('/ping', async (context: any) => {
 sdcpp.post('/models', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
-    const req = context.request;
-    const user = (context as any).user;
-    const headers = context.headers;
     try {
         const url = new URL((body.url as string).replace(/\/+$/, '') + '/v1/models');
 
@@ -1162,9 +1091,6 @@ sdcpp.post('/models', async (context: any) => {
 sdcpp.post('/generate', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
-    const req = context.request;
-    const user = (context as any).user;
-    const headers = context.headers;
     try {
         const url = new URL((body.url as string).replace(/\/+$/, '') + '/sdapi/v1/txt2img');
 
@@ -1221,9 +1147,6 @@ const drawthings = new Elysia({ prefix: '/drawthings' });
 drawthings.post('/ping', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
-    const req = context.request;
-    const user = (context as any).user;
-    const headers = context.headers;
     try {
         const url = new URL((body.url as string));
         url.pathname = '/';
@@ -1248,9 +1171,6 @@ drawthings.post('/ping', async (context: any) => {
 drawthings.post('/get-model', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
-    const req = context.request;
-    const user = (context as any).user;
-    const headers = context.headers;
     try {
         const url = new URL((body.url as string));
         url.pathname = '/';
@@ -1272,9 +1192,6 @@ drawthings.post('/get-model', async (context: any) => {
 drawthings.post('/get-upscaler', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
-    const req = context.request;
-    const user = (context as any).user;
-    const headers = context.headers;
     try {
         const url = new URL((body.url as string));
         url.pathname = '/';
@@ -1296,9 +1213,6 @@ drawthings.post('/get-upscaler', async (context: any) => {
 drawthings.post('/generate', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
-    const req = context.request;
-    const user = (context as any).user;
-    const headers = context.headers;
     try {
         console.debug('SD DrawThings API request:', body);
 
@@ -1364,9 +1278,7 @@ pollinations.post('/models', async ({ set }) => {
 pollinations.post('/generate', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
-    const req = context.request;
     const user = (context as any).user;
-    const headers = context.headers;
     try {
         const key = readSecret(user.directories, SECRET_KEYS.POLLINATIONS);
         if (!key) {
@@ -1423,9 +1335,7 @@ const stability = new Elysia({ prefix: '/stability' });
 stability.post('/generate', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
-    const req = context.request;
     const user = (context as any).user;
-    const headers = context.headers;
     try {
         const key = readSecret(user.directories, SECRET_KEYS.STABILITY);
 
@@ -1492,9 +1402,7 @@ const huggingface = new Elysia({ prefix: '/huggingface' });
 huggingface.post('/generate', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
-    const req = context.request;
     const user = (context as any).user;
-    const headers = context.headers;
     try {
         const key = readSecret(user.directories, SECRET_KEYS.HUGGINGFACE);
 
@@ -1537,11 +1445,8 @@ huggingface.post('/generate', async (context: any) => {
 const electronhub = new Elysia({ prefix: '/electronhub' });
 
 electronhub.post('/models', async (context: any) => {
-    const body = context.body as Record<string, unknown>;
     const set = context.set;
-    const req = context.request;
     const user = (context as any).user;
-    const headers = context.headers;
     try {
         const key = readSecret(user.directories, SECRET_KEYS.ELECTRONHUB);
 
@@ -1598,9 +1503,7 @@ electronhub.post('/models', async (context: any) => {
 electronhub.post('/generate', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
-    const req = context.request;
     const user = (context as any).user;
-    const headers = context.headers;
     try {
         const key = readSecret(user.directories, SECRET_KEYS.ELECTRONHUB);
 
@@ -1671,9 +1574,6 @@ electronhub.post('/generate', async (context: any) => {
 electronhub.post('/sizes', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
-    const req = context.request;
-    const user = (context as any).user;
-    const headers = context.headers;
     const result = await fetch(`https://api.electronhub.ai/v1/models/${body.model}`, {
         method: 'GET',
         headers: {
@@ -1702,11 +1602,8 @@ electronhub.post('/sizes', async (context: any) => {
 const chutes = new Elysia({ prefix: '/chutes' });
 
 chutes.post('/models', async (context: any) => {
-    const body = context.body as Record<string, unknown>;
     const set = context.set;
-    const req = context.request;
     const user = (context as any).user;
-    const headers = context.headers;
     try {
         const key = readSecret(user.directories, SECRET_KEYS.CHUTES);
 
@@ -1751,9 +1648,7 @@ chutes.post('/models', async (context: any) => {
 chutes.post('/generate', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
-    const req = context.request;
     const user = (context as any).user;
-    const headers = context.headers;
     try {
         const key = readSecret(user.directories, SECRET_KEYS.CHUTES);
 
@@ -1805,11 +1700,8 @@ chutes.post('/generate', async (context: any) => {
 const nanogpt = new Elysia({ prefix: '/nanogpt' });
 
 nanogpt.post('/models', async (context: any) => {
-    const body = context.body as Record<string, unknown>;
     const set = context.set;
-    const req = context.request;
     const user = (context as any).user;
-    const headers = context.headers;
     try {
         const key = readSecret(user.directories, SECRET_KEYS.NANOGPT);
 
@@ -1856,9 +1748,7 @@ nanogpt.post('/models', async (context: any) => {
 nanogpt.post('/generate', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
-    const req = context.request;
     const user = (context as any).user;
-    const headers = context.headers;
     try {
         const key = readSecret(user.directories, SECRET_KEYS.NANOGPT);
 
@@ -1907,9 +1797,7 @@ const bfl = new Elysia({ prefix: '/bfl' });
 bfl.post('/generate', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
-    const req = context.request;
     const user = (context as any).user;
-    const headers = context.headers;
     try {
         const key = readSecret(user.directories, SECRET_KEYS.BFL);
 
@@ -2096,9 +1984,7 @@ falai.post('/models', async ({ set }) => {
 falai.post('/generate', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
-    const req = context.request;
     const user = (context as any).user;
-    const headers = context.headers;
     try {
         const key = readSecret(user.directories, SECRET_KEYS.FALAI);
 
@@ -2208,9 +2094,7 @@ const xai = new Elysia({ prefix: '/xai' });
 xai.post('/generate', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
-    const req = context.request;
     const user = (context as any).user;
-    const headers = context.headers;
     try {
         const key = readSecret(user.directories, SECRET_KEYS.XAI);
 
@@ -2272,11 +2156,8 @@ xai.post('/generate', async (context: any) => {
 const aimlapi = new Elysia({ prefix: '/aimlapi' });
 
 aimlapi.post('/models', async (context: any) => {
-    const body = context.body as Record<string, unknown>;
     const set = context.set;
-    const req = context.request;
     const user = (context as any).user;
-    const headers = context.headers;
     try {
         const key = readSecret(user.directories, SECRET_KEYS.AIMLAPI);
 
@@ -2325,9 +2206,7 @@ aimlapi.post('/models', async (context: any) => {
 aimlapi.post('/generate-image', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
-    const req = context.request;
     const user = (context as any).user;
-    const headers = context.headers;
     try {
         const key = readSecret(user.directories, SECRET_KEYS.AIMLAPI);
         if (!key) { set.status = 400; return; }
@@ -2379,9 +2258,7 @@ const zai = new Elysia({ prefix: '/zai' });
 zai.post('/generate', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
-    const req = context.request;
     const user = (context as any).user;
-    const headers = context.headers;
     try {
         const key = readSecret(user.directories, SECRET_KEYS.ZAI);
 
@@ -2476,7 +2353,6 @@ zai.post('/generate-video', async (context: any) => {
     const set = context.set;
     const req = context.request;
     const user = (context as any).user;
-    const headers = context.headers;
     try {
         const controller = new AbortController();
         (req as any).socket.removeAllListeners('close');
@@ -2600,9 +2476,7 @@ const workersai = new Elysia({ prefix: '/workersai' });
 workersai.post('/models', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
-    const req = context.request;
     const user = (context as any).user;
-    const headers = context.headers;
     try {
         const key = readSecret(user.directories, SECRET_KEYS.WORKERS_AI);
 
@@ -2660,9 +2534,7 @@ workersai.post('/models', async (context: any) => {
 workersai.post('/generate', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
-    const req = context.request;
     const user = (context as any).user;
-    const headers = context.headers;
     try {
         const key = readSecret(user.directories, SECRET_KEYS.WORKERS_AI);
 

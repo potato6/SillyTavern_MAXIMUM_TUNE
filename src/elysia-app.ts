@@ -7,11 +7,10 @@
  * In standalone mode (the default) the full middleware stack is applied.
  */
 
-import { Elysia, t } from 'elysia';
+import { Elysia } from 'elysia';
 import { cors } from '@elysiajs/cors';
 import { staticPlugin } from '@elysiajs/static';
-import { createHmac, timingSafeEqual, randomBytes } from 'node:crypto';
-import type { Request as ExpressRequest } from 'express';
+import { createHmac, timingSafeEqual } from 'node:crypto';
 
 // ── Cookie session helpers ─────────────────────────────────────────────────────
 
@@ -227,7 +226,6 @@ export function createElysiaApp(config?: ElysiaAppConfig): Elysia {
             const proxy = new Proxy(session, handler);
 
             // Schedule cookie writing by intercepting the response
-            const origSetCookie = (set.headers as Record<string, string>)['Set-Cookie'];
             const maxAgeSeconds = Math.floor(maxAge / 1000);
 
             // Return proxy as session — the caller mutates it, then we stringify at response time
@@ -241,8 +239,6 @@ export function createElysiaApp(config?: ElysiaAppConfig): Elysia {
         // Write session cookie after response is generated (if dirty)
         app = app.onAfterHandle({ as: 'global' }, ({ set, _sessionMeta }: any) => {
             if (_sessionMeta?.dirty && set?.headers) {
-                const meta = _sessionMeta;
-                const plain: Record<string, unknown> = {};
                 // The session was accessed via proxy; we need to read current state
                 // But at this point we can't reconstruct it easily...
                 // For now, skip auto-cookie writing — the derive plugin above sets it.

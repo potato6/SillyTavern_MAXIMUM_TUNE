@@ -1,6 +1,5 @@
 import { Elysia } from 'elysia';
-import { PassThrough } from 'node:stream';
-import { Readable } from 'node:stream';
+import { PassThrough, Readable } from 'node:stream';
 import { CHAT_COMPLETION_SOURCES } from '../../../constants.js';
 import {
     getTokenizerModel,

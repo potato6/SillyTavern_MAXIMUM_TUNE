@@ -565,7 +565,6 @@ export const router = new Elysia({ prefix: '/api/extensions' })
         }
     })
     .get('/discover', (context) => {
-        const { set } = context;
         const user = (context as unknown as Record<string, unknown>).user as Record<
             string,
             unknown

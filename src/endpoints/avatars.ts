@@ -7,7 +7,6 @@ import { sync as writeFileAtomicSync } from 'write-file-atomic';
 import { getImages, tryParse } from '../util.js';
 import { applyAvatarCropResize } from './characters.js';
 import { invalidateThumbnail } from './thumbnails.js';
-import cacheBuster from '../middleware/cacheBuster.js';
 
 export const router = new Elysia({ prefix: '/api/avatars' })
     .post('/get', (context) => {

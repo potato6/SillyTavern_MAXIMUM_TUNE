@@ -12,7 +12,7 @@ import { getHostFromUrl, isHostWhitelisted } from './content-manager.js';
 const VALID_CATEGORIES = new Set(['bgm', 'ambient', 'blip', 'live2d', 'vrm', 'character', 'temp']);
 
 export function validateAssetFileName(inputFilename: string) {
-    if (!/^[a-zA-Z0-9_\-\.]+$/.test(inputFilename)) {
+    if (!/^[a-zA-Z0-9_\-.]+$/.test(inputFilename)) {
         return { error: true, message: "Illegal character in filename; only alphanumeric, '_', '-' are accepted." };
     }
 

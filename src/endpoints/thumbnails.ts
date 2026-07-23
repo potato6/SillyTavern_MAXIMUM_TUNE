@@ -5,7 +5,7 @@ import sanitize from 'sanitize-filename';
 import { sync as writeFileAtomicSync } from 'write-file-atomic';
 import { imageSize as sizeOf } from 'image-size';
 
-import { getConfigValue, invalidateFirefoxCache } from '../util.js';
+import { getConfigValue } from '../util.js';
 import {
     getThumbnailResolution,
     isAnimatedWebP,

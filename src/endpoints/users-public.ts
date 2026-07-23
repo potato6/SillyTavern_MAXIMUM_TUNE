@@ -4,7 +4,7 @@ import storage from 'node-persist';
 import { Elysia } from 'elysia';
 import { RateLimiterMemory, RateLimiterRes } from 'rate-limiter-flexible';
 import { getIpAddress, retryAfter } from '../express-common.js';
-import { color, Cache, getConfigValue } from '../util.js';
+import { color, getConfigValue } from '../util.js';
 import {
     KEY_PREFIX,
     getUserAvatar,
@@ -18,8 +18,6 @@ const DISCREET_LOGIN = getConfigValue('enableDiscreetLogin', false, 'boolean');
 const PREFER_REAL_IP_HEADER = getConfigValue('rateLimiting.preferRealIpHeader', false, 'boolean');
 const LOGIN_POINTS = getConfigValue('rateLimiting.accountsLoginMaxAttempts', 5, 'number');
 const RECOVER_POINTS = getConfigValue('rateLimiting.accountsRecoverMaxAttempts', 5, 'number');
-const MFA_CACHE = new Cache(5 * 60 * 1000);
-
 const generateRecoveryCode = () =>
     Array.from({ length: 6 }, () => crypto.randomInt(0, 10)).join('');
 
@@ -86,7 +84,6 @@ router.post('/login', async (context: Record<string, unknown>) => {
 
         const rateLimit = await loginLimiter.get(ip);
         if (rateLimit !== null && rateLimit.consumedPoints > loginLimiter.points) {
-            const retrySecs = Math.round(rateLimit.msBeforeNext / 1000) || 1;
             return retryAfter(
                 set,
                 new RateLimiterRes(rateLimit.consumedPoints, rateLimit.msBeforeNext),

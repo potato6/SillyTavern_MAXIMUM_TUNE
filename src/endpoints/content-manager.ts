@@ -1068,7 +1068,6 @@ export const router = new Elysia({ prefix: '/api/content' })
             const url = bodyAny.url as string;
             const host = getHostFromUrl(url);
             let result;
-            let type;
 
             const isChub = host.includes('chub.ai') || host.includes('characterhub.org');
             const isJannnyContent = host.includes('janitorai');
@@ -1085,7 +1084,6 @@ export const router = new Elysia({ prefix: '/api/content' })
                     return;
                 }
 
-                type = 'character';
                 result = await downloadPygmalionCharacter(uuid);
             } else if (isJannnyContent) {
                 const uuid = getUuidFromUrl(url);
@@ -1094,7 +1092,6 @@ export const router = new Elysia({ prefix: '/api/content' })
                     return;
                 }
 
-                type = 'character';
                 result = await downloadJannyCharacter(uuid);
             } else if (isAICharacterCardsContent) {
                 const AICCParsed = parseAICC(url);
@@ -1102,11 +1099,9 @@ export const router = new Elysia({ prefix: '/api/content' })
                     set.status = 404;
                     return;
                 }
-                type = 'character';
                 result = await downloadAICCCharacter(AICCParsed);
             } else if (isChub) {
                 const chubParsed = parseChubUrl(url);
-                type = chubParsed?.type;
 
                 if (chubParsed?.type === 'character') {
                     console.info('Downloading chub character:', chubParsed.id);
@@ -1125,7 +1120,6 @@ export const router = new Elysia({ prefix: '/api/content' })
                     return;
                 }
 
-                type = 'character';
                 result = await downloadRisuCharacter(uuid);
             } else if (isPerchance) {
                 const perchanceSlug = parsePerchanceSlug(url);
@@ -1133,11 +1127,9 @@ export const router = new Elysia({ prefix: '/api/content' })
                     set.status = 404;
                     return;
                 }
-                type = 'character';
                 result = await downloadPerchanceCharacter(perchanceSlug);
             } else if (isGeneric) {
                 console.info('Downloading from generic url:', url);
-                type = 'character';
                 result = await downloadGenericPng(url);
             } else {
                 console.error(

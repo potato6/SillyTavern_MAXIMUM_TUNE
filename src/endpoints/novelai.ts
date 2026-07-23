@@ -1,5 +1,4 @@
 import util from 'node:util';
-import { Buffer } from 'node:buffer';
 
 import { Elysia } from 'elysia';
 
