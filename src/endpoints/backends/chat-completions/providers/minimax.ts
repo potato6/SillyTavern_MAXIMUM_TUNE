@@ -38,7 +38,7 @@ const provider: ChatProvider = {
         // MiniMax does not allow consecutive messages with the same role.
         const messages = postProcessPrompt(
             req.body.messages,
-            PROMPT_PROCESSING_TYPE.MERGE_TOOLS,
+            PROMPT_PROCESSING_TYPE.MERGE_TOOLS as string,
             getPromptNames(req),
         );
 

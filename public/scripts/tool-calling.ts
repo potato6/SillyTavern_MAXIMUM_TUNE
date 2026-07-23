@@ -197,15 +197,22 @@ class ToolDefinition {
      * @param {function} shouldRegister A function that will be called to determine if the tool should be registered.
      * @param {boolean} stealth A tool call result will not be shown in the chat. No follow-up generation will be performed.
      */
-    // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
     constructor(
+// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
         name,
+// @ts-expect-error TS(7006) FIXME: Parameter 'displayName' implicitly has an 'any' type.
         displayName,
+// @ts-expect-error TS(7006) FIXME: Parameter 'description' implicitly has an 'any' type.
         description,
+// @ts-expect-error TS(7006) FIXME: Parameter 'parameters' implicitly has an 'any' type.
         parameters,
+// @ts-expect-error TS(7006) FIXME: Parameter 'action' implicitly has an 'any' type.
         action,
+// @ts-expect-error TS(7006) FIXME: Parameter 'formatMessage' implicitly has an 'any' type.
         formatMessage,
+// @ts-expect-error TS(7006) FIXME: Parameter 'shouldRegister' implicitly has an 'any' type.
         shouldRegister,
+// @ts-expect-error TS(7006) FIXME: Parameter 'stealth' implicitly has an 'any' type.
         stealth,
     ) {
         this.#name = name;
@@ -720,10 +727,10 @@ export class ToolManager {
                 case chat_completion_sources.ELECTRONHUB:
                     return currentModel.metadata?.function_call;
                 case chat_completion_sources.WORKERS_AI:
-                    // @ts-expect-error TS(2339) FIXME: Property 'properties' does not exist on type 'neve... Remove this comment to see the full error message
                     return (
                         Array.isArray(currentModel.properties) &&
                         currentModel.properties.some(
+// @ts-expect-error TS(7006) FIXME: Parameter 'p' implicitly has an 'any' type.
                             (p) => p.property_id === 'function_calling' && p.value === 'true',
                         )
                     );
@@ -829,9 +836,10 @@ export class ToolManager {
 
         // Google AI Studio tool calls
         if (Array.isArray(data?.responseContent?.parts)) {
-            // @ts-expect-error TS(7006) FIXME: Parameter 'p' implicitly has an 'any' type.
             return data.responseContent.parts
+// @ts-expect-error TS(7006) FIXME: Parameter 'p' implicitly has an 'any' type.
                 .filter((p) => p.functionCall)
+// @ts-expect-error TS(7006) FIXME: Parameter 'p' implicitly has an 'any' type.
                 .map((p) => convertGoogleToolCall(p.functionCall, p.thoughtSignature));
         }
 
@@ -849,8 +857,8 @@ export class ToolManager {
                 // Add OpenRouter signatures
                 if (Array.isArray(choice.message.reasoning_details)) {
                     for (const toolCall of choice.message.tool_calls) {
-                        // @ts-expect-error TS(7006) FIXME: Parameter 'rd' implicitly has an 'any' type.
                         const reasoningDetail = choice.message.reasoning_details.find(
+// @ts-expect-error TS(7006) FIXME: Parameter 'rd' implicitly has an 'any' type.
                             (rd) => rd.id === toolCall.id,
                         );
                         if (
@@ -869,8 +877,8 @@ export class ToolManager {
 
         // Claude tool calls to OpenAI tool calls
         if (Array.isArray(data?.content)) {
-            // @ts-expect-error TS(7006) FIXME: Parameter 'c' implicitly has an 'any' type.
             const content = data.content
+// @ts-expect-error TS(7006) FIXME: Parameter 'c' implicitly has an 'any' type.
                 .filter((c) => c.type === 'tool_use')
                 .map(convertClaudeToolCall);
 
@@ -994,8 +1002,8 @@ export class ToolManager {
             acc[name] = (acc[name] || 0) + 1;
             return acc;
         }, {});
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         return Object.entries(toolCounts)
+// @ts-expect-error TS(18046) FIXME: 'count' is of type 'unknown'.
             .map(([name, count]) => (count > 1 ? `${name} (${count})` : name))
             .join(', ');
     }
@@ -1068,11 +1076,11 @@ export class ToolManager {
             'An error occurred while invoking function tools. Click here for more details.',
             'Tool Calling',
             {
-                // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
                 onclick: () =>
                     Popup.show.text(
                         'Tool Calling Errors',
                         DOMPurify.sanitize(
+// @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
                             errors.map((e) => `${e.cause}: ${e.message}`).join('<br>'),
                         ),
                     ),
@@ -1321,14 +1329,14 @@ export class ToolManager {
 
                     // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
                     const actionFunc = closureToFunction(action, (x) => x);
-                    // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
                     const formatMessageFunc =
                         formatMessage instanceof SlashCommandClosure
+// @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
                             ? closureToFunction(formatMessage, (x) => String(x))
                             : null;
-                    // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
                     const shouldRegisterFunc =
                         shouldRegister instanceof SlashCommandClosure
+// @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
                             ? closureToFunction(shouldRegister, (x) => isTrueBoolean(x))
                             : null;
 

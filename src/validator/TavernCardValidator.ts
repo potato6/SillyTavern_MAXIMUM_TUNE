@@ -141,12 +141,11 @@ export class TavernCardValidator {
             return true;
         });
 
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         return (
             isAllRequiredFieldsPresent &&
-            Array.isArray(data.alternate_greetings) &&
-            Array.isArray(data.tags) &&
-            typeof data.extensions === 'object'
+            Array.isArray((data as any).alternate_greetings) &&
+            Array.isArray((data as any).tags) &&
+            typeof (data as any).extensions === 'object'
         );
     }
 

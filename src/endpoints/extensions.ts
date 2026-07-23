@@ -9,7 +9,6 @@ import { PUBLIC_DIRECTORIES } from '../constants.js';
 import { getConfigValue, isValidUrl } from '../util.js';
 import { createGitClient } from '../git/client.js';
 
-// @ts-expect-error TS(2345) FIXME: Argument of type '"auto"' is not assignable to par... Remove this comment to see the full error message
 const gitBackend = getConfigValue('git.backend', 'auto');
 
 /**
@@ -75,7 +74,6 @@ export const extensionsEnabledFeatureGuard = (
     response: express.Response,
     next: express.NextFunction,
 ) => {
-    // @ts-expect-error TS(2345) FIXME: Argument of type 'true' is not assignable to param... Remove this comment to see the full error message
     const enabled = !!getConfigValue('extensions.enabled', true, 'boolean');
     if (!enabled) {
         response.sendStatus(404);

@@ -130,17 +130,17 @@ export const newWorldInfoEntryDefinition = {
     characterFilterNames: { default: [], type: 'array', excludeFromTemplate: true },
     characterFilterTags: { default: [], type: 'array', excludeFromTemplate: true },
     characterFilterExclude: { default: false, type: 'boolean', excludeFromTemplate: true },
-    // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
     triggers: {
         default: [],
         type: 'array',
+// @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
         arrayFilter: (value) => GENERATION_TYPE_TRIGGERS.includes(value),
     },
 };
 
 export const newWorldInfoEntryTemplate = Object.fromEntries(
-    // @ts-expect-error TS(2339) FIXME: Property 'excludeFromTemplate' does not exist on type ...
     Object.entries(newWorldInfoEntryDefinition)
+// @ts-expect-error TS(2339) FIXME: Property 'filter' does not exist on type.
         .filter(([_, value]) => !value.excludeFromTemplate)
         .map(([key, value]) => [key, value.default]),
 );
@@ -704,7 +704,6 @@ export async function createNewWorldInfo(worldName, { interactive = false } = {}
 
     const sanitizedWorldName = await getSanitizedFilename(worldName);
 
-    // @ts-expect-error TS(2322) FIXME: Type '(existingName: any) => Promise<boolean>' is ... Remove this comment to see the full error message
     const allowed = await checkOverwriteExistingData(
         'World Info',
         wiManager.worldNames,
@@ -712,6 +711,7 @@ export async function createNewWorldInfo(worldName, { interactive = false } = {}
         {
             interactive: interactive,
             actionName: 'Create',
+// @ts-expect-error TS(2322) FIXME: Type is not assignable.
             deleteAction: (existingName) => deleteWorldInfo(existingName),
         },
     );
@@ -870,7 +870,6 @@ export async function importWorldInfo(file) {
 
     const worldName = file.name.substr(0, file.name.lastIndexOf('.'));
     const sanitizedWorldName = await getSanitizedFilename(worldName);
-    // @ts-expect-error TS(2322) FIXME: Type '(existingName: any) => Promise<boolean>' is ... Remove this comment to see the full error message
     const allowed = await checkOverwriteExistingData(
         'World Info',
         wiManager.worldNames,
@@ -878,6 +877,7 @@ export async function importWorldInfo(file) {
         {
             interactive: true,
             actionName: 'Import',
+// @ts-expect-error TS(2322) FIXME: Type is not assignable.
             deleteAction: (existingName) => deleteWorldInfo(existingName),
         },
     );
@@ -907,9 +907,9 @@ export async function importWorldInfo(file) {
                 // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 document.getElementById('world_editor_select').value = String(newIndex);
                 // Sync the TomSelect display with the programmatic value change
-                // @ts-expect-error TS(2339) FIXME: Property 'tomselect' does not exist on type 'HTMLElement'.
                 document
                     .getElementById('world_editor_select')
+// @ts-expect-error TS(2551) FIXME: Property does not exist.
                     ?.tomselect?.setValue(String(newIndex));
                 document
                     .getElementById('world_editor_select')
@@ -933,10 +933,12 @@ export async function importWorldInfo(file) {
  * @param {boolean} [options.deleteOriginal] - Whether to delete the original entry from the source lorebook after moving it.
  * @returns {Promise<boolean>} True if the move was successful, false otherwise.
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'sourceName' implicitly has an 'any' typ... Remove this comment to see the full error message
 export async function moveWorldInfoEntry(
+// @ts-expect-error TS(7006) FIXME: Parameter 'sourceName' implicitly has an 'any' type.
     sourceName,
+// @ts-expect-error TS(7006) FIXME: Parameter 'targetName' implicitly has an 'any' type.
     targetName,
+// @ts-expect-error TS(7006) FIXME: Parameter 'uid' implicitly has an 'any' type.
     uid,
     { deleteOriginal = true } = {},
 ) {
@@ -1025,8 +1027,8 @@ export async function moveWorldInfoEntry(
         );
 
         // Check if the currently viewed book in the editor is the source or target and reload it
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const currentEditorBookIndex = Number(
+// @ts-expect-error TS(2531) FIXME: Object is possibly 'null' or 'undefined'.
             (document.getElementById('world_editor_select').value = String()),
         );
         if (!isNaN(currentEditorBookIndex)) {

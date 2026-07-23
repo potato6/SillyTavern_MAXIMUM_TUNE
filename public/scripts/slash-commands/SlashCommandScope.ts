@@ -10,8 +10,8 @@ export class SlashCommandScope {
     /** @type {object.<string, string|SlashCommandClosure>} */ macros = {};
     /** @type {{key:string, value:string|SlashCommandClosure}[]} */
     get macroList() {
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         return [
+// @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type.
             ...Object.keys(this.macros).map((key) => ({ key, value: this.macros[key] })),
             ...(this.parent?.macroList ?? []),
         ];

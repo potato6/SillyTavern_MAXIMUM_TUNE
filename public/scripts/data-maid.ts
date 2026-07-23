@@ -181,12 +181,13 @@ class DataMaidDialog {
     // @ts-expect-error TS(7006) FIXME: Parameter 'report' implicitly has an 'any' type.
     async renderReport(report, resultsList) {
         for (const [prop, data] of Object.entries(this.DATA_MAID_CATEGORIES)) {
-            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             const category = await this.renderCategory(
                 prop,
+// @ts-expect-error TS(18046) FIXME: 'data' is of type 'unknown'.
                 data.name,
+// @ts-expect-error TS(18046) FIXME: 'data' is of type 'unknown'.
                 data.description,
-                report.report[prop],
+                (report as any).report[prop],
             );
             if (!category) {
                 continue;

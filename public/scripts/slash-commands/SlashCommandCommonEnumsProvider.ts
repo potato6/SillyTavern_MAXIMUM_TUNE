@@ -178,16 +178,17 @@ export const commonEnumProviders = {
      * @param {...('global'|'local'|'scope'|'all')} type - The type of variables to include in the array. Can be 'all', 'global', or 'local'.
      * @returns {(executor:SlashCommandExecutor, scope:SlashCommandScope) => SlashCommandEnumValue[]}
      */
-    // @ts-expect-error TS(7019) FIXME: Rest parameter 'type' implicitly has an 'any[]' ty... Remove this comment to see the full error message
     variables:
+// @ts-expect-error TS(7019) FIXME: Rest parameter implicitly has 'any[]' type.
         (...type) =>
+// @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
         (_, scope) => {
             const types = new Set(type.flat());
             const isAll = types.has('all');
             return [
-                // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
                 ...(isAll || types.has('scope')
                     ? scope.allVariableNames.map(
+// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
                           (name) =>
                               new SlashCommandEnumValue(
                                   name,
@@ -354,9 +355,9 @@ export const commonEnumProviders = {
      * @param {('all' | 'existing' | 'not-existing')?} [mode] - Which types of tags to show
      * @returns {(executor:SlashCommandExecutor, scope:SlashCommandScope) => SlashCommandEnumValue[]}
      */
-    // @ts-expect-error TS(7006) FIXME: Parameter 'executor' implicitly has an 'any' type.
     tagsForChar:
         (mode = 'all') =>
+// @ts-expect-error TS(7006) FIXME: Parameter 'executor' implicitly has an 'any' type.
         (executor, _scope) => {
             // Try to see if we can find the char during execution to filter down the tags list some more. Otherwise take all tags.
             // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
@@ -387,12 +388,12 @@ export const commonEnumProviders = {
      * @param {boolean} [options.allowVars] - Whether to add enum option for variable names
      * @returns {(executor:SlashCommandExecutor, scope:SlashCommandScope) => SlashCommandEnumValue[]}
      */
-    // @ts-expect-error TS(7006) FIXME: Parameter 'executor' implicitly has an 'any' type.
     messages:
         ({ allowIdAfter = false, allowVars = false } = {}) =>
+// @ts-expect-error TS(7006) FIXME: Parameter 'executor' implicitly has an 'any' type.
         (executor, scope) => {
-            // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
             const nameFilter =
+// @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
                 executor.namedArgumentList.find((it) => it.name == 'name')?.value || '';
             return [
                 ...chat
@@ -432,8 +433,8 @@ export const commonEnumProviders = {
      */
     // @ts-expect-error TS(7006) FIXME: Parameter 'executor' implicitly has an 'any' type.
     messageMedia: () => (executor, _scope) => {
-        // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
         const messageId = Number(
+// @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
             executor.namedArgumentList.find((it) => ['mesId', 'id'].includes(it.name))?.value || '',
         );
         if (isNaN(messageId) || messageId === null || messageId < 0 || messageId >= chat.length) {
@@ -481,7 +482,6 @@ export const commonEnumProviders = {
      * All existing worlds / lorebooks
      * @returns {SlashCommandEnumValue[]}
      */
-    // @ts-expect-error TS(7006) FIXME: Parameter 'worldName' implicitly has an 'any' type... Remove this comment to see the full error message
     worlds: () =>
         wiManager.worldNames.map(
             (worldName) =>
@@ -496,14 +496,14 @@ export const commonEnumProviders = {
         if (!chat_metadata.script_injects || !Object.keys(chat_metadata.script_injects).length)
             return [];
         return Object.entries(chat_metadata.script_injects).map(([id, inject]) => {
-            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             const positionName =
                 Object.entries(extension_prompt_types).find(
+// @ts-expect-error TS(18046) FIXME: 'inject' is of type 'unknown'.
                     ([_, value]) => value === inject.position,
                 )?.[0] ?? 'unknown';
-            // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
             return new SlashCommandEnumValue(
                 id,
+// @ts-expect-error TS(18046) FIXME: 'inject' is of type 'unknown'.
                 `${enumIcons.getRoleIcon(inject.role ?? extension_prompt_roles.SYSTEM)}[Inject](${positionName}, depth: ${inject.depth}, scan: ${inject.scan ?? false}) ${inject.value}`,
                 enumTypes.enum,
                 '💉',
@@ -542,6 +542,7 @@ export const commonEnumProviders = {
             ...(includeNone ? [new SlashCommandEnumValue('<None>')] : []),
             // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
             ...extension_settings.connectionManager.profiles.map(
+// @ts-expect-error TS(7006) FIXME: Parameter 'p' implicitly has an 'any' type.
                 (p) => new SlashCommandEnumValue(p.name, null, enumTypes.name, enumIcons.server),
             ),
         ],

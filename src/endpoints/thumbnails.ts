@@ -38,14 +38,11 @@ export const ALLOWED_IMAGE_EXTENSIONS = new Set([
     '.apng',
 ]);
 
-// @ts-expect-error TS(2345) FIXME: Argument of type 'true' is not assignable to param... Remove this comment to see the full error message
-const thumbnailsEnabled = !!getConfigValue('thumbnails.enabled', true, 'boolean');
-// @ts-expect-error TS(2345) FIXME: Argument of type '95' is not assignable to paramet... Remove this comment to see the full error message
+const thumbnailsEnabled = !!getConfigValue('thumbnails.enabled', true, 'boolean' as const);
 const quality = Math.min(
     100,
-    Math.max(1, parseInt(getConfigValue('thumbnails.quality', 95, 'number'))),
+    Math.max(1, parseInt(getConfigValue('thumbnails.quality', 95, 'number' as const))),
 );
-// @ts-expect-error TS(2345) FIXME: Argument of type '"jpg"' is not assignable to para... Remove this comment to see the full error message
 const pngFormat = String(getConfigValue('thumbnails.format', 'jpg')).toLowerCase().trim() === 'png';
 
 /**
@@ -269,7 +266,7 @@ async function processSingleImage(
 
         if (type === 'bg') {
             const [configWidth, configHeight] = dimensions[type];
-            const targetPixelArea = configWidth * configHeight;
+            const targetPixelArea = configWidth! * configHeight!;
 
             // Calculate thumbnail dimensions to maintain target pixel area while preserving aspect ratio
             // For aspect ratio w:h, if area = w*h and ratio = w/h, then:
@@ -281,7 +278,7 @@ async function processSingleImage(
         } else if (type === 'avatar' || type === 'persona') {
             // Crop and resize to fixed dimensions
             const [configWidth, configHeight] = dimensions[type];
-            pipeline = pipeline.resize(configWidth, configHeight);
+            pipeline = pipeline.resize(configWidth!, configHeight!);
         }
 
         const buffer = pngFormat

@@ -2255,6 +2255,7 @@ export async function loadPowerUserSettings(
         'experimental_macro_engine',
     ) as HTMLInputElement | null;
     if (experimentalMacroEngineEl)
+// @ts-expect-error TS(2339) FIXME: Property 'checked' does not exist on type.
         experimentalMacroEngineEl.checked = power_user.experimental_macro_engine;
     (document.getElementById('example_messages_behavior') as HTMLSelectElement).value =
         getExampleMessagesBehavior();
@@ -5012,6 +5013,7 @@ function registerSettingsPanelHandlers() {
     const expMacroEl = guardEl('experimental_macro_engine');
     if (expMacroEl)
         expMacroEl.addEventListener('input', function () {
+// @ts-expect-error TS(2339) FIXME: Property 'experimental_macro_engine' does not exist on type.
             power_user.experimental_macro_engine = !!(
                 this instanceof HTMLInputElement && this.checked
             );

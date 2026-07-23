@@ -116,8 +116,8 @@ export function registerCoreMacros() {
     // @ts-expect-error TS(7006) FIXME: Parameter 'content' implicitly has an 'any' type.
     function splitOnTopLevelElse(content) {
         const { cst } = MacroParser.parseDocument(content);
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         const macroNodes = /** @type {import('chevrotain').CstNode[]} */ (
+// @ts-expect-error TS(2339) FIXME: Property 'children' does not exist on type.
             cst?.children?.macro || []
         );
 
@@ -250,8 +250,8 @@ export function registerCoreMacros() {
         category: MacroCategory.UTILITY,
         description: 'Current text from the send textarea.',
         returns: 'Current text from the send textarea.',
-        // @ts-expect-error TS(2339) FIXME: Property 'value' does not exist on type 'Element'.
         handler: () =>
+// @ts-expect-error TS(2339) FIXME: Property 'querySelector' does not exist on type.
             /** @type {HTMLTextAreaElement} */ (document.querySelector('#send_textarea'))?.value ??
             '',
     });

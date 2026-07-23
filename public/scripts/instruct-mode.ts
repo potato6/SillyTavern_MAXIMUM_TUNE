@@ -194,9 +194,10 @@ export async function loadInstructMode(data) {
  * Updates the bind model template state based on the current model, instruct and context preset.
  */
 export function updateBindModelTemplatesState() {
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     const bindModelTemplates =
+// @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type.
         power_user.model_templates_mappings[online_status] ??
+// @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type.
         power_user.model_templates_mappings[power_user.chat_template_hash];
     const bindingsMatch =
         (bindModelTemplates &&
@@ -457,15 +458,22 @@ export const force_output_sequence = {
  * @param {InstructSettings} customInstruct Custom instruct mode settings.
  * @returns {string} Formatted instruct mode chat message.
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
 export function formatInstructModeChat(
+// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
     name,
+// @ts-expect-error TS(7006) FIXME: Parameter 'mes' implicitly has an 'any' type.
     mes,
+// @ts-expect-error TS(7006) FIXME: Parameter 'isUser' implicitly has an 'any' type.
     isUser,
+// @ts-expect-error TS(7006) FIXME: Parameter 'isNarrator' implicitly has an 'any' type.
     isNarrator,
+// @ts-expect-error TS(7006) FIXME: Parameter 'forceAvatar' implicitly has an 'any' type.
     forceAvatar,
+// @ts-expect-error TS(7006) FIXME: Parameter 'name1' implicitly has an 'any' type.
     name1,
+// @ts-expect-error TS(7006) FIXME: Parameter 'name2' implicitly has an 'any' type.
     name2,
+// @ts-expect-error TS(7006) FIXME: Parameter 'forceOutputSequence' implicitly has an 'any' type.
     forceOutputSequence,
     customInstruct = null,
 ) {
@@ -561,8 +569,8 @@ export function formatInstructModeChat(
  * @param {InstructSettings} [params.customInstruct] Custom instruct mode settings.
  * @returns {string} Formatted instruct mode story string.
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'storyString' implicitly has an 'any' ty... Remove this comment to see the full error message
 export function formatInstructModeStoryString(
+// @ts-expect-error TS(7006) FIXME: Parameter 'storyString' implicitly has an 'any' type.
     storyString,
     { customContext = null, customInstruct = null } = {},
 ) {
@@ -710,14 +718,20 @@ export function formatInstructModeExamples(mesExamplesArray, name1, name2) {
  * @param {InstructSettings} customInstruct Custom instruct settings.
  * @returns {string} Formatted instruct mode last prompt line.
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
 export function formatInstructModePrompt(
+// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
     name,
+// @ts-expect-error TS(7006) FIXME: Parameter 'isImpersonate' implicitly has an 'any' type.
     isImpersonate,
+// @ts-expect-error TS(7006) FIXME: Parameter 'promptBias' implicitly has an 'any' type.
     promptBias,
+// @ts-expect-error TS(7006) FIXME: Parameter 'name1' implicitly has an 'any' type.
     name1,
+// @ts-expect-error TS(7006) FIXME: Parameter 'name2' implicitly has an 'any' type.
     name2,
+// @ts-expect-error TS(7006) FIXME: Parameter 'isQuiet' implicitly has an 'any' type.
     isQuiet,
+// @ts-expect-error TS(7006) FIXME: Parameter 'isQuietToLoud' implicitly has an 'any' type.
     isQuietToLoud,
     customInstruct = null,
 ) {

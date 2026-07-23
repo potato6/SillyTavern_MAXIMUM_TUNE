@@ -348,7 +348,7 @@ router.post('/electronhub/generate-voice', async (request, response) => {
             return response.sendStatus(400);
         }
 
-        const requestBody = {
+        const requestBody: Record<string, any> = {
             input: request.body.input,
             voice: request.body.voice,
             speed: request.body.speed ?? 1,
@@ -358,24 +358,17 @@ router.post('/electronhub/generate-voice', async (request, response) => {
         };
 
         // Optional provider-specific params
-        // @ts-expect-error TS(2339) FIXME: Property 'instructions' does not exist on type '{ ... Remove this comment to see the full error message
         if (request.body.instructions) requestBody.instructions = request.body.instructions;
-        // @ts-expect-error TS(2339) FIXME: Property 'speaker_transcript' does not exist on ty... Remove this comment to see the full error message
         if (request.body.speaker_transcript)
             requestBody.speaker_transcript = request.body.speaker_transcript;
-        // @ts-expect-error TS(2339) FIXME: Property 'cfg_scale' does not exist on type '{ inp... Remove this comment to see the full error message
         if (Number.isFinite(request.body.cfg_scale))
             requestBody.cfg_scale = Number(request.body.cfg_scale);
-        // @ts-expect-error TS(2339) FIXME: Property 'cfg_filter_top_k' does not exist on type... Remove this comment to see the full error message
         if (Number.isFinite(request.body.cfg_filter_top_k))
             requestBody.cfg_filter_top_k = Number(request.body.cfg_filter_top_k);
-        // @ts-expect-error TS(2339) FIXME: Property 'speech_rate' does not exist on type '{ i... Remove this comment to see the full error message
         if (Number.isFinite(request.body.speech_rate))
             requestBody.speech_rate = Number(request.body.speech_rate);
-        // @ts-expect-error TS(2339) FIXME: Property 'pitch_adjustment' does not exist on type... Remove this comment to see the full error message
         if (Number.isFinite(request.body.pitch_adjustment))
             requestBody.pitch_adjustment = Number(request.body.pitch_adjustment);
-        // @ts-expect-error TS(2339) FIXME: Property 'emotional_style' does not exist on type ... Remove this comment to see the full error message
         if (request.body.emotional_style)
             requestBody.emotional_style = request.body.emotional_style;
 
@@ -383,13 +376,11 @@ router.post('/electronhub/generate-voice', async (request, response) => {
         const knownParams = new Set(Object.keys(requestBody));
         for (const key in request.body) {
             if (!knownParams.has(key) && request.body[key] !== undefined) {
-                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 requestBody[key] = request.body[key];
             }
         }
 
         // Clean undefineds
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         Object.keys(requestBody).forEach(
             (k) => requestBody[k] === undefined && delete requestBody[k],
         );

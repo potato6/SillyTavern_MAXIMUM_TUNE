@@ -62,7 +62,6 @@ router.post('/folders', async function (request, response) {
         /** @type {Object.<string, string[]>} */
         const imageFolderMap = {};
         for (const [relativePath, meta] of Object.entries(index.images)) {
-            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             if (Array.isArray(meta.folderIds) && meta.folderIds.length > 0) {
                 // Strip the directory prefix to get just the filename
                 const filename = relativePath.split('/').pop() || relativePath;

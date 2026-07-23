@@ -271,14 +271,13 @@ export default function initPrivateRequestFilter({
         return;
     }
 
-    // @ts-expect-error TS(2322) FIXME: Type 'string[]' is not assignable to type 'never[]... Remove this comment to see the full error message
     const agent = new PrivateRequestAgent({
         privateAddressWhitelist,
         logBlocked,
         logAllowed,
         allowUnresolvedHosts,
         enableKeepAlive,
-    });
+    } as any);
 
     http.globalAgent = agent;
     https.globalAgent = agent;

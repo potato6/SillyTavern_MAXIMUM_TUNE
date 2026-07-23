@@ -66,17 +66,14 @@ export class SlashCommandAutoCompleteNameResult extends AutoCompleteNameResult {
         if (!Array.isArray(this.executor.command?.namedArgumentList)) {
             return null;
         }
-        // @ts-expect-error TS(7006) FIXME: Parameter 'arg' implicitly has an 'any' type.
         const notProvidedNamedArguments = this.executor.command.namedArgumentList.filter(
-            (arg) => !this.executor.namedArgumentList.find((it) => it.name == arg.name),
+            (arg: any) => !this.executor.namedArgumentList.find((it: any) => it.name == arg.name),
         );
         let name;
-        // @ts-expect-error TS(7034) FIXME: Variable 'value' implicitly has type 'any' in some... Remove this comment to see the full error message
-        let value;
+        let value: any;
         let start;
         let cmdArg;
-        // @ts-expect-error TS(7034) FIXME: Variable 'argAssign' implicitly has type 'any' in ... Remove this comment to see the full error message
-        let argAssign;
+        let argAssign: any;
         const unamedArgLength = this.executor.endUnnamedArgs - this.executor.startUnnamedArgs;
         const namedArgsFollowedBySpace = text[this.executor.endNamedArgs] == ' ';
         if (
@@ -84,9 +81,8 @@ export class SlashCommandAutoCompleteNameResult extends AutoCompleteNameResult {
             this.executor.endNamedArgs + (namedArgsFollowedBySpace ? 1 : 0) >= index
         ) {
             // cursor is somewhere within the named arguments (including final space)
-            // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
             argAssign = this.executor.namedArgumentList.find(
-                (it) => it.start <= index && it.end >= index,
+                (it: any) => it.start <= index && it.end >= index,
             );
             if (argAssign) {
                 const [argName, ...v] = text.slice(argAssign.start, index).split(getSplitRegex());
@@ -134,10 +130,9 @@ export class SlashCommandAutoCompleteNameResult extends AutoCompleteNameResult {
             // if cursor is already behind "=" check for enums
             const enumList = cmdArg?.enumProvider?.(this.executor, this.scope) ?? cmdArg?.enumList;
             if (cmdArg && enumList?.length) {
-                // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
                 if (
                     isSelect &&
-                    enumList.find((it) => it.value == value) &&
+                    enumList.find((it: any) => it.value == value) &&
                     argAssign &&
                     argAssign.end == index
                 ) {
@@ -162,8 +157,8 @@ export class SlashCommandAutoCompleteNameResult extends AutoCompleteNameResult {
             const result = new AutoCompleteSecondaryNameResult(
                 name,
                 start,
-                // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
                 notProvidedNamedArguments.map(
+// @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
                     (it) =>
                         new SlashCommandNamedArgumentAutoCompleteOption(it, this.executor.command),
                 ),
@@ -186,15 +181,14 @@ export class SlashCommandAutoCompleteNameResult extends AutoCompleteNameResult {
         const notProvidedArguments = this.executor.command.unnamedArgumentList.slice(
             this.executor.unnamedArgumentList.length - (lastArgIsBlank ? 1 : 0),
         );
-        let value;
+        let value: any;
         let start;
         let cmdArg;
-        let argAssign;
+        let argAssign: any;
         if (this.executor.startUnnamedArgs <= index && this.executor.endUnnamedArgs + 1 >= index) {
             // cursor is somwehere in the unnamed args
-            // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
             const idx = this.executor.unnamedArgumentList.findIndex(
-                (it) => it.start <= index && it.end >= index,
+                (it: any) => it.start <= index && it.end >= index,
             );
             if (idx > -1) {
                 argAssign = this.executor.unnamedArgumentList[idx];

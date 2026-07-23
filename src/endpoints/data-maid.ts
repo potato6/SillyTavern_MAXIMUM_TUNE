@@ -646,9 +646,8 @@ export class DataMaidService {
                             console.warn(
                                 'Found group past chat metadata in group definition - this is deprecated behavior.',
                             );
-                            // @ts-expect-error TS(2769) FIXME: No overload matches this call.
                             allMetadata.push(
-                                ...Object.values(groupData.past_metadata).filter(filterFn),
+                                ...(Object.values(groupData.past_metadata).filter(filterFn as (value: unknown) => boolean)),
                             );
                         }
                     } catch (error) {

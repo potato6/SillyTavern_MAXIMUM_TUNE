@@ -15,12 +15,9 @@ import {
 import { color, getConfigValue, safeReadFileSync } from '../util.js';
 
 const whitelistPath = path.join(process.cwd(), './whitelist.txt');
-// @ts-expect-error TS(2345) FIXME: Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
 const enableForwardedWhitelist = !!getConfigValue('enableForwardedWhitelist', false, 'boolean');
-// @ts-expect-error TS(2345) FIXME: Argument of type 'true' is not assignable to param... Remove this comment to see the full error message
 const whitelistDockerHosts = !!getConfigValue('whitelistDockerHosts', true, 'boolean');
 /** @type {string[]} */
-// @ts-expect-error TS(2345) FIXME: Argument of type 'never[]' is not assignable to pa... Remove this comment to see the full error message
 let whitelist = getConfigValue('whitelist', []);
 
 if (fs.existsSync(whitelistPath)) {

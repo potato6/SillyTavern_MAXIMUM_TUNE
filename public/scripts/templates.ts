@@ -41,8 +41,8 @@ function getUrlAsync(url) {
  * @param {boolean} fullPath Should the template ID be treated as a full path or a relative path
  * @returns {Promise<string>} Rendered template
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'templateId' implicitly has an 'any' typ... Remove this comment to see the full error message
 export async function renderTemplateAsync(
+// @ts-expect-error TS(7006) FIXME: Parameter 'templateId' implicitly has an 'any' type.
     templateId,
     templateData = {},
     sanitize = true,

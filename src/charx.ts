@@ -93,8 +93,8 @@ export class CharXParser {
         }
 
         const embeddedAssets = this.collectCharXAssets(card);
-        const iconAsset = this.pickCharXIconAsset(embeddedAssets);
-        const auxiliaryAssets = this.mapCharXAssetsForStorage(embeddedAssets);
+        const iconAsset = this.pickCharXIconAsset(embeddedAssets as CharXAsset[]);
+        const auxiliaryAssets = this.mapCharXAssetsForStorage(embeddedAssets as CharXAsset[]);
 
         const archivePaths = new Set();
 
@@ -218,9 +218,7 @@ export class CharXParser {
             .filter(Boolean);
     }
 
-    // @ts-expect-error TS(2304) FIXME: Cannot find name 'CharXAsset'.
     pickCharXIconAsset(assets: Array<CharXAsset>) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'CharXAsset'.
         const iconAssets = assets.filter(
             (asset: CharXAsset) =>
                 asset.type === 'icon' && CHARX_IMAGE_EXTENSIONS.has(asset.ext) && asset.zipPath,
@@ -229,7 +227,6 @@ export class CharXParser {
             return null;
         }
 
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'CharXAsset'.
         const mainIcon = iconAssets.find(
             (asset: CharXAsset) => asset.name?.toLowerCase() === 'main',
         );
@@ -264,9 +261,7 @@ export class CharXParser {
         return (sanitized || fallback).toLowerCase();
     }
 
-    // @ts-expect-error TS(2304) FIXME: Cannot find name 'CharXAsset'.
     mapCharXAssetsForStorage(assets: Array<CharXAsset>) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'CharXAsset'.
         return assets.reduce((acc: Array<CharXAsset>, asset: CharXAsset) => {
             if (!asset?.zipPath) {
                 return acc;
@@ -342,7 +337,6 @@ function deleteExistingByBaseName(dirPath: string, baseName: string) {
  * @param {string} characterFolder - Character folder name (sanitized)
  * @returns {{sprites: number, backgrounds: number, misc: number}}
  */
-// @ts-expect-error TS(2304) FIXME: Cannot find name 'CharXAsset'.
 export function persistCharXAssets(
     assets: Array<CharXAsset>,
     bufferMap: Map<string, Buffer>,
@@ -400,7 +394,7 @@ export function persistCharXAssets(
                     continue;
                 }
                 // Delete existing sprite with same base name (any extension) - matches sprites.js behavior
-                deleteExistingByBaseName(targetDir, asset.baseName);
+                deleteExistingByBaseName(targetDir, asset.baseName as string);
                 const filePath = path.join(targetDir, `${asset.baseName}.${asset.ext || 'png'}`);
                 writeFileAtomicSync(filePath, buffer);
                 summary.sprites += 1;
@@ -418,7 +412,7 @@ export function persistCharXAssets(
                     continue;
                 }
                 // Delete existing background with same base name
-                deleteExistingByBaseName(backgroundDir, asset.baseName);
+                deleteExistingByBaseName(backgroundDir, asset.baseName as string);
                 const fileName = `${asset.baseName}.${asset.ext || 'png'}`;
                 const filePath = path.join(backgroundDir, fileName);
                 writeFileAtomicSync(filePath, buffer);

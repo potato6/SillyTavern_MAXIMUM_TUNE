@@ -127,8 +127,8 @@ function toggleReasoningAutoExpand() {
  * @param root0.chatCompletionSource
  * @returns {string} Extracted reasoning
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
 export function extractReasoningFromData(
+// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
     data,
     {
         mainApi = null,
@@ -163,26 +163,29 @@ export function extractReasoningFromData(
                     );
                 case chat_completion_sources.MAKERSUITE:
                 case chat_completion_sources.VERTEXAI:
-                    // @ts-expect-error TS(7006) FIXME: Parameter 'part' implicitly has an 'any' type.
                     return (
                         data?.responseContent?.parts
+// @ts-expect-error TS(7006) FIXME: Parameter 'part' implicitly has an 'any' type.
                             ?.filter((part) => part.thought)
+// @ts-expect-error TS(7006) FIXME: Parameter 'part' implicitly has an 'any' type.
                             ?.map((part) => part.text)
                             ?.join('\n\n') ?? ''
                     );
                 case chat_completion_sources.CLAUDE:
-                    // @ts-expect-error TS(7006) FIXME: Parameter 'part' implicitly has an 'any' type.
                     return (
                         data?.content
+// @ts-expect-error TS(7006) FIXME: Parameter 'part' implicitly has an 'any' type.
                             ?.filter((part) => part.type === 'thinking')
+// @ts-expect-error TS(7006) FIXME: Parameter 'part' implicitly has an 'any' type.
                             ?.map((part) => part.thinking)
                             ?.join('\n\n') ?? ''
                     );
                 case chat_completion_sources.MISTRALAI:
-                    // @ts-expect-error TS(7006) FIXME: Parameter 'part' implicitly has an 'any' type.
                     return (
                         data?.choices?.[0]?.message?.content?.[0]?.thinking
+// @ts-expect-error TS(7006) FIXME: Parameter 'part' implicitly has an 'any' type.
                             ?.map((part) => part.text)
+// @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
                             ?.filter((x) => x)
                             ?.join('\n\n') ?? ''
                     );
@@ -219,8 +222,8 @@ export function extractReasoningFromData(
  * @param {string|null} [options.chatCompletionSource] Override for chat completion source
  * @returns {string?} Encrypted signature of the reasoning text
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
 export function extractReasoningSignatureFromData(
+// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
     data,
     { mainApi = null, chatCompletionSource = null } = {},
 ) {
@@ -1757,8 +1760,8 @@ export function parseReasoningFromString(str, { strict = true } = {}, template =
     }
 
     try {
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         const regex = new RegExp(
+// @ts-expect-error TS(18047) FIXME: Object is possibly 'null' or 'undefined'.
             `${strict ? '^\\s*?' : ''}${escapeRegex(template.prefix)}(.*?)${escapeRegex(template.suffix)}`,
             's',
         );

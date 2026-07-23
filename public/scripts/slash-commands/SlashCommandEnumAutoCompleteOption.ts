@@ -8,8 +8,8 @@ export class SlashCommandEnumAutoCompleteOption extends AutoCompleteOption {
      */
     // @ts-expect-error TS(7006) FIXME: Parameter 'cmd' implicitly has an 'any' type.
     static from(cmd, enumValue) {
-        // @ts-expect-error TS(2339) FIXME: Property 'value' does not exist on type 'never'.
         const mapped =
+// @ts-expect-error TS(2339) FIXME: Property 'valueToOptionMap' does not exist on type.
             this.valueToOptionMap.find((it) => enumValue instanceof it.value)?.option ?? this;
         return new mapped(cmd, enumValue);
     }
@@ -38,13 +38,13 @@ export class SlashCommandEnumAutoCompleteOption extends AutoCompleteOption {
 
     // @ts-expect-error TS(4114) FIXME: This member must have an 'override' modifier becau... Remove this comment to see the full error message
     renderItem() {
-        // @ts-expect-error TS(2345) FIXME: Argument of type 'null' is not assignable to param... Remove this comment to see the full error message
         const li = this.makeItem(
             this.name,
             this.typeIcon,
             true,
             [],
             [],
+// @ts-expect-error TS(2345) FIXME: Type is not assignable.
             null,
             this.enumValue.description,
         );

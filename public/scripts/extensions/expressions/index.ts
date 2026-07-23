@@ -602,7 +602,6 @@ async function moduleWorker({ newChat = false } = {}) {
     }
 
     // If using LLM api then check if streamingProcessor is finished to avoid sending multiple requests to the API
-    // @ts-expect-error TS(2339): Property 'isFinished' does not exist on type 'neve... Remove this comment to see the full error message
     if (extension_settings.expressions.api === EXPRESSION_API.llm && context.streamingProcessor && !context.streamingProcessor.isFinished) {
         return;
     }
@@ -614,7 +613,6 @@ async function moduleWorker({ newChat = false } = {}) {
     }
 
     // Throttle classification requests during streaming
-    // @ts-expect-error TS(2339): Property 'isFinished' does not exist on type 'neve... Remove this comment to see the full error message
     if (!context.groupId && context.streamingProcessor && !context.streamingProcessor.isFinished) {
         const now = Date.now();
         const timeSinceLastServerResponse = now - lastServerResponseTime;

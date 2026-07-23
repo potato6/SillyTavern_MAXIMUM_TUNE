@@ -161,9 +161,9 @@ function renderAlternativeTokensView() {
     if (prefix) {
         const element = view.querySelector('.logprobs_output_token');
         if (element) {
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             const scrollOffset =
                 element.getBoundingClientRect().top -
+// @ts-expect-error TS(18047) FIXME: Object is possibly 'null' or 'undefined'.
                 element.parentElement.getBoundingClientRect().top;
             // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             element.parentElement.scrollTop = scrollOffset;
@@ -669,9 +669,9 @@ async function convertTokenIdLogprobsToText(input) {
     const tokenizerId = getTokenizerBestMatch(api);
 
     /** @type {any[]} Flatten unique token IDs across all logprobs */
-    // @ts-expect-error TS(7006) FIXME: Parameter 'logprobs' implicitly has an 'any' type.
     const tokenIds = Array.from(
         new Set(
+// @ts-expect-error TS(7006) FIXME: Parameter 'logprobs' implicitly has an 'any' type.
             input.flatMap((logprobs) =>
                 // @ts-expect-error TS(7031) FIXME: Binding element 'token' implicitly has an 'any' ty... Remove this comment to see the full error message
                 logprobs.topLogprobs.map(([token]) => token).concat(logprobs.token),

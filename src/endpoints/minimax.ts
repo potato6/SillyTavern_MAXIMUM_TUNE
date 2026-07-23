@@ -206,10 +206,10 @@ router.post('/generate-voice', async (request, response) => {
                 return response.send(Buffer.from(audioBytes));
             } catch (conversionError) {
                 console.error('MiniMax TTS: Audio conversion error:', conversionError);
-                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 return response
                     .status(500)
-                    .json({ error: `Audio data conversion failed: ${conversionError.message}` });
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    .json({ error: `Audio data conversion failed: ${(conversionError as any).message}` });
             }
         } else if (responseData.data && responseData.data.url) {
             // Handle URL-based audio response
@@ -236,10 +236,11 @@ router.post('/generate-voice', async (request, response) => {
                 return response.send(Buffer.from(audioBuffer));
             } catch (urlError) {
                 console.error('MiniMax TTS: Error fetching audio from URL:', urlError);
-                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const errMsg = (urlError as any).message || 'Unknown error';
                 return response
                     .status(500)
-                    .json({ error: `Failed to fetch audio: ${urlError.message}` });
+                    .json({ error: `Failed to fetch audio: ${errMsg}` });
             }
         } else {
             // Handle error response

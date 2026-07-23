@@ -93,11 +93,11 @@ async function getVector(
         throw new Error(`Unknown vector source ${source}`);
     }
 
-    const provider = await providerLoader();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const provider: any = await providerLoader();
 
     switch (source) {
         case 'nomicai':
-            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             return provider.getVector(text, source, directories);
         case 'togetherai':
         case 'mistral':
@@ -108,7 +108,6 @@ async function getVector(
         case 'nanogpt':
         case 'siliconflow':
         case 'workers_ai':
-            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             return provider.getVector(
                 text,
                 source,
@@ -117,22 +116,16 @@ async function getVector(
                 sourceSettings.urlOverride,
             );
         case 'extras':
-            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             return provider.getVector(text, sourceSettings.extrasUrl, sourceSettings.extrasKey);
         case 'palm':
-            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             return provider.getVector(text, sourceSettings.model, sourceSettings.request);
         case 'vertexai':
-            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             return provider.getVector(text, sourceSettings.model, sourceSettings.request);
         case 'cohere':
-            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             return provider.getVector(text, isQuery, directories, sourceSettings.model);
         case 'llamacpp':
-            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             return provider.getVector(text, sourceSettings.apiUrl, directories);
         case 'vllm':
-            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             return provider.getVector(
                 text,
                 sourceSettings.apiUrl,
@@ -140,7 +133,6 @@ async function getVector(
                 directories,
             );
         case 'ollama':
-            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             return provider.getVector(
                 text,
                 sourceSettings.apiUrl,
@@ -188,11 +180,10 @@ async function getBatchVector(
             throw new Error(`Unknown vector source ${source}`);
         }
 
-        const provider = await providerLoader();
+        const provider = (await providerLoader()) as any;
 
         switch (source) {
             case 'nomicai':
-                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 results.push(...(await provider.getBatchVector(batch, source, directories)));
                 break;
             case 'togetherai':
@@ -204,7 +195,6 @@ async function getBatchVector(
             case 'nanogpt':
             case 'siliconflow':
             case 'workers_ai':
-                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 results.push(
                     ...(await provider.getBatchVector(
                         batch,
@@ -216,7 +206,6 @@ async function getBatchVector(
                 );
                 break;
             case 'extras':
-                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 results.push(
                     ...(await provider.getBatchVector(
                         batch,
@@ -226,7 +215,6 @@ async function getBatchVector(
                 );
                 break;
             case 'palm':
-                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 results.push(
                     ...(await provider.getBatchVector(
                         batch,
@@ -236,7 +224,6 @@ async function getBatchVector(
                 );
                 break;
             case 'vertexai':
-                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 results.push(
                     ...(await provider.getBatchVector(
                         batch,
@@ -246,7 +233,6 @@ async function getBatchVector(
                 );
                 break;
             case 'cohere':
-                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 results.push(
                     ...(await provider.getBatchVector(
                         batch,
@@ -257,13 +243,11 @@ async function getBatchVector(
                 );
                 break;
             case 'llamacpp':
-                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 results.push(
                     ...(await provider.getBatchVector(batch, sourceSettings.apiUrl, directories)),
                 );
                 break;
             case 'vllm':
-                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 results.push(
                     ...(await provider.getBatchVector(
                         batch,
@@ -274,7 +258,6 @@ async function getBatchVector(
                 );
                 break;
             case 'ollama':
-                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 results.push(
                     ...(await provider.getBatchVector(
                         batch,
@@ -462,9 +445,8 @@ async function insertVectorItems(
     );
 
     for (let i = 0; i < items.length; i++) {
-        const item = items[i];
-        const vector = vectors[i];
-        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
+        const item = items[i]!;
+        const vector = vectors[i]!;
         await store.upsertItem({
             vector: vector,
             metadata: { hash: item.hash, text: item.text, index: item.index },

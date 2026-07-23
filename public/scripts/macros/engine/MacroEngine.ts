@@ -215,6 +215,7 @@ class MacroEngine {
                     // If building fails, log warning and fall through to check registered macros
                     // @ts-expect-error TS(2345) FIXME: Argument of type '{ message: string; call: any; }'... Remove this comment to see the full error message
                     logMacroRuntimeWarning({
+// @ts-expect-error TS(18046) FIXME: 'error' is of type 'unknown'.
                         message: `Dynamic macro "${name}" has invalid options: ${error.message}`,
                         call,
                     });
@@ -263,14 +264,15 @@ class MacroEngine {
                 return result;
             }
         } catch (error) {
-            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             const isRuntimeError = !!(
                 error &&
+// @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type.
                 (error.name === 'MacroRuntimeError' || error.isMacroRuntimeError)
             );
             if (isRuntimeError) {
                 // @ts-expect-error TS(2345) FIXME: Argument of type '{ message: any; call: any; error... Remove this comment to see the full error message
                 logMacroRuntimeWarning({
+// @ts-expect-error TS(2339) FIXME: Property 'message' does not exist on type.
                     message: error.message || `Macro "${name}" execution failed.`,
                     call,
                     error,
@@ -332,6 +334,7 @@ class MacroEngine {
             (text) =>
                 text.replace(
                     /{{time_(UTC[+-]\d+)}}/gi,
+// @ts-expect-error TS(7006) FIXME: Parameter '_match' implicitly has an 'any' type.
                     (_match, utcOffset) => `{{time::${utcOffset}}}`,
                 ),
             { priority: 10, source: 'core:legacy-time-syntax' },

@@ -31,19 +31,16 @@ export function getIpFromRequest(req: express.Request) {
  * @returns {string|undefined} The client IP address
  */
 export function getRealOrForwardedIp(req: express.Request) {
-    // @ts-expect-error TS(2345) FIXME: Argument of type 'true' is not assignable to param... Remove this comment to see the full error message
-    const xRealIpEnabled = !!getConfigValue('forwardedHeaders.xRealIp', true, 'boolean');
-    // @ts-expect-error TS(2345) FIXME: Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
+    const xRealIpEnabled = !!getConfigValue('forwardedHeaders.xRealIp', true, 'boolean' as const);
     const cfConnectingIpEnabled = !!getConfigValue(
         'forwardedHeaders.cfConnectingIp',
         false,
-        'boolean',
+        'boolean' as const,
     );
-    // @ts-expect-error TS(2345) FIXME: Argument of type 'true' is not assignable to param... Remove this comment to see the full error message
     const xForwardedForEnabled = !!getConfigValue(
         'forwardedHeaders.xForwardedFor',
         true,
-        'boolean',
+        'boolean' as const,
     );
 
     // Check if X-Real-IP is available
@@ -112,8 +109,7 @@ export function filterValidIpPatterns(
             validEntries.push(entry);
         } catch (e) {
             if (typeof formatLog === 'function') {
-                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-                console.warn(formatLog(entry, e?.message || 'Unknown error'));
+                    console.warn(formatLog(entry, (e as Error)?.message || 'Unknown error'));
             }
         }
     }

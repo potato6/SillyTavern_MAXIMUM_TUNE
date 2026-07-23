@@ -556,10 +556,9 @@ export function existsLocalVariable(name) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
 export function existsGlobalVariable(name) {
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     return (
-        extension_settings.variables.global &&
-        extension_settings.variables.global[name] !== undefined
+        (extension_settings.variables as any).global &&
+        (extension_settings.variables as any).global[name] !== undefined
     );
 }
 
@@ -710,9 +709,8 @@ export function evalBoolean(rule, a, b) {
  * @param {SlashCommandAbortController} [abortController] The abort controller to use.
  * @returns {Promise<SlashCommandClosureResult>} Closure execution result
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'command' implicitly has an 'any' type.
 async function executeSubCommands(
-    command,
+    command: any,
     scope = null,
     parserFlags = null,
     abortController = null,
@@ -793,8 +791,8 @@ function parseNumericSeries(value, scope = null) {
         }
     }
 
-    // @ts-expect-error TS(7006) FIXME: Parameter 'i' implicitly has an 'any' type.
     const array = values
+// @ts-expect-error TS(7006) FIXME: Parameter 'i' implicitly has an 'any' type.
         .map((i) => (typeof i === 'string' ? i.trim() : i))
         // @ts-expect-error TS(7006) FIXME: Parameter 'i' implicitly has an 'any' type.
         .filter((i) => i !== '')
@@ -893,10 +891,9 @@ function maxValuesCallback(args, value) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 function subValuesCallback(args, value) {
-    // @ts-expect-error TS(7006) FIXME: Parameter 'array' implicitly has an 'any' type.
     return performOperation(
         value,
-        (array) => array.reduce((a, b) => a - b, array.shift() ?? 0),
+        (array: any) => array.reduce((a: any, b: any) => a - b, array.shift() ?? 0),
         false,
         args._scope,
     );
@@ -909,10 +906,9 @@ function subValuesCallback(args, value) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 function divValuesCallback(args, value) {
-    // @ts-expect-error TS(7006) FIXME: Parameter 'array' implicitly has an 'any' type.
     return performOperation(
         value,
-        (array) => {
+        (array: any) => {
             if (array[1] === 0) {
                 console.warn('Division by zero.');
                 return 0;
@@ -931,10 +927,9 @@ function divValuesCallback(args, value) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
 function modValuesCallback(args, value) {
-    // @ts-expect-error TS(7006) FIXME: Parameter 'array' implicitly has an 'any' type.
     return performOperation(
         value,
-        (array) => {
+        (array: any) => {
             if (array[1] === 0) {
                 console.warn('Division by zero.');
                 return 0;
@@ -1105,8 +1100,8 @@ function sortArrayObjectCallback(args, value) {
     } else if (typeof parsedValue === 'object') {
         const keysort = args.keysort;
         if (isFalseBoolean(keysort)) {
-            // @ts-expect-error TS(7005) FIXME: Variable 'parsedValue' implicitly has an 'any' typ... Remove this comment to see the full error message
             parsedValue = Object.keys(parsedValue).toSorted(function (a, b) {
+// @ts-expect-error TS(7005) FIXME: Variable 'parsedValue' implicitly has an 'any' type.
                 return customSortComparitor(parsedValue[a], parsedValue[b]);
             });
         } else {
@@ -1925,13 +1920,13 @@ export function registerVariableCommands() {
             returns: 'result of the last executed command',
             namedArgumentList: [
                 new SlashCommandNamedArgument(
-                    // @ts-expect-error TS(2345) FIXME: Argument of type 'SlashCommandEnumValue[]' is not ... Remove this comment to see the full error message
                     'guard',
                     'disable loop iteration limit',
                     [ARGUMENT_TYPE.STRING],
                     false,
                     false,
                     null,
+// @ts-expect-error TS(2345) FIXME: Type is not assignable.
                     commonEnumProviders.boolean('onOff')(),
                 ),
             ],

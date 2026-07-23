@@ -10,9 +10,7 @@ const provider: BackendProvider = {
     endpoints: { status: '/api/tags', generate: '/api/generate' },
 
     buildGenerateBody(body: Record<string, unknown>): Record<string, unknown> {
-        // @ts-expect-error TS(2345) — getConfigValue signature accepts null|undefined for default
         const keepAlive = Number(getConfigValue('ollama.keepAlive', -1, 'number'));
-        // @ts-expect-error TS(2345) — getConfigValue signature accepts null|undefined for default
         const numBatch = Number(getConfigValue('ollama.batchSize', -1, 'number'));
         const options = pickBy(body, (_, key) => OLLAMA_KEYS.includes(key)) as Record<
             string,

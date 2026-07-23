@@ -2,9 +2,8 @@ import { registerDebugFunction } from './power-user.js';
 
 const storageKey = 'language';
 const overrideLanguage = localStorage.getItem(storageKey);
-// @ts-expect-error TS(2339) FIXME: Property 'userLanguage' does not exist on type 'Na... Remove this comment to see the full error message
 const localeFile = String(
-    overrideLanguage || navigator.language || navigator.userLanguage || 'en',
+    overrideLanguage || navigator.language || (navigator as any).userLanguage || 'en',
 ).toLowerCase();
 // @ts-expect-error TS(7034) FIXME: Variable 'langs' implicitly has type 'any' in some... Remove this comment to see the full error message
 let langs;
@@ -83,11 +82,9 @@ const observer = new MutationObserver((mutations) => {
  * @param  {...any} values - Values for placeholders in the template string
  * @returns {string} Translated and formatted string
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'strings' implicitly has an 'any' type.
-export function t(strings, ...values) {
-    // @ts-expect-error TS(7006) FIXME: Parameter 'result' implicitly has an 'any' type.
+export function t(strings: any, ...values: any) {
     const str = strings.reduce(
-        (result, string, i) => result + string + (values[i] !== undefined ? `\${${i}}` : ''),
+        (result: any, string: any, i: any) => result + string + (values[i] !== undefined ? '\\${' + i + '}' : ''),
         '',
     );
     const translatedStr = translate(str);
@@ -230,14 +227,12 @@ async function getMissingTranslations() {
                 const attributeMatch = key.match(/\[(\S+)\](.+)/); // [attribute]key
                 if (attributeMatch) {
                     // attribute-tagged key
-                    // @ts-expect-error TS(2538) FIXME: Type 'undefined' cannot be used as an index type.
-                    const localizedValue = localeData?.[attributeMatch[2]];
+                    const localizedValue = (localeData as any)?.[attributeMatch[2]!];
                     if (!localizedValue) {
-                        // @ts-expect-error TS(2345) FIXME: Argument of type 'string | undefined' is not assig... Remove this comment to see the full error message
                         missingData.push({
                             key,
                             language: language.lang,
-                            value: String(el.getAttribute(attributeMatch[1])),
+                            value: String(el.getAttribute(attributeMatch[1]!)),
                         });
                     }
                 } else {
@@ -257,10 +252,8 @@ async function getMissingTranslations() {
     }
 
     // Remove duplicates
-    // @ts-expect-error TS(7034) FIXME: Variable 'uniqueMissingData' implicitly has type '... Remove this comment to see the full error message
-    const uniqueMissingData = [];
+    const uniqueMissingData: any[] = [];
     for (const { key, language, value } of missingData) {
-        // @ts-expect-error TS(7005) FIXME: Variable 'uniqueMissingData' implicitly has an 'an... Remove this comment to see the full error message
         if (
             !uniqueMissingData.some(
                 (x) => x.key === key && x.language === language && x.value === value,
@@ -271,9 +264,8 @@ async function getMissingTranslations() {
     }
 
     // Sort by language, then key
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
     uniqueMissingData.sort(
-        (a, b) => a.language.localeCompare(b.language) || a.key.localeCompare(b.key),
+        (a: any, b: any) => a.language.localeCompare(b.language) || a.key.localeCompare(b.key),
     );
 
     // Map to { language: { key: value } }

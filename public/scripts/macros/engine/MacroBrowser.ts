@@ -192,9 +192,9 @@ export class MacroBrowser {
     // @ts-expect-error TS(7006) FIXME: Parameter 'macro' implicitly has an 'any' type.
     #showDetails(macro, item) {
         // Clear previous selection
-        // @ts-expect-error TS(7006) FIXME: Parameter 'el' implicitly has an 'any' type.
         this.dom
             .querySelectorAll('.macro-item.selected')
+// @ts-expect-error TS(7006) FIXME: Parameter 'el' implicitly has an 'any' type.
             .forEach((el) => el.classList.remove('selected'));
         item.classList.add('selected');
 
@@ -214,9 +214,9 @@ export class MacroBrowser {
         // Clear details on search
         this.detailsPanel.innerHTML =
             '<div class="macro-details-placeholder">Select a macro to view details</div>';
-        // @ts-expect-error TS(7006) FIXME: Parameter 'el' implicitly has an 'any' type.
         this.dom
             .querySelectorAll('.macro-item.selected')
+// @ts-expect-error TS(7006) FIXME: Parameter 'el' implicitly has an 'any' type.
             .forEach((el) => el.classList.remove('selected'));
 
         // If empty query, show all
@@ -224,9 +224,9 @@ export class MacroBrowser {
             for (const item of this.itemMap.values()) {
                 item.classList.remove('isFiltered');
             }
-            // @ts-expect-error TS(7006) FIXME: Parameter 'h' implicitly has an 'any' type.
             this.dom
                 .querySelectorAll('.macro-category-header')
+// @ts-expect-error TS(7006) FIXME: Parameter 'h' implicitly has an 'any' type.
                 .forEach((h) => h.classList.remove('isFiltered'));
             return;
         }
@@ -313,7 +313,6 @@ export class MacroBrowser {
      * Handles keyboard shortcuts.
      * @param {KeyboardEvent} evt
      */
-    // @ts-expect-error TS(7006) FIXME: Parameter 'evt' implicitly has an 'any' type.
 }
 
 /**

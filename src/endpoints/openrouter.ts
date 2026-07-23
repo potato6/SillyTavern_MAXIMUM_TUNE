@@ -119,12 +119,11 @@ async function fetchModelsByModality(
 
 router.post('/models/multimodal', async (_req, res) => {
     try {
-        // @ts-expect-error TS(2345) FIXME: Argument of type '(m: {    id: string;}) => string... Remove this comment to see the full error message
         const models = await fetchModelsByModality(
             '/models',
             'image',
             'text',
-            (m: { id: string }) => m.id,
+            ((m: { id: string }) => m.id) as any,
         );
         return res.json(models);
     } catch (error) {
@@ -135,15 +134,14 @@ router.post('/models/multimodal', async (_req, res) => {
 
 router.post('/models/embedding', async (_req, res) => {
     try {
-        // @ts-expect-error TS(2345) FIXME: Argument of type '(m: {    id: string;    name?: s... Remove this comment to see the full error message
         const models = await fetchModelsByModality(
             '/models',
             'text',
             'embeddings',
-            (m: { id: string; name?: string }) => ({
+            ((m: { id: string; name?: string }) => ({
                 id: m.id,
                 name: m.name,
-            }),
+            })) as any,
         );
         return res.json(models);
     } catch (error) {
@@ -154,15 +152,14 @@ router.post('/models/embedding', async (_req, res) => {
 
 router.post('/models/image', async (_req, res) => {
     try {
-        // @ts-expect-error TS(2345) FIXME: Argument of type '(m: {    id: string;    name?: s... Remove this comment to see the full error message
         const models = await fetchModelsByModality(
             '/models',
             'text',
             'image',
-            (m: { id: string; name?: string }) => ({
+            ((m: { id: string; name?: string }) => ({
                 value: m.id,
                 text: m.name || m.id,
-            }),
+            })) as any,
         );
         return res.json(models);
     } catch (error) {

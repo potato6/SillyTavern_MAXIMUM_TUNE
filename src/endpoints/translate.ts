@@ -216,7 +216,6 @@ router.post('/deepl', async (request, response) => {
 
         const text = request.body.text;
         const lang = request.body.lang;
-        // @ts-expect-error TS(2345) FIXME: Argument of type '"default"' is not assignable to ... Remove this comment to see the full error message
         const formality = getConfigValue('deepl.formality', 'default');
 
         if (!text || !lang) {

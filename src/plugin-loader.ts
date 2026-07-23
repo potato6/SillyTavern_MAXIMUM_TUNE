@@ -6,9 +6,7 @@ import express from 'express';
 import { default as git, CheckRepoActions } from 'simple-git';
 import { getConfigValue, color } from './util.js';
 
-// @ts-expect-error TS(2345) FIXME: Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
-const enableServerPlugins = !!getConfigValue('enableServerPlugins', false, 'boolean');
-// @ts-expect-error TS(2345) FIXME: Argument of type 'true' is not assignable to param... Remove this comment to see the full error message
+const enableServerPlugins = !!getConfigValue('enableServerPlugins', false, 'boolean' as const);
 const enableServerPluginsAutoUpdate = !!getConfigValue(
     'enableServerPluginsAutoUpdate',
     true,

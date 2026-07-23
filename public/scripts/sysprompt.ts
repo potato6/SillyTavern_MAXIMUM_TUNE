@@ -276,11 +276,11 @@ export function initSystemPrompts() {
                 SlashCommandArgument.fromProps({
                     description: 'system prompt name',
                     typeList: [ARGUMENT_TYPE.STRING],
-                    // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
                     enumProvider: () =>
                         system_prompts.map(
                             (x) =>
                                 new SlashCommandEnumValue(
+// @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type.
                                     x.name,
                                     null,
                                     enumTypes.enum,

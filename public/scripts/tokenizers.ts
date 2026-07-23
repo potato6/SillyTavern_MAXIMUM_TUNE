@@ -281,8 +281,8 @@ export function getTokenizerBestMatch(forApi) {
         const hasTokenizerError = sessionStorage.getItem(TOKENIZER_WARNING_KEY);
         const hasValidEndpoint = sessionStorage.getItem(TOKENIZER_SUPPORTED_KEY);
         const isConnected = online_status !== 'no_connection';
-        // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
         const isTokenizerSupported =
+// @ts-expect-error TS(2345) FIXME: Type is not assignable.
             TEXTGEN_TOKENIZERS.includes(textgen_settings.type) &&
             (textgen_settings.type !== textgen_types.OOBA || hasValidEndpoint);
 
@@ -950,9 +950,9 @@ export async function initTokenizers() {
     );
     eventSource.on(event_types.ONLINE_STATUS_CHANGED, async () => {
         // Clear tokenizer warning when (re)connecting to an LLM backend that supports tokenization
-        // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
         if (
             main_api === 'textgenerationwebui' &&
+// @ts-expect-error TS(2345) FIXME: Type is not assignable.
             TEXTGEN_TOKENIZERS.includes(textgen_settings.type)
         ) {
             sessionStorage.removeItem(TOKENIZER_WARNING_KEY);

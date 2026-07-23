@@ -112,8 +112,8 @@ class AccountStorage {
             console.warn(`AccountStorage not ready (trying to write to ${key})`);
         }
 
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         const hasPropertySet =
+// @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type.
             Object.hasOwn(this.#state, key) && this.#state[key] === String(value);
 
         if (hasPropertySet) {

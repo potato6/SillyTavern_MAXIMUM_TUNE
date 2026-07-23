@@ -422,18 +422,14 @@ router.post('/generate', async function (request, response) {
         }
 
         await provider.chat(request, response);
-    } catch (error) {
+    } catch (error: any) {
         console.error('Generation failed', error);
-        // @ts-expect-error TS(2571)
         const message =
             error.code === 'ECONNREFUSED'
-                ? // @ts-expect-error TS(2571)
-                  `Connection refused: ${error.message}`
-                : // @ts-expect-error TS(2571)
-                  error.message || 'Unknown error occurred';
+                ? `Connection refused: ${error.message}`
+                : error.message || 'Unknown error occurred';
 
         if (!response.headersSent) {
-            // @ts-expect-error TS(2698)
             response.status(502).send({ error: { message, ...error } });
         } else {
             response.end();

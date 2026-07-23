@@ -172,9 +172,8 @@ class CharacterContextMenu {
      * Hide the context menu
      * @returns {void}
      */
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     static hide = () =>
-        document.getElementById(BulkEditOverlay.contextMenuId).classList.add('hidden');
+        document.getElementById(BulkEditOverlay.contextMenuId)!.classList.add('hidden');
 
     /**
      * Sets up the context menu for the given overlay
@@ -205,10 +204,9 @@ class CharacterContextMenu {
             },
         ];
 
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         contextMenuItems.forEach((contextMenuItem) =>
             document
-                .getElementById(contextMenuItem.id)
+                .getElementById(contextMenuItem.id)!
                 .addEventListener('click', contextMenuItem.callback),
         );
     }
@@ -297,10 +295,9 @@ class BulkTagPopupHandler {
 
         document.body.insertAdjacentHTML('beforeend', this.#getHtml());
 
-        // @ts-expect-error TS(7006) FIXME: Parameter 'id' implicitly has an 'any' type.
         const entities = this.characterIds
-            .map((id) => characterToEntity(characters[id], id))
-            .filter((entity) => entity.item !== undefined);
+            .map((id: any) => characterToEntity(characters[id], id))
+            .filter((entity: any) => entity.item !== undefined);
         buildAvatarList(document.getElementById('bulk_tags_avatars_block'), entities);
 
         // Print the tag list with all mutuable tags, marking them as removable. That is the initial fill
@@ -501,10 +498,8 @@ class BulkEditOverlay {
      */
     #cancelNextToggle = false;
 
-    /**
-     * @type {HTMLElement}
-     */
-    container = null;
+    /** @type {HTMLElement | null} */
+    container: HTMLElement | null = null;
 
     get state() {
         return this.#state;
@@ -556,7 +551,6 @@ class BulkEditOverlay {
         // @ts-expect-error TS(7005) FIXME: Variable 'bulkEditOverlayInstance' implicitly has ... Remove this comment to see the full error message
         if (bulkEditOverlayInstance instanceof BulkEditOverlay) return bulkEditOverlayInstance;
 
-        // @ts-expect-error TS(2322) FIXME: Type 'HTMLElement | null' is not assignable to typ... Remove this comment to see the full error message
         this.container = document.getElementById(BulkEditOverlay.containerId);
 
         eventSource.on(
@@ -759,23 +753,19 @@ class BulkEditOverlay {
             element.addEventListener('click', this.toggleCharacterSelected),
         );
 
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     #enableBulkEditButtonHighlight = () =>
-        document.getElementById('bulkEditButton').classList.add('bulk_edit_overlay_active');
+        document.getElementById('bulkEditButton')!.classList.add('bulk_edit_overlay_active');
 
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     #disableBulkEditButtonHighlight = () =>
-        document.getElementById('bulkEditButton').classList.remove('bulk_edit_overlay_active');
+        document.getElementById('bulkEditButton')!.classList.remove('bulk_edit_overlay_active');
 
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     #getEnabledElements = () => [
-        ...this.container.getElementsByClassName(BulkEditOverlay.characterClass),
+        ...this.container!.getElementsByClassName(BulkEditOverlay.characterClass),
     ];
 
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     #getDisabledElements = () => [
-        ...this.container.getElementsByClassName(BulkEditOverlay.groupClass),
-        ...this.container.getElementsByClassName(BulkEditOverlay.bogusFolderClass),
+        ...this.container!.getElementsByClassName(BulkEditOverlay.groupClass),
+        ...this.container!.getElementsByClassName(BulkEditOverlay.bogusFolderClass),
     ];
 
     // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.

@@ -93,7 +93,6 @@ const EXPORTABLE_KEYS = new Set([
     SECRET_KEYS.DEEPLX_URL,
 ]);
 
-// @ts-expect-error TS(2345) FIXME: Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
 export const allowKeysExposure = !!getConfigValue('allowKeysExposure', false, 'boolean');
 
 /**

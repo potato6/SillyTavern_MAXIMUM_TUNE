@@ -38,16 +38,11 @@ import { uniqBy } from 'es-toolkit';
 
 export const KEY_PREFIX = 'user:';
 const AVATAR_PREFIX = 'avatar:';
-// @ts-expect-error TS(2345) FIXME: Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
 const ENABLE_ACCOUNTS = getConfigValue('enableUserAccounts', false, 'boolean');
-// @ts-expect-error TS(2345) FIXME: Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
 const AUTHELIA_AUTH = getConfigValue('sso.autheliaAuth', false, 'boolean');
-// @ts-expect-error TS(2345) FIXME: Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
 const AUTHENTIK_AUTH = getConfigValue('sso.authentikAuth', false, 'boolean');
-// @ts-expect-error TS(2345) FIXME: Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
 const PER_USER_BASIC_AUTH = getConfigValue('perUserBasicAuth', false, 'boolean');
 const ANON_CSRF_SECRET = crypto.randomBytes(64).toString('base64');
-// @ts-expect-error TS(2345) FIXME: Argument of type 'string[]' is not assignable to p... Remove this comment to see the full error message
 const TRUSTED_PROXIES = filterValidIpPatterns(
     getConfigValue('sso.trustedProxies', ['127.0.0.1', '::1']) ?? [],
     (entry: string, message: string) =>
@@ -154,7 +149,6 @@ function logSecurityAlert(message: string) {
     const { basicAuthMode, whitelistMode } = globalThis.COMMAND_LINE_ARGS;
     if (basicAuthMode || whitelistMode) return; // safe!
     console.error(color.red(message));
-    // @ts-expect-error TS(2345) FIXME: Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
     if (getConfigValue('securityOverride', false, 'boolean')) {
         console.warn(
             color.red(
@@ -209,7 +203,6 @@ export async function verifySecuritySettings() {
     }
 
     if (basicAuthMode) {
-        // @ts-expect-error TS(2345) FIXME: Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
         const perUserBasicAuth = getConfigValue('perUserBasicAuth', false, 'boolean');
         if (perUserBasicAuth && !ENABLE_ACCOUNTS) {
             console.error(
@@ -218,9 +211,7 @@ export async function verifySecuritySettings() {
                 ),
             );
         } else if (!perUserBasicAuth) {
-            // @ts-expect-error TS(2345) FIXME: Argument of type '""' is not assignable to paramet... Remove this comment to see the full error message
             const basicAuthUserName = getConfigValue('basicAuthUser.username', '');
-            // @ts-expect-error TS(2345) FIXME: Argument of type '""' is not assignable to paramet... Remove this comment to see the full error message
             const basicAuthUserPassword = getConfigValue('basicAuthUser.password', '');
             if (!basicAuthUserName || !basicAuthUserPassword) {
                 console.warn(
@@ -464,10 +455,9 @@ export async function migrateUserData() {
                 fs.rmSync(migration.old, { recursive: true, force: true });
             }
         } catch (error) {
-            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             console.error(
                 color.red(`Error migrating ${migration.old} to ${migration.new}:`),
-                error.message,
+                (error as any).message,
             );
             errors.push(migration.old);
         }
@@ -650,7 +640,7 @@ export function getCookieSecret(dataRoot: string) {
         }
     }
 
-    const oldSecret = getConfigValue(STORAGE_KEYS.cookieSecret);
+    const oldSecret = getConfigValue((STORAGE_KEYS as any).cookieSecret) as string | undefined;
     if (oldSecret) {
         console.log('Migrating cookie secret from config.yaml...');
         writeFileAtomicSync(cookieSecretPath, oldSecret, { encoding: 'utf8' });
@@ -688,7 +678,6 @@ export function getCookieSessionName() {
  */
 export function getSessionCookieAge() {
     // Defaults to "no expiration" if not set
-    // @ts-expect-error TS(2345) FIXME: Argument of type '-1' is not assignable to paramet... Remove this comment to see the full error message
     const configValue = getConfigValue('sessionTimeout', -1, 'number');
 
     // Convert to milliseconds

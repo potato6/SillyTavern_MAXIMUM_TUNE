@@ -158,11 +158,10 @@ router.post('/change-password', async (request, response) => {
 
 router.post('/backup', async (request, response) => {
     try {
-        // @ts-expect-error TS(2345) FIXME: Argument of type 'true' is not assignable to param... Remove this comment to see the full error message
         const allowFullDataBackup = !!getConfigValue(
             'backups.allowFullDataBackup',
             true,
-            'boolean',
+            'boolean' as const,
         );
 
         if (!allowFullDataBackup) {

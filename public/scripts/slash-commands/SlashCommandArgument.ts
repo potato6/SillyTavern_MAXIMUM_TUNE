@@ -63,9 +63,10 @@ export class SlashCommandArgument {
      * @param {(executor:SlashCommandExecutor, scope:SlashCommandScope)=>SlashCommandEnumValue[]} enumProvider function that returns auto complete options
      * @param forceEnum
      */
-    // @ts-expect-error TS(7006) FIXME: Parameter 'description' implicitly has an 'any' ty... Remove this comment to see the full error message
     constructor(
+// @ts-expect-error TS(7006) FIXME: Parameter 'description' implicitly has an 'any' type.
         description,
+// @ts-expect-error TS(7006) FIXME: Parameter 'types' implicitly has an 'any' type.
         types,
         isRequired = false,
         acceptsMultiple = false,
@@ -90,12 +91,13 @@ export class SlashCommandArgument {
         this.forceEnum = forceEnum;
 
         // If no enums were set explictly and the type is one where we know possible enum values, we set them here
-        // @ts-expect-error TS(2345) FIXME: Argument of type 'string' is not assignable to par... Remove this comment to see the full error message
         if (
             !this.enumList.length &&
             this.typeList.length === 1 &&
+// @ts-expect-error TS(2345) FIXME: Type is not assignable.
             this.typeList.includes(ARGUMENT_TYPE.BOOLEAN)
         )
+// @ts-expect-error TS(2322) FIXME: Type is not assignable.
             this.enumList = commonEnumProviders.boolean()();
     }
 }
@@ -146,10 +148,12 @@ export class SlashCommandNamedArgument extends SlashCommandArgument {
      * @param {(executor:SlashCommandExecutor, scope:SlashCommandScope)=>SlashCommandEnumValue[]} [enumProvider] function that returns auto complete options
      * @param {boolean} [forceEnum]
      */
-    // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
     constructor(
+// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
         name,
+// @ts-expect-error TS(7006) FIXME: Parameter 'description' implicitly has an 'any' type.
         description,
+// @ts-expect-error TS(7006) FIXME: Parameter 'types' implicitly has an 'any' type.
         types,
         isRequired = false,
         acceptsMultiple = false,

@@ -39,15 +39,12 @@ import { CharXParser, persistCharXAssets } from '../charx.js';
 import cacheBuster from '../middleware/cacheBuster.js';
 
 // With 100 MB limit it would take roughly 3000 characters to reach this limit
-// @ts-expect-error TS(2345) FIXME: Argument of type '"100mb"' is not assignable to pa... Remove this comment to see the full error message
 const memoryCacheCapacity = getConfigValue('performance.memoryCacheCapacity', '100mb');
 const memoryCache = new MemoryLimitedMap(memoryCacheCapacity);
 // Some Android devices require tighter memory management
 const isAndroid = process.platform === 'android';
 // Use shallow character data for the character list
-// @ts-expect-error TS(2345) FIXME: Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
 const useShallowCharacters = !!getConfigValue('performance.lazyLoadCharacters', false, 'boolean');
-// @ts-expect-error TS(2345) FIXME: Argument of type 'true' is not assignable to param... Remove this comment to see the full error message
 const useDiskCache = !!getConfigValue('performance.useDiskCache', true, 'boolean');
 
 class DiskCache {
@@ -241,7 +238,6 @@ async function readCharacterData(inputFile: string, inputFormat = 'png') {
  * @param {Crop|undefined} crop - Crop parameters
  * @returns {Promise<boolean>} - True if the operation was successful
  */
-// @ts-expect-error TS(2304) FIXME: Cannot find name 'Crop'.
 async function writeCharacterData(
     inputFile: string | Buffer,
     data: string,
@@ -312,7 +308,9 @@ async function writeCharacterData(
  * @param {Crop|undefined} [crop] Crop parameters
  * @returns {Promise<Buffer>} Processed image buffer
  */
-// @ts-expect-error TS(2304) FIXME: Cannot find name 'Crop'.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Crop = any;
+
 export async function applyAvatarCropResize(buffer: Buffer, crop: Crop | undefined) {
     const metadata = await new Bun.Image(buffer).metadata();
     let finalWidth = metadata.width ?? 0;
@@ -330,7 +328,7 @@ export async function applyAvatarCropResize(buffer: Buffer, crop: Crop | undefin
         // Resize to approximate the crop region
         pipeline = pipeline.resize(width, height);
         // Apply standard resize if requested
-        if (crop.want_resize) {
+        if ((crop as any).want_resize) {
             finalWidth = AVATAR_WIDTH;
             finalHeight = AVATAR_HEIGHT;
         } else {
@@ -349,7 +347,6 @@ export async function applyAvatarCropResize(buffer: Buffer, crop: Crop | undefin
  * @param {Crop|undefined} [crop] Crop parameters
  * @returns {Promise<Buffer>} Image buffer
  */
-// @ts-expect-error TS(2304) FIXME: Cannot find name 'Crop'.
 async function parseImageBuffer(buffer: Buffer, crop: Crop | undefined) {
     return await applyAvatarCropResize(buffer, crop);
 }
@@ -360,7 +357,6 @@ async function parseImageBuffer(buffer: Buffer, crop: Crop | undefined) {
  * @param {Crop|undefined} crop Crop parameters
  * @returns {Promise<Buffer>} Image buffer
  */
-// @ts-expect-error TS(2304) FIXME: Cannot find name 'Crop'.
 async function tryReadImage(imgPath: string, crop: Crop | undefined) {
     try {
         const buffer = fs.readFileSync(imgPath);
@@ -397,9 +393,8 @@ const calculateChatSize = (charDir: string) => {
 
 // Calculate the total string length of the data object
 const calculateDataSize = (data: unknown) => {
-    // @ts-expect-error TS(2769) FIXME: No overload matches this call.
-    return typeof data === 'object'
-        ? Object.values(data).reduce((acc, val) => acc + String(val).length, 0)
+    return data !== null && typeof data === 'object'
+        ? Object.values(data as Record<string, unknown>).reduce((acc: number, val: unknown) => acc + String(val).length, 0)
         : 0;
 };
 
@@ -732,11 +727,10 @@ function charaFormatData(
 
             // File was not imported - convert the world info to the character book
             if (file && file.entries) {
-                // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
                 set(
                     char,
                     'data.character_book',
-                    convertWorldInfoToCharacterBook(data.world, file.entries),
+                    convertWorldInfoToCharacterBook(data.world as any, (file as any).entries),
                 );
             }
         } catch {
@@ -958,12 +952,11 @@ async function importFromCharX(
 
     if (auxiliaryAssets.length > 0) {
         try {
-            // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
             const summary = persistCharXAssets(
                 auxiliaryAssets,
                 extractedBuffers,
                 request.user.directories,
-                characterFolder,
+                characterFolder as any,
             );
             if (summary.sprites || summary.backgrounds || summary.misc) {
                 console.log(
@@ -1031,13 +1024,12 @@ async function importFromByaf(
             );
             const dir = path.dirname(filePath);
             if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-            // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
             writeFileAtomicSync(
                 filePath,
                 ByafParser.getChatFromScenario(
                     scenario,
                     request.body.user_name,
-                    card.name,
+                    card.name as any,
                     byafData.chatBackgrounds,
                 ),
                 'utf8',
@@ -1102,9 +1094,8 @@ async function importFromByaf(
         }
     }
 
-    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     const result = await writeCharacterData(
-        byafData.images[0].image,
+        byafData.images[0]?.image ?? null as any,
         JSON.stringify(card),
         fileName,
         request,
@@ -1704,12 +1695,11 @@ router.post(
                     });
             }
         } catch (exception) {
-            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             response
                 .status(500)
                 .send({
                     message: 'Unexpected error while saving character.',
-                    error: exception.toString(),
+                    error: (exception as any).toString(),
                 });
         }
     },
@@ -1859,12 +1849,11 @@ function getPngName(file: string, directories: import('../users.js').UserDirecto
         getUniqueName(
             file,
             (name: string) => fs.existsSync(path.join(directories.characters, `${name}.png`)),
-            // @ts-expect-error TS(2322) FIXME: Type '(base: string, i: number) => string' is not ... Remove this comment to see the full error message
             {
                 nameBuilder: (base: string, i: number) => (i === 0 ? base : `${base}${i}`),
                 startIndex: 0,
                 maxTries: 10000,
-            },
+            } as any,
         ) ?? file
     );
 }

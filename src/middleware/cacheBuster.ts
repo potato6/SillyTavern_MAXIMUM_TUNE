@@ -28,7 +28,6 @@ class CacheBuster {
     constructor() {
         // @ts-expect-error TS(2322) FIXME: Type 'boolean' is not assignable to type 'null'.
         this.#isEnabled = !!getConfigValue('cacheBuster.enabled', false, 'boolean');
-        // @ts-expect-error TS(2345) FIXME: Argument of type '""' is not assignable to paramet... Remove this comment to see the full error message
         const userAgentPattern = getConfigValue('cacheBuster.userAgentPattern', '');
         if (userAgentPattern) {
             try {

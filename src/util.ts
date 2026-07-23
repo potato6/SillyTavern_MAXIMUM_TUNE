@@ -90,8 +90,7 @@ export function getConfig(): Record<string, unknown> {
                 'FATAL: Failed to read config.yaml. Please check the file for syntax errors.',
             ),
         );
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-        console.error(error.message);
+        console.error((error as Error).message);
         process.exit(1);
     }
 }
@@ -101,9 +100,9 @@ export function getConfig(): Record<string, unknown> {
  * @param {string} key - Key to get from the config object
  * @param {unknown} defaultValue - Default value to return if the key is not found
  * @param {'number'|'boolean'|null} typeConverter - Type to convert the value to
- * @returns {unknown} Value for the given key
+ * @returns {any} Value for the given key
  */
-export function getConfigValue(key: string, defaultValue = null, typeConverter = null) {
+export function getConfigValue(key: string, defaultValue: any = null, typeConverter: 'number' | 'boolean' | null = null) {
     /**
      * Gets the value from environment variables or config file.
      * @returns {unknown} The retrieved value
@@ -121,10 +120,8 @@ export function getConfigValue(key: string, defaultValue = null, typeConverter =
 
     const value = _getValue();
     switch (typeConverter) {
-        // @ts-expect-error TS(2678) FIXME: Type '"number"' is not comparable to type 'null'.
         case 'number':
             return isNaN(parseFloat(value)) ? defaultValue : parseFloat(value);
-        // @ts-expect-error TS(2678) FIXME: Type '"boolean"' is not comparable to type 'null'.
         case 'boolean':
             return toBoolean(value);
         default:
@@ -568,9 +565,8 @@ export function generateTimestamp() {
  * @param {number?} limit Maximum number of backups to keep. If null, the limit is determined by the `backups.common.numberOfBackups` config value.
  */
 export function removeOldBackups(directory: string, prefix: string, limit = null) {
-    // @ts-expect-error TS(2345) FIXME: Argument of type '50' is not assignable to paramet... Remove this comment to see the full error message
     const MAX_BACKUPS =
-        limit ?? Number(getConfigValue('backups.common.numberOfBackups', 50, 'number'));
+        limit ?? Number(getConfigValue('backups.common.numberOfBackups', 50, 'number' as const));
 
     let files = fs.readdirSync(directory).filter((f) => f.startsWith(prefix));
     if (files.length > MAX_BACKUPS) {
@@ -1005,7 +1001,6 @@ export function stringToBool(str: unknown) {
  * Setup the minimum log level
  */
 export function setupLogLevel() {
-    // @ts-expect-error TS(2345) FIXME: Argument of type 'number' is not assignable to par... Remove this comment to see the full error message
     const logLevel = getConfigValue('logging.minLogLevel', LOG_LEVELS.DEBUG, 'number');
 
     globalThis.console.debug = logLevel <= LOG_LEVELS.DEBUG ? console.debug : () => {};

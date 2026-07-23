@@ -215,9 +215,10 @@ export class Popup {
      * @param {string} [inputValue] - The initial value of the input field
      * @param {PopupOptions} [options] - Additional options for the popup
      */
-    // @ts-expect-error TS(7006) FIXME: Parameter 'content' implicitly has an 'any' type.
     constructor(
+// @ts-expect-error TS(7006) FIXME: Parameter 'content' implicitly has an 'any' type.
         content,
+// @ts-expect-error TS(7006) FIXME: Parameter 'type' implicitly has an 'any' type.
         type,
         inputValue = '',
         {
@@ -302,10 +303,10 @@ export class Popup {
         // If custom button captions are provided, we set them beforehand
         this.okButton.textContent = typeof okButton === 'string' ? okButton : 'OK';
         this.okButton.dataset.i18n = this.okButton.textContent;
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         this.cancelButton.textContent =
             typeof cancelButton === 'string'
                 ? cancelButton
+// @ts-expect-error TS(18047) FIXME: Object is possibly 'null' or 'undefined'.
                 : template.getAttribute('popup-button-cancel');
         this.cancelButton.dataset.i18n = this.cancelButton.textContent;
 
@@ -511,11 +512,11 @@ export class Popup {
                 if (okButton === false) this.okButton.style.display = 'none';
                 if (cancelButton === false) this.cancelButton.style.display = 'none';
                 // Override default captions for confirm on OK->Yes, CANCEL->No
-                // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                 if (!okButton)
+// @ts-expect-error TS(18047) FIXME: Object is possibly 'null' or 'undefined'.
                     this.okButton.textContent = template.getAttribute('popup-button-yes');
-                // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                 if (!cancelButton)
+// @ts-expect-error TS(18047) FIXME: Object is possibly 'null' or 'undefined'.
                     this.cancelButton.textContent = template.getAttribute('popup-button-no');
                 break;
             }
@@ -525,8 +526,8 @@ export class Popup {
                 if (okButton === false) this.okButton.style.display = 'none';
                 if (cancelButton === false) this.cancelButton.style.display = 'none';
                 // Override default captions for input on OK->Save
-                // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                 if (!okButton)
+// @ts-expect-error TS(18047) FIXME: Object is possibly 'null' or 'undefined'.
                     this.okButton.textContent = template.getAttribute('popup-button-save');
                 break;
             }
@@ -553,8 +554,8 @@ export class Popup {
                 if (okButton === false) this.okButton.style.display = 'none';
                 if (cancelButton === false) this.cancelButton.style.display = 'none';
                 // Override default captions for crop on OK->Crop
-                // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                 if (!okButton)
+// @ts-expect-error TS(18047) FIXME: Object is possibly 'null' or 'undefined'.
                     this.okButton.textContent = template.getAttribute('popup-button-crop');
                 break;
             }
@@ -733,8 +734,8 @@ export class Popup {
 
                     evt.preventDefault();
                     evt.stopPropagation();
-                    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                     const result = Number(
+// @ts-expect-error TS(18047) FIXME: Object is possibly 'null' or 'undefined'.
                         document.activeElement.getAttribute('data-result') ?? this.defaultResult,
                     );
 
@@ -859,8 +860,8 @@ export class Popup {
         }
 
         if (this.customInputs?.length) {
-            // @ts-expect-error TS(7006) FIXME: Parameter 'input' implicitly has an 'any' type.
             this.inputResults = new Map(
+// @ts-expect-error TS(7006) FIXME: Parameter 'input' implicitly has an 'any' type.
                 this.customInputs.map((input) => {
                     /** @type {HTMLInputElement} */
                     const inputControl = this.dlg.querySelector(`#${input.id}`);

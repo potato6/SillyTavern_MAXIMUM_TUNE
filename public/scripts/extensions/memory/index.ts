@@ -1,6 +1,7 @@
 import { getStringHash, debounce, waitUntilCondition, extractAllWords, isTrueBoolean } from '../../utils.js';
 declare const $: any; declare const toastr: any;
 import { getContext, getApiUrl, extension_settings, doExtrasFetch, modules, renderExtensionTemplateAsync } from '../../extensions.js';
+import { removeReasoningFromString } from '../../reasoning.js';
 import {
     activateSendButtons,
     deactivateSendButtons,
@@ -497,7 +498,6 @@ async function onChatEvent() {
     }
 
     // Streaming in-progress
-    // @ts-expect-error TS(2339): Property 'isFinished' does not exist on type 'neve... Remove this comment to see the full error message
     if (streamingProcessor && !streamingProcessor.isFinished) {
         return;
     }

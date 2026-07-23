@@ -104,10 +104,12 @@ export const slashCommandReturnHelper = {
      * @param {(o: object) => string} [options.objectToHtmlFunc] Analog to 'objectToStringFunc', which will be used here if not provided - but can do a different string layout if HTML is requested
      * @returns {Promise<*>} The processed return value
      */
-    // @ts-expect-error TS(7006) FIXME: Parameter 'type' implicitly has an 'any' type.
     async doReturn(
+// @ts-expect-error TS(7006) FIXME: Parameter 'type' implicitly has an 'any' type.
         type,
+// @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
         value,
+// @ts-expect-error TS(7006) FIXME: Parameter 'o' implicitly has an 'any' type.
         { objectToStringFunc = (o) => o?.toString(), objectToHtmlFunc = null } = {},
     ) {
         const shouldHtml = type.endsWith('html');

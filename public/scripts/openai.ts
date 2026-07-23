@@ -924,9 +924,8 @@ async function populationInjectionPrompts(prompts, messages) {
     const maxDepth = getExtensionPromptMaxDepth();
     for (let i = 0; i <= maxDepth; i++) {
         // Get prompts for current depth
-        // @ts-expect-error TS(7006) FIXME: Parameter 'prompt' implicitly has an 'any' type.
         const depthPrompts = prompts.filter(
-            (prompt) => prompt.injection_depth === i && prompt.content,
+            (prompt: any) => prompt.injection_depth === i && prompt.content,
         );
 
         const roleMessages = [];
@@ -935,45 +934,38 @@ async function populationInjectionPrompts(prompts, messages) {
 
         // Group prompts by priority
         const extensionPromptsOrder = '100';
-        const orderGroups = {
+        const orderGroups: Record<string, any[]> = {
             [extensionPromptsOrder]: [],
         };
         for (const prompt of depthPrompts) {
             const order = prompt.injection_order ?? 100;
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             if (!orderGroups[order]) {
-                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 orderGroups[order] = [];
             }
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             orderGroups[order].push(prompt);
         }
 
         // Process each order group in order (b - a = low to high ; a - b = high to low)
         const orders = Object.keys(orderGroups).toSorted((a, b) => +b - +a);
         for (const order of orders) {
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-            const orderPrompts = orderGroups[order];
+            const orderPrompts = (orderGroups as any)[order];
 
             // Order of priority for roles (most important go lower)
             const roles = ['system', 'user', 'assistant'];
             for (const role of roles) {
                 const rolePrompts = orderPrompts
-                    // @ts-expect-error TS(7006) FIXME: Parameter 'prompt' implicitly has an 'any' type.
-                    .filter((prompt) => prompt.role === role)
-                    // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
-                    .map((x) => x.content)
+                    .filter((prompt: any) => prompt.role === role)
+                    .map((x: any) => x.content)
                     .join(separator);
 
                 // Get extension prompt
                 const extensionPrompt =
                     order === extensionPromptsOrder
-                        ? // @ts-expect-error TS(2345) FIXME: Argument of type 'number' is not assignable to par... Remove this comment to see the full error message
-                          await getExtensionPrompt(
+                        ? await getExtensionPrompt(
                               extension_prompt_types.IN_CHAT,
-                              i,
+                              i as any,
                               separator,
-                              roleTypes[role],
+                              (roleTypes as any)[role],
                               wrap,
                           )
                         : '';
@@ -1007,11 +999,10 @@ async function populationInjectionPrompts(prompts, messages) {
  * @param type
  * @param cyclePrompt
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'messages' implicitly has an 'any' type.
 async function populateChatHistory(
-    messages,
-    prompts,
-    chatCompletion,
+    messages: any,
+    prompts: any,
+    chatCompletion: any,
     type = null,
     cyclePrompt = null,
 ) {
@@ -1220,12 +1211,11 @@ async function populateChatHistory(
                 undefined,
                 'toolCall-' + chatMessage.identifier,
             );
-            // @ts-expect-error TS(7006) FIXME: Parameter 'invocation' implicitly has an 'any' typ... Remove this comment to see the full error message
             const toolResultMessages = await Promise.all(
                 invocations
                     .slice()
                     .toReversed()
-                    .map((invocation) =>
+                    .map((invocation: any) =>
                         Message.createAsync(
                             'tool',
                             invocation.result || '[No content]',
@@ -1373,13 +1363,11 @@ export function getPromptRole(role) {
  * @param {object[]} options.messageExamples - Array containing all message examples.
  * @returns {Promise<void>}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'prompts' implicitly has an 'any' type.
 async function populateChatCompletion(
-    prompts,
-    chatCompletion,
-    { bias, quietPrompt, quietImage, type, cyclePrompt, messages, messageExamples },
+    prompts: any,
+    chatCompletion: any,
+    { bias, quietPrompt, quietImage, type, cyclePrompt, messages, messageExamples }: any,
 ) {
-    // Helper function for preparing a prompt, that already exists within the prompt collection, for completion
     // @ts-expect-error TS(7006) FIXME: Parameter 'source' implicitly has an 'any' type.
     const addToChatCompletion = async (source, target = null) => {
         // We need the prompts array to determine a position for the source.
@@ -1437,9 +1425,8 @@ async function populateChatCompletion(
     // Add ordered system and user prompts
     const systemPrompts = ['nsfw', 'jailbreak'];
     const userRelativePrompts = prompts.collection
-        // @ts-expect-error TS(7006) FIXME: Parameter 'prompt' implicitly has an 'any' type.
         .filter(
-            (prompt) =>
+            (prompt: any) =>
                 false === prompt.system_prompt &&
                 prompt.injection_position !== INJECTION_POSITION.ABSOLUTE,
         )
@@ -1449,10 +1436,8 @@ async function populateChatCompletion(
             return acc;
         }, []);
     const absolutePrompts = prompts.collection
-        // @ts-expect-error TS(7006) FIXME: Parameter 'prompt' implicitly has an 'any' type.
-        .filter((prompt) => prompt.injection_position === INJECTION_POSITION.ABSOLUTE)
-        // @ts-expect-error TS(7006) FIXME: Parameter 'acc' implicitly has an 'any' type.
-        .reduce((acc, prompt) => {
+        .filter((prompt: any) => prompt.injection_position === INJECTION_POSITION.ABSOLUTE)
+        .reduce((acc: any, prompt: any) => {
             acc.push(prompt);
             return acc;
         }, []);
@@ -1467,10 +1452,9 @@ async function populateChatCompletion(
     // Bias
     if (bias && bias.trim().length) await addToChatCompletion('bias');
 
-    // @ts-expect-error TS(7006) FIXME: Parameter 'prompt' implicitly has an 'any' type.
     const injectToMain = async (
-        /** @type {Prompt} */ prompt,
-        /** @type {string|number} */ position,
+        prompt: any,
+        position: any,
     ) => {
         if (chatCompletion.has('main')) {
             const message = await Message.fromPromptAsync(prompt);
@@ -1478,8 +1462,7 @@ async function populateChatCompletion(
         } else {
             // Convert the relative prompt to an injection and place it relative to main prompt
             // Keeping prompts in the same order bucket will squash them together during in-chat injection
-            // @ts-expect-error TS(7006) FIXME: Parameter 'p' implicitly has an 'any' type.
-            const indexOfMain = absolutePrompts.findIndex((p) => p.identifier === 'main');
+            const indexOfMain = absolutePrompts.findIndex((p: any) => p.identifier === 'main');
             if (indexOfMain >= 0) {
                 const main = absolutePrompts[indexOfMain];
                 const promptCopy = new Prompt(prompt);
@@ -1587,7 +1570,6 @@ async function populateChatCompletion(
  * @param {string} options.type - The type of generation that triggered the prompt
  * @returns {Promise<object>} prompts - The prepared and merged system and user-defined prompts.
  */
-// @ts-expect-error TS(7031) FIXME: Binding element 'scenario' implicitly has an 'any'... Remove this comment to see the full error message
 async function preparePromptsForChatCompletion({
     scenario,
     charPersonality,
@@ -1601,7 +1583,7 @@ async function preparePromptsForChatCompletion({
     systemPromptOverride,
     jailbreakPromptOverride,
     type,
-}) {
+}: any) {
     const scenarioText =
         scenario && oai_settings.scenario_format
             ? substituteParams(oai_settings.scenario_format)
@@ -1863,9 +1845,8 @@ export async function prepareOpenAIMessages(
         messages,
         // @ts-expect-error TS(7031) FIXME: Binding element 'messageExamples' implicitly has a... Remove this comment to see the full error message
         messageExamples,
-        // @ts-expect-error TS(7006) FIXME: Parameter 'dryRun' implicitly has an 'any' type.
     },
-    dryRun,
+    dryRun: any,
 ) {
     // Without a character selected, there is no way to accurately calculate tokens
     if (!promptManager!.activeCharacter && dryRun) return [null, false];
@@ -2058,91 +2039,63 @@ function checkModerationError(
  * @param {ChatCompletionSettings} settings Chat completion settings
  * @returns {string} API model
  */
-export function getChatCompletionModel(settings = null) {
-    // @ts-expect-error TS(2322) FIXME: Type '{ send_if_empty: string; impersonation_promp... Remove this comment to see the full error message
+export function getChatCompletionModel(settings: any = null) {
     settings = settings ?? oai_settings;
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     const source = settings.chat_completion_source;
     switch (source) {
         case chat_completion_sources.CLAUDE:
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             return settings.claude_model;
         case chat_completion_sources.OPENAI:
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             return settings.openai_model;
         case chat_completion_sources.MAKERSUITE:
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             return settings.google_model;
         case chat_completion_sources.VERTEXAI:
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             return settings.vertexai_model;
         case chat_completion_sources.OPENROUTER:
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             return settings.openrouter_model !== openrouter_website_model
                 ? settings.openrouter_model
                 : null;
         case chat_completion_sources.AI21:
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             return settings.ai21_model;
         case chat_completion_sources.MISTRALAI:
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             return settings.mistralai_model;
         case chat_completion_sources.CUSTOM:
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             return settings.custom_model;
         case chat_completion_sources.COHERE:
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             return settings.cohere_model;
         case chat_completion_sources.PERPLEXITY:
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             return settings.perplexity_model;
         case chat_completion_sources.GROQ:
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             return settings.groq_model;
         case chat_completion_sources.SILICONFLOW:
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             return settings.siliconflow_model;
         case chat_completion_sources.MINIMAX:
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             return settings.minimax_model;
         case chat_completion_sources.ELECTRONHUB:
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             return settings.electronhub_model;
         case chat_completion_sources.CHUTES:
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             return settings.chutes_model;
         case chat_completion_sources.NANOGPT:
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             return settings.nanogpt_model;
         case chat_completion_sources.DEEPSEEK:
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             return settings.deepseek_model;
         case chat_completion_sources.AIMLAPI:
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             return settings.aimlapi_model;
         case chat_completion_sources.XAI:
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             return settings.xai_model;
         case chat_completion_sources.POLLINATIONS:
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             return settings.pollinations_model;
         case chat_completion_sources.COMETAPI:
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             return settings.cometapi_model;
         case chat_completion_sources.MOONSHOT:
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             return settings.moonshot_model;
         case chat_completion_sources.FIREWORKS:
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             return settings.fireworks_model;
         case chat_completion_sources.AZURE_OPENAI:
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             return settings.azure_openai_model;
         case chat_completion_sources.ZAI:
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             return settings.zai_model;
         case chat_completion_sources.WORKERS_AI:
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             return settings.workers_ai_model;
         default:
             console.error(`Unknown chat completion source: ${source}`);
@@ -2262,13 +2215,11 @@ function saveModelList(data) {
         modelOpenRouterSelect?.appendChild(websiteOption);
 
         if (oai_settings.group_models) {
-            // @ts-expect-error TS(7006) FIXME: Parameter 'models' implicitly has an 'any' type.
             groupModelsByVendor(model_list, chat_completion_sources.OPENROUTER).forEach(
-                (models, vendor) => {
+                (models: any, vendor: any) => {
                     const optgroup = document.createElement('optgroup');
                     optgroup.label = vendor;
-                    // @ts-expect-error TS(7006) FIXME: Parameter 'model' implicitly has an 'any' type.
-                    models.forEach((model) => {
+                    models.forEach((model: any) => {
                         const option = document.createElement('option');
                         option.value = model.id;
                         option.textContent = model.name;
@@ -2286,11 +2237,10 @@ function saveModelList(data) {
             });
         }
 
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         (() => {
             const el = document.getElementById('model_openrouter_select');
             if (el) {
-                el.value = oai_settings.openrouter_model;
+                (el as any).value = oai_settings.openrouter_model;
                 el.dispatchEvent(new Event('change'));
             }
         })();
@@ -2311,11 +2261,10 @@ function saveModelList(data) {
                 model_list.findIndex((model) => model.id == oai_settings.openai_model) !== -1
                     ? oai_settings.openai_model
                     : default_settings.openai_model;
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             (() => {
                 const el = document.getElementById('model_openai_select');
                 if (el) {
-                    el.value = model;
+                    (el as any).value = model;
                     el.dispatchEvent(new Event('change'));
                 }
             })();
@@ -2341,11 +2290,10 @@ function saveModelList(data) {
         });
 
         if (!oai_settings.custom_model && model_list.length > 0) {
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             (() => {
                 const el = document.getElementById('model_custom_select');
                 if (el) {
-                    el.value = model_list[0].id;
+                    (el as any).value = model_list[0].id;
                     el.dispatchEvent(new Event('change'));
                 }
             })();
@@ -2363,13 +2311,11 @@ function saveModelList(data) {
         if (aimlapiSelect) aimlapiSelect.innerHTML = '';
 
         if (oai_settings.group_models) {
-            // @ts-expect-error TS(7006) FIXME: Parameter 'models' implicitly has an 'any' type.
             groupModelsByVendor(model_list, chat_completion_sources.AIMLAPI).forEach(
-                (models, vendor) => {
+                (models: any, vendor: any) => {
                     const optgroup = document.createElement('optgroup');
                     optgroup.label = vendor;
-                    // @ts-expect-error TS(7006) FIXME: Parameter 'model' implicitly has an 'any' type.
-                    models.forEach((model) => {
+                    models.forEach((model: any) => {
                         const option = document.createElement('option');
                         option.value = model.id;
                         option.textContent = model.info?.name || model.id;
@@ -2391,11 +2337,10 @@ function saveModelList(data) {
             oai_settings.aimlapi_model = model_list[0].id;
         }
 
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         (() => {
             const el = document.getElementById('model_aimlapi_select');
             if (el) {
-                el.value = oai_settings.aimlapi_model;
+                (el as any).value = oai_settings.aimlapi_model;
                 el.dispatchEvent(new Event('change'));
             }
         })();
@@ -2417,11 +2362,10 @@ function saveModelList(data) {
             )?.id;
         }
 
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         (() => {
             const el = document.getElementById('model_mistralai_select');
             if (el) {
-                el.value = oai_settings.mistralai_model;
+                (el as any).value = oai_settings.mistralai_model;
                 el.dispatchEvent(new Event('change'));
             }
         })();
@@ -2440,13 +2384,11 @@ function saveModelList(data) {
         if (electronHubSelect) electronHubSelect.innerHTML = '';
 
         if (oai_settings.group_models) {
-            // @ts-expect-error TS(7006) FIXME: Parameter 'models' implicitly has an 'any' type.
             groupModelsByVendor(model_list, chat_completion_sources.ELECTRONHUB).forEach(
-                (models, vendor) => {
+                (models: any, vendor: any) => {
                     const optgroup = document.createElement('optgroup');
                     optgroup.label = vendor;
-                    // @ts-expect-error TS(7006) FIXME: Parameter 'model' implicitly has an 'any' type.
-                    models.forEach((model) => {
+                    models.forEach((model: any) => {
                         const option = document.createElement('option');
                         option.value = model.id;
                         option.textContent = model.name;
@@ -2471,11 +2413,10 @@ function saveModelList(data) {
             oai_settings.electronhub_model = model_list[0].id;
         }
 
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         (() => {
             const el = document.getElementById('model_electronhub_select');
             if (el) {
-                el.value = oai_settings.electronhub_model;
+                (el as any).value = oai_settings.electronhub_model;
                 el.dispatchEvent(new Event('change'));
             }
         })();
@@ -2494,13 +2435,11 @@ function saveModelList(data) {
         if (chutesSelect) chutesSelect.innerHTML = '';
 
         if (oai_settings.group_models) {
-            // @ts-expect-error TS(7006) FIXME: Parameter 'models' implicitly has an 'any' type.
             groupModelsByVendor(model_list, chat_completion_sources.CHUTES).forEach(
-                (models, vendor) => {
+                (models: any, vendor: any) => {
                     const optgroup = document.createElement('optgroup');
                     optgroup.label = vendor;
-                    // @ts-expect-error TS(7006) FIXME: Parameter 'model' implicitly has an 'any' type.
-                    models.forEach((model) => {
+                    models.forEach((model: any) => {
                         const option = new Option(model.id, model.id);
                         optgroup.appendChild(option);
                     });
@@ -2519,11 +2458,10 @@ function saveModelList(data) {
             oai_settings.chutes_model = model_list[0].id;
         }
 
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         (() => {
             const el = document.getElementById('model_chutes_select');
             if (el) {
-                el.value = oai_settings.chutes_model;
+                (el as any).value = oai_settings.chutes_model;
                 el.dispatchEvent(new Event('change'));
             }
         })();
@@ -2539,13 +2477,11 @@ function saveModelList(data) {
         if (nanogptSelect) nanogptSelect.innerHTML = '';
 
         if (oai_settings.group_models) {
-            // @ts-expect-error TS(7006) FIXME: Parameter 'models' implicitly has an 'any' type.
             groupModelsByVendor(model_list, chat_completion_sources.NANOGPT).forEach(
-                (models, vendor) => {
+                (models: any, vendor: any) => {
                     const optgroup = document.createElement('optgroup');
                     optgroup.label = vendor;
-                    // @ts-expect-error TS(7006) FIXME: Parameter 'model' implicitly has an 'any' type.
-                    models.forEach((model) => {
+                    models.forEach((model: any) => {
                         const option = new Option(model.name || model.id, model.id);
                         optgroup.appendChild(option);
                     });
@@ -2929,17 +2865,14 @@ function groupModelsByVendor(array, source) {
                 return acc;
             }, new Map());
         case chat_completion_sources.ELECTRONHUB:
-            // @ts-expect-error TS(7006) FIXME: Parameter 'acc' implicitly has an 'any' type.
-            return array.reduce((acc, curr) => {
-                // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-                const vendor =
-                    String(curr?.name || curr?.id || 'Other')
-                        .split(':')[0]
-                        .trim() || 'Other';
+            return array.reduce((acc: Map<string, object[]>, curr: any) => {
+                const vendor: any = '' + ((curr as any).name || (curr as any).id || 'Other');
+                const vendorStr: string = vendor.split(':')[0].trim() || 'Other';
                 if (!acc.has(vendor)) {
                     acc.set(vendor, []);
                 }
-                acc.get(vendor).push(curr);
+                const arr = acc.get(vendor);
+                if (arr) arr.push(curr);
                 return acc;
             }, new Map());
         case chat_completion_sources.NANOGPT:
@@ -2986,8 +2919,7 @@ function groupModelsByVendor(array, source) {
  * @param {string} model Model name (optional, used for ElectronHub)
  * @returns {string} Reasoning effort, if present
  */
-function getReasoningEffort(settings = null, model = null) {
-    // @ts-expect-error TS(2322) FIXME: Type '{ send_if_empty: string; impersonation_promp... Remove this comment to see the full error message
+function getReasoningEffort(settings: any = null, model: any = null) {
     settings = settings ?? oai_settings;
     model = model ?? getChatCompletionModel(settings);
 
@@ -3007,9 +2939,7 @@ function getReasoningEffort(settings = null, model = null) {
         chat_completion_sources.DEEPSEEK,
     ];
 
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     if (!reasoningEffortSources.includes(settings.chat_completion_source)) {
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         return settings.reasoning_effort;
     }
 
@@ -3017,9 +2947,7 @@ function getReasoningEffort(settings = null, model = null) {
      *
      */
     function resolveReasoningEffort() {
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         if (settings.chat_completion_source === chat_completion_sources.DEEPSEEK) {
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             switch (settings.reasoning_effort) {
                 case reasoning_effort_types.auto:
                     return undefined;
@@ -3030,12 +2958,10 @@ function getReasoningEffort(settings = null, model = null) {
             }
         }
 
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         if (
             settings.chat_completion_source === chat_completion_sources.CUSTOM &&
             /^koboldcpp\/(.+)$/.test(model)
         ) {
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             switch (settings.reasoning_effort) {
                 case reasoning_effort_types.auto:
                     return undefined;
@@ -3050,35 +2976,29 @@ function getReasoningEffort(settings = null, model = null) {
                 case reasoning_effort_types.max:
                     return 'xhigh';
                 default:
-                    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                     return settings.reasoning_effort;
             }
         }
 
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         switch (settings.reasoning_effort) {
             case reasoning_effort_types.auto:
                 return undefined;
             case reasoning_effort_types.min:
-                // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-                if (
-                    chat_completion_sources.OPENROUTER === settings.chat_completion_source &&
-                    !settings.show_thoughts
+            if (
+                chat_completion_sources.OPENROUTER === settings.chat_completion_source &&
+                !settings.show_thoughts
                 ) {
                     return 'none';
                 }
 
-                // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                 if (
                     [chat_completion_sources.OPENAI, chat_completion_sources.AZURE_OPENAI].includes(
                         settings.chat_completion_source,
                     )
                 ) {
-                    // @ts-expect-error TS(2345) FIXME: Argument of type 'null' is not assignable to param... Remove this comment to see the full error message
-                    if (/^gpt-5\.(4|5)/.test(model)) {
+                    if (/^gpt-5\.(4|5)/.test(model ?? '')) {
                         return 'none';
                     }
-                    // @ts-expect-error TS(2345) FIXME: Argument of type 'null' is not assignable to param... Remove this comment to see the full error message
                     if (model.startsWith('gpt-5')) {
                         return reasoning_effort_types.min;
                     }
@@ -3088,7 +3008,6 @@ function getReasoningEffort(settings = null, model = null) {
             case reasoning_effort_types.max:
                 return reasoning_effort_types.high;
             default:
-                // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                 return settings.reasoning_effort;
         }
     }
@@ -3096,7 +3015,6 @@ function getReasoningEffort(settings = null, model = null) {
     const reasoningEffort = resolveReasoningEffort();
 
     // Check if the resolved effort supported by the model
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     if (settings.chat_completion_source === chat_completion_sources.ELECTRONHUB) {
         if (Array.isArray(model_list) && reasoningEffort) {
             const currentModel = model_list.find((m) => m.id === model);
@@ -3139,12 +3057,11 @@ function getVerbosity(settings = null) {
  * @param {import('../script.js').AdditionalRequestOptions} options Additional request options
  * @returns {Promise<object>} Final generation parameters object appropriate for the chat completion source
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'settings' implicitly has an 'any' type.
 export async function createGenerationParameters(
-    settings,
-    model,
-    type,
-    messages,
+    settings: any,
+    model: any,
+    type: any,
+    messages: any,
     { jsonSchema = null } = {},
 ) {
     // HACK: Filter out null and non-object messages
@@ -3678,14 +3595,12 @@ export async function createGenerationParameters(
  * @returns {Promise<unknown>}
  * @throws {Error}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'type' implicitly has an 'any' type.
-async function sendOpenAIRequest(type, messages, signal, { jsonSchema = null } = {}) {
+async function sendOpenAIRequest(type: any, messages: any, signal: any, { jsonSchema = null } = {}) {
     // Provide default abort signal
     if (!signal) {
         signal = new AbortController().signal;
     }
 
-    // @ts-expect-error TS(2345) FIXME: Argument of type '{ send_if_empty: string; imperso... Remove this comment to see the full error message
     const model = getChatCompletionModel(oai_settings);
     const { generate_data, stream, canMultiSwipe } = await createGenerationParameters(
         oai_settings,
@@ -3716,10 +3631,8 @@ async function sendOpenAIRequest(type, messages, signal, { jsonSchema = null } =
         const reader = eventStream.readable.getReader();
         return async function* streamData() {
             let text = '';
-            // @ts-expect-error TS(7034) FIXME: Variable 'swipes' implicitly has type 'any[]' in s... Remove this comment to see the full error message
-            const swipes = [];
-            // @ts-expect-error TS(7034) FIXME: Variable 'toolCalls' implicitly has type 'any[]' i... Remove this comment to see the full error message
-            const toolCalls = [];
+            const swipes: any[] = [];
+            const toolCalls: any[] = [];
             const state = { reasoning: '', images: [], signature: '', toolSignatures: {} };
             while (true) {
                 const { done, value } = await reader.read();
@@ -3736,18 +3649,15 @@ async function sendOpenAIRequest(type, messages, signal, { jsonSchema = null } =
                 ) {
                     const swipeIndex = parsed.choices[0].index - 1;
                     // FIXME: state.reasoning should be an array to support multi-swipe
-                    // @ts-expect-error TS(7005) FIXME: Variable 'swipes' implicitly has an 'any[]' type.
                     swipes[swipeIndex] =
                         (swipes[swipeIndex] || '') +
-                        getStreamingReply(parsed, state, { overrideShowThoughts: false });
+                        getStreamingReply(parsed, state, { overrideShowThoughts: null });
                 } else {
                     text += getStreamingReply(parsed, state);
                 }
 
-                // @ts-expect-error TS(7005) FIXME: Variable 'toolCalls' implicitly has an 'any[]' typ... Remove this comment to see the full error message
                 ToolManager.parseToolCalls(toolCalls, parsed, state.toolSignatures);
 
-                // @ts-expect-error TS(7005) FIXME: Variable 'toolCalls' implicitly has an 'any[]' typ... Remove this comment to see the full error message
                 yield {
                     text,
                     swipes: swipes,
@@ -3792,10 +3702,9 @@ async function sendOpenAIRequest(type, messages, signal, { jsonSchema = null } =
  * @param {boolean?} [options.overrideShowThoughts] Override show thoughts
  * @returns {string} The reply extracted from the response data
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
 export function getStreamingReply(
-    data,
-    state,
+    data: any,
+    state: any,
     { chatCompletionSource = null, overrideShowThoughts = null } = {},
 ) {
     const chat_completion_source = chatCompletionSource ?? oai_settings.chat_completion_source;
@@ -3811,75 +3720,57 @@ export function getStreamingReply(
             chat_completion_source,
         )
     ) {
-        // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
         const inlineData =
             data?.candidates?.[0]?.content?.parts
-                ?.filter((x) => x.inlineData && !x.thought)
-                ?.map((x) => x.inlineData) || [];
+                ?.filter((x: any) => x.inlineData && !x.thought)
+                ?.map((x: any) => x.inlineData) || [];
         if (Array.isArray(inlineData) && inlineData.length > 0) {
             state.images.push(
                 ...inlineData.map((x) => `data:${x.mimeType};base64,${x.data}`).filter(isDataURL),
             );
         }
         if (show_thoughts) {
-            // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
             state.reasoning +=
                 data?.candidates?.[0]?.content?.parts
-                    ?.filter((x) => x.thought)
-                    ?.map((x) => x.text)?.[0] || '';
+                    ?.filter((x: any) => x.thought)
+                    ?.map((x: any) => x.text)?.[0] || '';
         }
         // Extract thought signatures from streaming chunks (typically in final chunk)
         const parts = data?.candidates?.[0]?.content?.parts || [];
-        // @ts-expect-error TS(7006) FIXME: Parameter 'part' implicitly has an 'any' type.
-        parts.forEach((part) => {
+        parts.forEach((part: any) => {
             if (part.thoughtSignature && typeof part.text === 'string') {
                 state.signature = part.thoughtSignature;
             }
         });
-        // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
         return (
             data?.candidates?.[0]?.content?.parts
-                ?.filter((x) => !x.thought)
-                ?.map((x) => x.text)?.[0] || ''
+                ?.filter((x: any) => !x.thought)
+                ?.map((x: any) => x.text)?.[0] || ''
         );
     } else if (chat_completion_source === chat_completion_sources.COHERE) {
         return data?.delta?.message?.content?.text || data?.delta?.message?.tool_plan || '';
     } else if (chat_completion_source === chat_completion_sources.DEEPSEEK) {
         if (show_thoughts) {
-            // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
             state.reasoning +=
-                data.choices?.filter((x) => x?.delta?.reasoning_content)?.[0]?.delta
-                    ?.reasoning_content || '';
-        }
-        return data.choices?.[0]?.delta?.content || '';
-    } else if (chat_completion_source === chat_completion_sources.XAI) {
-        if (show_thoughts) {
-            // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
-            state.reasoning +=
-                data.choices?.filter((x) => x?.delta?.reasoning_content)?.[0]?.delta
+                data.choices?.filter((x: any) => x?.delta?.reasoning_content)?.[0]?.delta
                     ?.reasoning_content || '';
         }
         return data.choices?.[0]?.delta?.content || '';
     } else if (chat_completion_source === chat_completion_sources.OPENROUTER) {
-        // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
         const imageUrls =
             data?.choices?.[0]?.delta?.images
-                ?.filter((x) => x.type === 'image_url')
-                ?.map((x) => x?.image_url?.url) || [];
+                ?.filter((x: any) => x.type === 'image_url')
+                ?.map((x: any) => x?.image_url?.url) || [];
         if (Array.isArray(imageUrls) && imageUrls.length > 0) {
             state.images.push(...imageUrls.filter(isDataURL));
         }
         if (show_thoughts) {
             state.reasoning +=
-                // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
-                data.choices?.filter((x) => x?.delta?.reasoning)?.[0]?.delta?.reasoning ??
-                // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
-                data.choices?.filter((x) => x?.delta?.reasoning_content)?.[0]?.delta
+                data.choices?.filter((x: any) => x?.delta?.reasoning)?.[0]?.delta?.reasoning ??
+                data.choices?.filter((x: any) => x?.delta?.reasoning_content)?.[0]?.delta
                     ?.reasoning_content ??
-                // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
-                data.choices?.filter((x) => x?.message?.reasoning)?.[0]?.message?.reasoning ??
-                // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
-                data.choices?.filter((x) => x?.message?.reasoning_content)?.[0]?.message
+                data.choices?.filter((x: any) => x?.message?.reasoning)?.[0]?.message?.reasoning ??
+                data.choices?.filter((x: any) => x?.message?.reasoning_content)?.[0]?.message
                     ?.reasoning_content ??
                 '';
         }
@@ -3923,11 +3814,9 @@ export function getStreamingReply(
     ) {
         if (show_thoughts) {
             state.reasoning +=
-                // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
-                data.choices?.filter((x) => x?.delta?.reasoning_content)?.[0]?.delta
+                data.choices?.filter((x: any) => x?.delta?.reasoning_content)?.[0]?.delta
                     ?.reasoning_content ??
-                // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
-                data.choices?.filter((x) => x?.delta?.reasoning)?.[0]?.delta?.reasoning ??
+                data.choices?.filter((x: any) => x?.delta?.reasoning)?.[0]?.delta?.reasoning ??
                 '';
         }
         return (
@@ -3938,9 +3827,8 @@ export function getStreamingReply(
         );
     } else if (chat_completion_source === chat_completion_sources.MISTRALAI) {
         if (show_thoughts) {
-            // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
             state.reasoning +=
-                data.choices?.filter((x) => x?.delta?.content?.[0]?.thinking)?.[0]?.delta
+                data.choices?.filter((x: any) => x?.delta?.content?.[0]?.thinking)?.[0]?.delta
                     ?.content?.[0]?.thinking?.[0]?.text || '';
         }
         const content =
@@ -3950,8 +3838,8 @@ export function getStreamingReply(
             '';
         return Array.isArray(content)
             ? content
-                  .map((x) => x.text)
-                  .filter((x) => x)
+                  .map((x: any) => x.text)
+                  .filter((x: any) => x)
                   .join('')
             : content;
     } else {
@@ -4273,9 +4161,8 @@ class Message {
             },
             ...(includeSignature && i.signature ? { signature: i.signature } : {}),
         }));
-        // @ts-expect-error TS(7006) FIXME: Parameter 'i' implicitly has an 'any' type.
         const fallbackReasoning =
-            invocations.find((i) => typeof i.reasoning === 'string' && i.reasoning.length > 0)
+            invocations.find((i: any) => typeof i.reasoning === 'string' && i.reasoning.length > 0)
                 ?.reasoning || null;
         this.reasoning = includeReasoning ? fallbackReasoning : null;
         // @ts-expect-error TS(2554) FIXME: Expected 3 arguments, but got 1.
@@ -4828,10 +4715,9 @@ export class ChatCompletion {
      */
     // @ts-expect-error TS(7006) FIXME: Parameter 'messages' implicitly has an 'any' type.
     canAffordAll(messages) {
-        // @ts-expect-error TS(7006) FIXME: Parameter 'total' implicitly has an 'any' type.
         return (
             0 <=
-            this.tokenBudget - messages.reduce((total, message) => total + message.getTokens(), 0)
+            this.tokenBudget - messages.reduce((total: any, message: any) => total + message.getTokens(), 0)
         );
     }
 
@@ -5032,7 +4918,7 @@ function migrateChatCompletionSettings(settings) {
         },
         {
             oldKey: 'custom_prompt_post_processing',
-            oldValue: custom_prompt_post_processing_types.CLAUDE,
+            oldValue: (custom_prompt_post_processing_types as any).CLAUDE,
             newKey: 'custom_prompt_post_processing',
             newValue: custom_prompt_post_processing_types.MERGE,
         },
@@ -5473,8 +5359,7 @@ async function saveOpenAIPreset(name, settings, triggerUi = true) {
             oai_settings.preset_settings_openai = data.name;
             const value = (openai_setting_names as Record<string, number>)[data.name] as number;
             Object.assign(openai_settings[value]!, presetBody);
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            document
+            (document as any)
                 .querySelector('#settings_preset_openai option[value="${value}"]')
                 ?.selected(true);
             if (triggerUi)
@@ -5505,9 +5390,8 @@ async function saveOpenAIPreset(name, settings, triggerUi = true) {
  *
  */
 function onLogitBiasPresetChange() {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const value = String(
-        document.getElementById('openai_logit_bias_preset')?.selectedOptions[0]?.value || '',
+        (document.getElementById('openai_logit_bias_preset') as any)?.selectedOptions[0]?.value || '',
     );
     // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     const preset = oai_settings.bias_presets[value];
@@ -5905,9 +5789,8 @@ function onLogitBiasPresetExportClick() {
         return;
     }
 
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     const presetJsonString = JSON.stringify(
-        oai_settings.bias_presets[oai_settings.bias_preset_selected],
+        (oai_settings as any).bias_presets[(oai_settings as any).bias_preset_selected],
         null,
         4,
     );
@@ -5940,10 +5823,8 @@ async function onDeletePresetClick() {
     if (Object.keys(openai_setting_names).length) {
         // @ts-expect-error TS(2322) FIXME: Type 'string | undefined' is not assignable to typ... Remove this comment to see the full error message
         oai_settings.preset_settings_openai = Object.keys(openai_setting_names)[0];
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        document
-            .querySelector('#settings_preset_openai option[value="${newValue}"]')
-            ?.selected(true);
+        const option = document.querySelector('#settings_preset_openai option[value="' + oai_settings.preset_settings_openai + '"]') as any;
+        if (option) option.selected = true;
         document.getElementById('settings_preset_openai')?.dispatchEvent(new Event('change'));
     }
 
@@ -5986,12 +5867,8 @@ async function onLogitBiasPresetDeleteClick() {
     if (Object.keys(oai_settings.bias_presets).length) {
         // @ts-expect-error TS(2322) FIXME: Type 'string | undefined' is not assignable to typ... Remove this comment to see the full error message
         oai_settings.bias_preset_selected = Object.keys(oai_settings.bias_presets)[0];
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        document
-            .querySelector(
-                '#openai_logit_bias_preset option[value="${oai_settings.bias_preset_selected}"]',
-            )
-            ?.selected(true);
+        const option2 = document.querySelector('#openai_logit_bias_preset option[value="' + oai_settings.bias_preset_selected + '"]') as any;
+        if (option2) option2.selected = true;
         document.getElementById('openai_logit_bias_preset')?.dispatchEvent(new Event('change'));
     }
 
@@ -6006,9 +5883,8 @@ async function onLogitBiasPresetDeleteClick() {
 function onSettingsPresetChange() {
     const presetNameBefore = oai_settings.preset_settings_openai;
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const presetName =
-        document.getElementById('settings_preset_openai')?.selectedOptions[0]?.textContent || '';
+        (document.getElementById('settings_preset_openai') as HTMLSelectElement | null)?.selectedOptions[0]?.textContent || '';
     oai_settings.preset_settings_openai = presetName;
 
     const preset = structuredClone(
@@ -6669,9 +6545,8 @@ async function onModelChange() {
     if (value && this.matches('#model_custom_select')) {
         console.log('Custom model changed to', value);
         oai_settings.custom_model = value;
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         (() => {
-            const el = document.getElementById('custom_model_id');
+            const el = document.getElementById('custom_model_id') as HTMLInputElement | null;
             if (el) {
                 el.value = value;
                 el.dispatchEvent(new Event('input'));
@@ -6768,27 +6643,24 @@ async function onModelChange() {
         const contextSize = getGeminiMaxContext(value, oai_settings.max_context_unlocked);
         const maxTemp = getGeminiMaxTemp(value);
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        document.getElementById('openai_max_context').setAttribute('max', contextSize);
+        document.getElementById('openai_max_context').setAttribute('max', String(contextSize));
         oai_settings.temp_openai = Math.min(maxTemp, oai_settings.temp_openai);
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         (() => {
             const el = document.getElementById('temp_openai');
             if (el) {
-                el.setAttribute('max', maxTemp);
-                el.value = oai_settings.temp_openai;
+                el.setAttribute('max', String(maxTemp));
+                (el as any).value = oai_settings.temp_openai;
                 el.dispatchEvent(new Event('input'));
             }
         })();
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         oai_settings.openai_max_context = Math.min(
-            Number(document.getElementById('openai_max_context').getAttribute('max')),
+            Number(document.getElementById('openai_max_context')?.getAttribute('max') ?? 0),
             oai_settings.openai_max_context,
         );
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         (() => {
             const el = document.getElementById('openai_max_context');
             if (el) {
-                el.value = oai_settings.openai_max_context;
+                (el as any).value = oai_settings.openai_max_context;
                 el.dispatchEvent(new Event('input'));
             }
         })();
@@ -6797,52 +6669,48 @@ async function onModelChange() {
     if (oai_settings.chat_completion_source == chat_completion_sources.OPENROUTER) {
         if (oai_settings.max_context_unlocked) {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            document.getElementById('openai_max_context').setAttribute('max', unlocked_max);
+            document.getElementById('openai_max_context').setAttribute('max', String(unlocked_max));
         } else {
             const model = model_list.find((m) => m.id == oai_settings.openrouter_model);
             if (model?.context_length) {
                 // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
                 document
                     .getElementById('openai_max_context')
-                    .setAttribute('max', model.context_length);
+                    .setAttribute('max', String(model.context_length));
             } else {
                 // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-                document.getElementById('openai_max_context').setAttribute('max', max_128k);
+                document.getElementById('openai_max_context').setAttribute('max', String(max_128k));
             }
         }
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         oai_settings.openai_max_context = Math.min(
-            Number(document.getElementById('openai_max_context').getAttribute('max')),
+            Number(document.getElementById('openai_max_context')?.getAttribute('max') ?? 0),
             oai_settings.openai_max_context,
         );
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         (() => {
             const el = document.getElementById('openai_max_context');
             if (el) {
-                el.value = oai_settings.openai_max_context;
+                (el as any).value = oai_settings.openai_max_context;
                 el.dispatchEvent(new Event('input'));
             }
         })();
 
         if (value && (value.includes('claude') || value.includes('palm-2'))) {
             oai_settings.temp_openai = Math.min(claude_max_temp, oai_settings.temp_openai);
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             (() => {
                 const el = document.getElementById('temp_openai');
                 if (el) {
-                    el.setAttribute('max', claude_max_temp);
-                    el.value = oai_settings.temp_openai;
+                    el.setAttribute('max', String(claude_max_temp));
+                    (el as any).value = oai_settings.temp_openai;
                     el.dispatchEvent(new Event('input'));
                 }
             })();
         } else {
             oai_settings.temp_openai = Math.min(oai_max_temp, oai_settings.temp_openai);
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             (() => {
                 const el = document.getElementById('temp_openai');
                 if (el) {
-                    el.setAttribute('max', oai_max_temp);
-                    el.value = oai_settings.temp_openai;
+                    el.setAttribute('max', String(oai_max_temp));
+                    (el as any).value = oai_settings.temp_openai;
                     el.dispatchEvent(new Event('input'));
                 }
             })();
@@ -6854,28 +6722,26 @@ async function onModelChange() {
     if (oai_settings.chat_completion_source == chat_completion_sources.CLAUDE) {
         if (oai_settings.max_context_unlocked) {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            document.getElementById('openai_max_context').setAttribute('max', unlocked_max);
+            document.getElementById('openai_max_context').setAttribute('max', String(unlocked_max));
         } else if (/^claude-(sonnet-4-5|sonnet-4-6|opus-4-6|opus-4-7)/.test(value)) {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            document.getElementById('openai_max_context').setAttribute('max', max_1mil);
+            document.getElementById('openai_max_context').setAttribute('max', String(max_1mil));
         } else if (/^claude-(3|opus|haiku|sonnet)/.test(value)) {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            document.getElementById('openai_max_context').setAttribute('max', max_200k);
+            document.getElementById('openai_max_context').setAttribute('max', String(max_200k));
         } else {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            document.getElementById('openai_max_context').setAttribute('max', max_200k);
+            document.getElementById('openai_max_context').setAttribute('max', String(max_200k));
         }
 
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         oai_settings.openai_max_context = Math.min(
             oai_settings.openai_max_context,
-            Number(document.getElementById('openai_max_context').getAttribute('max')),
+            Number(document.getElementById('openai_max_context')?.getAttribute('max') ?? 0),
         );
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         (() => {
             const el = document.getElementById('openai_max_context');
             if (el) {
-                el.value = oai_settings.openai_max_context;
+                (el as any).value = oai_settings.openai_max_context;
                 el.dispatchEvent(new Event('input'));
             }
         })();
@@ -6886,12 +6752,11 @@ async function onModelChange() {
             .setAttribute('placeholder', 'https://api.anthropic.com/v1');
 
         oai_settings.temp_openai = Math.min(claude_max_temp, oai_settings.temp_openai);
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         (() => {
             const el = document.getElementById('temp_openai');
             if (el) {
-                el.setAttribute('max', claude_max_temp);
-                el.value = oai_settings.temp_openai;
+                el.setAttribute('max', String(claude_max_temp));
+                (el as any).value = oai_settings.temp_openai;
                 el.dispatchEvent(new Event('input'));
             }
         })();
@@ -6905,17 +6770,15 @@ async function onModelChange() {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         document
             .getElementById('openai_max_context')
-            .setAttribute('max', getMaxContextOpenAI(value));
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            .setAttribute('max', String(getMaxContextOpenAI(value) ?? ''));
         oai_settings.openai_max_context = Math.min(
             oai_settings.openai_max_context,
-            Number(document.getElementById('openai_max_context').getAttribute('max')),
+            Number(document.getElementById('openai_max_context')?.getAttribute('max') ?? 0),
         );
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         (() => {
             const el = document.getElementById('openai_max_context');
             if (el) {
-                el.value = oai_settings.openai_max_context;
+                (el as any).value = oai_settings.openai_max_context;
                 el.dispatchEvent(new Event('input'));
             }
         })();
@@ -6926,12 +6789,11 @@ async function onModelChange() {
             .setAttribute('placeholder', 'https://api.openai.com/v1');
 
         oai_settings.temp_openai = Math.min(oai_max_temp, oai_settings.temp_openai);
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         (() => {
             const el = document.getElementById('temp_openai');
             if (el) {
-                el.setAttribute('max', oai_max_temp);
-                el.value = oai_settings.temp_openai;
+                el.setAttribute('max', String(oai_max_temp));
+                (el as any).value = oai_settings.temp_openai;
                 el.dispatchEvent(new Event('input'));
             }
         })();
@@ -6943,27 +6805,24 @@ async function onModelChange() {
             oai_settings.max_context_unlocked,
         );
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        document.getElementById('openai_max_context').setAttribute('max', maxContext);
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        document.getElementById('openai_max_context').setAttribute('max', String(maxContext));
         oai_settings.openai_max_context = Math.min(
             oai_settings.openai_max_context,
-            Number(document.getElementById('openai_max_context').getAttribute('max')),
+            Number(document.getElementById('openai_max_context')?.getAttribute('max') ?? 0),
         );
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         (() => {
             const el = document.getElementById('openai_max_context');
             if (el) {
-                el.value = oai_settings.openai_max_context;
+                (el as any).value = oai_settings.openai_max_context;
                 el.dispatchEvent(new Event('input'));
             }
         })();
         oai_settings.temp_openai = Math.min(mistral_max_temp, oai_settings.temp_openai);
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         (() => {
             const el = document.getElementById('temp_openai');
             if (el) {
-                el.setAttribute('max', mistral_max_temp);
-                el.value = oai_settings.temp_openai;
+                el.setAttribute('max', String(mistral_max_temp));
+                (el as any).value = oai_settings.temp_openai;
                 el.dispatchEvent(new Event('input'));
             }
         })();
@@ -6972,14 +6831,14 @@ async function onModelChange() {
     if (oai_settings.chat_completion_source === chat_completion_sources.COHERE) {
         if (oai_settings.max_context_unlocked) {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            document.getElementById('openai_max_context').setAttribute('max', unlocked_max);
+            document.getElementById('openai_max_context').setAttribute('max', String(unlocked_max));
         } else if (
             ['command-light-nightly', 'command-light', 'command'].includes(
                 oai_settings.cohere_model,
             )
         ) {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            document.getElementById('openai_max_context').setAttribute('max', max_4k);
+            document.getElementById('openai_max_context').setAttribute('max', String(max_4k));
         } else if (
             oai_settings.cohere_model.includes('command-r') ||
             [
@@ -6990,41 +6849,38 @@ async function onModelChange() {
             ].includes(oai_settings.cohere_model)
         ) {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            document.getElementById('openai_max_context').setAttribute('max', max_128k);
+            document.getElementById('openai_max_context').setAttribute('max', String(max_128k));
         } else if (['command-a-03-2025'].includes(oai_settings.cohere_model)) {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            document.getElementById('openai_max_context').setAttribute('max', max_256k);
+            document.getElementById('openai_max_context').setAttribute('max', String(max_256k));
         } else if (['c4ai-aya-23-8b', 'c4ai-aya-expanse-8b'].includes(oai_settings.cohere_model)) {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            document.getElementById('openai_max_context').setAttribute('max', max_8k);
+            document.getElementById('openai_max_context').setAttribute('max', String(max_8k));
         } else if (
             ['c4ai-aya-vision-8b', 'c4ai-aya-vision-32b'].includes(oai_settings.cohere_model)
         ) {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            document.getElementById('openai_max_context').setAttribute('max', max_16k);
+            document.getElementById('openai_max_context').setAttribute('max', String(max_16k));
         } else {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            document.getElementById('openai_max_context').setAttribute('max', max_4k);
+            document.getElementById('openai_max_context').setAttribute('max', String(max_4k));
         }
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         oai_settings.openai_max_context = Math.min(
-            Number(document.getElementById('openai_max_context').getAttribute('max')),
+            Number(document.getElementById('openai_max_context')?.getAttribute('max') ?? 0),
             oai_settings.openai_max_context,
         );
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         (() => {
             const el = document.getElementById('openai_max_context');
             if (el) {
-                el.value = oai_settings.openai_max_context;
+                (el as any).value = oai_settings.openai_max_context;
                 el.dispatchEvent(new Event('input'));
             }
         })();
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         (() => {
             const el = document.getElementById('temp_openai');
             if (el) {
-                el.setAttribute('max', claude_max_temp);
-                el.value = oai_settings.temp_openai;
+                el.setAttribute('max', String(claude_max_temp));
+                (el as any).value = oai_settings.temp_openai;
                 el.dispatchEvent(new Event('input'));
             }
         })();
@@ -7033,46 +6889,43 @@ async function onModelChange() {
     if (oai_settings.chat_completion_source === chat_completion_sources.PERPLEXITY) {
         if (oai_settings.max_context_unlocked) {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            document.getElementById('openai_max_context').setAttribute('max', unlocked_max);
+            document.getElementById('openai_max_context').setAttribute('max', String(unlocked_max));
         } else if (
             ['sonar', 'sonar-reasoning', 'sonar-reasoning-pro', 'r1-1776'].includes(
                 oai_settings.perplexity_model,
             )
         ) {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            document.getElementById('openai_max_context').setAttribute('max', 127000);
+            document.getElementById('openai_max_context').setAttribute('max', String(127000));
         } else if (['sonar-pro'].includes(oai_settings.perplexity_model)) {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            document.getElementById('openai_max_context').setAttribute('max', 200000);
+            document.getElementById('openai_max_context').setAttribute('max', String(200000));
         } else if (oai_settings.perplexity_model.includes('llama-3.1')) {
             const isOnline = oai_settings.perplexity_model.includes('online');
             const contextSize = isOnline ? 128 * 1024 - 4000 : 128 * 1024;
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            document.getElementById('openai_max_context').setAttribute('max', contextSize);
+            document.getElementById('openai_max_context').setAttribute('max', String(contextSize));
         } else {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            document.getElementById('openai_max_context').setAttribute('max', max_128k);
+            document.getElementById('openai_max_context').setAttribute('max', String(max_128k));
         }
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         oai_settings.openai_max_context = Math.min(
-            Number(document.getElementById('openai_max_context').getAttribute('max')),
+            Number(document.getElementById('openai_max_context')?.getAttribute('max') ?? 0),
             oai_settings.openai_max_context,
         );
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         (() => {
             const el = document.getElementById('openai_max_context');
             if (el) {
-                el.value = oai_settings.openai_max_context;
+                (el as any).value = oai_settings.openai_max_context;
                 el.dispatchEvent(new Event('input'));
             }
         })();
         oai_settings.temp_openai = Math.min(oai_max_temp, oai_settings.temp_openai);
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         (() => {
             const el = document.getElementById('temp_openai');
             if (el) {
-                el.setAttribute('max', oai_max_temp);
-                el.value = oai_settings.temp_openai;
+                el.setAttribute('max', String(oai_max_temp));
+                (el as any).value = oai_settings.temp_openai;
                 el.dispatchEvent(new Event('input'));
             }
         })();
@@ -7084,27 +6937,24 @@ async function onModelChange() {
             oai_settings.max_context_unlocked,
         );
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        document.getElementById('openai_max_context').setAttribute('max', maxContext);
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        document.getElementById('openai_max_context').setAttribute('max', String(maxContext));
         oai_settings.openai_max_context = Math.min(
-            Number(document.getElementById('openai_max_context').getAttribute('max')),
+            Number(document.getElementById('openai_max_context')?.getAttribute('max') ?? 0),
             oai_settings.openai_max_context,
         );
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         (() => {
             const el = document.getElementById('openai_max_context');
             if (el) {
-                el.value = oai_settings.openai_max_context;
+                (el as any).value = oai_settings.openai_max_context;
                 el.dispatchEvent(new Event('input'));
             }
         })();
         oai_settings.temp_openai = Math.min(oai_max_temp, oai_settings.temp_openai);
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         (() => {
             const el = document.getElementById('temp_openai');
             if (el) {
-                el.setAttribute('max', oai_max_temp);
-                el.value = oai_settings.temp_openai;
+                el.setAttribute('max', String(oai_max_temp));
+                (el as any).value = oai_settings.temp_openai;
                 el.dispatchEvent(new Event('input'));
             }
         })();
@@ -7113,31 +6963,28 @@ async function onModelChange() {
     if (oai_settings.chat_completion_source == chat_completion_sources.AI21) {
         if (oai_settings.max_context_unlocked) {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            document.getElementById('openai_max_context').setAttribute('max', unlocked_max);
+            document.getElementById('openai_max_context').setAttribute('max', String(unlocked_max));
         } else if (oai_settings.ai21_model.startsWith('jamba-')) {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            document.getElementById('openai_max_context').setAttribute('max', max_256k);
+            document.getElementById('openai_max_context').setAttribute('max', String(max_256k));
         }
 
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         oai_settings.openai_max_context = Math.min(
-            Number(document.getElementById('openai_max_context').getAttribute('max')),
+            Number(document.getElementById('openai_max_context')?.getAttribute('max') ?? 0),
             oai_settings.openai_max_context,
         );
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         (() => {
             const el = document.getElementById('openai_max_context');
             if (el) {
-                el.value = oai_settings.openai_max_context;
+                (el as any).value = oai_settings.openai_max_context;
                 el.dispatchEvent(new Event('input'));
             }
         })();
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         (() => {
             const el = document.getElementById('temp_openai');
             if (el) {
-                el.setAttribute('max', oai_max_temp);
-                el.value = oai_settings.temp_openai;
+                el.setAttribute('max', String(oai_max_temp));
+                (el as any).value = oai_settings.temp_openai;
                 el.dispatchEvent(new Event('input'));
             }
         })();
@@ -7145,26 +6992,23 @@ async function onModelChange() {
 
     if (oai_settings.chat_completion_source == chat_completion_sources.CUSTOM) {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        document.getElementById('openai_max_context').setAttribute('max', unlocked_max);
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        document.getElementById('openai_max_context').setAttribute('max', String(unlocked_max));
         oai_settings.openai_max_context = Math.min(
-            Number(document.getElementById('openai_max_context').getAttribute('max')),
+            Number(document.getElementById('openai_max_context')?.getAttribute('max') ?? 0),
             oai_settings.openai_max_context,
         );
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         (() => {
             const el = document.getElementById('openai_max_context');
             if (el) {
-                el.value = oai_settings.openai_max_context;
+                (el as any).value = oai_settings.openai_max_context;
                 el.dispatchEvent(new Event('input'));
             }
         })();
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         (() => {
             const el = document.getElementById('temp_openai');
             if (el) {
-                el.setAttribute('max', oai_max_temp);
-                el.value = oai_settings.temp_openai;
+                el.setAttribute('max', String(oai_max_temp));
+                (el as any).value = oai_settings.temp_openai;
                 el.dispatchEvent(new Event('input'));
             }
         })();
@@ -7176,27 +7020,24 @@ async function onModelChange() {
             oai_settings.max_context_unlocked,
         );
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        document.getElementById('openai_max_context').setAttribute('max', maxContext);
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        document.getElementById('openai_max_context').setAttribute('max', String(maxContext));
         oai_settings.openai_max_context = Math.min(
-            Number(document.getElementById('openai_max_context').getAttribute('max')),
+            Number(document.getElementById('openai_max_context')?.getAttribute('max') ?? 0),
             oai_settings.openai_max_context,
         );
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         (() => {
             const el = document.getElementById('openai_max_context');
             if (el) {
-                el.value = oai_settings.openai_max_context;
+                (el as any).value = oai_settings.openai_max_context;
                 el.dispatchEvent(new Event('input'));
             }
         })();
         oai_settings.temp_openai = Math.min(oai_max_temp, oai_settings.temp_openai);
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         (() => {
             const el = document.getElementById('temp_openai');
             if (el) {
-                el.setAttribute('max', oai_max_temp);
-                el.value = oai_settings.temp_openai;
+                el.setAttribute('max', String(oai_max_temp));
+                (el as any).value = oai_settings.temp_openai;
                 el.dispatchEvent(new Event('input'));
             }
         })();
@@ -7210,27 +7051,24 @@ async function onModelChange() {
             oai_settings.max_context_unlocked,
         );
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        document.getElementById('openai_max_context').setAttribute('max', maxContext);
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        document.getElementById('openai_max_context').setAttribute('max', String(maxContext));
         oai_settings.openai_max_context = Math.min(
-            Number(document.getElementById('openai_max_context').getAttribute('max')),
+            Number(document.getElementById('openai_max_context')?.getAttribute('max') ?? 0),
             oai_settings.openai_max_context,
         );
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         (() => {
             const el = document.getElementById('openai_max_context');
             if (el) {
-                el.value = oai_settings.openai_max_context;
+                (el as any).value = oai_settings.openai_max_context;
                 el.dispatchEvent(new Event('input'));
             }
         })();
         oai_settings.temp_openai = Math.min(oai_max_temp, oai_settings.temp_openai);
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         (() => {
             const el = document.getElementById('temp_openai');
             if (el) {
-                el.setAttribute('max', oai_max_temp);
-                el.value = oai_settings.temp_openai;
+                el.setAttribute('max', String(oai_max_temp));
+                (el as any).value = oai_settings.temp_openai;
                 el.dispatchEvent(new Event('input'));
             }
         })();
@@ -7244,27 +7082,24 @@ async function onModelChange() {
             oai_settings.max_context_unlocked,
         );
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        document.getElementById('openai_max_context').setAttribute('max', maxContext);
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        document.getElementById('openai_max_context').setAttribute('max', String(maxContext));
         oai_settings.openai_max_context = Math.min(
-            Number(document.getElementById('openai_max_context').getAttribute('max')),
+            Number(document.getElementById('openai_max_context')?.getAttribute('max') ?? 0),
             oai_settings.openai_max_context,
         );
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         (() => {
             const el = document.getElementById('openai_max_context');
             if (el) {
-                el.value = oai_settings.openai_max_context;
+                (el as any).value = oai_settings.openai_max_context;
                 el.dispatchEvent(new Event('input'));
             }
         })();
         oai_settings.temp_openai = Math.min(oai_max_temp, oai_settings.temp_openai);
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         (() => {
             const el = document.getElementById('temp_openai');
             if (el) {
-                el.setAttribute('max', oai_max_temp);
-                el.value = oai_settings.temp_openai;
+                el.setAttribute('max', String(oai_max_temp));
+                (el as any).value = oai_settings.temp_openai;
                 el.dispatchEvent(new Event('input'));
             }
         })();
@@ -7273,31 +7108,28 @@ async function onModelChange() {
     if (oai_settings.chat_completion_source === chat_completion_sources.POLLINATIONS) {
         if (oai_settings.max_context_unlocked) {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            document.getElementById('openai_max_context').setAttribute('max', unlocked_max);
+            document.getElementById('openai_max_context').setAttribute('max', String(unlocked_max));
         } else {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            document.getElementById('openai_max_context').setAttribute('max', max_128k);
+            document.getElementById('openai_max_context').setAttribute('max', String(max_128k));
         }
 
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         oai_settings.openai_max_context = Math.min(
-            Number(document.getElementById('openai_max_context').getAttribute('max')),
+            Number(document.getElementById('openai_max_context')?.getAttribute('max') ?? 0),
             oai_settings.openai_max_context,
         );
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         (() => {
             const el = document.getElementById('openai_max_context');
             if (el) {
-                el.value = oai_settings.openai_max_context;
+                (el as any).value = oai_settings.openai_max_context;
                 el.dispatchEvent(new Event('input'));
             }
         })();
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         (() => {
             const el = document.getElementById('temp_openai');
             if (el) {
-                el.setAttribute('max', oai_max_temp);
-                el.value = oai_settings.temp_openai;
+                el.setAttribute('max', String(oai_max_temp));
+                (el as any).value = oai_settings.temp_openai;
                 el.dispatchEvent(new Event('input'));
             }
         })();
@@ -7306,26 +7138,23 @@ async function onModelChange() {
     if (oai_settings.chat_completion_source === chat_completion_sources.DEEPSEEK) {
         const maxContext = oai_settings.max_context_unlocked ? unlocked_max : max_1mil;
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        document.getElementById('openai_max_context').setAttribute('max', maxContext);
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        document.getElementById('openai_max_context').setAttribute('max', String(maxContext));
         oai_settings.openai_max_context = Math.min(
-            Number(document.getElementById('openai_max_context').getAttribute('max')),
+            Number(document.getElementById('openai_max_context')?.getAttribute('max') ?? 0),
             oai_settings.openai_max_context,
         );
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         (() => {
             const el = document.getElementById('openai_max_context');
             if (el) {
-                el.value = oai_settings.openai_max_context;
+                (el as any).value = oai_settings.openai_max_context;
                 el.dispatchEvent(new Event('input'));
             }
         })();
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         (() => {
             const el = document.getElementById('temp_openai');
             if (el) {
-                el.setAttribute('max', oai_max_temp);
-                el.value = oai_settings.temp_openai;
+                el.setAttribute('max', String(oai_max_temp));
+                (el as any).value = oai_settings.temp_openai;
                 el.dispatchEvent(new Event('input'));
             }
         })();
@@ -7334,40 +7163,36 @@ async function onModelChange() {
     if (oai_settings.chat_completion_source === chat_completion_sources.WORKERS_AI) {
         if (oai_settings.max_context_unlocked) {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            document.getElementById('openai_max_context').setAttribute('max', unlocked_max);
+            document.getElementById('openai_max_context').setAttribute('max', String(unlocked_max));
         } else {
             const model = model_list.find((m) => m.id === oai_settings.workers_ai_model);
-            // @ts-expect-error TS(2339) FIXME: Property 'properties' does not exist on type 'neve... Remove this comment to see the full error message
             const ctxProp =
                 Array.isArray(model?.properties) &&
-                model.properties.find((p) => p.property_id === 'context_window');
+                model.properties.find((p: any) => p.property_id === 'context_window');
             const contextLength = ctxProp ? Number(ctxProp.value) : max_8k;
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             document
                 .getElementById('openai_max_context')
-                .setAttribute('max', contextLength || max_8k);
+                .setAttribute('max', String(contextLength || max_8k));
         }
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         oai_settings.openai_max_context = Math.min(
-            Number(document.getElementById('openai_max_context').getAttribute('max')),
+            Number(document.getElementById('openai_max_context')?.getAttribute('max') ?? 0),
             oai_settings.openai_max_context,
         );
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         (() => {
             const el = document.getElementById('openai_max_context');
             if (el) {
-                el.value = oai_settings.openai_max_context;
+                (el as any).value = oai_settings.openai_max_context;
                 el.dispatchEvent(new Event('input'));
             }
         })();
         const workersAiMaxTemp = 5.0;
         oai_settings.temp_openai = Math.min(workersAiMaxTemp, oai_settings.temp_openai);
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         (() => {
             const el = document.getElementById('temp_openai');
             if (el) {
-                el.setAttribute('max', workersAiMaxTemp);
-                el.value = oai_settings.temp_openai;
+                el.setAttribute('max', String(workersAiMaxTemp));
+                (el as any).value = oai_settings.temp_openai;
                 el.dispatchEvent(new Event('input'));
             }
         })();
@@ -7377,26 +7202,23 @@ async function onModelChange() {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         document
             .getElementById('openai_max_context')
-            .setAttribute('max', oai_settings.max_context_unlocked ? unlocked_max : max_128k);
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+            .setAttribute('max', String(oai_settings.max_context_unlocked ? unlocked_max : max_128k));
         oai_settings.openai_max_context = Math.min(
-            Number(document.getElementById('openai_max_context').getAttribute('max')),
+            Number(document.getElementById('openai_max_context')?.getAttribute('max') ?? 0),
             oai_settings.openai_max_context,
         );
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         (() => {
             const el = document.getElementById('openai_max_context');
             if (el) {
-                el.value = oai_settings.openai_max_context;
+                (el as any).value = oai_settings.openai_max_context;
                 el.dispatchEvent(new Event('input'));
             }
         })();
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         (() => {
             const el = document.getElementById('temp_openai');
             if (el) {
-                el.setAttribute('max', oai_max_temp);
-                el.value = oai_settings.temp_openai;
+                el.setAttribute('max', String(oai_max_temp));
+                (el as any).value = oai_settings.temp_openai;
                 el.dispatchEvent(new Event('input'));
             }
         })();
@@ -7405,44 +7227,41 @@ async function onModelChange() {
     if (oai_settings.chat_completion_source === chat_completion_sources.XAI) {
         if (oai_settings.max_context_unlocked) {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            document.getElementById('openai_max_context').setAttribute('max', unlocked_max);
+            document.getElementById('openai_max_context').setAttribute('max', String(unlocked_max));
         } else if (oai_settings.xai_model.includes('grok-2-vision')) {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            document.getElementById('openai_max_context').setAttribute('max', max_32k);
+            document.getElementById('openai_max_context').setAttribute('max', String(max_32k));
         } else if (oai_settings.xai_model.includes('grok-4-fast')) {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            document.getElementById('openai_max_context').setAttribute('max', max_2mil);
+            document.getElementById('openai_max_context').setAttribute('max', String(max_2mil));
         } else if (oai_settings.xai_model.includes('grok-4')) {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            document.getElementById('openai_max_context').setAttribute('max', max_256k);
+            document.getElementById('openai_max_context').setAttribute('max', String(max_256k));
         } else if (oai_settings.xai_model.includes('grok-code')) {
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            document.getElementById('openai_max_context').setAttribute('max', max_256k);
+            document.getElementById('openai_max_context').setAttribute('max', String(max_256k));
         } else {
             // grok 2 and grok 3
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            document.getElementById('openai_max_context').setAttribute('max', max_128k);
+            document.getElementById('openai_max_context').setAttribute('max', String(max_128k));
         }
 
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         oai_settings.openai_max_context = Math.min(
-            Number(document.getElementById('openai_max_context').getAttribute('max')),
+            Number(document.getElementById('openai_max_context')?.getAttribute('max') ?? 0),
             oai_settings.openai_max_context,
         );
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         (() => {
             const el = document.getElementById('openai_max_context');
             if (el) {
-                el.value = oai_settings.openai_max_context;
+                (el as any).value = oai_settings.openai_max_context;
                 el.dispatchEvent(new Event('input'));
             }
         })();
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         (() => {
             const el = document.getElementById('temp_openai');
             if (el) {
-                el.setAttribute('max', oai_max_temp);
-                el.value = oai_settings.temp_openai;
+                el.setAttribute('max', String(oai_max_temp));
+                (el as any).value = oai_settings.temp_openai;
                 el.dispatchEvent(new Event('input'));
             }
         })();
@@ -7458,75 +7277,67 @@ async function onModelChange() {
             console.log('[AI/ML API] Model CTX:', model?.info?.contextLength);
         }
 
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         (() => {
-            const el = document.getElementById('openai_max_context');
+            const el = document.getElementById('openai_max_context') as HTMLInputElement | null;
             if (el) {
                 el.setAttribute('max', String(maxContext));
-                el.value = Math.min(Number(oai_settings.openai_max_context), maxContext);
+                el.value = String(Math.min(Number(oai_settings.openai_max_context), maxContext));
                 el.dispatchEvent(new Event('input'));
             }
         })();
 
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         (() => {
-            const el = document.getElementById('temp_openai');
+            const el = document.getElementById('temp_openai') as HTMLInputElement | null;
             if (el) {
                 el.setAttribute('max', String(oai_max_temp));
-                el.value = Number(oai_settings.temp_openai);
+                el.value = String(Number(oai_settings.temp_openai));
                 el.dispatchEvent(new Event('input'));
             }
         })();
 
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         oai_settings.openai_max_context = Number(
-            document.getElementById('openai_max_context').value,
+            (document.getElementById('openai_max_context') as HTMLInputElement).value,
         );
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        oai_settings.temp_openai = Number(document.getElementById('temp_openai').value);
+        oai_settings.temp_openai = Number((document.getElementById('temp_openai') as HTMLInputElement).value);
     }
 
     if (oai_settings.chat_completion_source === chat_completion_sources.COHERE) {
         oai_settings.pres_pen_openai = Math.min(Math.max(0, oai_settings.pres_pen_openai), 1);
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         (() => {
             const el = document.getElementById('pres_pen_openai');
             if (el) {
-                el.setAttribute('max', 1);
-                el.setAttribute('min', 0);
-                el.value = oai_settings.pres_pen_openai;
+                el.setAttribute('max', String(1));
+                el.setAttribute('min', String(0));
+                (el as any).value = oai_settings.pres_pen_openai;
                 el.dispatchEvent(new Event('input'));
             }
         })();
         oai_settings.freq_pen_openai = Math.min(Math.max(0, oai_settings.freq_pen_openai), 1);
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         (() => {
             const el = document.getElementById('freq_pen_openai');
             if (el) {
-                el.setAttribute('max', 1);
-                el.setAttribute('min', 0);
-                el.value = oai_settings.freq_pen_openai;
+                el.setAttribute('max', String(1));
+                el.setAttribute('min', String(0));
+                (el as any).value = oai_settings.freq_pen_openai;
                 el.dispatchEvent(new Event('input'));
             }
         })();
     } else {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         (() => {
             const el = document.getElementById('pres_pen_openai');
             if (el) {
-                el.setAttribute('max', 2);
-                el.setAttribute('min', -2);
-                el.value = oai_settings.pres_pen_openai;
+                el.setAttribute('max', String(2));
+                el.setAttribute('min', String(-2));
+                (el as any).value = oai_settings.pres_pen_openai;
                 el.dispatchEvent(new Event('input'));
             }
         })();
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         (() => {
             const el = document.getElementById('freq_pen_openai');
             if (el) {
-                el.setAttribute('max', 2);
-                el.setAttribute('min', -2);
-                el.value = oai_settings.freq_pen_openai;
+                el.setAttribute('max', String(2));
+                el.setAttribute('min', String(-2));
+                (el as any).value = oai_settings.freq_pen_openai;
                 el.dispatchEvent(new Event('input'));
             }
         })();
@@ -7538,27 +7349,24 @@ async function onModelChange() {
             oai_settings.max_context_unlocked,
         );
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        document.getElementById('openai_max_context').setAttribute('max', maxContext);
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        document.getElementById('openai_max_context').setAttribute('max', String(maxContext));
         oai_settings.openai_max_context = Math.min(
-            Number(document.getElementById('openai_max_context').getAttribute('max')),
+            Number(document.getElementById('openai_max_context')?.getAttribute('max') ?? 0),
             oai_settings.openai_max_context,
         );
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         (() => {
             const el = document.getElementById('openai_max_context');
             if (el) {
-                el.value = oai_settings.openai_max_context;
+                (el as any).value = oai_settings.openai_max_context;
                 el.dispatchEvent(new Event('input'));
             }
         })();
         oai_settings.temp_openai = Math.min(claude_max_temp, oai_settings.temp_openai);
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         (() => {
             const el = document.getElementById('temp_openai');
             if (el) {
-                el.setAttribute('max', claude_max_temp);
-                el.value = oai_settings.temp_openai;
+                el.setAttribute('max', String(claude_max_temp));
+                (el as any).value = oai_settings.temp_openai;
                 el.dispatchEvent(new Event('input'));
             }
         })();
@@ -7570,27 +7378,24 @@ async function onModelChange() {
             oai_settings.max_context_unlocked,
         );
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        document.getElementById('openai_max_context').setAttribute('max', maxContext);
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        document.getElementById('openai_max_context').setAttribute('max', String(maxContext));
         oai_settings.openai_max_context = Math.min(
-            Number(document.getElementById('openai_max_context').getAttribute('max')),
+            Number(document.getElementById('openai_max_context')?.getAttribute('max') ?? 0),
             oai_settings.openai_max_context,
         );
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         (() => {
             const el = document.getElementById('openai_max_context');
             if (el) {
-                el.value = oai_settings.openai_max_context;
+                (el as any).value = oai_settings.openai_max_context;
                 el.dispatchEvent(new Event('input'));
             }
         })();
         oai_settings.temp_openai = Math.min(oai_max_temp, oai_settings.temp_openai);
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         (() => {
             const el = document.getElementById('temp_openai');
             if (el) {
-                el.setAttribute('max', oai_max_temp);
-                el.value = oai_settings.temp_openai;
+                el.setAttribute('max', String(oai_max_temp));
+                (el as any).value = oai_settings.temp_openai;
                 el.dispatchEvent(new Event('input'));
             }
         })();
@@ -7602,27 +7407,24 @@ async function onModelChange() {
             oai_settings.max_context_unlocked,
         );
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        document.getElementById('openai_max_context').setAttribute('max', maxContext);
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        document.getElementById('openai_max_context').setAttribute('max', String(maxContext));
         oai_settings.openai_max_context = Math.min(
-            Number(document.getElementById('openai_max_context').getAttribute('max')),
+            Number(document.getElementById('openai_max_context')?.getAttribute('max') ?? 0),
             oai_settings.openai_max_context,
         );
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         (() => {
             const el = document.getElementById('openai_max_context');
             if (el) {
-                el.value = oai_settings.openai_max_context;
+                (el as any).value = oai_settings.openai_max_context;
                 el.dispatchEvent(new Event('input'));
             }
         })();
         oai_settings.temp_openai = Math.min(oai_max_temp, oai_settings.temp_openai);
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         (() => {
             const el = document.getElementById('temp_openai');
             if (el) {
-                el.setAttribute('max', oai_max_temp);
-                el.value = oai_settings.temp_openai;
+                el.setAttribute('max', String(oai_max_temp));
+                (el as any).value = oai_settings.temp_openai;
                 el.dispatchEvent(new Event('input'));
             }
         })();
@@ -7631,27 +7433,24 @@ async function onModelChange() {
     if (oai_settings.chat_completion_source === chat_completion_sources.MINIMAX) {
         const maxContext = oai_settings.minimax_model === 'M2-her' ? 65536 : 204800;
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        document.getElementById('openai_max_context').setAttribute('max', maxContext);
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        document.getElementById('openai_max_context').setAttribute('max', String(maxContext));
         oai_settings.openai_max_context = Math.min(
-            Number(document.getElementById('openai_max_context').getAttribute('max')),
+            Number(document.getElementById('openai_max_context')?.getAttribute('max') ?? 0),
             oai_settings.openai_max_context,
         );
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         (() => {
             const el = document.getElementById('openai_max_context');
             if (el) {
-                el.value = oai_settings.openai_max_context;
+                (el as any).value = oai_settings.openai_max_context;
                 el.dispatchEvent(new Event('input'));
             }
         })();
         oai_settings.temp_openai = Math.min(claude_max_temp, oai_settings.temp_openai);
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         (() => {
             const el = document.getElementById('temp_openai');
             if (el) {
-                el.setAttribute('max', claude_max_temp);
-                el.value = oai_settings.temp_openai;
+                el.setAttribute('max', String(claude_max_temp));
+                (el as any).value = oai_settings.temp_openai;
                 el.dispatchEvent(new Event('input'));
             }
         })();
@@ -7663,27 +7462,24 @@ async function onModelChange() {
             oai_settings.max_context_unlocked,
         );
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        document.getElementById('openai_max_context').setAttribute('max', maxContext);
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+        document.getElementById('openai_max_context').setAttribute('max', String(maxContext));
         oai_settings.openai_max_context = Math.min(
-            Number(document.getElementById('openai_max_context').getAttribute('max')),
+            Number(document.getElementById('openai_max_context')?.getAttribute('max') ?? 0),
             oai_settings.openai_max_context,
         );
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         (() => {
             const el = document.getElementById('openai_max_context');
             if (el) {
-                el.value = oai_settings.openai_max_context;
+                (el as any).value = oai_settings.openai_max_context;
                 el.dispatchEvent(new Event('input'));
             }
         })();
         oai_settings.temp_openai = Math.min(claude_max_temp, oai_settings.temp_openai);
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         (() => {
             const el = document.getElementById('temp_openai');
             if (el) {
-                el.setAttribute('max', claude_max_temp);
-                el.value = oai_settings.temp_openai;
+                el.setAttribute('max', String(claude_max_temp));
+                (el as any).value = oai_settings.temp_openai;
                 el.dispatchEvent(new Event('input'));
             }
         })();
@@ -7694,7 +7490,7 @@ async function onModelChange() {
         .getElementById('openai_max_context_counter')
         .setAttribute(
             'max',
-            Number(document.getElementById('openai_max_context').getAttribute('max')),
+            String(Number(document.getElementById('openai_max_context')?.getAttribute('max') ?? 0)),
         );
 
     saveSettingsDebounced();
@@ -8247,11 +8043,10 @@ export function isImageInliningSupported() {
             const waiModel =
                 Array.isArray(model_list) &&
                 model_list.find((m) => m.id === oai_settings.workers_ai_model);
-            // @ts-expect-error TS(2339) FIXME: Property 'properties' does not exist on type 'neve... Remove this comment to see the full error message
             return Boolean(
                 waiModel &&
                 Array.isArray(waiModel.properties) &&
-                waiModel.properties.some((p) => p.property_id === 'vision' && p.value === 'true'),
+                waiModel.properties.some((p: any) => p.property_id === 'vision' && p.value === 'true'),
             );
         }
         default:
@@ -8466,10 +8261,10 @@ function setProxyPreset(name, url, password) {
  *
  */
 function onProxyPresetChange() {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-    const value = String(
-        document.getElementById('openai_proxy_preset')?.selectedOptions[0]?.value || '',
-    );
+        const selectEl = document.getElementById('openai_proxy_preset') as HTMLSelectElement | null;
+        const value = String(
+            selectEl?.selectedOptions[0]?.value || '',
+        );
     const selectedPreset = proxies.find((preset) => preset.name === value);
 
     if (selectedPreset) {
@@ -8870,9 +8665,8 @@ export function initOpenAI() {
     });
 
     document.getElementById('send_if_empty_textarea')?.addEventListener('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         oai_settings.send_if_empty = String(
-            document.getElementById('send_if_empty_textarea').value,
+            (document.getElementById('send_if_empty_textarea') as HTMLTextAreaElement).value,
         );
         saveSettingsDebounced();
     });
@@ -8880,25 +8674,22 @@ export function initOpenAI() {
     document
         .getElementById('impersonation_prompt_textarea')
         ?.addEventListener('input', function () {
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             oai_settings.impersonation_prompt = String(
-                document.getElementById('impersonation_prompt_textarea').value,
+                (document.getElementById('impersonation_prompt_textarea') as HTMLTextAreaElement).value,
             );
             saveSettingsDebounced();
         });
 
     document.getElementById('newchat_prompt_textarea')?.addEventListener('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         oai_settings.new_chat_prompt = String(
-            document.getElementById('newchat_prompt_textarea').value,
+            (document.getElementById('newchat_prompt_textarea') as HTMLTextAreaElement).value,
         );
         saveSettingsDebounced();
     });
 
     document.getElementById('newgroupchat_prompt_textarea')?.addEventListener('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         oai_settings.new_group_chat_prompt = String(
-            document.getElementById('newgroupchat_prompt_textarea').value,
+            (document.getElementById('newgroupchat_prompt_textarea') as HTMLTextAreaElement).value,
         );
         saveSettingsDebounced();
     });
@@ -8906,9 +8697,8 @@ export function initOpenAI() {
     document
         .getElementById('newexamplechat_prompt_textarea')
         ?.addEventListener('input', function () {
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             oai_settings.new_example_chat_prompt = String(
-                document.getElementById('newexamplechat_prompt_textarea').value,
+                (document.getElementById('newexamplechat_prompt_textarea') as HTMLTextAreaElement).value,
             );
             saveSettingsDebounced();
         });
@@ -8916,39 +8706,34 @@ export function initOpenAI() {
     document
         .getElementById('continue_nudge_prompt_textarea')
         ?.addEventListener('input', function () {
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             oai_settings.continue_nudge_prompt = String(
-                document.getElementById('continue_nudge_prompt_textarea').value,
+                (document.getElementById('continue_nudge_prompt_textarea') as HTMLTextAreaElement).value,
             );
             saveSettingsDebounced();
         });
 
     document.getElementById('wi_format_textarea')?.addEventListener('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-        oai_settings.wi_format = String(document.getElementById('wi_format_textarea').value);
+        oai_settings.wi_format = String((document.getElementById('wi_format_textarea') as HTMLTextAreaElement).value);
         saveSettingsDebounced();
     });
 
     document.getElementById('scenario_format_textarea')?.addEventListener('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         oai_settings.scenario_format = String(
-            document.getElementById('scenario_format_textarea').value,
+            (document.getElementById('scenario_format_textarea') as HTMLTextAreaElement).value,
         );
         saveSettingsDebounced();
     });
 
     document.getElementById('personality_format_textarea')?.addEventListener('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         oai_settings.personality_format = String(
-            document.getElementById('personality_format_textarea').value,
+            (document.getElementById('personality_format_textarea') as HTMLTextAreaElement).value,
         );
         saveSettingsDebounced();
     });
 
     document.getElementById('group_nudge_prompt_textarea')?.addEventListener('input', function () {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         oai_settings.group_nudge_prompt = String(
-            document.getElementById('group_nudge_prompt_textarea').value,
+            (document.getElementById('group_nudge_prompt_textarea') as HTMLTextAreaElement).value,
         );
         saveSettingsDebounced();
     });
@@ -9055,17 +8840,13 @@ export function initOpenAI() {
         );
     });
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     document
         .getElementById('oai_max_context_unlocked')
-        ?.addEventListener('input', function (_e, data) {
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
-            oai_settings.max_context_unlocked = !!this.checked;
-            if (data?.source !== 'preset') {
-                document
-                    .getElementById('chat_completion_source')
-                    ?.dispatchEvent(new Event('change'));
-            }
+        ?.addEventListener('input', function (this: HTMLElement, _e: Event) {
+            oai_settings.max_context_unlocked = !!(this as HTMLInputElement).checked;
+            document
+                .getElementById('chat_completion_source')
+                ?.dispatchEvent(new Event('change'));
             saveSettingsDebounced();
         });
 

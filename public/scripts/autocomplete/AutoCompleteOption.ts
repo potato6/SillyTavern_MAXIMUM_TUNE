@@ -51,9 +51,8 @@ export class AutoCompleteOption {
      * @param valueProvider
      * @param makeSelectable
      */
-    // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
     constructor(
-        name,
+        name: any,
         typeIcon = ' ',
         type = '',
         matchProvider = null,
@@ -68,11 +67,10 @@ export class AutoCompleteOption {
         this.makeSelectable = makeSelectable;
     }
 
-    // @ts-expect-error TS(7006) FIXME: Parameter 'key' implicitly has an 'any' type.
     makeItem(
-        key,
-        typeIcon,
-        noSlash,
+        key: any,
+        typeIcon: any,
+        noSlash: any,
         namedArguments = [],
         unnamedArguments = [],
         returnType = 'void',

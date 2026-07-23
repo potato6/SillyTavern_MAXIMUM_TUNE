@@ -14,10 +14,9 @@ export class AutoCompleteNameResultBase {
      * @param {()=>string} makeNoMatchText Function that returns text to show when no matches where found.
      * @param {()=>string} makeNoOptionsText Function that returns text to show when no options are available to match against.
      */
-    // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
     constructor(
-        name,
-        start,
+        name: any,
+        start: any,
         optionList = [],
         canBeQuoted = false,
         makeNoMatchText = null,

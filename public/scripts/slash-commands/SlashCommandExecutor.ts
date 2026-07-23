@@ -21,15 +21,15 @@ export class SlashCommandExecutor {
     }
     set source(value) {
         this.#source = value;
-        // @ts-expect-error TS(2339) FIXME: Property 'value' does not exist on type 'never'.
         for (const arg of this.namedArgumentList.filter(
+// @ts-expect-error TS(2339) FIXME: Property 'value' does not exist on type.
             (it) => it.value instanceof SlashCommandClosure,
         )) {
             // @ts-expect-error TS(2339) FIXME: Property 'value' does not exist on type 'never'.
             arg.value.source = value;
         }
-        // @ts-expect-error TS(2339) FIXME: Property 'value' does not exist on type 'never'.
         for (const arg of this.unnamedArgumentList.filter(
+// @ts-expect-error TS(2339) FIXME: Property 'value' does not exist on type.
             (it) => it.value instanceof SlashCommandClosure,
         )) {
             // @ts-expect-error TS(2339) FIXME: Property 'value' does not exist on type 'never'.
@@ -46,14 +46,16 @@ export class SlashCommandExecutor {
     get commandCount() {
         return (
             1 +
-            // @ts-expect-error TS(2339) FIXME: Property 'value' does not exist on type 'never'.
             this.namedArgumentList
+// @ts-expect-error TS(2339) FIXME: Property 'filter' does not exist on type.
                 .filter((it) => it.value instanceof SlashCommandClosure)
+// @ts-expect-error TS(2339) FIXME: Property 'map' does not exist on type.
                 .map((it) => /**@type {SlashCommandClosure}*/ (it.value).commandCount)
                 .reduce((cur, sum) => cur + sum, 0) +
-            // @ts-expect-error TS(2339) FIXME: Property 'value' does not exist on type 'never'.
             this.unnamedArgumentList
+// @ts-expect-error TS(2339) FIXME: Property 'filter' does not exist on type.
                 .filter((it) => it.value instanceof SlashCommandClosure)
+// @ts-expect-error TS(2339) FIXME: Property 'map' does not exist on type.
                 .map((it) => /**@type {SlashCommandClosure}*/ (it.value).commandCount)
                 .reduce((cur, sum) => cur + sum, 0)
         );
@@ -62,13 +64,15 @@ export class SlashCommandExecutor {
     // @ts-expect-error TS(7032) FIXME: Property 'onProgress' implicitly has type 'any', b... Remove this comment to see the full error message
     set onProgress(value) {
         const closures = /**@type {SlashCommandClosure[]}*/ ([
-            // @ts-expect-error TS(2339) FIXME: Property 'value' does not exist on type 'never'.
             ...this.namedArgumentList
+// @ts-expect-error TS(2339) FIXME: Property 'filter' does not exist on type.
                 .filter((it) => it.value instanceof SlashCommandClosure)
+// @ts-expect-error TS(2339) FIXME: Property 'map' does not exist on type.
                 .map((it) => it.value),
-            // @ts-expect-error TS(2339) FIXME: Property 'value' does not exist on type 'never'.
             ...this.unnamedArgumentList
+// @ts-expect-error TS(2339) FIXME: Property 'filter' does not exist on type.
                 .filter((it) => it.value instanceof SlashCommandClosure)
+// @ts-expect-error TS(2339) FIXME: Property 'map' does not exist on type.
                 .map((it) => it.value),
         ]);
         for (const closure of closures) {

@@ -17,14 +17,13 @@ export class SlashCommandNamedArgumentAutoCompleteOption extends AutoCompleteOpt
 
     // @ts-expect-error TS(4114) FIXME: This member must have an 'override' modifier becau... Remove this comment to see the full error message
     renderItem() {
-        // @ts-expect-error TS(2345) FIXME: Argument of type 'null' is not assignable to param... Remove this comment to see the full error message
         const li = this.makeItem(
             this.name,
             '⌗',
             true,
             [],
             [],
-            null,
+            null as any,
             `${this.arg.isRequired ? '' : '(optional) '}${this.arg.description ?? ''}`,
         );
         li.setAttribute('data-name', this.name);

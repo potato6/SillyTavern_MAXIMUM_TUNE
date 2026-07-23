@@ -221,10 +221,8 @@ router.post('/generate', async function (request, response) {
             streamHandler: provider.stream,
             transformResponse: provider.transformGenerateResponse,
         });
-    } catch (error) {
-        // @ts-expect-error TS(2571) — unknown catch
+    } catch (error: any) {
         const status = error?.status ?? error?.code ?? 'UNKNOWN';
-        // @ts-expect-error TS(2571) — unknown catch
         const text =
             error?.error ??
             error?.statusText ??

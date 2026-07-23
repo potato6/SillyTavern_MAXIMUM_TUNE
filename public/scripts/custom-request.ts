@@ -105,15 +105,21 @@ export class TextCompletionService {
      * @param {Record<string, any> & TextCompletionRequestBase & {prompt: string}} custom
      * @returns {TextCompletionPayload}
      */
-    // @ts-expect-error TS(7031) FIXME: Binding element 'prompt' implicitly has an 'any' t... Remove this comment to see the full error message
     static createRequestData({
         stream = false,
+// @ts-expect-error TS(7031) FIXME: Parameter 'prompt' implicitly has an 'any' type.
         prompt,
+// @ts-expect-error TS(7031) FIXME: Parameter 'max_tokens' implicitly has an 'any' type.
         max_tokens,
+// @ts-expect-error TS(7031) FIXME: Parameter 'model' implicitly has an 'any' type.
         model,
+// @ts-expect-error TS(7031) FIXME: Parameter 'api_type' implicitly has an 'any' type.
         api_type,
+// @ts-expect-error TS(7031) FIXME: Parameter 'api_server' implicitly has an 'any' type.
         api_server,
+// @ts-expect-error TS(7031) FIXME: Parameter 'temperature' implicitly has an 'any' type.
         temperature,
+// @ts-expect-error TS(7031) FIXME: Parameter 'min_p' implicitly has an 'any' type.
         min_p,
         ...props
     }) {
@@ -343,15 +349,16 @@ export class TextCompletionService {
                 const instructPresetManager = getPresetManager('instruct');
                 instructPreset = instructPresetManager?.getCompletionPresetByName(instructName);
                 if (instructPreset) {
-                    // @ts-expect-error TS(2339) FIXME: Property 'instructSettings' does not exist on type... Remove this comment to see the full error message
                     requestData.prompt = this.constructPrompt(
                         prompt,
                         instructPreset,
+// @ts-expect-error TS(2339) FIXME: Property 'instructSettings' does not exist on type.
                         options.instructSettings,
                     );
-                    // @ts-expect-error TS(2322) FIXME: Type 'false' is not assignable to type 'null | und... Remove this comment to see the full error message
                     const stoppingStrings = getInstructStoppingSequences({
+// @ts-expect-error TS(2322) FIXME: Type is not assignable.
                         customInstruct: instructPreset,
+// @ts-expect-error TS(2322) FIXME: Type is not assignable.
                         useStopStrings: false,
                     });
                     requestData.stop = stoppingStrings;
@@ -471,10 +478,11 @@ export class TextCompletionService {
         }
 
         // convert to a generation payload
-        // @ts-expect-error TS(2339) FIXME: Property 'model' does not exist on type '{}'.
         const payload = createTextGenGenerationData(
             settings,
+// @ts-expect-error TS(2339) FIXME: Property 'model' does not exist on type.
             overridePayload.model,
+// @ts-expect-error TS(2339) FIXME: Property 'prompt' does not exist on type.
             overridePayload.prompt,
             preset.genamt,
         );
@@ -495,17 +503,25 @@ export class ChatCompletionService {
      * @param {ChatCompletionPayload} custom
      * @returns {ChatCompletionPayload}
      */
-    // @ts-expect-error TS(7031) FIXME: Binding element 'messages' implicitly has an 'any'... Remove this comment to see the full error message
     static createRequestData({
         stream = false,
+// @ts-expect-error TS(7031) FIXME: Parameter 'messages' implicitly has an 'any' type.
         messages,
+// @ts-expect-error TS(7031) FIXME: Parameter 'model' implicitly has an 'any' type.
         model,
+// @ts-expect-error TS(7031) FIXME: Parameter 'chat_completion_source' implicitly has an 'any' type.
         chat_completion_source,
+// @ts-expect-error TS(7031) FIXME: Parameter 'max_tokens' implicitly has an 'any' type.
         max_tokens,
+// @ts-expect-error TS(7031) FIXME: Parameter 'temperature' implicitly has an 'any' type.
         temperature,
+// @ts-expect-error TS(7031) FIXME: Parameter 'custom_url' implicitly has an 'any' type.
         custom_url,
+// @ts-expect-error TS(7031) FIXME: Parameter 'reverse_proxy' implicitly has an 'any' type.
         reverse_proxy,
+// @ts-expect-error TS(7031) FIXME: Parameter 'proxy_password' implicitly has an 'any' type.
         proxy_password,
+// @ts-expect-error TS(7031) FIXME: Parameter 'custom_prompt_post_processing' implicitly has an 'any' type.
         custom_prompt_post_processing,
         ...props
     }) {
@@ -576,9 +592,9 @@ export class ChatCompletionService {
             };
             // Try parse JSON
             if (data.json_schema) {
-                // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'null | un... Remove this comment to see the full error message
                 result.content = JSON.parse(
                     extractJsonFromData(json, {
+// @ts-expect-error TS(2322) FIXME: Type is not assignable.
                         mainApi: this.TYPE,
                         chatCompletionSource: data.chat_completion_source,
                     }),
@@ -707,15 +723,17 @@ export class ChatCompletionService {
             // The order is: connection profile => CC preset => CC settings
             // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             overridePayload[field] =
+// @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type.
                 overridePayload[field] || settings[field] || oai_settings[field];
         });
 
         // Convert from settings to generation payload
-        // @ts-expect-error TS(2339) FIXME: Property 'model' does not exist on type '{}'.
         const data = await createGenerationParameters(
             settings,
+// @ts-expect-error TS(2339) FIXME: Property 'model' does not exist on type.
             overridePayload.model,
             'quiet',
+// @ts-expect-error TS(2339) FIXME: Property 'messages' does not exist on type.
             overridePayload.messages,
         );
         const payload = data.generate_data;

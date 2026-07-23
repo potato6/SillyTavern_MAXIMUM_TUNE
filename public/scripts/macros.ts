@@ -26,11 +26,10 @@ export function getLastMessageId({ exclude_swipe_in_propress = true, filter = nu
 
         // If ignoring swipes and the message is being swiped, continue
         // We can check if a message is being swiped by checking whether the current swipe id is not in the list of finished swipes yet
-        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         if (
             exclude_swipe_in_propress &&
-            message.swipes &&
-            message.swipe_id >= message.swipes.length
+            message!.swipes &&
+            message!.swipe_id! >= message!.swipes.length
         ) {
             continue;
         }

@@ -98,10 +98,11 @@ function getLastMessageId({
     for (let i = chat.length - 1; i >= 0; i--) {
         const message = chat[i];
 
-        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         if (
             exclude_swipe_in_propress &&
+// @ts-expect-error TS(18048) FIXME: Object is possibly 'null' or 'undefined'.
             message.swipes &&
+// @ts-expect-error TS(18048) FIXME: Object is possibly 'null' or 'undefined'.
             message.swipe_id >= message.swipes.length
         ) {
             continue;

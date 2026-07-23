@@ -243,7 +243,6 @@ function getGenericHeaders(directories: import('./users.js').UserDirectoryList, 
  * @param urlHost
  */
 export function getOverrideHeaders(urlHost: string) {
-    // @ts-expect-error TS(2345) FIXME: Argument of type 'never[]' is not assignable to pa... Remove this comment to see the full error message
     const requestOverrides = getConfigValue('requestOverrides', []);
     const overrideHeaders = requestOverrides?.find(
         (e: { hosts?: string[]; headers?: Record<string, string> }) => e.hosts?.includes(urlHost),
@@ -266,9 +265,8 @@ export function setAdditionalHeaders(
     args: Record<string, unknown>,
     server: string | null,
 ) {
-    // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
     setAdditionalHeadersByType(
-        args.headers,
+        args.headers as Record<string, unknown>,
         request.body.api_type,
         server,
         request.user.directories,

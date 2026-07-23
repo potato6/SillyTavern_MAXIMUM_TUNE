@@ -203,10 +203,9 @@ const provider: ChatProvider = {
                 delete requestBody.top_k;
             }
 
-            // @ts-expect-error TS(2532) — prompt messages are arrays, not undefined at this point
             if (
                 convertedPrompt.messages.length &&
-                convertedPrompt.messages[convertedPrompt.messages.length - 1].role === 'assistant'
+                convertedPrompt.messages[convertedPrompt.messages.length - 1]?.role === 'assistant'
             ) {
                 // @ts-expect-error TS(2532) — ditto
                 convertedPrompt.messages[convertedPrompt.messages.length - 1].role = 'user';

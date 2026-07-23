@@ -62,12 +62,16 @@ export class ScraperManager {
      * @returns {ScraperInfo[]} List of scrapers available for the Data Bank
      */
     static getDataBankScrapers() {
-        // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type 'never'.
         return ScraperManager.#scrapers.map((s) => ({
+// @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type.
             id: s.id,
+// @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type.
             name: s.name,
+// @ts-expect-error TS(2339) FIXME: Property 'description' does not exist on type.
             description: s.description,
+// @ts-expect-error TS(2339) FIXME: Property 'iconClass' does not exist on type.
             iconClass: s.iconClass,
+// @ts-expect-error TS(2339) FIXME: Property 'iconAvailable' does not exist on type.
             iconAvailable: s.iconAvailable,
         }));
     }
@@ -416,8 +420,8 @@ class MediaWikiScraper {
         }
 
         if (output === 'single') {
-            // @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
             const combinedContent = data
+// @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
                 .map((a) => String(a.title).trim() + '\n\n' + String(a.content).trim())
                 .join('\n\n\n\n');
             const file = new File([combinedContent], `${url}.txt`, { type: 'text/plain' });
@@ -552,8 +556,8 @@ class FandomScraper {
         }
 
         if (output === 'single') {
-            // @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
             const combinedContent = data
+// @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
                 .map((a) => String(a.title).trim() + '\n\n' + String(a.content).trim())
                 .join('\n\n\n\n');
             const file = new File([combinedContent], `${fandom}.txt`, { type: 'text/plain' });
@@ -792,13 +796,13 @@ class YouTubeScraper {
                 helpString: 'Scrape a transcript from a YouTube video by ID or URL.',
                 returns: ARGUMENT_TYPE.STRING,
                 namedArgumentList: [
-                    // @ts-expect-error TS(2345) FIXME: Argument of type '""' is not assignable to paramet... Remove this comment to see the full error message
                     new SlashCommandNamedArgument(
                         'lang',
                         'ISO 639-1 language code of the transcript, e.g. "en"',
                         ARGUMENT_TYPE.STRING,
                         false,
                         false,
+// @ts-expect-error TS(2345) FIXME: Type is not assignable.
                         '',
                         iso6391Codes,
                     ),

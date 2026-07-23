@@ -6,11 +6,8 @@ import { isHostAllowed, hostValidationMiddleware } from 'host-validation-middlew
 const knownHosts = new Set();
 const maxKnownHosts = 1000;
 
-// @ts-expect-error TS(2345) FIXME: Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
 const hostWhitelistEnabled = !!getConfigValue('hostWhitelist.enabled', false);
-// @ts-expect-error TS(2345) FIXME: Argument of type 'never[]' is not assignable to pa... Remove this comment to see the full error message
 const hostWhitelist = Object.freeze(getConfigValue('hostWhitelist.hosts', []));
-// @ts-expect-error TS(2345) FIXME: Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
 const hostWhitelistScan = !!getConfigValue('hostWhitelist.scan', false, 'boolean');
 
 const validationMiddleware = hostValidationMiddleware({

@@ -23,13 +23,9 @@ import {
     isPathUnderParent,
 } from '../util.js';
 
-// @ts-expect-error TS(2345) FIXME: Argument of type 'true' is not assignable to param... Remove this comment to see the full error message
 const isBackupEnabled = !!getConfigValue('backups.chat.enabled', true, 'boolean');
-// @ts-expect-error TS(2345) FIXME: Argument of type '-1' is not assignable to paramet... Remove this comment to see the full error message
 const maxTotalChatBackups = Number(getConfigValue('backups.chat.maxTotalBackups', -1, 'number'));
-// @ts-expect-error TS(2345) FIXME: Argument of type '10000' is not assignable to para... Remove this comment to see the full error message
 const throttleInterval = Number(getConfigValue('backups.chat.throttleInterval', 10_000, 'number'));
-// @ts-expect-error TS(2345) FIXME: Argument of type 'true' is not assignable to param... Remove this comment to see the full error message
 const checkIntegrity = !!getConfigValue('backups.chat.checkIntegrity', true, 'boolean');
 
 export const CHAT_BACKUPS_PREFIX = 'chat_';
@@ -419,7 +415,6 @@ async function checkChatIntegrity(filePath: string, integritySlug: string): Prom
  * @returns {Promise<ChatInfo>} Chat information
  * @typedef {(textArray: string[]) => boolean} ChatMatchFunction
  */
-// @ts-expect-error TS(2304) FIXME: Cannot find name 'ChatMatchFunction'.
 export async function getChatInfo(
     pathToFile: string,
     additionalData: Record<string, unknown> = {},
@@ -1207,12 +1202,12 @@ router.post('/recent', async function (request, response) {
                                 continue;
                             }
                             const stats = await fs.promises.stat(filePath);
-                            // @ts-expect-error TS(2345) FIXME: Argument of type '{ groupId: any; filePath: any; m... Remove this comment to see the full error message
-                            allChatFiles.push({
+                            const chatFile: Record<string, any> = {
                                 groupId: groupData.id,
                                 filePath,
                                 mtime: stats.mtimeMs,
-                            });
+                            };
+                            allChatFiles.push(chatFile as any);
                         }
                     }
                 } catch {
@@ -1245,12 +1240,11 @@ router.post('/recent', async function (request, response) {
         ]);
 
         const max = parseInt(request.body.max ?? Number.MAX_SAFE_INTEGER) + pinnedChats.length;
-        // @ts-expect-error TS(7006) FIXME: Parameter 'p' implicitly has an 'any' type.
         const isPinned = (chatFile: ChatFile) =>
             pinnedChats.some(
-                (p) =>
-                    p.file_name === path.basename(chatFile.filePath) &&
-                    (p.avatar === chatFile.pngFile || p.group === chatFile.groupId),
+                (p: any) =>
+                    p.file_name === path.basename((chatFile as any).filePath) &&
+                    (p.avatar === (chatFile as any).pngFile || p.group === (chatFile as any).groupId),
             );
         const recentChats = allChatFiles
             .toSorted((a, b) => {

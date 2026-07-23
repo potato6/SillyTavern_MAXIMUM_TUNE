@@ -1974,7 +1974,6 @@ export class SimpleAutoCompleteOption extends AutoCompleteOption {
     #description;
 
     /** @type {string|null} */
-    // @ts-expect-error TS(7008) FIXME: Member '#detailedDescription' implicitly has an 'a... Remove this comment to see the full error message
     #detailedDescription;
 
     /**
@@ -1985,14 +1984,13 @@ export class SimpleAutoCompleteOption extends AutoCompleteOption {
      * @param {string} [config.detailedDescription] - Longer description for details panel (supports HTML). Falls back to description if not provided.
      * @param {string} [config.type] - Type identifier for CSS/data attributes.
      */
-    // @ts-expect-error TS(7031) FIXME: Binding element 'name' implicitly has an 'any' typ... Remove this comment to see the full error message
     constructor({
         name,
         symbol = ' ',
         description = '',
         detailedDescription = null,
         type = 'simple',
-    }) {
+    }: { name: any; symbol?: string; description?: string; detailedDescription?: any; type?: string }) {
         super(name, symbol, type);
         this.#description = description;
         this.#detailedDescription = detailedDescription;

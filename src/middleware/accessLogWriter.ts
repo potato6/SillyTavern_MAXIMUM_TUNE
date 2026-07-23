@@ -4,7 +4,6 @@ import type { Request, Response, NextFunction } from 'express';
 import { getIpAddress } from '../express-common.js';
 import { color, getConfigValue } from '../util.js';
 
-// @ts-expect-error TS(2345) FIXME: Argument of type 'true' is not assignable to param... Remove this comment to see the full error message
 const enableAccessLog = getConfigValue('logging.enableAccessLog', true, 'boolean');
 
 const knownIPs = new Set();

@@ -18,7 +18,6 @@ const scaffoldDirectory = path.join(serverDirectory, 'default/scaffold');
 const contentIndexPath = path.join(contentDirectory, 'index.json');
 const scaffoldIndexPath = path.join(scaffoldDirectory, 'index.json');
 
-// @ts-expect-error TS(2345) FIXME: Argument of type 'never[]' is not assignable to pa... Remove this comment to see the full error message
 const WHITELIST_GENERIC_URL_DOWNLOAD_SOURCES = getConfigValue('whitelistImportDomains', []);
 const USER_AGENT = 'SillyTavern';
 
@@ -132,7 +131,6 @@ export function getDefaultPresetFile(filename: string) {
  * @param {string[]} [forceCategories] List of categories to force check (even if content check is skipped)
  * @returns {boolean} Whether any content was added
  */
-// @ts-expect-error TS(2304) FIXME: Cannot find name 'ContentItem'.
 function seedContent(
     contentIndex: ContentItem[],
     contentLogPath: string,
@@ -198,7 +196,6 @@ function seedContent(
  * @param {string[]} forceCategories List of categories to force check (even if content check is skipped)
  * @returns {Promise<boolean>} Whether any content was added
  */
-// @ts-expect-error TS(2304) FIXME: Cannot find name 'ContentItem'.
 async function seedContentForUser(
     contentIndex: ContentItem[],
     directories: UserDirectoryList,
@@ -222,7 +219,6 @@ async function seedContentForUser(
  * @param {ContentItem[]} contentIndex Content index
  * @returns {Promise<boolean>} Whether any content was added
  */
-// @ts-expect-error TS(2304) FIXME: Cannot find name 'ContentItem'.
 async function seedGlobalContent(contentIndex: ContentItem[]) {
     const contentLogPath = path.join(globalThis.DATA_ROOT, 'content.log');
     return seedContent(contentIndex, contentLogPath, getGlobalTargetByType);
@@ -239,7 +235,6 @@ export async function checkForNewContent(
     forceCategories: string[] = [],
 ) {
     try {
-        // @ts-expect-error TS(2345) FIXME: Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
         const contentCheckSkip = getConfigValue('skipContentCheck', false, 'boolean');
         if (contentCheckSkip && forceCategories?.length === 0) {
             return;

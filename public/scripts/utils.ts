@@ -115,9 +115,9 @@ export const paginationDropdownChangeHandler = function (event, size) {
     const dropdown = container.querySelector('select');
     // @ts-expect-error TS(7006) FIXME: Parameter 'el' implicitly has an 'any' type.
     dropdown?.querySelectorAll('[selected]').forEach((el) => el.removeAttribute('selected'));
-    // @ts-expect-error TS(7006) FIXME: Parameter 'el' implicitly has an 'any' type.
     dropdown
         ?.querySelectorAll(`[value="${size}"]`)
+// @ts-expect-error TS(7006) FIXME: Parameter 'el' implicitly has an 'any' type.
         .forEach((el) => el.setAttribute('selected', ''));
 };
 
@@ -548,8 +548,8 @@ export function removeFromArray(array, item) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'arr' implicitly has an 'any' type.
 export function normalizeArray(arr) {
-    // @ts-expect-error TS(7006) FIXME: Parameter 's' implicitly has an 'any' type.
     return [
+// @ts-expect-error TS(7006) FIXME: Parameter 's' implicitly has an 'any' type.
         ...new Set((arr ?? []).map((s) => (typeof s === 'string' ? s.trim() : s)).filter(Boolean)),
     ];
 }
@@ -963,9 +963,10 @@ export function isElementInViewport(el) {
  *        When set to 0, the intention is to also check if the basename (without applied index) is free.
  * @returns {string|null} A unique name. Null if no unique name could be found in `maxTries`.
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'baseName' implicitly has an 'any' type.
 export function getUniqueName(
+// @ts-expect-error TS(7006) FIXME: Parameter 'baseName' implicitly has an 'any' type.
     baseName,
+// @ts-expect-error TS(7006) FIXME: Parameter 'exists' implicitly has an 'any' type.
     exists,
     { nameBuilder = null, maxTries = 1000, startIndex = 1 } = {},
 ) {
@@ -1616,8 +1617,8 @@ export function getVideoDurationFromDataURL(dataUrl) {
  * @param {string} [type] MIME type of the thumbnail
  * @returns {Promise<string>} Promise that resolves to a data URL of the video thumbnail
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'videoUrl' implicitly has an 'any' type.
 export function getVideoThumbnail(
+// @ts-expect-error TS(7006) FIXME: Parameter 'videoUrl' implicitly has an 'any' type.
     videoUrl,
     maxWidth = null,
     maxHeight = null,
@@ -2450,9 +2451,9 @@ function postProcessText(text, collapse = true) {
     if (collapse) {
         text = collapseNewlines(text);
         // Trim leading and trailing whitespace, and remove empty lines
-        // @ts-expect-error TS(7006) FIXME: Parameter 'l' implicitly has an 'any' type.
         text = text
             .split('\n')
+// @ts-expect-error TS(7006) FIXME: Parameter 'l' implicitly has an 'any' type.
             .map((l) => l.trim())
             .filter(Boolean)
             .join('\n');
@@ -2460,9 +2461,9 @@ function postProcessText(text, collapse = true) {
         // Replace more than 4 newlines with 4 newlines
         text = text.replace(/\n{4,}/g, '\n\n\n\n');
         // Trim lines that contain nothing but whitespace
-        // @ts-expect-error TS(7006) FIXME: Parameter 'l' implicitly has an 'any' type.
         text = text
             .split('\n')
+// @ts-expect-error TS(7006) FIXME: Parameter 'l' implicitly has an 'any' type.
             .map((l) => (/^\s+$/.test(l) ? '' : l))
             .join('\n');
     }
@@ -2488,8 +2489,8 @@ export async function getReadableText(document, textSelector = 'body') {
     }
 
     const elements = document.querySelectorAll(textSelector);
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
     const rawText = Array.from(elements)
+// @ts-expect-error TS(18046) FIXME: 'e' is of type 'unknown'.
         .map((e) => e.textContent)
         .join('\n');
     const text = postProcessText(rawText);
@@ -2820,9 +2821,10 @@ export function getSelect2OptionId(option) {
  * @param {boolean} [options.select] - Whether the options should be selected right away
  * @param {object} [options.changeEventArgs] - Optional event args being passed into the "change" event when its triggered because a new options is selected
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'element' implicitly has an 'any' type.
 export function select2ModifyOptions(
+// @ts-expect-error TS(7006) FIXME: Parameter 'element' implicitly has an 'any' type.
     element,
+// @ts-expect-error TS(7006) FIXME: Parameter 'items' implicitly has an 'any' type.
     items,
     { select = false, changeEventArgs = null } = {},
 ) {
@@ -2919,9 +2921,10 @@ export function isSelect2ChoiceElement(element) {
  * @param {boolean} [options.closeDrawer] - Whether the drawer should be closed and focus removed after the choice item was clicked
  * @param {boolean} [options.openDrawer] - Whether the drawer should be opened, even if this click would normally close it
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'control' implicitly has an 'any' type.
 export function select2ChoiceClickSubscribe(
+// @ts-expect-error TS(7006) FIXME: Parameter 'control' implicitly has an 'any' type.
     control,
+// @ts-expect-error TS(7006) FIXME: Parameter 'action' implicitly has an 'any' type.
     action,
     { buttonStyle = false, closeDrawer = false, openDrawer = false } = {},
 ) {
@@ -2968,7 +2971,9 @@ export function highlightRegex(regexStr) {
     const escape = (str) =>
         str.replace(
             /[&<>"'\x01]/g,
+// @ts-expect-error TS(7006) FIXME: Parameter 'match' implicitly has an 'any' type.
             (match) =>
+// @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type.
                 ({
                     '&': '&amp;',
                     '<': '&lt;',
@@ -3013,9 +3018,9 @@ export function highlightRegex(regexStr) {
     // Function to replace each pattern with a highlighted HTML span
     // @ts-expect-error TS(7006) FIXME: Parameter 'pattern' implicitly has an 'any' type.
     const wrapPattern = (pattern, className) => {
-        // @ts-expect-error TS(7006) FIXME: Parameter 'match' implicitly has an 'any' type.
         regexStr = regexStr.replace(
             pattern,
+// @ts-expect-error TS(7006) FIXME: Parameter 'match' implicitly has an 'any' type.
             (match) => `<span class="${className}">${match}</span>`,
         );
     };
@@ -3043,10 +3048,12 @@ export function highlightRegex(regexStr) {
  * @param {(existingName:string)=>void} [options.deleteAction] - Optional action to execute wen deleting an existing data object on overwrite
  * @returns {Promise<boolean>} True if the user confirmed the overwrite or there is no overwrite needed, false otherwise
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'type' implicitly has an 'any' type.
 export async function checkOverwriteExistingData(
+// @ts-expect-error TS(7006) FIXME: Parameter 'type' implicitly has an 'any' type.
     type,
+// @ts-expect-error TS(7006) FIXME: Parameter 'existingNames' implicitly has an 'any' type.
     existingNames,
+// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
     name,
     { interactive = false, actionName = 'Overwrite', deleteAction = null } = {},
 ) {
@@ -3169,14 +3176,15 @@ export async function fetchFaFile(name) {
     document.head.append(style);
     const sheet = style.sheet;
     style.remove();
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     return (
+// @ts-expect-error TS(18047) FIXME: Object is possibly 'null' or 'undefined'.
         [...sheet.cssRules]
             .filter((rule) => rule instanceof CSSStyleRule && rule.style?.content)
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             .map((rule) =>
+// @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type.
                 rule['selectorText']
                     .split(/,\s*/)
+// @ts-expect-error TS(7006) FIXME: Parameter 'selector' implicitly has an 'any' type.
                     .map((selector) => selector.split('::').shift().slice(1)),
             )
     );
@@ -3211,9 +3219,9 @@ export async function showFontAwesomePicker(customList = null) {
                 qry.placeholder = 'Filter icons';
                 qry.autofocus = true;
                 const qryDebounced = debounce(() => {
-                    // @ts-expect-error TS(7006) FIXME: Parameter 'className' implicitly has an 'any' type... Remove this comment to see the full error message
                     const result = new Set(
                         faList.filter((fa) =>
+// @ts-expect-error TS(7006) FIXME: Parameter 'className' implicitly has an 'any' type.
                             fa.find((className) => className.includes(qry.value.toLowerCase())),
                         ),
                     );
@@ -3385,9 +3393,9 @@ export function findChar({
 
     // If allowAvatar is true, search by avatar first
     if (allowAvatar && name) {
-        // @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type 'never'.
         const characterByAvatar = filteredCharacters.find(
             (char) =>
+// @ts-expect-error TS(2339) FIXME: Property 'avatar' does not exist on type.
                 char.avatar === name || (!name.endsWith('.png') && char.avatar === `${name}.png`),
         );
         if (characterByAvatar) {
@@ -3518,15 +3526,15 @@ export function textValueMatcher(params, data) {
         return textValueMatcher(params, match);
     }
 
-    // @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
     const textMatch = compareIgnoreCaseAndAccents(
         data.text,
         params.term,
+// @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
         (a, b) => a.indexOf(b) > -1,
     );
-    // @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
     const valueMatch =
         data.element instanceof HTMLOptionElement &&
+// @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
         compareIgnoreCaseAndAccents(data.element.value, params.term, (a, b) => a.indexOf(b) > -1);
 
     if (textMatch || valueMatch) {
@@ -3596,10 +3604,12 @@ export function logSlashCommandWarn(message, args, valueObj = null) {
  * @param {number} [params.visibilityThreshold] Scroll position (px) to show the button (default: 300)
  * @returns {() => void} Cleanup function to remove event listeners
  */
-// @ts-expect-error TS(7031) FIXME: Binding element 'scrollContainerId' implicitly has... Remove this comment to see the full error message
 export function setupScrollToTop({
+// @ts-expect-error TS(7031) FIXME: Parameter 'scrollContainerId' implicitly has an 'any' type.
     scrollContainerId,
+// @ts-expect-error TS(7031) FIXME: Parameter 'buttonId' implicitly has an 'any' type.
     buttonId,
+// @ts-expect-error TS(7031) FIXME: Parameter 'drawerId' implicitly has an 'any' type.
     drawerId,
     visibilityThreshold = 300,
 }) {

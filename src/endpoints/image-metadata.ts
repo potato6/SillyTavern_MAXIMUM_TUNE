@@ -39,12 +39,9 @@ export const METADATA_FILE = 'image-metadata.json';
 
 /** @type {Record<string, number[]>} */
 export const thumbnailDimensions = {
-    // @ts-expect-error TS(2345) FIXME: Argument of type 'number[]' is not assignable to p... Remove this comment to see the full error message
-    bg: getConfigValue('thumbnails.dimensions.bg', [160, 90]),
-    // @ts-expect-error TS(2345) FIXME: Argument of type 'number[]' is not assignable to p... Remove this comment to see the full error message
-    avatar: getConfigValue('thumbnails.dimensions.avatar', [96, 144]),
-    // @ts-expect-error TS(2345) FIXME: Argument of type 'number[]' is not assignable to p... Remove this comment to see the full error message
-    persona: getConfigValue('thumbnails.dimensions.persona', [96, 144]),
+    bg: getConfigValue('thumbnails.dimensions.bg', [160, 90]) as number[],
+    avatar: getConfigValue('thumbnails.dimensions.avatar', [96, 144]) as number[],
+    persona: getConfigValue('thumbnails.dimensions.persona', [96, 144]) as number[],
 };
 
 /**
@@ -52,9 +49,7 @@ export const thumbnailDimensions = {
  * @param {ThumbnailType} type Thumbnail type
  * @returns {number} Resolution (width * height)
  */
-// @ts-expect-error TS(2304) FIXME: Cannot find name 'ThumbnailType'.
 export function getThumbnailResolution(type: ThumbnailType): number {
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     const dims = thumbnailDimensions[type];
     if (Array.isArray(dims) && dims.length >= 2) {
         return Number(dims[0]) * Number(dims[1]);
@@ -89,30 +84,26 @@ export function isAnimatedWebP(buffer: Buffer): boolean {
  */
 async function getAverageColor(buffer: Buffer): Promise<string> {
     try {
-        const pixel = await new Bun.Image(buffer).resize(1, 1).png().buffer();
-        const png = new Uint8Array(pixel);
+                const pixel = new Uint8Array(await new Bun.Image(buffer).resize(1, 1).png().buffer());
         let offset = 8;
-        while (offset < png.length) {
-            const length = new DataView(png.buffer, offset, 4).getUint32(0);
-            // @ts-expect-error TS(2345) FIXME: Argument of type 'number | undefined' is not assig... Remove this comment to see the full error message
+        while (offset < pixel.length) {
+            const length = new DataView(pixel.buffer, offset, 4).getUint32(0);
             const type = String.fromCharCode(
-                png[offset + 4],
-                png[offset + 5],
-                png[offset + 6],
-                png[offset + 7],
+                pixel[offset + 4]!,
+                pixel[offset + 5]!,
+                pixel[offset + 6]!,
+                pixel[offset + 7]!,
             );
             if (type === 'IDAT') {
-                const compressed = png.slice(offset + 8, offset + 8 + length);
+                const compressed = pixel.slice(offset + 8, offset + 8 + length);
                 const raw = inflateSync(compressed);
                 const toHex = (c: number) => c.toString(16).padStart(2, '0');
-                // @ts-expect-error TS(2345) FIXME: Argument of type 'number | undefined' is not assig... Remove this comment to see the full error message
-                return `#${toHex(raw[1])}${toHex(raw[2])}${toHex(raw[3])}`;
+                return `#${toHex(raw[1] as number)}${toHex(raw[2] as number)}${toHex(raw[3] as number)}`;
             }
             offset += 12 + length;
         }
         return '#808080';
-    } catch (error) {
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
+    } catch (error: any) {
         console.warn('[Bun.Image] Failed to calculate average color:', error.message);
         return '#808080';
     }
@@ -124,7 +115,6 @@ async function getAverageColor(buffer: Buffer): Promise<string> {
  * @param {ThumbnailType} type - The thumbnail type for resolution calculation.
  * @returns {Promise<ImageMetadata>} A metadata object. Throws an error if processing fails.
  */
-// @ts-expect-error TS(2304) FIXME: Cannot find name 'ThumbnailType'.
 export async function generateImageMetadata(
     filePath: string,
     type: ThumbnailType,
@@ -183,7 +173,6 @@ export async function generateImageMetadata(
  * @param {string} userDataRoot - Path to the user data directory root
  * @returns {Promise<MetadataIndex>} The metadata index
  */
-// @ts-expect-error TS(2304) FIXME: Cannot find name 'MetadataIndex'.
 export async function readMetadataIndex(userDataRoot: string): Promise<MetadataIndex> {
     const indexPath = path.join(userDataRoot, METADATA_FILE);
     try {
@@ -199,7 +188,6 @@ export async function readMetadataIndex(userDataRoot: string): Promise<MetadataI
  * @param {string} userDataRoot - Path to the user data directory root
  * @param {MetadataIndex} metadata - The metadata to write
  */
-// @ts-expect-error TS(2304) FIXME: Cannot find name 'MetadataIndex'.
 export async function writeMetadataIndex(
     userDataRoot: string,
     metadata: MetadataIndex,
@@ -217,7 +205,6 @@ export async function writeMetadataIndex(
  * @param {ThumbnailType} type - The thumbnail type for resolution calculation.
  * @returns {Promise<{results: {[key: string]: ImageMetadata}, generatedCount: number}>} Results map and count of newly generated
  */
-// @ts-expect-error TS(2304) FIXME: Cannot find name 'ThumbnailType'.
 export async function getOrGenerateMetadataBatch(
     userDataRoot: string,
     relativePaths: string[],
@@ -267,10 +254,9 @@ export async function getOrGenerateMetadataBatch(
             indexModified = true;
             generatedCount++;
         } catch (error) {
-            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             console.warn(
                 `[ImageMetadata] Failed to generate metadata for ${relativePath}:`,
-                error.message,
+                (error as any).message,
             );
         }
     }
@@ -315,7 +301,6 @@ export async function removeMetadata(userDataRoot: string, relativePath: string)
  * @param {string} newRelativePath - The new relative path
  * @returns {Promise<ImageMetadata|null>} The updated metadata
  */
-// @ts-expect-error TS(2304) FIXME: Cannot find name 'ImageMetadata'.
 export async function renameMetadata(
     userDataRoot: string,
     oldRelativePath: string,
@@ -466,11 +451,8 @@ export async function deleteFolder(userDataRoot: string, folderId: string): Prom
     index.folders.splice(idx, 1);
     // Remove folderId from all images
     for (const meta of Object.values(index.images)) {
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         if (Array.isArray(meta.folderIds)) {
-            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             const fi = meta.folderIds.indexOf(folderId);
-            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             if (fi !== -1) meta.folderIds.splice(fi, 1);
         }
     }

@@ -230,7 +230,8 @@ async function runJS(block: HTMLElement) {
  * @param block
  */
 async function runST(block: HTMLElement) {
-    const { executeSlashCommandsWithOptions } = SillyTavern.getContext();
+    const context = (SillyTavern as any).getContext();
+    const { executeSlashCommandsWithOptions } = context;
     try {
         const { el, loader, cleared } = getOutput(block);
         show(loader);

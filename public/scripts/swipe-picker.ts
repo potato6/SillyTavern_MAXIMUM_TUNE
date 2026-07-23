@@ -6,7 +6,6 @@ import { power_user } from './power-user.js';
 import { isMobile } from './RossAscends-mods.js';
 import { getTokenCountAsync } from './tokenizers.js';
 import { addLongPressEvent, clamp, copyText, timestampToMoment } from './utils.js';
-// @ts-expect-error TS(2792) FIXME: Cannot find module '/script.js'. Did you mean to s... Remove this comment to see the full error message
 import {
     chat,
     deleteSwipe,
@@ -15,6 +14,7 @@ import {
     isSwipingAllowed,
     swipe,
     syncMesToSwipe,
+// @ts-expect-error TS(2307) FIXME: Cannot find module.
 } from '/script.js';
 
 /**
@@ -176,8 +176,8 @@ async function openSwipePicker(messageId) {
      *
      */
     async function renderSwipeList() {
-        // @ts-expect-error TS(7006) FIXME: Parameter 'swipe' implicitly has an 'any' type.
         const swipeBlocks = await Promise.all(
+// @ts-expect-error TS(7006) FIXME: Parameter 'swipe' implicitly has an 'any' type.
             message.swipes.map(async (swipe, index) => {
                 const swipeText = String(swipe ?? '');
                 // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
@@ -200,8 +200,8 @@ async function openSwipePicker(messageId) {
                     ? timestampToMoment(swipeInfo.send_date).format('lll')
                     : '';
                 const previewText = swipeText.replace(/\s+/g, ' ').trim();
-                // @ts-expect-error TS(2345) FIXME: Argument of type '0' is not assignable to paramete... Remove this comment to see the full error message
                 const tokenCount =
+// @ts-expect-error TS(2345) FIXME: Type is not assignable.
                     swipeInfo?.extra?.token_count ?? (await getTokenCountAsync(swipeText, 0));
                 const canDeleteSwipe = canDeleteSwipeFromPicker(index);
                 const swipeDetails = [];
@@ -217,9 +217,10 @@ async function openSwipePicker(messageId) {
                 block.setAttribute('file_name', `swipe-${index + 1}`);
                 block.setAttribute('data-swipe-id', String(index));
 
-                // @ts-expect-error TS(7006) FIXME: Parameter 'el' implicitly has an 'any' type.
                 template
+// @ts-expect-error TS(2339) FIXME: Property 'querySelectorAll' does not exist on type.
                     .querySelectorAll('.renameChatButton, .exportChatButton')
+// @ts-expect-error TS(7006) FIXME: Parameter 'el' implicitly has an 'any' type.
                     .forEach((el) => el.remove());
                 branchButton.removeAttribute('data-format');
                 branchButton.setAttribute('title', t`Create Branch`);
@@ -271,10 +272,10 @@ async function openSwipePicker(messageId) {
                                   : Math.min(selectedSwipeId, message.swipes.length - 2);
 
                         if (power_user.confirm_message_delete) {
-                            // @ts-expect-error TS(2345) FIXME: Argument of type 'null' is not assignable to param... Remove this comment to see the full error message
                             const result = await callGenericPopup(
                                 t`Are you sure you want to delete swipe #${index + 1}?`,
                                 POPUP_TYPE.CONFIRM,
+// @ts-expect-error TS(2345) FIXME: Type is not assignable.
                                 null,
                                 {
                                     okButton: t`Delete Swipe`,

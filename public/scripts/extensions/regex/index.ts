@@ -1452,9 +1452,12 @@ function migrateSettings() {
             performSave = true;
         }
 
+// @ts-expect-error TS(2339) FIXME: Property 'placement' does not exist on type.
         if (script.placement.includes(regex_placement.MD_DISPLAY)) {
             script.placement = script.placement.length === 1 ?
+// @ts-expect-error TS(2339) FIXME: Property 'values' does not exist on type.
                 Object.values(regex_placement).filter((e) => e !== regex_placement.MD_DISPLAY) :
+// @ts-expect-error TS(2339) FIXME: Property 'placement' does not exist on type.
                 script.placement = script.placement.filter((e: any) => e !== regex_placement.MD_DISPLAY);
 
             script.markdownOnly = true;

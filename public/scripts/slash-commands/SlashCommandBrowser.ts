@@ -44,10 +44,8 @@ export class SlashCommandBrowser {
                                 if (query.slice(-1) === '"' && !/(?:^|\s+)"/.test(query)) {
                                     query = `"${query}`;
                                 }
-                                // @ts-expect-error TS(7034) FIXME: Variable 'fuzzyList' implicitly has type 'any[]' i... Remove this comment to see the full error message
-                                const fuzzyList = [];
-                                // @ts-expect-error TS(7034) FIXME: Variable 'quotedList' implicitly has type 'any[]' ... Remove this comment to see the full error message
-                                const quotedList = [];
+                                const fuzzyList: any[] = [];
+                                const quotedList: any[] = [];
                                 while (query.length > 0) {
                                     const match = queryRegex.exec(query);
                                     if (!match) break;
@@ -75,7 +73,7 @@ export class SlashCommandBrowser {
                                         ...cmd.namedArgumentList.map((it) => it.description),
                                         // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
                                         ...cmd.namedArgumentList.flatMap((it) =>
-                                            it.enumList.map((e) => e.value),
+                                            it.enumList.map((e: any) => e.value),
                                         ),
                                         // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
                                         ...cmd.namedArgumentList.flatMap((it) => it.typeList),
@@ -83,14 +81,13 @@ export class SlashCommandBrowser {
                                         ...cmd.unnamedArgumentList.map((it) => it.description),
                                         // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
                                         ...cmd.unnamedArgumentList.flatMap((it) =>
-                                            it.enumList.map((e) => e.value),
+                                            it.enumList.map((e: any) => e.value),
                                         ),
                                         // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
                                         ...cmd.unnamedArgumentList.flatMap((it) => it.typeList),
                                         ...cmd.aliases,
                                         cmd.helpString,
                                     ];
-                                    // @ts-expect-error TS(7005) FIXME: Variable 'fuzzyList' implicitly has an 'any[]' typ... Remove this comment to see the full error message
                                     const find = () =>
                                         targets.find(
                                             (t) =>

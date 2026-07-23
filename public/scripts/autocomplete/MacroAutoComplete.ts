@@ -127,9 +127,8 @@ function shouldActivateMacroAutocomplete(
  * @param {MACRO_AUTOCOMPLETE_STYLE} [options.autocompleteStyle] - The autocomplete style.
  * @returns {AutoComplete} The autocomplete instance.
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'textarea' implicitly has an 'any' type.
 export function setMacroAutoComplete(
-    textarea,
+    textarea: any,
     {
         autocompleteMode = MACRO_AUTOCOMPLETE_MODE.DEFAULT,
         autocompleteStyle = MACRO_AUTOCOMPLETE_STYLE.SMALL,

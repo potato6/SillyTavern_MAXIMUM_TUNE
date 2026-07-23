@@ -716,9 +716,8 @@ comfy.post('/generate', async (request, response) => {
         }
         const outputs = Object.keys(item.outputs).map((it) => item.outputs[it]);
         console.debug('ComfyUI outputs:', outputs);
-        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         const imgInfo =
-            outputs.flatMap((it) => it.images)[0] ?? outputs.flatMap((it) => it.gifs)[0];
+            outputs.flatMap((it: any) => it.images)[0] ?? outputs.flatMap((it: any) => it.gifs)[0];
         if (!imgInfo) {
             throw new Error('ComfyUI did not return any recognizable outputs.');
         }
@@ -1876,9 +1875,8 @@ falai.post('/generate', async (request, response) => {
                 };
 
                 if (resultData.detail !== null && resultData.detail !== undefined) {
-                    // @ts-expect-error TS(2769) FIXME: No overload matches this call.
                     throw new Error('FAL.AI failed to generate image.', {
-                        cause: `${resultData.detail[0].loc[1]}: ${resultData.detail[0].msg}`,
+                        cause: `${resultData.detail![0]!.loc[1]}: ${resultData.detail![0]!.msg}`,
                     });
                 }
 

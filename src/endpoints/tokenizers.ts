@@ -21,6 +21,9 @@ import { TEXT_COMPLETION_MODELS } from './text-completion-models.js';
 /**
  * @typedef { (req: import('express').Request, res: import('express').Response) => Promise<import('express').Response> } TokenizationHandler
  */
+type TokenizationHandler = (req: express.Request, res: express.Response) => Promise<express.Response>;
+
+type Crop = any;
 
 /**
  * @type {{[key: string]: import('tiktoken').Tiktoken}} Tokenizers cache
@@ -28,8 +31,7 @@ import { TEXT_COMPLETION_MODELS } from './text-completion-models.js';
 const tokenizersCache = {};
 
 const BYTES_PER_TOKEN = 3.35;
-// @ts-expect-error TS(2345) FIXME: Argument of type 'true' is not assignable to param... Remove this comment to see the full error message
-const IS_DOWNLOAD_ALLOWED = getConfigValue('enableDownloadableTokenizers', true, 'boolean');
+const IS_DOWNLOAD_ALLOWED = getConfigValue('enableDownloadableTokenizers', true, 'boolean' as const);
 const gunzip = promisify(zlib.gunzip);
 
 /**
@@ -114,16 +116,14 @@ async function getPathToTokenizer(model: string, fallbackModel: string | undefin
     } catch (error) {
         const getLastSegment = (str: string) => str?.split('/')?.pop() || '';
         if (fallbackModel) {
-            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             console.error(
-                `Could not get a tokenizer from ${getLastSegment(model)}. Reason: ${error.message}. Using a fallback model: ${getLastSegment(fallbackModel)}.`,
+                `Could not get a tokenizer from ${getLastSegment(model)}. Reason: ${(error as any).message}. Using a fallback model: ${getLastSegment(fallbackModel)}.`,
             );
             return fallbackModel;
         }
 
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         throw new Error(
-            `Failed to instantiate a tokenizer and fallback is not provided. Reason: ${error.message}`,
+            `Failed to instantiate a tokenizer and fallback is not provided. Reason: ${(error as any).message}`,
             { cause: error },
         );
     }
@@ -579,7 +579,6 @@ export function getTiktokenTokenizer(model: string) {
  */
 export function countWebTokenizerTokens(tokenizer: Tokenizer | null, messages: object[]) {
     // Should be fine if we use the old conversion method instead of the messages API one i think?
-    // @ts-expect-error TS(2345) FIXME: Argument of type 'object[]' is not assignable to p... Remove this comment to see the full error message
     const convertedPrompt = convertClaudePrompt(messages, false, '', false, false, '', false);
 
     // Fallback to strlen estimation
@@ -596,10 +595,9 @@ export function countWebTokenizerTokens(tokenizer: Tokenizer | null, messages: o
  * @param {SentencePieceTokenizer} tokenizer Sentencepiece tokenizer
  * @returns {TokenizationHandler} Handler function
  */
-// @ts-expect-error TS(2304) FIXME: Cannot find name 'TokenizationHandler'.
 function createSentencepieceEncodingHandler(
     tokenizer: SentencePieceTokenizer,
-): TokenizationHandler {
+): any {
     /**
      * Request handler for encoding Sentencepiece tokens.
      * @param {import('express').Request} request The Express request object The Express request object
@@ -629,10 +627,9 @@ function createSentencepieceEncodingHandler(
  * @param {SentencePieceTokenizer} tokenizer Sentencepiece tokenizer
  * @returns {TokenizationHandler} Handler function
  */
-// @ts-expect-error TS(2304) FIXME: Cannot find name 'TokenizationHandler'.
 function createSentencepieceDecodingHandler(
     tokenizer: SentencePieceTokenizer,
-): TokenizationHandler {
+): any {
     /**
      * Request handler for decoding Sentencepiece tokens.
      * @param {import('express').Request} request The Express request object The Express request object
@@ -664,8 +661,7 @@ function createSentencepieceDecodingHandler(
  * @param {string} modelId Tiktoken model ID
  * @returns {TokenizationHandler} Handler function
  */
-// @ts-expect-error TS(2304) FIXME: Cannot find name 'TokenizationHandler'.
-function createTiktokenEncodingHandler(modelId: string): TokenizationHandler {
+function createTiktokenEncodingHandler(modelId: string): any {
     /**
      * Request handler for encoding Tiktoken tokens.
      * @param {import('express').Request} request The Express request object
@@ -696,8 +692,7 @@ function createTiktokenEncodingHandler(modelId: string): TokenizationHandler {
  * @param {string} modelId Tiktoken model ID
  * @returns {TokenizationHandler} Handler function
  */
-// @ts-expect-error TS(2304) FIXME: Cannot find name 'TokenizationHandler'.
-function createTiktokenDecodingHandler(modelId: string): TokenizationHandler {
+function createTiktokenDecodingHandler(modelId: string): any {
     /**
      * Request handler for decoding Tiktoken tokens.
      * @param {import('express').Request} request The Express request object
@@ -727,8 +722,7 @@ function createTiktokenDecodingHandler(modelId: string): TokenizationHandler {
  * @param {WebTokenizer} tokenizer WebTokenizer instance
  * @returns {TokenizationHandler} Handler function
  */
-// @ts-expect-error TS(2304) FIXME: Cannot find name 'TokenizationHandler'.
-function createWebTokenizerEncodingHandler(tokenizer: WebTokenizer): TokenizationHandler {
+function createWebTokenizerEncodingHandler(tokenizer: WebTokenizer): any {
     /**
      * Request handler for encoding WebTokenizer tokens.
      * @param {import('express').Request} request The Express request object
@@ -760,8 +754,7 @@ function createWebTokenizerEncodingHandler(tokenizer: WebTokenizer): Tokenizatio
  * @param {WebTokenizer} tokenizer WebTokenizer instance
  * @returns {TokenizationHandler} Handler function
  */
-// @ts-expect-error TS(2304) FIXME: Cannot find name 'TokenizationHandler'.
-function createWebTokenizerDecodingHandler(tokenizer: WebTokenizer): TokenizationHandler {
+function createWebTokenizerDecodingHandler(tokenizer: WebTokenizer): any {
     /**
      * Request handler for decoding WebTokenizer tokens.
      * @param {import('express').Request} request The Express request object
@@ -976,36 +969,36 @@ router.get('/map', function (_req, res) {
 
 // ── Legacy per-tokenizer routes (kept for backward compatibility) ────────────
 
-router.post('/llama/encode', createSentencepieceEncodingHandler(spp_llama));
-router.post('/nerdstash/encode', createSentencepieceEncodingHandler(spp_nerd));
-router.post('/nerdstash_v2/encode', createSentencepieceEncodingHandler(spp_nerd_v2));
-router.post('/mistral/encode', createSentencepieceEncodingHandler(spp_mistral));
-router.post('/yi/encode', createSentencepieceEncodingHandler(spp_yi));
-router.post('/gemma/encode', createSentencepieceEncodingHandler(spp_gemma));
-router.post('/jamba/encode', createSentencepieceEncodingHandler(spp_jamba));
-router.post('/gpt2/encode', createTiktokenEncodingHandler('gpt2'));
-router.post('/claude/encode', createWebTokenizerEncodingHandler(claude_tokenizer));
-router.post('/llama3/encode', createWebTokenizerEncodingHandler(llama3_tokenizer));
-router.post('/qwen2/encode', createWebTokenizerEncodingHandler(qwen2Tokenizer));
-router.post('/command-r/encode', createWebTokenizerEncodingHandler(commandRTokenizer));
-router.post('/command-a/encode', createWebTokenizerEncodingHandler(commandATokenizer));
-router.post('/nemo/encode', createWebTokenizerEncodingHandler(nemoTokenizer));
-router.post('/deepseek/encode', createWebTokenizerEncodingHandler(deepseekTokenizer));
-router.post('/llama/decode', createSentencepieceDecodingHandler(spp_llama));
-router.post('/nerdstash/decode', createSentencepieceDecodingHandler(spp_nerd));
-router.post('/nerdstash_v2/decode', createSentencepieceDecodingHandler(spp_nerd_v2));
-router.post('/mistral/decode', createSentencepieceDecodingHandler(spp_mistral));
-router.post('/yi/decode', createSentencepieceDecodingHandler(spp_yi));
-router.post('/gemma/decode', createSentencepieceDecodingHandler(spp_gemma));
-router.post('/jamba/decode', createSentencepieceDecodingHandler(spp_jamba));
-router.post('/gpt2/decode', createTiktokenDecodingHandler('gpt2'));
-router.post('/claude/decode', createWebTokenizerDecodingHandler(claude_tokenizer));
-router.post('/llama3/decode', createWebTokenizerDecodingHandler(llama3_tokenizer));
-router.post('/qwen2/decode', createWebTokenizerDecodingHandler(qwen2Tokenizer));
-router.post('/command-r/decode', createWebTokenizerDecodingHandler(commandRTokenizer));
-router.post('/command-a/decode', createWebTokenizerDecodingHandler(commandATokenizer));
-router.post('/nemo/decode', createWebTokenizerDecodingHandler(nemoTokenizer));
-router.post('/deepseek/decode', createWebTokenizerDecodingHandler(deepseekTokenizer));
+router.post('/llama/encode', createSentencepieceEncodingHandler(spp_llama) as any);
+router.post('/nerdstash/encode', createSentencepieceEncodingHandler(spp_nerd) as any);
+router.post('/nerdstash_v2/encode', createSentencepieceEncodingHandler(spp_nerd_v2) as any);
+router.post('/mistral/encode', createSentencepieceEncodingHandler(spp_mistral) as any);
+router.post('/yi/encode', createSentencepieceEncodingHandler(spp_yi) as any);
+router.post('/gemma/encode', createSentencepieceEncodingHandler(spp_gemma) as any);
+router.post('/jamba/encode', createSentencepieceEncodingHandler(spp_jamba) as any);
+router.post('/gpt2/encode', createTiktokenEncodingHandler('gpt2') as any);
+router.post('/claude/encode', createWebTokenizerEncodingHandler(claude_tokenizer) as any);
+router.post('/llama3/encode', createWebTokenizerEncodingHandler(llama3_tokenizer) as any);
+router.post('/qwen2/encode', createWebTokenizerEncodingHandler(qwen2Tokenizer) as any);
+router.post('/command-r/encode', createWebTokenizerEncodingHandler(commandRTokenizer) as any);
+router.post('/command-a/encode', createWebTokenizerEncodingHandler(commandATokenizer) as any);
+router.post('/nemo/encode', createWebTokenizerEncodingHandler(nemoTokenizer) as any);
+router.post('/deepseek/encode', createWebTokenizerEncodingHandler(deepseekTokenizer) as any);
+router.post('/llama/decode', createSentencepieceDecodingHandler(spp_llama) as any);
+router.post('/nerdstash/decode', createSentencepieceDecodingHandler(spp_nerd) as any);
+router.post('/nerdstash_v2/decode', createSentencepieceDecodingHandler(spp_nerd_v2) as any);
+router.post('/mistral/decode', createSentencepieceDecodingHandler(spp_mistral) as any);
+router.post('/yi/decode', createSentencepieceDecodingHandler(spp_yi) as any);
+router.post('/gemma/decode', createSentencepieceDecodingHandler(spp_gemma) as any);
+router.post('/jamba/decode', createSentencepieceDecodingHandler(spp_jamba) as any);
+router.post('/gpt2/decode', createTiktokenDecodingHandler('gpt2') as any);
+router.post('/claude/decode', createWebTokenizerDecodingHandler(claude_tokenizer) as any);
+router.post('/llama3/decode', createWebTokenizerDecodingHandler(llama3_tokenizer) as any);
+router.post('/qwen2/decode', createWebTokenizerDecodingHandler(qwen2Tokenizer) as any);
+router.post('/command-r/decode', createWebTokenizerDecodingHandler(commandRTokenizer) as any);
+router.post('/command-a/decode', createWebTokenizerDecodingHandler(commandATokenizer) as any);
+router.post('/nemo/decode', createWebTokenizerDecodingHandler(nemoTokenizer) as any);
+router.post('/deepseek/decode', createWebTokenizerDecodingHandler(deepseekTokenizer) as any);
 
 router.post('/openai/encode', async function (req, res) {
     try {

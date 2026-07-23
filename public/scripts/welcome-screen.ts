@@ -495,8 +495,8 @@ async function sendWelcomePanel(chats, expand = false) {
                 const avatarId = chatItem.getAttribute('data-avatar');
                 const groupId = chatItem.getAttribute('data-group');
                 const fileName = chatItem.getAttribute('data-file');
-                // @ts-expect-error TS(7006) FIXME: Parameter 'c' implicitly has an 'any' type.
                 const recentChat = chats.find(
+// @ts-expect-error TS(7006) FIXME: Parameter 'c' implicitly has an 'any' type.
                     (c) =>
                         c.chat_name === fileName &&
                         ((c.is_group && c.group === groupId) ||
@@ -733,11 +733,12 @@ async function refreshWelcomeScreen({ flashChat = null } = {}) {
             const file = el.getAttribute('data-file');
             const group = el.getAttribute('data-group');
             const avatar = el.getAttribute('data-avatar');
-            // @ts-expect-error TS(2339) FIXME: Property 'chat_name' does not exist on type 'never... Remove this comment to see the full error message
             return (
+// @ts-expect-error TS(2339) FIXME: Property 'chat_name' does not exist on type.
                 file === flashChat.chat_name &&
                 // @ts-expect-error TS(2339) FIXME: Property 'is_group' does not exist on type 'never'... Remove this comment to see the full error message
                 ((flashChat.is_group && group === flashChat.group) ||
+// @ts-expect-error TS(2339) FIXME: Property 'is_group' does not exist on type.
                     (!flashChat.is_group && avatar === flashChat.avatar))
             );
         });
@@ -1057,9 +1058,9 @@ export function initWelcomeScreen() {
         }
     });
 
-    // @ts-expect-error TS(7031) FIXME: Binding element 'avatarId' implicitly has an 'any'... Remove this comment to see the full error message
     eventSource.on(
         event_types.CHAT_RENAMED,
+// @ts-expect-error TS(7031) FIXME: Parameter 'avatarId' implicitly has an 'any' type.
         async ({ avatarId, groupId, oldFileName, newFileName }) => {
             PinnedChatsManager.rename(
                 { avatar: avatarId, group: groupId, file_name: oldFileName },

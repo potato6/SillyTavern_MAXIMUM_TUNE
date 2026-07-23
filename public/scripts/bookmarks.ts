@@ -113,7 +113,7 @@ async function getBookmarkName({ isReplace = false, forceName = null } = {}) {
     // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
     const suggestedName = getUniqueName(mainChatName, (x) => existingChats.includes(x), {
         nameBuilder: buildCheckpointName,
-    });
+    } as any);
 
     const body = await renderTemplateAsync('createCheckpoint', {
         isReplace: isReplace,
@@ -275,7 +275,7 @@ export async function createBranch(mesId, { swipeId = null } = {}) {
     // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
     const name = getUniqueName(mainChatName, (x) => existingChats.includes(x), {
         nameBuilder: buildBranchName,
-    });
+    } as any);
     if (!name) {
         console.error('Could not generate a unique branch name.');
         notyf.error('Could not generate a unique branch name.', 'Branch creation failed');
@@ -292,13 +292,12 @@ export async function createBranch(mesId, { swipeId = null } = {}) {
     }
 
     if (selected_group) {
-        // @ts-expect-error TS(7005) FIXME: Variable 'selected_group' implicitly has an 'any' ... Remove this comment to see the full error message
         await saveGroupBookmarkChat(
             selected_group,
             name,
             newMetadata,
             messageIndex,
-            branchChatSnapshot,
+            branchChatSnapshot as any,
         );
     } else {
         await saveChat({
@@ -453,10 +452,9 @@ export async function convertSoloToGroupChat() {
 
     const character = characters[this_chid];
 
-    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     const name = getUniqueName(
         `Group: ${character.name}`,
-        (y) => groups.findIndex((x) => x.name === y) !== -1,
+        (y: any) => groups.findIndex((x) => x.name === y) !== -1,
     );
     const avatar = getThumbnailUrl('avatar', character.avatar);
     const chatName = humanizedDateTime();
@@ -514,12 +512,11 @@ export async function convertSoloToGroupChat() {
         const message = structuredClone(chat[index]);
         groupChat[index] = message;
 
-        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         if (
-            message.is_user ||
-            message.is_system ||
-            message.extra?.type === system_message_types.NARRATOR ||
-            message.force_avatar !== undefined
+            message!.is_user ||
+            message!.is_system ||
+            message!.extra?.type === system_message_types.NARRATOR ||
+            message!.force_avatar !== undefined
         ) {
             continue;
         }

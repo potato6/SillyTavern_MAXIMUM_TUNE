@@ -361,13 +361,12 @@ export class ByafParser {
         characterName: string,
         chatBackgrounds: Array<ByafChatBackground>,
     ) {
-        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         const chatStartDate =
             scenario?.messages?.length == 0
                 ? new Date().toISOString()
                 : scenario?.messages?.filter(
                       (m: ByafHumanMessage | ByafAiMessage) => 'createdAt' in m,
-                  )[0].createdAt;
+                  )[0]?.createdAt;
         const chatBackground =
             chatBackgrounds.find((bg: ByafChatBackground) =>
                 bg.paths.includes(scenario?.backgroundImage || ''),

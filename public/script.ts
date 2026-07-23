@@ -393,37 +393,37 @@ import { Notyf, NotyfNotification, type INotyfPosition } from 'notyf';
 // Apply cash-dom polyfills (normally defined in index.html) to the bundled copy of cash-dom.
 // The bundle gets its own separate instance via import, so the index.html polyfills don't carry over.
 (function () {
-    if ($.fn.transition) return; // already applied
+    if (($.fn as any).transition) return; // already applied
 
-    $.fn.sortable =
-        $.fn.sortable ||
-        function () {
+    ($.fn as any).sortable =
+        ($.fn as any).sortable ||
+        function (this: any) {
             return this;
         };
 
-    $.fn.fadeIn =
-        $.fn.fadeIn ||
-        function (opts) {
-            this.each(function () {
+    ($.fn as any).fadeIn =
+        ($.fn as any).fadeIn ||
+        function (this: any, opts: any) {
+            this.each(function (this: any) {
                 this.style.display = '';
             });
             if (opts && typeof opts.complete === 'function') opts.complete();
             return this;
         };
 
-    $.fn.fadeOut =
-        $.fn.fadeOut ||
-        function (opts) {
-            this.each(function () {
+    ($.fn as any).fadeOut =
+        ($.fn as any).fadeOut ||
+        function (this: any, opts: any) {
+            this.each(function (this: any) {
                 this.style.display = 'none';
             });
             if (opts && typeof opts.complete === 'function') opts.complete();
             return this;
         };
 
-    $.fn.transition =
-        $.fn.transition ||
-        function (opts) {
+    ($.fn as any).transition =
+        ($.fn as any).transition ||
+        function (this: any, opts: any) {
             const duration = (opts && opts.duration) || 0;
             const easing = (opts && opts.easing) || 'ease';
             const props = Object.assign({}, opts);
@@ -431,7 +431,7 @@ import { Notyf, NotyfNotification, type INotyfPosition } from 'notyf';
             delete props.easing;
             delete props.complete;
             const complete = opts && opts.complete;
-            this.each(function () {
+            this.each(function (this: any) {
                 if (duration > 0) {
                     this.style.transition = `all ${duration}ms ${easing}`;
                 }
@@ -439,7 +439,7 @@ import { Notyf, NotyfNotification, type INotyfPosition } from 'notyf';
                     this.style[key] = value;
                 }
                 if (duration > 0) {
-                    const handler = () => {
+                    const handler = function (this: any) {
                         this.style.transition = '';
                         this.removeEventListener('transitionend', handler);
                         if (typeof complete === 'function') complete.call(this);
@@ -452,38 +452,38 @@ import { Notyf, NotyfNotification, type INotyfPosition } from 'notyf';
             return this;
         };
 
-    $.fn.stop =
-        $.fn.stop ||
-        function () {
+    ($.fn as any).stop =
+        ($.fn as any).stop ||
+        function (this: any) {
             return this;
         };
 
-    $.fn.scrollTop =
-        $.fn.scrollTop ||
-        function (v) {
+    ($.fn as any).scrollTop =
+        ($.fn as any).scrollTop ||
+        function (this: any, v: any) {
             return v === void 0
                 ? this[0]?.scrollTop
-                : (this.each(function () {
+                : (this.each(function (this: any) {
                       this.scrollTop = v;
                   }),
                   this);
         };
 
-    $.fn.hover =
-        $.fn.hover ||
-        function (fnIn, fnOut) {
+    ($.fn as any).hover =
+        ($.fn as any).hover ||
+        function (this: any, fnIn: any, fnOut: any) {
             return this.on('mouseenter', fnIn).on('mouseleave', fnOut || fnIn);
         };
 
-    $.fn.bind =
-        $.fn.bind ||
-        function () {
+    ($.fn as any).bind =
+        ($.fn as any).bind ||
+        function (this: any) {
             return this;
         };
 
-    $.fn.pagination =
-        $.fn.pagination ||
-        function (options) {
+    ($.fn as any).pagination =
+        ($.fn as any).pagination ||
+        function (this: any, options: any) {
             if (typeof options === 'object' && options.dataSource) {
                 const dataSource = options.dataSource;
                 const pageSize = options.pageSize || 50;
@@ -523,8 +523,8 @@ import { Notyf, NotyfNotification, type INotyfPosition } from 'notyf';
         'focusout',
     ];
     for (const ev of eventShorthands) {
-        if (!$.fn[ev]) {
-            $.fn[ev] = function (handler) {
+        if (!($.fn as any)[ev]) {
+            ($.fn as any)[ev] = function (this: any, handler: any) {
                 return handler ? this.on(ev, handler) : this.trigger(ev);
             };
         }
@@ -725,7 +725,7 @@ let dialogueCloseStop = false;
 /** @type {ChatMetadata} */
 export let chat_metadata: ChatMetadata = {};
 /** @type {StreamingProcessor} */
-export let streamingProcessor = null;
+export let streamingProcessor: any = null;
 // @ts-expect-error TS(7034) FIXME: Variable 'crop_data' implicitly has type 'any' in ... Remove this comment to see the full error message
 let crop_data = undefined;
 let is_delete_mode = false;
@@ -892,8 +892,7 @@ let this_del_mes = -1;
 /** @type {string} */
 let this_edit_mes_chname = '';
 /** @type {number|undefined} */
-// @ts-expect-error TS(7034) FIXME: Variable 'this_edit_mes_id' implicitly has type 'a... Remove this comment to see the full error message
-let this_edit_mes_id = undefined;
+let this_edit_mes_id: any = undefined;
 
 //settings
 // @ts-expect-error TS(7005) FIXME: Variable 'settings' implicitly has an 'any' type.
@@ -1300,9 +1299,8 @@ function getCharacterBlock(item, id) {
         this_avatar = getThumbnailUrl('avatar', item.avatar);
     }
     // Populate the template
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const $templateClone = $(
-        document.querySelector('#character_template .character_select').cloneNode(true),
+        document.querySelector('#character_template .character_select')!.cloneNode(true),
     );
     $templateClone.attr({ 'data-chid': id, id: `CharID${id}` });
     $templateClone.find('img').attr('src', this_avatar).attr('alt', item.name);
@@ -1830,14 +1828,12 @@ export async function deleteCharacterChatByName(characterId, fileName) {
             body: JSON.stringify({ avatar_url: character.avatar }),
         });
         const chats = Object.values(await chatsResponse.json());
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-        chats.sort((a, b) =>
+        chats.sort((a: any, b: any) =>
             sortMoments(timestampToMoment(a.last_mes), timestampToMoment(b.last_mes)),
         );
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         const newChatName =
             chats.length && typeof chats[0] === 'object'
-                ? chats[0].file_name.replace('.jsonl', '')
+                ? (chats[0] as any).file_name.replace('.jsonl', '')
                 : `${character.name} - ${humanizedDateTime()}`;
         await updateRemoteChatName(characterId, newChatName);
     }
@@ -1859,8 +1855,7 @@ export async function replaceCurrentChat() {
 
     if (chatsResponse.ok) {
         const chats = Object.values(await chatsResponse.json());
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-        chats.sort((a, b) =>
+        chats.sort((a: any, b: any) =>
             sortMoments(timestampToMoment(a.last_mes), timestampToMoment(b.last_mes)),
         );
 
@@ -2001,7 +1996,6 @@ export async function redisplayChat({ targetChat = chat, startIndex = 0, fade = 
         });
 
         //The last_mes has been removed, add it to the new last message.
-        // @ts-expect-error Suppressed after fixes
         newMessageElements.at(-1).classList.add('last_mes');
 
         //Append to chat in one DOM update.
@@ -2150,11 +2144,10 @@ export async function deleteMessage(id, swipeDeletionIndex = undefined, askConfi
 
     let deleteOnlySwipe = canDeleteSwipe;
     if (askConfirmation) {
-        // @ts-expect-error TS(2345) FIXME: Argument of type 'null' is not assignable to param... Remove this comment to see the full error message
         const result = await callGenericPopup(
             t`Are you sure you want to delete this message?`,
             POPUP_TYPE.CONFIRM,
-            null,
+            undefined as any,
             {
                 okButton: canDeleteSwipe ? t`Delete Swipe` : t`Delete Message`,
                 cancelButton: 'Cancel',
@@ -2182,7 +2175,6 @@ export async function deleteMessage(id, swipeDeletionIndex = undefined, askConfi
     updateViewMessageIds(startIndex);
     saveChatDebounced();
 
-    // @ts-expect-error TS(7005) FIXME: Variable 'this_edit_mes_id' implicitly has an 'any... Remove this comment to see the full error message
     if (this_edit_mes_id === id) {
         this_edit_mes_id = undefined;
     }
@@ -2281,13 +2273,12 @@ export async function sendTextareaMessage() {
  * @param {boolean} [isReasoning] If the message is reasoning output
  * @returns {string} HTML string
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'mes' implicitly has an 'any' type.
 export function messageFormatting(
-    mes,
-    ch_name,
-    isSystem,
-    isUser,
-    messageId,
+    mes: any,
+    ch_name: any,
+    isSystem: any,
+    isUser: any,
+    messageId: any,
     sanitizerOverrides = {},
     isReasoning = false,
 ) {
@@ -2621,13 +2612,12 @@ export function ensureMessageMediaIsArray(mes) {
      * @param {(value: any) => boolean} [filterFn] Optional filter function to apply when getting/setting the plain property
      * @param {(value: any) => any} [mapFn] Optional map function to apply when getting/setting the plain property
      */
-    // @ts-expect-error TS(7006) FIXME: Parameter 'obj' implicitly has an 'any' type.
     function addArrayAutoWrapper(
-        obj,
-        plainProperty,
-        arrayProperty,
-        filterFn = () => true,
-        mapFn = (t) => t,
+        obj: any,
+        plainProperty: any,
+        arrayProperty: any,
+        filterFn: (value: any) => boolean = () => true,
+        mapFn: (value: any) => any = (t: any) => t,
     ) {
         // If the plain property is already a getter, do nothing.
         const hasGetterProperty = isGetterObjectProperty(obj, plainProperty);
@@ -2728,7 +2718,6 @@ export function ensureMessageMediaIsArray(mes) {
 
     migrateMediaToArray(mes.extra);
     addArrayAutoWrapper(mes.extra, 'file', 'files');
-    // @ts-expect-error TS(2345) FIXME: Argument of type '(t: any) => boolean' is not assi... Remove this comment to see the full error message
     addArrayAutoWrapper(
         mes.extra,
         'image',
@@ -2736,7 +2725,6 @@ export function ensureMessageMediaIsArray(mes) {
         (t) => t.type === MEDIA_TYPE.IMAGE,
         (t) => t.url,
     );
-    // @ts-expect-error TS(2345) FIXME: Argument of type '(t: any) => boolean' is not assi... Remove this comment to see the full error message
     addArrayAutoWrapper(
         mes.extra,
         'video',
@@ -2828,11 +2816,9 @@ export function appendMediaToMessage(mes, messageElement, scrollBehavior = SCROL
      * @param {number} index Index of the image attachment
      * @returns {JQuery<HTMLElement>} The appended image container element
      */
-    // @ts-expect-error TS(7006) FIXME: Parameter 'attachment' implicitly has an 'any' typ... Remove this comment to see the full error message
-    function appendImageAttachment(attachment, index) {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    function appendImageAttachment(attachment: any, index: any) {
         const template = $(
-            document.querySelector('#message_image_template .mes_img_container').cloneNode(true),
+            document.querySelector('#message_image_template .mes_img_container')!.cloneNode(true),
         );
         template.attr('data-index', index);
 
@@ -2878,11 +2864,9 @@ export function appendMediaToMessage(mes, messageElement, scrollBehavior = SCROL
      * @param {number} index Index of the video attachment
      * @returns {JQuery<HTMLElement>} The appended video container element
      */
-    // @ts-expect-error TS(7006) FIXME: Parameter 'attachment' implicitly has an 'any' typ... Remove this comment to see the full error message
-    function appendVideoAttachment(attachment, index) {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    function appendVideoAttachment(attachment: any, index: any) {
         const template = $(
-            document.querySelector('#message_video_template .mes_video_container').cloneNode(true),
+            document.querySelector('#message_video_template .mes_video_container')!.cloneNode(true),
         );
         template.attr('data-index', index);
 
@@ -2925,11 +2909,9 @@ export function appendMediaToMessage(mes, messageElement, scrollBehavior = SCROL
      * @param {number} index Index of the audio attachment
      * @returns {JQuery<HTMLElement>} The appended audio container element
      */
-    // @ts-expect-error TS(7006) FIXME: Parameter 'attachment' implicitly has an 'any' typ... Remove this comment to see the full error message
-    function appendAudioAttachment(attachment, index) {
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+    function appendAudioAttachment(attachment: any, index: any) {
         const template = $(
-            document.querySelector('#message_audio_template .mes_audio_container').cloneNode(true),
+            document.querySelector('#message_audio_template .mes_audio_container')!.cloneNode(true),
         );
         template.attr('data-index', index);
         const audio = template.find('.mes_audio');
@@ -3048,9 +3030,8 @@ export function appendMediaToMessage(mes, messageElement, scrollBehavior = SCROL
         const mediaIndex = getMediaIndex(mes);
         const selectedMedia = mes.extra.media[mediaIndex];
 
-        // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         const galleryControls = $(
-            document.querySelector('#message_gallery_controls .mes_img_swipes').cloneNode(true),
+            document.querySelector('#message_gallery_controls .mes_img_swipes')!.cloneNode(true),
         );
         const counter = galleryControls.find('.mes_img_swipe_counter');
         counter.text(`${mediaIndex + 1}/${mes.extra.media.length}`);
@@ -3076,10 +3057,9 @@ export function appendMediaToMessage(mes, messageElement, scrollBehavior = SCROL
     if (hasFiles) {
         for (let index = 0; index < mes.extra.files.length; index++) {
             const file = mes.extra.files[index];
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const template = $(
                 document
-                    .querySelector('#message_file_template .mes_file_container')
+                    .querySelector('#message_file_template .mes_file_container')!
                     .cloneNode(true),
             );
             // @ts-expect-error Suppressed after fixes
@@ -3145,9 +3125,8 @@ export function addCopyToCodeBlocks(messageElement) {
  * @param {JQuery<HTMLElement>} [options.messageElement] Message element
  * @returns {void}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'message' implicitly has an 'any' type.
 function updateMessageItemizedPromptButton(
-    message,
+    message: any,
     {
         messageId = chat.indexOf(message),
         messageElement = chatElement.find(`.mes[mesid="${messageId}"]`),
@@ -3201,9 +3180,8 @@ function getMessageTextHTML(message, { messageId = chat.indexOf(message) }) {
  * @param {boolean} [options.showSwipes] Whether to refresh the swipe buttons.
  * @returns {JQuery<HTMLElement>} The newly added message element
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'mes' implicitly has an 'any' type.
 export function addOneMessage(
-    mes,
+    mes: any,
     {
         type = undefined,
         insertAfter = null,
@@ -3287,14 +3265,13 @@ export function addOneMessage(
  * @param {SCROLL_BEHAVIOR} [options.adjustMediaScroll] Scroll behavior option passed to appendMediaToMessage.
  * @returns {JQuery<HTMLElement>} Rendered HTMLElement.
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'mes' implicitly has an 'any' type.
 export function updateMessageElement(
-    mes,
+    mes: any,
     {
         messageId = chat.length - 1,
-        messageElement = $(messageTemplate.cloneNode(true)),
+        messageElement = $(messageTemplate!.cloneNode(true)),
         adjustMediaScroll = SCROLL_BEHAVIOR.NONE,
-    } = {},
+    }: any = {},
 ) {
     let avatarImg = getThumbnailUrl('persona', user_avatar);
 
@@ -3330,7 +3307,6 @@ export function updateMessageElement(
         mes.extra?.time_to_first_token,
     );
 
-    // @ts-expect-error Suppressed after fixes
     messageElement.attr({
         mesid: messageId,
         swipeid: mes.swipe_id ?? 0,
@@ -3435,11 +3411,10 @@ export function formatCharacterAvatar(characterAvatar) {
  * console.log(timerValue); // 1.2s
  * console.log(timerTitle); // Generation queued: 12:34:56 7 Jan 2021\nReply received: 12:34:57 7 Jan 2021\nTime to generate: 1.2 seconds\nToken rate: 5 t/s
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'gen_started' implicitly has an 'any' ty... Remove this comment to see the full error message
 function formatGenerationTimer(
-    gen_started,
-    gen_finished,
-    tokenCount,
+    gen_started: any,
+    gen_finished: any,
+    tokenCount: any,
     reasoningDuration = null,
     timeToFirstToken = null,
 ) {
@@ -3540,7 +3515,7 @@ export function scrollChatToBottom({ waitForFrame }: { waitForFrame?: boolean } 
  * @param {(x: string) => string} [options.postProcessFn] - Post-processing function for each substituted macro.
  * @returns {string} The string with substituted parameters.
  */
-export function substituteParams(content, options = {}) {
+export function substituteParams(content: any, options: any = {}) {
     if (!content) return '';
 
     if (typeof content !== 'string') {
@@ -3556,7 +3531,7 @@ export function substituteParams(content, options = {}) {
         groupOverride: options.groupOverride,
         replaceCharacterCard: options.replaceCharacterCard ?? true,
         dynamicMacros: options.dynamicMacros ?? {},
-        postProcessFn: options.postProcessFn ?? ((x) => x),
+        postProcessFn: options.postProcessFn ?? ((x: any) => x),
     };
 
     const env = MacroEnvBuilder.buildFromRawEnv(ctx);
@@ -3652,7 +3627,6 @@ export async function generateQuietPrompt(
         console.trace(
             'generateQuietPrompt called with positional arguments. Please use an object instead.',
         );
-        // @ts-expect-error TS(2322) FIXME: Type 'unknown' is not assignable to type 'string'.
         [
             quietPrompt,
             quietToLoud,
@@ -3662,7 +3636,7 @@ export async function generateQuietPrompt(
             responseLength,
             forceChId,
             jsonSchema,
-        ] = args;
+        ] = args as any;
     }
 
     const responseLengthCustomized = typeof responseLength === 'number' && responseLength > 0;
@@ -3811,13 +3785,12 @@ function addPersonaDescriptionExtensionPrompt() {
                 ? `${power_user.persona_description}\n${originalAN}`
                 : `${originalAN}\n${power_user.persona_description}`;
 
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         setExtensionPrompt(
             NOTE_MODULE_NAME,
             ANWithDesc,
             chat_metadata[metadata_keys.position],
             chat_metadata[metadata_keys.depth],
-            extension_settings.note.allowWIScan,
+            (extension_settings as any).note.allowWIScan,
             chat_metadata[metadata_keys.role],
         );
     }
@@ -4165,11 +4138,10 @@ export function parseMesExamples(examplesStr, isInstruct) {
         ? `${substituteParams(power_user.context.example_separator)}\n`
         : '';
     const blockHeading = main_api === 'openai' || isInstruct ? '<START>\n' : exampleSeparator;
-    // @ts-expect-error TS(7006) FIXME: Parameter 'block' implicitly has an 'any' type.
     const splitExamples = examplesStr
         .split(/<START>/gi)
         .slice(1)
-        .map((block) => `${blockHeading}${block.trim()}\n`);
+        .map((block: any) => `${blockHeading}${block.trim()}\n`);
 
     return splitExamples;
 }
@@ -4397,62 +4369,48 @@ class StreamingProcessor {
             this.sendTextarea.value = processedText;
             this.sendTextarea.dispatchEvent(new Event('input', { bubbles: true }));
         } else {
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-            const mesChanged = chat[messageId].mes !== processedText;
+            const mesChanged = chat[messageId]!.mes !== processedText;
             await this.#checkDomElements(messageId);
             this.#updateMessageBlockVisibility();
             const currentTime = new Date();
             // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-            chat[messageId].mes = processedText;
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-            chat[messageId].gen_started = this.timeStarted;
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-            chat[messageId].gen_finished = currentTime;
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-            if (!chat[messageId].extra) {
-                // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-                chat[messageId].extra = {};
+            chat[messageId]!.mes = processedText;
+            chat[messageId]!.gen_started = this.timeStarted;
+            chat[messageId]!.gen_finished = currentTime;
+            if (!chat[messageId]!.extra) {
+                chat[messageId]!.extra = {};
             }
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-            chat[messageId].extra.time_to_first_token = this.timeToFirstToken;
+            chat[messageId]!.extra.time_to_first_token = this.timeToFirstToken;
 
             // Update reasoning
             await this.reasoningHandler.process(messageId, mesChanged, this.promptReasoning);
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-            processedText = chat[messageId].mes;
+            processedText = chat[messageId]!.mes;
 
             // Token count update.
             const tokenCountText = this.reasoningHandler.reasoning + processedText;
-            // @ts-expect-error TS(2345) FIXME: Argument of type '0' is not assignable to paramete... Remove this comment to see the full error message
             const currentTokenCount =
                 isFinal && power_user.message_token_count_enabled
-                    ? await getTokenCountAsync(tokenCountText, 0)
+                    ? await getTokenCountAsync(tokenCountText, undefined as any)
                     : 0;
             if (currentTokenCount) {
-                // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-                chat[messageId].extra.token_count = currentTokenCount;
+                chat[messageId]!.extra.token_count = currentTokenCount;
                 if (this.messageTokenCounterDom instanceof HTMLElement) {
                     this.messageTokenCounterDom.textContent = `${currentTokenCount}t`;
                 }
             }
 
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             if (
                 (this.type == 'swipe' || this.type === 'continue') &&
-                Array.isArray(chat[messageId].swipes)
+                Array.isArray(chat[messageId]!.swipes)
             ) {
                 // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-                chat[messageId].swipes[chat[messageId].swipe_id] = processedText;
+                chat[messageId]!.swipes[chat[messageId]!.swipe_id] = processedText;
                 // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-                chat[messageId].swipe_info[chat[messageId].swipe_id] = {
-                    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-                    send_date: chat[messageId].send_date,
-                    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-                    gen_started: chat[messageId].gen_started,
-                    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-                    gen_finished: chat[messageId].gen_finished,
-                    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-                    extra: structuredClone(chat[messageId].extra),
+                chat[messageId]!.swipe_info[chat[messageId]!.swipe_id] = {
+                    send_date: chat[messageId]!.send_date,
+                    gen_started: chat[messageId]!.gen_started,
+                    gen_finished: chat[messageId]!.gen_finished,
+                    extra: structuredClone(chat[messageId]!.extra),
                 };
             }
 
@@ -4476,13 +4434,12 @@ class StreamingProcessor {
                 }
             }
 
-            // @ts-expect-error TS(2345) FIXME: Argument of type 'number | null' is not assignable... Remove this comment to see the full error message
             const timePassed = formatGenerationTimer(
                 this.timeStarted,
                 currentTime,
                 currentTokenCount,
-                this.reasoningHandler.getDuration(),
-                this.timeToFirstToken,
+                this.reasoningHandler.getDuration() as any,
+                this.timeToFirstToken as any,
             );
             if (this.messageTimerDom instanceof HTMLElement) {
                 // @ts-expect-error TS(2322) FIXME: Type 'string | undefined' is not assignable to typ... Remove this comment to see the full error message
@@ -4532,9 +4489,8 @@ class StreamingProcessor {
                 gen_finished: message.gen_finished,
                 extra: swipeInfoExtra,
             };
-            // @ts-expect-error TS(2554) FIXME: Expected 1-3 arguments, but got 0.
             const swipeInfoArray = Array(this.swipes.length)
-                .fill()
+                .fill(undefined as any)
                 .map(() => structuredClone(swipeInfo));
             // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             parseReasoningInSwipes(this.swipes, swipeInfoArray, message.extra?.reasoning_duration);
@@ -4611,14 +4567,13 @@ class StreamingProcessor {
     // @ts-expect-error TS(7006) FIXME: Parameter 'messageId' implicitly has an 'any' type... Remove this comment to see the full error message
     setFirstSwipe(messageId) {
         if (this.type !== 'swipe' && this.type !== 'impersonate') {
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             if (
-                Array.isArray(chat[messageId].swipes) &&
-                chat[messageId].swipes.length === 1 &&
-                chat[messageId].swipe_id === 0
+                Array.isArray(chat[messageId]!.swipes) &&
+                chat[messageId]!.swipes.length === 1 &&
+                chat[messageId]!.swipe_id === 0
             ) {
                 // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-                chat[messageId].swipes[0] = chat[messageId].mes;
+                chat[messageId]!.swipes[0] = chat[messageId]!.mes;
                 // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                 chat[messageId].swipe_info[0] = {
                     // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
@@ -4684,10 +4639,9 @@ class StreamingProcessor {
                 this.images = state?.images ?? [];
                 this.reasoningSignature = state?.signature ?? null;
                 await eventSource.emit(event_types.STREAM_TOKEN_RECEIVED, text);
-                // @ts-expect-error TS(2554) FIXME: Expected 3 arguments, but got 2.
                 await sw.tick(
                     async () =>
-                        await this.onProgressStreaming(this.messageId, this.continueMessage + text),
+                        await this.onProgressStreaming(this.messageId, this.continueMessage + text, undefined as any),
                 );
             }
             // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
@@ -4884,33 +4838,30 @@ export async function generateRawData({
                     };
                 } else {
                     const isHorde = api === 'koboldhorde';
-                    // @ts-expect-error Suppressed after fixes
                     const koboldSettings =
-                        koboldai_settings[koboldai_setting_names[kai_settings.preset_settings]];
-                    // @ts-expect-error Suppressed after fixes
+                        (koboldai_settings as any)[(koboldai_setting_names as any)[kai_settings.preset_settings]];
                     generateData = getKoboldGenerationData(
                         prompt.toString(),
-                        koboldSettings,
+                        koboldSettings as any,
                         amount_gen,
                         max_context,
                         isHorde,
-                        'quiet',
+                        'quiet' as any,
                     );
                 }
                 TempResponseLength.restore(api);
                 break;
             // @ts-expect-error TS(2678) FIXME: Type '"novel"' is not comparable to type 'null'.
             case 'novel': {
-                // @ts-expect-error Suppressed after fixes
                 const novelSettings =
-                    novelai_settings[novelai_setting_names[nai_settings.preset_settings_novel]];
+                    novelai_settings[(novelai_setting_names as any)[nai_settings.preset_settings_novel]] as any;
                 generateData = getNovelGenerationData(
                     prompt,
                     novelSettings,
                     amount_gen,
                     false,
                     false,
-                    null,
+                    null as any,
                     'quiet',
                 );
                 TempResponseLength.restore(api);
@@ -4918,13 +4869,12 @@ export async function generateRawData({
             }
             // @ts-expect-error TS(2678) FIXME: Type '"textgenerationwebui"' is not comparable to ... Remove this comment to see the full error message
             case 'textgenerationwebui':
-                // @ts-expect-error Suppressed after fixes
                 generateData = await getTextGenGenerationData(
                     prompt,
                     amount_gen,
                     false,
                     false,
-                    null,
+                    null as any,
                     'quiet',
                 );
                 TempResponseLength.restore(api);
@@ -4941,12 +4891,11 @@ export async function generateRawData({
         let data = {};
 
         if (api === 'koboldhorde') {
-            // @ts-expect-error Suppressed after fixes
             data = await generateHorde(
                 prompt.toString(),
                 generateData,
                 abortController.signal,
-                false,
+                false as any,
             );
         } else if (api === 'openai') {
             data = await sendOpenAIRequest('quiet', generateData, abortController.signal, {
@@ -4979,10 +4928,9 @@ export async function generateRawData({
         }
 
         if (jsonSchema) {
-            // @ts-expect-error TS(2339) FIXME: Property 'returnInvalid' does not exist on type 'n... Remove this comment to see the full error message
             return extractJsonFromData(data, {
                 mainApi: api,
-                returnInvalidJson: jsonSchema.returnInvalid,
+                returnInvalidJson: (jsonSchema as any).returnInvalid,
             });
         }
 
@@ -5021,7 +4969,6 @@ export async function generateRaw(
         console.trace(
             'generateRaw called with positional arguments. Please use an object instead.',
         );
-        // @ts-expect-error TS(2322) FIXME: Type 'unknown' is not assignable to type 'string'.
         [
             prompt,
             api,
@@ -5032,7 +4979,7 @@ export async function generateRaw(
             trimNames,
             prefill,
             jsonSchema,
-        ] = args;
+        ] = args as any;
     }
 
     const data = await generateRawData({
@@ -5053,7 +5000,7 @@ export async function generateRaw(
 
     // format result, exclude user prompt bias
     const message = cleanUpMessage({
-        getMessage: extractMessageFromData(data, api),
+        getMessage: extractMessageFromData(data, api) as any,
         isImpersonate: false,
         isContinue: false,
         displayIncompleteSentences: true,
@@ -5220,7 +5167,7 @@ function removeLastMessage() {
  */
 // @ts-expect-error TS(7023) FIXME: 'Generate' implicitly has return type 'any' becaus... Remove this comment to see the full error message
 export async function Generate(
-    type,
+    type: any,
     {
         automatic_trigger,
         force_name2,
@@ -5372,10 +5319,9 @@ export async function Generate(
     //this function just gives special care to novel quiet instruction prompts
     if (quiet_prompt) {
         quiet_prompt = substituteParams(quiet_prompt);
-        // @ts-expect-error Suppressed after fixes
         quiet_prompt =
             main_api == 'novel' && !quietToLoud
-                ? adjustNovelInstructionPrompt(quiet_prompt)
+                ? adjustNovelInstructionPrompt(quiet_prompt as string)
                 : quiet_prompt;
     }
 
@@ -5500,13 +5446,12 @@ export async function Generate(
     if (selected_group && Array.isArray(groupDepthPrompts) && groupDepthPrompts.length > 0) {
         groupDepthPrompts.forEach((value, index) => {
             const role = getExtensionPromptRoleByName(value.role);
-            // @ts-expect-error TS(2339) FIXME: Property 'allowWIScan' does not exist on type '{ d... Remove this comment to see the full error message
             setExtensionPrompt(
                 inject_ids.DEPTH_PROMPT_INDEX(index),
                 value.text,
                 extension_prompt_types.IN_CHAT,
                 value.depth,
-                extension_settings.note.allowWIScan,
+                (extension_settings.note as any).allowWIScan,
                 role,
             );
         });
@@ -5519,13 +5464,12 @@ export async function Generate(
             characters[this_chid]?.data?.extensions?.depth_prompt?.role ??
                 depth_prompt_role_default,
         );
-        // @ts-expect-error TS(2339) FIXME: Property 'allowWIScan' does not exist on type '{ d... Remove this comment to see the full error message
         setExtensionPrompt(
             inject_ids.DEPTH_PROMPT,
             depthPromptText,
             extension_prompt_types.IN_CHAT,
             depthPromptDepth,
-            extension_settings.note.allowWIScan,
+            (extension_settings.note as any).allowWIScan,
             depthPromptRole,
         );
     }
@@ -5538,9 +5482,8 @@ export async function Generate(
 
     // Collect messages with usable content
     const canUseTools = ToolManager.isToolCallingSupported();
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
     const canPerformToolCalls =
-        !dryRun && ToolManager.canPerformToolCalls(type) && depth < ToolManager.RECURSE_LIMIT;
+        !dryRun && ToolManager.canPerformToolCalls(type) && (depth as number) < ToolManager.RECURSE_LIMIT;
     // @ts-expect-error TS(2339) FIXME: Property 'is_system' does not exist on type 'never... Remove this comment to see the full error message
     let coreChat: SillyTavern.ChatMessage[] = chat.filter(
         (x) => !x.is_system || (canUseTools && Array.isArray(x.extra?.tool_invocations)),
@@ -5852,8 +5795,7 @@ export async function Generate(
     }
 
     // Inject all Depth prompts. Chat Completion does it separately
-    // @ts-expect-error TS(7034) FIXME: Variable 'injectedIndices' implicitly has type 'an... Remove this comment to see the full error message
-    let injectedIndices = [];
+    let injectedIndices: any[] = [];
     if (main_api !== 'openai') {
         injectedIndices = await doChatInject(coreChat, isContinue);
     }
@@ -5890,7 +5832,7 @@ export async function Generate(
                 // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                 chat2[i] = chat2[i].slice(
                     0,
-                    chat2[i].lastIndexOf(coreChat[j].mes) + coreChat[j].mes.length,
+                    chat2[i]!.lastIndexOf(coreChat[j].mes) + coreChat[j].mes.length,
                 );
                 continue_mag = coreChat[j].mes;
             }
@@ -6009,8 +5951,7 @@ export async function Generate(
     }
 
     // Force pinned examples into the context
-    // @ts-expect-error TS(7034) FIXME: Variable 'pinExmString' implicitly has type 'any' ... Remove this comment to see the full error message
-    let pinExmString;
+    let pinExmString: any;
     if (power_user.pin_examples) {
         pinExmString = examplesString = mesExamplesArray.join('');
     }
@@ -6122,8 +6063,7 @@ export async function Generate(
         }
     }
 
-    // @ts-expect-error TS(7034) FIXME: Variable 'mesSend' implicitly has type 'any[]' in ... Remove this comment to see the full error message
-    const mesSend = [];
+    let mesSend: any[] = [];
     console.debug('calling runGenerate');
 
     if (isContinue) {
@@ -6156,7 +6096,7 @@ export async function Generate(
             // In instruct mode it only removes it if wrap is enabled and it's not a quiet generation
             if (i === arrMes.length - 1 && type !== 'continue') {
                 if (!isInstruct || (power_user.instruct.wrap && type !== 'quiet')) {
-                    item = item.replace(/\n?$/, '');
+                    (item as string) = (item as string).replace(/\n?$/, '');
                 }
             }
 
@@ -6175,11 +6115,9 @@ export async function Generate(
         }
 
         console.debug('--setting Prompt string');
-        // @ts-expect-error TS(7005) FIXME: Variable 'pinExmString' implicitly has an 'any' ty... Remove this comment to see the full error message
         mesExmString = pinExmString ?? mesExamplesArray.slice(0, count_exm_add).join('');
 
         if (mesSend.length) {
-            // @ts-expect-error TS(7005) FIXME: Variable 'mesSend' implicitly has an 'any[]' type.
             mesSend[mesSend.length - 1].message = modifyLastPromptLine(
                 mesSend[mesSend.length - 1].message,
             );
@@ -6276,7 +6214,6 @@ export async function Generate(
     async function checkPromptSize() {
         console.debug('---checking Prompt size');
         setPromptString();
-        // @ts-expect-error TS(7005) FIXME: Variable 'mesSend' implicitly has an 'any[]' type.
         const jointMessages = mesSend
             .map((e) => `${e.extensionPrompts.join('')}${e.message}`)
             .join('');
@@ -6301,7 +6238,6 @@ export async function Generate(
                 await checkPromptSize(); // and try agin...
             } else if (mesSend.length > 0) {
                 // if the chat history is longer than 0
-                // @ts-expect-error TS(7005) FIXME: Variable 'mesSend' implicitly has an 'any[]' type.
                 mesSend.shift(); // remove the first (oldest) chat entry..
                 await checkPromptSize(); // and check size again..
             } else {
@@ -6340,7 +6276,6 @@ export async function Generate(
         }
 
         // Deep clone
-        // @ts-expect-error TS(7005) FIXME: Variable 'mesSend' implicitly has an 'any[]' type.
         const finalMesSend = structuredClone(mesSend);
 
         if (useCfgPrompt) {
@@ -6409,7 +6344,6 @@ export async function Generate(
         };
 
         finalMesSend.forEach((item, i) => {
-            // @ts-expect-error TS(7005) FIXME: Variable 'injectedIndices' implicitly has an 'any[... Remove this comment to see the full error message
             item.injected = injectedIndices.includes(finalMesSend.length - i - 1);
         });
 
@@ -6474,16 +6408,14 @@ export async function Generate(
 
             if (kai_settings.preset_settings != 'gui') {
                 const isHorde = main_api == 'koboldhorde';
-                // @ts-expect-error Suppressed after fixes
                 const presetSettings =
-                    koboldai_settings[koboldai_setting_names[kai_settings.preset_settings]];
+                    (koboldai_settings as any)[(koboldai_setting_names as any)[kai_settings.preset_settings]];
                 const maxContext =
                     adjustedParams && horde_settings.auto_adjust_context_length
                         ? adjustedParams.maxContextLength
                         : max_context;
-                // @ts-expect-error Suppressed after fixes
                 generate_data = getKoboldGenerationData(
-                    finalPrompt,
+                    finalPrompt as string,
                     presetSettings,
                     maxLength,
                     maxContext,
@@ -6496,25 +6428,22 @@ export async function Generate(
             const cfgValues = useCfgPrompt
                 ? { guidanceScale: cfgGuidanceScale, negativePrompt: await getCombinedPrompt(true) }
                 : null;
-            // @ts-expect-error Suppressed after fixes
             generate_data = await getTextGenGenerationData(
-                finalPrompt,
+                finalPrompt!,
                 maxLength,
                 isImpersonate,
                 isContinue,
-                cfgValues,
+                cfgValues as any,
                 type,
             );
             break;
         }
         case 'novel': {
             const cfgValues = useCfgPrompt ? { guidanceScale: cfgGuidanceScale } : null;
-            // @ts-expect-error Suppressed after fixes
             const presetSettings =
-                novelai_settings[novelai_setting_names[nai_settings.preset_settings_novel]];
-            // @ts-expect-error Suppressed after fixes
+                novelai_settings[novelai_setting_names[nai_settings.preset_settings_novel]!]! as any;
             generate_data = getNovelGenerationData(
-                finalPrompt,
+                finalPrompt as string,
                 presetSettings,
                 maxLength,
                 isImpersonate,
@@ -6595,7 +6524,6 @@ export async function Generate(
             rawPrompt: generate_data.prompt || generate_data.input,
             mesId: getNextMessageId(type),
             allAnchors: await getAllExtensionPrompts(),
-            // @ts-expect-error TS(7005) FIXME: Variable 'injectedIndices' implicitly has an 'any[... Remove this comment to see the full error message
             chatInjects:
                 injectedIndices?.map((index) => arrMes[arrMes.length - index - 1])?.join('') || '',
             // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
@@ -6638,7 +6566,6 @@ export async function Generate(
             tokenizer: getFriendlyTokenizerName(main_api).tokenizerName || '',
             presetName: getPresetManager()?.getSelectedPresetName() || '',
             messagesCount: main_api !== 'openai' ? mesSend.length : oaiMessages.length,
-            // @ts-expect-error TS(7005) FIXME: Variable 'pinExmString' implicitly has an 'any' ty... Remove this comment to see the full error message
             examplesCount:
                 main_api !== 'openai'
                     ? pinExmString
@@ -6648,9 +6575,8 @@ export async function Generate(
         };
 
         //console.log(additionalPromptStuff);
-        // @ts-expect-error TS(2339) FIXME: Property 'mesId' does not exist on type 'never'.
-        const itemizedIndex = itemizedPrompts.findIndex(
-            (item) => item.mesId === additionalPromptStuff.mesId,
+        const itemizedIndex = itemizedPrompts!.findIndex(
+            (item: any) => item.mesId === additionalPromptStuff.mesId,
         );
 
         if (itemizedIndex !== -1) {
@@ -6667,7 +6593,6 @@ export async function Generate(
 
         if (isStreamingEnabled() && type !== 'quiet') {
             continue_mag = promptReasoning.removePrefix(continue_mag);
-            // @ts-expect-error TS(2322) FIXME: Type 'StreamingProcessor' is not assignable to typ... Remove this comment to see the full error message
             streamingProcessor = new StreamingProcessor(
                 type,
                 force_name2,
@@ -6677,7 +6602,6 @@ export async function Generate(
             );
             if (isContinue) {
                 // Save reply does add cycle text to the prompt, so it's not needed here
-                // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                 streamingProcessor.firstMessageText = '';
             }
 
@@ -6687,7 +6611,6 @@ export async function Generate(
             });
 
             hideSwipeButtons();
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             let getMessage = await streamingProcessor.generate();
             const messageChunk = cleanUpMessage({
                 getMessage: getMessage,
@@ -6700,40 +6623,33 @@ export async function Generate(
                 getMessage = continue_mag + getMessage;
             }
 
-            // @ts-expect-error TS(2339) FIXME: Property 'isStopped' does not exist on type 'never... Remove this comment to see the full error message
             const isStreamFinished =
                 streamingProcessor &&
                 !streamingProcessor.isStopped &&
                 streamingProcessor.isFinished;
-            // @ts-expect-error TS(2339) FIXME: Property 'toolCalls' does not exist on type 'never... Remove this comment to see the full error message
             const isStreamWithToolCalls =
                 streamingProcessor &&
                 Array.isArray(streamingProcessor.toolCalls) &&
                 streamingProcessor.toolCalls.length;
             if (canPerformToolCalls && isStreamFinished && isStreamWithToolCalls) {
                 const lastMessage = chat[chat.length - 1];
-                // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                 const hasToolCalls = ToolManager.hasToolCalls(streamingProcessor.toolCalls);
-                // @ts-expect-error TS(2339) FIXME: Property 'mes' does not exist on type 'never'.
                 const shouldDeleteMessage =
                     type !== 'swipe' &&
-                    ['', '...'].includes(lastMessage?.mes) &&
+                    ['', '...'].includes(lastMessage?.mes ?? '') &&
                     !lastMessage?.extra?.reasoning &&
                     ['', '...'].includes(streamingProcessor?.result);
                 if (hasToolCalls && shouldDeleteMessage) await deleteLastMessage();
                 if (hasToolCalls && !shouldDeleteMessage) {
-                    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                     await streamingProcessor.finalizeIntermediaryMessage(
                         streamingProcessor.messageId,
                         getMessage,
                         { unlockUI: false },
                     );
                 }
-                // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                 const invocationResult = await ToolManager.invokeFunctionTools(
                     streamingProcessor.toolCalls,
                     {
-                        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                         reasoningText: streamingProcessor.reasoningHandler.reasoning,
                     },
                 );
@@ -6777,7 +6693,6 @@ export async function Generate(
             }
 
             if (isStreamFinished) {
-                // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
                 await streamingProcessor.onFinishStreaming(
                     streamingProcessor.messageId,
                     getMessage,
@@ -6825,9 +6740,8 @@ export async function Generate(
 
         if (jsonSchema) {
             unblockGeneration(type);
-            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             return extractJsonFromData(data, {
-                returnInvalidJson: jsonSchema.returnInvalid ?? false,
+                returnInvalidJson: (jsonSchema as any).returnInvalid ?? false,
             });
         }
 
@@ -6881,7 +6795,6 @@ export async function Generate(
         } else {
             // Without streaming we'll be having a full message on continuation. Treat it as a last chunk.
             if (originalType !== 'continue') {
-                // @ts-expect-error TS(2322) FIXME: Type 'any[]' is not assignable to type 'never[]'.
                 ({ type, getMessage } = await saveReply({
                     type,
                     getMessage,
@@ -6892,7 +6805,6 @@ export async function Generate(
                     reasoningSignature,
                 }));
             } else {
-                // @ts-expect-error TS(2322) FIXME: Type 'any[]' is not assignable to type 'never[]'.
                 ({ type, getMessage } = await saveReply({
                     type: 'appendFinal',
                     getMessage,
@@ -7008,7 +6920,6 @@ export async function Generate(
 export function stopGeneration() {
     let stopped = false;
     if (streamingProcessor) {
-        // @ts-expect-error TS(2339) FIXME: Property 'onStopStreaming' does not exist on type ... Remove this comment to see the full error message
         streamingProcessor.onStopStreaming();
         stopped = true;
     }
@@ -7051,9 +6962,8 @@ async function doChatInject(messages, isContinue) {
         const wrap = false;
 
         for (const role of roles) {
-            // @ts-expect-error TS(2345) FIXME: Argument of type 'number' is not assignable to par... Remove this comment to see the full error message
             const extensionPrompt = String(
-                await getExtensionPrompt(extension_prompt_types.IN_CHAT, i, separator, role, wrap),
+                await getExtensionPrompt(extension_prompt_types.IN_CHAT, i as any, separator, role as any, wrap),
             ).trimStart();
             const isNarrator = role === extension_prompt_roles.SYSTEM;
             const isUser = role === extension_prompt_roles.USER;
@@ -7107,7 +7017,6 @@ function flushWIInjections() {
 // @ts-expect-error TS(7006) FIXME: Parameter 'type' implicitly has an 'any' type.
 function unblockGeneration(type) {
     // Don't unblock if a parallel stream is still running
-    // @ts-expect-error TS(2339) FIXME: Property 'isFinished' does not exist on type 'neve... Remove this comment to see the full error message
     if (type === 'quiet' && streamingProcessor && !streamingProcessor.isFinished) {
         return;
     }
@@ -7322,10 +7231,9 @@ export function removeMacros(str) {
  * @param {string} [avatar] Avatar of the user sending the message. Defaults to user_avatar.
  * @returns {Promise<any>} A promise that resolves to the message when it is inserted.
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'messageText' implicitly has an 'any' ty... Remove this comment to see the full error message
 export async function sendMessageAsUser(
-    messageText,
-    messageBias,
+    messageText: any,
+    messageBias: any,
     insertAt = null,
     compact = false,
     name = name1,
@@ -7664,7 +7572,6 @@ export async function sendStreamingRequest(type, data, options = {}) {
 
     switch (main_api) {
         case 'openai':
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             return await sendOpenAIRequest(
                 type,
                 data.prompt,
@@ -7672,19 +7579,16 @@ export async function sendStreamingRequest(type, data, options = {}) {
                 options,
             );
         case 'textgenerationwebui':
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             return await generateTextGenWithStreaming(
                 data,
                 streamingProcessor.abortController.signal,
             );
         case 'novel':
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             return await generateNovelWithStreaming(
                 data,
                 streamingProcessor.abortController.signal,
             );
         case 'kobold':
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             return await generateKoboldWithStreaming(
                 data,
                 streamingProcessor.abortController.signal,
@@ -7748,10 +7652,9 @@ function extractImagesFromData(data, { mainApi = null, chatCompletionSource = nu
                     case chat_completion_sources.VERTEXAI:
                     case chat_completion_sources.MAKERSUITE:
                         {
-                            // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
                             const inlineData = data?.responseContent?.parts
-                                ?.filter((x) => x.inlineData && !x.thought)
-                                ?.map((x) => x.inlineData);
+                                ?.filter((x: any) => x.inlineData && !x.thought)
+                                ?.map((x: any) => x.inlineData);
                             if (Array.isArray(inlineData) && inlineData.length > 0) {
                                 return inlineData
                                     .map((x) => `data:${x.mimeType};base64,${x.data}`)
@@ -7760,10 +7663,9 @@ function extractImagesFromData(data, { mainApi = null, chatCompletionSource = nu
                         }
                         break;
                     case chat_completion_sources.OPENROUTER: {
-                        // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
                         const imageUrl = data?.choices[0]?.message?.images
-                            ?.filter((x) => x.type === 'image_url')
-                            ?.map((x) => x?.image_url?.url);
+                            ?.filter((x: any) => x.type === 'image_url')
+                            ?.map((x: any) => x?.image_url?.url);
                         if (Array.isArray(imageUrl) && imageUrl.length > 0) {
                             return imageUrl.filter(isDataURL);
                         }
@@ -7803,9 +7705,8 @@ function parseAndSaveLogprobs(data, continueFrom) {
             switch (textgen_settings.type) {
                 case textgen_types.LLAMACPP:
                     {
-                        // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
                         logprobs =
-                            data?.completion_probabilities?.map((x) =>
+                            data?.completion_probabilities?.map((x: any) =>
                                 parseTextgenLogprobs(x.content, [x]),
                             ) || null;
                     }
@@ -7862,11 +7763,10 @@ export function extractMessageFromData(data, activeApi = null) {
             case 'novel':
                 return data.output;
             case 'openai':
-                // @ts-expect-error TS(7006) FIXME: Parameter 'p' implicitly has an 'any' type.
                 return (
                     data?.content
-                        ?.filter((p) => p.type === 'text')
-                        ?.map((p) => p.text)
+                        ?.filter((p: any) => p.type === 'text')
+                        ?.map((p: any) => p.text)
                         ?.join('\n\n') ??
                     data?.choices?.[0]?.message?.content ??
                     data?.choices?.[0]?.text ??
@@ -7898,9 +7798,8 @@ export function extractMessageFromData(data, activeApi = null) {
  * @param {boolean} [options.returnInvalidJson] Whether to return the raw JSON string even if it fails to parse
  * @returns {string} Extracted JSON string from the response data
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'data' implicitly has an 'any' type.
 export function extractJsonFromData(
-    data,
+    data: any,
     { mainApi = null, chatCompletionSource = null, returnInvalidJson = false } = {},
 ) {
     mainApi = mainApi ?? main_api;
@@ -8023,7 +7922,6 @@ function extractMultiSwipes(data, type) {
         }
     }
 
-    // @ts-expect-error Suppressed after fixes
     if (
         main_api === 'openai' ||
         (main_api === 'textgenerationwebui' &&
@@ -8033,7 +7931,7 @@ function extractMultiSwipes(data, type) {
                 textgen_types.APHRODITE,
                 textgen_types.TABBY,
                 textgen_types.INFERMATICAI,
-            ].includes(textgen_settings.type))
+            ].includes(textgen_settings.type as any))
     ) {
         if (!Array.isArray(data.choices)) {
             return swipes;
@@ -8193,33 +8091,26 @@ export function cleanUpMessage(
         }
     }
 
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-    if (getMessage.indexOf('<|endoftext|>') != -1) {
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-        getMessage = getMessage.substring(0, getMessage.indexOf('<|endoftext|>'));
+    if ((getMessage as string).indexOf('<|endoftext|>') != -1) {
+        getMessage = (getMessage as string).substring(0, (getMessage as string).indexOf('<|endoftext|>'));
     }
     const isInstruct = power_user.instruct.enabled && main_api !== 'openai';
-    // @ts-expect-error TS(7006) FIXME: Parameter 'str' implicitly has an 'any' type.
-    const isNotEmpty = (str) => str && str.trim() !== '';
+    const isNotEmpty = (str: any) => str && str.trim() !== '';
     if (isInstruct && power_user.instruct.stop_sequence) {
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-        if (getMessage.indexOf(power_user.instruct.stop_sequence) != -1) {
-            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-            getMessage = getMessage.substring(
+        if ((getMessage as string).indexOf(power_user.instruct.stop_sequence) != -1) {
+            getMessage = (getMessage as string).substring(
                 0,
-                getMessage.indexOf(power_user.instruct.stop_sequence),
+                (getMessage as string).indexOf(power_user.instruct.stop_sequence),
             );
         }
     }
     // Hana: Only use the first sequence (should be <|model|>)
     // of the prompt before <|user|> (as KoboldAI Lite does it).
     if (isInstruct && isNotEmpty(power_user.instruct.input_sequence)) {
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-        if (getMessage.indexOf(power_user.instruct.input_sequence) != -1) {
-            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-            getMessage = getMessage.substring(
+        if ((getMessage as string).indexOf(power_user.instruct.input_sequence) != -1) {
+            getMessage = (getMessage as string).substring(
                 0,
-                getMessage.indexOf(power_user.instruct.input_sequence),
+                (getMessage as string).indexOf(power_user.instruct.input_sequence),
             );
         }
     }
@@ -8241,12 +8132,11 @@ export function cleanUpMessage(
             },
         ];
         for (const seq of sequences.filter((s) => s.apply)) {
-            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
             seq.value
                 .split('\n')
-                .filter((line) => line.trim() !== '')
-                .forEach((line) => {
-                    getMessage = getMessage.replaceAll(line, '');
+                .filter((line: any) => line.trim() !== '')
+                .forEach((line: any) => {
+                    getMessage = (getMessage as string).replaceAll(line, '');
                 });
         }
     }
@@ -8358,7 +8248,6 @@ async function processImageAttachment(message, { imageUrls }) {
  * @property {string} type Type of generation
  * @property {string} getMessage Generated message
  */
-// @ts-expect-error TS(7031) FIXME: Binding element 'type' implicitly has an 'any' typ... Remove this comment to see the full error message
 export async function saveReply(
     {
         type,
@@ -8369,6 +8258,15 @@ export async function saveReply(
         reasoning = '',
         imageUrls = [],
         reasoningSignature = null,
+    }: {
+        type: any;
+        getMessage: any;
+        fromStreaming?: boolean;
+        title?: any;
+        swipes?: any;
+        reasoning?: any;
+        imageUrls?: any;
+        reasoningSignature?: any;
     },
     ...args: unknown[]
 ) {
@@ -8382,13 +8280,12 @@ export async function saveReply(
 
     const lastMessage = chat[chat.length - 1];
 
-    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     if (
         type != 'append' &&
         type != 'continue' &&
         type != 'appendFinal' &&
         chat.length &&
-        (lastMessage.swipe_id === undefined ||
+        (lastMessage!.swipe_id === undefined ||
             // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             lastMessage.is_user)
     ) {
@@ -8653,10 +8550,7 @@ export async function saveReply(
             gen_finished: item.gen_finished,
             extra: swipeInfoExtra,
         };
-        // @ts-expect-error TS(2554) FIXME: Expected 1-3 arguments, but got 0.
-        const swipeInfoArray = Array(swipes.length)
-            .fill()
-            .map(() => structuredClone(swipeInfo));
+        const swipeInfoArray = Array.from({ length: swipes.length }, () => structuredClone(swipeInfo));
         // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         parseReasoningInSwipes(swipes, swipeInfoArray, item.extra?.reasoning_duration);
         // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
@@ -9369,7 +9263,7 @@ export async function saveChat(
         [chatName, withMetadata, mesId, force] = args;
     }
 
-    const metadata = { ...chat_metadata, ...withMetadata };
+    const metadata = { ...chat_metadata, ...(withMetadata as any) };
     const fileName = chatName ?? characters[this_chid]?.chat;
 
     if (!fileName && name2 === neutralCharacterName) {
@@ -9469,12 +9363,11 @@ async function read_avatar_load(input) {
         const fileData = await getBase64Async(file);
 
         if (!power_user.never_resize_avatars) {
-            // @ts-expect-error TS(2322) FIXME: Type 'unknown' is not assignable to type 'null | u... Remove this comment to see the full error message
             const dlg = new Popup(
                 'Set the crop position of the avatar image',
                 POPUP_TYPE.CROP,
                 '',
-                { cropImage: fileData },
+                { cropImage: fileData as any, },
             );
             const croppedImage = await dlg.show();
 
@@ -9543,10 +9436,9 @@ export function getThumbnailUrl(type, file, t = false) {
  * @param root0.interactable
  * @param root0.highlightFavs
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'block' implicitly has an 'any' type.
 export function buildAvatarList(
-    block,
-    entities,
+    block: any,
+    entities: any,
     {
         templateId = 'inline_avatar_template',
         empty = true,
@@ -10354,7 +10246,6 @@ function messageEditAuto(div) {
             mes.is_system,
             // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             mes.is_user,
-            // @ts-expect-error TS(7005) FIXME: Variable 'this_edit_mes_id' implicitly has an 'any... Remove this comment to see the full error message
             this_edit_mes_id,
             {},
             false,
@@ -10441,7 +10332,6 @@ export async function messageEdit(editMessageId) {
  * This deletes the user's unsaved changes.
  * @param {number} [messageId]
  */
-// @ts-expect-error TS(7005) FIXME: Variable 'this_edit_mes_id' implicitly has an 'any... Remove this comment to see the full error message
 async function messageEditCancel(messageId = this_edit_mes_id) {
     // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
     const text = chat[messageId].mes;
@@ -10487,11 +10377,9 @@ async function messageEditCancel(messageId = this_edit_mes_id) {
     }
 
     await eventSource.emit(event_types.MESSAGE_UPDATED, messageId);
-    // @ts-expect-error TS(7005) FIXME: Variable 'this_edit_mes_id' implicitly has an 'any... Remove this comment to see the full error message
     if (messageId == this_edit_mes_id) {
         this_edit_mes_id = undefined;
     } else {
-        // @ts-expect-error TS(7005) FIXME: Variable 'this_edit_mes_id' implicitly has an 'any... Remove this comment to see the full error message
         console.warn(
             `The message editor was closed on message #${messageId} while #${this_edit_mes_id} is being edited.`,
         );
@@ -10545,7 +10433,6 @@ async function messageEditMove(sourceId, targetId) {
     [chat[sourceId], chat[targetId]] = [chat[targetId], chat[sourceId]];
 
     // Update edited message id
-    // @ts-expect-error TS(7005) FIXME: Variable 'this_edit_mes_id' implicitly has an 'any... Remove this comment to see the full error message
     if (this_edit_mes_id === sourceId) {
         this_edit_mes_id = targetId;
     }
@@ -10563,7 +10450,6 @@ async function messageEditMove(sourceId, targetId) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'div' implicitly has an 'any' type.
 async function messageEditDone(div) {
-    // @ts-expect-error TS(7005) FIXME: Variable 'this_edit_mes_id' implicitly has an 'any... Remove this comment to see the full error message
     if (!(this_edit_mes_id >= 0)) {
         console.trace('this_edit_mes_id cannot be blank when calling messageEditDone.');
         return;
@@ -10573,9 +10459,7 @@ async function messageEditDone(div) {
     const { mesBlock, mes, bias } = updateMsg;
     let { text } = updateMsg;
 
-    // @ts-expect-error TS(7005) FIXME: Variable 'this_edit_mes_id' implicitly has an 'any... Remove this comment to see the full error message
     await eventSource.emit(event_types.MESSAGE_EDITED, this_edit_mes_id);
-    // @ts-expect-error TS(7005) FIXME: Variable 'this_edit_mes_id' implicitly has an 'any... Remove this comment to see the full error message
     text = chat[this_edit_mes_id]?.mes ?? text;
     mesBlock[0].querySelector('.mes_text').innerHTML = '';
     mesBlock.find('.mes_edit_buttons').css('display', 'none');
@@ -10589,7 +10473,6 @@ async function messageEditDone(div) {
             mes.is_system,
             // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
             mes.is_user,
-            // @ts-expect-error TS(7005) FIXME: Variable 'this_edit_mes_id' implicitly has an 'any... Remove this comment to see the full error message
             this_edit_mes_id,
             {},
             false,
@@ -10608,7 +10491,6 @@ async function messageEditDone(div) {
         reasoningEditDone.click();
     }
 
-    // @ts-expect-error TS(7005) FIXME: Variable 'this_edit_mes_id' implicitly has an 'any... Remove this comment to see the full error message
     await eventSource.emit(event_types.MESSAGE_UPDATED, this_edit_mes_id);
     this_edit_mes_id = undefined;
     await saveChatConditional();
@@ -10628,9 +10510,8 @@ async function messageEditDone(div) {
 export async function getChatsFromFiles(data, isGroupChat) {
     const context = getContext();
     const chat_dict = {};
-    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
     const chat_list = Object.values(data)
-        .toSorted((a, b) => a.file_name.localeCompare(b.file_name))
+        .toSorted((a: any, b: any) => a.file_name.localeCompare(b.file_name))
         .toReversed();
 
     // @ts-expect-error TS(2345) FIXME: Argument of type '({ file_name }: { file_name: any... Remove this comment to see the full error message
@@ -10789,14 +10670,13 @@ export async function displayPastChats(hightlightNames = []) {
  * @param selected_group
  * @param highlightNames
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'searchQuery' implicitly has an 'any' ty... Remove this comment to see the full error message
 async function displayChats(
-    searchQuery,
-    currentChat,
-    displayName,
-    avatarImg,
-    selected_group,
-    highlightNames,
+    searchQuery: any,
+    currentChat: any,
+    displayName: any,
+    avatarImg: any,
+    selected_group: any,
+    highlightNames: any,
 ) {
     try {
         const response = await fetch('/api/chats/search', {
@@ -10824,10 +10704,9 @@ async function displayChats(
 
         for (const chat of filteredData) {
             const isSelected = currentChat === chat.file_name;
-            // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             const template = $(
                 document
-                    .querySelector('#past_chat_template .select_chat_block_wrapper')
+                    .querySelector('#past_chat_template .select_chat_block_wrapper')!
                     .cloneNode(true),
             );
             template.find('.select_chat_block').attr('file_name', chat.file_name);
@@ -11207,12 +11086,11 @@ function select_rm_characters() {
  * @param {boolean} scan Should the prompt be included in the world info scan.
  * @param {(function(): Promise<boolean>|boolean)} filter Filter function to determine if the prompt should be injected.
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'key' implicitly has an 'any' type.
 export function setExtensionPrompt(
-    key,
-    value,
-    position,
-    depth,
+    key: any,
+    value: any,
+    position: any,
+    depth: any,
     scan = false,
     role = extension_prompt_roles.SYSTEM,
     filter = null,
@@ -11451,7 +11329,6 @@ export function isMessageSwipeable(messageId: number, message?: ChatMessage) {
 
     if (
         //Only messages below the currently edited message can be swiped, if it's not mid-swipe edit.
-        // @ts-expect-error TS(7005) FIXME: Variable 'this_edit_mes_id' implicitly has an 'any... Remove this comment to see the full error message
         messageId > (this_edit_mes_id ?? -1) &&
         swipeState != SWIPE_STATE.EDITING &&
         //If the message is the last message, and it exists.
@@ -11787,12 +11664,10 @@ export function getFirstDisplayedMessageId() {
  *
  */
 export function updateEditArrowClasses() {
-    // @ts-expect-error TS(7005) FIXME: Variable 'this_edit_mes_id' implicitly has an 'any... Remove this comment to see the full error message
     if (!(this_edit_mes_id >= 0)) {
         return;
     }
 
-    // @ts-expect-error TS(7005) FIXME: Variable 'this_edit_mes_id' implicitly has an 'any... Remove this comment to see the full error message
     const message = chatElement.children('.mes').filter(`.mes[mesid="${this_edit_mes_id}"]`);
 
     const downButton = message.find('.mes_edit_down');
@@ -11806,10 +11681,8 @@ export function updateEditArrowClasses() {
     deleteButton.removeClass('disabled');
 
     // The last message cannot be moved down.
-    // @ts-expect-error TS(7005) FIXME: Variable 'this_edit_mes_id' implicitly has an 'any... Remove this comment to see the full error message
     downButton.toggleClass('disabled', lastId === Number(this_edit_mes_id));
     // The first message cannot be moved up.
-    // @ts-expect-error TS(7005) FIXME: Variable 'this_edit_mes_id' implicitly has an 'any... Remove this comment to see the full error message
     upButton.toggleClass('disabled', firstId === Number(this_edit_mes_id));
 }
 
@@ -11819,9 +11692,7 @@ export function updateEditArrowClasses() {
  */
 export function closeMessageEditor(what = 'all') {
     if (what === 'message' || what === 'all') {
-        // @ts-expect-error TS(7005) FIXME: Variable 'this_edit_mes_id' implicitly has an 'any... Remove this comment to see the full error message
         if (this_edit_mes_id >= 0) {
-            // @ts-expect-error TS(7005) FIXME: Variable 'this_edit_mes_id' implicitly has an 'any... Remove this comment to see the full error message
             chatElement.find(`.mes[mesid="${this_edit_mes_id}"] .mes_edit_cancel`).trigger('click');
         }
     }
@@ -11889,9 +11760,8 @@ async function openCharacterWorldPopup() {
     const worldId =
         (menu_type == 'create' ? create_save.world : characters[chid]?.data?.extensions?.world) ||
         '';
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const template = $(
-        document.querySelector('#character_world_template .character_world').cloneNode(true),
+        document.querySelector('#character_world_template .character_world')!.cloneNode(true),
     );
     template.find('.character_name').text(charName);
 
@@ -11985,10 +11855,9 @@ function openAlternateGreetings() {
         }
     }
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     const template = $(
         document
-            .querySelector('#alternate_greetings_template .alternate_grettings')
+            .querySelector('#alternate_greetings_template .alternate_grettings')!
             .cloneNode(true),
     );
     const getArray = () =>
@@ -12035,11 +11904,10 @@ function openAlternateGreetings() {
  * @param {Popup} popup
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'template' implicitly has an 'any' type.
-function addAlternateGreeting(template, greeting, index, getArray, popup) {
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
+function addAlternateGreeting(template: any, greeting, index, getArray, popup) {
     const greetingBlock = $(
         document
-            .querySelector('#alternate_greeting_form_template .alternate_greeting')
+            .querySelector('#alternate_greeting_form_template .alternate_greeting')!
             .cloneNode(true),
     );
     greetingBlock.attr('data-index', index);
@@ -12188,90 +12056,73 @@ export async function createOrEditCharacter(e) {
 
             $('#character_cross').trigger('click'); //closes the advanced character editing popup
             const fields = [
-                // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
-                { id: '#character_name_pole', callback: (value) => (create_save.name = value) },
-                // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
+                { id: '#character_name_pole', callback: (value: any) => (create_save.name = value) },
                 {
                     id: '#description_textarea',
-                    callback: (value) => (create_save.description = value),
+                    callback: (value: any) => (create_save.description = value),
                 },
-                // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
                 {
                     id: '#creator_notes_textarea',
-                    callback: (value) => (create_save.creator_notes = value),
+                    callback: (value: any) => (create_save.creator_notes = value),
                 },
-                // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
                 {
                     id: '#character_version_textarea',
-                    callback: (value) => (create_save.character_version = value),
+                    callback: (value: any) => (create_save.character_version = value),
                 },
-                // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
                 {
                     id: '#post_history_instructions_textarea',
-                    callback: (value) => (create_save.post_history_instructions = value),
+                    callback: (value: any) => (create_save.post_history_instructions = value),
                 },
-                // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
                 {
                     id: '#system_prompt_textarea',
-                    callback: (value) => (create_save.system_prompt = value),
+                    callback: (value: any) => (create_save.system_prompt = value),
                 },
                 // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
                 { id: '#tags_textarea', callback: (value) => (create_save.tags = value) },
                 // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
                 { id: '#creator_textarea', callback: (value) => (create_save.creator = value) },
-                // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
                 {
                     id: '#personality_textarea',
-                    callback: (value) => (create_save.personality = value),
+                    callback: (value: any) => (create_save.personality = value),
                 },
-                // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
                 {
                     id: '#firstmessage_textarea',
-                    callback: (value) => (create_save.first_message = value),
+                    callback: (value: any) => (create_save.first_message = value),
                 },
-                // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
                 {
                     id: '#talkativeness_slider',
-                    callback: (value) => (create_save.talkativeness = value),
+                    callback: (value: any) => (create_save.talkativeness = value),
                     defaultValue: talkativeness_default,
                 },
-                // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
-                { id: '#scenario_pole', callback: (value) => (create_save.scenario = value) },
-                // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
+                { id: '#scenario_pole', callback: (value: any) => (create_save.scenario = value) },
                 {
                     id: '#depth_prompt_prompt',
-                    callback: (value) => (create_save.depth_prompt_prompt = value),
+                    callback: (value: any) => (create_save.depth_prompt_prompt = value),
                 },
-                // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
                 {
                     id: '#depth_prompt_depth',
-                    callback: (value) => (create_save.depth_prompt_depth = value),
+                    callback: (value: any) => (create_save.depth_prompt_depth = value),
                     defaultValue: depth_prompt_depth_default,
                 },
-                // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
                 {
                     id: '#depth_prompt_role',
-                    callback: (value) => (create_save.depth_prompt_role = value),
+                    callback: (value: any) => (create_save.depth_prompt_role = value),
                     defaultValue: depth_prompt_role_default,
                 },
-                // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
                 {
                     id: '#mes_example_textarea',
-                    callback: (value) => (create_save.mes_example = value),
+                    callback: (value: any) => (create_save.mes_example = value),
                 },
                 { id: '#character_json_data', callback: () => {} },
-                // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
                 {
                     id: '#alternate_greetings_template',
-                    callback: (value) => (create_save.alternate_greetings = value),
+                    callback: (value: any) => (create_save.alternate_greetings = value),
                     defaultValue: [],
                 },
-                // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
-                { id: '#character_world', callback: (value) => (create_save.world = value) },
-                // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
+                { id: '#character_world', callback: (value: any) => (create_save.world = value) },
                 {
                     id: '#_character_extensions_fake',
-                    callback: (value) => (create_save.extensions = {}),
+                    callback: (value: any) => (create_save.extensions = {}),
                 },
             ];
 
@@ -12370,9 +12221,8 @@ export async function createOrEditCharacter(e) {
                 message.mes &&
                 !selected_group &&
                 !chat_metadata.tainted &&
-                // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                 (chat.length === 0 ||
-                    (chat.length === 1 && !chat[0].is_user && !chat[0].is_system));
+                    (chat.length === 1 && !chat[0]!.is_user && !chat[0]!.is_system));
 
             if (shouldRegenerateMessage) {
                 chat.splice(0, chat.length, message);
@@ -12423,10 +12273,9 @@ function formatSwipeCounter(current, total) {
  * @param {number} [params.forceSwipeId] The target swipe_id. When out of range, it will be looped or clamped.
  * @param {number} [params.forceDuration] Overwrites the default swipe duration.
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
 export async function swipe(
-    event,
-    direction,
+    event: any,
+    direction: any,
     {
         source,
         repeated,
@@ -12463,7 +12312,6 @@ export async function swipe(
             chat.length - 1,
     );
 
-    // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
     if (
         [
             SWIPE_SOURCE.DELETE,
@@ -12471,7 +12319,7 @@ export async function swipe(
             SWIPE_SOURCE.AUTO_SWIPE,
             SWIPE_SOURCE.SLASH_COMMAND,
             SWIPE_SOURCE.SWIPE_PICKER,
-        ].includes(source)
+        ].includes(source as any)
     ) {
         console.info(
             `The ${direction} swipe source on message #${mesId} is ${source}, Most checks have been bypassed. `,
@@ -12561,11 +12409,10 @@ export async function swipe(
         }
 
         //Clamp Id between swipes.
-        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         const clampedId = clamp(
-            chat[mesId].swipe_id,
+            chat[mesId]!.swipe_id,
             0,
-            Math.max(0, chat[mesId].swipes.length - 1),
+            Math.max(0, chat[mesId]!.swipes!.length - 1),
         );
 
         await updateSwipeCounter(mesId);
@@ -12611,12 +12458,10 @@ export async function swipe(
             // Prevent recursion.
             if (source != SWIPE_SOURCE.BACK) {
                 source = SWIPE_SOURCE.BACK;
-                // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-                chat[mesId].swipe_id = clampedId;
+                chat[mesId]!.swipe_id = clampedId;
 
                 //Update the chat.
-                // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-                await loadFromSwipeId(mesId, chat[mesId].swipe_id);
+                await loadFromSwipeId(mesId, chat[mesId]!.swipe_id);
                 await redisplayChat({ startIndex: mesId });
             } else {
                 await Popup.show.confirm(
@@ -12691,8 +12536,7 @@ export async function swipe(
     // @ts-expect-error TS(7006) FIXME: Parameter 'mesId' implicitly has an 'any' type.
     async function loadFromSwipeId(mesId, newSwipeId) {
         //Update the swipe_id.
-        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-        chat[mesId].swipe_id = newSwipeId;
+        chat[mesId]!.swipe_id = newSwipeId;
 
         clearMessageData(chat[mesId]);
 
@@ -12702,8 +12546,7 @@ export async function swipe(
 
             notyf.error(errorMessage);
 
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-            chat[mesId].swipe_id = originalSwipeId;
+            chat[mesId]!.swipe_id = originalSwipeId;
             await endSwipe(true);
         }
         return true;
@@ -12720,9 +12563,8 @@ export async function swipe(
      * @param {boolean} [params.freeze] When true, do not remove the class from the animation, leaving it stuck at xEnd.
      * @returns {Promise<boolean|Function>} endSlide unfreezes the messages from xEnd.
      */
-    // @ts-expect-error TS(7006) FIXME: Parameter 'mesId' implicitly has an 'any' type.
     async function animateSwipeTransition(
-        mesId,
+        mesId: any,
         {
             xStart = '0px',
             xEnd = '0px',
@@ -12864,10 +12706,9 @@ export async function swipe(
     async function animateSwipe(run_generate = false, skipSwipeOut = false) {
         if (!skipSwipeOut) {
             //Swipe out.
-            // @ts-expect-error TS(2322) FIXME: Type 'unknown' is not assignable to type 'number |... Remove this comment to see the full error message
             await animateSwipeTransition(mesId, {
                 xEnd: `${swipeRange}px`,
-                duration: swipeDuration,
+                duration: swipeDuration as number,
             });
         }
 
@@ -12886,27 +12727,22 @@ export async function swipe(
             //Only scroll when swiping the last message.
             const scroll = mesId == chat.length - 1;
             //The swipe buttons will be refreshed in endSwipe(), refreshing them now will cause flickering.
-            // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'undefined... Remove this comment to see the full error message
             addOneMessage(chat[mesId], {
-                type: 'swipe',
-                forceId: mesId,
+                type: 'swipe' as any,
+                forceId: mesId as any,
                 scroll: scroll,
                 showSwipes: false,
             });
 
             if (power_user.message_token_count_enabled) {
-                // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-                if (!chat[mesId].extra) {
-                    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-                    chat[mesId].extra = {};
+                if (!chat[mesId]!.extra) {
+                    chat[mesId]!.extra = {};
                 }
 
-                // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type 'never'.
-                const tokenCountText = (chat[mesId]?.extra?.reasoning || '') + chat[mesId].mes;
+                const tokenCountText = (chat[mesId]?.extra?.reasoning || '') + chat[mesId]!.mes;
                 // @ts-expect-error TS(2345) FIXME: Argument of type '0' is not assignable to paramete... Remove this comment to see the full error message
                 const tokenCount = await getTokenCountAsync(tokenCountText, 0);
-                // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-                chat[mesId].extra.token_count = tokenCount;
+                chat[mesId]!.extra.token_count = tokenCount;
                 thisMesDiv.find('.tokenCounterDisplay').text(`${tokenCount}t`);
             }
         }
@@ -12928,20 +12764,17 @@ export async function swipe(
         }
 
         //Swipe in from the opposite side.
-        // @ts-expect-error TS(2322) FIXME: Type 'unknown' is not assignable to type 'number |... Remove this comment to see the full error message
         await animateSwipeTransition(mesId, {
             xStart: `${-swipeRange}px`,
             xEnd: `${0}px`,
-            duration: swipeDuration,
+            duration: swipeDuration as number,
         });
     }
 
-    // @ts-expect-error TS(7005) FIXME: Variable 'this_edit_mes_id' implicitly has an 'any... Remove this comment to see the full error message
     if (mesId === Number(this_edit_mes_id)) {
         closeMessageEditor();
     }
     if (isStreamingEnabled() && streamingProcessor) {
-        // @ts-expect-error TS(2339) FIXME: Property 'onStopStreaming' does not exist on type ... Remove this comment to see the full error message
         streamingProcessor.onStopStreaming();
     }
 
@@ -12955,35 +12788,25 @@ export async function swipe(
         // Make sure ad-hoc changes to extras are saved before swiping away
         syncMesToSwipe(mesId);
 
-        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-        if (chat[mesId].swipe_id === undefined) {
+        if (chat[mesId]!.swipe_id === undefined) {
             // if there is no swipe-message in the last spot of the chat array
+            chat[mesId]!.swipe_id = 0; // set it to id 0
+            chat[mesId]!.swipes = []; // empty the array
+            chat[mesId]!.swipe_info = [];
             // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-            chat[mesId].swipe_id = 0; // set it to id 0
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-            chat[mesId].swipes = []; // empty the array
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-            chat[mesId].swipe_info = [];
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-            chat[mesId].swipes[0] = chat[mesId].mes; //assign swipe array with last chat[mesId] from chat
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-            chat[mesId].swipe_info[0] = {
-                // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-                send_date: chat[mesId].send_date,
-                // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-                gen_started: chat[mesId].gen_started,
-                // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-                gen_finished: chat[mesId].gen_finished,
-                // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-                extra: structuredClone(chat[mesId].extra),
+            chat[mesId]!.swipes[0] = chat[mesId]!.mes; //assign swipe array with last chat[mesId] from chat
+            chat[mesId]!.swipe_info[0] = {
+                send_date: chat[mesId]!.send_date,
+                gen_started: chat[mesId]!.gen_started,
+                gen_finished: chat[mesId]!.gen_finished,
+                extra: structuredClone(chat[mesId]!.extra),
             };
         }
         // If the user is holding down the key and we're at the last or first swipe, don't do anything.
-        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         const isLastSwipe =
             direction === SWIPE_DIRECTION.RIGHT
-                ? chat[mesId].swipe_id === Math.max(0, chat[mesId].swipes.length - 1)
-                : chat[mesId].swipe_id === 0;
+                ? chat[mesId]!.swipe_id === Math.max(0, chat[mesId]!.swipes!.length - 1)
+                : chat[mesId]!.swipe_id === 0;
         if (source === SWIPE_SOURCE.KEYBOARD && repeated && isLastSwipe) {
             await endSwipe();
             return;
@@ -12999,18 +12822,14 @@ export async function swipe(
         if (forceSwipeId == null) newSwipeId--;
         //Loop to last swipe if negative.
         if (newSwipeId < 0) {
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-            newSwipeId = Math.max(0, chat[mesId].swipes.length - 1);
+            newSwipeId = Math.max(0, chat[mesId]!.swipes!.length - 1);
         }
         //Limit swipe_id to swipes.
-        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-        if (newSwipeId > chat[mesId].swipes.length - 1) {
-            // @ts-expect-error Suppressed after fixes
+        if (newSwipeId > chat[mesId]!.swipes!.length - 1) {
             notyf.warning(
-                `The swipe_id for message #${mesId} was ${newSwipeId}. It has been reset to ${chat[mesId].swipes.length - 1}.`,
+                `The swipe_id for message #${mesId} was ${newSwipeId}. It has been reset to ${chat[mesId]!.swipes!.length - 1}.`,
             );
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-            chat[mesId].swipe_id = chat[mesId].swipes.length - 1;
+            chat[mesId]!.swipe_id = chat[mesId]!.swipes!.length - 1;
             await endSwipe();
             return;
         }
@@ -13309,13 +13128,18 @@ export async function doNewChat({ deleteCurrentChat = false } = {}) {
  * @param {string} param.newFileName New name for the chat (no JSONL extension)
  * @param {boolean} [param.loader] Whether to show loader during the operation
  */
-// @ts-expect-error TS(7031) FIXME: Binding element 'characterId' implicitly has an 'a... Remove this comment to see the full error message
 export async function renameGroupOrCharacterChat({
     characterId,
     groupId,
     oldFileName,
     newFileName,
     loader: showLoader,
+}: {
+    characterId: any;
+    groupId: any;
+    oldFileName: any;
+    newFileName: any;
+    loader: any;
 }) {
     const currentChatId = getCurrentChatId();
     const body = {
@@ -13868,12 +13692,11 @@ function initCharacterSearch() {
         event_types.MESSAGE_SWIPED,
     ];
     if ('MESSAGE_UPDATED' in event_types) renderEvents.push(event_types.MESSAGE_UPDATED);
-    // @ts-expect-error Suppressed after fixes
     else if ('MESSAGE_EDITED' in (event_types as Record<string, unknown>))
         renderEvents.push(
             (event_types as Record<string, unknown>)[
                 'MESSAGE_EDITED'
-            ] as typeof event_types.CHARACTER_MESSAGE_RENDERED,
+            ] as any,
         );
 
     for (const event of renderEvents) {
@@ -13892,9 +13715,8 @@ function initCharacterSearch() {
             ?.dispatchEvent(new Event('click', { bubbles: true }));
     }, 200);
 
-    // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
     document.addEventListener('click', function (e) {
-        if (e.target.closest('.api_loading')) {
+        if ((e.target as HTMLElement)?.closest('.api_loading')) {
             cancelStatusCheck('Canceled because connecting was manually canceled');
         }
     });
@@ -14049,14 +13871,13 @@ function initCharacterSearch() {
         });
     }
 
-    const chatElementScroll = document.getElementById('chat');
+    const chatElementScroll = document.getElementById('chat')!;
     const chatScrollHandler = function () {
         if (power_user.waifuMode) {
             scrollLock = true;
             return;
         }
 
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         const scrollIsAtBottom =
             Math.abs(
                 chatElementScroll.scrollHeight -
@@ -14074,7 +13895,6 @@ function initCharacterSearch() {
             scrollLock = true;
         }
     };
-    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     chatElementScroll.addEventListener('scroll', chatScrollHandler, { passive: true });
 
     $(document).on('click', '.mes', function (this: HTMLElement) {
@@ -14564,7 +14384,6 @@ function initCharacterSearch() {
             }
         } else if (id == 'option_regenerate') {
             //Attempting to regenerate a user message will instead generate a new message.
-            // @ts-expect-error TS(7005) FIXME: Variable 'this_edit_mes_id' implicitly has an 'any... Remove this comment to see the full error message
             if (
                 chat.length &&
                 chat.length - 1 === this_edit_mes_id &&
@@ -14597,7 +14416,6 @@ function initCharacterSearch() {
                 );
                 return;
             }
-            // @ts-expect-error TS(7005) FIXME: Variable 'this_edit_mes_id' implicitly has an 'any... Remove this comment to see the full error message
             if (chat.length && chat.length - 1 === this_edit_mes_id) {
                 notyf.warning(
                     t`Finish the edit before starting a generation.`,
@@ -14722,7 +14540,7 @@ function initCharacterSearch() {
     ////////////////// OPTIMIZED RANGE SLIDER LISTENERS////////////////
 
     let sliderLocked = true;
-    let sliderTimer = null;
+    let sliderTimer = null as any;
 
     $("input[type='range']").on('touchstart', function () {
         // Unlock the slider after 300ms
@@ -14827,9 +14645,7 @@ function initCharacterSearch() {
                 return;
             }*/
 
-            // @ts-expect-error TS(7005) FIXME: Variable 'this_edit_mes_id' implicitly has an 'any... Remove this comment to see the full error message
             if (this_edit_mes_id >= 0) {
-                // @ts-expect-error TS(7005) FIXME: Variable 'this_edit_mes_id' implicitly has an 'any... Remove this comment to see the full error message
                 const mes_edited = chatElement
                     .find(`[mesid="${this_edit_mes_id}"]`)
                     .find('.mes_edit_done');
@@ -14938,25 +14754,19 @@ function initCharacterSearch() {
     });
 
     $(document).on('click', '.mes_edit_up', async function () {
-        // @ts-expect-error TS(7005) FIXME: Variable 'this_edit_mes_id' implicitly has an 'any... Remove this comment to see the full error message
         if (this_edit_mes_id <= 0) {
             return;
         }
-        // @ts-expect-error TS(7005) FIXME: Variable 'this_edit_mes_id' implicitly has an 'any... Remove this comment to see the full error message
         const targetId = Number(this_edit_mes_id) - 1;
-        // @ts-expect-error TS(7005) FIXME: Variable 'this_edit_mes_id' implicitly has an 'any... Remove this comment to see the full error message
         await messageEditMove(this_edit_mes_id, targetId);
     });
 
     $(document).on('click', '.mes_edit_down', async function () {
-        // @ts-expect-error TS(7005) FIXME: Variable 'this_edit_mes_id' implicitly has an 'any... Remove this comment to see the full error message
         if (this_edit_mes_id >= chat.length - 1) {
             return;
         }
 
-        // @ts-expect-error TS(7005) FIXME: Variable 'this_edit_mes_id' implicitly has an 'any... Remove this comment to see the full error message
         const targetId = Number(this_edit_mes_id) + 1;
-        // @ts-expect-error TS(7005) FIXME: Variable 'this_edit_mes_id' implicitly has an 'any... Remove this comment to see the full error message
         await messageEditMove(this_edit_mes_id, targetId);
     });
 
@@ -14971,7 +14781,6 @@ function initCharacterSearch() {
 
         hideSwipeButtons();
         const oldScroll = (chatElement[0] as HTMLElement)?.scrollTop ?? 0;
-        // @ts-expect-error TS(7005) FIXME: Variable 'this_edit_mes_id' implicitly has an 'any... Remove this comment to see the full error message
         const clone = structuredClone(chat[this_edit_mes_id]);
         // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         clone.send_date = Date.now();
@@ -15000,24 +14809,21 @@ function initCharacterSearch() {
 
     $(document).on('click', '.mes_edit_delete', async function (event, customData) {
         const fromSlashCommand = customData?.fromSlashCommand || false;
-        // @ts-expect-error TS(7005) FIXME: Variable 'this_edit_mes_id' implicitly has an 'any... Remove this comment to see the full error message
         const message = chat[this_edit_mes_id];
         // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         const selectedSwipe = message.swipe_id ?? undefined;
         // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         const swipesArray = Array.isArray(message.swipes) ? message.swipes : [];
-        // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         const canDeleteSwipe =
             power_user.confirm_message_delete &&
             !fromSlashCommand &&
-            !message.is_user &&
+            !message!.is_user &&
             swipesArray.length > 1 &&
             this_edit_mes_id === chat.length - 1 &&
             selectedSwipe !== undefined;
-        // @ts-expect-error TS(7005) FIXME: Variable 'this_edit_mes_id' implicitly has an 'any... Remove this comment to see the full error message
         await deleteMessage(
             Number(this_edit_mes_id),
-            canDeleteSwipe ? selectedSwipe : undefined,
+            (canDeleteSwipe ? selectedSwipe : undefined) as any,
             power_user.confirm_message_delete && fromSlashCommand !== true,
         );
     });
@@ -15505,7 +15311,6 @@ function initCharacterSearch() {
                 return;
             }
             if (isEditVisible && power_user.auto_save_msg_edits === true) {
-                // @ts-expect-error TS(7005) FIXME: Variable 'this_edit_mes_id' implicitly has an 'any... Remove this comment to see the full error message
                 chatElement
                     .find(`.mes[mesid="${this_edit_mes_id}"] .mes_edit_done`)
                     .trigger('click');
@@ -15513,7 +15318,6 @@ function initCharacterSearch() {
                 $('#send_textarea').trigger('focus');
                 return;
             }
-            // @ts-expect-error TS(7005) FIXME: Variable 'this_edit_mes_id' implicitly has an 'any... Remove this comment to see the full error message
             if (this_edit_mes_id === undefined) {
                 const stopBtn = document.getElementById('mes_stop');
                 if (!stopBtn || getComputedStyle(stopBtn).display === 'none') {
@@ -15522,10 +15326,9 @@ function initCharacterSearch() {
                 $('#mes_stop').trigger('click');
                 if (chat.length === 0) return;
                 const lastMessage = chat[chat.length - 1];
-                // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                 if (
-                    Array.isArray(lastMessage.swipes) &&
-                    lastMessage.swipe_id == lastMessage.swipes.length
+                    Array.isArray(lastMessage!.swipes) &&
+                    lastMessage!.swipe_id == lastMessage!.swipes.length
                 ) {
                     $('.last_mes .swipe_left').trigger('click');
                 }
@@ -15676,7 +15479,6 @@ function initCharacterSearch() {
         cancelTtsPlay();
         if (streamingProcessor) {
             console.log('Page reloaded. Aborting streaming...');
-            // @ts-expect-error TS(2339) FIXME: Property 'onStopStreaming' does not exist on type ... Remove this comment to see the full error message
             streamingProcessor.onStopStreaming();
         }
     });
@@ -15804,7 +15606,7 @@ function initCharacterSearch() {
     // @ts-expect-error TS(2322) FIXME: Type 'DragAndDropHandler' is not assignable to typ... Remove this comment to see the full error message
     charDragDropHandler = new DragAndDropHandler(
         'body',
-        async (files, event) => {
+        async (files: any, event: any) => {
             if (!files.length) {
                 await importFromURL(event.dataTransfer?.items, files);
             }
@@ -15849,7 +15651,6 @@ function initCharacterSearch() {
     document.getElementById('preloader')?.remove();
     (document.querySelector('dialog') as HTMLDialogElement)?.close();
     window.addEventListener('beforeunload', (e) => {
-        // @ts-expect-error TS(7005) FIXME: Variable 'this_edit_mes_id' implicitly has an 'any... Remove this comment to see the full error message
         if (isChatSaving || this_edit_mes_id >= 0) {
             e.preventDefault();
         }

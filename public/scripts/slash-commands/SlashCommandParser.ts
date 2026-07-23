@@ -47,9 +47,9 @@ export class SlashCommandParser {
     static addCommandObject(command) {
         const reserved = ['/', '#', ':', 'parser-flag', 'breakpoint'];
         for (const start of reserved) {
-            // @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
             if (
                 command.name.toLowerCase().startsWith(start) ||
+// @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
                 (command.aliases ?? []).find((a) => a.toLowerCase().startsWith(start))
             ) {
                 throw new Error(`Illegal Name. Slash command name cannot begin with "${start}".`);
@@ -177,8 +177,8 @@ export class SlashCommandParser {
                         description: 'The parser flag to modify.',
                         typeList: [ARGUMENT_TYPE.STRING],
                         isRequired: true,
-                        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                         enumList: Object.keys(PARSER_FLAG).map(
+// @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type.
                             (flag) => new SlashCommandEnumValue(flag, help[PARSER_FLAG[flag]]),
                         ),
                     }),
@@ -529,8 +529,8 @@ export class SlashCommandParser {
         if (executor) {
             const childClosure =
                 this.closureIndex
-                    // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
                     .find(
+// @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
                         (it) =>
                             it.start <= index &&
                             (it.end >= index || it.end == null) &&
@@ -538,8 +538,8 @@ export class SlashCommandParser {
                     ) ?? null;
             if (childClosure !== null) return null;
             // Check if cursor is inside a macro
-            // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
             const macroEntry = this.macroIndex.findLast(
+// @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
                 (it) => it.start <= index && it.end >= index,
             );
             if (macroEntry) {
@@ -727,8 +727,8 @@ export class SlashCommandParser {
         return value;
     }
 
-    // @ts-expect-error TS(7006) FIXME: Parameter 'text' implicitly has an 'any' type.
     parse(
+// @ts-expect-error TS(7006) FIXME: Parameter 'text' implicitly has an 'any' type.
         text,
         verifyCommandNames = true,
         flags = null,
@@ -739,7 +739,9 @@ export class SlashCommandParser {
         for (const key of Object.keys(PARSER_FLAG)) {
             // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             this.flags[PARSER_FLAG[key]] =
+// @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type.
                 flags?.[PARSER_FLAG[key]] ??
+// @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type.
                 power_user.stscript.parser.flags[PARSER_FLAG[key]] ??
                 false;
         }
@@ -986,6 +988,7 @@ export class SlashCommandParser {
         if (Object.keys(PARSER_FLAG).includes(flag.value.toString())) {
             // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             this.flags[PARSER_FLAG[flag.value.toString()]] = isTrueBoolean(
+// @ts-expect-error TS(2339) FIXME: Property 'value' does not exist on type.
                 state?.value.toString() ?? 'on',
             );
         }
@@ -1102,9 +1105,9 @@ export class SlashCommandParser {
         if (this.testUnnamedArgument()) {
             // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
             const rawQuotesArg = cmd?.namedArgumentList?.find((a) => a.name === 'raw');
-            // @ts-expect-error TS(2339) FIXME: Property 'value' does not exist on type 'never'.
             const rawQuotes =
                 cmd?.command?.rawQuotes && rawQuotesArg
+// @ts-expect-error TS(2339) FIXME: Property 'value' does not exist on type.
                     ? !isFalseBoolean(rawQuotesArg?.value?.toString())
                     : cmd?.command?.rawQuotes;
             // @ts-expect-error TS(2322) FIXME: Type 'SlashCommandUnnamedArgumentAssignment[]' is ... Remove this comment to see the full error message
@@ -1350,9 +1353,9 @@ export class SlashCommandParser {
             else return true;
         }
         if (!this.verifyCommandNames && this.testClosureEnd()) return true;
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         if (
             this.verifyCommandNames &&
+// @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type.
             !this.flags[PARSER_FLAG.STRICT_ESCAPING] &&
             this.testCommandEnd()
         ) {
@@ -1362,9 +1365,9 @@ export class SlashCommandParser {
                 this.index,
             );
         }
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         return (
             this.testSymbol('"') ||
+// @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type.
             (!this.flags[PARSER_FLAG.STRICT_ESCAPING] && this.testCommandEnd())
         );
     }

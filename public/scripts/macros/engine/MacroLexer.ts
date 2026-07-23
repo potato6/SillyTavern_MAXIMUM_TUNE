@@ -234,8 +234,8 @@ const Def = {
         [modes.macro_identifier_end]: [
             // Valid options after a macro identifier: whitespace, colon/double-colon (captured), macro end braces, or output modifier pipe.
             exits(Tokens.Macro.BeforeEnd, modes.macro_identifier_end),
-            // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'undefined... Remove this comment to see the full error message
             enter(Tokens.Macro.EndOfIdentifier, modes.macro_args, {
+// @ts-expect-error TS(2322) FIXME: Type is not assignable.
                 andExits: modes.macro_identifier_end,
             }),
         ],
@@ -266,8 +266,8 @@ const Def = {
         [modes.macro_filter_modifer]: [
             using(Tokens.WhiteSpace),
 
-            // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'undefined... Remove this comment to see the full error message
             enter(Tokens.Filter.Identifier, modes.macro_filter_modifier_end, {
+// @ts-expect-error TS(2322) FIXME: Type is not assignable.
                 andExits: modes.macro_filter_modifer,
             }),
         ],
@@ -281,8 +281,8 @@ const Def = {
         [modes.var_identifier]: [
             using(Tokens.WhiteSpace),
             // Consume the variable identifier and move to operator detection
-            // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'undefined... Remove this comment to see the full error message
             enter(Tokens.Var.Identifier, modes.var_after_identifier, {
+// @ts-expect-error TS(2322) FIXME: Type is not assignable.
                 andExits: modes.var_identifier,
             }),
             // If no valid identifier found, exit back (will result in parser error)
@@ -294,56 +294,56 @@ const Def = {
             // Check for operators - order matters: longer patterns first
             using(Tokens.Var.Operators.Increment),
             using(Tokens.Var.Operators.Decrement),
-            // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'undefined... Remove this comment to see the full error message
             enter(Tokens.Var.Operators.NullishCoalescingEquals, modes.var_value, {
+// @ts-expect-error TS(2322) FIXME: Type is not assignable.
                 andExits: modes.var_after_identifier,
             }),
-            // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'undefined... Remove this comment to see the full error message
             enter(Tokens.Var.Operators.NullishCoalescing, modes.var_value, {
+// @ts-expect-error TS(2322) FIXME: Type is not assignable.
                 andExits: modes.var_after_identifier,
             }),
-            // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'undefined... Remove this comment to see the full error message
             enter(Tokens.Var.Operators.LogicalOrEquals, modes.var_value, {
+// @ts-expect-error TS(2322) FIXME: Type is not assignable.
                 andExits: modes.var_after_identifier,
             }),
-            // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'undefined... Remove this comment to see the full error message
             enter(Tokens.Var.Operators.LogicalOr, modes.var_value, {
+// @ts-expect-error TS(2322) FIXME: Type is not assignable.
                 andExits: modes.var_after_identifier,
             }),
-            // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'undefined... Remove this comment to see the full error message
             enter(Tokens.Var.Operators.MinusEquals, modes.var_value, {
+// @ts-expect-error TS(2322) FIXME: Type is not assignable.
                 andExits: modes.var_after_identifier,
             }),
-            // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'undefined... Remove this comment to see the full error message
             enter(Tokens.Var.Operators.DoubleEquals, modes.var_value, {
+// @ts-expect-error TS(2322) FIXME: Type is not assignable.
                 andExits: modes.var_after_identifier,
             }),
-            // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'undefined... Remove this comment to see the full error message
             enter(Tokens.Var.Operators.NotEquals, modes.var_value, {
+// @ts-expect-error TS(2322) FIXME: Type is not assignable.
                 andExits: modes.var_after_identifier,
             }),
-            // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'undefined... Remove this comment to see the full error message
             enter(Tokens.Var.Operators.GreaterThanOrEqual, modes.var_value, {
+// @ts-expect-error TS(2322) FIXME: Type is not assignable.
                 andExits: modes.var_after_identifier,
             }),
-            // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'undefined... Remove this comment to see the full error message
             enter(Tokens.Var.Operators.GreaterThan, modes.var_value, {
+// @ts-expect-error TS(2322) FIXME: Type is not assignable.
                 andExits: modes.var_after_identifier,
             }),
-            // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'undefined... Remove this comment to see the full error message
             enter(Tokens.Var.Operators.LessThanOrEqual, modes.var_value, {
+// @ts-expect-error TS(2322) FIXME: Type is not assignable.
                 andExits: modes.var_after_identifier,
             }),
-            // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'undefined... Remove this comment to see the full error message
             enter(Tokens.Var.Operators.LessThan, modes.var_value, {
+// @ts-expect-error TS(2322) FIXME: Type is not assignable.
                 andExits: modes.var_after_identifier,
             }),
-            // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'undefined... Remove this comment to see the full error message
             enter(Tokens.Var.Operators.PlusEquals, modes.var_value, {
+// @ts-expect-error TS(2322) FIXME: Type is not assignable.
                 andExits: modes.var_after_identifier,
             }),
-            // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'undefined... Remove this comment to see the full error message
             enter(Tokens.Var.Operators.Equals, modes.var_value, {
+// @ts-expect-error TS(2322) FIXME: Type is not assignable.
                 andExits: modes.var_after_identifier,
             }),
             // If we see the end, exit

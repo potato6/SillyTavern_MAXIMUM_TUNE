@@ -99,25 +99,28 @@ function applyDynamicFocusStyles(styleSheet, { fromExtension = false } = {}) {
                 });
             } else if (rule instanceof CSSMediaRule) {
                 // Recursively process nested @media rules
-                // @ts-expect-error TS(2322) FIXME: Type '{ type: string; conditionText: string; }' is... Remove this comment to see the full error message
                 processRules(rule.cssRules, [
+// @ts-expect-error TS(2322) FIXME: Type is not assignable.
                     ...wrappers,
+// @ts-expect-error TS(2322) FIXME: Type is not assignable.
                     { type: 'media', conditionText: rule.conditionText },
                 ]);
             } else if (rule instanceof CSSSupportsRule) {
                 // Recursively process nested @supports rules
-                // @ts-expect-error TS(2322) FIXME: Type '{ type: string; conditionText: string; }' is... Remove this comment to see the full error message
                 processRules(rule.cssRules, [
+// @ts-expect-error TS(2322) FIXME: Type is not assignable.
                     ...wrappers,
+// @ts-expect-error TS(2322) FIXME: Type is not assignable.
                     { type: 'supports', conditionText: rule.conditionText },
                 ]);
             } else if (rule instanceof window.CSSContainerRule) {
                 // Recursively process nested @container rules (if supported by the browser)
                 // Note: conditionText contains the query like "(min-width: 300px)" or "style(color)"
                 // Using 'container' as the type ensures uniqueness separate from @media/@supports
-                // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 processRules(rule.cssRules, [
+// @ts-expect-error TS(2322) FIXME: Type is not assignable.
                     ...wrappers,
+// @ts-expect-error TS(2322) FIXME: Type is not assignable.
                     { type: 'container', conditionText: rule.conditionText },
                 ]);
             }

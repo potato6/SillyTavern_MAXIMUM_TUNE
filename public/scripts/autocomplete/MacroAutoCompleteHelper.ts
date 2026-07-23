@@ -105,10 +105,10 @@ export function findUnclosedScopesRegex(text) {
         if (isClosing) {
             // Find matching opener in stack (case-insensitive)
             // When closing an outer scope, all inner unclosed scopes are implicitly closed
-            // @ts-expect-error TS(2339) FIXME: Property 'findLastIndex' does not exist on type '{... Remove this comment to see the full error message
             const matchIndex = stack.findLastIndex(
-                (s) => s.name.toLowerCase() === name.toLowerCase(),
-            );
+// @ts-expect-error TS(18048) FIXME: Object is possibly 'null' or 'undefined'.
+            (s: any) => s.name.toLowerCase() === name.toLowerCase(),
+        );
             if (matchIndex !== -1) {
                 // Pop everything from matchIndex to end (inclusive) - closes the matched scope and all nested ones
                 stack.splice(matchIndex);
@@ -705,7 +705,6 @@ export function buildEnhancedMacroOptions(context, textUpToCursor, { isForced = 
                 name: context.identifier,
                 symbol: '❌',
                 description: `No macro found: "${context.identifier}"`,
-                // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'null | un... Remove this comment to see the full error message
                 detailedDescription: `The macro name <code>${context.identifier}</code> does not exist.<br><br>Check spelling or use a different macro name.`,
                 type: 'error',
             });
@@ -750,7 +749,6 @@ export function buildIfConditionOptions(context, allMacros, macroInnerText) {
         name: '!',
         symbol: '🔁',
         description: 'Invert condition (NOT)',
-        // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'null | un... Remove this comment to see the full error message
         detailedDescription:
             'Inverts the condition result. If the condition is truthy, it becomes falsy, and vice versa.<br><br>Example: <code>{{if !myVar}}</code> executes when <code>myVar</code> is empty or zero.',
         type: 'inverse',
@@ -973,10 +971,9 @@ export function getVariableNames(scope) {
  * @param {BuildMacroAutoCompleteOptions} [options] - Optional pre-computed values.
  * @returns {Promise<AutoCompleteNameResult|null>}
  */
-// @ts-expect-error TS(7006) FIXME: Parameter 'text' implicitly has an 'any' type.
 export async function buildMacroAutoCompleteResult(
-    text,
-    cursorPos,
+    text: any,
+    cursorPos: any,
     { macro = null, textUpToCursor = null, unclosedScopes = null, isForced = false } = {},
 ) {
     // Compute textUpToCursor if not provided
@@ -1018,9 +1015,9 @@ export async function buildMacroAutoCompleteResult(
 
                 const macroDef = macroSystem.registry.getPrimaryMacro(scopedMacro.name);
                 if (macroDef) {
-                    // @ts-expect-error TS(2345) FIXME: Argument of type '{ currentArgIndex: number; isInS... Remove this comment to see the full error message
                     const scopedOption = new EnhancedMacroAutoCompleteOption(
                         macroDef,
+// @ts-expect-error TS(2345) FIXME: Type is not assignable.
                         scopedContext,
                     );
                     scopedOption.valueProvider = () => '';
@@ -1072,9 +1069,9 @@ export async function buildMacroAutoCompleteResult(
 
                 const macroDef = macroSystem.registry.getPrimaryMacro(scopedMacro.name);
                 if (macroDef) {
-                    // @ts-expect-error TS(2345) FIXME: Argument of type '{ currentArgIndex: number; isInS... Remove this comment to see the full error message
                     const scopedOption = new EnhancedMacroAutoCompleteOption(
                         macroDef,
+// @ts-expect-error TS(2345) FIXME: Type is not assignable.
                         scopedContext,
                     );
                     scopedOption.valueProvider = () => '';

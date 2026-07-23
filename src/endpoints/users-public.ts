@@ -14,13 +14,9 @@ import {
     getAccountVersion,
 } from '../users.js';
 
-// @ts-expect-error TS(2345) FIXME: Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
 const DISCREET_LOGIN = getConfigValue('enableDiscreetLogin', false, 'boolean');
-// @ts-expect-error TS(2345) FIXME: Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
 const PREFER_REAL_IP_HEADER = getConfigValue('rateLimiting.preferRealIpHeader', false, 'boolean');
-// @ts-expect-error TS(2345) FIXME: Argument of type '5' is not assignable to paramete... Remove this comment to see the full error message
 const LOGIN_POINTS = getConfigValue('rateLimiting.accountsLoginMaxAttempts', 5, 'number');
-// @ts-expect-error TS(2345) FIXME: Argument of type '5' is not assignable to paramete... Remove this comment to see the full error message
 const RECOVER_POINTS = getConfigValue('rateLimiting.accountsRecoverMaxAttempts', 5, 'number');
 const MFA_CACHE = new Cache(5 * 60 * 1000);
 

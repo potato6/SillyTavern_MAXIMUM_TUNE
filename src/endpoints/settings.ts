@@ -11,29 +11,22 @@ import { getConfigValue, generateTimestamp, removeOldBackups } from '../util.js'
 import { getAllUserHandles, getUserDirectories } from '../users.js';
 import { getFileNameValidationFunction } from '../middleware/validateFileName.js';
 
-// @ts-expect-error TS(2345) FIXME: Argument of type 'true' is not assignable to param... Remove this comment to see the full error message
-const ENABLE_EXTENSIONS = !!getConfigValue('extensions.enabled', true, 'boolean');
-// @ts-expect-error TS(2345) FIXME: Argument of type 'true' is not assignable to param... Remove this comment to see the full error message
-const ENABLE_EXTENSIONS_AUTO_UPDATE = !!getConfigValue('extensions.autoUpdate', true, 'boolean');
-// @ts-expect-error TS(2345) FIXME: Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
-const ENABLE_ACCOUNTS = !!getConfigValue('enableUserAccounts', false, 'boolean');
-// @ts-expect-error TS(2345) FIXME: Argument of type 'false' is not assignable to para... Remove this comment to see the full error message
+const ENABLE_EXTENSIONS = !!getConfigValue('extensions.enabled', true, 'boolean' as const);
+const ENABLE_EXTENSIONS_AUTO_UPDATE = !!getConfigValue('extensions.autoUpdate', true, 'boolean' as const);
+const ENABLE_ACCOUNTS = !!getConfigValue('enableUserAccounts', false, 'boolean' as const);
 const ENABLE_REQUEST_COMPRESSION = !!getConfigValue(
     'performance.requestCompression.enabled',
     false,
     'boolean',
 );
-// @ts-expect-error TS(2345) FIXME: Argument of type '"256kb"' is not assignable to pa... Remove this comment to see the full error message
 const REQUEST_COMPRESSION_MIN = bytes.parse(
     getConfigValue('performance.requestCompression.minPayloadSize', '256kb'),
 );
-// @ts-expect-error TS(2345) FIXME: Argument of type '"8mb"' is not assignable to para... Remove this comment to see the full error message
 const REQUEST_COMPRESSION_MAX = bytes.parse(
     getConfigValue('performance.requestCompression.maxPayloadSize', '8mb'),
 );
-// @ts-expect-error TS(2345) FIXME: Argument of type '3000' is not assignable to param... Remove this comment to see the full error message
 const REQUEST_COMPRESSION_TIMEOUT = Number(
-    getConfigValue('performance.requestCompression.timeout', 3000, 'number'),
+ getConfigValue('performance.requestCompression.timeout', 3000, 'number' as const),
 );
 
 // 10 minutes

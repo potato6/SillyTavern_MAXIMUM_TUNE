@@ -263,7 +263,6 @@ export async function getGoogleApiConfig(
             ? request.body.proxy_password
             : readSecret(request.user.directories, SECRET_KEYS.MAKERSUITE);
         const apiUrl = trimTrailingSlash(request.body.reverse_proxy || API_MAKERSUITE);
-        // @ts-expect-error TS(2345) FIXME: Argument of type '"v1beta"' is not assignable to p... Remove this comment to see the full error message
         const apiVersion = getConfigValue('gemini.apiVersion', 'v1beta');
         baseUrl = `${apiUrl}/${apiVersion}`;
         url = `${baseUrl}/models/${model}:${endpoint}`;
@@ -519,7 +518,6 @@ router.post('/generate-image', async (request, response) => {
         // Is it even worth it?
         const isDeprecated = model.startsWith('imagegeneration');
         // Get person generation setting from config
-        // @ts-expect-error TS(2345) FIXME: Argument of type '"allow_adult"' is not assignable... Remove this comment to see the full error message
         const personGeneration = getConfigValue('gemini.image.personGeneration', 'allow_adult');
 
         const requestBody = {
