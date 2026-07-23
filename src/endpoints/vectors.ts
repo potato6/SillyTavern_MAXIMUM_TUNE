@@ -2,7 +2,7 @@ import path from 'node:path';
 import fs from 'node:fs';
 
 import vectra from 'vectra';
-import express from 'express';
+import type express from 'express';
 import { Elysia } from 'elysia';
 import sanitize from 'sanitize-filename';
 

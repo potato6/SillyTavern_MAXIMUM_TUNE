@@ -1,8 +1,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import url from 'node:url';
+import { Elysia } from 'elysia';
 
-import express from 'express';
 import { default as git, CheckRepoActions } from 'simple-git';
 import { getConfigValue, color } from './util.js';
 
@@ -21,75 +21,118 @@ interface PluginInfo {
 
 interface PluginModule {
     info?: PluginInfo;
-    init?: (router: express.Router) => void | Promise<void>;
+    init?: (router: any) => void | Promise<void>;
     exit?: () => void | Promise<void>;
     default?: PluginModule;
 }
 
 /**
  * Map of loaded plugins.
- * @type {Map<string, PluginModule>}
  */
 const loadedPlugins = new Map<string, PluginModule>();
 
-/**
- * Determine if a file is a CommonJS module.
- * @param {string} file Path to file
- * @returns {boolean} True if file is a CommonJS module
- */
 const isCommonJS = (file: string) => path.extname(file) === '.js' || path.extname(file) === '.cjs';
-
-/**
- * Determine if a file is an ECMAScript module.
- * @param {string} file Path to file
- * @returns {boolean} True if file is an ECMAScript module
- */
 const isESModule = (file: string) => path.extname(file) === '.mjs';
+
+// ── Express Router shim for Elysia ───────────────────────────────────────────
+// Plugins expect an express.Router() with .get(), .post(), etc.
+// We create a proxy that intercepts route registrations and builds
+// an Elysia instance with matching handlers.
+
+function createPluginRouter(): { elysiaRouter: Elysia } {
+    const router = new Elysia();
+    const methods = ['get', 'post', 'put', 'patch', 'delete', 'all'] as const;
+
+    // Proxy that intercepts method calls (router.get, router.post, etc.)
+    // and registers them on the Elysia instance.
+    const handler: ProxyHandler<Record<string, Function>> = {
+        get(target, prop: string) {
+            if (methods.includes(prop as any)) {
+                return (path: string, ...handlers: Function[]) => {
+                    // Elysia route handlers receive (context) not (req, res, next)
+                    // We wrap Express-style handlers to extract req/res from context
+                    const wrappedHandler = async (context: any) => {
+                        const { request, set, ...rest } = context;
+                        const url = new URL(request.url);
+
+                        // Build mock Express req
+                        const req: any = {
+                            params: context.params ?? {},
+                            query: Object.fromEntries(url.searchParams),
+                            body: context.body ?? {},
+                            headers: Object.fromEntries(request.headers),
+                            path: url.pathname,
+                            method: request.method,
+                            url: request.url,
+                            ip: request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+                                || request.headers.get('x-real-ip')
+                                || '127.0.0.1',
+                            session: context.session,
+                            user: context.user,
+                        };
+
+                        // Build mock Express res
+                        let bodySent: any = undefined;
+                        let statusCode = 200;
+                        const res: any = {
+                            status(code: number) { statusCode = code; return this; },
+                            send(body: any) { bodySent = body; },
+                            json(body: any) { bodySent = body; },
+                            sendStatus(code: number) { statusCode = code; bodySent = undefined; },
+                            setHeader() {},
+                            getHeaders() { return {}; },
+                            end() {},
+                            type() { return this; },
+                            attachment() {},
+                        };
+
+                        // Run Express-style handlers in sequence
+                        for (const handler of handlers) {
+                            await new Promise<void>((resolve, reject) => {
+                                handler(req, res, (err?: any) => err ? reject(err) : resolve());
+                            });
+                            if (bodySent !== undefined) break;
+                        }
+
+                        set.status = statusCode;
+                        return bodySent;
+                    };
+
+                    // Use the Elysia method (prop) with the path and wrapped handler
+                    (router as any)[prop](path, wrappedHandler);
+                    return handler; // proxy returns itself for chaining
+                };
+            }
+            return Reflect.get(target, prop);
+        },
+    };
+
+    return { elysiaRouter: router };
+}
 
 /**
  * Load and initialize server plugins from a directory if they are enabled.
- * @param {import('express').Express} app Express app
- * @param {string} pluginsPath Path to plugins directory
- * @returns {Promise<() => Promise<unknown[]> | (() => void)>} Promise that resolves when all plugins are loaded. Resolves to a "cleanup" function to
- * be called before the server shuts down.
  */
-export async function loadPlugins(app: express.Express, pluginsPath: string) {
+export async function loadPlugins(app: any, pluginsPath: string) {
     try {
         const exitHooks: Array<() => unknown> = [];
         const emptyFn = () => {};
 
-        // Server plugins are disabled.
-        if (!enableServerPlugins) {
-            return emptyFn;
-        }
-
-        // Plugins directory does not exist.
-        if (!fs.existsSync(pluginsPath)) {
-            return emptyFn;
-        }
+        if (!enableServerPlugins) return emptyFn;
+        if (!fs.existsSync(pluginsPath)) return emptyFn;
 
         const files = fs.readdirSync(pluginsPath);
-
-        // No plugins to load.
-        if (files.length === 0) {
-            return emptyFn;
-        }
+        if (files.length === 0) return emptyFn;
 
         await updatePlugins(pluginsPath);
 
         for (const file of files) {
             const pluginFilePath = path.join(pluginsPath, file);
-
             if (fs.statSync(pluginFilePath).isDirectory()) {
                 await loadFromDirectory(app, pluginFilePath, exitHooks);
                 continue;
             }
-
-            // Not a JavaScript file.
-            if (!isCommonJS(file) && !isESModule(file)) {
-                continue;
-            }
-
+            if (!isCommonJS(file) && !isESModule(file)) continue;
             await loadFromFile(app, pluginFilePath, exitHooks);
         }
 
@@ -99,7 +142,6 @@ export async function loadPlugins(app: express.Express, pluginsPath: string) {
             );
         }
 
-        // Call all plugin "exit" functions at once and wait for them to finish
         return () => Promise.all(exitHooks.map((exitFn) => exitFn()));
     } catch (error) {
         console.error('Plugin loading failed.', error);
@@ -107,58 +149,33 @@ export async function loadPlugins(app: express.Express, pluginsPath: string) {
     }
 }
 
-/**
- * Load and initialize plugins from a directory.
- * @param {import('express').Express} app Express app
- * @param {string} pluginDirectoryPath Path to plugin directory
- * @param {Array<() => unknown>} exitHooks Array of cleanup functions to be called on plugin exit
- */
 async function loadFromDirectory(
-    app: express.Express,
+    app: any,
     pluginDirectoryPath: string,
     exitHooks: Array<() => unknown>,
 ) {
     const files = fs.readdirSync(pluginDirectoryPath);
+    if (files.length === 0) return;
 
-    // No plugins to load.
-    if (files.length === 0) {
-        return;
-    }
-
-    // Plugin is an npm package.
     const packageJsonFilePath = path.join(pluginDirectoryPath, 'package.json');
     if (fs.existsSync(packageJsonFilePath)) {
-        if (await loadFromPackage(app, packageJsonFilePath, exitHooks)) {
-            return;
-        }
+        if (await loadFromPackage(app, packageJsonFilePath, exitHooks)) return;
     }
 
-    // Plugin is a module file.
     const fileTypes = ['index.js', 'index.cjs', 'index.mjs'];
-
     for (const fileType of fileTypes) {
         const filePath = path.join(pluginDirectoryPath, fileType);
         if (fs.existsSync(filePath)) {
-            if (await loadFromFile(app, filePath, exitHooks)) {
-                return;
-            }
+            if (await loadFromFile(app, filePath, exitHooks)) return;
         }
     }
 }
 
-/**
- * Loads and initializes a plugin from an npm package.
- * @param {import('express').Express} app Express app
- * @param {string} packageJsonPath Path to package.json file
- * @param {Array<() => unknown>} exitHooks Array of functions to be run on plugin exit. Will be pushed to if the plugin has
- * an "exit" function.
- * @returns {Promise<boolean>} Promise that resolves to true if plugin was loaded successfully
- */
 async function loadFromPackage(
-    app: express.Express,
+    app: any,
     packageJsonPath: string,
     exitHooks: Array<() => unknown>,
-) {
+): Promise<boolean> {
     try {
         const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
         if (packageJson.main) {
@@ -171,19 +188,11 @@ async function loadFromPackage(
     return false;
 }
 
-/**
- * Loads and initializes a plugin from a file.
- * @param {import('express').Express} app Express app
- * @param {string} pluginFilePath Path to plugin directory
- * @param {Array<() => unknown>} exitHooks Array of functions to be run on plugin exit. Will be pushed to if the plugin has
- * an "exit" function.
- * @returns {Promise<boolean>} Promise that resolves to true if plugin was loaded successfully
- */
 async function loadFromFile(
-    app: express.Express,
+    app: any,
     pluginFilePath: string,
     exitHooks: Array<() => unknown>,
-) {
+): Promise<boolean> {
     try {
         const fileUrl = url.pathToFileURL(pluginFilePath).toString();
         const plugin = await import(fileUrl);
@@ -195,38 +204,22 @@ async function loadFromFile(
     }
 }
 
-/**
- * Check whether a plugin ID is valid (only lowercase alphanumeric, hyphens, and underscores).
- * @param {string} id The plugin ID to check
- * @returns {boolean} True if the plugin ID is valid.
- */
 function isValidPluginID(id: string) {
     return /^[a-z0-9_-]+$/.test(id);
 }
 
-/**
- * Initializes a plugin module.
- * @param {import('express').Express} app Express app
- * @param {PluginModule} plugin Plugin module
- * @param {Array<() => unknown>} exitHooks Array of functions to be run on plugin exit. Will be pushed to if the plugin has
- * an "exit" function.
- * @returns {Promise<boolean>} Promise that resolves to true if plugin was initialized successfully
- */
 async function initPlugin(
-    app: express.Express,
+    app: any,
     plugin: PluginModule,
     exitHooks: Array<() => unknown>,
-) {
+): Promise<boolean> {
     const info = plugin.info || plugin.default?.info;
     if (typeof info !== 'object') {
         console.error('Failed to load plugin module; plugin info not found');
         return false;
     }
 
-    // We don't currently use "name" or "description" but it would be nice to have a UI for listing server plugins, so
-    // require them now just to be safe
-    for (const field of ['id', 'name', 'description']) {
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
+    for (const field of ['id', 'name', 'description'] as const) {
         if (typeof info[field] !== 'string') {
             console.error(`Failed to load plugin module; plugin info missing field '${field}'`);
             return false;
@@ -251,17 +244,16 @@ async function initPlugin(
         return false;
     }
 
-    // Allow the plugin to register API routes under /api/plugins/[plugin ID] via a router
-    const router = express.Router();
+    // Create a proxy router that looks like express.Router() to plugins
+    // but actually builds an Elysia sub-app
+    const { elysiaRouter } = createPluginRouter();
 
-    await init(router);
+    await init(elysiaRouter as any);
 
     loadedPlugins.set(id, plugin);
 
-    // Add API routes to the app if the plugin registered any
-    if (router.stack.length > 0) {
-        app.use(`/api/plugins/${id}`, router);
-    }
+    // Mount the plugin's Elysia router on the main app
+    app.use(`/api/plugins/${id}`, elysiaRouter);
 
     const exit = plugin.exit || plugin.default?.exit;
     if (typeof exit === 'function') {
@@ -271,23 +263,15 @@ async function initPlugin(
     return true;
 }
 
-/**
- * Automatically update all git plugins in the ./plugins directory
- * @param {string} pluginsPath Path to plugins directory
- */
 async function updatePlugins(pluginsPath: string) {
-    if (!enableServerPluginsAutoUpdate) {
-        return;
-    }
+    if (!enableServerPluginsAutoUpdate) return;
 
     const directories = fs
         .readdirSync(pluginsPath)
         .filter((file) => !file.startsWith('.'))
         .filter((file) => fs.statSync(path.join(pluginsPath, file)).isDirectory());
 
-    if (directories.length === 0) {
-        return;
-    }
+    if (directories.length === 0) return;
 
     console.log(
         color.blue('Auto-updating server plugins... Set'),
@@ -297,9 +281,7 @@ async function updatePlugins(pluginsPath: string) {
 
     if (!Bun.which('git')) {
         console.error(
-            color.red(
-                'Git is not installed. Please install Git to enable auto-updating of server plugins.',
-            ),
+            color.red('Git is not installed. Please install Git to enable auto-updating of server plugins.'),
         );
         return;
     }
@@ -310,33 +292,22 @@ async function updatePlugins(pluginsPath: string) {
         try {
             const pluginPath = path.join(pluginsPath, directory);
             const pluginRepo = git(pluginPath);
-
             const isRepo = await pluginRepo.checkIsRepo(CheckRepoActions.IS_REPO_ROOT);
-            if (!isRepo) {
-                continue;
-            }
+            if (!isRepo) continue;
 
             await pluginRepo.fetch();
             const commitHash = await pluginRepo.revparse(['HEAD']);
             const trackingBranch = await pluginRepo.revparse(['--abbrev-ref', '@{u}']);
-            const log = await pluginRepo.log({
-                from: commitHash,
-                to: trackingBranch,
-            });
+            const log = await pluginRepo.log({ from: commitHash, to: trackingBranch });
 
-            if (log.total === 0) {
-                continue;
-            }
+            if (log.total === 0) continue;
 
             pluginsToUpdate++;
             await pluginRepo.pull();
             const latestCommit = await pluginRepo.revparse(['HEAD']);
-            console.log(
-                `Plugin ${color.green(directory)} updated to commit ${color.cyan(latestCommit)}`,
-            );
+            console.log(`Plugin ${color.green(directory)} updated to commit ${color.cyan(latestCommit)}`);
         } catch (error) {
-            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-            console.error(color.red(`Failed to update plugin ${directory}: ${error.message}`));
+            console.error(color.red(`Failed to update plugin ${directory}: ${(error as any).message}`));
         }
     }
 

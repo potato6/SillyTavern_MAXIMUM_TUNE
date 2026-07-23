@@ -5,7 +5,7 @@ import dns from 'node:dns';
 import Handlebars from 'handlebars';
 import ipMatching from 'ip-matching';
 import isDocker from 'is-docker';
-import express from 'express';
+import type express from 'express';
 
 import {
     filterValidIpPatterns,

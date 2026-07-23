@@ -8,7 +8,7 @@ import { Buffer } from 'node:buffer';
 
 // Express and other dependencies
 import storage from 'node-persist';
-import express from 'express';
+import type express from 'express';
 import { Elysia } from 'elysia';
 import { Archiver } from 'archiver';
 import { sync as writeFileAtomicSync } from 'write-file-atomic';
