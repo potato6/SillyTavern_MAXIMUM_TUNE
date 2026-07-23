@@ -209,7 +209,7 @@ export function redirectDeprecatedEndpoints(app: import('express').Express) {
  * @param {import('express').Express} app The Express app to use
  */
 export function setupPrivateEndpoints(app: import('express').Express) {
-    app.use('/', userDataRouter);
+    app.use('/', userDataRouter as any);
     app.use(mountElysia(usersPrivateRouter));
     app.use(mountElysia(usersAdminRouter));
     app.use(mountElysia(movingUIRouter));

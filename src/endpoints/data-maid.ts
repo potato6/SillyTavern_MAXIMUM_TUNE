@@ -766,13 +766,13 @@ export const router = new Elysia({ prefix: '/api/data-maid' })
 
             const profile = user.profile as Record<string, string>;
             const dataMaid = new DataMaidService(
-                profile.handle,
+                profile.handle ?? '',
                 user.directories as import('../users.js').UserDirectoryList,
             );
             const rawReport = await dataMaid.generateReport();
 
             const report = await dataMaid.sanitizeReport(rawReport);
-            const token = DataMaidService.generateToken(profile.handle, rawReport);
+            const token = DataMaidService.generateToken(profile.handle ?? '', rawReport);
 
             return { report, token };
         } catch (error) {
@@ -872,7 +872,7 @@ export const router = new Elysia({ prefix: '/api/data-maid' })
 
             if (
                 !isPathUnderParent(
-                    (user.directories as Record<string, string>).root,
+                    (user.directories as Record<string, string>).root ?? '',
                     fileEntry.path,
                 )
             ) {

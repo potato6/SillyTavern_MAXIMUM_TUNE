@@ -1252,13 +1252,13 @@ export const router = new Elysia({ prefix: '/api/chats' })
 
             for (const chatFile of chatFiles) {
                 const matcher = query ? hasTextMatch : null;
-                const chatInfo: Record<string, unknown> = await getChatInfo(
+                const chatInfo = await getChatInfo(
                     chatFile,
                     {},
                     false,
                     matcher,
-                );
-                const hasMatch = chatInfo.match || hasTextMatch([chatInfo.file_id ?? '']);
+                ) as Record<string, unknown>;
+                const hasMatch = chatInfo.match || hasTextMatch([chatInfo.file_id as string ?? '']);
 
                 // Skip corrupted or invalid chat files
                 if (!chatInfo.file_name) {

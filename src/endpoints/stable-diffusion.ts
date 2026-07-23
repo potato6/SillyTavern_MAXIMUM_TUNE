@@ -365,6 +365,7 @@ router.post('/generate', async (context: any) => {
     const req = context.request;
     const user = (context as any).user;
     const headers = context.headers;
+    const response = context as any;
     try {
         try {
             const optionsUrl = new URL(body.url);
@@ -717,18 +718,18 @@ comfy.post(
                 path.extname(oldName).toLowerCase() !== '.json' ||
                 path.extname(newName).toLowerCase() !== '.json'
             ) {
-                return response.status(400).send('Only JSON workflow files are allowed');
+                set.status = 400; return 'Only JSON workflow files are allowed';
             }
 
             const oldPath = path.join(user.directories.comfyWorkflows, oldName);
             const newPath = path.join(user.directories.comfyWorkflows, newName);
 
             if (!fs.existsSync(oldPath)) {
-                return response.status(404).send('Workflow not found');
+                set.status = 404; return 'Workflow not found';
             }
 
             if (fs.existsSync(newPath)) {
-                return response.status(409).send('A workflow with that name already exists');
+                set.status = 409; return 'A workflow with that name already exists';
             }
 
             fs.renameSync(oldPath, newPath);
@@ -771,6 +772,7 @@ comfy.post('/generate', async (context: any) => {
     const req = context.request;
     const user = (context as any).user;
     const headers = context.headers;
+    const response = context as any;
     try {
         let item: ComfyHistoryItem | undefined;
         const url = new URL(body.url.replace(/\/+$/, '') + '/prompt');
@@ -856,8 +858,7 @@ comfy.post('/generate', async (context: any) => {
     } catch (error) {
         console.error('ComfyUI error:', error);
         // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-        response.status(500).send(error.message);
-        return response;
+        set.status = 500; return error.message;
     }
 });
 
@@ -907,6 +908,7 @@ comfyRunPod.post('/generate', async (context: any) => {
     const req = context.request;
     const user = (context as any).user;
     const headers = context.headers;
+    const response = context as any;
     try {
         const key = readSecret(user.directories, SECRET_KEYS.COMFY_RUNPOD);
 
@@ -978,8 +980,7 @@ comfyRunPod.post('/generate', async (context: any) => {
     } catch (error) {
         console.error('ComfyUI error:', error);
         // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-        response.status(500).send(error.message);
-        return response;
+        set.status = 500; return error.message;
     }
 });
 
@@ -1290,14 +1291,14 @@ drawthings.post('/generate', async (context: any) => {
         const url = new URL(body.url);
         url.pathname = '/sdapi/v1/txt2img';
 
-        const body = { ...body };
-        const auth = getBasicAuthHeader(body.auth);
-        delete body.url;
-        delete body.auth;
+        const requestBody = { ...body };
+        const auth = getBasicAuthHeader(requestBody.auth);
+        delete requestBody.url;
+        delete requestBody.auth;
 
         const result = await fetch(url, {
             method: 'POST',
-            body: JSON.stringify(body),
+            body: JSON.stringify(requestBody),
             headers: {
                 'Content-Type': 'application/json',
                 Authorization: auth,
@@ -2183,7 +2184,7 @@ falai.post('/generate', async (context: any) => {
     } catch (error) {
         console.error(error);
         // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-        return response.status(500).send(error.cause || error.message);
+        set.status = 500; return error.cause || error.message;
     }
 });
 
@@ -2306,12 +2307,17 @@ aimlapi.post('/models', async (context: any) => {
     }
 });
 
-aimlapi.post('/generate-image', async ({ body, set, request: req_, user, headers }) => {
+aimlapi.post('/generate-image', async (context: any) => {
+    const body = context.body as Record<string, unknown>;
+    const set = context.set;
+    const req = context.request;
+    const user = (context as any).user;
+    const headers = context.headers;
     try {
-        const key = readSecret(req.user.directories, SECRET_KEYS.AIMLAPI);
-        if (!key) return res.sendStatus(400);
+        const key = readSecret(user.directories, SECRET_KEYS.AIMLAPI);
+        if (!key) { set.status = 400; return; }
 
-        console.debug('AI/ML API image request:', req.body);
+        console.debug('AI/ML API image request:', body);
 
         const apiRes = await fetch('https://api.aimlapi.com/v1/images/generations', {
             method: 'POST',
@@ -2320,11 +2326,11 @@ aimlapi.post('/generate-image', async ({ body, set, request: req_, user, headers
                 Authorization: `Bearer ${key}`,
                 ...AIMLAPI_HEADERS,
             },
-            body: JSON.stringify(req.body),
+            body: JSON.stringify(body),
         });
         if (!apiRes.ok) {
             const err = await apiRes.text();
-            return res.status(500).send(err);
+            set.status = 500; return err;
         }
         const data = (await apiRes.json()) as {
             images?: Array<{ b64_json?: string; base64?: string; url?: string }>;
@@ -2332,7 +2338,7 @@ aimlapi.post('/generate-image', async ({ body, set, request: req_, user, headers
         };
 
         const imgObj = Array.isArray(data.images) ? data.images[0] : data.data?.[0];
-        if (!imgObj) return res.status(500).send('No image returned');
+        if (!imgObj) { set.status = 500; return 'No image returned'; }
 
         let base64;
         if (imgObj.b64_json || imgObj.base64) {
@@ -2346,10 +2352,10 @@ aimlapi.post('/generate-image', async ({ body, set, request: req_, user, headers
             throw new Error('Unsupported image format');
         }
 
-        return res.json({ format: 'png', data: base64 });
+        return { format: 'png', data: base64 };
     } catch (e) {
         console.error(e);
-        res.status(500).send('Internal error');
+        set.status = 500; return 'Internal error';
     }
 });
 
@@ -2503,7 +2509,7 @@ zai.post('/generate-video', async (context: any) => {
         for (let attempt = 0; attempt < 30; attempt++) {
             if (controller.signal.aborted) {
                 console.info('Z.AI video generation aborted by client');
-                return response.status(500).send('Video generation aborted by client');
+                set.status = 500; return 'Video generation aborted by client';
             }
 
             await delay(5000 + attempt * 1000);
@@ -2522,7 +2528,7 @@ zai.post('/generate-video', async (context: any) => {
             if (!pollResponse.ok) {
                 const text = await pollResponse.text();
                 console.warn('Z.AI video job polling failed', pollResponse.statusText, text);
-                return response.status(500).send(text);
+                set.status = 500; return text;
             }
 
             const pollResult = (await pollResponse.json()) as {
@@ -2533,7 +2539,7 @@ zai.post('/generate-video', async (context: any) => {
 
             if (pollResult.task_status === 'FAIL') {
                 console.warn('Z.AI video generation failed', pollResult);
-                return response.status(500).send('Video generation failed');
+                set.status = 500; return 'Video generation failed';
             }
 
             if (pollResult.task_status === 'SUCCESS') {
@@ -2554,14 +2560,14 @@ zai.post('/generate-video', async (context: any) => {
                         contentResponse.statusText,
                         text,
                     );
-                    return response.status(500).send(text);
+                    set.status = 500; return text;
                 }
 
                 const contentBuffer = await contentResponse.arrayBuffer();
-                return response.send({
+                return {
                     format: 'mp4',
                     video: Buffer.from(contentBuffer).toString('base64'),
-                });
+                };
             }
         }
         console.warn('Z.AI video was not available after multiple attempts.');
@@ -2667,7 +2673,7 @@ workersai.post('/generate', async (context: any) => {
 
         const apiUrl = `https://api.cloudflare.com/client/v4/accounts/${encodeURIComponent(accountId)}/ai/run/${model}`;
 
-        const body = {
+        const requestBody = {
             prompt: body.prompt,
             negative_prompt: body.negative_prompt || undefined,
             width: body.width ? Number(body.width) : undefined,
@@ -2678,15 +2684,15 @@ workersai.post('/generate', async (context: any) => {
         };
 
         // Remove undefined values
-        for (const prop of Object.keys(body)) {
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-            if (body[prop] === undefined) {
-                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                delete body[prop];
+        for (const prop of Object.keys(requestBody)) {
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{ prompt: any; negative_prompt: any; width: any; height: any; num_steps: any; guidance: any; seed: any; }'.
+            if (requestBody[prop] === undefined) {
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{ prompt: any; negative_prompt: any; width: any; height: any; num_steps: any; guidance: any; seed: any; }'.
+                delete requestBody[prop];
             }
         }
 
-        console.debug('Cloudflare Workers AI request:', model, body);
+        console.debug('Cloudflare Workers AI request:', model, requestBody);
 
         /** @type {RequestInit} */
         const apiRequest = {
@@ -2698,7 +2704,7 @@ workersai.post('/generate', async (context: any) => {
 
         if (/flux-2/.test(model)) {
             const formData = new FormData();
-            for (const [key, value] of Object.entries(body)) {
+            for (const [key, value] of Object.entries(requestBody)) {
                 formData.append(key, String(value));
             }
             // @ts-expect-error TS(2339) FIXME: Property 'body' does not exist on type '{ method: ... Remove this comment to see the full error message
@@ -2707,7 +2713,7 @@ workersai.post('/generate', async (context: any) => {
             // @ts-expect-error TS(2322) FIXME: Type '{ 'Content-Type': string; Authorization: str... Remove this comment to see the full error message
             apiRequest.headers = { ...apiRequest.headers, 'Content-Type': 'application/json' };
             // @ts-expect-error TS(2339) FIXME: Property 'body' does not exist on type '{ method: ... Remove this comment to see the full error message
-            apiRequest.body = JSON.stringify(body);
+            apiRequest.body = JSON.stringify(requestBody);
         }
 
         const result = await fetch(apiUrl, apiRequest);
@@ -2719,7 +2725,7 @@ workersai.post('/generate', async (context: any) => {
                 result.statusText,
                 text,
             );
-            return response.status(500).send(text);
+            set.status = 500; return text;
         }
 
         const contentType = result.headers.get('content-type') || '';
@@ -2733,12 +2739,12 @@ workersai.post('/generate', async (context: any) => {
                 set.status = 500;
                 return;
             }
-            return response.send({ format: 'png', image: image });
+            return { format: 'png', image: image };
         }
 
         // Non-partner models return raw binary image data
         const buffer = await result.arrayBuffer();
-        return response.send({ format: 'png', image: Buffer.from(buffer).toString('base64') });
+        return { format: 'png', image: Buffer.from(buffer).toString('base64') };
     } catch (error) {
         console.error(error);
         set.status = 500;

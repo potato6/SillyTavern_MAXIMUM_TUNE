@@ -114,7 +114,7 @@ export const router = new Elysia({ prefix: '/api/assets' })
 
                 const fileStream = fs.createWriteStream(pathToUpload);
                 if (response.body) {
-                    await finished(Readable.fromWeb(response.body as import('stream/web').ReadableStream).pipe(fileStream));
+                    await finished(Readable.fromWeb(response.body as unknown as import('stream/web').ReadableStream).pipe(fileStream));
                 }
                 const relative = clientRelativePath(directories?.root ?? '', pathToUpload);
                 return { path: relative };

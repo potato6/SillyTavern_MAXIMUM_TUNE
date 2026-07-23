@@ -9,6 +9,7 @@ import { Buffer } from 'node:buffer';
 // Express and other dependencies
 import storage from 'node-persist';
 import express from 'express';
+import { Elysia } from 'elysia';
 import { Archiver } from 'archiver';
 import { sync as writeFileAtomicSync } from 'write-file-atomic';
 import sanitize from 'sanitize-filename';
@@ -26,14 +27,12 @@ import {
     color,
     delay,
     generateTimestamp,
-    invalidateFirefoxCache,
     isPathUnderParent,
     setPermissionsSync,
 } from './util.js';
 
 import { serverDirectory } from './server-directory.js';
 import { filterValidIpPatterns, getIpFromRequest } from './express-common.js';
-import { extensionsEnabledFeatureGuard } from './endpoints/extensions.js';
 import { uniqBy } from 'es-toolkit';
 
 export const KEY_PREFIX = 'user:';
@@ -944,7 +943,7 @@ async function headerUserLogin(request: import('express').Request, header = 'Rem
     }
     console.debug(`Attempting auto-login for user from header ${header}: ${remoteUser}`);
 
-    const ip = getIpFromRequest(request);
+    const ip = getIpFromRequest(request as unknown as Record<string, unknown>);
     const isTrusted = isRequestFromTrustedProxy(ip);
     if (!isTrusted) {
         console.warn(
@@ -1157,31 +1156,38 @@ export async function loginPageMiddleware(request: express.Request, response: ex
 
 /**
  * Creates a route handler for serving files from a specific directory.
- * @param {(req: import('express').Request) => string} directoryFn A function that returns the directory path to serve files from
- * @returns {import('express').RequestHandler} Express request handler
+ * @param {(context: any) => string} directoryFn A function that returns the directory path to serve files from
+ * @returns {(context: any) => Promise<Response | undefined>} Elysia request handler
  */
-function createRouteHandler(directoryFn: (req: express.Request) => string) {
-    return async (req: express.Request, res: express.Response) => {
+function createRouteHandler(directoryFn: (context: any) => string) {
+    return async (context: any) => {
         try {
-            const directory = directoryFn(req);
+            const directory = directoryFn(context);
             const filePath = path.join(
-                ...(Array.isArray(req.params.filePath)
-                    ? req.params.filePath
-                    : [req.params.filePath ?? '']),
+                ...(Array.isArray(context.params.filePath)
+                    ? context.params.filePath
+                    : [context.params.filePath ?? '']),
             );
             const fullPath = path.join(directory, filePath);
             if (!isPathUnderParent(directory, path.resolve(fullPath))) {
-                return res.sendStatus(403);
+                context.set.status = 403;
+                return;
             }
             const exists = fs.existsSync(fullPath);
             if (!exists) {
-                return res.sendStatus(404);
+                context.set.status = 404;
+                return;
             }
 
-            invalidateFirefoxCache(filePath, req, res);
-            return res.sendFile(filePath, { root: directory });
+            const ua = context.request.headers.get('user-agent') || '';
+            if (/firefox/i.test(ua) && Bun.file(fullPath).type?.startsWith('image/')) {
+                context.set.headers ??= {};
+                context.set.headers['Cache-Control'] = 'must-understand, no-store';
+            }
+            return new Response(Bun.file(fullPath));
         } catch {
-            return res.sendStatus(500);
+            context.set.status = 500;
+            return;
         }
     };
 }
@@ -1191,36 +1197,40 @@ function createRouteHandler(directoryFn: (req: express.Request) => string) {
  * @param {(req: import('express').Request) => string} directoryFn A function that returns the directory path to serve files from
  * @returns {import('express').RequestHandler} Express request handler
  */
-function createExtensionsRouteHandler(directoryFn: (req: express.Request) => string) {
-    return async (req: express.Request, res: express.Response) => {
+function createExtensionsRouteHandler(directoryFn: (context: any) => string) {
+    return async (context: any) => {
         try {
-            const directory = directoryFn(req);
+            const directory = directoryFn(context);
             const filePath = path.join(
-                ...(Array.isArray(req.params.filePath)
-                    ? req.params.filePath
-                    : [req.params.filePath ?? '']),
+                ...(Array.isArray(context.params.filePath)
+                    ? context.params.filePath
+                    : [context.params.filePath ?? '']),
             );
             const localPath = path.join(directory, filePath);
             if (!isPathUnderParent(directory, path.resolve(localPath))) {
-                return res.sendStatus(403);
+                context.set.status = 403;
+                return;
             }
             const existsLocal = fs.existsSync(localPath);
             if (existsLocal) {
-                return res.sendFile(filePath, { root: directory });
+                return new Response(Bun.file(localPath));
             }
 
             const globalPath = path.join(PUBLIC_DIRECTORIES.globalExtensions, filePath);
             if (!isPathUnderParent(PUBLIC_DIRECTORIES.globalExtensions, path.resolve(globalPath))) {
-                return res.sendStatus(403);
+                context.set.status = 403;
+                return;
             }
             const existsGlobal = fs.existsSync(globalPath);
             if (existsGlobal) {
-                return res.sendFile(filePath, { root: PUBLIC_DIRECTORIES.globalExtensions });
+                return new Response(Bun.file(globalPath));
             }
 
-            return res.sendStatus(404);
+            context.set.status = 404;
+            return;
         } catch {
-            return res.sendStatus(500);
+            context.set.status = 500;
+            return;
         }
     };
 }
@@ -1320,33 +1330,40 @@ export async function getAllEnabledUsers() {
 /**
  * Express router for serving files from the user's directories.
  */
-export const router = express.Router();
-router.use(
-    '/backgrounds/*filePath',
-    createRouteHandler((req: express.Request) => req.user.directories.backgrounds),
+export const router = new Elysia();
+router.all(
+    '/backgrounds/:filePath*',
+    createRouteHandler((context: any) => (context as any).user.directories.backgrounds),
 );
-router.use(
-    '/characters/*filePath',
-    createRouteHandler((req: express.Request) => req.user.directories.characters),
+router.all(
+    '/characters/:filePath*',
+    createRouteHandler((context: any) => (context as any).user.directories.characters),
 );
-router.use(
-    '/User%20Avatars/*filePath',
-    createRouteHandler((req: express.Request) => req.user.directories.avatars),
+router.all(
+    '/User%20Avatars/:filePath*',
+    createRouteHandler((context: any) => (context as any).user.directories.avatars),
 );
-router.use(
-    '/assets/*filePath',
-    createRouteHandler((req: express.Request) => req.user.directories.assets),
+router.all(
+    '/assets/:filePath*',
+    createRouteHandler((context: any) => (context as any).user.directories.assets),
 );
-router.use(
-    '/user/images/*filePath',
-    createRouteHandler((req: express.Request) => req.user.directories.userImages),
+router.all(
+    '/user/images/:filePath*',
+    createRouteHandler((context: any) => (context as any).user.directories.userImages),
 );
-router.use(
-    '/user/files/*filePath',
-    createRouteHandler((req: express.Request) => req.user.directories.files),
+router.all(
+    '/user/files/:filePath*',
+    createRouteHandler((context: any) => (context as any).user.directories.files),
 );
-router.use(
-    '/scripts/extensions/third-party/*filePath',
-    extensionsEnabledFeatureGuard,
-    createExtensionsRouteHandler((req: express.Request) => req.user.directories.extensions),
+router.all(
+    '/scripts/extensions/third-party/:filePath*',
+    async (context: any) => {
+        const enabled = !!getConfigValue('extensions.enabled', true, 'boolean');
+        if (!enabled) {
+            context.set.status = 404;
+            return;
+        }
+        const handler = createExtensionsRouteHandler((ctx: any) => (ctx as any).user.directories.extensions);
+        return handler(context);
+    },
 );

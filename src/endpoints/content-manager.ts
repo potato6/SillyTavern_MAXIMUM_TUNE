@@ -1155,7 +1155,7 @@ export const router = new Elysia({ prefix: '/api/content' })
             if (result.fileType) set.headers['Content-Type'] = result.fileType;
             set.headers['Content-Disposition'] =
                 `attachment; filename="${encodeURI(result.fileName)}"`;
-            set.headers['X-Custom-Content-Type'] = type as string;
+            set.headers['X-Custom-Content-Type'] = uuidType;
             return new Response(result.buffer);
         } catch (error) {
             console.error('Importing custom content failed', error);

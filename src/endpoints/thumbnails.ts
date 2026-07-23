@@ -244,7 +244,7 @@ const publicRouter = new Elysia({ prefix: '/thumbnail' }).get('/', async (contex
                 directories ?? {},
                 type as 'bg' | 'avatar' | 'persona',
             );
-            const pathToOriginalFile = path.resolve(path.join(folder, file));
+            const pathToOriginalFile = path.resolve(path.join(folder ?? '', file));
             if (!fs.existsSync(pathToOriginalFile)) {
                 set.status = 404;
                 return;
@@ -268,7 +268,7 @@ const publicRouter = new Elysia({ prefix: '/thumbnail' }).get('/', async (contex
             directories ?? {},
             type as 'bg' | 'avatar' | 'persona',
         );
-        const pathToCachedFile = path.join(thumbnailFolder, file);
+        const pathToCachedFile = path.join(thumbnailFolder ?? '', file);
 
         if (!fs.existsSync(pathToCachedFile)) {
             const thumbResult = await generateThumbnail(

@@ -63,7 +63,7 @@ function buildAdditionalHeaders(
         headers,
         apiType,
         server,
-        (user?.directories as Record<string, string>) ?? {},
+        (user?.directories as any) ?? {},
         secretId,
     );
 }
@@ -256,7 +256,7 @@ router.post('/generate', async (context) => {
                     abortHeaders,
                     apiType,
                     trimV1(baseUrl),
-                    (user?.directories as Record<string, string>) ?? {},
+                    (user?.directories as any) ?? {},
                     (body as Record<string, unknown>).secret_id as string | null,
                 );
                 await abortKoboldCppRequest(trimV1(baseUrl), abortHeaders);
