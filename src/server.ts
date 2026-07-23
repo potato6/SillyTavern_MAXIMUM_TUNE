@@ -184,7 +184,7 @@ export function setupPrivateEndpoints(app: import('express').Express) {
     app.use('/api/images', imagesRouter);
     app.use('/api/quick-replies', quickRepliesRouter);
     app.use('/api/avatars', avatarsRouter);
-    app.use('/api/themes', themesRouter);
+    app.use(mountElysia(themesRouter));
     app.use('/api/openai', openAiRouter);
     app.use('/api/google', googleRouter);
     app.use('/api/anthropic', anthropicRouter);
@@ -215,13 +215,13 @@ export function setupPrivateEndpoints(app: import('express').Express) {
     app.use('/api/nanogpt', nanogptRouter);
     app.use('/api/backends/kobold', koboldRouter);
     app.use('/api/backends/chat-completions', chatCompletionsRouter);
-    app.use('/api/backends/keys', backendsKeysRouter);
+    app.use(mountElysia(backendsKeysRouter));
     app.use('/api/speech', speechRouter);
     app.use('/api/azure', azureRouter);
     app.use('/api/volcengine', volcengineRouter);
     app.use('/api/minimax', minimaxRouter);
     app.use('/api/data-maid', dataMaidRouter);
-    app.use('/api/backups', backupsRouter);
+    app.use(mountElysia(backupsRouter));
     app.use('/api/image-metadata', imageMetadataRouter);
 }
 

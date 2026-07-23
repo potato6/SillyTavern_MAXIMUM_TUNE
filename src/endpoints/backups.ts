@@ -1,83 +1,101 @@
-import express from 'express';
 import fs, { promises as fsPromises } from 'node:fs';
 import path from 'node:path';
+import { Elysia } from 'elysia';
 import sanitize from 'sanitize-filename';
 import { CHAT_BACKUPS_PREFIX, getChatInfo } from './chats.js';
 
-export const router = express.Router();
+export const router = new Elysia({ prefix: '/api/backups' })
+    .post('/chat/get', async (context) => {
+        const { set } = context;
+        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const directories = user?.directories as Record<string, string> | undefined;
 
-router.post('/chat/get', async (request, response) => {
-    try {
-        const backupModels = [];
-        const backupFiles = await fsPromises
-            .readdir(request.user.directories.backups, { withFileTypes: true })
-            .then((d) =>
-                d
-                    .filter(
-                        (d) =>
-                            d.isFile() &&
-                            path.extname(d.name) === '.jsonl' &&
-                            d.name.startsWith(CHAT_BACKUPS_PREFIX),
-                    )
-                    .map((d) => d.name),
-            );
+        try {
+            const backupModels = [];
+            const backupDir = directories?.backups ?? '';
+            const backupFiles = await fsPromises
+                .readdir(backupDir, { withFileTypes: true })
+                .then((d) =>
+                    d
+                        .filter(
+                            (d) =>
+                                d.isFile() &&
+                                path.extname(d.name) === '.jsonl' &&
+                                d.name.startsWith(CHAT_BACKUPS_PREFIX),
+                        )
+                        .map((d) => d.name),
+                );
 
-        for (const name of backupFiles) {
-            const filePath = path.join(request.user.directories.backups, name);
-            const info = await getChatInfo(filePath);
-            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-            if (!info || !info.file_name) {
-                continue;
+            for (const name of backupFiles) {
+                const filePath = path.join(backupDir, name);
+                const info = await getChatInfo(filePath);
+                if (!info || !(info as Record<string, unknown>).file_name) {
+                    continue;
+                }
+                backupModels.push(info);
             }
-            backupModels.push(info);
+
+            return backupModels;
+        } catch (error) {
+            console.error(error);
+            set.status = 500;
+            return;
         }
+    })
+    .post('/chat/delete', async (context) => {
+        const { body, set } = context;
+        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const directories = user?.directories as Record<string, string> | undefined;
+        const { name } = body as Record<string, unknown>;
 
-        return response.json(backupModels);
-    } catch (error) {
-        console.error(error);
-        return response.sendStatus(500);
-    }
-});
+        try {
+            const filePath = path.join(directories?.backups ?? '', sanitize(name as string));
 
-router.post('/chat/delete', async (request, response) => {
-    try {
-        const { name } = request.body;
-        const filePath = path.join(request.user.directories.backups, sanitize(name));
+            if (!path.parse(filePath).base.startsWith(CHAT_BACKUPS_PREFIX)) {
+                console.warn('Attempt to delete non-chat backup file:', name);
+                set.status = 400;
+                return;
+            }
 
-        if (!path.parse(filePath).base.startsWith(CHAT_BACKUPS_PREFIX)) {
-            console.warn('Attempt to delete non-chat backup file:', name);
-            return response.sendStatus(400);
+            if (!fs.existsSync(filePath)) {
+                set.status = 404;
+                return;
+            }
+
+            await fsPromises.unlink(filePath);
+            set.status = 204;
+        } catch (error) {
+            console.error(error);
+            set.status = 500;
         }
+    })
+    .post('/chat/download', async (context) => {
+        const { body, set } = context;
+        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const directories = user?.directories as Record<string, string> | undefined;
+        const { name } = body as Record<string, unknown>;
 
-        if (!fs.existsSync(filePath)) {
-            return response.sendStatus(404);
+        try {
+            const filePath = path.join(directories?.backups ?? '', sanitize(name as string));
+
+            if (!path.parse(filePath).base.startsWith(CHAT_BACKUPS_PREFIX)) {
+                console.warn('Attempt to download non-chat backup file:', name);
+                set.status = 400;
+                return;
+            }
+
+            if (!fs.existsSync(filePath)) {
+                set.status = 404;
+                return;
+            }
+
+            return new Response(Bun.file(filePath), {
+                headers: {
+                    'Content-Disposition': `attachment; filename="${path.basename(filePath)}"`,
+                },
+            });
+        } catch (error) {
+            console.error(error);
+            set.status = 500;
         }
-
-        await fsPromises.unlink(filePath);
-        return response.sendStatus(200);
-    } catch (error) {
-        console.error(error);
-        return response.sendStatus(500);
-    }
-});
-
-router.post('/chat/download', async (request, response) => {
-    try {
-        const { name } = request.body;
-        const filePath = path.join(request.user.directories.backups, sanitize(name));
-
-        if (!path.parse(filePath).base.startsWith(CHAT_BACKUPS_PREFIX)) {
-            console.warn('Attempt to download non-chat backup file:', name);
-            return response.sendStatus(400);
-        }
-
-        if (!fs.existsSync(filePath)) {
-            return response.sendStatus(404);
-        }
-
-        return response.download(filePath);
-    } catch (error) {
-        console.error(error);
-        return response.sendStatus(500);
-    }
-});
+    });
