@@ -211,15 +211,15 @@ export function setupPrivateEndpoints(app: import('express').Express) {
     app.use('/api/translate', translateRouter);
     app.use('/api/search', searchRouter);
     app.use('/api/backends/text-completions', textCompletionsRouter);
-    app.use('/api/openrouter', openRouterRouter);
-    app.use('/api/nanogpt', nanogptRouter);
+    app.use(mountElysia(openRouterRouter));
+    app.use(mountElysia(nanogptRouter));
     app.use('/api/backends/kobold', koboldRouter);
     app.use('/api/backends/chat-completions', chatCompletionsRouter);
     app.use(mountElysia(backendsKeysRouter));
     app.use('/api/speech', speechRouter);
     app.use(mountElysia(azureRouter));
     app.use('/api/volcengine', volcengineRouter);
-    app.use('/api/minimax', minimaxRouter);
+    app.use(mountElysia(minimaxRouter));
     app.use('/api/data-maid', dataMaidRouter);
     app.use(mountElysia(backupsRouter));
     app.use('/api/image-metadata', imageMetadataRouter);

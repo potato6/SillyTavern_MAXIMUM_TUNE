@@ -1,22 +1,26 @@
-import express from 'express';
+import { Elysia } from 'elysia';
 import { readSecret, SECRET_KEYS } from './secrets.js';
 
-export const router = express.Router();
+export const router = new Elysia({ prefix: '/api/minimax' });
 
 // Audio format MIME type mapping
 const getAudioMimeType = (format: string) => {
-    const mimeTypes = {
+    const mimeTypes: Record<string, string> = {
         mp3: 'audio/mpeg',
         wav: 'audio/wav',
         pcm: 'audio/pcm',
         flac: 'audio/flac',
         aac: 'audio/aac',
     };
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     return mimeTypes[format] || 'audio/mpeg';
 };
 
-router.post('/generate-voice', async (request, response) => {
+router.post('/generate-voice', async (context) => {
+    const { set } = context;
+    const body = context.body as Record<string, unknown>;
+    const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+    const directories = user?.directories as Record<string, string> | undefined;
+
     try {
         const {
             text,
@@ -30,22 +34,18 @@ router.post('/generate-voice', async (request, response) => {
             bitrate = 128000,
             format = 'mp3',
             language,
-        } = request.body;
+        } = body as Record<string, unknown>;
 
-        const apiKey = readSecret(request.user.directories, SECRET_KEYS.MINIMAX);
-        const groupId = readSecret(request.user.directories, SECRET_KEYS.MINIMAX_GROUP_ID);
+        const apiKey = directories ? readSecret(directories as any, SECRET_KEYS.MINIMAX) : '';
+        const groupId = directories ? readSecret(directories as any, SECRET_KEYS.MINIMAX_GROUP_ID) : '';
 
-        // Validate required parameters
         if (!text || !voiceId || !apiKey || !groupId) {
             console.warn('MiniMax TTS: Missing required parameters');
-            return response
-                .status(400)
-                .json({
-                    error: 'Missing required parameters: text, voiceId, apiKey, and groupId are required',
-                });
+            set.status = 400;
+            return { error: 'Missing required parameters: text, voiceId, apiKey, and groupId are required' };
         }
 
-        const requestBody = {
+        const requestBody: Record<string, unknown> = {
             model: model,
             text: text,
             stream: false,
@@ -63,9 +63,7 @@ router.post('/generate-voice', async (request, response) => {
             },
         };
 
-        // Add language parameter if provided
         if (language) {
-            // @ts-expect-error TS(2339) FIXME: Property 'lang' does not exist on type '{ model: a... Remove this comment to see the full error message
             requestBody.lang = language;
         }
 
@@ -75,7 +73,7 @@ router.post('/generate-voice', async (request, response) => {
             url: apiUrl,
             body: {
                 ...requestBody,
-                voice_setting: { ...requestBody.voice_setting, voice_id: '[REDACTED]' },
+                voice_setting: { ...requestBody.voice_setting as Record<string, unknown>, voice_id: '[REDACTED]' },
             },
         });
 
@@ -93,29 +91,19 @@ router.post('/generate-voice', async (request, response) => {
             let errorMessage = `HTTP ${apiResponse.status}`;
 
             try {
-                // Try to parse JSON error response
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic MiniMax API error
                 const errorData: any = await apiResponse.json();
                 console.error('MiniMax TTS API error (JSON):', errorData);
-
-                // Check for MiniMax specific error format
                 const baseResp = errorData?.base_resp;
                 if (baseResp && baseResp.status_code !== 0) {
                     if (baseResp.status_code === 1004) {
-                        errorMessage =
-                            'Authentication failed - Please check your API key and API host';
+                        errorMessage = 'Authentication failed - Please check your API key and API host';
                     } else {
                         errorMessage = `API Error: ${baseResp.status_msg}`;
                     }
                 } else {
-                    errorMessage =
-                        errorData.error?.message ||
-                        errorData.message ||
-                        errorData.detail ||
-                        `HTTP ${apiResponse.status}`;
+                    errorMessage = errorData.error?.message || errorData.message || errorData.detail || `HTTP ${apiResponse.status}`;
                 }
             } catch {
-                // If not JSON, try to read text
                 try {
                     const errorText = await apiResponse.text();
                     console.error('MiniMax TTS API error (Text):', errorText);
@@ -131,128 +119,118 @@ router.post('/generate-voice', async (request, response) => {
             }
 
             console.error('MiniMax TTS API request failed:', errorMessage);
-            return response.status(500).json({ error: errorMessage });
+            set.status = 500;
+            return { error: errorMessage };
         }
 
-        // Parse the response
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic MiniMax API response
         let responseData: any;
         try {
             responseData = await apiResponse.json();
             console.debug('MiniMax TTS Response received');
         } catch (jsonError) {
             console.error('MiniMax TTS: Failed to parse response as JSON:', jsonError);
-            return response.status(500).json({ error: 'Invalid response format from MiniMax API' });
+            set.status = 500;
+            return { error: 'Invalid response format from MiniMax API' };
         }
 
-        // Check for API error codes in response data
         const baseResp = responseData?.base_resp;
         if (baseResp && baseResp.status_code !== 0) {
-            let errorMessage;
+            let errorMessage: string;
             if (baseResp.status_code === 1004) {
                 errorMessage = 'Authentication failed - Please check your API key and API host';
             } else {
                 errorMessage = `API Error: ${baseResp.status_msg}`;
             }
             console.error('MiniMax TTS API error:', baseResp);
-            return response.status(500).json({ error: errorMessage });
+            set.status = 500;
+            return { error: errorMessage };
         }
 
-        // Process the audio data
-        if (responseData.data && responseData.data.audio) {
-            // Process hex-encoded audio data
-            const hexAudio = responseData.data.audio;
+        // Handle audio data
+        if (responseData.data?.audio) {
+            const hexAudio = responseData.data.audio as string;
 
             if (!hexAudio || typeof hexAudio !== 'string') {
                 console.error('MiniMax TTS: Invalid audio data format');
-                return response.status(500).json({ error: 'Invalid audio data format' });
+                set.status = 500;
+                return { error: 'Invalid audio data format' };
             }
 
-            // Remove possible prefix and spaces
             const cleanHex = hexAudio.replace(/^0x/, '').replace(/\s/g, '');
 
-            // Validate hex string format
             if (!/^[0-9a-fA-F]*$/.test(cleanHex)) {
                 console.error('MiniMax TTS: Invalid hex string format');
-                return response.status(500).json({ error: 'Invalid audio data format' });
+                set.status = 500;
+                return { error: 'Invalid audio data format' };
             }
 
-            // Ensure hex string length is even
             const paddedHex = cleanHex.length % 2 === 0 ? cleanHex : '0' + cleanHex;
 
             try {
-                // Convert hex string to byte array
                 const hexMatches = paddedHex.match(/.{1,2}/g);
                 if (!hexMatches) {
                     console.error('MiniMax TTS: Failed to parse hex string');
-                    return response.status(500).json({ error: 'Invalid hex string format' });
+                    set.status = 500;
+                    return { error: 'Invalid hex string format' };
                 }
                 const audioBytes = new Uint8Array(hexMatches.map((byte) => parseInt(byte, 16)));
 
                 if (audioBytes.length === 0) {
                     console.error('MiniMax TTS: Audio conversion resulted in empty array');
-                    return response.status(500).json({ error: 'Audio data conversion failed' });
+                    set.status = 500;
+                    return { error: 'Audio data conversion failed' };
                 }
 
-                console.debug(
-                    `MiniMax TTS: Converted ${paddedHex.length} hex characters to ${audioBytes.length} bytes`,
-                );
+                console.debug(`MiniMax TTS: Converted ${paddedHex.length} hex characters to ${audioBytes.length} bytes`);
 
-                // Set appropriate headers and send audio data
-                const mimeType = getAudioMimeType(format);
-                response.setHeader('Content-Type', mimeType);
-                response.setHeader('Content-Length', audioBytes.length);
-
-                return response.send(Buffer.from(audioBytes));
+                const mimeType = getAudioMimeType(format as string);
+                return new Response(audioBytes, {
+                    headers: {
+                        'Content-Type': mimeType,
+                        'Content-Length': String(audioBytes.length),
+                    },
+                });
             } catch (conversionError) {
                 console.error('MiniMax TTS: Audio conversion error:', conversionError);
-                return response
-                    .status(500)
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    .json({ error: `Audio data conversion failed: ${(conversionError as any).message}` });
+                set.status = 500;
+                return { error: `Audio data conversion failed: ${(conversionError as Error).message}` };
             }
-        } else if (responseData.data && responseData.data.url) {
-            // Handle URL-based audio response
-            console.debug('MiniMax TTS: Received audio URL:', responseData.data.url);
+        } else if (responseData.data?.url) {
+            const audioUrl = responseData.data.url as string;
+            console.debug('MiniMax TTS: Received audio URL:', audioUrl);
 
             try {
-                const audioResponse = await fetch(responseData.data.url);
+                const audioResponse = await fetch(audioUrl);
                 if (!audioResponse.ok) {
-                    console.error(
-                        'MiniMax TTS: Failed to fetch audio from URL:',
-                        audioResponse.status,
-                    );
-                    return response
-                        .status(500)
-                        .json({ error: `Failed to fetch audio from URL: ${audioResponse.status}` });
+                    console.error('MiniMax TTS: Failed to fetch audio from URL:', audioResponse.status);
+                    set.status = 500;
+                    return { error: `Failed to fetch audio from URL: ${audioResponse.status}` };
                 }
 
                 const audioBuffer = await audioResponse.arrayBuffer();
-                const mimeType = getAudioMimeType(format);
+                const mimeType = getAudioMimeType(format as string);
 
-                response.setHeader('Content-Type', mimeType);
-                response.setHeader('Content-Length', audioBuffer.byteLength);
-
-                return response.send(Buffer.from(audioBuffer));
+                return new Response(audioBuffer, {
+                    headers: {
+                        'Content-Type': mimeType,
+                        'Content-Length': String(audioBuffer.byteLength),
+                    },
+                });
             } catch (urlError) {
                 console.error('MiniMax TTS: Error fetching audio from URL:', urlError);
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const errMsg = (urlError as any).message || 'Unknown error';
-                return response
-                    .status(500)
-                    .json({ error: `Failed to fetch audio: ${errMsg}` });
+                const errMsg = (urlError as Error).message || 'Unknown error';
+                set.status = 500;
+                return { error: `Failed to fetch audio: ${errMsg}` };
             }
         } else {
-            // Handle error response
-            const errorMessage =
-                responseData.base_resp?.status_msg ||
-                responseData.error?.message ||
-                'Unknown error';
+            const errorMessage = responseData.base_resp?.status_msg || responseData.error?.message || 'Unknown error';
             console.error('MiniMax TTS: No valid audio data in response:', responseData);
-            return response.status(500).json({ error: `API Error: ${errorMessage}` });
+            set.status = 500;
+            return { error: `API Error: ${errorMessage}` };
         }
     } catch (error) {
         console.error('MiniMax TTS generation failed:', error);
-        return response.status(500).json({ error: 'Internal server error' });
+        set.status = 500;
+        return { error: 'Internal server error' };
     }
 });

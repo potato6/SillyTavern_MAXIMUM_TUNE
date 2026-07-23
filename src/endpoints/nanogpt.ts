@@ -1,7 +1,7 @@
-import express from 'express';
+import { Elysia } from 'elysia';
 import { readSecret, SECRET_KEYS } from './secrets.js';
 
-export const router = express.Router();
+export const router = new Elysia({ prefix: '/api/nanogpt' });
 const API_NANOGPT = 'https://nano-gpt.com/api';
 
 /**
@@ -11,30 +11,28 @@ const API_NANOGPT = 'https://nano-gpt.com/api';
 let _providersCache: { id: string; label: string }[] | null = null;
 let _providersCacheTime = 0;
 
-router.get('/providers', async (_req, res) => {
+router.get('/providers', async () => {
     try {
         if (_providersCache && Date.now() - _providersCacheTime < 3600_000) {
-            return res.json(_providersCache);
+            return _providersCache;
         }
         const response = await fetch(`${API_NANOGPT}/models/providers`, {
             method: 'GET',
             headers: { Accept: 'application/json' },
         });
-        if (!response.ok) return res.json(_providersCache ?? []);
+        if (!response.ok) return _providersCache ?? [];
         const data = (await response.json()) as { providers?: { id: string; label: string }[] };
         _providersCache = data?.providers ?? [];
         _providersCacheTime = Date.now();
-        return res.json(_providersCache);
+        return _providersCache;
     } catch (error) {
         console.error(error);
-        return res.json(_providersCache ?? []);
+        return _providersCache ?? [];
     }
 });
 
 /**
  * Parses a numeric API value, returning 0 for missing or invalid values.
- * @param {unknown} value Value to parse.
- * @returns {number}
  */
 function parseNumber(value: unknown) {
     const number = Number(value);
@@ -43,8 +41,6 @@ function parseNumber(value: unknown) {
 
 /**
  * Normalizes a NanoGPT usage bucket.
- * @param {any} usage Usage bucket from NanoGPT.
- * @returns {{ used: number, remaining: number, percentUsed: number, resetAt: number } | null}
  */
 function normalizeUsage(usage: Record<string, unknown>) {
     if (!usage || typeof usage !== 'object') {
@@ -59,13 +55,18 @@ function normalizeUsage(usage: Record<string, unknown>) {
     };
 }
 
-router.post('/credits', async (req, res) => {
+router.post('/credits', async (context) => {
+    const { set } = context;
+    const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+    const directories = user?.directories as Record<string, string> | undefined;
+
     try {
-        const key = readSecret(req.user.directories, SECRET_KEYS.NANOGPT);
+        const key = directories ? readSecret(directories as any, SECRET_KEYS.NANOGPT) : '';
 
         if (!key) {
             console.warn('NanoGPT API key not found');
-            return res.sendStatus(400);
+            set.status = 400;
+            return;
         }
 
         const headers = {
@@ -84,11 +85,12 @@ router.post('/credits', async (req, res) => {
                 'NanoGPT balance request failed',
                 balanceReq.status === 'fulfilled' ? balanceReq.value.statusText : balanceReq.reason,
             );
-            return res.sendStatus(500);
+            set.status = 500;
+            return;
         }
 
         const balanceData = (await balanceReq.value.json()) as Record<string, unknown>;
-        const result = {
+        const result: Record<string, unknown> = {
             usd_balance: parseNumber(balanceData.usd_balance),
             nano_balance: parseNumber(balanceData.nano_balance),
             subscription: null,
@@ -98,7 +100,6 @@ router.post('/credits', async (req, res) => {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic NanoGPT subscription API
             const subData: any = await subReq.value.json();
             if (subData.active) {
-                // @ts-expect-error TS(2322) FIXME: Type '{ active: boolean; state: string; allowOvera... Remove this comment to see the full error message
                 result.subscription = {
                     active: true,
                     state: String(subData.state || ''),
@@ -122,31 +123,31 @@ router.post('/credits', async (req, res) => {
             console.warn('NanoGPT subscription usage request failed', subReq.reason);
         }
 
-        return res.json(result);
+        return result;
     } catch (error) {
         console.error(error);
-        return res.sendStatus(500);
+        set.status = 500;
     }
 });
 
-router.post('/models/providers', async (req, res) => {
+router.post('/models/providers', async (context) => {
+    const body = context.body as Record<string, unknown>;
+
     try {
-        const { model } = req.body;
+        const model = body.model as string;
 
         if (!model) {
-            return res.status(400).json({ supportsProviderSelection: false, providers: [] });
+            return { supportsProviderSelection: false, providers: [] };
         }
 
         const encodedModel = encodeURIComponent(model);
         const response = await fetch(`${API_NANOGPT}/models/${encodedModel}/providers`, {
             method: 'GET',
-            headers: {
-                Accept: 'application/json',
-            },
+            headers: { Accept: 'application/json' },
         });
 
         if (!response.ok) {
-            return res.json({ supportsProviderSelection: false, providers: [] });
+            return { supportsProviderSelection: false, providers: [] };
         }
 
         const data = (await response.json()) as Record<string, unknown>;
@@ -157,12 +158,12 @@ router.post('/models/providers', async (req, res) => {
                   .filter(Boolean)
             : [];
 
-        return res.json({
+        return {
             supportsProviderSelection: Boolean(data?.supportsProviderSelection),
             providers,
-        });
+        };
     } catch (error) {
         console.error(error);
-        return res.sendStatus(500);
+        return new Response(null, { status: 500 });
     }
 });
