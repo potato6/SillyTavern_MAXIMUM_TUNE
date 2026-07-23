@@ -11,9 +11,12 @@
  *   cors        → @elysiajs/cors plugin
  *   static      → @elysiajs/static plugin
  *
- * Middleware that depends on Express-specific req/res (basicAuth, session, CSRF,
- * request-filter, whitelist, access-log) will be converted to Elysia plugins
- * in later phases.  For now the factory provides the hooks they need.
+ * In `bridgeMode` only the `resolve` plugin runs — CORS, compression, security
+ * headers, static, etc. are handled by the still-active Express middleware.
+ * This lets us incremental-migrate routers while keeping Express in front.
+ *
+ * In standalone mode (bridgeMode = false / omitted) the full middleware stack
+ * is applied and the result replaces the Express app entirely.
  */
 
 import { Elysia } from 'elysia';
@@ -23,6 +26,8 @@ import { staticPlugin } from '@elysiajs/static';
 // ── Configuration ────────────────────────────────────────────────────────────
 
 export interface ElysiaAppConfig {
+    /** When true, only sets up the resolve bridge (no CORS/static/security/compression). */
+    bridgeMode?: boolean;
     /** CORS settings (mirrors config.yaml cors.*).  null/undefined → disabled. */
     cors?: {
         enabled: boolean;
@@ -53,6 +58,7 @@ export interface ElysiaAppConfig {
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 const responseTimers = new WeakMap<Request, number>();
+const startTimeSym = Symbol('responseStart');
 
 // ── Factory ──────────────────────────────────────────────────────────────────
 
@@ -67,19 +73,39 @@ const responseTimers = new WeakMap<Request, number>();
  */
 export function createElysiaApp(config?: ElysiaAppConfig): Elysia {
     const { maxBodySize } = config ?? {};
+    const bridgeMode = config?.bridgeMode ?? false;
 
-    const app = new Elysia({
-        // Let Elysia normalise request / response types automatically.
+    // Builder — we build the chain based on config.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let app: any = new Elysia({
         normalize: true,
     });
 
+    // ── Resolve bridge (always runs) ───────────────────────────────────────
+    // In bridge mode, mountElysia passes Express user/session via header.
+    // In standalone mode, middleware plugins populate these later.
+    app = app.resolve(({ request }: { request: Request }) => {
+        const raw = request.headers.get('x-elysia-ctx');
+        if (!raw) return {};
+        try {
+            const ctx = JSON.parse(raw) as Record<string, unknown>;
+            return {
+                user: ctx.user ?? null,
+                session: ctx.session ?? null,
+            };
+        } catch {
+            return {};
+        }
+    });
+
+    if (bridgeMode) {
+        return app as Elysia;
+    }
+
     // ── 1.  Body size limit ────────────────────────────────────────────────
-    // Elysia does not expose a built-in body-size cap, so we enforce it via
-    // the onParse hook.  We let Elysia's default parsers run but abort early
-    // when Content-Length exceeds the limit.
     if (maxBodySize) {
         const maxBytes = parseBytes(maxBodySize);
-        app.onParse({ as: 'global' }, ({ request }) => {
+        app = app.onParse({ as: 'global' }, ({ request }: { request: Request }) => {
             const cl = request.headers.get('content-length');
             if (cl && Number(cl) > maxBytes) {
                 return new Response('Request body too large', { status: 413 });
@@ -87,20 +113,21 @@ export function createElysiaApp(config?: ElysiaAppConfig): Elysia {
         });
     }
 
-    // ── 2.  Security headers (replaces `helmet({ contentSecurityPolicy: false })`) ─
-    app.onBeforeHandle({ as: 'global' }, ({ set }) => {
-        set.headers['X-Content-Type-Options'] ??= 'nosniff';
-        set.headers['X-Frame-Options'] ??= 'DENY';
-        set.headers['X-XSS-Protection'] ??= '0';
-        set.headers['Referrer-Policy'] ??= 'strict-origin-when-cross-origin';
-        set.headers['Permissions-Policy'] ??=
+    // ── 2.  Security headers ──────────────────────────────────────────────
+    app = app.onBeforeHandle({ as: 'global' }, ({ set }: { set: Record<string, unknown> }) => {
+        const headers = set.headers as Record<string, string>;
+        headers['X-Content-Type-Options'] ??= 'nosniff';
+        headers['X-Frame-Options'] ??= 'DENY';
+        headers['X-XSS-Protection'] ??= '0';
+        headers['Referrer-Policy'] ??= 'strict-origin-when-cross-origin';
+        headers['Permissions-Policy'] ??=
             'camera=(), microphone=(), geolocation=()';
     });
 
-    // ── 3.  CORS (replaces npm `cors`) ─────────────────────────────────────
+    // ── 3.  CORS ──────────────────────────────────────────────────────────
     const corsCfg = config?.cors;
     if (corsCfg?.enabled) {
-        app.use(
+        app = app.use(
             cors({
                 origin: corsCfg.origin || '*',
                 methods: corsCfg.methods?.length
@@ -120,51 +147,47 @@ export function createElysiaApp(config?: ElysiaAppConfig): Elysia {
         );
     }
 
-    // ── 4.  Response time header (replaces npm `response-time`) ────────────
-    app.onBeforeHandle({ as: 'global' }, ({ request }) => {
+    // ── 4.  Response time header ──────────────────────────────────────────
+    app = app.onBeforeHandle({ as: 'global' }, ({ request }: { request: Request }) => {
         responseTimers.set(request, performance.now());
     });
 
-    app.onAfterHandle({ as: 'global' }, ({ request, set }) => {
+    app = app.onAfterHandle({ as: 'global' }, ({ request, set }: { request: Request; set: Record<string, unknown> }) => {
         const start = responseTimers.get(request);
         if (start !== undefined) {
-            const elapsed = performance.now() - start;
-            set.headers['X-Response-Time'] = `${elapsed.toFixed(3)}ms`;
+            const headers = set.headers as Record<string, string>;
+            headers['X-Response-Time'] = `${(performance.now() - start).toFixed(3)}ms`;
             responseTimers.delete(request);
         }
     });
 
-    // ── 5.  Response compression (replaces npm `compression`) ──────────────
-    // Compress text-like responses when the client advertises gzip/deflate.
-    // Uses the Web CompressionStream API available in Bun.
-    app.onAfterHandle({ as: 'global' }, ({ response, request, set }) => {
+    // ── 5.  Response compression ──────────────────────────────────────────
+    app = app.onAfterHandle({ as: 'global' }, ({ response, request, set }: {
+        response: unknown;
+        request: Request;
+        set: Record<string, unknown>;
+    }) => {
         if (!response || typeof response !== 'object') return;
-        if (set.headers['Content-Encoding']?.toString()) return; // already compressed
+        const headers = set.headers as Record<string, string>;
+        if (headers['Content-Encoding']) return;
 
         const accept = request.headers.get('accept-encoding') ?? '';
         if (!accept.includes('gzip') && !accept.includes('deflate')) return;
 
-        const encoding = accept.includes('gzip') ? 'gzip' as const : 'deflate' as const;
-
-        // Only compress text-like content types.
-        const ct = (set.headers['Content-Type'] ?? '').toString();
+        const encoding: 'gzip' | 'deflate' = accept.includes('gzip') ? 'gzip' : 'deflate';
+        const ct = headers['Content-Type'] ?? '';
         if (!/text|json|xml|javascript|css/.test(ct)) return;
 
-        // If the handler returned a plain value, Elysia wraps it lazily and
-        // `response` here will be a Response.  We need a Response to pipe.
         if (!(response instanceof Response)) return;
-
         const body = response.body;
         if (!body) return;
 
-        // Skip if the response is already small (not worth compressing).
         const cl = response.headers.get('content-length');
         if (cl && Number(cl) < 1024) return;
 
-        set.headers['Content-Encoding'] = encoding as string;
-        set.headers['Vary'] = 'Accept-Encoding';
+        headers['Content-Encoding'] = encoding;
+        headers['Vary'] = 'Accept-Encoding';
 
-        // Strip content-length since it changes after compression.
         const originalHeaders = new Headers(response.headers);
         originalHeaders.delete('content-length');
 
@@ -177,10 +200,10 @@ export function createElysiaApp(config?: ElysiaAppConfig): Elysia {
         });
     });
 
-    // ── 6.  Static file serving (replaces express.static) ──────────────────
+    // ── 6.  Static file serving ───────────────────────────────────────────
     const staticCfg = config?.static;
     if (staticCfg?.assets ?? staticCfg?.prefix !== undefined) {
-        app.use(staticPlugin({
+        app = app.use(staticPlugin({
             assets: staticCfg.assets ?? 'public/dist',
             prefix: staticCfg.prefix ?? '',
             indexHTML: staticCfg.indexHTML ?? false,
@@ -191,31 +214,11 @@ export function createElysiaApp(config?: ElysiaAppConfig): Elysia {
         }));
     }
 
-    // ── 7.  Error handler ──────────────────────────────────────────────────
-    app.onError({ as: 'global' }, ({ code, error, set }) => {
-        if (code === 'NOT_FOUND') {
-            set.status = 404;
-            return 'Not Found';
-        }
-
-        if (code === 'VALIDATION') {
-            set.status = 400;
-            return { error: 'Validation Error', details: (error as Error).message };
-        }
-
-        console.error('Unhandled error:', error);
-        set.status = 500;
-        return 'Internal Server Error';
-    });
-
-    return app;
+    return app as Elysia;
 }
 
 // ── Internal utilities ───────────────────────────────────────────────────────
 
-/**
- * Parse a human-readable byte string ("500mb", "1gb", "10kb") to a number.
- */
 function parseBytes(value: string): number {
     const match = value.match(/^(\d+(?:\.\d+)?)\s*(b|kb|mb|gb|tb)$/i);
     if (!match) return Number(value) || 0;
@@ -231,5 +234,3 @@ function parseBytes(value: string): number {
         default: return num;
     }
 }
-
-

@@ -1,20 +1,26 @@
 import path from 'node:path';
-import express from 'express';
+import { Elysia } from 'elysia';
 import sanitize from 'sanitize-filename';
 import { sync as writeFileAtomicSync } from 'write-file-atomic';
 
-export const router = express.Router();
+export const router = new Elysia({ prefix: '/api/moving-ui' })
+    .post('/save', (context) => {
+        const { body, set } = context;
+        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const bodyAny = body as Record<string, unknown> | null;
+        if (!bodyAny?.name) {
+            set.status = 400;
+            return;
+        }
 
-router.post('/save', (request, response) => {
-    if (!request.body || !request.body.name) {
-        return response.sendStatus(400);
-    }
+        const directories = user?.directories as Record<string, string> | undefined;
 
-    const filename = path.join(
-        request.user.directories.movingUI,
-        sanitize(`${request.body.name}.json`),
-    );
-    writeFileAtomicSync(filename, JSON.stringify(request.body, null, 4), 'utf8');
+        const filename = path.join(
+            directories?.movingUI ?? '',
+            sanitize(`${bodyAny.name}.json`),
+        );
+        writeFileAtomicSync(filename, JSON.stringify(body, null, 4), 'utf8');
 
-    return response.sendStatus(200);
-});
+        set.status = 204;
+        return;
+    });

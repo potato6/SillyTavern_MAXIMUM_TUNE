@@ -180,7 +180,7 @@ export function setupPrivateEndpoints(app: import('express').Express) {
     app.use('/', userDataRouter);
     app.use('/api/users', usersPrivateRouter);
     app.use('/api/users', usersAdminRouter);
-    app.use('/api/moving-ui', movingUIRouter);
+    app.use(mountElysia(movingUIRouter));
     app.use('/api/images', imagesRouter);
     app.use('/api/quick-replies', quickRepliesRouter);
     app.use('/api/avatars', avatarsRouter);
@@ -443,6 +443,7 @@ import hostWhitelistMiddleware from './middleware/hostWhitelist.js';
 import userCssMiddleware from './middleware/userCss.js';
 import { UPLOADS_DIRECTORY } from './constants.js';
 import { router as usersPublicRouter } from './endpoints/users-public.js';
+import { mountElysia } from './elysia-mount.js';
 
 // Work around a node v20.0.0, v20.1.0, and v20.2.0 bug
 if (process.versions?.node?.match(/20\.[0-2]\.0/)) {
