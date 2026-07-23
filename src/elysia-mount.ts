@@ -98,8 +98,15 @@ export function mountElysia(elysiaApp: { fetch: (req: Request) => Response | Pro
                 }
             });
 
-            const bodyText = await webRes.text();
-            res.send(bodyText || undefined);
+            // Use arrayBuffer for binary content types to avoid UTF-8 corruption
+            const ct = webRes.headers.get('content-type') ?? '';
+            if (ct.startsWith('text/') || ct.includes('json') || ct.includes('xml') || ct.includes('javascript') || ct.includes('svg')) {
+                const bodyText = await webRes.text();
+                res.send(bodyText || undefined);
+            } else {
+                const bodyBuffer = await webRes.arrayBuffer();
+                res.send(new Uint8Array(bodyBuffer));
+            }
         } catch (err) {
             next(err);
         }
