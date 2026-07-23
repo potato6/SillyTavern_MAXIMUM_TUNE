@@ -97,7 +97,9 @@ const basicAuthMiddleware = async function (
                 request.method,
                 request.originalUrl,
             );
-            return retryAfter(response as unknown as Record<string, unknown>, error).sendStatus(429);
+            const rlError = error as RateLimiterRes;
+            retryAfter(response as unknown as Record<string, unknown>, rlError);
+            return response.sendStatus(429);
         }
         console.error('Basic auth error:', error);
         return response.sendStatus(500);

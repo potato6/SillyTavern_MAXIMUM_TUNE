@@ -945,7 +945,7 @@ export const router = new Elysia({ prefix: '/api/data-maid' })
 
                 if (
                     !isPathUnderParent(
-                        (user.directories as Record<string, string>).root,
+                        ((user?.directories as Record<string, string>) ?? {}).root ?? '',
                         fileEntry.path,
                     )
                 ) {

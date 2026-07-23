@@ -307,7 +307,7 @@ export function setAdditionalHeadersByType(
     };
 
     const getHeaders = headerGetters[type];
-    const headers = getHeaders ? getHeaders(directories, secretId !== null ? secretId : undefined) : {};
+    const headers = getHeaders ? getHeaders(directories, (secretId ?? null) as null | undefined) : {};
 
     if (typeof server === 'string' && server.length > 0) {
         try {
