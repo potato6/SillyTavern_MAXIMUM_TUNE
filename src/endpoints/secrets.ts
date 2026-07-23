@@ -560,6 +560,10 @@ export const router = new Elysia({ prefix: '/api/secrets' })
             unknown
         > | null;
         const directories = user?.directories as Record<string, string> | undefined;
+        if (!directories) {
+            set.status = 401;
+            return { error: 'Not authenticated' };
+        }
         try {
             const manager = new SecretManager(directories as any);
             const state = manager.getSecretState();

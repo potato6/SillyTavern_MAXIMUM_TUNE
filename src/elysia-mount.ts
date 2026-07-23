@@ -7,9 +7,10 @@
  *
  * At runtime:
  *   1. Express middleware chain sets `req.user` / `req.session` as usual.
- *   2. This bridge captures them and passes via `x-elysia-ctx` header.
- *   3. A parent Elysia instance with a `resolve` plugin extracts them into context.
- *   4. Handlers access `user` / `session` directly in their context.
+ *   2. This bridge captures them and attaches directly to the Web Request
+ *      via a Symbol property, bypassing JSON serialization issues.
+ *   3. An Elysia resolve plugin extracts them into the handler context.
+ *   4. Handlers access `user` / `session` / `file` directly.
  *
  * When Elysia returns 404 (route not matched), we call `next()` so other
  * Express middleware (or unconverted routers) get a chance to handle it.
@@ -21,23 +22,8 @@
 import type { Request as ExpressRequest, Response as ExpressResponse, NextFunction } from 'express';
 import { Elysia } from 'elysia';
 
-// Resolve plugin used by every bridged router to extract user/session/file
-// from the x-elysia-ctx header that mountElysia sets.
-const bridgeResolve = new Elysia({ name: 'mount-elysia-bridge' })
-    .resolve(({ request }) => {
-        const raw = request.headers.get('x-elysia-ctx');
-        if (!raw) return {};
-        try {
-            const ctx = JSON.parse(raw) as Record<string, unknown>;
-            return {
-                user: ctx.user ?? null,
-                session: ctx.session ?? null,
-                file: ctx.file ?? null,
-            };
-        } catch {
-            return {};
-        }
-    });
+/** Symbol key for storing Express context on the Web Request object. */
+const CTX_SYM = Symbol('elysia-ctx');
 
 /**
  * Wrap an Elysia instance so it can be used as Express middleware.
@@ -46,9 +32,11 @@ const bridgeResolve = new Elysia({ name: 'mount-elysia-bridge' })
  * The bridge 404-passthrough ensures only matching routes are handled.
  */
 export function mountElysia(elysiaApp: { fetch: (req: Request) => Response | Promise<Response> }) {
-    // Wrap the router in a parent that has the resolve plugin.
-    // This ensures user/session/file are available in EVERY router's context.
-    const wrapped = new Elysia().use(bridgeResolve).use(elysiaApp as any);
+    const wrapped = new Elysia()
+        .resolve(({ request }) => {
+            return (request as unknown as Record<symbol, unknown>)[CTX_SYM] as Record<string, unknown> ?? {};
+        })
+        .use(elysiaApp as any);
 
     return async (req: ExpressRequest, res: ExpressResponse, next: NextFunction) => {
         try {
@@ -67,13 +55,15 @@ export function mountElysia(elysiaApp: { fetch: (req: Request) => Response | Pro
             }
 
             const headers = new Headers(req.headers as Record<string, string>);
+            const webReq = new Request(url, { method: req.method, headers, body });
 
-            // Pass Express augmentations (user, session, file) to Elysia via header.
+            // Attach Express user/session/file directly to the Web Request object
+            // using a Symbol key — no JSON serialization needed.
             const reqAny = req as unknown as Record<string, unknown>;
+            const ctx: Record<string, unknown> = {};
             const user = reqAny.user as Record<string, unknown> | null;
             const session = reqAny.session as Record<string, unknown> | null;
             const file = reqAny.file as Record<string, unknown> | null;
-            const ctx: Record<string, unknown> = {};
             if (user) ctx.user = user;
             if (session) ctx.session = session;
             if (file) {
@@ -88,15 +78,7 @@ export function mountElysia(elysiaApp: { fetch: (req: Request) => Response | Pro
                     size: file.size,
                 };
             }
-            if (Object.keys(ctx).length > 0) {
-                headers.set('x-elysia-ctx', JSON.stringify(ctx));
-            }
-
-            const webReq = new Request(url, {
-                method: req.method,
-                headers,
-                body,
-            });
+            (webReq as unknown as Record<symbol, unknown>)[CTX_SYM] = ctx;
 
             // Dispatch to wrapped Elysia (has resolve plugin + user router).
             const webRes = await wrapped.fetch(webReq);
