@@ -1185,7 +1185,7 @@ function createRouteHandler(directoryFn: (context: any) => string) {
                 context.set.headers ??= {};
                 context.set.headers['Cache-Control'] = 'must-understand, no-store';
             }
-            return new Response(Bun.file(fullPath));
+            return new Response(Bun.file(fullPath), { headers: { 'Content-Type': Bun.file(fullPath).type || 'application/octet-stream' } });
         } catch {
             context.set.status = 500;
             return;
@@ -1210,7 +1210,7 @@ function createExtensionsRouteHandler(directoryFn: (context: any) => string) {
             }
             const existsLocal = fs.existsSync(localPath);
             if (existsLocal && fs.statSync(localPath).isFile()) {
-                return new Response(Bun.file(localPath));
+                return new Response(Bun.file(localPath), { headers: { 'Content-Type': Bun.file(localPath).type || 'application/octet-stream' } });
             }
 
             const globalPath = path.join(PUBLIC_DIRECTORIES.globalExtensions, filePath);
@@ -1220,7 +1220,7 @@ function createExtensionsRouteHandler(directoryFn: (context: any) => string) {
             }
             const existsGlobal = fs.existsSync(globalPath);
             if (existsGlobal && fs.statSync(globalPath).isFile()) {
-                return new Response(Bun.file(globalPath));
+                return new Response(Bun.file(globalPath), { headers: { 'Content-Type': Bun.file(globalPath).type || 'application/octet-stream' } });
             }
 
             context.set.status = 404;

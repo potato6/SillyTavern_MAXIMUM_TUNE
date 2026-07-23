@@ -18,9 +18,8 @@ import { safeReadFileSync, getConfigValue, setupLogLevel, getVersion } from './u
 import { loadPlugins } from './plugin-loader.js';
 
 import hostWhitelistMiddleware from './middleware/hostWhitelist.js';
-import accessLoggerMiddleware, { migrateAccessLog } from './middleware/accessLogWriter.js';
 import basicAuthMiddleware from './middleware/basicAuth.js';
-import getLibServeMiddleware from './middleware/lib-serve.js';
+import accessLoggerMiddleware, { migrateAccessLog } from './middleware/accessLogWriter.js';
 
 import {
     initUserStorage, ensurePublicDirectoriesExist, migrateUserData, migrateSystemPrompts,
@@ -297,13 +296,27 @@ export function buildApp() {
     // User CSS
     app.get('/css/user.css', async ({ set }: any) => {
         const userCssPath = path.resolve(path.join(globalThis.DATA_ROOT, '_css', 'user.css'));
-        if (fs.existsSync(userCssPath)) return new Response(Bun.file(userCssPath));
+        if (fs.existsSync(userCssPath)) return new Response(Bun.file(userCssPath), { headers: { 'Content-Type': 'text/css; charset=utf-8' } });
         set.status = 404;
     });
 
-    // Static files (lib-serve, then static)
-    const libMiddleware = getLibServeMiddleware();
-    app.onBeforeHandle({ as: 'global' }, adaptMiddleware(libMiddleware));
+    // Lib file serving (replaces Express webpack-dev-middleware)
+    app.get('/lib.js', async ({ set }: any) => {
+        const appVersion = await getVersion();
+        const webpackRoot = path.resolve(globalThis.DATA_ROOT || process.cwd(), '_webpack');
+        const cacheSeed = JSON.stringify([appVersion.pkgVersion, appVersion.gitRevision, 'bun']);
+        const cacheVersion = Bun.hash(cacheSeed).toString(16);
+        const outputPath = path.join(webpackRoot, cacheVersion, 'output');
+        const filePath = path.join(outputPath, 'lib.js');
+        if (fs.existsSync(filePath)) {
+            return new Response(Bun.file(filePath), {
+                headers: { 'Content-Type': 'application/javascript; charset=utf-8' },
+            });
+        }
+        set.status = 404;
+    });
+
+    // Static files — @elysiajs/static handles Content-Type automatically
     app.use(staticPlugin({
         assets: path.join(serverDirectory, 'public/dist'),
         prefix: '/',
@@ -380,6 +393,28 @@ export function buildApp() {
 
 const cliArgs = globalThis.COMMAND_LINE_ARGS;
 
+async function buildLibBundle() {
+    console.log();
+    console.log('Compiling frontend libraries with Bun...');
+    const appVersion = await getVersion();
+    const webpackRoot = path.resolve(globalThis.DATA_ROOT || process.cwd(), '_webpack');
+    const cacheSeed = JSON.stringify([appVersion.pkgVersion, appVersion.gitRevision, 'bun']);
+    const cacheVersion = Bun.hash(cacheSeed).toString(16);
+    const outdir = path.join(webpackRoot, cacheVersion, 'output');
+    const result = await Bun.build({
+        entrypoints: ['./public/lib.js'],
+        outdir,
+        format: 'esm',
+    });
+    if (!result.success) {
+        console.error('Build failed');
+        for (const message of result.logs) console.error(message);
+        throw new Error('Frontend build failed');
+    }
+    console.log(`Successfully built to ${outdir}`);
+    console.log();
+}
+
 async function start() {
     await initUserStorage(globalThis.DATA_ROOT);
     ensurePublicDirectoriesExist();
@@ -398,6 +433,7 @@ async function start() {
     migrateAccessLog();
     await settingsInit();
     await statsInit();
+    await buildLibBundle();
 
     const pluginsDirectory = path.join(serverDirectory, 'plugins');
     const cleanupPlugins = await loadPlugins(app as any, pluginsDirectory);
