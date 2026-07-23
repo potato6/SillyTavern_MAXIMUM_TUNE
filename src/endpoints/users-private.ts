@@ -1,296 +1,438 @@
 import path from 'node:path';
-import { promises as fsPromises } from 'node:fs';
+import { promises as fsPromises, createWriteStream } from 'node:fs';
 import crypto from 'node:crypto';
+import os from 'node:os';
 
 import storage from 'node-persist';
-import express from 'express';
+import { Elysia } from 'elysia';
+import { Archiver } from 'archiver';
 
 import {
     getUserAvatar,
     toKey,
     getPasswordHash,
     getPasswordSalt,
-    createBackupArchive,
     ensurePublicDirectoriesExist,
     toAvatarKey,
     getAccountVersion,
+    getUserDirectories,
 } from '../users.js';
 import { SETTINGS_FILE } from '../constants.js';
 import { checkForNewContent, CONTENT_TYPES } from './content-manager.js';
-import { color, Cache, getConfigValue } from '../util.js';
+import { color, Cache, getConfigValue, generateTimestamp } from '../util.js';
 
 const RESET_CACHE = new Cache(5 * 60 * 1000);
 
-export const router = express.Router();
+export const router = new Elysia({ prefix: '/api/users' })
+    .post('/logout', (context) => {
+        const { set } = context;
+        const session = (context as unknown as Record<string, unknown>).session as Record<
+            string,
+            unknown
+        > | null;
 
-router.post('/logout', async (request, response) => {
-    try {
-        if (!request.session) {
-            console.error('Session not available');
-            return response.sendStatus(500);
+        try {
+            if (!session) {
+                console.error('Session not available');
+                set.status = 500;
+                return;
+            }
+
+            session.handle = null;
+            session.csrfToken = null;
+            session.version = null;
+            set.status = 204;
+        } catch (error) {
+            console.error(error);
+            set.status = 500;
         }
+    })
+    .get('/me', async (context) => {
+        const { set } = context;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
 
-        request.session.handle = null;
-        request.session.csrfToken = null;
-        request.session.version = null;
-        request.session = null;
-        return response.sendStatus(204);
-    } catch (error) {
-        console.error(error);
-        return response.sendStatus(500);
-    }
-});
+        try {
+            if (!user) {
+                set.status = 403;
+                return;
+            }
 
-router.get('/me', async (request, response) => {
-    try {
-        if (!request.user) {
-            return response.sendStatus(403);
+            const profile = user.profile as Record<string, unknown>;
+            const viewModel = {
+                handle: profile.handle,
+                name: profile.name,
+                avatar: await getUserAvatar(profile.handle as string),
+                admin: profile.admin,
+                password: !!profile.password,
+                created: profile.created,
+            };
+
+            return viewModel;
+        } catch (error) {
+            console.error(error);
+            set.status = 500;
         }
+    })
+    .post('/change-avatar', async (context) => {
+        const { body, set } = context;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
+        const bodyAny = body as Record<string, unknown> | null;
 
-        const user = request.user.profile;
-        const viewModel = {
-            handle: user.handle,
-            name: user.name,
-            avatar: await getUserAvatar(user.handle),
-            admin: user.admin,
-            password: !!user.password,
-            created: user.created,
-        };
+        try {
+            if (!bodyAny?.handle) {
+                console.warn('Change avatar failed: Missing required fields');
+                set.status = 400;
+                return { error: 'Missing required fields' };
+            }
 
-        return response.json(viewModel);
-    } catch (error) {
-        console.error(error);
-        return response.sendStatus(500);
-    }
-});
+            const profile = user?.profile as Record<string, unknown> | undefined;
+            if (bodyAny.handle !== profile?.handle && !profile?.admin) {
+                console.error('Change avatar failed: Unauthorized');
+                set.status = 403;
+                return { error: 'Unauthorized' };
+            }
 
-router.post('/change-avatar', async (request, response) => {
-    try {
-        if (!request.body.handle) {
-            console.warn('Change avatar failed: Missing required fields');
-            return response.status(400).json({ error: 'Missing required fields' });
+            // Avatar is not a data URL or not an empty string
+            const avatar = bodyAny.avatar as string;
+            if (!avatar.startsWith('data:image/') && avatar !== '') {
+                console.warn('Change avatar failed: Invalid data URL');
+                set.status = 400;
+                return { error: 'Invalid data URL' };
+            }
+
+            /** @type {import('../users.js').User} */
+            const existingUser = (await storage.getItem(toKey(bodyAny.handle as string))) as Record<
+                string,
+                unknown
+            > | null;
+
+            if (!existingUser) {
+                console.error('Change avatar failed: User not found');
+                set.status = 404;
+                return { error: 'User not found' };
+            }
+
+            await storage.setItem(toAvatarKey(bodyAny.handle as string), avatar);
+            set.status = 204;
+        } catch (error) {
+            console.error(error);
+            set.status = 500;
         }
+    })
+    .post('/change-password', async (context) => {
+        const { body, set } = context;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
+        const session = (context as unknown as Record<string, unknown>).session as Record<
+            string,
+            unknown
+        > | null;
+        const bodyAny = body as Record<string, unknown> | null;
 
-        if (request.body.handle !== request.user.profile.handle && !request.user.profile.admin) {
-            console.error('Change avatar failed: Unauthorized');
-            return response.status(403).json({ error: 'Unauthorized' });
+        try {
+            if (!bodyAny?.handle) {
+                console.warn('Change password failed: Missing required fields');
+                set.status = 400;
+                return { error: 'Missing required fields' };
+            }
+
+            const profile = user?.profile as Record<string, unknown> | undefined;
+            if (bodyAny.handle !== profile?.handle && !profile?.admin) {
+                console.error('Change password failed: Unauthorized');
+                set.status = 403;
+                return { error: 'Unauthorized' };
+            }
+
+            /** @type {import('../users.js').User} */
+            const existingUser = (await storage.getItem(toKey(bodyAny.handle as string))) as Record<
+                string,
+                unknown
+            > | null;
+
+            if (!existingUser) {
+                console.error('Change password failed: User not found');
+                set.status = 404;
+                return { error: 'User not found' };
+            }
+
+            if (!existingUser.enabled) {
+                console.error('Change password failed: User is disabled');
+                set.status = 403;
+                return { error: 'User is disabled' };
+            }
+
+            if (
+                !profile?.admin &&
+                existingUser.password &&
+                existingUser.password !==
+                    getPasswordHash(bodyAny.oldPassword as string, existingUser.salt as string)
+            ) {
+                console.error('Change password failed: Incorrect password');
+                set.status = 403;
+                return { error: 'Incorrect password' };
+            }
+
+            if (bodyAny.newPassword) {
+                const salt = getPasswordSalt();
+                existingUser.password = getPasswordHash(bodyAny.newPassword as string, salt);
+                existingUser.salt = salt;
+            } else {
+                existingUser.password = '';
+                existingUser.salt = '';
+            }
+
+            await storage.setItem(toKey(bodyAny.handle as string), existingUser);
+
+            // Update session version to keep the current session valid after password change
+            if (session && session.handle === existingUser.handle) {
+                session.version = getAccountVersion(existingUser as any);
+            }
+
+            set.status = 204;
+        } catch (error) {
+            console.error(error);
+            set.status = 500;
         }
+    })
+    .post('/backup', async (context) => {
+        const { body, set } = context;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
 
-        // Avatar is not a data URL or not an empty string
-        if (!request.body.avatar.startsWith('data:image/') && request.body.avatar !== '') {
-            console.warn('Change avatar failed: Invalid data URL');
-            return response.status(400).json({ error: 'Invalid data URL' });
+        try {
+            const allowFullDataBackup = !!getConfigValue(
+                'backups.allowFullDataBackup',
+                true,
+                'boolean' as const,
+            );
+
+            if (!allowFullDataBackup) {
+                console.warn('Backup failed: Full data backup is disabled in configuration');
+                set.status = 403;
+                return { error: 'Full data backup is disabled' };
+            }
+
+            const bodyAny = body as Record<string, unknown> | null;
+            const handle = bodyAny?.handle as string;
+
+            if (!handle) {
+                console.warn('Backup failed: Missing required fields');
+                set.status = 400;
+                return { error: 'Missing required fields' };
+            }
+
+            const profile = user?.profile as Record<string, unknown> | undefined;
+            if (handle !== profile?.handle && !profile?.admin) {
+                console.error('Backup failed: Unauthorized');
+                set.status = 403;
+                return { error: 'Unauthorized' };
+            }
+
+            // Create the backup archive to a temporary file instead of piping to Express response
+            const directories = getUserDirectories(handle);
+            const timestamp = generateTimestamp();
+            const tempFilePath = path.join(os.tmpdir(), `${handle}-${timestamp}.zip`);
+
+            // @ts-expect-error FIXME: Archiver constructor overload mismatch
+            const archive = new Archiver('zip');
+            const output = createWriteStream(tempFilePath);
+
+            await new Promise<void>((resolve, reject) => {
+                output.on('close', resolve);
+                output.on('error', reject);
+                archive.on('error', reject);
+
+                archive.pipe(output);
+
+                archive.on('error', function (err: Error) {
+                    console.error('Archive error:', err.message);
+                });
+
+                archive.glob('**/*', {
+                    cwd: directories.root,
+                    follow: false,
+                    dot: true,
+                });
+
+                archive.finalize();
+            });
+
+            console.info('Archive wrote %d bytes', archive.pointer());
+
+            return new Response(Bun.file(tempFilePath), {
+                headers: {
+                    'Content-Disposition': `attachment; filename="${path.basename(tempFilePath)}"`,
+                    'Content-Type': 'application/zip',
+                },
+            });
+        } catch (error) {
+            console.error('Backup failed', error);
+            set.status = 500;
         }
+    })
+    .post('/reset-settings', async (context) => {
+        const { body, set } = context;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
+        const bodyAny = body as Record<string, unknown> | null;
 
-        /** @type {import('../users.js').User} */
-        const user = await storage.getItem(toKey(request.body.handle));
+        try {
+            const profile = user?.profile as Record<string, unknown> | undefined;
+            const password = bodyAny?.password as string;
 
-        if (!user) {
-            console.error('Change avatar failed: User not found');
-            return response.status(404).json({ error: 'User not found' });
+            if (
+                profile?.password &&
+                profile.password !== getPasswordHash(password, profile.salt as string)
+            ) {
+                console.warn('Reset settings failed: Incorrect password');
+                set.status = 403;
+                return { error: 'Incorrect password' };
+            }
+
+            const directories = user?.directories as Record<string, string> | undefined;
+            const pathToFile = path.join(directories?.root ?? '', SETTINGS_FILE);
+            await fsPromises.rm(pathToFile, { force: true });
+
+            const userDirs = user?.directories as
+                | import('../users.js').UserDirectoryList
+                | undefined;
+            await checkForNewContent(userDirs ? [userDirs] : [], [CONTENT_TYPES.SETTINGS]);
+
+            set.status = 204;
+        } catch (error) {
+            console.error('Reset settings failed', error);
+            set.status = 500;
         }
+    })
+    .post('/change-name', async (context) => {
+        const { body, set } = context;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
+        const bodyAny = body as Record<string, unknown> | null;
 
-        await storage.setItem(toAvatarKey(request.body.handle), request.body.avatar);
+        try {
+            if (!bodyAny?.name || !bodyAny?.handle) {
+                console.warn('Change name failed: Missing required fields');
+                set.status = 400;
+                return { error: 'Missing required fields' };
+            }
 
-        return response.sendStatus(204);
-    } catch (error) {
-        console.error(error);
-        return response.sendStatus(500);
-    }
-});
+            const profile = user?.profile as Record<string, unknown> | undefined;
+            if (bodyAny.handle !== profile?.handle && !profile?.admin) {
+                console.error('Change name failed: Unauthorized');
+                set.status = 403;
+                return { error: 'Unauthorized' };
+            }
 
-router.post('/change-password', async (request, response) => {
-    try {
-        if (!request.body.handle) {
-            console.warn('Change password failed: Missing required fields');
-            return response.status(400).json({ error: 'Missing required fields' });
+            /** @type {import('../users.js').User} */
+            const existingUser = (await storage.getItem(toKey(bodyAny.handle as string))) as Record<
+                string,
+                unknown
+            > | null;
+
+            if (!existingUser) {
+                console.warn('Change name failed: User not found');
+                set.status = 404;
+                return { error: 'User not found' };
+            }
+
+            existingUser.name = bodyAny.name;
+            await storage.setItem(toKey(bodyAny.handle as string), existingUser);
+
+            set.status = 204;
+        } catch (error) {
+            console.error('Change name failed', error);
+            set.status = 500;
         }
+    })
+    .post('/reset-step1', async (context) => {
+        const { set } = context;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
+        const profile = user?.profile as Record<string, unknown> | undefined;
 
-        if (request.body.handle !== request.user.profile.handle && !request.user.profile.admin) {
-            console.error('Change password failed: Unauthorized');
-            return response.status(403).json({ error: 'Unauthorized' });
+        try {
+            const resetCode = String(crypto.randomInt(1000, 9999));
+            console.log();
+            console.log(
+                color.magenta(
+                    `${(profile?.name as string) ?? 'User'}, your account reset code is: `,
+                ) + color.red(resetCode),
+            );
+            console.log();
+            RESET_CACHE.set(profile?.handle as string, resetCode);
+            set.status = 204;
+        } catch (error) {
+            console.error('Recover step 1 failed:', error);
+            set.status = 500;
         }
+    })
+    .post('/reset-step2', async (context) => {
+        const { body, set } = context;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
+        const profile = user?.profile as Record<string, unknown> | undefined;
+        const bodyAny = body as Record<string, unknown> | null;
 
-        /** @type {import('../users.js').User} */
-        const user = await storage.getItem(toKey(request.body.handle));
+        try {
+            if (!bodyAny?.code) {
+                console.warn('Recover step 2 failed: Missing required fields');
+                set.status = 400;
+                return { error: 'Missing required fields' };
+            }
 
-        if (!user) {
-            console.error('Change password failed: User not found');
-            return response.status(404).json({ error: 'User not found' });
+            if (
+                profile?.password &&
+                profile.password !==
+                    getPasswordHash(bodyAny.password as string, profile.salt as string)
+            ) {
+                console.warn('Recover step 2 failed: Incorrect password');
+                set.status = 400;
+                return { error: 'Incorrect password' };
+            }
+
+            const code = RESET_CACHE.get(profile?.handle as string);
+
+            if (!code || code !== bodyAny.code) {
+                console.warn('Recover step 2 failed: Incorrect code');
+                set.status = 400;
+                return { error: 'Incorrect code' };
+            }
+
+            console.info('Resetting account data:', profile?.handle);
+
+            const directories = user?.directories as Record<string, string> | undefined;
+            await fsPromises.rm(directories?.root ?? '', { recursive: true, force: true });
+
+            await ensurePublicDirectoriesExist();
+
+            const userDirs = user?.directories as
+                | import('../users.js').UserDirectoryList
+                | undefined;
+            await checkForNewContent(userDirs ? [userDirs] : []);
+
+            RESET_CACHE.remove(profile?.handle as string);
+            set.status = 204;
+        } catch (error) {
+            console.error('Recover step 2 failed:', error);
+            set.status = 500;
         }
-
-        if (!user.enabled) {
-            console.error('Change password failed: User is disabled');
-            return response.status(403).json({ error: 'User is disabled' });
-        }
-
-        if (
-            !request.user.profile.admin &&
-            user.password &&
-            user.password !== getPasswordHash(request.body.oldPassword, user.salt)
-        ) {
-            console.error('Change password failed: Incorrect password');
-            return response.status(403).json({ error: 'Incorrect password' });
-        }
-
-        if (request.body.newPassword) {
-            const salt = getPasswordSalt();
-            user.password = getPasswordHash(request.body.newPassword, salt);
-            user.salt = salt;
-        } else {
-            user.password = '';
-            user.salt = '';
-        }
-
-        await storage.setItem(toKey(request.body.handle), user);
-
-        // Update session version to keep the current session valid after password change
-        if (request.session && request.session.handle === user.handle) {
-            request.session.version = getAccountVersion(user);
-        }
-
-        return response.sendStatus(204);
-    } catch (error) {
-        console.error(error);
-        return response.sendStatus(500);
-    }
-});
-
-router.post('/backup', async (request, response) => {
-    try {
-        const allowFullDataBackup = !!getConfigValue(
-            'backups.allowFullDataBackup',
-            true,
-            'boolean' as const,
-        );
-
-        if (!allowFullDataBackup) {
-            console.warn('Backup failed: Full data backup is disabled in configuration');
-            return response.status(403).json({ error: 'Full data backup is disabled' });
-        }
-
-        const handle = request.body.handle;
-
-        if (!handle) {
-            console.warn('Backup failed: Missing required fields');
-            return response.status(400).json({ error: 'Missing required fields' });
-        }
-
-        if (handle !== request.user.profile.handle && !request.user.profile.admin) {
-            console.error('Backup failed: Unauthorized');
-            return response.status(403).json({ error: 'Unauthorized' });
-        }
-
-        await createBackupArchive(handle, response);
-    } catch (error) {
-        console.error('Backup failed', error);
-        return response.sendStatus(500);
-    }
-});
-
-router.post('/reset-settings', async (request, response) => {
-    try {
-        const password = request.body.password;
-
-        if (
-            request.user.profile.password &&
-            request.user.profile.password !== getPasswordHash(password, request.user.profile.salt)
-        ) {
-            console.warn('Reset settings failed: Incorrect password');
-            return response.status(403).json({ error: 'Incorrect password' });
-        }
-
-        const pathToFile = path.join(request.user.directories.root, SETTINGS_FILE);
-        await fsPromises.rm(pathToFile, { force: true });
-        await checkForNewContent([request.user.directories], [CONTENT_TYPES.SETTINGS]);
-
-        return response.sendStatus(204);
-    } catch (error) {
-        console.error('Reset settings failed', error);
-        return response.sendStatus(500);
-    }
-});
-
-router.post('/change-name', async (request, response) => {
-    try {
-        if (!request.body.name || !request.body.handle) {
-            console.warn('Change name failed: Missing required fields');
-            return response.status(400).json({ error: 'Missing required fields' });
-        }
-
-        if (request.body.handle !== request.user.profile.handle && !request.user.profile.admin) {
-            console.error('Change name failed: Unauthorized');
-            return response.status(403).json({ error: 'Unauthorized' });
-        }
-
-        /** @type {import('../users.js').User} */
-        const user = await storage.getItem(toKey(request.body.handle));
-
-        if (!user) {
-            console.warn('Change name failed: User not found');
-            return response.status(404).json({ error: 'User not found' });
-        }
-
-        user.name = request.body.name;
-        await storage.setItem(toKey(request.body.handle), user);
-
-        return response.sendStatus(204);
-    } catch (error) {
-        console.error('Change name failed', error);
-        return response.sendStatus(500);
-    }
-});
-
-router.post('/reset-step1', async (request, response) => {
-    try {
-        const resetCode = String(crypto.randomInt(1000, 9999));
-        console.log();
-        console.log(
-            color.magenta(`${request.user.profile.name}, your account reset code is: `) +
-                color.red(resetCode),
-        );
-        console.log();
-        RESET_CACHE.set(request.user.profile.handle, resetCode);
-        return response.sendStatus(204);
-    } catch (error) {
-        console.error('Recover step 1 failed:', error);
-        return response.sendStatus(500);
-    }
-});
-
-router.post('/reset-step2', async (request, response) => {
-    try {
-        if (!request.body.code) {
-            console.warn('Recover step 2 failed: Missing required fields');
-            return response.status(400).json({ error: 'Missing required fields' });
-        }
-
-        if (
-            request.user.profile.password &&
-            request.user.profile.password !==
-                getPasswordHash(request.body.password, request.user.profile.salt)
-        ) {
-            console.warn('Recover step 2 failed: Incorrect password');
-            return response.status(400).json({ error: 'Incorrect password' });
-        }
-
-        const code = RESET_CACHE.get(request.user.profile.handle);
-
-        if (!code || code !== request.body.code) {
-            console.warn('Recover step 2 failed: Incorrect code');
-            return response.status(400).json({ error: 'Incorrect code' });
-        }
-
-        console.info('Resetting account data:', request.user.profile.handle);
-        await fsPromises.rm(request.user.directories.root, { recursive: true, force: true });
-
-        await ensurePublicDirectoriesExist();
-        await checkForNewContent([request.user.directories]);
-
-        RESET_CACHE.remove(request.user.profile.handle);
-        return response.sendStatus(204);
-    } catch (error) {
-        console.error('Recover step 2 failed:', error);
-        return response.sendStatus(500);
-    }
-});
+    });

@@ -8,7 +8,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { imageSize } from 'image-size';
 import writeFileAtomic from 'write-file-atomic';
-import express from 'express';
+import { Elysia } from 'elysia';
 import { inflateSync } from 'node:zlib';
 import { getConfigValue, isPathUnderParent, uuidv4 } from '../util.js';
 
@@ -84,7 +84,7 @@ export function isAnimatedWebP(buffer: Buffer): boolean {
  */
 async function getAverageColor(buffer: Buffer): Promise<string> {
     try {
-                const pixel = new Uint8Array(await new Bun.Image(buffer).resize(1, 1).png().buffer());
+        const pixel = new Uint8Array(await new Bun.Image(buffer).resize(1, 1).png().buffer());
         let offset = 8;
         while (offset < pixel.length) {
             const length = new DataView(pixel.buffer, offset, 4).getUint32(0);
@@ -537,293 +537,317 @@ export async function unassignImagesFromFolder(
     await writeMetadataIndex(userDataRoot, index);
 }
 
-export const router = express.Router();
+export const router = new Elysia({ prefix: '/api/image-metadata' })
 
-/**
- * POST /api/image-metadata/folders/get
- * List all virtual folders.
- */
-router.post('/folders/get', async function (request, response) {
-    try {
-        const index = await readMetadataIndex(request.user.directories.root);
-        return response.json(index.folders || []);
-    } catch (error) {
-        console.error('[ImageMetadata] Folders list error:', error);
-        return response.status(500).json({ error: 'Internal server error.' });
-    }
-});
+    /**
+     * POST /api/image-metadata/folders/get
+     * List all virtual folders.
+     */
+    .post('/folders/get', async (ctx) => {
+        try {
+            const index = await readMetadataIndex((ctx as any).user.directories.root);
+            return index.folders || [];
+        } catch (error) {
+            console.error('[ImageMetadata] Folders list error:', error);
+            ctx.set.status = 500;
+            return { error: 'Internal server error.' };
+        }
+    })
 
-/**
- * POST /api/image-metadata/folders/create
- * Create a new folder. Body: { name: string }
- */
-router.post('/folders/create', async function (request, response) {
-    try {
-        const { name } = request.body;
-        if (!name || typeof name !== 'string') {
-            return response.status(400).json({ error: '"name" is required.' });
-        }
-        const folder = await createFolder(request.user.directories.root, name.trim());
-        return response.json(folder);
-    } catch (error) {
-        console.error('[ImageMetadata] Folder create error:', error);
-        return response.status(500).json({ error: 'Internal server error.' });
-    }
-});
-
-/**
- * POST /api/image-metadata/folders/set-thumbnails
- * Batch-set thumbnail files for multiple folders in one write. Body: { updates: [{id, thumbnailFile}] }
- */
-router.post('/folders/set-thumbnails', async function (request, response) {
-    try {
-        const { updates } = request.body;
-        if (
-            !Array.isArray(updates) ||
-            updates.some((u) => !u.id || typeof u.thumbnailFile !== 'string')
-        ) {
-            return response
-                .status(400)
-                .json({ error: '"updates" must be an array of {id, thumbnailFile}.' });
-        }
-        await setFolderThumbnailsBatch(request.user.directories.root, updates);
-        return response.json({ ok: true });
-    } catch (error) {
-        console.error('[ImageMetadata] Folder set-thumbnails error:', error);
-        return response.status(500).json({ error: 'Internal server error.' });
-    }
-});
-
-/**
- * POST /api/image-metadata/folders/update
- * Update a folder. Body: { id: string, name?: string, thumbnailFile?: string }
- */
-router.post('/folders/update', async function (request, response) {
-    try {
-        const { id, ...updates } = request.body;
-        if (!id || typeof id !== 'string') {
-            return response.status(400).json({ error: '"id" is required.' });
-        }
-        const folder = await updateFolder(request.user.directories.root, id, updates);
-        return response.json(folder);
-    } catch (error) {
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-        if (error.message.includes('not found')) {
-            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-            return response.status(404).json({ error: error.message });
-        }
-        console.error('[ImageMetadata] Folder update error:', error);
-        return response.status(500).json({ error: 'Internal server error.' });
-    }
-});
-
-/**
- * POST /api/image-metadata/folders/delete
- * Delete a folder and unassign all images. Body: { id: string }
- */
-router.post('/folders/delete', async function (request, response) {
-    try {
-        const { id } = request.body;
-        if (!id || typeof id !== 'string') {
-            return response.status(400).json({ error: '"id" is required.' });
-        }
-        await deleteFolder(request.user.directories.root, id);
-        return response.json({ ok: true });
-    } catch (error) {
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-        if (error.message.includes('not found')) {
-            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-            return response.status(404).json({ error: error.message });
-        }
-        console.error('[ImageMetadata] Folder delete error:', error);
-        return response.status(500).json({ error: 'Internal server error.' });
-    }
-});
-
-/**
- * POST /api/image-metadata/folders/assign
- * Assign images to a folder. Body: { id: string, paths: string[] }
- */
-router.post('/folders/assign', async function (request, response) {
-    try {
-        const { id, paths } = request.body;
-        if (!id || typeof id !== 'string') {
-            return response.status(400).json({ error: '"id" is required.' });
-        }
-        if (!Array.isArray(paths)) {
-            return response.status(400).json({ error: '"paths" array is required.' });
-        }
-        await assignImagesToFolder(request.user.directories.root, id, paths);
-        return response.json({ ok: true });
-    } catch (error) {
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-        if (error.message.includes('not found')) {
-            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-            return response.status(404).json({ error: error.message });
-        }
-        console.error('[ImageMetadata] Folder assign error:', error);
-        return response.status(500).json({ error: 'Internal server error.' });
-    }
-});
-
-/**
- * POST /api/image-metadata/folders/unassign
- * Unassign images from a folder. Body: { id: string, paths: string[] }
- */
-router.post('/folders/unassign', async function (request, response) {
-    try {
-        const { id, paths } = request.body;
-        if (!id || typeof id !== 'string') {
-            return response.status(400).json({ error: '"id" is required.' });
-        }
-        if (!Array.isArray(paths)) {
-            return response.status(400).json({ error: '"paths" array is required.' });
-        }
-        await unassignImagesFromFolder(request.user.directories.root, id, paths);
-        return response.json({ ok: true });
-    } catch (error) {
-        console.error('[ImageMetadata] Folder unassign error:', error);
-        return response.status(500).json({ error: 'Internal server error.' });
-    }
-});
-
-/**
- * POST /api/image-metadata
- * Get metadata for image(s) by path.
- */
-router.post('/', async function (request, response) {
-    try {
-        const { path: singlePath, paths, type } = request.body;
-
-        if (!singlePath && !paths) {
-            return response.status(400).json({ error: 'Either "path" or "paths" is required.' });
-        }
-
-        const userDataRoot = request.user.directories.root;
-
-        // Helper to validate a path is under user data directory
-        const validatePath = (relativePath: string) => {
-            const fullPath = path.resolve(userDataRoot, relativePath);
-            if (!isPathUnderParent(userDataRoot, fullPath)) {
-                throw new Error(`Path "${relativePath}" is outside the user data directory.`);
+    /**
+     * POST /api/image-metadata/folders/create
+     * Create a new folder. Body: { name: string }
+     */
+    .post('/folders/create', async (ctx) => {
+        try {
+            const body = ctx.body as Record<string, unknown>;
+            const name = body.name;
+            if (!name || typeof name !== 'string') {
+                ctx.set.status = 400;
+                return { error: '"name" is required.' };
             }
-            return relativePath;
-        };
+            const folder = await createFolder((ctx as any).user.directories.root, name.trim());
+            return folder;
+        } catch (error) {
+            console.error('[ImageMetadata] Folder create error:', error);
+            ctx.set.status = 500;
+            return { error: 'Internal server error.' };
+        }
+    })
 
-        // Handle single path
-        if (singlePath && !paths) {
-            const relativePath = validatePath(singlePath);
-            const fullPath = path.join(userDataRoot, relativePath);
-
-            try {
-                await fs.access(fullPath);
-            } catch {
-                return response.status(404).json({ error: 'File not found.' });
+    /**
+     * POST /api/image-metadata/folders/set-thumbnails
+     * Batch-set thumbnail files for multiple folders in one write. Body: { updates: [{id, thumbnailFile}] }
+     */
+    .post('/folders/set-thumbnails', async (ctx) => {
+        try {
+            const body = ctx.body as Record<string, unknown>;
+            const updates = body.updates;
+            if (
+                !Array.isArray(updates) ||
+                (updates as any[]).some((u: any) => !u.id || typeof u.thumbnailFile !== 'string')
+            ) {
+                ctx.set.status = 400;
+                return { error: '"updates" must be an array of {id, thumbnailFile}.' };
             }
+            await setFolderThumbnailsBatch((ctx as any).user.directories.root, updates as any[]);
+            return { ok: true };
+        } catch (error) {
+            console.error('[ImageMetadata] Folder set-thumbnails error:', error);
+            ctx.set.status = 500;
+            return { error: 'Internal server error.' };
+        }
+    })
 
-            const { results: metadataResults } = await getOrGenerateMetadataBatch(
-                userDataRoot,
-                [relativePath],
-                type,
+    /**
+     * POST /api/image-metadata/folders/update
+     * Update a folder. Body: { id: string, name?: string, thumbnailFile?: string }
+     */
+    .post('/folders/update', async (ctx) => {
+        try {
+            const body = ctx.body as Record<string, unknown>;
+            const { id, ...updates } = body;
+            if (!id || typeof id !== 'string') {
+                ctx.set.status = 400;
+                return { error: '"id" is required.' };
+            }
+            const folder = await updateFolder((ctx as any).user.directories.root, id, updates);
+            return folder;
+        } catch (error) {
+            if ((error as any).message.includes('not found')) {
+                ctx.set.status = 404;
+                return { error: (error as any).message };
+            }
+            console.error('[ImageMetadata] Folder update error:', error);
+            ctx.set.status = 500;
+            return { error: 'Internal server error.' };
+        }
+    })
+
+    /**
+     * POST /api/image-metadata/folders/delete
+     * Delete a folder and unassign all images. Body: { id: string }
+     */
+    .post('/folders/delete', async (ctx) => {
+        try {
+            const body = ctx.body as Record<string, unknown>;
+            const id = body.id;
+            if (!id || typeof id !== 'string') {
+                ctx.set.status = 400;
+                return { error: '"id" is required.' };
+            }
+            await deleteFolder((ctx as any).user.directories.root, id);
+            return { ok: true };
+        } catch (error) {
+            if ((error as any).message.includes('not found')) {
+                ctx.set.status = 404;
+                return { error: (error as any).message };
+            }
+            console.error('[ImageMetadata] Folder delete error:', error);
+            ctx.set.status = 500;
+            return { error: 'Internal server error.' };
+        }
+    })
+
+    /**
+     * POST /api/image-metadata/folders/assign
+     * Assign images to a folder. Body: { id: string, paths: string[] }
+     */
+    .post('/folders/assign', async (ctx) => {
+        try {
+            const body = ctx.body as Record<string, unknown>;
+            const { id, paths } = body;
+            if (!id || typeof id !== 'string') {
+                ctx.set.status = 400;
+                return { error: '"id" is required.' };
+            }
+            if (!Array.isArray(paths)) {
+                ctx.set.status = 400;
+                return { error: '"paths" array is required.' };
+            }
+            await assignImagesToFolder((ctx as any).user.directories.root, id, paths as string[]);
+            return { ok: true };
+        } catch (error) {
+            if ((error as any).message.includes('not found')) {
+                ctx.set.status = 404;
+                return { error: (error as any).message };
+            }
+            console.error('[ImageMetadata] Folder assign error:', error);
+            ctx.set.status = 500;
+            return { error: 'Internal server error.' };
+        }
+    })
+
+    /**
+     * POST /api/image-metadata/folders/unassign
+     * Unassign images from a folder. Body: { id: string, paths: string[] }
+     */
+    .post('/folders/unassign', async (ctx) => {
+        try {
+            const body = ctx.body as Record<string, unknown>;
+            const { id, paths } = body;
+            if (!id || typeof id !== 'string') {
+                ctx.set.status = 400;
+                return { error: '"id" is required.' };
+            }
+            if (!Array.isArray(paths)) {
+                ctx.set.status = 400;
+                return { error: '"paths" array is required.' };
+            }
+            await unassignImagesFromFolder(
+                (ctx as any).user.directories.root,
+                id,
+                paths as string[],
             );
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-            const metadata = metadataResults[relativePath];
+            return { ok: true };
+        } catch (error) {
+            console.error('[ImageMetadata] Folder unassign error:', error);
+            ctx.set.status = 500;
+            return { error: 'Internal server error.' };
+        }
+    })
 
-            if (!metadata) {
-                return response
-                    .status(404)
-                    .json({ error: 'Could not generate metadata for file.' });
+    /**
+     * POST /api/image-metadata
+     * Get metadata for image(s) by path.
+     */
+    .post('/', async (ctx) => {
+        try {
+            const body = ctx.body as Record<string, unknown>;
+            const singlePath = body.path;
+            const paths = body.paths;
+            const type = body.type as string | undefined;
+
+            if (!singlePath && !paths) {
+                ctx.set.status = 400;
+                return { error: 'Either "path" or "paths" is required.' };
             }
 
-            return response.json(metadata);
-        }
+            const userDataRoot = (ctx as any).user.directories.root;
 
-        // Handle multiple paths
-        if (paths && Array.isArray(paths)) {
-            /** @type {{[key: string]: ImageMetadata | {error: string}}} */
-            const results = {};
-            const validPaths = [];
+            // Helper to validate a path is under user data directory
+            const validatePath = (relativePath: string) => {
+                const fullPath = path.resolve(userDataRoot, relativePath);
+                if (!isPathUnderParent(userDataRoot, fullPath)) {
+                    throw new Error(`Path "${relativePath}" is outside the user data directory.`);
+                }
+                return relativePath;
+            };
 
-            // Validate all paths first
-            for (const relativePath of paths) {
+            // Handle single path
+            if (singlePath && !paths) {
+                const relativePath = validatePath(singlePath as string);
+                const fullPath = path.join(userDataRoot, relativePath);
+
                 try {
-                    validatePath(relativePath);
-                    validPaths.push(relativePath);
-                } catch (error) {
-                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                    results[relativePath] = { error: error.message };
+                    await fs.access(fullPath);
+                } catch {
+                    ctx.set.status = 404;
+                    return { error: 'File not found.' };
                 }
+
+                const { results: metadataResults } = await getOrGenerateMetadataBatch(
+                    userDataRoot,
+                    [relativePath],
+                    type as any,
+                );
+                const metadata = (metadataResults as Record<string, unknown>)[relativePath];
+
+                if (!metadata) {
+                    ctx.set.status = 404;
+                    return { error: 'Could not generate metadata for file.' };
+                }
+
+                return metadata;
             }
 
-            // Process all valid paths in a single batch
-            const { results: batchMetadata } = await getOrGenerateMetadataBatch(
-                userDataRoot,
-                validPaths,
-                type,
-            );
+            // Handle multiple paths
+            if (paths && Array.isArray(paths)) {
+                const results: Record<string, unknown> = {};
+                const validPaths = [];
 
-            for (const relativePath of validPaths) {
-                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                if (batchMetadata[relativePath]) {
-                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                    results[relativePath] = batchMetadata[relativePath];
-                } else {
-                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                    results[relativePath] = { error: 'File not found or could not process.' };
+                // Validate all paths first
+                for (const relativePath of paths as string[]) {
+                    try {
+                        validatePath(relativePath);
+                        validPaths.push(relativePath);
+                    } catch (error) {
+                        results[relativePath] = { error: (error as any).message };
+                    }
                 }
+
+                // Process all valid paths in a single batch
+                const { results: batchMetadata } = await getOrGenerateMetadataBatch(
+                    userDataRoot,
+                    validPaths,
+                    type as any,
+                );
+
+                for (const relativePath of validPaths) {
+                    if ((batchMetadata as Record<string, unknown>)[relativePath]) {
+                        results[relativePath] = (batchMetadata as Record<string, unknown>)[
+                            relativePath
+                        ];
+                    } else {
+                        results[relativePath] = { error: 'File not found or could not process.' };
+                    }
+                }
+
+                return results;
             }
 
-            return response.json(results);
+            ctx.set.status = 400;
+            return { error: 'Invalid request format.' };
+        } catch (error) {
+            console.error('[ImageMetadata] API error:', error);
+            ctx.set.status = 500;
+            return { error: 'Internal server error.' };
         }
+    })
 
-        return response.status(400).json({ error: 'Invalid request format.' });
-    } catch (error) {
-        console.error('[ImageMetadata] API error:', error);
-        return response.status(500).json({ error: 'Internal server error.' });
-    }
-});
+    /**
+     * POST /api/image-metadata/all
+     * Get all metadata from the index.
+     * @param {string} [prefix] - Optional path prefix to filter results
+     */
+    .post('/all', async (ctx) => {
+        try {
+            const body = ctx.body as Record<string, unknown>;
+            const userDataRoot = (ctx as any).user.directories.root;
+            const prefix = String(body.prefix || '');
+            const index = await readMetadataIndex(userDataRoot);
 
-/**
- * POST /api/image-metadata/all
- * Get all metadata from the index.
- * @param {string} [prefix] - Optional path prefix to filter results
- */
-router.post('/all', async function (request, response) {
-    try {
-        const userDataRoot = request.user.directories.root;
-        const prefix = String(request.body.prefix || '');
-        const index = await readMetadataIndex(userDataRoot);
-
-        // If prefix specified, filter to only matching paths
-        if (prefix) {
-            const filteredImages = {};
-            for (const [key, value] of Object.entries(index.images)) {
-                if (key.startsWith(prefix)) {
-                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                    filteredImages[key] = value;
+            // If prefix specified, filter to only matching paths
+            if (prefix) {
+                const filteredImages: Record<string, unknown> = {};
+                for (const [key, value] of Object.entries(index.images)) {
+                    if (key.startsWith(prefix)) {
+                        filteredImages[key] = value;
+                    }
                 }
+                return { version: index.version, images: filteredImages };
             }
-            return response.json({ version: index.version, images: filteredImages });
+
+            return index;
+        } catch (error) {
+            console.error('[ImageMetadata] Failed to read metadata index:', error);
+            ctx.set.status = 500;
+            return { error: 'Internal server error.' };
         }
+    })
 
-        return response.json(index);
-    } catch (error) {
-        console.error('[ImageMetadata] Failed to read metadata index:', error);
-        return response.status(500).json({ error: 'Internal server error.' });
-    }
-});
-
-/**
- * POST /api/image-metadata/cleanup
- * Clean up orphaned metadata entries (files that no longer exist).
- */
-router.post('/cleanup', async function (request, response) {
-    try {
-        const userDataRoot = request.user.directories.root;
-        const removed = await cleanupOrphanedMetadata(userDataRoot);
-        return response.json({ removed, count: removed.length });
-    } catch (error) {
-        console.error('[ImageMetadata] Cleanup error:', error);
-        return response.status(500).json({ error: 'Internal server error.' });
-    }
-});
+    /**
+     * POST /api/image-metadata/cleanup
+     * Clean up orphaned metadata entries (files that no longer exist).
+     */
+    .post('/cleanup', async (ctx) => {
+        try {
+            const userDataRoot = (ctx as any).user.directories.root;
+            const removed = await cleanupOrphanedMetadata(userDataRoot);
+            return { removed, count: removed.length };
+        } catch (error) {
+            console.error('[ImageMetadata] Cleanup error:', error);
+            ctx.set.status = 500;
+            return { error: 'Internal server error.' };
+        }
+    });

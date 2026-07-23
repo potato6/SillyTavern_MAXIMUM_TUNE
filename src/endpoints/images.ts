@@ -20,7 +20,10 @@ export const router = new Elysia({ prefix: '/api/images' })
     .post('/upload', async (context) => {
         const { set } = context;
         const body = context.body as Record<string, unknown>;
-        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
         const directories = user?.directories as Record<string, string> | undefined;
 
         try {
@@ -70,7 +73,10 @@ export const router = new Elysia({ prefix: '/api/images' })
     })
     .post('/list/:folder?', (context) => {
         const { params, body, set } = context;
-        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
         const directories = user?.directories as Record<string, string> | undefined;
         const bodyAny = body as Record<string, unknown>;
 
@@ -91,10 +97,7 @@ export const router = new Elysia({ prefix: '/api/images' })
                 return { error: 'No folder specified' };
             }
 
-            const directoryPath = path.join(
-                directories?.userImages ?? '',
-                sanitize(folder),
-            );
+            const directoryPath = path.join(directories?.userImages ?? '', sanitize(folder));
             const type = Number(bodyAny.type ?? MEDIA_REQUEST_TYPE.IMAGE);
             const sort = (bodyAny.sortField as string) || 'date';
             const order = (bodyAny.sortOrder as string) || 'asc';
@@ -115,7 +118,10 @@ export const router = new Elysia({ prefix: '/api/images' })
         }
     })
     .post('/folders', (context) => {
-        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
         const directories = user?.directories as Record<string, string> | undefined;
 
         try {
@@ -132,12 +138,17 @@ export const router = new Elysia({ prefix: '/api/images' })
             return folders;
         } catch (error) {
             console.error(error);
-            return new Response(JSON.stringify({ error: 'Unable to retrieve folders' }), { status: 500 });
+            return new Response(JSON.stringify({ error: 'Unable to retrieve folders' }), {
+                status: 500,
+            });
         }
     })
     .post('/delete', async (context) => {
         const { body, set } = context;
-        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
         const directories = user?.directories as Record<string, string> | undefined;
         const bodyAny = body as Record<string, unknown>;
 

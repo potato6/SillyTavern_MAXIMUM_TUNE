@@ -63,15 +63,15 @@ export class ScraperManager {
      */
     static getDataBankScrapers() {
         return ScraperManager.#scrapers.map((s) => ({
-// @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type.
+            // @ts-expect-error TS(2339) FIXME: Property 'id' does not exist on type.
             id: s.id,
-// @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type.
+            // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type.
             name: s.name,
-// @ts-expect-error TS(2339) FIXME: Property 'description' does not exist on type.
+            // @ts-expect-error TS(2339) FIXME: Property 'description' does not exist on type.
             description: s.description,
-// @ts-expect-error TS(2339) FIXME: Property 'iconClass' does not exist on type.
+            // @ts-expect-error TS(2339) FIXME: Property 'iconClass' does not exist on type.
             iconClass: s.iconClass,
-// @ts-expect-error TS(2339) FIXME: Property 'iconAvailable' does not exist on type.
+            // @ts-expect-error TS(2339) FIXME: Property 'iconAvailable' does not exist on type.
             iconAvailable: s.iconAvailable,
         }));
     }
@@ -421,7 +421,7 @@ class MediaWikiScraper {
 
         if (output === 'single') {
             const combinedContent = data
-// @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
+                // @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
                 .map((a) => String(a.title).trim() + '\n\n' + String(a.content).trim())
                 .join('\n\n\n\n');
             const file = new File([combinedContent], `${url}.txt`, { type: 'text/plain' });
@@ -557,7 +557,7 @@ class FandomScraper {
 
         if (output === 'single') {
             const combinedContent = data
-// @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
+                // @ts-expect-error TS(7006) FIXME: Parameter 'a' implicitly has an 'any' type.
                 .map((a) => String(a.title).trim() + '\n\n' + String(a.content).trim())
                 .join('\n\n\n\n');
             const file = new File([combinedContent], `${fandom}.txt`, { type: 'text/plain' });
@@ -802,7 +802,7 @@ class YouTubeScraper {
                         ARGUMENT_TYPE.STRING,
                         false,
                         false,
-// @ts-expect-error TS(2345) FIXME: Type is not assignable.
+                        // @ts-expect-error TS(2345) FIXME: Type is not assignable.
                         '',
                         iso6391Codes,
                     ),

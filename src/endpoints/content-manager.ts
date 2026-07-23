@@ -3,7 +3,7 @@ import path from 'node:path';
 import zlib from 'node:zlib';
 import { Buffer } from 'node:buffer';
 
-import express from 'express';
+import { Elysia } from 'elysia';
 import sanitize from 'sanitize-filename';
 import { sync as writeFileAtomicSync } from 'write-file-atomic';
 
@@ -1054,154 +1054,173 @@ export function isHostWhitelisted(host: string) {
     return WHITELIST_GENERIC_URL_DOWNLOAD_SOURCES.includes(host);
 }
 
-export const router = express.Router();
+export const router = new Elysia({ prefix: '/api/content' })
+    .post('/importURL', async (context) => {
+        const { set, body } = context;
+        const bodyAny = body as Record<string, unknown>;
 
-router.post('/importURL', async (request, response) => {
-    if (!request.body.url) {
-        return response.sendStatus(400);
-    }
+        if (!bodyAny.url) {
+            set.status = 400;
+            return;
+        }
 
-    try {
-        const url = request.body.url;
-        const host = getHostFromUrl(url);
-        let result;
-        let type;
+        try {
+            const url = bodyAny.url as string;
+            const host = getHostFromUrl(url);
+            let result;
+            let type;
 
-        const isChub = host.includes('chub.ai') || host.includes('characterhub.org');
-        const isJannnyContent = host.includes('janitorai');
-        const isPygmalionContent = host.includes('pygmalion.chat');
-        const isAICharacterCardsContent = host.includes('aicharactercards.com');
-        const isRisu = host.includes('realm.risuai.net');
-        const isPerchance = host.includes('perchance.org');
-        const isGeneric = isHostWhitelisted(host);
+            const isChub = host.includes('chub.ai') || host.includes('characterhub.org');
+            const isJannnyContent = host.includes('janitorai');
+            const isPygmalionContent = host.includes('pygmalion.chat');
+            const isAICharacterCardsContent = host.includes('aicharactercards.com');
+            const isRisu = host.includes('realm.risuai.net');
+            const isPerchance = host.includes('perchance.org');
+            const isGeneric = isHostWhitelisted(host);
 
-        if (isPygmalionContent) {
-            const uuid = getUuidFromUrl(url);
-            if (!uuid) {
-                return response.sendStatus(404);
-            }
+            if (isPygmalionContent) {
+                const uuid = getUuidFromUrl(url);
+                if (!uuid) {
+                    set.status = 404;
+                    return;
+                }
 
-            type = 'character';
-            result = await downloadPygmalionCharacter(uuid);
-        } else if (isJannnyContent) {
-            const uuid = getUuidFromUrl(url);
-            if (!uuid) {
-                return response.sendStatus(404);
-            }
+                type = 'character';
+                result = await downloadPygmalionCharacter(uuid);
+            } else if (isJannnyContent) {
+                const uuid = getUuidFromUrl(url);
+                if (!uuid) {
+                    set.status = 404;
+                    return;
+                }
 
-            type = 'character';
-            result = await downloadJannyCharacter(uuid);
-        } else if (isAICharacterCardsContent) {
-            const AICCParsed = parseAICC(url);
-            if (!AICCParsed) {
-                return response.sendStatus(404);
-            }
-            type = 'character';
-            result = await downloadAICCCharacter(AICCParsed);
-        } else if (isChub) {
-            const chubParsed = parseChubUrl(url);
-            type = chubParsed?.type;
+                type = 'character';
+                result = await downloadJannyCharacter(uuid);
+            } else if (isAICharacterCardsContent) {
+                const AICCParsed = parseAICC(url);
+                if (!AICCParsed) {
+                    set.status = 404;
+                    return;
+                }
+                type = 'character';
+                result = await downloadAICCCharacter(AICCParsed);
+            } else if (isChub) {
+                const chubParsed = parseChubUrl(url);
+                type = chubParsed?.type;
 
-            if (chubParsed?.type === 'character') {
-                console.info('Downloading chub character:', chubParsed.id);
-                result = await downloadChubCharacter(chubParsed.id);
-            } else if (chubParsed?.type === 'lorebook') {
-                console.info('Downloading chub lorebook:', chubParsed.id);
-                result = await downloadChubLorebook(chubParsed.id);
+                if (chubParsed?.type === 'character') {
+                    console.info('Downloading chub character:', chubParsed.id);
+                    result = await downloadChubCharacter(chubParsed.id);
+                } else if (chubParsed?.type === 'lorebook') {
+                    console.info('Downloading chub lorebook:', chubParsed.id);
+                    result = await downloadChubLorebook(chubParsed.id);
+                } else {
+                    set.status = 404;
+                    return;
+                }
+            } else if (isRisu) {
+                const uuid = parseRisuUrl(url);
+                if (!uuid) {
+                    set.status = 404;
+                    return;
+                }
+
+                type = 'character';
+                result = await downloadRisuCharacter(uuid);
+            } else if (isPerchance) {
+                const perchanceSlug = parsePerchanceSlug(url);
+                if (!perchanceSlug) {
+                    set.status = 404;
+                    return;
+                }
+                type = 'character';
+                result = await downloadPerchanceCharacter(perchanceSlug);
+            } else if (isGeneric) {
+                console.info('Downloading from generic url:', url);
+                type = 'character';
+                result = await downloadGenericPng(url);
             } else {
-                return response.sendStatus(404);
-            }
-        } else if (isRisu) {
-            const uuid = parseRisuUrl(url);
-            if (!uuid) {
-                return response.sendStatus(404);
+                console.error(
+                    `Received an import for "${getHostFromUrl(url)}", but site is not whitelisted. This domain must be added to the config key "whitelistImportDomains" to allow import from this source.`,
+                );
+                set.status = 404;
+                return;
             }
 
-            type = 'character';
-            result = await downloadRisuCharacter(uuid);
-        } else if (isPerchance) {
-            const perchanceSlug = parsePerchanceSlug(url);
-            if (!perchanceSlug) {
-                return response.sendStatus(404);
+            if (!result) {
+                set.status = 404;
+                return;
             }
-            type = 'character';
-            result = await downloadPerchanceCharacter(perchanceSlug);
-        } else if (isGeneric) {
-            console.info('Downloading from generic url:', url);
-            type = 'character';
-            result = await downloadGenericPng(url);
-        } else {
-            console.error(
-                `Received an import for "${getHostFromUrl(url)}", but site is not whitelisted. This domain must be added to the config key "whitelistImportDomains" to allow import from this source.`,
-            );
-            return response.sendStatus(404);
+
+            if (result.fileType) set.headers['Content-Type'] = result.fileType;
+            set.headers['Content-Disposition'] =
+                `attachment; filename="${encodeURI(result.fileName)}"`;
+            set.headers['X-Custom-Content-Type'] = type as string;
+            return new Response(result.buffer);
+        } catch (error) {
+            console.error('Importing custom content failed', error);
+            set.status = 500;
+            return;
+        }
+    })
+    .post('/importUUID', async (context) => {
+        const { set, body } = context;
+        const bodyAny = body as Record<string, unknown>;
+
+        if (!bodyAny.url) {
+            set.status = 400;
+            return;
         }
 
-        if (!result) {
-            return response.sendStatus(404);
-        }
+        try {
+            const uuid = bodyAny.url as string;
+            let result;
 
-        if (result.fileType) response.set('Content-Type', result.fileType);
-        response.set('Content-Disposition', `attachment; filename="${encodeURI(result.fileName)}"`);
-        response.set('X-Custom-Content-Type', type);
-        return response.send(result.buffer);
-    } catch (error) {
-        console.error('Importing custom content failed', error);
-        return response.sendStatus(500);
-    }
-});
+            const isJannny = uuid.includes('_character');
+            const isPygmalion = !isJannny && uuid.length == 36;
+            const isAICC = uuid.startsWith('AICC/');
+            const isPerchance = isPerchanceUUID(uuid);
+            const uuidType = uuid.includes('lorebook') ? 'lorebook' : 'character';
 
-router.post('/importUUID', async (request, response) => {
-    if (!request.body.url) {
-        return response.sendStatus(400);
-    }
-
-    try {
-        const uuid = request.body.url;
-        let result;
-
-        const isJannny = uuid.includes('_character');
-        const isPygmalion = !isJannny && uuid.length == 36;
-        const isAICC = uuid.startsWith('AICC/');
-        const isPerchance = isPerchanceUUID(uuid);
-        const uuidType = uuid.includes('lorebook') ? 'lorebook' : 'character';
-
-        if (isPygmalion) {
-            console.info('Downloading Pygmalion character:', uuid);
-            result = await downloadPygmalionCharacter(uuid);
-        } else if (isJannny) {
-            console.info('Downloading Janitor character:', uuid.split('_')[0]);
-            result = await downloadJannyCharacter(uuid.split('_')[0]);
-        } else if (isAICC) {
-            const [, author, card] = uuid.split('/');
-            console.info('Downloading AICC character:', `${author}/${card}`);
-            result = await downloadAICCCharacter(`${author}/${card}`);
-        } else if (isPerchance) {
-            console.info('Downloading Perchance character:', uuid);
-            const parsedUuid = parsePerchanceSlug(uuid);
-            result = await downloadPerchanceCharacter(parsedUuid);
-        } else {
-            if (uuidType === 'character') {
-                console.info('Downloading chub character:', uuid);
-                result = await downloadChubCharacter(uuid);
-            } else if (uuidType === 'lorebook') {
-                console.info('Downloading chub lorebook:', uuid);
-                result = await downloadChubLorebook(uuid);
+            if (isPygmalion) {
+                console.info('Downloading Pygmalion character:', uuid);
+                result = await downloadPygmalionCharacter(uuid);
+            } else if (isJannny) {
+                console.info('Downloading Janitor character:', uuid.split('_')[0]);
+                result = await downloadJannyCharacter(uuid.split('_')[0] ?? '');
+            } else if (isAICC) {
+                const [, author, card] = uuid.split('/');
+                console.info('Downloading AICC character:', `${author}/${card}`);
+                result = await downloadAICCCharacter(`${author}/${card}`);
+            } else if (isPerchance) {
+                console.info('Downloading Perchance character:', uuid);
+                const parsedUuid = parsePerchanceSlug(uuid);
+                result = await downloadPerchanceCharacter(parsedUuid);
             } else {
-                return response.sendStatus(404);
+                if (uuidType === 'character') {
+                    console.info('Downloading chub character:', uuid);
+                    result = await downloadChubCharacter(uuid);
+                } else if (uuidType === 'lorebook') {
+                    console.info('Downloading chub lorebook:', uuid);
+                    result = await downloadChubLorebook(uuid);
+                } else {
+                    set.status = 404;
+                    return;
+                }
             }
-        }
 
-        if (!result) {
-            throw new Error('Failed to download content');
-        }
+            if (!result) {
+                throw new Error('Failed to download content');
+            }
 
-        if (result.fileType) response.set('Content-Type', result.fileType);
-        response.set('Content-Disposition', `attachment; filename="${result.fileName}"`);
-        response.set('X-Custom-Content-Type', uuidType);
-        return response.send(result.buffer);
-    } catch (error) {
-        console.error('Importing custom content failed', error);
-        return response.sendStatus(500);
-    }
-});
+            if (result.fileType) set.headers['Content-Type'] = result.fileType;
+            set.headers['Content-Disposition'] =
+                `attachment; filename="${encodeURI(result.fileName)}"`;
+            set.headers['X-Custom-Content-Type'] = type as string;
+            return new Response(result.buffer);
+        } catch (error) {
+            console.error('Importing custom content failed', error);
+            set.status = 500;
+            return;
+        }
+    });

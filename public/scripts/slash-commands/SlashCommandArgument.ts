@@ -64,9 +64,9 @@ export class SlashCommandArgument {
      * @param forceEnum
      */
     constructor(
-// @ts-expect-error TS(7006) FIXME: Parameter 'description' implicitly has an 'any' type.
+        // @ts-expect-error TS(7006) FIXME: Parameter 'description' implicitly has an 'any' type.
         description,
-// @ts-expect-error TS(7006) FIXME: Parameter 'types' implicitly has an 'any' type.
+        // @ts-expect-error TS(7006) FIXME: Parameter 'types' implicitly has an 'any' type.
         types,
         isRequired = false,
         acceptsMultiple = false,
@@ -94,10 +94,10 @@ export class SlashCommandArgument {
         if (
             !this.enumList.length &&
             this.typeList.length === 1 &&
-// @ts-expect-error TS(2345) FIXME: Type is not assignable.
+            // @ts-expect-error TS(2345) FIXME: Type is not assignable.
             this.typeList.includes(ARGUMENT_TYPE.BOOLEAN)
         )
-// @ts-expect-error TS(2322) FIXME: Type is not assignable.
+            // @ts-expect-error TS(2322) FIXME: Type is not assignable.
             this.enumList = commonEnumProviders.boolean()();
     }
 }
@@ -149,11 +149,11 @@ export class SlashCommandNamedArgument extends SlashCommandArgument {
      * @param {boolean} [forceEnum]
      */
     constructor(
-// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
+        // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
         name,
-// @ts-expect-error TS(7006) FIXME: Parameter 'description' implicitly has an 'any' type.
+        // @ts-expect-error TS(7006) FIXME: Parameter 'description' implicitly has an 'any' type.
         description,
-// @ts-expect-error TS(7006) FIXME: Parameter 'types' implicitly has an 'any' type.
+        // @ts-expect-error TS(7006) FIXME: Parameter 'types' implicitly has an 'any' type.
         types,
         isRequired = false,
         acceptsMultiple = false,

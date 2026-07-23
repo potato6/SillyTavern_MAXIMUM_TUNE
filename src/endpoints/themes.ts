@@ -7,7 +7,10 @@ import { sync as writeFileAtomicSync } from 'write-file-atomic';
 export const router = new Elysia({ prefix: '/api/themes' })
     .post('/save', (context) => {
         const { body, set } = context;
-        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
         const directories = user?.directories as Record<string, string> | undefined;
         const bodyAny = body as Record<string, unknown> | null;
 
@@ -16,17 +19,17 @@ export const router = new Elysia({ prefix: '/api/themes' })
             return;
         }
 
-        const filename = path.join(
-            directories?.themes ?? '',
-            sanitize(`${bodyAny.name}.json`),
-        );
+        const filename = path.join(directories?.themes ?? '', sanitize(`${bodyAny.name}.json`));
         writeFileAtomicSync(filename, JSON.stringify(body, null, 4), 'utf8');
 
         set.status = 204;
     })
     .post('/delete', (context) => {
         const { body, set } = context;
-        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
         const directories = user?.directories as Record<string, string> | undefined;
         const bodyAny = body as Record<string, unknown> | null;
 
@@ -36,10 +39,7 @@ export const router = new Elysia({ prefix: '/api/themes' })
         }
 
         try {
-            const filename = path.join(
-                directories?.themes ?? '',
-                sanitize(`${bodyAny.name}.json`),
-            );
+            const filename = path.join(directories?.themes ?? '', sanitize(`${bodyAny.name}.json`));
             if (!fs.existsSync(filename)) {
                 console.error('Theme file not found:', filename);
                 set.status = 404;

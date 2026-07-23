@@ -179,51 +179,54 @@ export const commonEnumProviders = {
      * @returns {(executor:SlashCommandExecutor, scope:SlashCommandScope) => SlashCommandEnumValue[]}
      */
     variables:
-// @ts-expect-error TS(7019) FIXME: Rest parameter implicitly has 'any[]' type.
+        // @ts-expect-error TS(7019) FIXME: Rest parameter implicitly has 'any[]' type.
         (...type) =>
-// @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
-        (_, scope) => {
-            const types = new Set(type.flat());
-            const isAll = types.has('all');
-            return [
-                ...(isAll || types.has('scope')
-                    ? scope.allVariableNames.map(
-// @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
-                          (name) =>
-                              new SlashCommandEnumValue(
-                                  name,
-                                  null,
-                                  enumTypes.variable,
-                                  enumIcons.scopeVariable,
-                              ),
-                      )
-                    : []),
-                ...(isAll || types.has('local')
-                    ? Object.keys(chat_metadata.variables ?? []).map(
-                          (name) =>
-                              new SlashCommandEnumValue(
-                                  name,
-                                  null,
-                                  enumTypes.name,
-                                  enumIcons.localVariable,
-                              ),
-                      )
-                    : []),
-                ...(isAll || types.has('global')
-                    ? Object.keys(
-                          (extension_settings.variables as Record<string, unknown>).global ?? [],
-                      ).map(
-                          (name: string) =>
-                              new SlashCommandEnumValue(
-                                  name,
-                                  null,
-                                  enumTypes.macro,
-                                  enumIcons.globalVariable,
-                              ),
-                      )
-                    : []),
-            ].filter((item, idx, list) => idx == list.findIndex((it) => it.value == item.value));
-        },
+            // @ts-expect-error TS(7006) FIXME: Parameter '_' implicitly has an 'any' type.
+            (_, scope) => {
+                const types = new Set(type.flat());
+                const isAll = types.has('all');
+                return [
+                    ...(isAll || types.has('scope')
+                        ? scope.allVariableNames.map(
+                              // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
+                              (name) =>
+                                  new SlashCommandEnumValue(
+                                      name,
+                                      null,
+                                      enumTypes.variable,
+                                      enumIcons.scopeVariable,
+                                  ),
+                          )
+                        : []),
+                    ...(isAll || types.has('local')
+                        ? Object.keys(chat_metadata.variables ?? []).map(
+                              (name) =>
+                                  new SlashCommandEnumValue(
+                                      name,
+                                      null,
+                                      enumTypes.name,
+                                      enumIcons.localVariable,
+                                  ),
+                          )
+                        : []),
+                    ...(isAll || types.has('global')
+                        ? Object.keys(
+                              (extension_settings.variables as Record<string, unknown>).global ??
+                                  [],
+                          ).map(
+                              (name: string) =>
+                                  new SlashCommandEnumValue(
+                                      name,
+                                      null,
+                                      enumTypes.macro,
+                                      enumIcons.globalVariable,
+                                  ),
+                          )
+                        : []),
+                ].filter(
+                    (item, idx, list) => idx == list.findIndex((it) => it.value == item.value),
+                );
+            },
 
     /**
      * Enum values for numbers and variable names
@@ -357,7 +360,7 @@ export const commonEnumProviders = {
      */
     tagsForChar:
         (mode = 'all') =>
-// @ts-expect-error TS(7006) FIXME: Parameter 'executor' implicitly has an 'any' type.
+        // @ts-expect-error TS(7006) FIXME: Parameter 'executor' implicitly has an 'any' type.
         (executor, _scope) => {
             // Try to see if we can find the char during execution to filter down the tags list some more. Otherwise take all tags.
             // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
@@ -390,10 +393,10 @@ export const commonEnumProviders = {
      */
     messages:
         ({ allowIdAfter = false, allowVars = false } = {}) =>
-// @ts-expect-error TS(7006) FIXME: Parameter 'executor' implicitly has an 'any' type.
+        // @ts-expect-error TS(7006) FIXME: Parameter 'executor' implicitly has an 'any' type.
         (executor, scope) => {
             const nameFilter =
-// @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
+                // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
                 executor.namedArgumentList.find((it) => it.name == 'name')?.value || '';
             return [
                 ...chat
@@ -434,7 +437,7 @@ export const commonEnumProviders = {
     // @ts-expect-error TS(7006) FIXME: Parameter 'executor' implicitly has an 'any' type.
     messageMedia: () => (executor, _scope) => {
         const messageId = Number(
-// @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
+            // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
             executor.namedArgumentList.find((it) => ['mesId', 'id'].includes(it.name))?.value || '',
         );
         if (isNaN(messageId) || messageId === null || messageId < 0 || messageId >= chat.length) {
@@ -498,12 +501,12 @@ export const commonEnumProviders = {
         return Object.entries(chat_metadata.script_injects).map(([id, inject]) => {
             const positionName =
                 Object.entries(extension_prompt_types).find(
-// @ts-expect-error TS(18046) FIXME: 'inject' is of type 'unknown'.
+                    // @ts-expect-error TS(18046) FIXME: 'inject' is of type 'unknown'.
                     ([_, value]) => value === inject.position,
                 )?.[0] ?? 'unknown';
             return new SlashCommandEnumValue(
                 id,
-// @ts-expect-error TS(18046) FIXME: 'inject' is of type 'unknown'.
+                // @ts-expect-error TS(18046) FIXME: 'inject' is of type 'unknown'.
                 `${enumIcons.getRoleIcon(inject.role ?? extension_prompt_roles.SYSTEM)}[Inject](${positionName}, depth: ${inject.depth}, scan: ${inject.scan ?? false}) ${inject.value}`,
                 enumTypes.enum,
                 '💉',
@@ -542,7 +545,7 @@ export const commonEnumProviders = {
             ...(includeNone ? [new SlashCommandEnumValue('<None>')] : []),
             // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type 'never'.
             ...extension_settings.connectionManager.profiles.map(
-// @ts-expect-error TS(7006) FIXME: Parameter 'p' implicitly has an 'any' type.
+                // @ts-expect-error TS(7006) FIXME: Parameter 'p' implicitly has an 'any' type.
                 (p) => new SlashCommandEnumValue(p.name, null, enumTypes.name, enumIcons.server),
             ),
         ],

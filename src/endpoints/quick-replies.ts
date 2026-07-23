@@ -7,7 +7,10 @@ import { sync as writeFileAtomicSync } from 'write-file-atomic';
 export const router = new Elysia({ prefix: '/api/quick-replies' })
     .post('/save', (context) => {
         const { body, set } = context;
-        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
         const directories = user?.directories as Record<string, string> | undefined;
         const bodyAny = body as Record<string, unknown> | null;
 
@@ -25,7 +28,10 @@ export const router = new Elysia({ prefix: '/api/quick-replies' })
     })
     .post('/delete', (context) => {
         const { body, set } = context;
-        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
         const directories = user?.directories as Record<string, string> | undefined;
         const bodyAny = body as Record<string, unknown> | null;
 

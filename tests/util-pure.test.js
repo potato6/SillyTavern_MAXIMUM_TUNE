@@ -181,7 +181,9 @@ describe('clientRelativePath', () => {
     });
 
     test('should throw if path does not start with root', () => {
-        expect(() => clientRelativePath('/data/user', '/other/path')).toThrow('Input path does not start with the root directory');
+        expect(() => clientRelativePath('/data/user', '/other/path')).toThrow(
+            'Input path does not start with the root directory',
+        );
     });
 });
 

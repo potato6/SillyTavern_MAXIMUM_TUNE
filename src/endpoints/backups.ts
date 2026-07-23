@@ -7,7 +7,10 @@ import { CHAT_BACKUPS_PREFIX, getChatInfo } from './chats.js';
 export const router = new Elysia({ prefix: '/api/backups' })
     .post('/chat/get', async (context) => {
         const { set } = context;
-        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
         const directories = user?.directories as Record<string, string> | undefined;
 
         try {
@@ -44,7 +47,10 @@ export const router = new Elysia({ prefix: '/api/backups' })
     })
     .post('/chat/delete', async (context) => {
         const { body, set } = context;
-        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
         const directories = user?.directories as Record<string, string> | undefined;
         const { name } = body as Record<string, unknown>;
 
@@ -71,7 +77,10 @@ export const router = new Elysia({ prefix: '/api/backups' })
     })
     .post('/chat/download', async (context) => {
         const { body, set } = context;
-        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
         const directories = user?.directories as Record<string, string> | undefined;
         const { name } = body as Record<string, unknown>;
 

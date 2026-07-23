@@ -22,11 +22,11 @@ export function processMarkdownExclusions(text) {
         // @ts-expect-error TS(7006) FIXME: Parameter 'element' implicitly has an 'any' type.
         .filter((element) => element.length > 0)
         .map(
-// @ts-expect-error TS(7006) FIXME: Parameter 'element' implicitly has an 'any' type.
+            // @ts-expect-error TS(7006) FIXME: Parameter 'element' implicitly has an 'any' type.
             (element) =>
                 `(${element
                     .split('')
-// @ts-expect-error TS(7006) FIXME: Parameter 'char' implicitly has an 'any' type.
+                    // @ts-expect-error TS(7006) FIXME: Parameter 'char' implicitly has an 'any' type.
                     .map((char) => `\\${char}`)
                     .join('')})`,
         );

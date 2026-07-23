@@ -222,12 +222,12 @@ export class AutoComplete {
                             if (idx % 2 == 1) {
                                 chars
                                     .slice(cIdx, cIdx + it.length)
-// @ts-expect-error TS(18046) FIXME: 'c' is of type 'unknown'.
+                                    // @ts-expect-error TS(18046) FIXME: 'c' is of type 'unknown'.
                                     .forEach((c) => c.classList.add('matched'));
                             } else {
                                 chars
                                     .slice(cIdx, cIdx + it.length)
-// @ts-expect-error TS(18046) FIXME: 'c' is of type 'unknown'.
+                                    // @ts-expect-error TS(18046) FIXME: 'c' is of type 'unknown'.
                                     .forEach((c) => c.classList.remove('matched'));
                             }
                             cIdx += it.length;
@@ -414,7 +414,7 @@ export class AutoComplete {
             this.fuzzyRegex = new RegExp(
                 `^(.*?)${this.name
                     .split('')
-// @ts-expect-error TS(7006) FIXME: Parameter 'char' implicitly has an 'any' type.
+                    // @ts-expect-error TS(7006) FIXME: Parameter 'char' implicitly has an 'any' type.
                     .map((char) => `(${escapeRegex(char)})`)
                     .join('(.*?)')}(.*?)$`,
                 'i',
@@ -438,13 +438,13 @@ export class AutoComplete {
                 this.isReplaceable || it.name == ''
                     ? it.matchProvider
                         ? it.matchProvider(this.name)
-// @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type.
-                        : matchers[this.matchType](it.name)
+                        : // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type.
+                          matchers[this.matchType](it.name)
                     : it.name.toLowerCase() == this.name,
             )
             // remove aliases
             .filter(
-// @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
+                // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
                 (it, idx, list) => list.findIndex((opt) => opt.value == it.value) == idx,
             ) as AutoCompleteOption[];
 
@@ -634,12 +634,12 @@ export class AutoComplete {
             rect[AUTOCOMPLETE_WIDTH.FULL] = layerRect;
             this.domWrap.style.setProperty(
                 '--bottom',
-// @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type.
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type.
                 `${window.innerHeight - rect[AUTOCOMPLETE_WIDTH.INPUT].top}px`,
             );
             this.dom.style.setProperty(
                 '--bottom',
-// @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type.
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type.
                 `${window.innerHeight - rect[AUTOCOMPLETE_WIDTH.INPUT].top}px`,
             );
             // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
@@ -648,23 +648,23 @@ export class AutoComplete {
                 this.domWrap.style.setProperty('--leftOffset', '1vw');
                 this.domWrap.style.setProperty(
                     '--leftOffset',
-// @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type.
+                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type.
                     `max(1vw, ${rect[power_user.stscript.autocomplete.width.left].left}px)`,
                 );
                 this.domWrap.style.setProperty(
                     '--rightOffset',
-// @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type.
+                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type.
                     `calc(100vw - min(${rect[power_user.stscript.autocomplete.width.right].right}px, ${this.isShowingDetails ? 74 : 0}vw)`,
                 );
             } else {
                 this.domWrap.style.setProperty(
                     '--leftOffset',
-// @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type.
+                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type.
                     `max(1vw, ${rect[power_user.stscript.autocomplete.width.left].left}px)`,
                 );
                 this.domWrap.style.setProperty(
                     '--rightOffset',
-// @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type.
+                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type.
                     `calc(100vw - min(99vw, ${rect[power_user.stscript.autocomplete.width.right].right}px)`,
                 );
             }
@@ -697,7 +697,7 @@ export class AutoComplete {
                     this.detailsWrap.style.setProperty('--rightOffset', '1vw');
                     this.detailsWrap.style.setProperty(
                         '--bottomOffset',
-// @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type.
+                        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type.
                         `calc(100vh - ${rect[AUTOCOMPLETE_WIDTH.INPUT].top}px)`,
                     );
                     this.detailsWrap.style.setProperty(
@@ -708,22 +708,22 @@ export class AutoComplete {
                     this.detailsWrap.classList.add('full');
                     this.detailsWrap.style.setProperty(
                         '--targetOffset',
-// @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type.
+                        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type.
                         `${rect[AUTOCOMPLETE_WIDTH.INPUT].top}`,
                     );
                     this.detailsWrap.style.setProperty(
                         '--bottomOffset',
-// @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type.
+                        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type.
                         `calc(100vh - ${rect[AUTOCOMPLETE_WIDTH.INPUT].top}px)`,
                     );
                     this.detailsWrap.style.setProperty(
                         '--leftOffset',
-// @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type.
+                        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type.
                         `${rect[power_user.stscript.autocomplete.width.left].left}px`,
                     );
                     this.detailsWrap.style.setProperty(
                         '--rightOffset',
-// @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type.
+                        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type.
                         `calc(100vw - ${rect[power_user.stscript.autocomplete.width.right].right}px)`,
                     );
                 }
@@ -742,34 +742,34 @@ export class AutoComplete {
         const layerRect = layer.getBoundingClientRect();
         // cursor is out of view -> hide
         if (
-// @ts-expect-error TS(18048) FIXME: Object is possibly 'null' or 'undefined'.
+            // @ts-expect-error TS(18048) FIXME: Object is possibly 'null' or 'undefined'.
             location.bottom < rect.top ||
-// @ts-expect-error TS(18048) FIXME: Object is possibly 'null' or 'undefined'.
+            // @ts-expect-error TS(18048) FIXME: Object is possibly 'null' or 'undefined'.
             location.top > rect.bottom ||
-// @ts-expect-error TS(18048) FIXME: Object is possibly 'null' or 'undefined'.
+            // @ts-expect-error TS(18048) FIXME: Object is possibly 'null' or 'undefined'.
             location.left < rect.left ||
-// @ts-expect-error TS(18048) FIXME: Object is possibly 'null' or 'undefined'.
+            // @ts-expect-error TS(18048) FIXME: Object is possibly 'null' or 'undefined'.
             location.left > rect.right
         ) {
             return this.hide();
         }
-// @ts-expect-error TS(18048) FIXME: Object is possibly 'null' or 'undefined'.
+        // @ts-expect-error TS(18048) FIXME: Object is possibly 'null' or 'undefined'.
         const left = Math.max(rect.left, location.left) - layerRect.left;
         this.domWrap.style.setProperty('--targetOffset', `${left}`);
-// @ts-expect-error TS(18048) FIXME: Object is possibly 'null' or 'undefined'.
+        // @ts-expect-error TS(18048) FIXME: Object is possibly 'null' or 'undefined'.
         if (location.top <= window.innerHeight / 2) {
             // if cursor is in lower half of window, show list above line
-// @ts-expect-error TS(18048) FIXME: Object is possibly 'null' or 'undefined'.
+            // @ts-expect-error TS(18048) FIXME: Object is possibly 'null' or 'undefined'.
             this.domWrap.style.top = `${location.bottom - layerRect.top}px`;
             this.domWrap.style.bottom = 'auto';
-// @ts-expect-error TS(18048) FIXME: Object is possibly 'null' or 'undefined'.
+            // @ts-expect-error TS(18048) FIXME: Object is possibly 'null' or 'undefined'.
             this.domWrap.style.maxHeight = `calc(${location.bottom - layerRect.top}px - ${this.textarea.closest('dialog') ? '0' : '1vh'})`;
         } else {
             // if cursor is in upper half of window, show list below line
             this.domWrap.style.top = 'auto';
-// @ts-expect-error TS(18048) FIXME: Object is possibly 'null' or 'undefined'.
+            // @ts-expect-error TS(18048) FIXME: Object is possibly 'null' or 'undefined'.
             this.domWrap.style.bottom = `calc(${layerRect.height}px - ${location.top - layerRect.top}px)`;
-// @ts-expect-error TS(18048) FIXME: Object is possibly 'null' or 'undefined'.
+            // @ts-expect-error TS(18048) FIXME: Object is possibly 'null' or 'undefined'.
             this.domWrap.style.maxHeight = `calc(${location.top - layerRect.top}px - ${this.textarea.closest('dialog') ? '0' : '1vh'})`;
         }
     }
@@ -782,13 +782,13 @@ export class AutoComplete {
         if (!layer) return;
         const layerRect = layer.getBoundingClientRect();
         if (
-// @ts-expect-error TS(18047) FIXME: Object is possibly 'null' or 'undefined'.
+            // @ts-expect-error TS(18047) FIXME: Object is possibly 'null' or 'undefined'.
             location.bottom < rect.top ||
-// @ts-expect-error TS(18047) FIXME: Object is possibly 'null' or 'undefined'.
+            // @ts-expect-error TS(18047) FIXME: Object is possibly 'null' or 'undefined'.
             location.top > rect.bottom ||
-// @ts-expect-error TS(18047) FIXME: Object is possibly 'null' or 'undefined'.
+            // @ts-expect-error TS(18047) FIXME: Object is possibly 'null' or 'undefined'.
             location.left < rect.left ||
-// @ts-expect-error TS(18047) FIXME: Object is possibly 'null' or 'undefined'.
+            // @ts-expect-error TS(18047) FIXME: Object is possibly 'null' or 'undefined'.
             location.left > rect.right
         ) {
             return this.hide();
@@ -916,7 +916,7 @@ export class AutoComplete {
         if (this.isReplaceable && this.selectedItem.value !== null) {
             // Apply per-option replacement offset (e.g., for closing tags that need to replace leading whitespace)
             const effectiveStart =
-// @ts-expect-error TS(2531) FIXME: Object is possibly 'null' or 'undefined'.
+                // @ts-expect-error TS(2531) FIXME: Object is possibly 'null' or 'undefined'.
                 this.effectiveParserResult.start + (this.selectedItem.replacementStartOffset ?? 0);
             // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
             this.textarea.value = `${this.text.slice(0, effectiveStart)}${this.selectedItem.replacer}${this.text.slice(this.effectiveParserResult.start + this.effectiveParserResult.name.length + (this.startQuote ? 1 : 0) + (this.endQuote ? 1 : 0))}`;

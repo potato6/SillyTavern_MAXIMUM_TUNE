@@ -1480,7 +1480,9 @@ function switchBgTab(tabHref: string): void {
     tabs.querySelectorAll('.bg_tab_button').forEach((btn) => {
         btn.classList.remove('ui-tabs-active');
     });
-    const activeButton = tabs.querySelector<HTMLAnchorElement>(`.bg_tab_button a[href="${tabHref}"]`);
+    const activeButton = tabs.querySelector<HTMLAnchorElement>(
+        `.bg_tab_button a[href="${tabHref}"]`,
+    );
     activeButton?.closest('.bg_tab_button')?.classList.add('ui-tabs-active');
 
     tabs.dispatchEvent(new CustomEvent('tabsactivate', { bubbles: true }));

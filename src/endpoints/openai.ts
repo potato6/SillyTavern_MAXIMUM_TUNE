@@ -1,9 +1,9 @@
 import fs from 'node:fs';
 import { Buffer } from 'node:buffer';
-import express from 'express';
+import { Elysia } from 'elysia';
 
 import { getConfigValue, mergeObjectWithYaml, excludeKeysByYaml, trimV1, delay } from '../util.js';
-import { setAdditionalHeaders } from '../additional-headers.js';
+import { setAdditionalHeadersByType } from '../additional-headers.js';
 import { readSecret, SECRET_KEYS } from './secrets.js';
 import {
     AIMLAPI_HEADERS,
@@ -12,119 +12,125 @@ import {
     ZAI_ENDPOINT,
 } from '../constants.js';
 
-export const router = express.Router();
+export const router: any = new Elysia({ prefix: '/api/openai' });
 
-router.post('/caption-image', async (request, response) => {
+router.post('/caption-image', async (context) => {
+    const { set } = context;
+    const body = context.body as Record<string, unknown>;
+    const user = (context as unknown as Record<string, unknown>).user as Record<
+        string,
+        unknown
+    > | null;
+    const directories = user?.directories as Record<string, string> | undefined;
+
     try {
         let key = '';
-        const headers = {};
-        const bodyParams = {};
+        const headers: Record<string, unknown> = {};
+        const bodyParams: Record<string, unknown> = {};
 
-        if (request.body.api === 'openai' && !request.body.reverse_proxy) {
-            key = readSecret(request.user.directories, SECRET_KEYS.OPENAI);
+        if (body.api === 'openai' && !body.reverse_proxy) {
+            key = readSecret(directories as any, SECRET_KEYS.OPENAI);
         }
 
-        if (request.body.api === 'xai' && !request.body.reverse_proxy) {
-            key = readSecret(request.user.directories, SECRET_KEYS.XAI);
+        if (body.api === 'xai' && !body.reverse_proxy) {
+            key = readSecret(directories as any, SECRET_KEYS.XAI);
         }
 
-        if (request.body.api === 'mistral' && !request.body.reverse_proxy) {
-            key = readSecret(request.user.directories, SECRET_KEYS.MISTRALAI);
+        if (body.api === 'mistral' && !body.reverse_proxy) {
+            key = readSecret(directories as any, SECRET_KEYS.MISTRALAI);
         }
 
-        if (request.body.reverse_proxy && request.body.proxy_password) {
-            key = request.body.proxy_password;
+        if (body.reverse_proxy && body.proxy_password) {
+            key = body.proxy_password as string;
         }
 
-        if (request.body.api === 'custom') {
-            key = readSecret(request.user.directories, SECRET_KEYS.CUSTOM);
-            mergeObjectWithYaml(bodyParams, request.body.custom_include_body);
-            mergeObjectWithYaml(headers, request.body.custom_include_headers);
+        if (body.api === 'custom') {
+            key = readSecret(directories as any, SECRET_KEYS.CUSTOM);
+            mergeObjectWithYaml(bodyParams, body.custom_include_body as Record<string, unknown>);
+            mergeObjectWithYaml(headers, body.custom_include_headers as Record<string, unknown>);
         }
 
-        if (request.body.api === 'openrouter') {
-            key = readSecret(request.user.directories, SECRET_KEYS.OPENROUTER);
+        if (body.api === 'openrouter') {
+            key = readSecret(directories as any, SECRET_KEYS.OPENROUTER);
         }
 
-        if (request.body.api === 'ooba') {
-            key = readSecret(request.user.directories, SECRET_KEYS.OOBA);
-            // @ts-expect-error TS(2339) FIXME: Property 'temperature' does not exist on type '{}'... Remove this comment to see the full error message
+        if (body.api === 'ooba') {
+            key = readSecret(directories as any, SECRET_KEYS.OOBA);
             bodyParams.temperature = 0.1;
         }
 
-        if (request.body.api === 'koboldcpp') {
-            key = readSecret(request.user.directories, SECRET_KEYS.KOBOLDCPP);
+        if (body.api === 'koboldcpp') {
+            key = readSecret(directories as any, SECRET_KEYS.KOBOLDCPP);
         }
 
-        if (request.body.api === 'llamacpp') {
-            key = readSecret(request.user.directories, SECRET_KEYS.LLAMACPP);
+        if (body.api === 'llamacpp') {
+            key = readSecret(directories as any, SECRET_KEYS.LLAMACPP);
         }
 
-        if (request.body.api === 'vllm') {
-            key = readSecret(request.user.directories, SECRET_KEYS.VLLM);
+        if (body.api === 'vllm') {
+            key = readSecret(directories as any, SECRET_KEYS.VLLM);
         }
 
-        if (request.body.api === 'aimlapi') {
-            key = readSecret(request.user.directories, SECRET_KEYS.AIMLAPI);
+        if (body.api === 'aimlapi') {
+            key = readSecret(directories as any, SECRET_KEYS.AIMLAPI);
         }
 
-        if (request.body.api === 'groq') {
-            key = readSecret(request.user.directories, SECRET_KEYS.GROQ);
+        if (body.api === 'groq') {
+            key = readSecret(directories as any, SECRET_KEYS.GROQ);
         }
 
-        if (request.body.api === 'cohere') {
-            key = readSecret(request.user.directories, SECRET_KEYS.COHERE);
+        if (body.api === 'cohere') {
+            key = readSecret(directories as any, SECRET_KEYS.COHERE);
         }
 
-        if (request.body.api === 'moonshot' && !request.body.reverse_proxy) {
-            key = readSecret(request.user.directories, SECRET_KEYS.MOONSHOT);
+        if (body.api === 'moonshot' && !body.reverse_proxy) {
+            key = readSecret(directories as any, SECRET_KEYS.MOONSHOT);
         }
 
-        if (request.body.api === 'nanogpt') {
-            key = readSecret(request.user.directories, SECRET_KEYS.NANOGPT);
+        if (body.api === 'nanogpt') {
+            key = readSecret(directories as any, SECRET_KEYS.NANOGPT);
         }
 
-        if (request.body.api === 'chutes') {
-            key = readSecret(request.user.directories, SECRET_KEYS.CHUTES);
+        if (body.api === 'chutes') {
+            key = readSecret(directories as any, SECRET_KEYS.CHUTES);
         }
 
-        if (request.body.api === 'electronhub') {
-            key = readSecret(request.user.directories, SECRET_KEYS.ELECTRONHUB);
+        if (body.api === 'electronhub') {
+            key = readSecret(directories as any, SECRET_KEYS.ELECTRONHUB);
         }
 
-        if (request.body.api === 'zai' && !request.body.reverse_proxy) {
-            key = readSecret(request.user.directories, SECRET_KEYS.ZAI);
+        if (body.api === 'zai' && !body.reverse_proxy) {
+            key = readSecret(directories as any, SECRET_KEYS.ZAI);
         }
 
-        if (request.body.api === 'zai') {
-            // @ts-expect-error TS(2339) FIXME: Property 'max_tokens' does not exist on type '{}'.
+        if (body.api === 'zai') {
             bodyParams.max_tokens = 4096; // default is 1024
         }
 
-        if (request.body.api === 'pollinations') {
-            key = readSecret(request.user.directories, SECRET_KEYS.POLLINATIONS);
-            // @ts-expect-error TS(2339) FIXME: Property 'seed' does not exist on type '{}'.
+        if (body.api === 'pollinations') {
+            key = readSecret(directories as any, SECRET_KEYS.POLLINATIONS);
             bodyParams.seed = Math.floor(Math.random() * Math.pow(2, 32));
         }
 
-        if (request.body.api === 'workers_ai') {
-            key = readSecret(request.user.directories, SECRET_KEYS.WORKERS_AI);
+        if (body.api === 'workers_ai') {
+            key = readSecret(directories as any, SECRET_KEYS.WORKERS_AI);
         }
 
         const noKeyTypes = ['custom', 'ooba', 'koboldcpp', 'vllm', 'llamacpp'];
-        if (!key && !request.body.reverse_proxy && !noKeyTypes.includes(request.body.api)) {
-            console.warn('No key found for API', request.body.api);
-            return response.sendStatus(400);
+        if (!key && !body.reverse_proxy && !noKeyTypes.includes(body.api as string)) {
+            console.warn('No key found for API', body.api);
+            set.status = 400;
+            return;
         }
 
-        const body = {
-            model: request.body.model,
+        const captionBody: Record<string, unknown> = {
+            model: body.model,
             messages: [
                 {
                     role: 'user',
                     content: [
-                        { type: 'text', text: request.body.prompt },
-                        { type: 'image_url', image_url: { url: request.body.image } },
+                        { type: 'text', text: body.prompt },
+                        { type: 'image_url', image_url: { url: body.image } },
                     ],
                 },
             ],
@@ -133,145 +139,154 @@ router.post('/caption-image', async (request, response) => {
 
         const captionSystemPrompt = getConfigValue('openai.captionSystemPrompt');
         if (captionSystemPrompt) {
-            body.messages.unshift({
+            (captionBody.messages as Array<Record<string, unknown>>).unshift({
                 role: 'system',
                 content: captionSystemPrompt,
             });
         }
 
-        if (request.body.api === 'custom') {
-            excludeKeysByYaml(body, request.body.custom_exclude_body);
+        if (body.api === 'custom') {
+            excludeKeysByYaml(captionBody, body.custom_exclude_body as Record<string, unknown>);
         }
 
         let apiUrl = '';
 
-        if (request.body.api === 'openrouter') {
+        if (body.api === 'openrouter') {
             apiUrl = 'https://openrouter.ai/api/v1/chat/completions';
             Object.assign(headers, OPENROUTER_HEADERS);
         }
 
-        if (request.body.api === 'openai') {
+        if (body.api === 'openai') {
             apiUrl = 'https://api.openai.com/v1/chat/completions';
         }
 
-        if (request.body.reverse_proxy) {
-            apiUrl = `${request.body.reverse_proxy}/chat/completions`;
+        if (body.reverse_proxy) {
+            apiUrl = `${body.reverse_proxy as string}/chat/completions`;
         }
 
-        if (request.body.api === 'custom') {
-            apiUrl = `${request.body.server_url}/chat/completions`;
+        if (body.api === 'custom') {
+            apiUrl = `${body.server_url as string}/chat/completions`;
         }
 
-        if (request.body.api === 'aimlapi') {
+        if (body.api === 'aimlapi') {
             apiUrl = 'https://api.aimlapi.com/v1/chat/completions';
             Object.assign(headers, AIMLAPI_HEADERS);
         }
 
-        if (request.body.api === 'groq') {
+        if (body.api === 'groq') {
             apiUrl = 'https://api.groq.com/openai/v1/chat/completions';
-            if (body.messages?.[0]?.role === 'system') {
-                body.messages[0].role = 'user';
+            const messages = captionBody.messages as Array<Record<string, unknown>>;
+            if (messages?.[0]?.role === 'system') {
+                messages[0].role = 'user';
             }
         }
 
-        if (request.body.api === 'mistral') {
+        if (body.api === 'mistral') {
             apiUrl = 'https://api.mistral.ai/v1/chat/completions';
         }
 
-        if (request.body.api === 'cohere') {
+        if (body.api === 'cohere') {
             apiUrl = 'https://api.cohere.ai/v2/chat';
         }
 
-        if (request.body.api === 'xai') {
+        if (body.api === 'xai') {
             apiUrl = 'https://api.x.ai/v1/chat/completions';
         }
 
-        if (request.body.api === 'pollinations') {
+        if (body.api === 'pollinations') {
             apiUrl = 'https://gen.pollinations.ai/v1/chat/completions';
         }
 
-        if (request.body.api === 'moonshot' && !request.body.reverse_proxy) {
+        if (body.api === 'moonshot' && !body.reverse_proxy) {
             apiUrl = 'https://api.moonshot.ai/v1/chat/completions';
         }
 
-        if (request.body.api === 'nanogpt') {
+        if (body.api === 'nanogpt') {
             apiUrl = 'https://nano-gpt.com/api/v1/chat/completions';
         }
 
-        if (request.body.api === 'chutes') {
+        if (body.api === 'chutes') {
             apiUrl = 'https://llm.chutes.ai/v1/chat/completions';
         }
 
-        if (request.body.api === 'electronhub') {
+        if (body.api === 'electronhub') {
             apiUrl = 'https://api.electronhub.ai/v1/chat/completions';
         }
 
-        if (request.body.api === 'zai' && !request.body.reverse_proxy) {
+        if (body.api === 'zai' && !body.reverse_proxy) {
             apiUrl =
-                request.body.zai_endpoint === ZAI_ENDPOINT.CODING
+                body.zai_endpoint === ZAI_ENDPOINT.CODING
                     ? 'https://api.z.ai/api/coding/paas/v4/chat/completions'
                     : 'https://api.z.ai/api/paas/v4/chat/completions';
         }
 
         // Handle video inlining for Z.AI
-        if (request.body.api === 'zai' && /data:video\/\w+;base64,/.test(request.body.image)) {
-            const message = body.messages.find((msg) => Array.isArray(msg.content));
+        if (body.api === 'zai' && /data:video\/\w+;base64,/.test(body.image as string)) {
+            const messages = captionBody.messages as Array<Record<string, unknown>>;
+            const message = messages.find((msg) => Array.isArray(msg.content));
             if (message) {
-                const imgContent = message.content.find((c) => c.type === 'image_url');
+                const content = message.content as Array<Record<string, unknown>>;
+                const imgContent = content.find((c) => c.type === 'image_url');
                 if (imgContent) {
                     imgContent.type = 'video_url';
-                    // @ts-expect-error TS(2339) FIXME: Property 'video_url' does not exist on type '{ typ... Remove this comment to see the full error message
                     imgContent.video_url = imgContent.image_url;
                     delete imgContent.image_url;
                 }
             }
         }
 
-        if (request.body.api === 'workers_ai') {
-            const accountId = String(request.body.workers_ai_account_id || '').trim();
+        if (body.api === 'workers_ai') {
+            const accountId = String(body.workers_ai_account_id || '').trim();
             if (!accountId) {
-                return response
-                    .status(400)
-                    .send({ error: 'Cloudflare Workers AI Account ID is required' });
+                set.status = 400;
+                return { error: 'Cloudflare Workers AI Account ID is required' };
             }
             apiUrl = `https://api.cloudflare.com/client/v4/accounts/${encodeURIComponent(accountId)}/ai/v1/chat/completions`;
         }
 
-        if (['koboldcpp', 'vllm', 'llamacpp', 'ooba'].includes(request.body.api)) {
-            apiUrl = `${trimV1(request.body.server_url)}/v1/chat/completions`;
+        if (['koboldcpp', 'vllm', 'llamacpp', 'ooba'].includes(body.api as string)) {
+            apiUrl = `${trimV1(body.server_url as string)}/v1/chat/completions`;
         }
 
-        if (request.body.api === 'ooba') {
-            const imgMessage = body.messages.pop();
-            body.messages.push({
+        if (body.api === 'ooba') {
+            const messages = captionBody.messages as Array<Record<string, unknown>>;
+            const imgMessage = messages.pop();
+            messages.push({
                 role: 'user',
-                content: imgMessage?.content?.[0]?.text,
+                content: (imgMessage?.content as Array<Record<string, unknown>>)?.[0]?.text,
             });
-            body.messages.push({
+            messages.push({
                 role: 'user',
                 content: [],
-                // @ts-expect-error TS(2345) FIXME: Argument of type '{ role: string; content: never[]... Remove this comment to see the full error message
-                image_url: imgMessage?.content?.[1]?.image_url?.url,
+                image_url: (imgMessage?.content as Array<Record<string, unknown>>)?.[1]?.image_url
+                    ?.url,
             });
         }
 
-        setAdditionalHeaders(request, { headers }, apiUrl);
-        console.debug('Multimodal captioning request', body);
+        setAdditionalHeadersByType(
+            headers,
+            (body.api_type as string) || '',
+            apiUrl,
+            directories as any,
+            body.secret_id,
+        );
+        console.debug('Multimodal captioning request', captionBody);
 
         const result = await fetch(apiUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${key}`,
+                Authorization: `*** ${key}`,
                 ...headers,
-            },
-            body: JSON.stringify(body),
+            } as Record<string, string>,
+            body: JSON.stringify(captionBody),
         });
 
         if (!result.ok) {
             const text = await result.text();
             console.warn('Multimodal captioning request failed', result.statusText, text);
-            return response.status(500).send(text);
+            set.status = 500;
+            return text;
         }
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic OpenAI API response
@@ -280,36 +295,46 @@ router.post('/caption-image', async (request, response) => {
         const caption = data?.choices?.[0]?.message?.content ?? data?.message?.content?.[0]?.text;
 
         if (!caption) {
-            return response.status(500).send('No caption found');
+            set.status = 500;
+            return 'No caption found';
         }
 
-        return response.json({ caption });
+        return { caption };
     } catch (error) {
         console.error(error);
-        response.status(500).send('Internal server error');
+        set.status = 500;
+        return 'Internal server error';
     }
 });
 
-router.post('/generate-voice', async (request, response) => {
+router.post('/generate-voice', async (context) => {
+    const { set } = context;
+    const body = context.body as Record<string, unknown>;
+    const user = (context as unknown as Record<string, unknown>).user as Record<
+        string,
+        unknown
+    > | null;
+    const directories = user?.directories as Record<string, string> | undefined;
+
     try {
-        const key = readSecret(request.user.directories, SECRET_KEYS.OPENAI);
+        const key = readSecret(directories as any, SECRET_KEYS.OPENAI);
 
         if (!key) {
             console.warn('No OpenAI key found');
-            return response.sendStatus(400);
+            set.status = 400;
+            return;
         }
 
-        const requestBody = {
-            input: request.body.text,
+        const requestBody: Record<string, unknown> = {
+            input: body.text,
             response_format: 'mp3',
-            voice: request.body.voice ?? 'alloy',
-            speed: request.body.speed ?? 1,
-            model: request.body.model ?? 'tts-1',
+            voice: body.voice ?? 'alloy',
+            speed: body.speed ?? 1,
+            model: body.model ?? 'tts-1',
         };
 
-        if (request.body.instructions) {
-            // @ts-expect-error TS(2339) FIXME: Property 'instructions' does not exist on type '{ ... Remove this comment to see the full error message
-            requestBody.instructions = request.body.instructions;
+        if (body.instructions) {
+            requestBody.instructions = body.instructions;
         }
 
         console.debug('OpenAI TTS request', requestBody);
@@ -318,7 +343,7 @@ router.post('/generate-voice', async (request, response) => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${key}`,
+                Authorization: `*** ${key}`,
             },
             body: JSON.stringify(requestBody),
         });
@@ -326,57 +351,67 @@ router.post('/generate-voice', async (request, response) => {
         if (!result.ok) {
             const text = await result.text();
             console.warn('OpenAI request failed', result.statusText, text);
-            return response.status(500).send(text);
+            set.status = 500;
+            return text;
         }
 
         const buffer = await result.arrayBuffer();
-        response.setHeader('Content-Type', 'audio/mpeg');
-        return response.send(Buffer.from(buffer));
+        return new Response(Buffer.from(buffer), {
+            headers: {
+                'Content-Type': 'audio/mpeg',
+            },
+        });
     } catch (error) {
         console.error('OpenAI TTS generation failed', error);
-        response.status(500).send('Internal server error');
+        set.status = 500;
+        return 'Internal server error';
     }
 });
 
 // ElectronHub TTS proxy
-router.post('/electronhub/generate-voice', async (request, response) => {
+router.post('/electronhub/generate-voice', async (context) => {
+    const { set } = context;
+    const body = context.body as Record<string, unknown>;
+    const user = (context as unknown as Record<string, unknown>).user as Record<
+        string,
+        unknown
+    > | null;
+    const directories = user?.directories as Record<string, string> | undefined;
+
     try {
-        const key = readSecret(request.user.directories, SECRET_KEYS.ELECTRONHUB);
+        const key = readSecret(directories as any, SECRET_KEYS.ELECTRONHUB);
 
         if (!key) {
             console.warn('No ElectronHub key found');
-            return response.sendStatus(400);
+            set.status = 400;
+            return;
         }
 
-        const requestBody: Record<string, any> = {
-            input: request.body.input,
-            voice: request.body.voice,
-            speed: request.body.speed ?? 1,
-            temperature: request.body.temperature ?? undefined,
-            model: request.body.model || 'tts-1',
+        const requestBody: Record<string, unknown> = {
+            input: body.input,
+            voice: body.voice,
+            speed: body.speed ?? 1,
+            temperature: body.temperature ?? undefined,
+            model: body.model || 'tts-1',
             response_format: 'mp3',
         };
 
         // Optional provider-specific params
-        if (request.body.instructions) requestBody.instructions = request.body.instructions;
-        if (request.body.speaker_transcript)
-            requestBody.speaker_transcript = request.body.speaker_transcript;
-        if (Number.isFinite(request.body.cfg_scale))
-            requestBody.cfg_scale = Number(request.body.cfg_scale);
-        if (Number.isFinite(request.body.cfg_filter_top_k))
-            requestBody.cfg_filter_top_k = Number(request.body.cfg_filter_top_k);
-        if (Number.isFinite(request.body.speech_rate))
-            requestBody.speech_rate = Number(request.body.speech_rate);
-        if (Number.isFinite(request.body.pitch_adjustment))
-            requestBody.pitch_adjustment = Number(request.body.pitch_adjustment);
-        if (request.body.emotional_style)
-            requestBody.emotional_style = request.body.emotional_style;
+        if (body.instructions) requestBody.instructions = body.instructions;
+        if (body.speaker_transcript) requestBody.speaker_transcript = body.speaker_transcript;
+        if (Number.isFinite(body.cfg_scale)) requestBody.cfg_scale = Number(body.cfg_scale);
+        if (Number.isFinite(body.cfg_filter_top_k))
+            requestBody.cfg_filter_top_k = Number(body.cfg_filter_top_k);
+        if (Number.isFinite(body.speech_rate)) requestBody.speech_rate = Number(body.speech_rate);
+        if (Number.isFinite(body.pitch_adjustment))
+            requestBody.pitch_adjustment = Number(body.pitch_adjustment);
+        if (body.emotional_style) requestBody.emotional_style = body.emotional_style;
 
         // Handle dynamic parameters sent from the frontend
         const knownParams = new Set(Object.keys(requestBody));
-        for (const key in request.body) {
-            if (!knownParams.has(key) && request.body[key] !== undefined) {
-                requestBody[key] = request.body[key];
+        for (const key in body) {
+            if (!knownParams.has(key) && body[key] !== undefined) {
+                requestBody[key] = body[key];
             }
         }
 
@@ -391,7 +426,7 @@ router.post('/electronhub/generate-voice', async (request, response) => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${key}`,
+                Authorization: `*** ${key}`,
             },
             body: JSON.stringify(requestBody),
         });
@@ -399,64 +434,88 @@ router.post('/electronhub/generate-voice', async (request, response) => {
         if (!result.ok) {
             const text = await result.text();
             console.warn('ElectronHub TTS request failed', result.statusText, text);
-            return response.status(500).send(text);
+            set.status = 500;
+            return text;
         }
 
         const contentType = result.headers.get('content-type') || 'audio/mpeg';
         const buffer = await result.arrayBuffer();
-        response.setHeader('Content-Type', contentType);
-        return response.send(Buffer.from(buffer));
+        return new Response(Buffer.from(buffer), {
+            headers: {
+                'Content-Type': contentType,
+            },
+        });
     } catch (error) {
         console.error('ElectronHub TTS generation failed', error);
-        response.status(500).send('Internal server error');
+        set.status = 500;
+        return 'Internal server error';
     }
 });
 
 // ElectronHub model list
-router.post('/electronhub/models', async (request, response) => {
+router.post('/electronhub/models', async (context) => {
+    const { set } = context;
+    const user = (context as unknown as Record<string, unknown>).user as Record<
+        string,
+        unknown
+    > | null;
+    const directories = user?.directories as Record<string, string> | undefined;
+
     try {
-        const key = readSecret(request.user.directories, SECRET_KEYS.ELECTRONHUB);
+        const key = readSecret(directories as any, SECRET_KEYS.ELECTRONHUB);
 
         if (!key) {
             console.warn('No ElectronHub key found');
-            return response.sendStatus(400);
+            set.status = 400;
+            return;
         }
 
         const result = await fetch('https://api.electronhub.ai/v1/models', {
             method: 'GET',
             headers: {
-                Authorization: `Bearer ${key}`,
+                Authorization: `*** ${key}`,
             },
         });
 
         if (!result.ok) {
             const text = await result.text();
             console.warn('ElectronHub models request failed', result.statusText, text);
-            return response.status(500).send(text);
+            set.status = 500;
+            return text;
         }
         const data = (await result.json()) as Record<string, unknown>;
         const models = data && Array.isArray(data.data) ? data.data : [];
-        return response.json(models);
+        return models;
     } catch (error) {
         console.error('ElectronHub models fetch failed', error);
-        response.status(500).send('Internal server error');
+        set.status = 500;
+        return 'Internal server error';
     }
 });
 
 // Chutes TTS
-router.post('/chutes/generate-voice', async (request, response) => {
+router.post('/chutes/generate-voice', async (context) => {
+    const { set } = context;
+    const body = context.body as Record<string, unknown>;
+    const user = (context as unknown as Record<string, unknown>).user as Record<
+        string,
+        unknown
+    > | null;
+    const directories = user?.directories as Record<string, string> | undefined;
+
     try {
-        const key = readSecret(request.user.directories, SECRET_KEYS.CHUTES);
+        const key = readSecret(directories as any, SECRET_KEYS.CHUTES);
 
         if (!key) {
             console.warn('No Chutes key found');
-            return response.sendStatus(400);
+            set.status = 400;
+            return;
         }
 
         const requestBody = {
-            text: request.body.input,
-            voice: request.body.voice || 'af_heart',
-            speed: request.body.speed || 1,
+            text: body.input,
+            voice: body.voice || 'af_heart',
+            speed: body.speed || 1,
         };
 
         console.debug('Chutes TTS request', requestBody);
@@ -465,7 +524,7 @@ router.post('/chutes/generate-voice', async (request, response) => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${key}`,
+                Authorization: `*** ${key}`,
             },
             body: JSON.stringify(requestBody),
         });
@@ -473,26 +532,39 @@ router.post('/chutes/generate-voice', async (request, response) => {
         if (!result.ok) {
             const text = await result.text();
             console.warn('Chutes TTS request failed', result.statusText, text);
-            return response.status(500).send(text);
+            set.status = 500;
+            return text;
         }
 
         const contentType = result.headers.get('content-type') || 'audio/mpeg';
         const buffer = await result.arrayBuffer();
-        response.setHeader('Content-Type', contentType);
-        return response.send(Buffer.from(buffer));
+        return new Response(Buffer.from(buffer), {
+            headers: {
+                'Content-Type': contentType,
+            },
+        });
     } catch (error) {
         console.error('Chutes TTS generation failed', error);
-        response.status(500).send('Internal server error');
+        set.status = 500;
+        return 'Internal server error';
     }
 });
 
-router.post('/chutes/models/embedding', async (request, response) => {
+router.post('/chutes/models/embedding', async (context) => {
+    const { set } = context;
+    const user = (context as unknown as Record<string, unknown>).user as Record<
+        string,
+        unknown
+    > | null;
+    const directories = user?.directories as Record<string, string> | undefined;
+
     try {
-        const key = readSecret(request.user.directories, SECRET_KEYS.CHUTES);
+        const key = readSecret(directories as any, SECRET_KEYS.CHUTES);
 
         if (!key) {
             console.warn('No Chutes key found');
-            return response.sendStatus(400);
+            set.status = 400;
+            return;
         }
 
         const result = await fetch(
@@ -500,7 +572,7 @@ router.post('/chutes/models/embedding', async (request, response) => {
             {
                 method: 'GET',
                 headers: {
-                    Authorization: `Bearer ${key}`,
+                    Authorization: `*** ${key}`,
                 },
             },
         );
@@ -508,35 +580,45 @@ router.post('/chutes/models/embedding', async (request, response) => {
         if (!result.ok) {
             const text = await result.text();
             console.warn('Chutes embedding models request failed', result.statusText, text);
-            return response.status(500).send(text);
+            set.status = 500;
+            return text;
         }
 
         const data = (await result.json()) as Record<string, unknown>;
 
         if (!Array.isArray(data?.items)) {
             console.warn('Chutes embedding models response invalid', data);
-            return response.sendStatus(500);
+            set.status = 500;
+            return;
         }
-        return response.json(data.items);
+        return data.items;
     } catch (error) {
         console.error('Chutes embedding models fetch failed', error);
-        response.sendStatus(500);
+        set.status = 500;
     }
 });
 
-router.post('/nanogpt/models/embedding', async (request, response) => {
+router.post('/nanogpt/models/embedding', async (context) => {
+    const { set } = context;
+    const user = (context as unknown as Record<string, unknown>).user as Record<
+        string,
+        unknown
+    > | null;
+    const directories = user?.directories as Record<string, string> | undefined;
+
     try {
-        const key = readSecret(request.user.directories, SECRET_KEYS.NANOGPT);
+        const key = readSecret(directories as any, SECRET_KEYS.NANOGPT);
 
         if (!key) {
             console.warn('No NanoGPT key found');
-            return response.sendStatus(400);
+            set.status = 400;
+            return;
         }
 
         const result = await fetch('https://nano-gpt.com/api/v1/embedding-models', {
             method: 'GET',
             headers: {
-                Authorization: `Bearer ${key}`,
+                Authorization: `*** ${key}`,
                 'Accept-Encoding': 'identity',
             },
         });
@@ -544,173 +626,216 @@ router.post('/nanogpt/models/embedding', async (request, response) => {
         if (!result.ok) {
             const text = await result.text();
             console.warn('NanoGPT embedding models request failed', result.statusText, text);
-            return response.status(500).send(text);
+            set.status = 500;
+            return text;
         }
 
         const data = (await result.json()) as Record<string, unknown>;
 
         if (!Array.isArray(data?.data)) {
             console.warn('NanoGPT embedding models response invalid', data);
-            return response.sendStatus(500);
+            set.status = 500;
+            return;
         }
-        return response.json(data.data);
+        return data.data;
     } catch (error) {
         console.error('NanoGPT embedding models fetch failed', error);
-        response.sendStatus(500);
+        set.status = 500;
     }
 });
 
-router.post('/siliconflow/models/embedding', async (request, response) => {
+router.post('/siliconflow/models/embedding', async (context) => {
+    const { set } = context;
+    const body = context.body as Record<string, unknown>;
+    const user = (context as unknown as Record<string, unknown>).user as Record<
+        string,
+        unknown
+    > | null;
+    const directories = user?.directories as Record<string, string> | undefined;
+
     try {
-        const key = readSecret(request.user.directories, SECRET_KEYS.SILICONFLOW);
+        const key = readSecret(directories as any, SECRET_KEYS.SILICONFLOW);
 
         if (!key) {
             console.warn('No SiliconFlow key found');
-            return response.sendStatus(400);
+            set.status = 400;
+            return;
         }
 
         const apiUrl =
-            request.body.siliconflow_endpoint === SILICONFLOW_ENDPOINT.CN
+            body.siliconflow_endpoint === SILICONFLOW_ENDPOINT.CN
                 ? 'https://api.siliconflow.cn/v1/models?type=text&sub_type=embedding'
                 : 'https://api.siliconflow.com/v1/models?type=text&sub_type=embedding';
 
         const result = await fetch(apiUrl, {
             method: 'GET',
             headers: {
-                Authorization: `Bearer ${key}`,
+                Authorization: `*** ${key}`,
             },
         });
 
         if (!result.ok) {
             const text = await result.text();
             console.warn('SiliconFlow embedding models request failed', result.statusText, text);
-            return response.status(500).send(text);
+            set.status = 500;
+            return text;
         }
 
         const data = (await result.json()) as Record<string, unknown>;
 
         if (!Array.isArray(data?.data)) {
             console.warn('SiliconFlow embedding models response invalid', data);
-            return response.sendStatus(500);
+            set.status = 500;
+            return;
         }
 
-        return response.json(data.data);
+        return data.data;
     } catch (error) {
         console.error('SiliconFlow embedding models fetch failed', error);
-        response.sendStatus(500);
+        set.status = 500;
     }
 });
 
-router.post('/workers-ai/models/embedding', async (request, response) => {
+router.post('/workers-ai/models/embedding', async (context) => {
+    const { set } = context;
+    const body = context.body as Record<string, unknown>;
+    const user = (context as unknown as Record<string, unknown>).user as Record<
+        string,
+        unknown
+    > | null;
+    const directories = user?.directories as Record<string, string> | undefined;
+
     try {
-        const key = readSecret(request.user.directories, SECRET_KEYS.WORKERS_AI);
+        const key = readSecret(directories as any, SECRET_KEYS.WORKERS_AI);
 
         if (!key) {
             console.warn('No Workers AI key found');
-            return response.sendStatus(400);
+            set.status = 400;
+            return;
         }
 
-        const accountId = String(request.body.workers_ai_account_id || '').trim();
+        const accountId = String(body.workers_ai_account_id || '').trim();
         if (!accountId) {
             console.warn('No Workers AI account ID found');
-            return response.sendStatus(400);
+            set.status = 400;
+            return;
         }
 
         const apiUrl = `https://api.cloudflare.com/client/v4/accounts/${encodeURIComponent(accountId)}/ai/models/search?task=Text+Embeddings&per_page=100`;
         const result = await fetch(apiUrl, {
             method: 'GET',
             headers: {
-                Authorization: `Bearer ${key}`,
+                Authorization: `*** ${key}`,
             },
         });
 
         if (!result.ok) {
             const text = await result.text();
             console.warn('Workers AI embedding models request failed', result.statusText, text);
-            return response.status(500).send(text);
+            set.status = 500;
+            return text;
         }
 
         const data = (await result.json()) as Record<string, unknown>;
 
         if (!Array.isArray(data?.result)) {
             console.warn('Workers AI embedding models response invalid', data);
-            return response.sendStatus(500);
+            set.status = 500;
+            return;
         }
 
-        return response.json(
-            data.result.map((m: Record<string, unknown>) => ({
-                ...m,
-                id: m.name,
-            })),
-        );
+        return (data.result as Array<Record<string, unknown>>).map((m) => ({
+            ...m,
+            id: m.name,
+        }));
     } catch (error) {
         console.error('Workers AI embedding models fetch failed', error);
-        response.sendStatus(500);
+        set.status = 500;
     }
 });
 
-router.post('/generate-image', async (request, response) => {
+router.post('/generate-image', async (context) => {
+    const { set } = context;
+    const body = context.body as Record<string, unknown>;
+    const user = (context as unknown as Record<string, unknown>).user as Record<
+        string,
+        unknown
+    > | null;
+    const directories = user?.directories as Record<string, string> | undefined;
+
     try {
-        const key = readSecret(request.user.directories, SECRET_KEYS.OPENAI);
+        const key = readSecret(directories as any, SECRET_KEYS.OPENAI);
 
         if (!key) {
             console.warn('No OpenAI key found');
-            return response.sendStatus(400);
+            set.status = 400;
+            return;
         }
 
-        console.debug('OpenAI request', request.body);
+        console.debug('OpenAI request', body);
 
         const result = await fetch('https://api.openai.com/v1/images/generations', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${key}`,
+                Authorization: `*** ${key}`,
             },
-            body: JSON.stringify(request.body),
+            body: JSON.stringify(body),
         });
 
         if (!result.ok) {
             const text = await result.text();
             console.warn('OpenAI request failed', result.statusText, text);
-            return response.status(500).send(text);
+            set.status = 500;
+            return text;
         }
 
         const data = (await result.json()) as Record<string, unknown>;
-        return response.json(data);
+        return data;
     } catch (error) {
         console.error(error);
-        response.status(500).send('Internal server error');
+        set.status = 500;
+        return 'Internal server error';
     }
 });
 
-router.post('/generate-video', async (request, response) => {
+router.post('/generate-video', async (context) => {
+    const { set } = context;
+    const body = context.body as Record<string, unknown>;
+    const user = (context as unknown as Record<string, unknown>).user as Record<
+        string,
+        unknown
+    > | null;
+    const directories = user?.directories as Record<string, string> | undefined;
+
     try {
         const controller = new AbortController();
-        request.socket.removeAllListeners('close');
-        request.socket.on('close', function () {
-            controller.abort();
-        });
+        const signal = context.request.signal;
+        if (signal) {
+            signal.addEventListener('abort', () => controller.abort(), { once: true });
+        }
 
-        const key = readSecret(request.user.directories, SECRET_KEYS.OPENAI);
+        const key = readSecret(directories as any, SECRET_KEYS.OPENAI);
 
         if (!key) {
             console.warn('No OpenAI key found');
-            return response.sendStatus(400);
+            set.status = 400;
+            return;
         }
 
-        console.debug('OpenAI video generation request', request.body);
+        console.debug('OpenAI video generation request', body);
 
         const videoJobResponse = await fetch('https://api.openai.com/v1/videos', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${key}`,
+                Authorization: `*** ${key}`,
             },
             body: JSON.stringify({
-                prompt: request.body.prompt,
-                model: request.body.model || 'sora-2',
-                size: request.body.size || '720x1280',
-                seconds: request.body.seconds || '8',
+                prompt: body.prompt,
+                model: body.model || 'sora-2',
+                size: body.size || '720x1280',
+                seconds: body.seconds || '8',
             }),
         });
 
@@ -721,56 +846,66 @@ router.post('/generate-video', async (request, response) => {
                 videoJobResponse.statusText,
                 text,
             );
-            return response.status(500).send(text);
+            set.status = 500;
+            return text;
         }
 
         const videoJob = (await videoJobResponse.json()) as Record<string, unknown>;
 
         if (!videoJob || !videoJob.id) {
             console.warn('OpenAI video generation returned no job ID', videoJob);
-            return response.status(500).send('No video job ID returned');
+            set.status = 500;
+            return 'No video job ID returned';
         }
 
         // Poll for video generation completion
         for (let attempt = 0; attempt < 30; attempt++) {
             if (controller.signal.aborted) {
                 console.info('OpenAI video generation aborted by client');
-                return response.status(500).send('Video generation aborted by client');
+                set.status = 500;
+                return 'Video generation aborted by client';
             }
 
             await delay(5000 + attempt * 1000);
-            console.debug(`Polling OpenAI video job ${videoJob.id}, attempt ${attempt + 1}`);
+            console.debug(
+                `Polling OpenAI video job ${String(videoJob.id)}, attempt ${attempt + 1}`,
+            );
 
-            const pollResponse = await fetch(`https://api.openai.com/v1/videos/${videoJob.id}`, {
-                method: 'GET',
-                headers: {
-                    Authorization: `Bearer ${key}`,
+            const pollResponse = await fetch(
+                `https://api.openai.com/v1/videos/${String(videoJob.id)}`,
+                {
+                    method: 'GET',
+                    headers: {
+                        Authorization: `*** ${key}`,
+                    },
                 },
-            });
+            );
 
             if (!pollResponse.ok) {
                 const text = await pollResponse.text();
                 console.warn('OpenAI video job polling failed', pollResponse.statusText, text);
-                return response.status(500).send(text);
+                set.status = 500;
+                return text;
             }
 
             const pollResult = (await pollResponse.json()) as Record<string, unknown>;
             console.debug(
-                `OpenAI video job status: ${pollResult.status}, progress: ${pollResult.progress}`,
+                `OpenAI video job status: ${String(pollResult.status)}, progress: ${String(pollResult.progress)}`,
             );
 
             if (pollResult.status === 'failed') {
                 console.warn('OpenAI video generation failed', pollResult);
-                return response.status(500).send('Video generation failed');
+                set.status = 500;
+                return 'Video generation failed';
             }
 
             if (pollResult.status === 'completed') {
                 const contentResponse = await fetch(
-                    `https://api.openai.com/v1/videos/${videoJob.id}/content`,
+                    `https://api.openai.com/v1/videos/${String(videoJob.id)}/content`,
                     {
                         method: 'GET',
                         headers: {
-                            Authorization: `Bearer ${key}`,
+                            Authorization: `*** ${key}`,
                         },
                     },
                 );
@@ -782,39 +917,50 @@ router.post('/generate-video', async (request, response) => {
                         contentResponse.statusText,
                         text,
                     );
-                    return response.status(500).send(text);
+                    set.status = 500;
+                    return text;
                 }
 
                 const contentBuffer = await contentResponse.arrayBuffer();
-                return response.send({
+                return {
                     format: 'mp4',
                     data: Buffer.from(contentBuffer).toString('base64'),
-                });
+                };
             }
         }
     } catch (error) {
         console.error('OpenAI video generation failed', error);
-        response.status(500).send('Internal server error');
+        set.status = 500;
+        return 'Internal server error';
     }
 });
 
-const custom = express.Router();
+const custom = new Elysia();
 
-custom.post('/generate-voice', async (request, response) => {
+custom.post('/generate-voice', async (context) => {
+    const { set } = context;
+    const body = context.body as Record<string, unknown>;
+    const user = (context as unknown as Record<string, unknown>).user as Record<
+        string,
+        unknown
+    > | null;
+    const directories = user?.directories as Record<string, string> | undefined;
+
     try {
-        const key = readSecret(request.user.directories, SECRET_KEYS.CUSTOM_OPENAI_TTS);
-        const { input, provider_endpoint, response_format, voice, speed, model } = request.body;
+        const key = readSecret(directories as any, SECRET_KEYS.CUSTOM_OPENAI_TTS);
+        const { input, provider_endpoint, response_format, voice, speed, model } = body;
 
         if (!provider_endpoint) {
             console.warn('No OpenAI-compatible TTS provider endpoint provided');
-            return response.sendStatus(400);
+            set.status = 400;
+            return;
         }
 
-        const result = await fetch(provider_endpoint, {
+        const result = await fetch(provider_endpoint as string, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${key ?? ''}`,
+                Authorization: `*** ${key ?? ''}`,
             },
             body: JSON.stringify({
                 input: input ?? '',
@@ -828,15 +974,20 @@ custom.post('/generate-voice', async (request, response) => {
         if (!result.ok) {
             const text = await result.text();
             console.warn('OpenAI request failed', result.statusText, text);
-            return response.status(500).send(text);
+            set.status = 500;
+            return text;
         }
 
         const buffer = await result.arrayBuffer();
-        response.setHeader('Content-Type', 'audio/mpeg');
-        return response.send(Buffer.from(buffer));
+        return new Response(Buffer.from(buffer), {
+            headers: {
+                'Content-Type': 'audio/mpeg',
+            },
+        });
     } catch (error) {
         console.error('OpenAI TTS generation failed', error);
-        response.status(500).send('Internal server error');
+        set.status = 500;
+        return 'Internal server error';
     }
 });
 
@@ -848,7 +999,7 @@ router.use('/custom', custom);
  * @param {string} config.secretKey - The SECRET_KEYS enum value for the provider
  * @param {string} config.apiUrl - The transcription API endpoint URL
  * @param {string} config.providerName - Display name for logging
- * @returns {import('express').RequestHandler} Express request handler
+ * @returns {Function} Elysia request handler
  */
 function createTranscribeHandler({
     secretKey,
@@ -859,34 +1010,48 @@ function createTranscribeHandler({
     apiUrl: string;
     providerName: string;
 }) {
-    return async (request: import('express').Request, response: import('express').Response) => {
+    return async (context: any) => {
+        const { set } = context;
+        const body = context.body as Record<string, unknown>;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
+        const directories = user?.directories as Record<string, string> | undefined;
+        const file = (context as unknown as Record<string, unknown>).file as Record<
+            string,
+            unknown
+        > | null;
+
         try {
-            const key = readSecret(request.user.directories, secretKey);
+            const key = readSecret(directories as any, secretKey);
 
             if (!key) {
                 console.warn(`No ${providerName} key found`);
-                return response.sendStatus(400);
+                set.status = 400;
+                return;
             }
 
-            if (!request.file) {
+            if (!file) {
                 console.warn('No audio file found');
-                return response.sendStatus(400);
+                set.status = 400;
+                return;
             }
 
-            console.info(`Processing audio file with ${providerName}`, request.file.path);
-            const fileBuffer = fs.readFileSync(request.file.path);
+            console.info(`Processing audio file with ${providerName}`, file.path);
+            const fileBuffer = fs.readFileSync(file.path as string);
             const formData = new FormData();
             formData.append('file', new Blob([fileBuffer], { type: 'audio/wav' }), 'audio.wav');
-            formData.append('model', request.body.model);
+            formData.append('model', body.model as string);
 
-            if (request.body.language) {
-                formData.append('language', request.body.language);
+            if (body.language) {
+                formData.append('language', body.language as string);
             }
 
             const result = await fetch(apiUrl, {
                 method: 'POST',
                 headers: {
-                    Authorization: `Bearer ${key}`,
+                    Authorization: `*** ${key}`,
                 },
                 body: formData,
             });
@@ -894,16 +1059,18 @@ function createTranscribeHandler({
             if (!result.ok) {
                 const text = await result.text();
                 console.warn(`${providerName} request failed`, result.statusText, text);
-                return response.status(500).send(text);
+                set.status = 500;
+                return text;
             }
 
-            fs.unlinkSync(request.file.path);
+            fs.unlinkSync(file.path as string);
             const data = (await result.json()) as Record<string, unknown>;
             console.debug(`${providerName} transcription response`, data);
-            return response.json(data);
+            return data;
         } catch (error) {
             console.error(`${providerName} transcription failed`, error);
-            response.status(500).send('Internal server error');
+            set.status = 500;
+            return 'Internal server error';
         }
     };
 }
@@ -944,27 +1111,41 @@ router.post(
     }),
 );
 
-router.post('/chutes/transcribe-audio', async (request, response) => {
+router.post('/chutes/transcribe-audio', async (context) => {
+    const { set } = context;
+    const body = context.body as Record<string, unknown>;
+    const user = (context as unknown as Record<string, unknown>).user as Record<
+        string,
+        unknown
+    > | null;
+    const directories = user?.directories as Record<string, string> | undefined;
+    const file = (context as unknown as Record<string, unknown>).file as Record<
+        string,
+        unknown
+    > | null;
+
     try {
-        const key = readSecret(request.user.directories, SECRET_KEYS.CHUTES);
+        const key = readSecret(directories as any, SECRET_KEYS.CHUTES);
 
         if (!key) {
             console.warn('No Chutes key found');
-            return response.sendStatus(400);
+            set.status = 400;
+            return;
         }
 
-        if (!request.file) {
+        if (!file) {
             console.warn('No audio file found');
-            return response.sendStatus(400);
+            set.status = 400;
+            return;
         }
 
-        console.info('Processing audio file with Chutes', request.file.path);
-        const audioBase64 = fs.readFileSync(request.file.path).toString('base64');
+        console.info('Processing audio file with Chutes', file.path);
+        const audioBase64 = fs.readFileSync(file.path as string).toString('base64');
 
-        const result = await fetch(`https://${request.body.model}.chutes.ai/transcribe`, {
+        const result = await fetch(`https://${String(body.model)}.chutes.ai/transcribe`, {
             method: 'POST',
             headers: {
-                Authorization: `Bearer ${key}`,
+                Authorization: `*** ${key}`,
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
@@ -975,25 +1156,28 @@ router.post('/chutes/transcribe-audio', async (request, response) => {
         if (!result.ok) {
             const text = await result.text();
             console.warn('Chutes request failed', result.statusText, text);
-            return response.status(500).send(text);
+            set.status = 500;
+            return text;
         }
 
-        fs.unlinkSync(request.file.path);
-        const data = (await result.json()) as Record<string, unknown>;
+        fs.unlinkSync(file.path as string);
+        const data = (await result.json()) as Array<Record<string, unknown>>;
         console.debug('Chutes transcription response', data);
 
         if (!Array.isArray(data)) {
             console.warn('Chutes transcription response invalid', data);
-            return response.sendStatus(500);
+            set.status = 500;
+            return;
         }
 
         const fullText = data
-            .map((chunk) => chunk.text || '')
+            .map((chunk) => String(chunk.text || ''))
             .join('')
             .trim();
-        return response.json({ text: fullText });
+        return { text: fullText };
     } catch (error) {
         console.error('Chutes transcription failed', error);
-        response.status(500).send('Internal server error');
+        set.status = 500;
+        return 'Internal server error';
     }
 });

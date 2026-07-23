@@ -1,5 +1,5 @@
 import { Buffer } from 'node:buffer';
-import express from 'express';
+import { Elysia } from 'elysia';
 import { speak, languages } from 'google-translate-api-x';
 import crypto from 'node:crypto';
 import util from 'node:util';
@@ -57,7 +57,7 @@ function createCompleteWavFile(pcmData: Buffer, sampleRate: number) {
  *
  * @param request
  */
-export async function getVertexAIAuth(request: express.Request) {
+export async function getVertexAIAuth(request: any) {
     const authMode = request.body.vertexai_auth_mode || 'express';
 
     if (request.body.reverse_proxy) {
@@ -185,13 +185,13 @@ export function getProjectIdFromServiceAccount(serviceAccount: Record<string, un
 
 /**
  * Generates Google API URL and headers based on request configuration
- * @param {express.Request} request Express request object
+ * @param {any} request Request-like object with body and user.directories
  * @param {string} model Model name to use
  * @param {string} endpoint API endpoint (default: 'generateContent')
  * @returns {Promise<{url: string, headers: object, apiName: string, baseUrl: string, safetySettings: object[]}>} URL, headers, and API name
  */
 export async function getGoogleApiConfig(
-    request: express.Request,
+    request: any,
     model: string,
     endpoint = 'generateContent',
 ) {
@@ -204,7 +204,7 @@ export async function getGoogleApiConfig(
     let baseUrl;
     const headers = {
         'Content-Type': 'application/json',
-    };
+    } as Record<string, string>;
 
     if (useVertexAi) {
         // Get authentication for Vertex AI
@@ -221,7 +221,6 @@ export async function getGoogleApiConfig(
             url = projectId
                 ? `${baseUrl}/projects/${projectId}/locations/${region}/publishers/google/models/${model}:${endpoint}`
                 : `${baseUrl}/publishers/google/models/${model}:${endpoint}`;
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             headers['x-goog-api-key'] = keyParam;
         } else if (authType === 'full') {
             // Full mode: use project-specific URL with Authorization header
@@ -247,14 +246,12 @@ export async function getGoogleApiConfig(
                     ? 'https://aiplatform.googleapis.com/v1'
                     : `https://${region}-aiplatform.googleapis.com/v1`;
             url = `${baseUrl}/projects/${projectId}/locations/${region}/publishers/google/models/${model}:${endpoint}`;
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             headers['Authorization'] = authHeader;
         } else {
             // Proxy mode: use Authorization header
             const apiUrl = trimTrailingSlash(request.body.reverse_proxy || API_VERTEX_AI);
             baseUrl = `${apiUrl}/v1`;
             url = `${baseUrl}/publishers/google/models/${model}:${endpoint}`;
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             headers['Authorization'] = authHeader;
         }
     } else {
@@ -266,28 +263,30 @@ export async function getGoogleApiConfig(
         const apiVersion = getConfigValue('gemini.apiVersion', 'v1beta');
         baseUrl = `${apiUrl}/${apiVersion}`;
         url = `${baseUrl}/models/${model}:${endpoint}`;
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         headers['x-goog-api-key'] = apiKey;
     }
 
     return { url, headers, apiName, baseUrl, safetySettings };
 }
 
-export const router = express.Router();
+export const router = new Elysia({ prefix: '/api/google' });
 
-router.post('/caption-image', async (request, response) => {
+router.post('/caption-image', async (context) => {
+    const { set } = context;
+    const body = context.body as Record<string, unknown>;
+
     try {
-        const mimeType = request.body.image.split(';')[0].split(':')[1];
-        const base64Data = request.body.image.split(',')[1];
-        const model = request.body.model || 'gemini-2.0-flash';
-        const { url, headers, apiName, safetySettings } = await getGoogleApiConfig(request, model);
+        const mimeType = (body.image as string)?.split(';')[0]?.split(':')[1] ?? '';
+        const base64Data = (body.image as string)?.split(',')[1] ?? '';
+        const model = (body.model as string) || 'gemini-2.0-flash';
+        const { url, headers, apiName, safetySettings } = await getGoogleApiConfig(context, model);
 
-        const body = {
+        const requestBody = {
             contents: [
                 {
                     role: 'user',
                     parts: [
-                        { text: request.body.prompt },
+                        { text: body.prompt as string },
                         {
                             inlineData: {
                                 mimeType: mimeType,
@@ -300,10 +299,10 @@ router.post('/caption-image', async (request, response) => {
             safetySettings: safetySettings,
         };
 
-        console.debug(`${apiName} captioning request`, model, body);
+        console.debug(`${apiName} captioning request`, model, requestBody);
 
         const result = await fetch(url, {
-            body: JSON.stringify(body),
+            body: JSON.stringify(requestBody),
             method: 'POST',
             headers: headers,
         });
@@ -314,7 +313,8 @@ router.post('/caption-image', async (request, response) => {
                 `${apiName} API returned error: ${result.status} ${result.statusText}`,
                 error,
             );
-            return response.status(500).send({ error: true });
+            set.status = 500;
+            return { error: true };
         }
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic Gemini API response
@@ -323,112 +323,221 @@ router.post('/caption-image', async (request, response) => {
 
         const candidates = data?.candidates;
         if (!candidates) {
-            return response
-                .status(500)
-                .send('No candidates found, image was most likely filtered.');
+            set.status = 500;
+            return 'No candidates found, image was most likely filtered.';
         }
 
         const caption = candidates[0].content.parts[0].text;
         if (!caption) {
-            return response.status(500).send('No caption found');
+            set.status = 500;
+            return 'No caption found';
         }
 
-        return response.json({ caption });
+        return { caption };
     } catch (error) {
         console.error(error);
-        response.status(500).send('Internal server error');
+        set.status = 500;
+        return 'Internal server error';
     }
 });
 
-router.post('/list-voices', (_, response) => {
-    return response.json(languages);
+router.post('/list-voices', () => {
+    return languages;
 });
 
-router.post('/generate-voice', async (request, response) => {
+router.post('/generate-voice', async (context) => {
+    const { set } = context;
+    const body = context.body as Record<string, unknown>;
+
     try {
-        const text = request.body.text;
-        const voice = request.body.voice ?? 'en';
+        const text = body.text as string;
+        const voice = (body.voice as string) ?? 'en';
 
         const result = await speak(text, { to: voice, forceBatch: false });
         const buffer = Array.isArray(result)
             ? Buffer.concat(result.map((x) => new Uint8Array(Buffer.from(x.toString(), 'base64'))))
             : Buffer.from(result.toString(), 'base64');
 
-        response.setHeader('Content-Type', 'audio/mpeg');
-        return response.send(buffer);
+        return new Response(buffer, {
+            headers: { 'Content-Type': 'audio/mpeg' },
+        });
     } catch (error) {
         console.error('Google Translate TTS generation failed', error);
-        response.status(500).send('Internal server error');
+        set.status = 500;
+        return 'Internal server error';
     }
 });
 
-router.post('/list-native-voices', async (_, response) => {
-    try {
-        // Hardcoded Gemini native TTS voices from official documentation
-        // Source: https://ai.google.dev/gemini-api/docs/speech-generation#voices
-        const voices = [
-            { name: 'Zephyr', voice_id: 'Zephyr', lang: 'en-US', description: 'Bright' },
-            { name: 'Puck', voice_id: 'Puck', lang: 'en-US', description: 'Upbeat' },
-            { name: 'Charon', voice_id: 'Charon', lang: 'en-US', description: 'Informative' },
-            { name: 'Kore', voice_id: 'Kore', lang: 'en-US', description: 'Firm' },
-            { name: 'Fenrir', voice_id: 'Fenrir', lang: 'en-US', description: 'Excitable' },
-            { name: 'Leda', voice_id: 'Leda', lang: 'en-US', description: 'Youthful' },
-            { name: 'Orus', voice_id: 'Orus', lang: 'en-US', description: 'Firm' },
-            { name: 'Aoede', voice_id: 'Aoede', lang: 'en-US', description: 'Breezy' },
-            { name: 'Callirhoe', voice_id: 'Callirhoe', lang: 'en-US', description: 'Easy-going' },
-            { name: 'Autonoe', voice_id: 'Autonoe', lang: 'en-US', description: 'Bright' },
-            { name: 'Enceladus', voice_id: 'Enceladus', lang: 'en-US', description: 'Breathy' },
-            { name: 'Iapetus', voice_id: 'Iapetus', lang: 'en-US', description: 'Clear' },
-            { name: 'Umbriel', voice_id: 'Umbriel', lang: 'en-US', description: 'Easy-going' },
-            { name: 'Algieba', voice_id: 'Algieba', lang: 'en-US', description: 'Smooth' },
-            { name: 'Despina', voice_id: 'Despina', lang: 'en-US', description: 'Smooth' },
-            { name: 'Erinome', voice_id: 'Erinome', lang: 'en-US', description: 'Clear' },
-            { name: 'Algenib', voice_id: 'Algenib', lang: 'en-US', description: 'Gravelly' },
-            {
-                name: 'Rasalgethi',
-                voice_id: 'Rasalgethi',
-                lang: 'en-US',
-                description: 'Informative',
-            },
-            { name: 'Laomedeia', voice_id: 'Laomedeia', lang: 'en-US', description: 'Upbeat' },
-            { name: 'Achernar', voice_id: 'Achernar', lang: 'en-US', description: 'Soft' },
-            { name: 'Alnilam', voice_id: 'Alnilam', lang: 'en-US', description: 'Firm' },
-            { name: 'Schedar', voice_id: 'Schedar', lang: 'en-US', description: 'Even' },
-            { name: 'Gacrux', voice_id: 'Gacrux', lang: 'en-US', description: 'Mature' },
-            { name: 'Pulcherrima', voice_id: 'Pulcherrima', lang: 'en-US', description: 'Forward' },
-            { name: 'Achird', voice_id: 'Achird', lang: 'en-US', description: 'Friendly' },
-            {
-                name: 'Zubenelgenubi',
-                voice_id: 'Zubenelgenubi',
-                lang: 'en-US',
-                description: 'Casual',
-            },
-            {
-                name: 'Vindemiatrix',
-                voice_id: 'Vindemiatrix',
-                lang: 'en-US',
-                description: 'Gentle',
-            },
-            { name: 'Sadachbia', voice_id: 'Sadachbia', lang: 'en-US', description: 'Lively' },
-            {
-                name: 'Sadaltager',
-                voice_id: 'Sadaltager',
-                lang: 'en-US',
-                description: 'Knowledgeable',
-            },
-            { name: 'Sulafat', voice_id: 'Sulafat', lang: 'en-US', description: 'Warm' },
-        ];
-        return response.json({ voices });
-    } catch (error) {
-        console.error('Failed to return Google TTS voices:', error);
-        response.sendStatus(500);
-    }
+router.post('/list-native-voices', () => {
+    const voices = [
+        {
+            name: 'Zephyr',
+            voice_id: 'Zephyr',
+            lang: 'en-US',
+            description: 'Bright',
+        },
+        { name: 'Puck', voice_id: 'Puck', lang: 'en-US', description: 'Upbeat' },
+        {
+            name: 'Charon',
+            voice_id: 'Charon',
+            lang: 'en-US',
+            description: 'Informative',
+        },
+        { name: 'Kore', voice_id: 'Kore', lang: 'en-US', description: 'Firm' },
+        {
+            name: 'Fenrir',
+            voice_id: 'Fenrir',
+            lang: 'en-US',
+            description: 'Excitable',
+        },
+        { name: 'Leda', voice_id: 'Leda', lang: 'en-US', description: 'Youthful' },
+        { name: 'Orus', voice_id: 'Orus', lang: 'en-US', description: 'Firm' },
+        { name: 'Aoede', voice_id: 'Aoede', lang: 'en-US', description: 'Breezy' },
+        {
+            name: 'Callirhoe',
+            voice_id: 'Callirhoe',
+            lang: 'en-US',
+            description: 'Easy-going',
+        },
+        {
+            name: 'Autonoe',
+            voice_id: 'Autonoe',
+            lang: 'en-US',
+            description: 'Bright',
+        },
+        {
+            name: 'Enceladus',
+            voice_id: 'Enceladus',
+            lang: 'en-US',
+            description: 'Breathy',
+        },
+        {
+            name: 'Iapetus',
+            voice_id: 'Iapetus',
+            lang: 'en-US',
+            description: 'Clear',
+        },
+        {
+            name: 'Umbriel',
+            voice_id: 'Umbriel',
+            lang: 'en-US',
+            description: 'Easy-going',
+        },
+        {
+            name: 'Algieba',
+            voice_id: 'Algieba',
+            lang: 'en-US',
+            description: 'Smooth',
+        },
+        {
+            name: 'Despina',
+            voice_id: 'Despina',
+            lang: 'en-US',
+            description: 'Smooth',
+        },
+        {
+            name: 'Erinome',
+            voice_id: 'Erinome',
+            lang: 'en-US',
+            description: 'Clear',
+        },
+        {
+            name: 'Algenib',
+            voice_id: 'Algenib',
+            lang: 'en-US',
+            description: 'Gravelly',
+        },
+        {
+            name: 'Rasalgethi',
+            voice_id: 'Rasalgethi',
+            lang: 'en-US',
+            description: 'Informative',
+        },
+        {
+            name: 'Laomedeia',
+            voice_id: 'Laomedeia',
+            lang: 'en-US',
+            description: 'Upbeat',
+        },
+        {
+            name: 'Achernar',
+            voice_id: 'Achernar',
+            lang: 'en-US',
+            description: 'Soft',
+        },
+        {
+            name: 'Alnilam',
+            voice_id: 'Alnilam',
+            lang: 'en-US',
+            description: 'Firm',
+        },
+        {
+            name: 'Schedar',
+            voice_id: 'Schedar',
+            lang: 'en-US',
+            description: 'Even',
+        },
+        {
+            name: 'Gacrux',
+            voice_id: 'Gacrux',
+            lang: 'en-US',
+            description: 'Mature',
+        },
+        {
+            name: 'Pulcherrima',
+            voice_id: 'Pulcherrima',
+            lang: 'en-US',
+            description: 'Forward',
+        },
+        {
+            name: 'Achird',
+            voice_id: 'Achird',
+            lang: 'en-US',
+            description: 'Friendly',
+        },
+        {
+            name: 'Zubenelgenubi',
+            voice_id: 'Zubenelgenubi',
+            lang: 'en-US',
+            description: 'Casual',
+        },
+        {
+            name: 'Vindemiatrix',
+            voice_id: 'Vindemiatrix',
+            lang: 'en-US',
+            description: 'Gentle',
+        },
+        {
+            name: 'Sadachbia',
+            voice_id: 'Sadachbia',
+            lang: 'en-US',
+            description: 'Lively',
+        },
+        {
+            name: 'Sadaltager',
+            voice_id: 'Sadaltager',
+            lang: 'en-US',
+            description: 'Knowledgeable',
+        },
+        {
+            name: 'Sulafat',
+            voice_id: 'Sulafat',
+            lang: 'en-US',
+            description: 'Warm',
+        },
+    ];
+    return { voices };
 });
 
-router.post('/generate-native-tts', async (request, response) => {
+router.post('/generate-native-tts', async (context) => {
+    const { set } = context;
+    const body = context.body as Record<string, unknown>;
+
     try {
-        const { text, voice, model } = request.body;
-        const { url, headers, apiName, safetySettings } = await getGoogleApiConfig(request, model);
+        const text = body.text as string;
+        const voice = body.voice as string;
+        const model = body.model as string;
+        const { url, headers, apiName, safetySettings } = await getGoogleApiConfig(context, model);
 
         console.debug(`${apiName} TTS request`, { model, text, voice });
 
@@ -465,7 +574,8 @@ router.post('/generate-native-tts', async (request, response) => {
                 errorText,
             );
             const errorMessage = JSON.parse(errorText).error?.message || 'TTS generation failed.';
-            return response.status(result.status).json({ error: errorMessage });
+            set.status = result.status;
+            return { error: errorMessage };
         }
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic Gemini API response
@@ -475,12 +585,13 @@ router.post('/generate-native-tts', async (request, response) => {
         const mimeType = audioPart?.inlineData?.mimeType;
 
         if (!audioData) {
-            return response.status(500).json({ error: 'No audio data found in response' });
+            set.status = 500;
+            return { error: 'No audio data found in response' };
         }
 
         const audioBuffer = Buffer.from(audioData, 'base64');
 
-        //If the audio is raw PCM, wrap it in a WAV header and send it.
+        // If the audio is raw PCM, wrap it in a WAV header and send it.
         if (mimeType && mimeType.toLowerCase().includes('audio/l16')) {
             const rateMatch = mimeType.match(/rate=(\d+)/);
             const sampleRate = rateMatch ? parseInt(rateMatch[1], 10) : 24000;
@@ -490,50 +601,53 @@ router.post('/generate-native-tts', async (request, response) => {
             const wavBuffer = createCompleteWavFile(pcmData, sampleRate);
 
             // Send the WAV file directly to the browser. This is much faster.
-            response.setHeader('Content-Type', 'audio/wav');
-            return response.send(wavBuffer);
+            return new Response(wavBuffer, {
+                headers: { 'Content-Type': 'audio/wav' },
+            });
         }
 
         // Fallback for any other audio format Google might send in the future.
-        response.setHeader('Content-Type', mimeType || 'application/octet-stream');
-        response.send(audioBuffer);
+        return new Response(audioBuffer, {
+            headers: { 'Content-Type': mimeType || 'application/octet-stream' },
+        });
     } catch (error) {
         console.error('Google TTS generation failed:', error);
-        if (!response.headersSent) {
-            return response
-                .status(500)
-                .json({ error: 'Internal server error during TTS generation' });
-        }
-        return response.end();
+        set.status = 500;
+        return { error: 'Internal server error during TTS generation' };
     }
 });
 
-router.post('/generate-image', async (request, response) => {
+router.post('/generate-image', async (context) => {
+    const { set } = context;
+    const body = context.body as Record<string, unknown>;
+
     try {
-        const model = request.body.model || 'imagen-3.0-generate-002';
-        const { url, headers, apiName } = await getGoogleApiConfig(request, model, 'predict');
+        const model = (body.model as string) || 'imagen-3.0-generate-002';
+        const { url, headers, apiName } = await getGoogleApiConfig(context, model, 'predict');
 
         // AI Studio is stricter than Vertex AI.
-        const isVertex = request.body.api === 'vertexai';
+        const isVertex = body.api === 'vertexai';
         // Is it even worth it?
-        const isDeprecated = model.startsWith('imagegeneration');
+        const isDeprecated = (model as string).startsWith('imagegeneration');
         // Get person generation setting from config
         const personGeneration = getConfigValue('gemini.image.personGeneration', 'allow_adult');
 
         const requestBody = {
             instances: [
                 {
-                    prompt: request.body.prompt || '',
+                    prompt: (body.prompt as string) || '',
                 },
             ],
             parameters: {
                 sampleCount: 1,
                 seed: isVertex
-                    ? Number(request.body.seed ?? Math.floor(Math.random() * 1000000))
+                    ? Number(body.seed ?? Math.floor(Math.random() * 1000000))
                     : undefined,
-                enhancePrompt: isVertex ? Boolean(request.body.enhance ?? false) : undefined,
-                negativePrompt: isVertex ? request.body.negative_prompt || undefined : undefined,
-                aspectRatio: String(request.body.aspect_ratio || '1:1'),
+                enhancePrompt: isVertex ? Boolean(body.enhance ?? false) : undefined,
+                negativePrompt: isVertex
+                    ? (body.negative_prompt as string) || undefined
+                    : undefined,
+                aspectRatio: String(body.aspect_ratio || '1:1'),
                 personGeneration: !isDeprecated && personGeneration ? personGeneration : undefined,
                 language: isVertex ? 'auto' : undefined,
                 safetySetting: !isDeprecated
@@ -563,7 +677,8 @@ router.post('/generate-image', async (request, response) => {
                 `${apiName} image generation error: ${result.status} ${result.statusText}`,
                 errorText,
             );
-            return response.status(500).send('Image generation request failed');
+            set.status = 500;
+            return 'Image generation request failed';
         }
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic Vertex AI response
@@ -572,34 +687,33 @@ router.post('/generate-image', async (request, response) => {
 
         if (!imagePart) {
             console.warn(`${apiName} image generation error: No image data found in response`);
-            return response.status(500).send('No image data found in response');
+            set.status = 500;
+            return 'No image data found in response';
         }
 
-        return response.send({ image: imagePart });
+        return { image: imagePart };
     } catch (error) {
         console.error('Google Image generation failed:', error);
-        if (!response.headersSent) {
-            return response.sendStatus(500);
-        }
-        return response.end();
+        set.status = 500;
+        return;
     }
 });
 
-router.post('/generate-video', async (request, response) => {
+router.post('/generate-video', async (context) => {
+    const { set } = context;
+    const body = context.body as Record<string, unknown>;
+
     try {
         const controller = new AbortController();
-        request.socket.removeAllListeners('close');
-        request.socket.on('close', function () {
-            controller.abort();
-        });
+        context.request.signal.addEventListener('abort', () => controller.abort());
 
-        const model = request.body.model || 'veo-3.1-generate-preview';
+        const model = (body.model as string) || 'veo-3.1-generate-preview';
         const { url, headers, apiName, baseUrl } = await getGoogleApiConfig(
-            request,
+            context,
             model,
             'predictLongRunning',
         );
-        const useVertexAi = request.body.api === 'vertexai';
+        const useVertexAi = body.api === 'vertexai';
 
         const isVeo3 = /veo-3/.test(model);
         const lowerBound = isVeo3 ? 4 : 5;
@@ -608,17 +722,15 @@ router.post('/generate-video', async (request, response) => {
         const requestBody = {
             instances: [
                 {
-                    prompt: String(request.body.prompt || ''),
+                    prompt: String(body.prompt || ''),
                 },
             ],
             parameters: {
-                negativePrompt: String(request.body.negative_prompt || ''),
-                durationSeconds: clamp(Number(request.body.seconds || 6), lowerBound, upperBound),
-                aspectRatio: String(request.body.aspect_ratio || '16:9'),
+                negativePrompt: String(body.negative_prompt || ''),
+                durationSeconds: clamp(Number(body.seconds || 6), lowerBound, upperBound),
+                aspectRatio: String(body.aspect_ratio || '16:9'),
                 personGeneration: 'allow_all',
-                seed: isVeo3
-                    ? Number(request.body.seed ?? Math.floor(Math.random() * 1000000))
-                    : undefined,
+                seed: isVeo3 ? Number(body.seed ?? Math.floor(Math.random() * 1000000)) : undefined,
             },
         };
 
@@ -635,7 +747,8 @@ router.post('/generate-video', async (request, response) => {
                 `${apiName} video generation error: ${videoJobResponse.status} ${videoJobResponse.statusText}`,
                 errorText,
             );
-            return response.status(500).send('Video generation request failed');
+            set.status = 500;
+            return 'Video generation request failed';
         }
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic AI Studio API
@@ -644,7 +757,8 @@ router.post('/generate-video', async (request, response) => {
 
         if (!videoJobName) {
             console.warn(`${apiName} video generation error: No job name found in response`);
-            return response.status(500).send('No video job name found in response');
+            set.status = 500;
+            return 'No video job name found in response';
         }
 
         console.debug(`${apiName} video job name:`, videoJobName);
@@ -652,14 +766,15 @@ router.post('/generate-video', async (request, response) => {
         for (let attempt = 0; attempt < 30; attempt++) {
             if (controller.signal.aborted) {
                 console.info(`${apiName} video generation aborted by client`);
-                return response.status(500).send('Video generation aborted by client');
+                set.status = 500;
+                return 'Video generation aborted by client';
             }
 
             await delay(5000 + attempt * 1000);
 
             if (useVertexAi) {
                 const { url: pollUrl, headers: pollHeaders } = await getGoogleApiConfig(
-                    request,
+                    context,
                     model,
                     'fetchPredictOperation',
                 );
@@ -676,7 +791,8 @@ router.post('/generate-video', async (request, response) => {
                         `${apiName} video job status error: ${pollResponse.status} ${pollResponse.statusText}`,
                         errorText,
                     );
-                    return response.status(500).send('Video job status request failed');
+                    set.status = 500;
+                    return 'Video job status request failed';
                 }
 
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic Vertex AI response
@@ -698,10 +814,11 @@ router.post('/generate-video', async (request, response) => {
                             `${apiName} video generation error: No video data found in response`,
                             pollDataLog,
                         );
-                        return response.status(500).send('No video data found in response');
+                        set.status = 500;
+                        return 'No video data found in response';
                     }
 
-                    return response.send({ video: videoData });
+                    return { video: videoData };
                 }
             } else {
                 const pollUrl =
@@ -717,7 +834,8 @@ router.post('/generate-video', async (request, response) => {
                         `${apiName} video job status error: ${pollResponse.status} ${pollResponse.statusText}`,
                         errorText,
                     );
-                    return response.status(500).send('Video job status request failed');
+                    set.status = 500;
+                    return 'Video job status request failed';
                 }
 
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic Vertex AI response
@@ -743,7 +861,8 @@ router.post('/generate-video', async (request, response) => {
                             `${apiName} video generation error: No video URI found in response`,
                             pollDataLog,
                         );
-                        return response.status(500).send('No video URI found in response');
+                        set.status = 500;
+                        return 'No video URI found in response';
                     }
 
                     const videoResponse = await fetch(videoUri, {
@@ -755,21 +874,24 @@ router.post('/generate-video', async (request, response) => {
                         console.warn(
                             `${apiName} video fetch error: ${videoResponse.status} ${videoResponse.statusText}`,
                         );
-                        return response.status(500).send('Video fetch request failed');
+                        set.status = 500;
+                        return 'Video fetch request failed';
                     }
 
                     const videoData = await videoResponse.arrayBuffer();
                     const videoBase64 = Buffer.from(videoData).toString('base64');
 
-                    return response.send({ video: videoBase64 });
+                    return { video: videoBase64 };
                 }
             }
         }
 
         console.warn(`${apiName} video generation error: Job timed out after multiple attempts`);
-        return response.status(500).send('Video generation timed out');
+        set.status = 500;
+        return 'Video generation timed out';
     } catch (error) {
         console.error('Google Video generation failed:', error);
-        return response.sendStatus(500);
+        set.status = 500;
+        return;
     }
 });

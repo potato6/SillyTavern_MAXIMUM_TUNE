@@ -56,7 +56,13 @@ router.post('/libre', async (context) => {
 
         const result = await fetch(url, {
             method: 'POST',
-            body: JSON.stringify({ q: text, source: 'auto', target: lang, format: 'text', api_key: key }),
+            body: JSON.stringify({
+                q: text,
+                source: 'auto',
+                target: lang,
+                format: 'text',
+                api_key: key,
+            }),
             headers: { 'Content-Type': 'application/json' },
         });
 
@@ -98,7 +104,9 @@ router.post('/google', async (context) => {
         const translatedText = await translator.translate(text).then((r) => r.text);
 
         console.debug('Translated text: ' + translatedText);
-        return new Response(translatedText, { headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
+        return new Response(translatedText, {
+            headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+        });
     } catch (error) {
         console.error('Translation error', error);
         set.status = 500;
@@ -242,9 +250,10 @@ router.post('/deepl', async (context) => {
             params.append('formality', formality as string);
         }
 
-        const endpoint = body.endpoint === 'pro'
-            ? 'https://api.deepl.com/v2/translate'
-            : 'https://api-free.deepl.com/v2/translate';
+        const endpoint =
+            body.endpoint === 'pro'
+                ? 'https://api.deepl.com/v2/translate'
+                : 'https://api-free.deepl.com/v2/translate';
 
         const result = await fetch(endpoint, {
             method: 'POST',
@@ -281,7 +290,9 @@ router.post('/onering', async (context) => {
     const body = getBody(context);
 
     try {
-        const secretUrl = directories ? readSecret(directories as any, SECRET_KEYS.ONERING_URL) : '';
+        const secretUrl = directories
+            ? readSecret(directories as any, SECRET_KEYS.ONERING_URL)
+            : '';
         const url = secretUrl || ONERING_URL_DEFAULT;
 
         if (!url) {

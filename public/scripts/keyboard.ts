@@ -89,7 +89,7 @@ function handleNodeChange(node) {
  * @param {boolean} [options.notFocusableByDefault] - Whether interactables of this class should not be focusable by default
  */
 export function registerInteractableType(
-// @ts-expect-error TS(7006) FIXME: Parameter 'interactableSelector' implicitly has an 'any' type.
+    // @ts-expect-error TS(7006) FIXME: Parameter 'interactableSelector' implicitly has an 'any' type.
     interactableSelector,
     { disabledByDefault = false, notFocusableByDefault = false } = {},
 ) {
@@ -189,7 +189,7 @@ function initializeInteractables(element = document) {
 function getAllInteractables(element) {
     // Query each selector individually and combine all to a big array to return
     return [].concat(
-// @ts-expect-error TS(2769) FIXME: Type is not assignable.
+        // @ts-expect-error TS(2769) FIXME: Type is not assignable.
         ...interactableSelectors.map((selector) =>
             Array.from(element.querySelectorAll(`${selector}`)),
         ),

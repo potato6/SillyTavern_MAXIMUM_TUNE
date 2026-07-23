@@ -22,14 +22,14 @@ export class SlashCommandExecutor {
     set source(value) {
         this.#source = value;
         for (const arg of this.namedArgumentList.filter(
-// @ts-expect-error TS(2339) FIXME: Property 'value' does not exist on type.
+            // @ts-expect-error TS(2339) FIXME: Property 'value' does not exist on type.
             (it) => it.value instanceof SlashCommandClosure,
         )) {
             // @ts-expect-error TS(2339) FIXME: Property 'value' does not exist on type 'never'.
             arg.value.source = value;
         }
         for (const arg of this.unnamedArgumentList.filter(
-// @ts-expect-error TS(2339) FIXME: Property 'value' does not exist on type.
+            // @ts-expect-error TS(2339) FIXME: Property 'value' does not exist on type.
             (it) => it.value instanceof SlashCommandClosure,
         )) {
             // @ts-expect-error TS(2339) FIXME: Property 'value' does not exist on type 'never'.
@@ -47,15 +47,15 @@ export class SlashCommandExecutor {
         return (
             1 +
             this.namedArgumentList
-// @ts-expect-error TS(2339) FIXME: Property 'filter' does not exist on type.
+                // @ts-expect-error TS(2339) FIXME: Property 'filter' does not exist on type.
                 .filter((it) => it.value instanceof SlashCommandClosure)
-// @ts-expect-error TS(2339) FIXME: Property 'map' does not exist on type.
+                // @ts-expect-error TS(2339) FIXME: Property 'map' does not exist on type.
                 .map((it) => /**@type {SlashCommandClosure}*/ (it.value).commandCount)
                 .reduce((cur, sum) => cur + sum, 0) +
             this.unnamedArgumentList
-// @ts-expect-error TS(2339) FIXME: Property 'filter' does not exist on type.
+                // @ts-expect-error TS(2339) FIXME: Property 'filter' does not exist on type.
                 .filter((it) => it.value instanceof SlashCommandClosure)
-// @ts-expect-error TS(2339) FIXME: Property 'map' does not exist on type.
+                // @ts-expect-error TS(2339) FIXME: Property 'map' does not exist on type.
                 .map((it) => /**@type {SlashCommandClosure}*/ (it.value).commandCount)
                 .reduce((cur, sum) => cur + sum, 0)
         );
@@ -65,14 +65,14 @@ export class SlashCommandExecutor {
     set onProgress(value) {
         const closures = /**@type {SlashCommandClosure[]}*/ ([
             ...this.namedArgumentList
-// @ts-expect-error TS(2339) FIXME: Property 'filter' does not exist on type.
+                // @ts-expect-error TS(2339) FIXME: Property 'filter' does not exist on type.
                 .filter((it) => it.value instanceof SlashCommandClosure)
-// @ts-expect-error TS(2339) FIXME: Property 'map' does not exist on type.
+                // @ts-expect-error TS(2339) FIXME: Property 'map' does not exist on type.
                 .map((it) => it.value),
             ...this.unnamedArgumentList
-// @ts-expect-error TS(2339) FIXME: Property 'filter' does not exist on type.
+                // @ts-expect-error TS(2339) FIXME: Property 'filter' does not exist on type.
                 .filter((it) => it.value instanceof SlashCommandClosure)
-// @ts-expect-error TS(2339) FIXME: Property 'map' does not exist on type.
+                // @ts-expect-error TS(2339) FIXME: Property 'map' does not exist on type.
                 .map((it) => it.value),
         ]);
         for (const closure of closures) {

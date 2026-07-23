@@ -145,15 +145,15 @@ class MacroEnvBuilder {
         // @ts-expect-error TS(2322) FIXME: Type 'string' is not assignable to type 'null | un... Remove this comment to see the full error message
         env.names.group = getGroupValue(ctx, { currentChar: env.names.char, includeMuted: true });
         env.names.groupNotMuted = getGroupValue(ctx, {
-// @ts-expect-error TS(2322) FIXME: Type is not assignable.
+            // @ts-expect-error TS(2322) FIXME: Type is not assignable.
             currentChar: env.names.char,
             includeMuted: false,
         });
         env.names.notChar = getGroupValue(ctx, {
-// @ts-expect-error TS(2322) FIXME: Type is not assignable.
+            // @ts-expect-error TS(2322) FIXME: Type is not assignable.
             currentChar: env.names.char,
             filterOutChar: true,
-// @ts-expect-error TS(2322) FIXME: Type is not assignable.
+            // @ts-expect-error TS(2322) FIXME: Type is not assignable.
             includeUser: env.names.user,
         });
 
@@ -210,7 +210,7 @@ class MacroEnvBuilder {
  * @returns {string}
  */
 function getGroupValue(
-// @ts-expect-error TS(7006) FIXME: Parameter 'ctx' implicitly has an 'any' type.
+    // @ts-expect-error TS(7006) FIXME: Parameter 'ctx' implicitly has an 'any' type.
     ctx,
     { currentChar = null, includeMuted = false, filterOutChar = false, includeUser = null },
 ) {

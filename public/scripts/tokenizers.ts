@@ -282,7 +282,7 @@ export function getTokenizerBestMatch(forApi) {
         const hasValidEndpoint = sessionStorage.getItem(TOKENIZER_SUPPORTED_KEY);
         const isConnected = online_status !== 'no_connection';
         const isTokenizerSupported =
-// @ts-expect-error TS(2345) FIXME: Type is not assignable.
+            // @ts-expect-error TS(2345) FIXME: Type is not assignable.
             TEXTGEN_TOKENIZERS.includes(textgen_settings.type) &&
             (textgen_settings.type !== textgen_types.OOBA || hasValidEndpoint);
 
@@ -952,7 +952,7 @@ export async function initTokenizers() {
         // Clear tokenizer warning when (re)connecting to an LLM backend that supports tokenization
         if (
             main_api === 'textgenerationwebui' &&
-// @ts-expect-error TS(2345) FIXME: Type is not assignable.
+            // @ts-expect-error TS(2345) FIXME: Type is not assignable.
             TEXTGEN_TOKENIZERS.includes(textgen_settings.type)
         ) {
             sessionStorage.removeItem(TOKENIZER_WARNING_KEY);

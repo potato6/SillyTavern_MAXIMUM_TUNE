@@ -42,7 +42,7 @@ function getUrlAsync(url) {
  * @returns {Promise<string>} Rendered template
  */
 export async function renderTemplateAsync(
-// @ts-expect-error TS(7006) FIXME: Parameter 'templateId' implicitly has an 'any' type.
+    // @ts-expect-error TS(7006) FIXME: Parameter 'templateId' implicitly has an 'any' type.
     templateId,
     templateData = {},
     sanitize = true,

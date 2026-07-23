@@ -31,7 +31,10 @@ export function readWorldInfoFile(
 
 export const router = new Elysia({ prefix: '/api/worldinfo' })
     .post('/list', async (context) => {
-        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
         const directories = user?.directories as Record<string, string> | undefined;
 
         try {
@@ -39,7 +42,9 @@ export const router = new Elysia({ prefix: '/api/worldinfo' })
             const jsonFiles = (
                 await fs.promises.readdir(directories?.worlds ?? '', { withFileTypes: true })
             )
-                .filter((file) => file.isFile() && path.extname(file.name).toLowerCase() === '.json')
+                .filter(
+                    (file) => file.isFile() && path.extname(file.name).toLowerCase() === '.json',
+                )
                 .toSorted((a, b) => a.name.localeCompare(b.name));
 
             for (const file of jsonFiles) {
@@ -47,11 +52,14 @@ export const router = new Elysia({ prefix: '/api/worldinfo' })
                     const filePath = path.join(directories?.worlds ?? '', file.name);
                     const fileContents = await fs.promises.readFile(filePath, 'utf8');
                     const fileContentsParsed = tryParse(fileContents) || {};
-                    const fileExtensions = (fileContentsParsed as Record<string, unknown>)?.extensions || {};
+                    const fileExtensions =
+                        (fileContentsParsed as Record<string, unknown>)?.extensions || {};
                     const fileNameWithoutExt = path.parse(file.name).name;
                     const fileData = {
                         file_id: fileNameWithoutExt,
-                        name: (fileContentsParsed as Record<string, unknown>)?.name || fileNameWithoutExt,
+                        name:
+                            (fileContentsParsed as Record<string, unknown>)?.name ||
+                            fileNameWithoutExt,
                         extensions:
                             typeof fileExtensions === 'object' && fileExtensions !== null
                                 ? fileExtensions
@@ -71,7 +79,10 @@ export const router = new Elysia({ prefix: '/api/worldinfo' })
     })
     .post('/get', (context) => {
         const { body, set } = context;
-        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
         const directories = user?.directories as Record<string, string> | undefined;
         const bodyAny = body as Record<string, unknown>;
 
@@ -85,7 +96,10 @@ export const router = new Elysia({ prefix: '/api/worldinfo' })
     })
     .post('/delete', (context) => {
         const { body, set } = context;
-        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
         const directories = user?.directories as Record<string, string> | undefined;
         const bodyAny = body as Record<string, unknown>;
 
@@ -108,9 +122,15 @@ export const router = new Elysia({ prefix: '/api/worldinfo' })
     .post('/import', (context) => {
         const { set } = context;
         const body = context.body as Record<string, unknown>;
-        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
         const directories = user?.directories as Record<string, string> | undefined;
-        const file = (context as unknown as Record<string, unknown>).file as Record<string, unknown> | null;
+        const file = (context as unknown as Record<string, unknown>).file as Record<
+            string,
+            unknown
+        > | null;
 
         if (!file) {
             set.status = 400;
@@ -152,7 +172,10 @@ export const router = new Elysia({ prefix: '/api/worldinfo' })
     })
     .post('/edit', (context) => {
         const { body, set } = context;
-        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
         const directories = user?.directories as Record<string, string> | undefined;
         const bodyAny = body as Record<string, unknown>;
 

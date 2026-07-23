@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
-import express from 'express';
+import { Elysia } from 'elysia';
 import { getSettingsBackupFilePrefix } from './settings.js';
 import { CHAT_BACKUPS_PREFIX } from './chats.js';
 import { isPathUnderParent, tryParse } from '../util.js';
@@ -647,7 +647,9 @@ export class DataMaidService {
                                 'Found group past chat metadata in group definition - this is deprecated behavior.',
                             );
                             allMetadata.push(
-                                ...(Object.values(groupData.past_metadata).filter(filterFn as (value: unknown) => boolean)),
+                                ...Object.values(groupData.past_metadata).filter(
+                                    filterFn as (value: unknown) => boolean,
+                                ),
                             );
                         }
                     } catch (error) {
@@ -749,159 +751,226 @@ export class DataMaidService {
     }
 }
 
-export const router = express.Router();
+export const router = new Elysia({ prefix: '/api/data-maid' })
+    .post('/report', async (context) => {
+        const { set } = context;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
+        try {
+            if (!user || !user.directories) {
+                set.status = 403;
+                return;
+            }
 
-router.post('/report', async (req, res) => {
-    try {
-        if (!req.user || !req.user.directories) {
-            return res.sendStatus(403);
-        }
-
-        const dataMaid = new DataMaidService(req.user.profile.handle, req.user.directories);
-        const rawReport = await dataMaid.generateReport();
-
-        const report = await dataMaid.sanitizeReport(rawReport);
-        const token = DataMaidService.generateToken(req.user.profile.handle, rawReport);
-
-        return res.json({ report, token });
-    } catch (error) {
-        console.error('[Data Maid] Error generating data maid report:', error);
-        return res.sendStatus(500);
-    }
-});
-
-router.post('/finalize', async (req, res) => {
-    try {
-        if (!req.user || !req.user.directories) {
-            return res.sendStatus(403);
-        }
-
-        if (!req.body.token) {
-            return res.sendStatus(400);
-        }
-
-        const token = req.body.token.toString();
-        if (!DataMaidService.TOKENS.has(token)) {
-            return res.sendStatus(403);
-        }
-
-        const tokenEntry = DataMaidService.TOKENS.get(token);
-        if (!tokenEntry || tokenEntry.handle !== req.user.profile.handle) {
-            return res.sendStatus(403);
-        }
-
-        // Remove the token after finalization
-        DataMaidService.TOKENS.delete(token);
-        return res.sendStatus(204);
-    } catch (error) {
-        console.error('[Data Maid] Error finalizing the token:', error);
-        return res.sendStatus(500);
-    }
-});
-
-router.get('/view', async (req, res) => {
-    try {
-        if (!req.user || !req.user.directories) {
-            return res.sendStatus(403);
-        }
-
-        if (!req.query.token || !req.query.hash) {
-            return res.sendStatus(400);
-        }
-
-        const token = req.query.token.toString();
-        const hash = req.query.hash.toString();
-
-        if (!DataMaidService.TOKENS.has(token)) {
-            return res.sendStatus(403);
-        }
-
-        const tokenEntry = DataMaidService.TOKENS.get(token);
-        if (!tokenEntry || tokenEntry.handle !== req.user.profile.handle) {
-            return res.sendStatus(403);
-        }
-
-        const fileEntry = tokenEntry.paths.find(
-            (entry: { path: string; hash: string }) => entry.hash === hash,
-        );
-        if (!fileEntry) {
-            return res.sendStatus(404);
-        }
-
-        if (!isPathUnderParent(req.user.directories.root, fileEntry.path)) {
-            console.warn(
-                '[Data Maid] Attempted access to a file outside of the user directory:',
-                fileEntry.path,
+            const profile = user.profile as Record<string, string>;
+            const dataMaid = new DataMaidService(
+                profile.handle,
+                user.directories as import('../users.js').UserDirectoryList,
             );
-            return res.sendStatus(403);
+            const rawReport = await dataMaid.generateReport();
+
+            const report = await dataMaid.sanitizeReport(rawReport);
+            const token = DataMaidService.generateToken(profile.handle, rawReport);
+
+            return { report, token };
+        } catch (error) {
+            console.error('[Data Maid] Error generating data maid report:', error);
+            set.status = 500;
+            return;
         }
+    })
+    .post('/finalize', async (context) => {
+        const { set } = context;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
+        try {
+            if (!user || !user.directories) {
+                set.status = 403;
+                return;
+            }
 
-        const pathToFile = fileEntry.path;
-        const fileExists = fs.existsSync(pathToFile);
+            const body = context.body as Record<string, unknown>;
+            if (!body.token) {
+                set.status = 400;
+                return;
+            }
 
-        if (!fileExists) {
-            return res.sendStatus(404);
+            const token = body.token.toString();
+            if (!DataMaidService.TOKENS.has(token)) {
+                set.status = 403;
+                return;
+            }
+
+            const tokenEntry = DataMaidService.TOKENS.get(token) as
+                | { handle: string; paths: { path: string; hash: string }[] }
+                | undefined;
+            if (
+                !tokenEntry ||
+                tokenEntry.handle !== (user.profile as Record<string, string>).handle
+            ) {
+                set.status = 403;
+                return;
+            }
+
+            // Remove the token after finalization
+            DataMaidService.TOKENS.delete(token);
+            set.status = 204;
+            return;
+        } catch (error) {
+            console.error('[Data Maid] Error finalizing the token:', error);
+            set.status = 500;
+            return;
         }
+    })
+    .get('/view', async (context) => {
+        const { set, query } = context;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
+        try {
+            if (!user || !user.directories) {
+                set.status = 403;
+                return;
+            }
 
-        const fileBuffer = await fs.promises.readFile(pathToFile);
-        const mimeType = Bun.file(pathToFile).type;
-        res.setHeader('Content-Type', mimeType);
-        return res.send(fileBuffer);
-    } catch (error) {
-        console.error('[Data Maid] Error viewing file:', error);
-        return res.sendStatus(500);
-    }
-});
+            if (!query.token || !query.hash) {
+                set.status = 400;
+                return;
+            }
 
-router.post('/delete', async (req, res) => {
-    try {
-        if (!req.user || !req.user.directories) {
-            return res.sendStatus(403);
-        }
+            const token = query.token.toString();
+            const hash = query.hash.toString();
 
-        const { token, hashes } = req.body;
-        if (!token || !Array.isArray(hashes) || hashes.length === 0) {
-            return res.sendStatus(400);
-        }
+            if (!DataMaidService.TOKENS.has(token)) {
+                set.status = 403;
+                return;
+            }
 
-        if (!DataMaidService.TOKENS.has(token)) {
-            return res.sendStatus(403);
-        }
+            const tokenEntry = DataMaidService.TOKENS.get(token) as
+                | { handle: string; paths: { path: string; hash: string }[] }
+                | undefined;
+            if (
+                !tokenEntry ||
+                tokenEntry.handle !== (user.profile as Record<string, string>).handle
+            ) {
+                set.status = 403;
+                return;
+            }
 
-        const tokenEntry = DataMaidService.TOKENS.get(token);
-        if (!tokenEntry || tokenEntry.handle !== req.user.profile.handle) {
-            return res.sendStatus(403);
-        }
-
-        for (const hash of hashes) {
             const fileEntry = tokenEntry.paths.find(
                 (entry: { path: string; hash: string }) => entry.hash === hash,
             );
             if (!fileEntry) {
-                continue;
+                set.status = 404;
+                return;
             }
 
-            if (!isPathUnderParent(req.user.directories.root, fileEntry.path)) {
+            if (
+                !isPathUnderParent(
+                    (user.directories as Record<string, string>).root,
+                    fileEntry.path,
+                )
+            ) {
                 console.warn(
-                    '[Data Maid] Attempted deletion of a file outside of the user directory:',
+                    '[Data Maid] Attempted access to a file outside of the user directory:',
                     fileEntry.path,
                 );
-                continue;
+                set.status = 403;
+                return;
             }
 
             const pathToFile = fileEntry.path;
             const fileExists = fs.existsSync(pathToFile);
 
             if (!fileExists) {
-                continue;
+                set.status = 404;
+                return;
             }
 
-            await fs.promises.unlink(pathToFile);
+            return new Response(Bun.file(pathToFile));
+        } catch (error) {
+            console.error('[Data Maid] Error viewing file:', error);
+            set.status = 500;
+            return;
         }
+    })
+    .post('/delete', async (context) => {
+        const { set } = context;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
+        try {
+            if (!user || !user.directories) {
+                set.status = 403;
+                return;
+            }
 
-        return res.sendStatus(204);
-    } catch (error) {
-        console.error('[Data Maid] Error deleting files:', error);
-        return res.sendStatus(500);
-    }
-});
+            const body = context.body as Record<string, unknown>;
+            const token = body.token;
+            const hashes = body.hashes;
+            if (!token || !Array.isArray(hashes) || (hashes as unknown[]).length === 0) {
+                set.status = 400;
+                return;
+            }
+
+            if (!DataMaidService.TOKENS.has(token as string)) {
+                set.status = 403;
+                return;
+            }
+
+            const tokenEntry = DataMaidService.TOKENS.get(token as string) as
+                | { handle: string; paths: { path: string; hash: string }[] }
+                | undefined;
+            if (
+                !tokenEntry ||
+                tokenEntry.handle !== (user.profile as Record<string, string>).handle
+            ) {
+                set.status = 403;
+                return;
+            }
+
+            for (const hash of hashes as string[]) {
+                const fileEntry = tokenEntry.paths.find(
+                    (entry: { path: string; hash: string }) => entry.hash === hash,
+                );
+                if (!fileEntry) {
+                    continue;
+                }
+
+                if (
+                    !isPathUnderParent(
+                        (user.directories as Record<string, string>).root,
+                        fileEntry.path,
+                    )
+                ) {
+                    console.warn(
+                        '[Data Maid] Attempted deletion of a file outside of the user directory:',
+                        fileEntry.path,
+                    );
+                    continue;
+                }
+
+                const pathToFile = fileEntry.path;
+                const fileExists = fs.existsSync(pathToFile);
+
+                if (!fileExists) {
+                    continue;
+                }
+
+                await fs.promises.unlink(pathToFile);
+            }
+
+            set.status = 204;
+            return;
+        } catch (error) {
+            console.error('[Data Maid] Error deleting files:', error);
+            set.status = 500;
+            return;
+        }
+    });

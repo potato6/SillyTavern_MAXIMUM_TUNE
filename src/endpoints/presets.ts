@@ -36,7 +36,10 @@ function getPresetSettingsByAPI(apiId: string, directories: Record<string, strin
 export const router = new Elysia({ prefix: '/api/presets' })
     .post('/save', (context) => {
         const { body, set } = context;
-        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
         const directories = user?.directories as Record<string, string> | undefined;
         const bodyAny = body as Record<string, unknown> | null;
 
@@ -60,7 +63,10 @@ export const router = new Elysia({ prefix: '/api/presets' })
     })
     .post('/delete', (context) => {
         const { body, set } = context;
-        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
         const directories = user?.directories as Record<string, string> | undefined;
         const bodyAny = body as Record<string, unknown> | null;
 
@@ -89,7 +95,10 @@ export const router = new Elysia({ prefix: '/api/presets' })
     })
     .post('/restore', (context) => {
         const { body, set } = context;
-        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
         const directories = user?.directories as Record<string, string> | undefined;
         const bodyAny = body as Record<string, unknown> | null;
 
@@ -106,7 +115,10 @@ export const router = new Elysia({ prefix: '/api/presets' })
 
             if (defaultPreset) {
                 result.isDefault = true;
-                result.preset = getDefaultPresetFile((defaultPreset as Record<string, unknown>).filename as string) || {};
+                result.preset =
+                    getDefaultPresetFile(
+                        (defaultPreset as Record<string, unknown>).filename as string,
+                    ) || {};
             }
 
             return result;

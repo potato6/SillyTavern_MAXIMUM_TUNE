@@ -24,7 +24,10 @@ export const router = new Elysia({ prefix: '/api/files' })
     .post('/upload', (context) => {
         const { set } = context;
         const body = context.body as Record<string, unknown>;
-        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
         const directories = user?.directories as Record<string, string> | undefined;
         const profile = user?.profile as Record<string, unknown> | undefined;
 
@@ -57,7 +60,10 @@ export const router = new Elysia({ prefix: '/api/files' })
     .post('/delete', (context) => {
         const { set } = context;
         const body = context.body as Record<string, unknown>;
-        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
         const directories = user?.directories as Record<string, string> | undefined;
 
         try {
@@ -86,7 +92,10 @@ export const router = new Elysia({ prefix: '/api/files' })
     .post('/verify', (context) => {
         const { set } = context;
         const body = context.body as Record<string, unknown>;
-        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
         const directories = user?.directories as Record<string, string> | undefined;
 
         try {

@@ -1,13 +1,12 @@
 import { promises as fsPromises } from 'node:fs';
 
 import storage from 'node-persist';
-import express from 'express';
+import { Elysia } from 'elysia';
 import { deburr } from 'es-toolkit/compat';
 import { checkForNewContent, CONTENT_TYPES } from './content-manager.js';
 import {
     KEY_PREFIX,
     toKey,
-    requireAdminMiddleware,
     getUserAvatar,
     getAllUserHandles,
     getPasswordSalt,
@@ -16,8 +15,6 @@ import {
     ensurePublicDirectoriesExist,
 } from '../users.js';
 import { DEFAULT_USER } from '../constants.js';
-
-export const router = express.Router();
 
 /**
  * Slugifies a given text string.
@@ -39,240 +36,338 @@ function slugify(text: string) {
         .replace(/^-+|-+$/g, '');
 }
 
-router.post('/get', requireAdminMiddleware, async (_request, response) => {
-    try {
-        /** @type {import('../users.js').User[]} */
-        const users = await storage.values((x) => x.key.startsWith(KEY_PREFIX));
+function requireAdmin(context: Record<string, unknown>): boolean {
+    const user = (context as unknown as Record<string, unknown>).user as Record<
+        string,
+        unknown
+    > | null;
+    if (!user) return false;
+    const profile = user.profile as Record<string, unknown> | null;
+    return !!profile?.admin;
+}
 
-        /** @type {Promise<import('../users.js').UserViewModel>[]} */
-        const viewModelPromises = users.map(
-            (user) =>
-                new Promise((resolve) => {
-                    getUserAvatar(user.handle).then((avatar) =>
-                        resolve({
-                            handle: user.handle,
-                            name: user.name,
-                            avatar: avatar,
-                            admin: user.admin,
-                            enabled: user.enabled,
-                            created: user.created,
-                            password: !!user.password,
-                        }),
-                    );
-                }),
-        );
+export const router = new Elysia({ prefix: '/api/users' })
+    .post('/get', async (context) => {
+        const { set } = context;
+        try {
+            if (!requireAdmin(context)) {
+                set.status = 403;
+                return;
+            }
 
-        const viewModels = await Promise.all(viewModelPromises);
-        // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
-        viewModels.sort((x, y) => (x.created ?? 0) - (y.created ?? 0));
-        return response.json(viewModels);
-    } catch (error) {
-        console.error('User list failed:', error);
-        return response.sendStatus(500);
-    }
-});
+            /** @type {import('../users.js').User[]} */
+            const users = await storage.values((x: { key: string }) =>
+                x.key.startsWith(KEY_PREFIX),
+            );
 
-router.post('/disable', requireAdminMiddleware, async (request, response) => {
-    try {
-        if (!request.body.handle) {
-            console.warn('Disable user failed: Missing required fields');
-            return response.status(400).json({ error: 'Missing required fields' });
+            /** @type {Promise<import('../users.js').UserViewModel>[]} */
+            const viewModelPromises = users.map(
+                (user: {
+                    handle: string;
+                    name: string;
+                    admin: boolean;
+                    enabled: boolean;
+                    created: number;
+                    password: string;
+                }) =>
+                    new Promise((resolve) => {
+                        getUserAvatar(user.handle).then((avatar: string) =>
+                            resolve({
+                                handle: user.handle,
+                                name: user.name,
+                                avatar: avatar,
+                                admin: user.admin,
+                                enabled: user.enabled,
+                                created: user.created,
+                                password: !!user.password,
+                            }),
+                        );
+                    }),
+            );
+
+            const viewModels = await Promise.all(viewModelPromises);
+            // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
+            viewModels.sort(
+                (x: { created: number }, y: { created: number }) =>
+                    (x.created ?? 0) - (y.created ?? 0),
+            );
+            return viewModels;
+        } catch (error) {
+            console.error('User list failed:', error);
+            return new Response(null, { status: 500 });
         }
+    })
+    .post('/disable', async (context) => {
+        const { set } = context;
+        const body = context.body as Record<string, unknown>;
+        const ctxUser = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
+        try {
+            if (!requireAdmin(context)) {
+                set.status = 403;
+                return;
+            }
 
-        if (request.body.handle === request.user.profile.handle) {
-            console.warn('Disable user failed: Cannot disable yourself');
-            return response.status(400).json({ error: 'Cannot disable yourself' });
+            if (!body.handle) {
+                console.warn('Disable user failed: Missing required fields');
+                set.status = 400;
+                return { error: 'Missing required fields' };
+            }
+
+            if (body.handle === (ctxUser?.profile as Record<string, unknown> | undefined)?.handle) {
+                console.warn('Disable user failed: Cannot disable yourself');
+                set.status = 400;
+                return { error: 'Cannot disable yourself' };
+            }
+
+            /** @type {import('../users.js').User} */
+            const user = await storage.getItem(toKey(body.handle as string));
+
+            if (!user) {
+                console.error('Disable user failed: User not found');
+                set.status = 404;
+                return { error: 'User not found' };
+            }
+
+            (user as Record<string, unknown>).enabled = false;
+            await storage.setItem(toKey(body.handle as string), user);
+            set.status = 204;
+        } catch (error) {
+            console.error('User disable failed:', error);
+            return new Response(null, { status: 500 });
         }
+    })
+    .post('/enable', async (context) => {
+        const { set } = context;
+        const body = context.body as Record<string, unknown>;
+        try {
+            if (!requireAdmin(context)) {
+                set.status = 403;
+                return;
+            }
 
-        /** @type {import('../users.js').User} */
-        const user = await storage.getItem(toKey(request.body.handle));
+            if (!body.handle) {
+                console.warn('Enable user failed: Missing required fields');
+                set.status = 400;
+                return { error: 'Missing required fields' };
+            }
 
-        if (!user) {
-            console.error('Disable user failed: User not found');
-            return response.status(404).json({ error: 'User not found' });
+            /** @type {import('../users.js').User} */
+            const user = await storage.getItem(toKey(body.handle as string));
+
+            if (!user) {
+                console.error('Enable user failed: User not found');
+                set.status = 404;
+                return { error: 'User not found' };
+            }
+
+            (user as Record<string, unknown>).enabled = true;
+            await storage.setItem(toKey(body.handle as string), user);
+            set.status = 204;
+        } catch (error) {
+            console.error('User enable failed:', error);
+            return new Response(null, { status: 500 });
         }
+    })
+    .post('/promote', async (context) => {
+        const { set } = context;
+        const body = context.body as Record<string, unknown>;
+        try {
+            if (!requireAdmin(context)) {
+                set.status = 403;
+                return;
+            }
 
-        user.enabled = false;
-        await storage.setItem(toKey(request.body.handle), user);
-        return response.sendStatus(204);
-    } catch (error) {
-        console.error('User disable failed:', error);
-        return response.sendStatus(500);
-    }
-});
+            if (!body.handle) {
+                console.warn('Promote user failed: Missing required fields');
+                set.status = 400;
+                return { error: 'Missing required fields' };
+            }
 
-router.post('/enable', requireAdminMiddleware, async (request, response) => {
-    try {
-        if (!request.body.handle) {
-            console.warn('Enable user failed: Missing required fields');
-            return response.status(400).json({ error: 'Missing required fields' });
+            /** @type {import('../users.js').User} */
+            const user = await storage.getItem(toKey(body.handle as string));
+
+            if (!user) {
+                console.error('Promote user failed: User not found');
+                set.status = 404;
+                return { error: 'User not found' };
+            }
+
+            (user as Record<string, unknown>).admin = true;
+            await storage.setItem(toKey(body.handle as string), user);
+            set.status = 204;
+        } catch (error) {
+            console.error('User promote failed:', error);
+            return new Response(null, { status: 500 });
         }
+    })
+    .post('/demote', async (context) => {
+        const { set } = context;
+        const body = context.body as Record<string, unknown>;
+        const ctxUser = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
+        try {
+            if (!requireAdmin(context)) {
+                set.status = 403;
+                return;
+            }
 
-        /** @type {import('../users.js').User} */
-        const user = await storage.getItem(toKey(request.body.handle));
+            if (!body.handle) {
+                console.warn('Demote user failed: Missing required fields');
+                set.status = 400;
+                return { error: 'Missing required fields' };
+            }
 
-        if (!user) {
-            console.error('Enable user failed: User not found');
-            return response.status(404).json({ error: 'User not found' });
+            if (body.handle === (ctxUser?.profile as Record<string, unknown> | undefined)?.handle) {
+                console.warn('Demote user failed: Cannot demote yourself');
+                set.status = 400;
+                return { error: 'Cannot demote yourself' };
+            }
+
+            /** @type {import('../users.js').User} */
+            const user = await storage.getItem(toKey(body.handle as string));
+
+            if (!user) {
+                console.error('Demote user failed: User not found');
+                set.status = 404;
+                return { error: 'User not found' };
+            }
+
+            (user as Record<string, unknown>).admin = false;
+            await storage.setItem(toKey(body.handle as string), user);
+            set.status = 204;
+        } catch (error) {
+            console.error('User demote failed:', error);
+            return new Response(null, { status: 500 });
         }
+    })
+    .post('/create', async (context) => {
+        const { set } = context;
+        const body = context.body as Record<string, unknown>;
+        try {
+            if (!requireAdmin(context)) {
+                set.status = 403;
+                return;
+            }
 
-        user.enabled = true;
-        await storage.setItem(toKey(request.body.handle), user);
-        return response.sendStatus(204);
-    } catch (error) {
-        console.error('User enable failed:', error);
-        return response.sendStatus(500);
-    }
-});
+            if (!body.handle || !body.name) {
+                console.warn('Create user failed: Missing required fields');
+                set.status = 400;
+                return { error: 'Missing required fields' };
+            }
 
-router.post('/promote', requireAdminMiddleware, async (request, response) => {
-    try {
-        if (!request.body.handle) {
-            console.warn('Promote user failed: Missing required fields');
-            return response.status(400).json({ error: 'Missing required fields' });
+            const handles = await getAllUserHandles();
+            const handle = slugify(body.handle as string);
+
+            if (!handle) {
+                console.warn('Create user failed: Invalid handle');
+                set.status = 400;
+                return { error: 'Invalid handle' };
+            }
+
+            if (handles.some((x) => x === handle)) {
+                console.warn('Create user failed: User with that handle already exists');
+                set.status = 409;
+                return { error: 'User already exists' };
+            }
+
+            const salt = getPasswordSalt();
+            const password = body.password ? getPasswordHash(body.password as string, salt) : '';
+
+            const newUser = {
+                handle: handle,
+                name: body.name || 'Anonymous',
+                created: Date.now(),
+                password: password,
+                salt: salt,
+                admin: !!body.admin,
+                enabled: true,
+            };
+
+            await storage.setItem(toKey(handle), newUser);
+
+            // Create user directories
+            console.info('Creating data directories for', newUser.handle);
+            await ensurePublicDirectoriesExist();
+            const directories = getUserDirectories(newUser.handle);
+            await checkForNewContent([directories], [CONTENT_TYPES.SETTINGS]);
+            return { handle: newUser.handle };
+        } catch (error) {
+            console.error('User create failed:', error);
+            return new Response(null, { status: 500 });
         }
+    })
+    .post('/delete', async (context) => {
+        const { set } = context;
+        const body = context.body as Record<string, unknown>;
+        const ctxUser = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
+        try {
+            if (!requireAdmin(context)) {
+                set.status = 403;
+                return;
+            }
 
-        /** @type {import('../users.js').User} */
-        const user = await storage.getItem(toKey(request.body.handle));
+            if (!body.handle) {
+                console.warn('Delete user failed: Missing required fields');
+                set.status = 400;
+                return { error: 'Missing required fields' };
+            }
 
-        if (!user) {
-            console.error('Promote user failed: User not found');
-            return response.status(404).json({ error: 'User not found' });
-        }
+            if (body.handle === (ctxUser?.profile as Record<string, unknown> | undefined)?.handle) {
+                console.warn('Delete user failed: Cannot delete yourself');
+                set.status = 400;
+                return { error: 'Cannot delete yourself' };
+            }
 
-        user.admin = true;
-        await storage.setItem(toKey(request.body.handle), user);
-        return response.sendStatus(204);
-    } catch (error) {
-        console.error('User promote failed:', error);
-        return response.sendStatus(500);
-    }
-});
-
-router.post('/demote', requireAdminMiddleware, async (request, response) => {
-    try {
-        if (!request.body.handle) {
-            console.warn('Demote user failed: Missing required fields');
-            return response.status(400).json({ error: 'Missing required fields' });
-        }
-
-        if (request.body.handle === request.user.profile.handle) {
-            console.warn('Demote user failed: Cannot demote yourself');
-            return response.status(400).json({ error: 'Cannot demote yourself' });
-        }
-
-        /** @type {import('../users.js').User} */
-        const user = await storage.getItem(toKey(request.body.handle));
-
-        if (!user) {
-            console.error('Demote user failed: User not found');
-            return response.status(404).json({ error: 'User not found' });
-        }
-
-        user.admin = false;
-        await storage.setItem(toKey(request.body.handle), user);
-        return response.sendStatus(204);
-    } catch (error) {
-        console.error('User demote failed:', error);
-        return response.sendStatus(500);
-    }
-});
-
-router.post('/create', requireAdminMiddleware, async (request, response) => {
-    try {
-        if (!request.body.handle || !request.body.name) {
-            console.warn('Create user failed: Missing required fields');
-            return response.status(400).json({ error: 'Missing required fields' });
-        }
-
-        const handles = await getAllUserHandles();
-        const handle = slugify(request.body.handle);
-
-        if (!handle) {
-            console.warn('Create user failed: Invalid handle');
-            return response.status(400).json({ error: 'Invalid handle' });
-        }
-
-        if (handles.some((x) => x === handle)) {
-            console.warn('Create user failed: User with that handle already exists');
-            return response.status(409).json({ error: 'User already exists' });
-        }
-
-        const salt = getPasswordSalt();
-        const password = request.body.password ? getPasswordHash(request.body.password, salt) : '';
-
-        const newUser = {
-            handle: handle,
-            name: request.body.name || 'Anonymous',
-            created: Date.now(),
-            password: password,
-            salt: salt,
-            admin: !!request.body.admin,
-            enabled: true,
-        };
-
-        await storage.setItem(toKey(handle), newUser);
-
-        // Create user directories
-        console.info('Creating data directories for', newUser.handle);
-        await ensurePublicDirectoriesExist();
-        const directories = getUserDirectories(newUser.handle);
-        await checkForNewContent([directories], [CONTENT_TYPES.SETTINGS]);
-        return response.json({ handle: newUser.handle });
-    } catch (error) {
-        console.error('User create failed:', error);
-        return response.sendStatus(500);
-    }
-});
-
-router.post('/delete', requireAdminMiddleware, async (request, response) => {
-    try {
-        if (!request.body.handle) {
-            console.warn('Delete user failed: Missing required fields');
-            return response.status(400).json({ error: 'Missing required fields' });
-        }
-
-        if (request.body.handle === request.user.profile.handle) {
-            console.warn('Delete user failed: Cannot delete yourself');
-            return response.status(400).json({ error: 'Cannot delete yourself' });
-        }
-
-        if (request.body.handle === DEFAULT_USER.handle) {
-            console.warn('Delete user failed: Cannot delete default user');
-            return response
-                .status(400)
-                .json({
+            if (body.handle === DEFAULT_USER.handle) {
+                console.warn('Delete user failed: Cannot delete default user');
+                set.status = 400;
+                return {
                     error: 'Sorry, but the default user cannot be deleted. It is required as a fallback.',
-                });
+                };
+            }
+
+            await storage.removeItem(toKey(body.handle as string));
+
+            if (body.purge) {
+                const directories = getUserDirectories(body.handle as string);
+                console.info('Deleting data directories for', body.handle);
+                await fsPromises.rm(directories.root, { recursive: true, force: true });
+            }
+
+            set.status = 204;
+        } catch (error) {
+            console.error('User delete failed:', error);
+            return new Response(null, { status: 500 });
         }
+    })
+    .post('/slugify', async (context) => {
+        const { set } = context;
+        const body = context.body as Record<string, unknown>;
+        try {
+            if (!requireAdmin(context)) {
+                set.status = 403;
+                return;
+            }
 
-        await storage.removeItem(toKey(request.body.handle));
+            if (!body.text) {
+                console.warn('Slugify failed: Missing required fields');
+                set.status = 400;
+                return { error: 'Missing required fields' };
+            }
 
-        if (request.body.purge) {
-            const directories = getUserDirectories(request.body.handle);
-            console.info('Deleting data directories for', request.body.handle);
-            await fsPromises.rm(directories.root, { recursive: true, force: true });
+            const text = slugify(body.text as string);
+
+            return new Response(text);
+        } catch (error) {
+            console.error('Slugify failed:', error);
+            return new Response(null, { status: 500 });
         }
-
-        return response.sendStatus(204);
-    } catch (error) {
-        console.error('User delete failed:', error);
-        return response.sendStatus(500);
-    }
-});
-
-router.post('/slugify', requireAdminMiddleware, async (request, response) => {
-    try {
-        if (!request.body.text) {
-            console.warn('Slugify failed: Missing required fields');
-            return response.status(400).json({ error: 'Missing required fields' });
-        }
-
-        const text = slugify(request.body.text);
-
-        return response.send(text);
-    } catch (error) {
-        console.error('Slugify failed:', error);
-        return response.sendStatus(500);
-    }
-});
+    });

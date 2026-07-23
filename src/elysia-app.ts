@@ -121,8 +121,7 @@ export function createElysiaApp(config?: ElysiaAppConfig): Elysia {
         headers['X-Frame-Options'] ??= 'DENY';
         headers['X-XSS-Protection'] ??= '0';
         headers['Referrer-Policy'] ??= 'strict-origin-when-cross-origin';
-        headers['Permissions-Policy'] ??=
-            'camera=(), microphone=(), geolocation=()';
+        headers['Permissions-Policy'] ??= 'camera=(), microphone=(), geolocation=()';
     });
 
     // ── 3.  CORS ──────────────────────────────────────────────────────────
@@ -131,17 +130,9 @@ export function createElysiaApp(config?: ElysiaAppConfig): Elysia {
         app = app.use(
             cors({
                 origin: corsCfg.origin || '*',
-                methods: corsCfg.methods?.length
-                    ? corsCfg.methods
-                    : ['OPTIONS'],
-                allowedHeaders:
-                    corsCfg.allowedHeaders?.length
-                        ? corsCfg.allowedHeaders
-                        : undefined,
-                exposeHeaders:
-                    corsCfg.exposedHeaders?.length
-                        ? corsCfg.exposedHeaders
-                        : undefined,
+                methods: corsCfg.methods?.length ? corsCfg.methods : ['OPTIONS'],
+                allowedHeaders: corsCfg.allowedHeaders?.length ? corsCfg.allowedHeaders : undefined,
+                exposeHeaders: corsCfg.exposedHeaders?.length ? corsCfg.exposedHeaders : undefined,
                 credentials: corsCfg.credentials ?? false,
                 maxAge: corsCfg.maxAge ?? 5,
             }),
@@ -153,66 +144,78 @@ export function createElysiaApp(config?: ElysiaAppConfig): Elysia {
         responseTimers.set(request, performance.now());
     });
 
-    app = app.onAfterHandle({ as: 'global' }, ({ request, set }: { request: Request; set: Record<string, unknown> }) => {
-        const start = responseTimers.get(request);
-        if (start !== undefined) {
-            const headers = set.headers as Record<string, string>;
-            headers['X-Response-Time'] = `${(performance.now() - start).toFixed(3)}ms`;
-            responseTimers.delete(request);
-        }
-    });
+    app = app.onAfterHandle(
+        { as: 'global' },
+        ({ request, set }: { request: Request; set: Record<string, unknown> }) => {
+            const start = responseTimers.get(request);
+            if (start !== undefined) {
+                const headers = set.headers as Record<string, string>;
+                headers['X-Response-Time'] = `${(performance.now() - start).toFixed(3)}ms`;
+                responseTimers.delete(request);
+            }
+        },
+    );
 
     // ── 5.  Response compression ──────────────────────────────────────────
-    app = app.onAfterHandle({ as: 'global' }, ({ response, request, set }: {
-        response: unknown;
-        request: Request;
-        set: Record<string, unknown>;
-    }) => {
-        if (!response || typeof response !== 'object') return;
-        const headers = set.headers as Record<string, string>;
-        if (headers['Content-Encoding']) return;
+    app = app.onAfterHandle(
+        { as: 'global' },
+        ({
+            response,
+            request,
+            set,
+        }: {
+            response: unknown;
+            request: Request;
+            set: Record<string, unknown>;
+        }) => {
+            if (!response || typeof response !== 'object') return;
+            const headers = set.headers as Record<string, string>;
+            if (headers['Content-Encoding']) return;
 
-        const accept = request.headers.get('accept-encoding') ?? '';
-        if (!accept.includes('gzip') && !accept.includes('deflate')) return;
+            const accept = request.headers.get('accept-encoding') ?? '';
+            if (!accept.includes('gzip') && !accept.includes('deflate')) return;
 
-        const encoding: 'gzip' | 'deflate' = accept.includes('gzip') ? 'gzip' : 'deflate';
-        const ct = headers['Content-Type'] ?? '';
-        if (!/text|json|xml|javascript|css/.test(ct)) return;
+            const encoding: 'gzip' | 'deflate' = accept.includes('gzip') ? 'gzip' : 'deflate';
+            const ct = headers['Content-Type'] ?? '';
+            if (!/text|json|xml|javascript|css/.test(ct)) return;
 
-        if (!(response instanceof Response)) return;
-        const body = response.body;
-        if (!body) return;
+            if (!(response instanceof Response)) return;
+            const body = response.body;
+            if (!body) return;
 
-        const cl = response.headers.get('content-length');
-        if (cl && Number(cl) < 1024) return;
+            const cl = response.headers.get('content-length');
+            if (cl && Number(cl) < 1024) return;
 
-        headers['Content-Encoding'] = encoding;
-        headers['Vary'] = 'Accept-Encoding';
+            headers['Content-Encoding'] = encoding;
+            headers['Vary'] = 'Accept-Encoding';
 
-        const originalHeaders = new Headers(response.headers);
-        originalHeaders.delete('content-length');
+            const originalHeaders = new Headers(response.headers);
+            originalHeaders.delete('content-length');
 
-        const newBody = body.pipeThrough(new CompressionStream(encoding));
+            const newBody = body.pipeThrough(new CompressionStream(encoding));
 
-        return new Response(newBody, {
-            status: response.status,
-            statusText: response.statusText,
-            headers: originalHeaders,
-        });
-    });
+            return new Response(newBody, {
+                status: response.status,
+                statusText: response.statusText,
+                headers: originalHeaders,
+            });
+        },
+    );
 
     // ── 6.  Static file serving ───────────────────────────────────────────
     const staticCfg = config?.static;
     if (staticCfg?.assets ?? staticCfg?.prefix !== undefined) {
-        app = app.use(staticPlugin({
-            assets: staticCfg.assets ?? 'public/dist',
-            prefix: staticCfg.prefix ?? '',
-            indexHTML: staticCfg.indexHTML ?? false,
-            alwaysStatic: staticCfg.alwaysStatic ?? false,
-            staticLimit: staticCfg.staticLimit ?? 1024,
-            ignorePatterns: staticCfg.ignorePatterns ?? [],
-            headers: staticCfg.headers ?? {},
-        }));
+        app = app.use(
+            staticPlugin({
+                assets: staticCfg.assets ?? 'public/dist',
+                prefix: staticCfg.prefix ?? '',
+                indexHTML: staticCfg.indexHTML ?? false,
+                alwaysStatic: staticCfg.alwaysStatic ?? false,
+                staticLimit: staticCfg.staticLimit ?? 1024,
+                ignorePatterns: staticCfg.ignorePatterns ?? [],
+                headers: staticCfg.headers ?? {},
+            }),
+        );
     }
 
     return app as Elysia;
@@ -228,10 +231,15 @@ function parseBytes(value: string): number {
     const unit = match[2]!.toLowerCase();
 
     switch (unit) {
-        case 'tb': return num * 1024 * 1024 * 1024 * 1024;
-        case 'gb': return num * 1024 * 1024 * 1024;
-        case 'mb': return num * 1024 * 1024;
-        case 'kb': return num * 1024;
-        default: return num;
+        case 'tb':
+            return num * 1024 * 1024 * 1024 * 1024;
+        case 'gb':
+            return num * 1024 * 1024 * 1024;
+        case 'mb':
+            return num * 1024 * 1024;
+        case 'kb':
+            return num * 1024;
+        default:
+            return num;
     }
 }

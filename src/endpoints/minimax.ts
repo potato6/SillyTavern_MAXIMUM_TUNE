@@ -18,7 +18,10 @@ const getAudioMimeType = (format: string) => {
 router.post('/generate-voice', async (context) => {
     const { set } = context;
     const body = context.body as Record<string, unknown>;
-    const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+    const user = (context as unknown as Record<string, unknown>).user as Record<
+        string,
+        unknown
+    > | null;
     const directories = user?.directories as Record<string, string> | undefined;
 
     try {
@@ -37,12 +40,16 @@ router.post('/generate-voice', async (context) => {
         } = body as Record<string, unknown>;
 
         const apiKey = directories ? readSecret(directories as any, SECRET_KEYS.MINIMAX) : '';
-        const groupId = directories ? readSecret(directories as any, SECRET_KEYS.MINIMAX_GROUP_ID) : '';
+        const groupId = directories
+            ? readSecret(directories as any, SECRET_KEYS.MINIMAX_GROUP_ID)
+            : '';
 
         if (!text || !voiceId || !apiKey || !groupId) {
             console.warn('MiniMax TTS: Missing required parameters');
             set.status = 400;
-            return { error: 'Missing required parameters: text, voiceId, apiKey, and groupId are required' };
+            return {
+                error: 'Missing required parameters: text, voiceId, apiKey, and groupId are required',
+            };
         }
 
         const requestBody: Record<string, unknown> = {
@@ -73,7 +80,10 @@ router.post('/generate-voice', async (context) => {
             url: apiUrl,
             body: {
                 ...requestBody,
-                voice_setting: { ...requestBody.voice_setting as Record<string, unknown>, voice_id: '[REDACTED]' },
+                voice_setting: {
+                    ...(requestBody.voice_setting as Record<string, unknown>),
+                    voice_id: '[REDACTED]',
+                },
             },
         });
 
@@ -96,12 +106,17 @@ router.post('/generate-voice', async (context) => {
                 const baseResp = errorData?.base_resp;
                 if (baseResp && baseResp.status_code !== 0) {
                     if (baseResp.status_code === 1004) {
-                        errorMessage = 'Authentication failed - Please check your API key and API host';
+                        errorMessage =
+                            'Authentication failed - Please check your API key and API host';
                     } else {
                         errorMessage = `API Error: ${baseResp.status_msg}`;
                     }
                 } else {
-                    errorMessage = errorData.error?.message || errorData.message || errorData.detail || `HTTP ${apiResponse.status}`;
+                    errorMessage =
+                        errorData.error?.message ||
+                        errorData.message ||
+                        errorData.detail ||
+                        `HTTP ${apiResponse.status}`;
                 }
             } catch {
                 try {
@@ -181,7 +196,9 @@ router.post('/generate-voice', async (context) => {
                     return { error: 'Audio data conversion failed' };
                 }
 
-                console.debug(`MiniMax TTS: Converted ${paddedHex.length} hex characters to ${audioBytes.length} bytes`);
+                console.debug(
+                    `MiniMax TTS: Converted ${paddedHex.length} hex characters to ${audioBytes.length} bytes`,
+                );
 
                 const mimeType = getAudioMimeType(format as string);
                 return new Response(audioBytes, {
@@ -193,7 +210,9 @@ router.post('/generate-voice', async (context) => {
             } catch (conversionError) {
                 console.error('MiniMax TTS: Audio conversion error:', conversionError);
                 set.status = 500;
-                return { error: `Audio data conversion failed: ${(conversionError as Error).message}` };
+                return {
+                    error: `Audio data conversion failed: ${(conversionError as Error).message}`,
+                };
             }
         } else if (responseData.data?.url) {
             const audioUrl = responseData.data.url as string;
@@ -202,7 +221,10 @@ router.post('/generate-voice', async (context) => {
             try {
                 const audioResponse = await fetch(audioUrl);
                 if (!audioResponse.ok) {
-                    console.error('MiniMax TTS: Failed to fetch audio from URL:', audioResponse.status);
+                    console.error(
+                        'MiniMax TTS: Failed to fetch audio from URL:',
+                        audioResponse.status,
+                    );
                     set.status = 500;
                     return { error: `Failed to fetch audio from URL: ${audioResponse.status}` };
                 }
@@ -223,7 +245,10 @@ router.post('/generate-voice', async (context) => {
                 return { error: `Failed to fetch audio: ${errMsg}` };
             }
         } else {
-            const errorMessage = responseData.base_resp?.status_msg || responseData.error?.message || 'Unknown error';
+            const errorMessage =
+                responseData.base_resp?.status_msg ||
+                responseData.error?.message ||
+                'Unknown error';
             console.error('MiniMax TTS: No valid audio data in response:', responseData);
             set.status = 500;
             return { error: `API Error: ${errorMessage}` };

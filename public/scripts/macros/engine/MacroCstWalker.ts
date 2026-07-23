@@ -528,7 +528,7 @@ class MacroCstWalker {
         // Extract scope (. for local, $ for global)
         const localPrefixToken = /** @type {IToken?} */ (
             (varChildren['Var.scope'] || []).find(
-// @ts-expect-error TS(7006) FIXME: Parameter 't' implicitly has an 'any' type.
+                // @ts-expect-error TS(7006) FIXME: Parameter 't' implicitly has an 'any' type.
                 (t) => /** @type {IToken} */ (t).tokenType?.name === 'Var.LocalPrefix',
             )
         );
@@ -709,7 +709,7 @@ class MacroCstWalker {
                 const numValue = Number(lazyValue());
                 if (!isNaN(numValue)) vars.add(varName, -numValue);
                 else
-// @ts-expect-error TS(2345) FIXME: Type is not assignable.
+                    // @ts-expect-error TS(2345) FIXME: Type is not assignable.
                     logMacroRuntimeWarning({
                         message: `Variable shorthand "-=" operator requires a numeric value, got: "${lazyValue()}"`,
                     });

@@ -1,372 +1,493 @@
 import { Buffer } from 'node:buffer';
 import fs from 'node:fs';
-import express from 'express';
+import { Elysia } from 'elysia';
 import mime from 'mime-types';
-import { forwardFetchResponse } from '../util.js';
 import { readSecret, SECRET_KEYS } from './secrets.js';
 
-export const router = express.Router();
+export const router = new Elysia({ prefix: '/api/speech' })
+    .use(
+        new Elysia({ prefix: '/pollinations' })
+            .post('/voices', async () => {
+                try {
+                    const model = 'openai-audio';
 
-const pollinations = express.Router();
+                    const response = await fetch('https://gen.pollinations.ai/text/models');
 
-pollinations.post('/voices', async (req, res) => {
-    try {
-        const model = req.body.model || 'openai-audio';
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch Pollinations models');
+                    }
 
-        const response = await fetch('https://gen.pollinations.ai/text/models');
+                    const data = (await response.json()) as Record<string, unknown>;
 
-        if (!response.ok) {
-            throw new Error('Failed to fetch Pollinations models');
-        }
+                    if (!Array.isArray(data)) {
+                        throw new Error('Invalid data format received from Pollinations');
+                    }
 
-        const data = (await response.json()) as Record<string, unknown>;
+                    const audioModelData = data.find((m) => m.name === model);
+                    if (!audioModelData || !Array.isArray(audioModelData.voices)) {
+                        throw new Error('No voices found for the specified model');
+                    }
 
-        if (!Array.isArray(data)) {
-            throw new Error('Invalid data format received from Pollinations');
-        }
+                    const voices = audioModelData.voices;
+                    return voices;
+                } catch (error) {
+                    console.error(error);
+                    return new Response(null, { status: 500 });
+                }
+            })
+            .post('/generate', async (context) => {
+                const { set } = context;
+                const body = context.body as Record<string, unknown>;
+                const user = (context as unknown as Record<string, unknown>).user as Record<
+                    string,
+                    unknown
+                > | null;
+                const directories = user?.directories as Record<string, string> | undefined;
 
-        const audioModelData = data.find((m) => m.name === model);
-        if (!audioModelData || !Array.isArray(audioModelData.voices)) {
-            throw new Error('No voices found for the specified model');
-        }
+                try {
+                    const key = directories
+                        ? readSecret(directories as any, SECRET_KEYS.POLLINATIONS)
+                        : '';
+                    if (!key) {
+                        console.warn('No API key saved for Pollinations TTS.');
+                        set.status = 400;
+                        return;
+                    }
 
-        const voices = audioModelData.voices;
-        return res.json(voices);
-    } catch (error) {
-        console.error(error);
-        return res.sendStatus(500);
-    }
-});
+                    const text = body.text as string;
+                    const model = (body.model as string) || 'openai-audio';
+                    const voice = (body.voice as string) || 'alloy';
 
-pollinations.post('/generate', async (req, res) => {
-    try {
-        const key = readSecret(req.user.directories, SECRET_KEYS.POLLINATIONS);
-        if (!key) {
-            console.warn('No API key saved for Pollinations TTS.');
-            return res.sendStatus(400);
-        }
+                    console.debug('Pollinations TTS request', { text, model, voice });
 
-        const text = req.body.text;
-        const model = req.body.model || 'openai-audio';
-        const voice = req.body.voice || 'alloy';
+                    const response = await fetch(
+                        'https://gen.pollinations.ai/v1/chat/completions',
+                        {
+                            method: 'POST',
+                            headers: {
+                                Authorization: `Bearer ${key}`,
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                model: model,
+                                stream: false,
+                                modalities: ['text', 'audio'],
+                                seed: Math.floor(Math.random() * Math.pow(2, 32)),
+                                audio: {
+                                    format: 'mp3',
+                                    voice: voice,
+                                },
+                                messages: [
+                                    {
+                                        role: 'user',
+                                        content: text,
+                                    },
+                                ],
+                            }),
+                        },
+                    );
 
-        console.debug('Pollinations TTS request', { text, model, voice });
+                    if (!response.ok) {
+                        const text = await response.text();
+                        throw new Error(`Failed to generate audio from Pollinations: ${text}`);
+                    }
 
-        const response = await fetch('https://gen.pollinations.ai/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                Authorization: `Bearer ${key}`,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                model: model,
-                stream: false,
-                modalities: ['text', 'audio'],
-                seed: Math.floor(Math.random() * Math.pow(2, 32)),
-                audio: {
-                    format: 'mp3',
-                    voice: voice,
-                },
-                messages: [
-                    {
-                        role: 'user',
-                        content: text,
-                    },
-                ],
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic Pollinations API response shape
+                    const data: any = await response.json();
+                    const audioData = data?.choices?.[0]?.message?.audio?.data;
+
+                    if (!audioData) {
+                        console.warn('Pollinations TTS audio data is missing from the response');
+                        set.status = 500;
+                        return;
+                    }
+
+                    return new Response(Buffer.from(audioData, 'base64'), {
+                        headers: {
+                            'Content-Type': 'audio/mpeg',
+                        },
+                    });
+                } catch (error) {
+                    console.error(error);
+                    set.status = 500;
+                }
             }),
-        });
+    )
+    .use(
+        new Elysia({ prefix: '/elevenlabs' })
+            .post('/voices', async (context) => {
+                const { set } = context;
+                const user = (context as unknown as Record<string, unknown>).user as Record<
+                    string,
+                    unknown
+                > | null;
+                const directories = user?.directories as Record<string, string> | undefined;
 
-        if (!response.ok) {
-            const text = await response.text();
-            throw new Error(`Failed to generate audio from Pollinations: ${text}`);
-        }
+                try {
+                    const apiKey = directories
+                        ? readSecret(directories as any, SECRET_KEYS.ELEVENLABS)
+                        : '';
+                    if (!apiKey) {
+                        console.warn('ElevenLabs API key not found');
+                        set.status = 400;
+                        return;
+                    }
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic Pollinations API response shape
-        const data: any = await response.json();
-        const audioData = data?.choices?.[0]?.message?.audio?.data;
+                    const response = await fetch('https://api.elevenlabs.io/v1/voices', {
+                        headers: {
+                            'xi-api-key': apiKey,
+                        },
+                    });
 
-        if (!audioData) {
-            console.warn('Pollinations TTS audio data is missing from the response');
-            return res.sendStatus(500);
-        }
+                    if (!response.ok) {
+                        const text = await response.text();
+                        console.warn(
+                            `ElevenLabs voices fetch failed: HTTP ${response.status} - ${text}`,
+                        );
+                        set.status = 500;
+                        return;
+                    }
 
-        res.set('Content-Type', 'audio/mpeg');
-        return res.send(Buffer.from(audioData, 'base64'));
-    } catch (error) {
-        console.error(error);
-        return res.sendStatus(500);
-    }
-});
+                    const responseJson = (await response.json()) as Record<string, unknown>;
+                    return responseJson;
+                } catch (error) {
+                    console.error(error);
+                    set.status = 500;
+                }
+            })
+            .post('/voice-settings', async (context) => {
+                const { set } = context;
+                const user = (context as unknown as Record<string, unknown>).user as Record<
+                    string,
+                    unknown
+                > | null;
+                const directories = user?.directories as Record<string, string> | undefined;
 
-router.use('/pollinations', pollinations);
+                try {
+                    const apiKey = directories
+                        ? readSecret(directories as any, SECRET_KEYS.ELEVENLABS)
+                        : '';
+                    if (!apiKey) {
+                        console.warn('ElevenLabs API key not found');
+                        set.status = 400;
+                        return;
+                    }
 
-const elevenlabs = express.Router();
+                    const response = await fetch(
+                        'https://api.elevenlabs.io/v1/voices/settings/default',
+                        {
+                            headers: {
+                                'xi-api-key': apiKey,
+                            },
+                        },
+                    );
 
-elevenlabs.post('/voices', async (req, res) => {
-    try {
-        const apiKey = readSecret(req.user.directories, SECRET_KEYS.ELEVENLABS);
-        if (!apiKey) {
-            console.warn('ElevenLabs API key not found');
-            return res.sendStatus(400);
-        }
+                    if (!response.ok) {
+                        const text = await response.text();
+                        console.warn(
+                            `ElevenLabs voice settings fetch failed: HTTP ${response.status} - ${text}`,
+                        );
+                        set.status = 500;
+                        return;
+                    }
+                    const responseJson = (await response.json()) as Record<string, unknown>;
+                    return responseJson;
+                } catch (error) {
+                    console.error(error);
+                    set.status = 500;
+                }
+            })
+            .post('/synthesize', async (context) => {
+                const { set } = context;
+                const body = context.body as Record<string, unknown>;
+                const user = (context as unknown as Record<string, unknown>).user as Record<
+                    string,
+                    unknown
+                > | null;
+                const directories = user?.directories as Record<string, string> | undefined;
 
-        const response = await fetch('https://api.elevenlabs.io/v1/voices', {
-            headers: {
-                'xi-api-key': apiKey,
-            },
-        });
+                try {
+                    const apiKey = directories
+                        ? readSecret(directories as any, SECRET_KEYS.ELEVENLABS)
+                        : '';
+                    if (!apiKey) {
+                        console.warn('ElevenLabs API key not found');
+                        set.status = 400;
+                        return;
+                    }
 
-        if (!response.ok) {
-            const text = await response.text();
-            console.warn(`ElevenLabs voices fetch failed: HTTP ${response.status} - ${text}`);
-            return res.sendStatus(500);
-        }
+                    const voiceId = body.voiceId as string;
+                    const request = body.request as Record<string, unknown>;
 
-        const responseJson = (await response.json()) as Record<string, unknown>;
-        return res.json(responseJson);
-    } catch (error) {
-        console.error(error);
-        return res.sendStatus(500);
-    }
-});
+                    if (!voiceId || !request) {
+                        console.warn(
+                            'ElevenLabs synthesis request missing voiceId or request body',
+                        );
+                        set.status = 400;
+                        return;
+                    }
 
-elevenlabs.post('/voice-settings', async (req, res) => {
-    try {
-        const apiKey = readSecret(req.user.directories, SECRET_KEYS.ELEVENLABS);
-        if (!apiKey) {
-            console.warn('ElevenLabs API key not found');
-            return res.sendStatus(400);
-        }
+                    console.debug('ElevenLabs TTS request:', request);
 
-        const response = await fetch('https://api.elevenlabs.io/v1/voices/settings/default', {
-            headers: {
-                'xi-api-key': apiKey,
-            },
-        });
+                    const response = await fetch(
+                        `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,
+                        {
+                            method: 'POST',
+                            headers: {
+                                'xi-api-key': apiKey,
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(request),
+                        },
+                    );
 
-        if (!response.ok) {
-            const text = await response.text();
-            console.warn(
-                `ElevenLabs voice settings fetch failed: HTTP ${response.status} - ${text}`,
-            );
-            return res.sendStatus(500);
-        }
-        const responseJson = (await response.json()) as Record<string, unknown>;
-        return res.json(responseJson);
-    } catch (error) {
-        console.error(error);
-        return res.sendStatus(500);
-    }
-});
+                    if (!response.ok) {
+                        const text = await response.text();
+                        console.warn(
+                            `ElevenLabs synthesis failed: HTTP ${response.status} - ${text}`,
+                        );
+                        set.status = 500;
+                        return;
+                    }
 
-elevenlabs.post('/synthesize', async (req, res) => {
-    try {
-        const apiKey = readSecret(req.user.directories, SECRET_KEYS.ELEVENLABS);
-        if (!apiKey) {
-            console.warn('ElevenLabs API key not found');
-            return res.sendStatus(400);
-        }
+                    return response;
+                } catch (error) {
+                    console.error(error);
+                    set.status = 500;
+                }
+            })
+            .post('/history', async (context) => {
+                const { set } = context;
+                const user = (context as unknown as Record<string, unknown>).user as Record<
+                    string,
+                    unknown
+                > | null;
+                const directories = user?.directories as Record<string, string> | undefined;
 
-        const { voiceId, request } = req.body;
+                try {
+                    const apiKey = directories
+                        ? readSecret(directories as any, SECRET_KEYS.ELEVENLABS)
+                        : '';
+                    if (!apiKey) {
+                        console.warn('ElevenLabs API key not found');
+                        set.status = 400;
+                        return;
+                    }
 
-        if (!voiceId || !request) {
-            console.warn('ElevenLabs synthesis request missing voiceId or request body');
-            return res.sendStatus(400);
-        }
+                    const response = await fetch('https://api.elevenlabs.io/v1/history', {
+                        headers: {
+                            'xi-api-key': apiKey,
+                        },
+                    });
 
-        console.debug('ElevenLabs TTS request:', request);
+                    if (!response.ok) {
+                        const text = await response.text();
+                        console.warn(
+                            `ElevenLabs history fetch failed: HTTP ${response.status} - ${text}`,
+                        );
+                        set.status = 500;
+                        return;
+                    }
 
-        const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
-            method: 'POST',
-            headers: {
-                'xi-api-key': apiKey,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(request),
-        });
+                    const responseJson = (await response.json()) as Record<string, unknown>;
+                    return responseJson;
+                } catch (error) {
+                    console.error(error);
+                    set.status = 500;
+                }
+            })
+            .post('/history-audio', async (context) => {
+                const { set } = context;
+                const body = context.body as Record<string, unknown>;
+                const user = (context as unknown as Record<string, unknown>).user as Record<
+                    string,
+                    unknown
+                > | null;
+                const directories = user?.directories as Record<string, string> | undefined;
 
-        if (!response.ok) {
-            const text = await response.text();
-            console.warn(`ElevenLabs synthesis failed: HTTP ${response.status} - ${text}`);
-            return res.sendStatus(500);
-        }
+                try {
+                    const apiKey = directories
+                        ? readSecret(directories as any, SECRET_KEYS.ELEVENLABS)
+                        : '';
+                    if (!apiKey) {
+                        console.warn('ElevenLabs API key not found');
+                        set.status = 400;
+                        return;
+                    }
 
-        res.set('Content-Type', 'audio/mpeg');
-        await forwardFetchResponse(response, res);
-    } catch (error) {
-        console.error(error);
-        return res.sendStatus(500);
-    }
-});
+                    const historyItemId = body.historyItemId as string;
+                    if (!historyItemId) {
+                        console.warn('ElevenLabs history audio request missing historyItemId');
+                        set.status = 400;
+                        return;
+                    }
 
-elevenlabs.post('/history', async (req, res) => {
-    try {
-        const apiKey = readSecret(req.user.directories, SECRET_KEYS.ELEVENLABS);
-        if (!apiKey) {
-            console.warn('ElevenLabs API key not found');
-            return res.sendStatus(400);
-        }
+                    console.debug('ElevenLabs history audio request for ID:', historyItemId);
 
-        const response = await fetch('https://api.elevenlabs.io/v1/history', {
-            headers: {
-                'xi-api-key': apiKey,
-            },
-        });
+                    const response = await fetch(
+                        `https://api.elevenlabs.io/v1/history/${historyItemId}/audio`,
+                        {
+                            headers: {
+                                'xi-api-key': apiKey,
+                            },
+                        },
+                    );
 
-        if (!response.ok) {
-            const text = await response.text();
-            console.warn(`ElevenLabs history fetch failed: HTTP ${response.status} - ${text}`);
-            return res.sendStatus(500);
-        }
+                    if (!response.ok) {
+                        const text = await response.text();
+                        console.warn(
+                            `ElevenLabs history audio fetch failed: HTTP ${response.status} - ${text}`,
+                        );
+                        set.status = 500;
+                        return;
+                    }
 
-        const responseJson = (await response.json()) as Record<string, unknown>;
-        return res.json(responseJson);
-    } catch (error) {
-        console.error(error);
-        return res.sendStatus(500);
-    }
-});
+                    return response;
+                } catch (error) {
+                    console.error(error);
+                    set.status = 500;
+                }
+            })
+            .post('/voices/add', async (context) => {
+                const { set } = context;
+                const body = context.body as Record<string, unknown>;
+                const user = (context as unknown as Record<string, unknown>).user as Record<
+                    string,
+                    unknown
+                > | null;
+                const directories = user?.directories as Record<string, string> | undefined;
 
-elevenlabs.post('/history-audio', async (req, res) => {
-    try {
-        const apiKey = readSecret(req.user.directories, SECRET_KEYS.ELEVENLABS);
-        if (!apiKey) {
-            console.warn('ElevenLabs API key not found');
-            return res.sendStatus(400);
-        }
+                try {
+                    const apiKey = directories
+                        ? readSecret(directories as any, SECRET_KEYS.ELEVENLABS)
+                        : '';
+                    if (!apiKey) {
+                        console.warn('ElevenLabs API key not found');
+                        set.status = 400;
+                        return;
+                    }
 
-        const { historyItemId } = req.body;
-        if (!historyItemId) {
-            console.warn('ElevenLabs history audio request missing historyItemId');
-            return res.sendStatus(400);
-        }
+                    const name = body.name as string;
+                    const description = body.description as string;
+                    const labels = body.labels as string;
+                    const files = body.files as string[];
 
-        console.debug('ElevenLabs history audio request for ID:', historyItemId);
+                    const formData = new FormData();
+                    formData.append('name', name || 'Custom Voice');
+                    formData.append('description', description || 'Uploaded via SillyTavern');
+                    formData.append('labels', labels || '');
 
-        const response = await fetch(
-            `https://api.elevenlabs.io/v1/history/${historyItemId}/audio`,
-            {
-                headers: {
-                    'xi-api-key': apiKey,
-                },
-            },
-        );
+                    for (const fileData of files || []) {
+                        const [mimeType, base64Data] =
+                            /^data:(.+);base64,(.+)$/.exec(fileData)?.slice(1) || [];
+                        if (!mimeType || !base64Data) {
+                            console.warn(
+                                'Invalid audio file data provided for ElevenLabs voice upload',
+                            );
+                            continue;
+                        }
+                        const buffer = Buffer.from(base64Data, 'base64');
+                        formData.append(
+                            'files',
+                            new Blob([buffer], { type: mimeType }),
+                            `audio.${mime.extension(mimeType) || 'wav'}`,
+                        );
+                    }
 
-        if (!response.ok) {
-            const text = await response.text();
-            console.warn(
-                `ElevenLabs history audio fetch failed: HTTP ${response.status} - ${text}`,
-            );
-            return res.sendStatus(500);
-        }
+                    console.debug('ElevenLabs voice upload request:', {
+                        name,
+                        description,
+                        labels,
+                        files: files?.length || 0,
+                    });
 
-        res.set('Content-Type', 'audio/mpeg');
-        await forwardFetchResponse(response, res);
-    } catch (error) {
-        console.error(error);
-        return res.sendStatus(500);
-    }
-});
+                    const response = await fetch('https://api.elevenlabs.io/v1/voices/add', {
+                        method: 'POST',
+                        headers: {
+                            'xi-api-key': apiKey,
+                        },
+                        body: formData,
+                    });
 
-elevenlabs.post('/voices/add', async (req, res) => {
-    try {
-        const apiKey = readSecret(req.user.directories, SECRET_KEYS.ELEVENLABS);
-        if (!apiKey) {
-            console.warn('ElevenLabs API key not found');
-            return res.sendStatus(400);
-        }
+                    if (!response.ok) {
+                        const text = await response.text();
+                        console.warn(
+                            `ElevenLabs voice upload failed: HTTP ${response.status} - ${text}`,
+                        );
+                        set.status = 500;
+                        return;
+                    }
 
-        const { name, description, labels, files } = req.body;
+                    const responseJson = (await response.json()) as Record<string, unknown>;
+                    return responseJson;
+                } catch (error) {
+                    console.error(error);
+                    set.status = 500;
+                }
+            })
+            .post('/recognize', async (context) => {
+                const { set } = context;
+                const body = context.body as Record<string, unknown>;
+                const user = (context as unknown as Record<string, unknown>).user as Record<
+                    string,
+                    unknown
+                > | null;
+                const directories = user?.directories as Record<string, string> | undefined;
+                const file = (context as unknown as Record<string, unknown>).file as Record<
+                    string,
+                    unknown
+                > | null;
 
-        const formData = new FormData();
-        formData.append('name', name || 'Custom Voice');
-        formData.append('description', description || 'Uploaded via SillyTavern');
-        formData.append('labels', labels || '');
+                try {
+                    const apiKey = directories
+                        ? readSecret(directories as any, SECRET_KEYS.ELEVENLABS)
+                        : '';
+                    if (!apiKey) {
+                        console.warn('ElevenLabs API key not found');
+                        set.status = 400;
+                        return;
+                    }
 
-        for (const fileData of files || []) {
-            const [mimeType, base64Data] = /^data:(.+);base64,(.+)$/.exec(fileData)?.slice(1) || [];
-            if (!mimeType || !base64Data) {
-                console.warn('Invalid audio file data provided for ElevenLabs voice upload');
-                continue;
-            }
-            const buffer = Buffer.from(base64Data, 'base64');
-            formData.append(
-                'files',
-                new Blob([buffer], { type: mimeType }),
-                `audio.${mime.extension(mimeType) || 'wav'}`,
-            );
-        }
+                    if (!file || !file.path) {
+                        console.warn('No audio file found');
+                        set.status = 400;
+                        return;
+                    }
 
-        console.debug('ElevenLabs voice upload request:', {
-            name,
-            description,
-            labels,
-            files: files?.length || 0,
-        });
+                    console.info('Processing audio file with ElevenLabs', file.path);
+                    const fileBuffer = fs.readFileSync(file.path as string);
+                    const formData = new FormData();
+                    formData.append(
+                        'file',
+                        new Blob([fileBuffer], { type: 'audio/wav' }),
+                        'audio.wav',
+                    );
+                    formData.append('model_id', (body.model as string) || '');
 
-        const response = await fetch('https://api.elevenlabs.io/v1/voices/add', {
-            method: 'POST',
-            headers: {
-                'xi-api-key': apiKey,
-            },
-            body: formData,
-        });
+                    const response = await fetch('https://api.elevenlabs.io/v1/speech-to-text', {
+                        method: 'POST',
+                        headers: {
+                            'xi-api-key': apiKey,
+                        },
+                        body: formData,
+                    });
 
-        if (!response.ok) {
-            const text = await response.text();
-            console.warn(`ElevenLabs voice upload failed: HTTP ${response.status} - ${text}`);
-            return res.sendStatus(500);
-        }
+                    if (!response.ok) {
+                        const text = await response.text();
+                        console.warn(
+                            `ElevenLabs speech recognition failed: HTTP ${response.status} - ${text}`,
+                        );
+                        set.status = 500;
+                        return;
+                    }
 
-        const responseJson = (await response.json()) as Record<string, unknown>;
-        return res.json(responseJson);
-    } catch (error) {
-        console.error(error);
-        return res.sendStatus(500);
-    }
-});
-
-elevenlabs.post('/recognize', async (req, res) => {
-    try {
-        const apiKey = readSecret(req.user.directories, SECRET_KEYS.ELEVENLABS);
-        if (!apiKey) {
-            console.warn('ElevenLabs API key not found');
-            return res.sendStatus(400);
-        }
-
-        if (!req.file) {
-            console.warn('No audio file found');
-            return res.sendStatus(400);
-        }
-
-        console.info('Processing audio file with ElevenLabs', req.file.path);
-        const fileBuffer = fs.readFileSync(req.file.path);
-        const formData = new FormData();
-        formData.append('file', new Blob([fileBuffer], { type: 'audio/wav' }), 'audio.wav');
-        formData.append('model_id', req.body.model);
-
-        const response = await fetch('https://api.elevenlabs.io/v1/speech-to-text', {
-            method: 'POST',
-            headers: {
-                'xi-api-key': apiKey,
-            },
-            body: formData,
-        });
-
-        if (!response.ok) {
-            const text = await response.text();
-            console.warn(`ElevenLabs speech recognition failed: HTTP ${response.status} - ${text}`);
-            return res.sendStatus(500);
-        }
-
-        fs.unlinkSync(req.file.path);
-        const responseJson = (await response.json()) as Record<string, unknown>;
-        console.debug('ElevenLabs speech recognition response:', responseJson);
-        return res.json(responseJson);
-    } catch (error) {
-        console.error(error);
-        return res.sendStatus(500);
-    }
-});
-
-router.use('/elevenlabs', elevenlabs);
+                    fs.unlinkSync(file.path as string);
+                    const responseJson = (await response.json()) as Record<string, unknown>;
+                    console.debug('ElevenLabs speech recognition response:', responseJson);
+                    return responseJson;
+                } catch (error) {
+                    console.error(error);
+                    set.status = 500;
+                }
+            }),
+    );

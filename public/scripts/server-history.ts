@@ -18,11 +18,11 @@ function findServers(request, resolve, serverLabel) {
 
     const needle = request.term.toLowerCase();
     const result = power_user.servers
-// @ts-expect-error TS(2339) FIXME: Property 'filter' does not exist on type.
+        // @ts-expect-error TS(2339) FIXME: Property 'filter' does not exist on type.
         .filter((x) => x.label == serverLabel)
-// @ts-expect-error TS(2339) FIXME: Property 'toSorted' does not exist on type.
+        // @ts-expect-error TS(2339) FIXME: Property 'toSorted' does not exist on type.
         .toSorted((a, b) => b.lastConnection - a.lastConnection)
-// @ts-expect-error TS(2339) FIXME: Property 'map' does not exist on type.
+        // @ts-expect-error TS(2339) FIXME: Property 'map' does not exist on type.
         .map((x) => x.url)
         .slice(0, 5);
     const hasExactMatch = result.findIndex((x) => x.toLowerCase() == needle) !== -1;

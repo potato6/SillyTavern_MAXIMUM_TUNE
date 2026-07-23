@@ -2,7 +2,7 @@ import path from 'node:path';
 import fs, { promises as fsPromises } from 'node:fs';
 import { Buffer } from 'node:buffer';
 
-import express from 'express';
+import { Elysia } from 'elysia';
 import sanitize from 'sanitize-filename';
 import { sync as writeFileAtomicSync } from 'write-file-atomic';
 import yaml from 'yaml';
@@ -394,7 +394,10 @@ const calculateChatSize = (charDir: string) => {
 // Calculate the total string length of the data object
 const calculateDataSize = (data: unknown) => {
     return data !== null && typeof data === 'object'
-        ? Object.values(data as Record<string, unknown>).reduce((acc: number, val: unknown) => acc + String(val).length, 0)
+        ? Object.values(data as Record<string, unknown>).reduce(
+              (acc: number, val: unknown) => acc + String(val).length,
+              0,
+          )
         : 0;
 };
 
@@ -1095,7 +1098,7 @@ async function importFromByaf(
     }
 
     const result = await writeCharacterData(
-        byafData.images[0]?.image ?? null as any,
+        byafData.images[0]?.image ?? (null as any),
         JSON.stringify(card),
         fileName,
         request,
@@ -1259,234 +1262,37 @@ async function importFromPng(
     return '';
 }
 
-export const router = express.Router();
-
-router.post(
-    '/create',
-    getFileNameValidationFunction('file_name'),
-    async function (request, response) {
-        try {
-            if (!request.body) return response.sendStatus(400);
-
-            request.body.ch_name = sanitize(request.body.ch_name);
-
-            const char = JSON.stringify(charaFormatData(request.body, request.user.directories));
-            const internalName =
-                request.body.file_name ||
-                getPngName(request.body.ch_name, request.user.directories);
-            const avatarName = `${internalName}.png`;
-            const chatsPath = path.join(request.user.directories.chats, internalName);
-
-            if (!fs.existsSync(chatsPath)) fs.mkdirSync(chatsPath);
-
-            if (!request.file) {
-                await writeCharacterData(DEFAULT_AVATAR_PATH, char, internalName, request);
-                return response.send(avatarName);
-            } else {
-                const crop = tryParse(request.query.crop as string);
-                const uploadPath = path.join(request.file.destination, request.file.filename);
-                await writeCharacterData(uploadPath, char, internalName, request, crop);
-                fs.unlinkSync(uploadPath);
-                return response.send(avatarName);
-            }
-        } catch (err) {
-            console.error(err);
-            response.sendStatus(500);
-        }
-    },
-);
-
-router.post('/rename', validateAvatarUrlMiddleware, async function (request, response) {
-    if (!request.body.avatar_url || !request.body.new_name) {
-        return response.sendStatus(400);
-    }
-
-    const oldAvatarName = request.body.avatar_url;
-    const newName = sanitize(request.body.new_name);
-    const oldInternalName = path.parse(request.body.avatar_url).name;
-    const newInternalName = getPngName(newName, request.user.directories);
-    const newAvatarName = `${newInternalName}.png`;
-
-    const oldAvatarPath = path.join(request.user.directories.characters, oldAvatarName);
-
-    const oldChatsPath = path.join(request.user.directories.chats, oldInternalName);
-    const newChatsPath = path.join(request.user.directories.chats, newInternalName);
-
-    try {
-        // Read old file, replace name int it
-        const rawOldData = await readCharacterData(oldAvatarPath);
-        if (rawOldData === undefined) throw new Error('Failed to read character file');
-
-        const oldData = getCharaCardV2(JSON.parse(rawOldData), request.user.directories);
-        set(oldData, 'data.name', newName);
-        set(oldData, 'name', newName);
-        const newData = JSON.stringify(oldData);
-
-        // Write data to new location
-        await writeCharacterData(oldAvatarPath, newData, newInternalName, request);
-
-        // Rename chats folder
-        if (fs.existsSync(oldChatsPath) && !fs.existsSync(newChatsPath)) {
-            fs.cpSync(oldChatsPath, newChatsPath, { recursive: true });
-            fs.rmSync(oldChatsPath, { recursive: true, force: true });
-        }
-
-        // Remove the old character file
-        fs.unlinkSync(oldAvatarPath);
-
-        // Return new avatar name to ST
-        return response.send({ avatar: newAvatarName });
-    } catch (err) {
-        console.error(err);
-        return response.sendStatus(500);
-    }
-});
-
-router.post('/edit', validateAvatarUrlMiddleware, async function (request, response) {
-    if (!request.body) {
-        console.warn('Error: no response body detected');
-        response.status(400).send('Error: no response body detected');
-        return;
-    }
-
-    if (
-        request.body.ch_name === '' ||
-        request.body.ch_name === undefined ||
-        request.body.ch_name === '.'
-    ) {
-        console.warn('Error: invalid name.');
-        response.status(400).send('Error: invalid name.');
-        return;
-    }
-
-    let char = charaFormatData(request.body, request.user.directories);
-    char.chat = request.body.chat;
-    char.create_date = request.body.create_date;
-    char = JSON.stringify(char);
-    const targetFile = request.body.avatar_url.replace('.png', '');
-
-    try {
-        if (!request.file) {
-            const avatarPath = path.join(
-                request.user.directories.characters,
-                request.body.avatar_url,
-            );
-            await writeCharacterData(avatarPath, char, targetFile, request);
-        } else {
-            const crop = tryParse(request.query.crop as string);
-            const newAvatarPath = path.join(request.file.destination, request.file.filename);
-            invalidateThumbnail(request.user.directories, 'avatar', request.body.avatar_url);
-            await writeCharacterData(newAvatarPath, char, targetFile, request, crop);
-            fs.unlinkSync(newAvatarPath);
-
-            // Bust cache to reload the new avatar
-            cacheBuster.bust(request, response);
-        }
-
-        return response.sendStatus(200);
-    } catch (err) {
-        console.error('An error occurred, character edit invalidated.', err);
-        return response.sendStatus(500);
-    }
-});
-
-router.post('/edit-avatar', validateAvatarUrlMiddleware, async function (request, response) {
-    try {
-        if (!request.file) {
-            return response.status(400).send('Error: no file uploaded');
-        }
-
-        if (!request.body || !request.body.avatar_url) {
-            return response.status(400).send('Error: no avatar_url in request body');
-        }
-
-        const uploadPath = path.join(request.file.destination, request.file.filename);
-        if (!fs.existsSync(uploadPath)) {
-            return response.status(400).send('Error: uploaded file does not exist');
-        }
-        const characterPath = path.join(
-            request.user.directories.characters,
-            request.body.avatar_url,
-        );
-        if (!fs.existsSync(characterPath)) {
-            return response.status(400).send('Error: character file does not exist');
-        }
-        const data = await readCharacterData(characterPath);
-        if (!data) {
-            return response.status(400).send('Error: failed to read character data');
-        }
-
-        const crop = tryParse(request.query.crop as string);
-        const fileName = request.body.avatar_url.replace('.png', '');
-        await writeCharacterData(uploadPath, data, fileName, request, crop);
-
-        // Remove uploaded temp file
-        fs.unlinkSync(uploadPath);
-
-        // Reset images caches
-        cacheBuster.bust(request, response);
-        invalidateThumbnail(request.user.directories, 'avatar', request.body.avatar_url);
-
-        return response.sendStatus(200);
-    } catch (err) {
-        console.error('An error occurred while editing avatar', err);
-        return response.sendStatus(500);
-    }
-});
+/**
+ * Gets the name for the uploaded PNG file.
+ * @param {string} file File name
+ * @param {import('../users.js').UserDirectoryList} directories User directories
+ * @returns {string} - The name for the uploaded PNG file
+ */
+function getPngName(file: string, directories: import('../users.js').UserDirectoryList) {
+    file = sanitize(file);
+    return (
+        getUniqueName(
+            file,
+            (name: string) => fs.existsSync(path.join(directories.characters, `${name}.png`)),
+            {
+                nameBuilder: (base: string, i: number) => (i === 0 ? base : `${base}${i}`),
+                startIndex: 0,
+                maxTries: 10000,
+            } as any,
+        ) ?? file
+    );
+}
 
 /**
- * Handle a POST request to edit a character attribute.
- *
- * This function reads the character data from a file, updates the specified attribute,
- * and writes the updated data back to the file.
- * @param {object} request - The HTTP request object.
- * @param {object} response - The HTTP response object.
- * @returns {void}
+ * Gets the preserved name for the uploaded file if the request is valid.
+ * @param {import("express").Request} request - Express request object
+ * @returns {string | undefined} - The preserved name if the request is valid, otherwise undefined
  */
-router.post('/edit-attribute', validateAvatarUrlMiddleware, async function (request, response) {
-    console.debug(request.body);
-    if (!request.body) {
-        console.warn('Error: no response body detected');
-        return response.status(400).send('Error: no response body detected');
-    }
-
-    if (
-        request.body.ch_name === '' ||
-        request.body.ch_name === undefined ||
-        request.body.ch_name === '.'
-    ) {
-        console.warn('Error: invalid name.');
-        return response.status(400).send('Error: invalid name.');
-    }
-
-    if (request.body.field === 'json_data') {
-        console.warn('Error: cannot edit json_data field.');
-        return response.status(400).send('Error: cannot edit json_data field.');
-    }
-
-    try {
-        const avatarPath = path.join(request.user.directories.characters, request.body.avatar_url);
-        const charJSON = await readCharacterData(avatarPath);
-        if (typeof charJSON !== 'string') throw new Error('Failed to read character file');
-
-        const char = JSON.parse(charJSON);
-        //check if the field exists
-        if (char[request.body.field] === undefined && char.data[request.body.field] === undefined) {
-            console.warn('Error: invalid field.');
-            response.status(400).send('Error: invalid field.');
-            return;
-        }
-        char[request.body.field] = request.body.value;
-        char.data[request.body.field] = request.body.value;
-        const newCharJSON = JSON.stringify(char);
-        const targetFile = request.body.avatar_url.replace('.png', '');
-        await writeCharacterData(avatarPath, newCharJSON, targetFile, request);
-        return response.sendStatus(200);
-    } catch (err) {
-        console.error('An error occurred, character edit invalidated.', err);
-        return response.sendStatus(500);
-    }
-});
+function getPreservedName(request: import('express').Request) {
+    return typeof request.body.preserved_name === 'string' && request.body.preserved_name.length > 0
+        ? path.parse(request.body.preserved_name).name
+        : undefined;
+}
 
 /**
  * Sentinel value that signals a field should be completely removed (unset)
@@ -1567,38 +1373,374 @@ async function mergeCharacterUpdate(
     return { ok: true };
 }
 
-/**
- * Handle a POST request to edit character properties.
- *
- * Operates in two modes depending on the request body:
- *
- * **Single mode** (default behavior) — when `avatar` (string) is present:
- *   Merges the request body with the selected character and validates the
- *   result against TavernCard V2 specification.
- *
- * **Bulk mode** — when `avatars` (array) is present:
- *   Applies the same merge to multiple characters in parallel. Supports:
- *   - An explicit list of avatars, or all characters when the array is empty
- *   - An optional server-side `filter` so only characters where a given
- *     JSON path exists and is non-null are updated
- *
- * In both modes, any value equal to the sentinel `__@@UNSET@@__` will cause
- * that key to be **deleted** from the character card instead of being set.
- * @param {import("express").Request} request - The HTTP request object
- * @param {import("express").Response} response - The HTTP response object
- * @returns {void}
- */
-router.post(
-    '/merge-attributes',
-    getFileNameValidationFunction('avatar'),
-    async function (request, response) {
+export const router = new Elysia({ prefix: '/api/characters' })
+    .post('/create', async (context) => {
+        const { set } = context;
+        const body = context.body as Record<string, unknown>;
+        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const directories = user?.directories as Record<string, string> | undefined;
+        const uploadedFile = (context as unknown as Record<string, unknown>).file as Record<string, unknown> | null;
+        const query = context.query as Record<string, string>;
+        const mockRequest = {
+            user: {
+                directories: directories,
+                profile: { handle: (user?.profile as Record<string, unknown>)?.handle as string ?? '' },
+            },
+        } as any;
+
+        try {
+            if (!body) {
+                set.status = 400;
+                return;
+            }
+
+            // Inline getFileNameValidationFunction('file_name')
+            if (body.file_name && typeof body.file_name === 'string' && forbiddenRegExp.test(body.file_name as string)) {
+                set.status = 400;
+                return;
+            }
+
+            body.ch_name = sanitize(body.ch_name as string);
+
+            const char = JSON.stringify(charaFormatData(body, directories));
+            const internalName =
+                (body.file_name as string) ||
+                getPngName(body.ch_name as string, directories as any);
+            const avatarName = `${internalName}.png`;
+            const chatsPath = path.join(directories?.chats ?? '', internalName);
+
+            if (!fs.existsSync(chatsPath)) fs.mkdirSync(chatsPath);
+
+            if (!uploadedFile) {
+                await writeCharacterData(DEFAULT_AVATAR_PATH, char, internalName, mockRequest);
+                return avatarName;
+            } else {
+                const crop = tryParse(query.crop as string);
+                const uploadPath = path.join(uploadedFile.destination as string, uploadedFile.filename as string);
+                await writeCharacterData(uploadPath, char, internalName, mockRequest, crop);
+                fs.unlinkSync(uploadPath);
+                return avatarName;
+            }
+        } catch (err) {
+            console.error(err);
+            set.status = 500;
+        }
+    })
+    .post('/rename', async (context) => {
+        const { set } = context;
+        const body = context.body as Record<string, unknown>;
+        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const directories = user?.directories as Record<string, string> | undefined;
+        const mockRequest = {
+            user: {
+                directories: directories,
+                profile: { handle: (user?.profile as Record<string, unknown>)?.handle as string ?? '' },
+            },
+        } as any;
+
+        // Inline validateAvatarUrlMiddleware
+        if (
+            body &&
+            'avatar_url' in body &&
+            (typeof body.avatar_url === 'string' || body.avatar_url?.toString) &&
+            forbiddenRegExp.test(body.avatar_url as string)
+        ) {
+            set.status = 400;
+            return;
+        }
+
+        if (!body?.avatar_url || !body?.new_name) {
+            set.status = 400;
+            return;
+        }
+
+        const oldAvatarName = body.avatar_url as string;
+        const newName = sanitize(body.new_name as string);
+        const oldInternalName = path.parse(body.avatar_url as string).name;
+        const newInternalName = getPngName(newName, directories as any);
+        const newAvatarName = `${newInternalName}.png`;
+
+        const oldAvatarPath = path.join(directories?.characters ?? '', oldAvatarName);
+
+        const oldChatsPath = path.join(directories?.chats ?? '', oldInternalName);
+        const newChatsPath = path.join(directories?.chats ?? '', newInternalName);
+
+        try {
+            // Read old file, replace name int it
+            const rawOldData = await readCharacterData(oldAvatarPath);
+            if (rawOldData === undefined) throw new Error('Failed to read character file');
+
+            const oldData = getCharaCardV2(JSON.parse(rawOldData), directories as any);
+            set(oldData, 'data.name', newName);
+            set(oldData, 'name', newName);
+            const newData = JSON.stringify(oldData);
+
+            // Write data to new location
+            await writeCharacterData(oldAvatarPath, newData, newInternalName, mockRequest);
+
+            // Rename chats folder
+            if (fs.existsSync(oldChatsPath) && !fs.existsSync(newChatsPath)) {
+                fs.cpSync(oldChatsPath, newChatsPath, { recursive: true });
+                fs.rmSync(oldChatsPath, { recursive: true, force: true });
+            }
+
+            // Remove the old character file
+            fs.unlinkSync(oldAvatarPath);
+
+            // Return new avatar name to ST
+            return { avatar: newAvatarName };
+        } catch (err) {
+            console.error(err);
+            set.status = 500;
+        }
+    })
+
+    .post('/edit', async (context) => {
+        const { set } = context;
+        const body = context.body as Record<string, unknown>;
+        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const directories = user?.directories as Record<string, string> | undefined;
+        const uploadedFile = (context as unknown as Record<string, unknown>).file as Record<string, unknown> | null;
+        const query = context.query as Record<string, string>;
+        const mockRequest = {
+            user: {
+                directories: directories,
+                profile: { handle: (user?.profile as Record<string, unknown>)?.handle as string ?? '' },
+            },
+        } as any;
+
+        // Inline validateAvatarUrlMiddleware
+        if (
+            body &&
+            'avatar_url' in body &&
+            (typeof body.avatar_url === 'string' || (body.avatar_url as any)?.toString) &&
+            forbiddenRegExp.test(body.avatar_url as string)
+        ) {
+            set.status = 400;
+            return;
+        }
+
+        if (!body) {
+            console.warn('Error: no response body detected');
+            set.status = 400;
+            return 'Error: no response body detected';
+        }
+
+        if (
+            body.ch_name === '' ||
+            body.ch_name === undefined ||
+            body.ch_name === '.'
+        ) {
+            console.warn('Error: invalid name.');
+            set.status = 400;
+            return 'Error: invalid name.';
+        }
+
+        let char = charaFormatData(body, directories);
+        char.chat = body.chat;
+        char.create_date = body.create_date;
+        char = JSON.stringify(char);
+        const targetFile = (body.avatar_url as string).replace('.png', '');
+
+        try {
+            if (!uploadedFile) {
+                const avatarPath = path.join(
+                    directories?.characters ?? '',
+                    body.avatar_url as string,
+                );
+                await writeCharacterData(avatarPath, char, targetFile, mockRequest);
+            } else {
+                const crop = tryParse(query.crop as string);
+                const newAvatarPath = path.join(uploadedFile.destination as string, uploadedFile.filename as string);
+                invalidateThumbnail(directories as any, 'avatar', body.avatar_url as string);
+                await writeCharacterData(newAvatarPath, char, targetFile, mockRequest, crop);
+                fs.unlinkSync(newAvatarPath);
+
+                // Bust cache to reload the new avatar
+                const isEnabled = true; // cacheBuster.shouldBust equivalent
+                if (isEnabled) {
+                    set.headers['Clear-Site-Data'] = '"cache"';
+                }
+            }
+
+            return;
+        } catch (err) {
+            console.error('An error occurred, character edit invalidated.', err);
+            set.status = 500;
+        }
+    })
+    .post('/edit-avatar', async (context) => {
+        const { set } = context;
+        const body = context.body as Record<string, unknown>;
+        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const directories = user?.directories as Record<string, string> | undefined;
+        const uploadedFile = (context as unknown as Record<string, unknown>).file as Record<string, unknown> | null;
+        const query = context.query as Record<string, string>;
+        const mockRequest = {
+            user: {
+                directories: directories,
+                profile: { handle: (user?.profile as Record<string, unknown>)?.handle as string ?? '' },
+            },
+        } as any;
+
+        // Inline validateAvatarUrlMiddleware
+        if (
+            body &&
+            'avatar_url' in body &&
+            (typeof body.avatar_url === 'string' || (body.avatar_url as any)?.toString) &&
+            forbiddenRegExp.test(body.avatar_url as string)
+        ) {
+            set.status = 400;
+            return;
+        }
+
+        try {
+            if (!uploadedFile) {
+                set.status = 400;
+                return 'Error: no file uploaded';
+            }
+
+            if (!body || !body.avatar_url) {
+                set.status = 400;
+                return 'Error: no avatar_url in request body';
+            }
+
+            const uploadPath = path.join(uploadedFile.destination as string, uploadedFile.filename as string);
+            if (!fs.existsSync(uploadPath)) {
+                set.status = 400;
+                return 'Error: uploaded file does not exist';
+            }
+            const characterPath = path.join(
+                directories?.characters ?? '',
+                body.avatar_url as string,
+            );
+            if (!fs.existsSync(characterPath)) {
+                set.status = 400;
+                return 'Error: character file does not exist';
+            }
+            const data = await readCharacterData(characterPath);
+            if (!data) {
+                set.status = 400;
+                return 'Error: failed to read character data';
+            }
+
+            const crop = tryParse(query.crop as string);
+            const fileName = (body.avatar_url as string).replace('.png', '');
+            await writeCharacterData(uploadPath, data, fileName, mockRequest, crop);
+
+            // Remove uploaded temp file
+            fs.unlinkSync(uploadPath);
+
+            // Reset images caches
+            set.headers['Clear-Site-Data'] = '"cache"';
+            invalidateThumbnail(directories as any, 'avatar', body.avatar_url as string);
+
+            return;
+        } catch (err) {
+            console.error('An error occurred while editing avatar', err);
+            set.status = 500;
+        }
+    })
+    .post('/edit-attribute', async (context) => {
+        const { set } = context;
+        const body = context.body as Record<string, unknown>;
+        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const directories = user?.directories as Record<string, string> | undefined;
+        const mockRequest = {
+            user: {
+                directories: directories,
+                profile: { handle: (user?.profile as Record<string, unknown>)?.handle as string ?? '' },
+            },
+        } as any;
+
+        // Inline validateAvatarUrlMiddleware
+        if (
+            body &&
+            'avatar_url' in body &&
+            (typeof body.avatar_url === 'string' || (body.avatar_url as any)?.toString) &&
+            forbiddenRegExp.test(body.avatar_url as string)
+        ) {
+            set.status = 400;
+            return;
+        }
+
+        console.debug(body);
+        if (!body) {
+            console.warn('Error: no response body detected');
+            set.status = 400;
+            return 'Error: no response body detected';
+        }
+
+        if (
+            body.ch_name === '' ||
+            body.ch_name === undefined ||
+            body.ch_name === '.'
+        ) {
+            console.warn('Error: invalid name.');
+            set.status = 400;
+            return 'Error: invalid name.';
+        }
+
+        if (body.field === 'json_data') {
+            console.warn('Error: cannot edit json_data field.');
+            set.status = 400;
+            return 'Error: cannot edit json_data field.';
+        }
+
+        try {
+            const avatarPath = path.join(directories?.characters ?? '', body.avatar_url as string);
+            const charJSON = await readCharacterData(avatarPath);
+            if (typeof charJSON !== 'string') throw new Error('Failed to read character file');
+
+            const char = JSON.parse(charJSON);
+            //check if the field exists
+            if (char[body.field as string] === undefined && char.data?.[body.field as string] === undefined) {
+                console.warn('Error: invalid field.');
+                set.status = 400;
+                return 'Error: invalid field.';
+            }
+            char[body.field as string] = body.value;
+            char.data[body.field as string] = body.value;
+            const newCharJSON = JSON.stringify(char);
+            const targetFile = (body.avatar_url as string).replace('.png', '');
+            await writeCharacterData(avatarPath, newCharJSON, targetFile, mockRequest);
+            return;
+        } catch (err) {
+            console.error('An error occurred, character edit invalidated.', err);
+            set.status = 500;
+        }
+    })
+    .post('/merge-attributes', async (context) => {
+        const { set } = context;
+        const body = context.body as Record<string, unknown>;
+        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const directories = user?.directories as Record<string, string> | undefined;
+        const mockRequest = {
+            user: {
+                directories: directories,
+                profile: { handle: (user?.profile as Record<string, unknown>)?.handle as string ?? '' },
+            },
+        } as any;
+
+        // Inline getFileNameValidationFunction('avatar')
+        if (
+            body &&
+            'avatar' in body &&
+            (typeof body.avatar === 'string' || (body.avatar as any)?.toString) &&
+            forbiddenRegExp.test(body.avatar as string)
+        ) {
+            set.status = 400;
+            return;
+        }
+
         try {
             // ── Bulk mode: avatars array is present ──────────────────
-            if (Array.isArray(request.body.avatars)) {
-                const { avatars, data, filter } = request.body;
+            if (Array.isArray(body.avatars)) {
+                const { avatars, data, filter } = body as any;
 
                 if (!isPlainObject(data)) {
-                    return response.status(400).send({ message: 'No valid update data provided.' });
+                    set.status = 400;
+                    return { message: 'No valid update data provided.' };
                 }
 
                 // Determine which avatar files to process
@@ -1610,17 +1752,16 @@ router.post(
                             forbiddenRegExp.test(avatar) ||
                             path.extname(avatar).toLowerCase() !== '.png'
                         ) {
-                            return response
-                                .status(400)
-                                .send({ message: `Invalid avatar filename: ${avatar}` });
+                            set.status = 400;
+                            return { message: `Invalid avatar filename: ${avatar}` };
                         }
                     }
                     targetAvatars = avatars;
                 } else {
                     // Empty array → scan all characters in the directory
-                    const files = fs.readdirSync(request.user.directories.characters);
+                    const files = fs.readdirSync(directories?.characters ?? '');
                     targetAvatars = files.filter(
-                        (file) => path.extname(file).toLowerCase() === '.png',
+                        (file: string) => path.extname(file).toLowerCase() === '.png',
                     );
                 }
 
@@ -1633,15 +1774,14 @@ router.post(
                  * @param {string} avatar Avatar filename
                  */
                 const processOne = async (avatar: string) => {
-                    const avatarPath = path.join(request.user.directories.characters, avatar);
+                    const avatarPath = path.join(directories?.characters ?? '', avatar);
 
                     try {
                         /** @type {(character: object) => boolean} */
-                        let shouldSkip = () => false;
+                        let shouldSkip: ((character: Record<string, unknown>) => boolean) = () => false;
 
                         // Apply optional server-side filter before updating the card
                         if (filter && typeof filter.path === 'string') {
-                            // @ts-expect-error TS(2322) FIXME: Type '(character: Record<string, unknown>) => bool... Remove this comment to see the full error message
                             shouldSkip = (character: Record<string, unknown>) => {
                                 const value = get(character, filter.path);
                                 return value === undefined;
@@ -1652,7 +1792,7 @@ router.post(
                             avatarPath,
                             avatar,
                             data,
-                            request,
+                            mockRequest,
                             shouldSkip,
                         );
                         if (result.ok) {
@@ -1675,342 +1815,403 @@ router.post(
                     await Promise.allSettled(batch.map(processOne));
                 }
 
-                return response.send({ updated, skipped, failed });
+                return { updated, skipped, failed };
             }
 
             // ── Single mode (default behavior) ───────────────────────
-            const update = request.body;
-            const avatarPath = path.join(request.user.directories.characters, update.avatar);
+            const update = body;
+            const avatarPath = path.join(directories?.characters ?? '', (update as any).avatar);
 
-            const result = await mergeCharacterUpdate(avatarPath, update.avatar, update, request);
+            const result = await mergeCharacterUpdate(avatarPath, (update as any).avatar, update, mockRequest);
             if (result.ok) {
-                response.sendStatus(200);
+                return;
             } else {
                 console.warn(result.error);
-                response
-                    .status(400)
-                    .send({
-                        message: `Validation failed for ${update.avatar}`,
-                        error: result.error,
-                    });
+                set.status = 400;
+                return {
+                    message: `Validation failed for ${(update as any).avatar}`,
+                    error: result.error,
+                };
             }
         } catch (exception) {
-            response
-                .status(500)
-                .send({
-                    message: 'Unexpected error while saving character.',
-                    error: (exception as any).toString(),
-                });
+            set.status = 500;
+            return {
+                message: 'Unexpected error while saving character.',
+                error: (exception as any).toString(),
+            };
         }
-    },
-);
+    })
+    .post('/delete', async (context) => {
+        const { set } = context;
+        const body = context.body as Record<string, unknown>;
+        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const directories = user?.directories as Record<string, string> | undefined;
 
-router.post('/delete', validateAvatarUrlMiddleware, async function (request, response) {
-    if (!request.body || !request.body.avatar_url) {
-        return response.sendStatus(400);
-    }
+        // Inline validateAvatarUrlMiddleware
+        if (
+            body &&
+            'avatar_url' in body &&
+            (typeof body.avatar_url === 'string' || (body.avatar_url as any)?.toString) &&
+            forbiddenRegExp.test(body.avatar_url as string)
+        ) {
+            set.status = 400;
+            return;
+        }
 
-    if (request.body.avatar_url !== sanitize(request.body.avatar_url)) {
-        console.error('Malicious filename prevented');
-        return response.sendStatus(403);
-    }
+        if (!body?.avatar_url) {
+            set.status = 400;
+            return;
+        }
 
-    const avatarPath = path.join(request.user.directories.characters, request.body.avatar_url);
-    if (!fs.existsSync(avatarPath)) {
-        return response.sendStatus(400);
-    }
+        if ((body.avatar_url as string) !== sanitize(body.avatar_url as string)) {
+            console.error('Malicious filename prevented');
+            set.status = 403;
+            return;
+        }
 
-    fs.unlinkSync(avatarPath);
-    invalidateThumbnail(request.user.directories, 'avatar', request.body.avatar_url);
-    const dir_name = request.body.avatar_url.replace('.png', '');
+        const avatarPath = path.join(directories?.characters ?? '', body.avatar_url as string);
+        if (!fs.existsSync(avatarPath)) {
+            set.status = 400;
+            return;
+        }
 
-    if (!dir_name.length) {
-        console.error('Malicious dirname prevented');
-        return response.sendStatus(403);
-    }
+        fs.unlinkSync(avatarPath);
+        invalidateThumbnail(directories as any, 'avatar', body.avatar_url as string);
+        const dir_name = (body.avatar_url as string).replace('.png', '');
 
-    if (request.body.delete_chats == true) {
+        if (!dir_name.length) {
+            console.error('Malicious dirname prevented');
+            set.status = 403;
+            return;
+        }
+
+        if (body.delete_chats == true) {
+            try {
+                await fs.promises.rm(path.join(directories?.chats ?? '', sanitize(dir_name)), {
+                    recursive: true,
+                    force: true,
+                });
+            } catch (err) {
+                console.error(err);
+                set.status = 500;
+                return;
+            }
+        }
+
+        return;
+    })
+    .post('/all', async (context) => {
+        const { set } = context;
+        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const directories = user?.directories as Record<string, string> | undefined;
+
         try {
-            await fs.promises.rm(path.join(request.user.directories.chats, sanitize(dir_name)), {
-                recursive: true,
-                force: true,
-            });
+            const files = fs.readdirSync(directories?.characters ?? '');
+            const pngFiles = files.filter((file: string) => file.endsWith('.png'));
+            const processingPromises = pngFiles.map((file: string) =>
+                processCharacter(file, directories as any, { shallow: useShallowCharacters }),
+            );
+            const data = (await Promise.all(processingPromises)).filter((c: any) => c.name);
+            return data;
         } catch (err) {
             console.error(err);
-            return response.sendStatus(500);
+            const isRangeError = err instanceof RangeError;
+            set.status = 500;
+            return { overflow: isRangeError, error: true };
         }
-    }
+    })
+    .post('/get', async (context) => {
+        const { set } = context;
+        const body = context.body as Record<string, unknown>;
+        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const directories = user?.directories as Record<string, string> | undefined;
 
-    return response.sendStatus(200);
-});
-
-/**
- * HTTP POST endpoint for the "/api/characters/all" route.
- *
- * This endpoint is responsible for reading character files from the `charactersPath` directory,
- * parsing character data, calculating stats for each character and responding with the data.
- * Stats are calculated only on the first run, on subsequent runs the stats are fetched from
- * the `charStats` variable.
- * The stats are calculated by the `calculateStats` function.
- * The characters are processed by the `processCharacter` function.
- * @param  {import("express").Request} request The HTTP request object.
- * @param  {import("express").Response} response The HTTP response object.
- * @returns {void}
- */
-router.post('/all', async function (request, response) {
-    try {
-        const files = fs.readdirSync(request.user.directories.characters);
-        const pngFiles = files.filter((file) => file.endsWith('.png'));
-        const processingPromises = pngFiles.map((file) =>
-            processCharacter(file, request.user.directories, { shallow: useShallowCharacters }),
-        );
-        const data = (await Promise.all(processingPromises)).filter((c) => c.name);
-        return response.send(data);
-    } catch (err) {
-        console.error(err);
-        const isRangeError = err instanceof RangeError;
-        response.status(500).send({ overflow: isRangeError, error: true });
-    }
-});
-
-router.post('/get', validateAvatarUrlMiddleware, async function (request, response) {
-    try {
-        if (!request.body) return response.sendStatus(400);
-        const item = request.body.avatar_url;
-        const filePath = path.join(request.user.directories.characters, item);
-
-        if (!fs.existsSync(filePath)) {
-            return response.sendStatus(404);
+        // Inline validateAvatarUrlMiddleware
+        if (
+            body &&
+            'avatar_url' in body &&
+            (typeof body.avatar_url === 'string' || (body.avatar_url as any)?.toString) &&
+            forbiddenRegExp.test(body.avatar_url as string)
+        ) {
+            set.status = 400;
+            return;
         }
 
-        const data = await processCharacter(item, request.user.directories, { shallow: false });
-
-        return response.send(data);
-    } catch (err) {
-        console.error(err);
-        response.sendStatus(500);
-    }
-});
-
-router.post('/chats', validateAvatarUrlMiddleware, async function (request, response) {
-    try {
-        if (!request.body) return response.sendStatus(400);
-
-        const characterDirectory = request.body.avatar_url.replace('.png', '');
-        const chatsDirectory = path.join(request.user.directories.chats, characterDirectory);
-
-        if (!fs.existsSync(chatsDirectory)) {
-            return response.send({ error: true });
-        }
-
-        const files = fs.readdirSync(chatsDirectory, { withFileTypes: true });
-        const jsonFiles = files
-            .filter((file) => file.isFile() && path.extname(file.name) === '.jsonl')
-            .map((file) => file.name);
-
-        if (jsonFiles.length === 0) {
-            return response.send([]);
-        }
-
-        if (request.body.simple) {
-            return response.send(
-                jsonFiles.map((file) => ({ file_name: file, file_id: path.parse(file).name })),
-            );
-        }
-
-        const jsonFilesPromise = jsonFiles.map((file) => {
-            const withMetadata = !!request.body.metadata;
-            const pathToFile = path.join(request.user.directories.chats, characterDirectory, file);
-            return getChatInfo(pathToFile, {}, withMetadata);
-        });
-
-        const chatData = (await Promise.allSettled(jsonFilesPromise))
-            .filter((x) => x.status === 'fulfilled')
-            .map((x) => x.value);
-        // @ts-expect-error TS(7006) FIXME: Parameter 'i' implicitly has an 'any' type.
-        const validFiles = chatData.filter((i) => i.file_name);
-
-        return response.send(validFiles);
-    } catch (error) {
-        console.error(error);
-        return response.send({ error: true });
-    }
-});
-
-/**
- * Gets the name for the uploaded PNG file.
- * @param {string} file File name
- * @param {import('../users.js').UserDirectoryList} directories User directories
- * @returns {string} - The name for the uploaded PNG file
- */
-function getPngName(file: string, directories: import('../users.js').UserDirectoryList) {
-    file = sanitize(file);
-    return (
-        getUniqueName(
-            file,
-            (name: string) => fs.existsSync(path.join(directories.characters, `${name}.png`)),
-            {
-                nameBuilder: (base: string, i: number) => (i === 0 ? base : `${base}${i}`),
-                startIndex: 0,
-                maxTries: 10000,
-            } as any,
-        ) ?? file
-    );
-}
-
-/**
- * Gets the preserved name for the uploaded file if the request is valid.
- * @param {import("express").Request} request - Express request object
- * @returns {string | undefined} - The preserved name if the request is valid, otherwise undefined
- */
-function getPreservedName(request: import('express').Request) {
-    return typeof request.body.preserved_name === 'string' && request.body.preserved_name.length > 0
-        ? path.parse(request.body.preserved_name).name
-        : undefined;
-}
-
-router.post('/import', async function (request, response) {
-    if (!request.body || !request.file) return response.sendStatus(400);
-
-    const uploadPath = path.join(request.file.destination, request.file.filename);
-    const format = request.body.file_type;
-    const preservedFileName = getPreservedName(request);
-
-    const formatImportFunctions = {
-        yaml: importFromYaml,
-        yml: importFromYaml,
-        json: importFromJson,
-        png: importFromPng,
-        charx: importFromCharX,
-        byaf: importFromByaf,
-    };
-
-    try {
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        const importFunction = formatImportFunctions[format];
-
-        if (!importFunction) {
-            throw new Error(`Unsupported format: ${format}`);
-        }
-
-        const fileName = await importFunction(uploadPath, { request, response }, preservedFileName);
-
-        if (!fileName) {
-            console.warn('Failed to import character');
-            return response.sendStatus(400);
-        }
-
-        if (preservedFileName) {
-            invalidateThumbnail(request.user.directories, 'avatar', `${preservedFileName}.png`);
-        }
-
-        response.send({ file_name: fileName });
-    } catch (err) {
-        console.error(err);
-        response.send({ error: true });
-    }
-});
-
-router.post('/duplicate', validateAvatarUrlMiddleware, async function (request, response) {
-    try {
-        if (!request.body.avatar_url) {
-            console.warn('avatar URL not found in request body');
-            console.debug(request.body);
-            return response.sendStatus(400);
-        }
-        const filename = path.join(
-            request.user.directories.characters,
-            sanitize(request.body.avatar_url),
-        );
-        if (!fs.existsSync(filename)) {
-            console.error('file for dupe not found', filename);
-            return response.sendStatus(404);
-        }
-        let suffix = 1;
-        let newFilename = filename;
-
-        // If filename ends with a _number, increment the number
-        const nameParts = path.basename(filename, path.extname(filename)).split('_');
-        const lastPart = nameParts[nameParts.length - 1]!;
-
-        let baseName;
-
-        if (!isNaN(Number(lastPart)) && nameParts.length > 1) {
-            suffix = parseInt(lastPart) + 1;
-            baseName = nameParts.slice(0, -1).join('_'); // construct baseName without suffix
-        } else {
-            baseName = nameParts.join('_'); // original filename is completely the baseName
-        }
-
-        newFilename = path.join(
-            request.user.directories.characters,
-            `${baseName}_${suffix}${path.extname(filename)}`,
-        );
-
-        while (fs.existsSync(newFilename)) {
-            const suffixStr = '_' + suffix;
-            newFilename = path.join(
-                request.user.directories.characters,
-                `${baseName}${suffixStr}${path.extname(filename)}`,
-            );
-            suffix++;
-        }
-
-        fs.copyFileSync(filename, newFilename);
-        console.info(`${filename} was copied to ${newFilename}`);
-        response.send({ path: path.parse(newFilename).base });
-    } catch (error) {
-        console.error(error);
-        return response.send({ error: true });
-    }
-});
-
-router.post('/export', validateAvatarUrlMiddleware, async function (request, response) {
-    try {
-        if (!request.body.format || !request.body.avatar_url) {
-            return response.sendStatus(400);
-        }
-
-        const filename = path.join(
-            request.user.directories.characters,
-            sanitize(request.body.avatar_url),
-        );
-
-        if (!fs.existsSync(filename)) {
-            return response.sendStatus(404);
-        }
-
-        switch (request.body.format) {
-            case 'png': {
-                const rawBuffer = await fsPromises.readFile(filename);
-                const rawData = read(rawBuffer);
-                // @ts-expect-error TS(2345) FIXME: Argument of type '(char: Record<string, unknown>) ... Remove this comment to see the full error message
-                const mutatedData = mutateJsonString(rawData, unsetPrivateFields);
-                const mutatedBuffer = write(rawBuffer, mutatedData);
-                const contentType = Bun.file(filename).type;
-                response.setHeader('Content-Type', contentType);
-                response.setHeader(
-                    'Content-Disposition',
-                    `attachment; filename="${encodeURI(path.basename(filename))}"`,
-                );
-                return response.send(mutatedBuffer);
+        try {
+            if (!body) {
+                set.status = 400;
+                return;
             }
-            case 'json': {
-                try {
-                    const json = await readCharacterData(filename);
-                    if (json === undefined) return response.sendStatus(400);
-                    const jsonObject = getCharaCardV2(JSON.parse(json), request.user.directories);
-                    unsetPrivateFields(jsonObject);
-                    return response.type('json').send(JSON.stringify(jsonObject, null, 4));
-                } catch {
-                    return response.sendStatus(400);
+            const item = body.avatar_url as string;
+            const filePath = path.join(directories?.characters ?? '', item);
+
+            if (!fs.existsSync(filePath)) {
+                set.status = 404;
+                return;
+            }
+
+            const data = await processCharacter(item, directories as any, { shallow: false });
+
+            return data;
+        } catch (err) {
+            console.error(err);
+            set.status = 500;
+        }
+    })
+    .post('/chats', async (context) => {
+        const { set } = context;
+        const body = context.body as Record<string, unknown>;
+        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const directories = user?.directories as Record<string, string> | undefined;
+
+        // Inline validateAvatarUrlMiddleware
+        if (
+            body &&
+            'avatar_url' in body &&
+            (typeof body.avatar_url === 'string' || (body.avatar_url as any)?.toString) &&
+            forbiddenRegExp.test(body.avatar_url as string)
+        ) {
+            set.status = 400;
+            return;
+        }
+
+        try {
+            if (!body) {
+                set.status = 400;
+                return;
+            }
+
+            const characterDirectory = (body.avatar_url as string).replace('.png', '');
+            const chatsDirectory = path.join(directories?.chats ?? '', characterDirectory);
+
+            if (!fs.existsSync(chatsDirectory)) {
+                return { error: true };
+            }
+
+            const files = fs.readdirSync(chatsDirectory, { withFileTypes: true });
+            const jsonFiles = files
+                .filter((file) => file.isFile() && path.extname(file.name) === '.jsonl')
+                .map((file) => file.name);
+
+            if (jsonFiles.length === 0) {
+                return [];
+            }
+
+            if (body.simple) {
+                return jsonFiles.map((file: string) => ({ file_name: file, file_id: path.parse(file).name }));
+            }
+
+            const jsonFilesPromise = jsonFiles.map((file: string) => {
+                const withMetadata = !!body.metadata;
+                const pathToFile = path.join(directories?.chats ?? '', characterDirectory, file);
+                return getChatInfo(pathToFile, {}, withMetadata);
+            });
+
+            const chatData = (await Promise.allSettled(jsonFilesPromise))
+                .filter((x) => x.status === 'fulfilled')
+                .map((x) => (x as PromiseFulfilledResult<any>).value);
+            // @ts-expect-error TS(7006) FIXME: Parameter 'i' implicitly has an 'any' type.
+            const validFiles = chatData.filter((i: any) => i.file_name);
+
+            return validFiles;
+        } catch (error) {
+            console.error(error);
+            return { error: true };
+        }
+    })
+    .post('/import', async (context) => {
+        const { set } = context;
+        const body = context.body as Record<string, unknown>;
+        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const directories = user?.directories as Record<string, string> | undefined;
+        const uploadedFile = (context as unknown as Record<string, unknown>).file as Record<string, unknown> | null;
+        const mockRequest = {
+            user: {
+                directories: directories,
+                profile: { handle: (user?.profile as Record<string, unknown>)?.handle as string ?? '' },
+            },
+        } as any;
+
+        if (!body || !uploadedFile) {
+            set.status = 400;
+            return;
+        }
+
+        const uploadPath = path.join(uploadedFile.destination as string, uploadedFile.filename as string);
+        const format = body.file_type as string;
+        const preservedFileName = getPreservedName({ body } as any);
+
+        const formatImportFunctions: Record<string, Function> = {
+            yaml: importFromYaml,
+            yml: importFromYaml,
+            json: importFromJson,
+            png: importFromPng,
+            charx: importFromCharX,
+            byaf: importFromByaf,
+        };
+
+        try {
+            const importFunction = formatImportFunctions[format];
+
+            if (!importFunction) {
+                throw new Error(`Unsupported format: ${format}`);
+            }
+
+            const fileName = await importFunction(uploadPath, { request: mockRequest, response: {} }, preservedFileName);
+
+            if (!fileName) {
+                console.warn('Failed to import character');
+                set.status = 400;
+                return;
+            }
+
+            if (preservedFileName) {
+                invalidateThumbnail(directories as any, 'avatar', `${preservedFileName}.png`);
+            }
+
+            return { file_name: fileName };
+        } catch (err) {
+            console.error(err);
+            return { error: true };
+        }
+    })
+    .post('/duplicate', async (context) => {
+        const { set } = context;
+        const body = context.body as Record<string, unknown>;
+        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const directories = user?.directories as Record<string, string> | undefined;
+
+        // Inline validateAvatarUrlMiddleware
+        if (
+            body &&
+            'avatar_url' in body &&
+            (typeof body.avatar_url === 'string' || (body.avatar_url as any)?.toString) &&
+            forbiddenRegExp.test(body.avatar_url as string)
+        ) {
+            set.status = 400;
+            return;
+        }
+
+        try {
+            if (!body?.avatar_url) {
+                console.warn('avatar URL not found in request body');
+                console.debug(body);
+                set.status = 400;
+                return;
+            }
+            const filename = path.join(
+                directories?.characters ?? '',
+                sanitize(body.avatar_url as string),
+            );
+            if (!fs.existsSync(filename)) {
+                console.error('file for dupe not found', filename);
+                set.status = 404;
+                return;
+            }
+            let suffix = 1;
+            let newFilename = filename;
+
+            // If filename ends with a _number, increment the number
+            const nameParts = path.basename(filename, path.extname(filename)).split('_');
+            const lastPart = nameParts[nameParts.length - 1]!;
+
+            let baseName: string;
+
+            if (!isNaN(Number(lastPart)) && nameParts.length > 1) {
+                suffix = parseInt(lastPart) + 1;
+                baseName = nameParts.slice(0, -1).join('_'); // construct baseName without suffix
+            } else {
+                baseName = nameParts.join('_'); // original filename is completely the baseName
+            }
+
+            newFilename = path.join(
+                directories?.characters ?? '',
+                `${baseName}_${suffix}${path.extname(filename)}`,
+            );
+
+            while (fs.existsSync(newFilename)) {
+                const suffixStr = '_' + suffix;
+                newFilename = path.join(
+                    directories?.characters ?? '',
+                    `${baseName}${suffixStr}${path.extname(filename)}`,
+                );
+                suffix++;
+            }
+
+            fs.copyFileSync(filename, newFilename);
+            console.info(`${filename} was copied to ${newFilename}`);
+            return { path: path.parse(newFilename).base };
+        } catch (error) {
+            console.error(error);
+            return { error: true };
+        }
+    })
+    .post('/export', async (context) => {
+        const { set } = context;
+        const body = context.body as Record<string, unknown>;
+        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const directories = user?.directories as Record<string, string> | undefined;
+
+        // Inline validateAvatarUrlMiddleware
+        if (
+            body &&
+            'avatar_url' in body &&
+            (typeof body.avatar_url === 'string' || (body.avatar_url as any)?.toString) &&
+            forbiddenRegExp.test(body.avatar_url as string)
+        ) {
+            set.status = 400;
+            return;
+        }
+
+        try {
+            if (!body?.format || !body?.avatar_url) {
+                set.status = 400;
+                return;
+            }
+
+            const filename = path.join(
+                directories?.characters ?? '',
+                sanitize(body.avatar_url as string),
+            );
+
+            if (!fs.existsSync(filename)) {
+                set.status = 404;
+                return;
+            }
+
+            switch (body.format) {
+                case 'png': {
+                    const rawBuffer = await fsPromises.readFile(filename);
+                    const rawData = read(rawBuffer);
+                    // @ts-expect-error TS(2345) FIXME: Argument of type '(char: Record<string, unknown>) ... Remove this comment to see the full error message
+                    const mutatedData = mutateJsonString(rawData, unsetPrivateFields);
+                    const mutatedBuffer = write(rawBuffer, mutatedData);
+                    const contentType = Bun.file(filename).type;
+                    set.headers['Content-Type'] = contentType;
+                    set.headers['Content-Disposition'] = `attachment; filename="${encodeURI(path.basename(filename))}"`;
+                    return new Response(new Uint8Array(mutatedBuffer));
+                }
+                case 'json': {
+                    try {
+                        const json = await readCharacterData(filename);
+                        if (json === undefined) {
+                            set.status = 400;
+                            return;
+                        }
+                        const jsonObject = getCharaCardV2(JSON.parse(json), directories as any);
+                        unsetPrivateFields(jsonObject);
+                        set.headers['Content-Type'] = 'application/json';
+                        return JSON.stringify(jsonObject, null, 4);
+                    } catch {
+                        set.status = 400;
+                        return;
+                    }
                 }
             }
-        }
 
-        return response.sendStatus(400);
-    } catch (err) {
-        console.error('Character export failed', err);
-        response.sendStatus(500);
-    }
-});
+            set.status = 400;
+        } catch (err) {
+            console.error('Character export failed', err);
+            set.status = 500;
+        }
+    });

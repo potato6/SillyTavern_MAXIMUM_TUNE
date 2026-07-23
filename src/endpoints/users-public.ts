@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 
 import storage from 'node-persist';
-import express from 'express';
+import { Elysia } from 'elysia';
 import { RateLimiterMemory, RateLimiterRes } from 'rate-limiter-flexible';
 import { getIpAddress, retryAfter } from '../express-common.js';
 import { color, Cache, getConfigValue } from '../util.js';
@@ -23,7 +23,7 @@ const MFA_CACHE = new Cache(5 * 60 * 1000);
 const generateRecoveryCode = () =>
     Array.from({ length: 6 }, () => crypto.randomInt(0, 10)).join('');
 
-export const router = express.Router();
+export const router = new Elysia({ prefix: '/api/users' });
 const loginLimiter = new RateLimiterMemory({
     points: LOGIN_POINTS > 0 ? LOGIN_POINTS : Number.MAX_SAFE_INTEGER,
     duration: 60,
@@ -33,22 +33,22 @@ const recoverLimiter = new RateLimiterMemory({
     duration: 300,
 });
 
-router.post('/list', async (_request, response) => {
+router.post('/list', async (context: Record<string, unknown>) => {
+    const set = context.set as Record<string, unknown>;
     try {
         if (DISCREET_LOGIN) {
-            return response.sendStatus(204);
+            (set.set as (code: number) => void)?.(204);
+            return;
         }
 
-        /** @type {import('../users.js').User[]} */
-        const users = await storage.values((x) => x.key.startsWith(KEY_PREFIX));
+        const users = await storage.values((x: { key: string }) => x.key.startsWith(KEY_PREFIX));
 
-        /** @type {Promise<import('../users.js').UserViewModel>[]} */
         const viewModelPromises = users
-            .filter((x) => x.enabled)
+            .filter((x: { enabled: boolean }) => x.enabled)
             .map(
-                (user) =>
+                (user: { handle: string; name: string; created: number; password: string }) =>
                     new Promise(async (resolve) => {
-                        getUserAvatar(user.handle).then((avatar) =>
+                        getUserAvatar(user.handle).then((avatar: string) =>
                             resolve({
                                 handle: user.handle,
                                 name: user.name,
@@ -61,187 +61,220 @@ router.post('/list', async (_request, response) => {
             );
 
         const viewModels = await Promise.all(viewModelPromises);
-        // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
-        viewModels.sort((x, y) => (x.created ?? 0) - (y.created ?? 0));
-        return response.json(viewModels);
+        return viewModels;
     } catch (error) {
-        console.error('User list failed:', error);
-        return response.sendStatus(500);
+        console.error('User list fetch error', error);
+        (set.set as (code: number) => void)?.(500);
+        return [];
     }
 });
 
-router.post('/login', async (request, response) => {
+router.post('/login', async (context: Record<string, unknown>) => {
+    const set = context.set as Record<string, unknown>;
+    const body = context.body as Record<string, unknown>;
+
     try {
-        if (!request.body.handle) {
-            console.warn('Login failed: Missing required fields');
-            return response.status(400).json({ error: 'Missing required fields' });
+        const ip = getIpAddress(context, PREFER_REAL_IP_HEADER);
+        const handle = body.handle as string;
+        const password = body.password as string;
+        const rememberMe = body.rememberMe as boolean | undefined;
+
+        if (!handle || !password) {
+            (set.set as (code: number) => void)?.(400);
+            return { error: 'Missing handle or password' };
         }
 
-        const ip = getIpAddress(request, PREFER_REAL_IP_HEADER);
-        await loginLimiter.consume(ip);
+        const rateLimit = await loginLimiter.get(ip);
+        if (rateLimit !== null && rateLimit.consumedPoints > loginLimiter.points) {
+            const retrySecs = Math.round(rateLimit.msBeforeNext / 1000) || 1;
+            return retryAfter(
+                set,
+                new RateLimiterRes(rateLimit.consumedPoints, rateLimit.msBeforeNext),
+            );
+        }
 
-        /** @type {import('../users.js').User} */
-        const user = await storage.getItem(toKey(request.body.handle));
-
+        const user = await storage.getItem(toKey(handle));
         if (!user) {
-            console.error('Login failed: User', request.body.handle, 'not found');
-            return response.status(403).json({ error: 'Incorrect credentials' });
+            await loginLimiter.consume(ip);
+            (set.set as (code: number) => void)?.(401);
+            return { error: 'Invalid handle or password' };
         }
 
-        if (!user.enabled) {
-            console.warn('Login failed: User', user.handle, 'is disabled');
-            return response.status(403).json({ error: 'User is disabled' });
+        const userRecord = user as Record<string, unknown>;
+        if (!userRecord.enabled) {
+            (set.set as (code: number) => void)?.(403);
+            return { error: 'Account is disabled' };
         }
 
-        if (user.password && user.password !== getPasswordHash(request.body.password, user.salt)) {
-            console.warn('Login failed: Incorrect password for', user.handle);
-            return response.status(403).json({ error: 'Incorrect credentials' });
+        const passwordHash = getPasswordHash(password, userRecord.salt as string);
+        if (userRecord.password !== passwordHash) {
+            await loginLimiter.consume(ip);
+            (set.set as (code: number) => void)?.(401);
+            return { error: 'Invalid handle or password' };
         }
 
-        if (!request.session) {
-            console.error('Session not available');
-            return response.sendStatus(500);
-        }
+        const accountVersion = getAccountVersion();
+        const token = crypto.randomBytes(64).toString('hex');
+        const mfaToken = crypto.randomBytes(64).toString('hex');
+
+        // Store session token
+        const sessionKey = `session:${token}`;
+        await storage.setItem(sessionKey, {
+            handle: userRecord.handle,
+            created: Date.now(),
+            rememberMe: !!rememberMe,
+            mfaToken: mfaToken,
+            passwordVersion: accountVersion,
+        });
+
+        // Set session TTL
+        const ttl = rememberMe ? 30 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000;
+        storage.setTTL(sessionKey, ttl);
 
         await loginLimiter.delete(ip);
-        request.session.handle = user.handle;
-        request.session.version = getAccountVersion(user);
-        console.info(
-            'Login successful:',
-            user.handle,
-            'from',
-            ip,
-            'at',
-            new Date().toLocaleString(),
-        );
-        return response.json({ handle: user.handle });
+
+        const avatar = await getUserAvatar(userRecord.handle as string);
+        return {
+            token,
+            mfaToken,
+            handle: userRecord.handle,
+            name: userRecord.name,
+            avatar: avatar,
+            mfaConfigured: !!userRecord.mfaSecret,
+            mfaRequired: !rememberMe,
+            passwordVersion: accountVersion,
+        };
     } catch (error) {
         if (error instanceof RateLimiterRes) {
-            console.error(
-                'Login failed: Rate limited from',
-                getIpAddress(request, PREFER_REAL_IP_HEADER),
-            );
-            return retryAfter(response, error)
-                .status(429)
-                .send({ error: 'Too many attempts. Try again later or recover your password.' });
+            return retryAfter(set, error);
         }
-
-        console.error('Login failed:', error);
-        return response.sendStatus(500);
+        console.error('Login error', error);
+        (set.set as (code: number) => void)?.(500);
+        return { error: 'Internal server error' };
     }
 });
 
-router.post('/recover-step1', async (request, response) => {
+router.post('/recover-step1', async (context: Record<string, unknown>) => {
+    const set = context.set as Record<string, unknown>;
+    const body = context.body as Record<string, unknown>;
+
     try {
-        if (!request.body.handle) {
-            console.warn('Recover step 1 failed: Missing required fields');
-            return response.status(400).json({ error: 'Missing required fields' });
+        const ip = getIpAddress(context, PREFER_REAL_IP_HEADER);
+        const handle = body.handle as string;
+
+        if (!handle) {
+            (set.set as (code: number) => void)?.(400);
+            return { error: 'Missing handle' };
         }
 
-        const ip = getIpAddress(request, PREFER_REAL_IP_HEADER);
-        await recoverLimiter.consume(ip);
-
-        /** @type {import('../users.js').User} */
-        const user = await storage.getItem(toKey(request.body.handle));
-
-        if (!user) {
-            console.error('Recover step 1 failed: User', request.body.handle, 'not found');
-            return response.status(404).json({ error: 'User not found' });
-        }
-
-        if (!user.enabled) {
-            console.error('Recover step 1 failed: User', user.handle, 'is disabled');
-            return response.status(403).json({ error: 'User is disabled' });
-        }
-
-        const mfaCode = generateRecoveryCode();
-        console.log();
-        console.log(
-            color.blue(`${user.name}, your password recovery code is: `) + color.magenta(mfaCode),
-        );
-        console.log();
-        MFA_CACHE.set(user.handle, mfaCode);
-        return response.sendStatus(204);
-    } catch (error) {
-        if (error instanceof RateLimiterRes) {
-            console.error(
-                'Recover step 1 failed: Rate limited from',
-                getIpAddress(request, PREFER_REAL_IP_HEADER),
-            );
-            return retryAfter(response, error)
-                .status(429)
-                .send({ error: 'Too many attempts. Try again later or contact your admin.' });
-        }
-
-        console.error('Recover step 1 failed:', error);
-        return response.sendStatus(500);
-    }
-});
-
-router.post('/recover-step2', async (request, response) => {
-    try {
-        if (!request.body.handle || !request.body.code) {
-            console.warn('Recover step 2 failed: Missing required fields');
-            return response.status(400).json({ error: 'Missing required fields' });
-        }
-
-        /** @type {import('../users.js').User} */
-        const user = await storage.getItem(toKey(request.body.handle));
-        const ip = getIpAddress(request, PREFER_REAL_IP_HEADER);
         const rateLimit = await recoverLimiter.get(ip);
-
         if (rateLimit !== null && rateLimit.consumedPoints > recoverLimiter.points) {
-            throw rateLimit;
+            return retryAfter(
+                set,
+                new RateLimiterRes(rateLimit.consumedPoints, rateLimit.msBeforeNext),
+            );
         }
 
+        const user = await storage.getItem(toKey(handle));
         if (!user) {
-            console.error('Recover step 2 failed: User', request.body.handle, 'not found');
-            return response.status(404).json({ error: 'User not found' });
-        }
-
-        if (!user.enabled) {
-            console.warn('Recover step 2 failed: User', user.handle, 'is disabled');
-            return response.status(403).json({ error: 'User is disabled' });
-        }
-
-        const mfaCode = MFA_CACHE.get(user.handle);
-
-        if (request.body.code !== mfaCode) {
             await recoverLimiter.consume(ip);
-            console.warn('Recover step 2 failed: Incorrect code');
-            return response.status(403).json({ error: 'Incorrect code' });
+            (set.set as (code: number) => void)?.(404);
+            return { error: 'User not found' };
         }
 
-        if (request.body.newPassword) {
-            const salt = getPasswordSalt();
-            user.password = getPasswordHash(request.body.newPassword, salt);
-            user.salt = salt;
-            await storage.setItem(toKey(user.handle), user);
-        } else {
-            user.password = '';
-            user.salt = '';
-            await storage.setItem(toKey(user.handle), user);
+        const userRecord = user as Record<string, unknown>;
+        if (!userRecord.enabled) {
+            (set.set as (code: number) => void)?.(403);
+            return { error: 'Account is disabled' };
         }
 
-        if (request.session && request.session.handle === user.handle) {
-            request.session.version = getAccountVersion(user);
-        }
+        const recoveryCode = generateRecoveryCode();
+        const recoveryHash = crypto.createHash('sha256').update(recoveryCode).digest('hex');
 
-        await recoverLimiter.delete(ip);
-        MFA_CACHE.remove(user.handle);
-        return response.sendStatus(204);
+        // Store recovery code
+        const recoveryKey = `recovery:${handle}`;
+        await storage.setItem(recoveryKey, {
+            code: recoveryHash,
+            created: Date.now(),
+        });
+        storage.setTTL(recoveryKey, 10 * 60 * 1000); // 10 min TTL
+
+        console.log(color.yellow(`Recovery code for ${handle}: ${recoveryCode}`));
+
+        return { message: 'Recovery code generated. Check server console.' };
     } catch (error) {
         if (error instanceof RateLimiterRes) {
-            console.error(
-                'Recover step 2 failed: Rate limited from',
-                getIpAddress(request, PREFER_REAL_IP_HEADER),
-            );
-            return retryAfter(response, error)
-                .status(429)
-                .send({ error: 'Too many attempts. Try again later or contact your admin.' });
+            return retryAfter(set, error);
+        }
+        console.error('Recovery step 1 error', error);
+        (set.set as (code: number) => void)?.(500);
+        return { error: 'Internal server error' };
+    }
+});
+
+router.post('/recover-step2', async (context: Record<string, unknown>) => {
+    const set = context.set as Record<string, unknown>;
+    const body = context.body as Record<string, unknown>;
+
+    try {
+        const ip = getIpAddress(context, PREFER_REAL_IP_HEADER);
+        const handle = body.handle as string;
+        const code = body.code as string;
+        const newPassword = body.newPassword as string;
+
+        if (!handle || !code || !newPassword) {
+            (set.set as (code: number) => void)?.(400);
+            return { error: 'Missing handle, code, or new password' };
         }
 
-        console.error('Recover step 2 failed:', error);
-        return response.sendStatus(500);
+        const rateLimit = await recoverLimiter.get(ip);
+        if (rateLimit !== null && rateLimit.consumedPoints > recoverLimiter.points) {
+            return retryAfter(
+                set,
+                new RateLimiterRes(rateLimit.consumedPoints, rateLimit.msBeforeNext),
+            );
+        }
+
+        // Verify recovery code
+        const recoveryKey = `recovery:${handle}`;
+        const recoveryData = (await storage.getItem(recoveryKey)) as Record<string, unknown> | null;
+
+        if (!recoveryData) {
+            (set.set as (code: number) => void)?.(400);
+            return { error: 'No recovery code found or expired' };
+        }
+
+        const codeHash = crypto.createHash('sha256').update(code).digest('hex');
+        if (recoveryData.code !== codeHash) {
+            await recoverLimiter.consume(ip);
+            (set.set as (code: number) => void)?.(400);
+            return { error: 'Invalid recovery code' };
+        }
+
+        // Update password
+        const user = (await storage.getItem(toKey(handle))) as Record<string, unknown>;
+        if (!user) {
+            (set.set as (code: number) => void)?.(404);
+            return { error: 'User not found' };
+        }
+
+        const salt = getPasswordSalt();
+        const passwordHash = getPasswordHash(newPassword, salt);
+        user.password = passwordHash;
+        user.salt = salt;
+        await storage.setItem(toKey(handle), user);
+
+        // Clean up recovery code
+        await storage.removeItem(recoveryKey);
+        await recoverLimiter.delete(ip);
+
+        return { message: 'Password updated successfully' };
+    } catch (error) {
+        if (error instanceof RateLimiterRes) {
+            return retryAfter(set, error);
+        }
+        console.error('Recovery step 2 error', error);
+        (set.set as (code: number) => void)?.(500);
+        return { error: 'Internal server error' };
     }
 });

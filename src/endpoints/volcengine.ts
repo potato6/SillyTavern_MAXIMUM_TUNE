@@ -7,7 +7,10 @@ export const router = new Elysia({ prefix: '/api/volcengine' });
 router.post('/generate-voice', async (context) => {
     const { set } = context;
     const body = context.body as Record<string, unknown>;
-    const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+    const user = (context as unknown as Record<string, unknown>).user as Record<
+        string,
+        unknown
+    > | null;
     const directories = user?.directories as Record<string, string> | undefined;
 
     try {
@@ -17,8 +20,12 @@ router.post('/generate-voice', async (context) => {
             provider_endpoint = 'https://openspeech.bytedance.com/api/v3/tts/unidirectional';
         }
 
-        const appId = directories ? readSecret(directories as any, SECRET_KEYS.VOLCENGINE_APP_ID) : '';
-        const accessKey = directories ? readSecret(directories as any, SECRET_KEYS.VOLCENGINE_ACCESS_KEY) : '';
+        const appId = directories
+            ? readSecret(directories as any, SECRET_KEYS.VOLCENGINE_APP_ID)
+            : '';
+        const accessKey = directories
+            ? readSecret(directories as any, SECRET_KEYS.VOLCENGINE_ACCESS_KEY)
+            : '';
 
         if (!appId || !accessKey) {
             console.warn(

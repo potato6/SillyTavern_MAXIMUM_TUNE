@@ -15,7 +15,10 @@ import { getImages } from '../util.js';
 
 export const router = new Elysia({ prefix: '/api/backgrounds' })
     .post('/all', async (context) => {
-        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
         const directories = user?.directories as Record<string, string> | undefined;
 
         try {
@@ -31,7 +34,9 @@ export const router = new Elysia({ prefix: '/api/backgrounds' })
 
             const imagesWithMetadata = images.map((img) => {
                 const relativePath = path.join('backgrounds', img);
-                const metadata = (metadataMap as Record<string, unknown>)?.[relativePath] as Record<string, unknown> | undefined;
+                const metadata = (metadataMap as Record<string, unknown>)?.[relativePath] as
+                    | Record<string, unknown>
+                    | undefined;
                 return {
                     filename: img,
                     isAnimated: metadata?.isAnimated ?? false,
@@ -41,11 +46,16 @@ export const router = new Elysia({ prefix: '/api/backgrounds' })
             return { images: imagesWithMetadata, config };
         } catch (error) {
             console.error('[Backgrounds] Error fetching backgrounds:', error);
-            return new Response(JSON.stringify({ error: 'Failed to fetch backgrounds' }), { status: 500 });
+            return new Response(JSON.stringify({ error: 'Failed to fetch backgrounds' }), {
+                status: 500,
+            });
         }
     })
     .post('/folders', async (context) => {
-        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
         const directories = user?.directories as Record<string, string> | undefined;
 
         try {
@@ -63,12 +73,17 @@ export const router = new Elysia({ prefix: '/api/backgrounds' })
             return { folders, imageFolderMap };
         } catch (error) {
             console.error('[Backgrounds] Folders endpoint error:', error);
-            return new Response(JSON.stringify({ error: 'Internal server error.' }), { status: 500 });
+            return new Response(JSON.stringify({ error: 'Internal server error.' }), {
+                status: 500,
+            });
         }
     })
     .post('/delete', (context) => {
         const { body, set } = context;
-        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
         const directories = user?.directories as Record<string, string> | undefined;
         const bodyAny = body as Record<string, unknown>;
 
@@ -109,7 +124,10 @@ export const router = new Elysia({ prefix: '/api/backgrounds' })
     })
     .post('/rename', (context) => {
         const { body, set } = context;
-        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
         const directories = user?.directories as Record<string, string> | undefined;
         const bodyAny = body as Record<string, unknown>;
 
@@ -119,8 +137,14 @@ export const router = new Elysia({ prefix: '/api/backgrounds' })
                 return;
             }
 
-            const oldFileName = path.join(directories?.backgrounds ?? '', sanitize(bodyAny.old_bg as string));
-            const newFileName = path.join(directories?.backgrounds ?? '', sanitize(bodyAny.new_bg as string));
+            const oldFileName = path.join(
+                directories?.backgrounds ?? '',
+                sanitize(bodyAny.old_bg as string),
+            );
+            const newFileName = path.join(
+                directories?.backgrounds ?? '',
+                sanitize(bodyAny.new_bg as string),
+            );
 
             if (!fs.existsSync(oldFileName)) {
                 console.error('BG file not found');
@@ -140,9 +164,11 @@ export const router = new Elysia({ prefix: '/api/backgrounds' })
 
             const oldRelativePath = path.join('backgrounds', bodyAny.old_bg as string);
             const newRelativePath = path.join('backgrounds', bodyAny.new_bg as string);
-            renameMetadata(directories?.root ?? '', oldRelativePath, newRelativePath).catch((err: Error) => {
-                console.warn('[Backgrounds] Failed to rename metadata:', err.message);
-            });
+            renameMetadata(directories?.root ?? '', oldRelativePath, newRelativePath).catch(
+                (err: Error) => {
+                    console.warn('[Backgrounds] Failed to rename metadata:', err.message);
+                },
+            );
 
             return 'ok';
         } catch (err) {
@@ -152,9 +178,15 @@ export const router = new Elysia({ prefix: '/api/backgrounds' })
     })
     .post('/upload', async (context) => {
         const { set } = context;
-        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
         const directories = user?.directories as Record<string, string> | undefined;
-        const file = (context as unknown as Record<string, unknown>).file as Record<string, unknown> | null;
+        const file = (context as unknown as Record<string, unknown>).file as Record<
+            string,
+            unknown
+        > | null;
 
         try {
             if (!file) {
@@ -171,7 +203,10 @@ export const router = new Elysia({ prefix: '/api/backgrounds' })
             const relativePath = path.join('backgrounds', filename);
             getOrGenerateMetadataBatch(directories?.root ?? '', [relativePath], 'bg').catch(
                 (err: Error) => {
-                    console.warn('[Backgrounds] Failed to generate metadata for upload:', err.message);
+                    console.warn(
+                        '[Backgrounds] Failed to generate metadata for upload:',
+                        err.message,
+                    );
                 },
             );
 

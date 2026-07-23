@@ -183,9 +183,9 @@ class DataMaidDialog {
         for (const [prop, data] of Object.entries(this.DATA_MAID_CATEGORIES)) {
             const category = await this.renderCategory(
                 prop,
-// @ts-expect-error TS(18046) FIXME: 'data' is of type 'unknown'.
+                // @ts-expect-error TS(18046) FIXME: 'data' is of type 'unknown'.
                 data.name,
-// @ts-expect-error TS(18046) FIXME: 'data' is of type 'unknown'.
+                // @ts-expect-error TS(18046) FIXME: 'data' is of type 'unknown'.
                 data.description,
                 (report as any).report[prop],
             );

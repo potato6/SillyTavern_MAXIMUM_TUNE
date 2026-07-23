@@ -280,7 +280,7 @@ export function initSystemPrompts() {
                         system_prompts.map(
                             (x) =>
                                 new SlashCommandEnumValue(
-// @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type.
+                                    // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type.
                                     x.name,
                                     null,
                                     enumTypes.enum,

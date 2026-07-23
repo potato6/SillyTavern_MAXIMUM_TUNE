@@ -313,15 +313,18 @@ export class CommandLineParser {
         const result = {
             configPath: configPath,
             dataRoot: dataRoot,
-            port: cliArguments.port ?? getConfigValue('port', defaultConfig.port, 'number' as const) as number,
+            port:
+                cliArguments.port ??
+                (getConfigValue('port', defaultConfig.port, 'number' as const) as number),
             listen:
-                cliArguments.listen ?? getConfigValue('listen', defaultConfig.listen, 'boolean' as const) as boolean,
+                cliArguments.listen ??
+                (getConfigValue('listen', defaultConfig.listen, 'boolean' as const) as boolean),
             listenAddressIPv6:
                 cliArguments.listenAddressIPv6 ??
-                getConfigValue('listenAddress.ipv6', defaultConfig.listenAddressIPv6) as string,
+                (getConfigValue('listenAddress.ipv6', defaultConfig.listenAddressIPv6) as string),
             listenAddressIPv4:
                 cliArguments.listenAddressIPv4 ??
-                getConfigValue('listenAddress.ipv4', defaultConfig.listenAddressIPv4) as string,
+                (getConfigValue('listenAddress.ipv4', defaultConfig.listenAddressIPv4) as string),
             enableIPv4:
                 stringToBool(cliArguments.enableIPv4) ??
                 stringToBool(getConfigValue('protocol.ipv4', defaultConfig.enableIPv4)) ??
@@ -332,10 +335,18 @@ export class CommandLineParser {
                 defaultConfig.enableIPv6,
             dnsPreferIPv6:
                 cliArguments.dnsPreferIPv6 ??
-                getConfigValue('dnsPreferIPv6', defaultConfig.dnsPreferIPv6, 'boolean' as const) as boolean,
+                (getConfigValue(
+                    'dnsPreferIPv6',
+                    defaultConfig.dnsPreferIPv6,
+                    'boolean' as const,
+                ) as boolean),
             heartbeatInterval:
                 cliArguments.heartbeatInterval ??
-                getConfigValue('heartbeatInterval', defaultConfig.heartbeatInterval, 'number' as const) as number,
+                (getConfigValue(
+                    'heartbeatInterval',
+                    defaultConfig.heartbeatInterval,
+                    'number' as const,
+                ) as number),
             browserLaunchEnabled:
                 cliArguments.browserLaunchEnabled ??
                 cliArguments.autorun ??
@@ -351,7 +362,11 @@ export class CommandLineParser {
             browserLaunchPort:
                 cliArguments.browserLaunchPort ??
                 cliArguments.autorunPortOverride ??
-                getConfigValue('browserLaunch.port', defaultConfig.browserLaunchPort, 'number' as const),
+                getConfigValue(
+                    'browserLaunch.port',
+                    defaultConfig.browserLaunchPort,
+                    'number' as const,
+                ),
             browserLaunchAvoidLocalhost:
                 cliArguments.browserLaunchAvoidLocalhost ??
                 cliArguments.avoidLocalhost ??
@@ -362,11 +377,21 @@ export class CommandLineParser {
                 ),
             enableCorsProxy:
                 cliArguments.corsProxy ??
-                getConfigValue('enableCorsProxy', defaultConfig.enableCorsProxy, 'boolean' as const),
+                getConfigValue(
+                    'enableCorsProxy',
+                    defaultConfig.enableCorsProxy,
+                    'boolean' as const,
+                ),
             disableCsrf:
                 cliArguments.disableCsrf ??
-                getConfigValue('disableCsrfProtection', defaultConfig.disableCsrf, 'boolean' as const),
-            ssl: cliArguments.ssl ?? getConfigValue('ssl.enabled', defaultConfig.ssl, 'boolean' as const),
+                getConfigValue(
+                    'disableCsrfProtection',
+                    defaultConfig.disableCsrf,
+                    'boolean' as const,
+                ),
+            ssl:
+                cliArguments.ssl ??
+                getConfigValue('ssl.enabled', defaultConfig.ssl, 'boolean' as const),
             certPath:
                 cliArguments.certPath ?? getConfigValue('ssl.certPath', defaultConfig.certPath),
             keyPath: cliArguments.keyPath ?? getConfigValue('ssl.keyPath', defaultConfig.keyPath),
@@ -381,7 +406,11 @@ export class CommandLineParser {
                 getConfigValue('basicAuthMode', defaultConfig.basicAuthMode, 'boolean' as const),
             enableKeepAlive:
                 cliArguments.enableKeepAlive ??
-                getConfigValue('enableKeepAlive', defaultConfig.enableKeepAlive, 'boolean' as const),
+                getConfigValue(
+                    'enableKeepAlive',
+                    defaultConfig.enableKeepAlive,
+                    'boolean' as const,
+                ),
             requestProxyEnabled:
                 cliArguments.requestProxyEnabled ??
                 getConfigValue(

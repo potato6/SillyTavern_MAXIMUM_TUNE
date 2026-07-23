@@ -792,7 +792,7 @@ function parseNumericSeries(value, scope = null) {
     }
 
     const array = values
-// @ts-expect-error TS(7006) FIXME: Parameter 'i' implicitly has an 'any' type.
+        // @ts-expect-error TS(7006) FIXME: Parameter 'i' implicitly has an 'any' type.
         .map((i) => (typeof i === 'string' ? i.trim() : i))
         // @ts-expect-error TS(7006) FIXME: Parameter 'i' implicitly has an 'any' type.
         .filter((i) => i !== '')
@@ -1101,7 +1101,7 @@ function sortArrayObjectCallback(args, value) {
         const keysort = args.keysort;
         if (isFalseBoolean(keysort)) {
             parsedValue = Object.keys(parsedValue).toSorted(function (a, b) {
-// @ts-expect-error TS(7005) FIXME: Variable 'parsedValue' implicitly has an 'any' type.
+                // @ts-expect-error TS(7005) FIXME: Variable 'parsedValue' implicitly has an 'any' type.
                 return customSortComparitor(parsedValue[a], parsedValue[b]);
             });
         } else {
@@ -1926,7 +1926,7 @@ export function registerVariableCommands() {
                     false,
                     false,
                     null,
-// @ts-expect-error TS(2345) FIXME: Type is not assignable.
+                    // @ts-expect-error TS(2345) FIXME: Type is not assignable.
                     commonEnumProviders.boolean('onOff')(),
                 ),
             ],

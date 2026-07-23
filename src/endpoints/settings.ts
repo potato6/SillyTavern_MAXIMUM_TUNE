@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-import express from 'express';
+import { Elysia } from 'elysia';
 import { throttle } from 'es-toolkit/compat';
 import { sync as writeFileAtomicSync } from 'write-file-atomic';
 import bytes from 'bytes';
@@ -9,10 +9,13 @@ import bytes from 'bytes';
 import { SETTINGS_FILE } from '../constants.js';
 import { getConfigValue, generateTimestamp, removeOldBackups } from '../util.js';
 import { getAllUserHandles, getUserDirectories } from '../users.js';
-import { getFileNameValidationFunction } from '../middleware/validateFileName.js';
 
 const ENABLE_EXTENSIONS = !!getConfigValue('extensions.enabled', true, 'boolean' as const);
-const ENABLE_EXTENSIONS_AUTO_UPDATE = !!getConfigValue('extensions.autoUpdate', true, 'boolean' as const);
+const ENABLE_EXTENSIONS_AUTO_UPDATE = !!getConfigValue(
+    'extensions.autoUpdate',
+    true,
+    'boolean' as const,
+);
 const ENABLE_ACCOUNTS = !!getConfigValue('enableUserAccounts', false, 'boolean' as const);
 const ENABLE_REQUEST_COMPRESSION = !!getConfigValue(
     'performance.requestCompression.enabled',
@@ -26,7 +29,7 @@ const REQUEST_COMPRESSION_MAX = bytes.parse(
     getConfigValue('performance.requestCompression.maxPayloadSize', '8mb'),
 );
 const REQUEST_COMPRESSION_TIMEOUT = Number(
- getConfigValue('performance.requestCompression.timeout', 3000, 'number' as const),
+    getConfigValue('performance.requestCompression.timeout', 3000, 'number' as const),
 );
 
 // 10 minutes
@@ -240,186 +243,253 @@ function getLatestBackup(handle: string) {
     return path.join(userDirectories.backups, latestBackup);
 }
 
-export const router = express.Router();
-
-router.post('/save', function (request, response) {
-    try {
-        const pathToSettings = path.join(request.user.directories.root, SETTINGS_FILE);
-        writeFileAtomicSync(pathToSettings, JSON.stringify(request.body, null, 4), 'utf8');
-        triggerAutoSave(request.user.profile.handle);
-        response.send({ result: 'ok' });
-    } catch (err) {
-        console.error(err);
-        response.send(err);
+/**
+ * Checks if a value passes filename validation.
+ * Returns an error message string if invalid, or null if valid.
+ */
+function validateFileName(name: unknown): string | null {
+    if (name == null) return null;
+    const strName = typeof name === 'string' ? name : String(name);
+    const forbidden = path.sep === '/' ? /[/\x00]/ : /[/\x00\\]/;
+    if (forbidden.test(strName)) {
+        return 'Invalid snapshot name';
     }
-});
+    return null;
+}
 
-// Wintermute's code
-router.post('/get', (request, response) => {
-    let settings;
-    try {
-        const pathToSettings = path.join(request.user.directories.root, SETTINGS_FILE);
-        settings = fs.readFileSync(pathToSettings, 'utf8');
-    } catch {
-        return response.sendStatus(500);
-    }
+export const router = new Elysia({ prefix: '/api/settings' })
+    .post('/save', (context) => {
+        const body = context.body as Record<string, unknown>;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
+        const directories = user?.directories as Record<string, string> | undefined;
 
-    // NovelAI Settings
-    const { fileContents: novelai_settings, fileNames: novelai_setting_names } =
-        readPresetsFromDirectory(request.user.directories.novelAI_Settings, {
-            sortFunction: sortByName(request.user.directories.novelAI_Settings),
-            removeFileExtension: true,
-        });
-
-    // OpenAI Settings
-    const { fileContents: openai_settings, fileNames: openai_setting_names } =
-        readPresetsFromDirectory(request.user.directories.openAI_Settings, {
-            sortFunction: sortByName(request.user.directories.openAI_Settings),
-            removeFileExtension: true,
-        });
-
-    // TextGenerationWebUI Settings
-    const {
-        fileContents: textgenerationwebui_presets,
-        fileNames: textgenerationwebui_preset_names,
-    } = readPresetsFromDirectory(request.user.directories.textGen_Settings, {
-        sortFunction: sortByName(request.user.directories.textGen_Settings),
-        removeFileExtension: true,
-    });
-
-    //Kobold
-    const { fileContents: koboldai_settings, fileNames: koboldai_setting_names } =
-        readPresetsFromDirectory(request.user.directories.koboldAI_Settings, {
-            sortFunction: sortByName(request.user.directories.koboldAI_Settings),
-            removeFileExtension: true,
-        });
-
-    const worldFiles = fs
-        .readdirSync(request.user.directories.worlds)
-        .filter((file) => path.extname(file).toLowerCase() === '.json')
-        .toSorted((a, b) => a.localeCompare(b));
-    const world_names = worldFiles.map((item) => path.parse(item).name);
-
-    const themes = readAndParseFromDirectory(request.user.directories.themes);
-    const movingUIPresets = readAndParseFromDirectory(request.user.directories.movingUI);
-    const quickReplyPresets = readAndParseFromDirectory(request.user.directories.quickreplies);
-
-    const instruct = readAndParseFromDirectory(request.user.directories.instruct);
-    const context = readAndParseFromDirectory(request.user.directories.context);
-    const sysprompt = readAndParseFromDirectory(request.user.directories.sysprompt);
-    const reasoning = readAndParseFromDirectory(request.user.directories.reasoning);
-
-    response.send({
-        settings,
-        koboldai_settings,
-        koboldai_setting_names,
-        world_names,
-        novelai_settings,
-        novelai_setting_names,
-        openai_settings,
-        openai_setting_names,
-        textgenerationwebui_presets,
-        textgenerationwebui_preset_names,
-        themes,
-        movingUIPresets,
-        quickReplyPresets,
-        instruct,
-        context,
-        sysprompt,
-        reasoning,
-        enable_extensions: ENABLE_EXTENSIONS,
-        enable_extensions_auto_update: ENABLE_EXTENSIONS_AUTO_UPDATE,
-        enable_accounts: ENABLE_ACCOUNTS,
-        request_compression: {
-            enabled: ENABLE_REQUEST_COMPRESSION,
-            minPayloadSize: REQUEST_COMPRESSION_MIN || 0,
-            maxPayloadSize: REQUEST_COMPRESSION_MAX || 0,
-            timeout: REQUEST_COMPRESSION_TIMEOUT || 0,
-        },
-    });
-});
-
-router.post('/get-snapshots', async (request, response) => {
-    try {
-        const snapshots = fs.readdirSync(request.user.directories.backups);
-        const userFilesPattern = getSettingsBackupFilePrefix(request.user.profile.handle);
-        const userSnapshots = snapshots.filter((x) => x.startsWith(userFilesPattern));
-
-        const result = userSnapshots.map((x) => {
-            const stat = fs.statSync(path.join(request.user.directories.backups, x));
-            return { date: stat.ctimeMs, name: x, size: stat.size };
-        });
-
-        response.json(result);
-    } catch (error) {
-        console.error(error);
-        response.sendStatus(500);
-    }
-});
-
-router.post('/load-snapshot', getFileNameValidationFunction('name'), async (request, response) => {
-    try {
-        const userFilesPattern = getSettingsBackupFilePrefix(request.user.profile.handle);
-
-        if (!request.body.name || !request.body.name.startsWith(userFilesPattern)) {
-            return response.status(400).send({ error: 'Invalid snapshot name' });
-        }
-
-        const snapshotName = request.body.name;
-        const snapshotPath = path.join(request.user.directories.backups, snapshotName);
-
-        if (!fs.existsSync(snapshotPath)) {
-            return response.sendStatus(404);
-        }
-
-        const content = fs.readFileSync(snapshotPath, 'utf8');
-
-        response.send(content);
-    } catch (error) {
-        console.error(error);
-        response.sendStatus(500);
-    }
-});
-
-router.post('/make-snapshot', async (request, response) => {
-    try {
-        backupUserSettings(request.user.profile.handle, false);
-        response.sendStatus(204);
-    } catch (error) {
-        console.error(error);
-        response.sendStatus(500);
-    }
-});
-
-router.post(
-    '/restore-snapshot',
-    getFileNameValidationFunction('name'),
-    async (request, response) => {
         try {
-            const userFilesPattern = getSettingsBackupFilePrefix(request.user.profile.handle);
+            const pathToSettings = path.join(directories?.root ?? '', SETTINGS_FILE);
+            writeFileAtomicSync(pathToSettings, JSON.stringify(body, null, 4), 'utf8');
+            triggerAutoSave((user?.profile as Record<string, unknown>)?.handle as string);
+            return { result: 'ok' };
+        } catch (err) {
+            console.error(err);
+            return err;
+        }
+    })
+    .post('/get', (context) => {
+        const { set } = context;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
+        const directories = user?.directories as Record<string, string> | undefined;
 
-            if (!request.body.name || !request.body.name.startsWith(userFilesPattern)) {
-                return response.status(400).send({ error: 'Invalid snapshot name' });
+        let settings;
+        try {
+            const pathToSettings = path.join(directories?.root ?? '', SETTINGS_FILE);
+            settings = fs.readFileSync(pathToSettings, 'utf8');
+        } catch {
+            set.status = 500;
+            return;
+        }
+
+        // NovelAI Settings
+        const { fileContents: novelai_settings, fileNames: novelai_setting_names } =
+            readPresetsFromDirectory(directories?.novelAI_Settings ?? '', {
+                sortFunction: sortByName(directories?.novelAI_Settings ?? ''),
+                removeFileExtension: true,
+            });
+
+        // OpenAI Settings
+        const { fileContents: openai_settings, fileNames: openai_setting_names } =
+            readPresetsFromDirectory(directories?.openAI_Settings ?? '', {
+                sortFunction: sortByName(directories?.openAI_Settings ?? ''),
+                removeFileExtension: true,
+            });
+
+        // TextGenerationWebUI Settings
+        const {
+            fileContents: textgenerationwebui_presets,
+            fileNames: textgenerationwebui_preset_names,
+        } = readPresetsFromDirectory(directories?.textGen_Settings ?? '', {
+            sortFunction: sortByName(directories?.textGen_Settings ?? ''),
+            removeFileExtension: true,
+        });
+
+        //Kobold
+        const { fileContents: koboldai_settings, fileNames: koboldai_setting_names } =
+            readPresetsFromDirectory(directories?.koboldAI_Settings ?? '', {
+                sortFunction: sortByName(directories?.koboldAI_Settings ?? ''),
+                removeFileExtension: true,
+            });
+
+        const worldFiles = fs
+            .readdirSync(directories?.worlds ?? '')
+            .filter((file) => path.extname(file).toLowerCase() === '.json')
+            .toSorted((a, b) => a.localeCompare(b));
+        const world_names = worldFiles.map((item) => path.parse(item).name);
+
+        const themes = readAndParseFromDirectory(directories?.themes ?? '');
+        const movingUIPresets = readAndParseFromDirectory(directories?.movingUI ?? '');
+        const quickReplyPresets = readAndParseFromDirectory(directories?.quickreplies ?? '');
+
+        const instruct = readAndParseFromDirectory(directories?.instruct ?? '');
+        const contextItems = readAndParseFromDirectory(directories?.context ?? '');
+        const sysprompt = readAndParseFromDirectory(directories?.sysprompt ?? '');
+        const reasoning = readAndParseFromDirectory(directories?.reasoning ?? '');
+
+        return {
+            settings,
+            koboldai_settings,
+            koboldai_setting_names,
+            world_names,
+            novelai_settings,
+            novelai_setting_names,
+            openai_settings,
+            openai_setting_names,
+            textgenerationwebui_presets,
+            textgenerationwebui_preset_names,
+            themes,
+            movingUIPresets,
+            quickReplyPresets,
+            instruct,
+            context: contextItems,
+            sysprompt,
+            reasoning,
+            enable_extensions: ENABLE_EXTENSIONS,
+            enable_extensions_auto_update: ENABLE_EXTENSIONS_AUTO_UPDATE,
+            enable_accounts: ENABLE_ACCOUNTS,
+            request_compression: {
+                enabled: ENABLE_REQUEST_COMPRESSION,
+                minPayloadSize: REQUEST_COMPRESSION_MIN || 0,
+                maxPayloadSize: REQUEST_COMPRESSION_MAX || 0,
+                timeout: REQUEST_COMPRESSION_TIMEOUT || 0,
+            },
+        };
+    })
+    .post('/get-snapshots', (context) => {
+        const { set } = context;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
+        const directories = user?.directories as Record<string, string> | undefined;
+
+        try {
+            const snapshots = fs.readdirSync(directories?.backups ?? '');
+            const userFilesPattern = getSettingsBackupFilePrefix(
+                (user?.profile as Record<string, unknown>)?.handle as string,
+            );
+            const userSnapshots = snapshots.filter((x) => x.startsWith(userFilesPattern));
+
+            const result = userSnapshots.map((x) => {
+                const stat = fs.statSync(path.join(directories?.backups ?? '', x));
+                return { date: stat.ctimeMs, name: x, size: stat.size };
+            });
+
+            return result;
+        } catch (error) {
+            console.error(error);
+            set.status = 500;
+        }
+    })
+    .post('/load-snapshot', (context) => {
+        const body = context.body as Record<string, unknown>;
+        const { set } = context;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
+        const directories = user?.directories as Record<string, string> | undefined;
+
+        try {
+            const validationError = validateFileName(body?.name);
+            if (validationError) {
+                set.status = 400;
+                return { error: validationError };
             }
 
-            const snapshotName = request.body.name;
-            const snapshotPath = path.join(request.user.directories.backups, snapshotName);
+            const userFilesPattern = getSettingsBackupFilePrefix(
+                (user?.profile as Record<string, unknown>)?.handle as string,
+            );
+
+            if (!body?.name || !(body.name as string).startsWith(userFilesPattern)) {
+                set.status = 400;
+                return { error: 'Invalid snapshot name' };
+            }
+
+            const snapshotName = body.name as string;
+            const snapshotPath = path.join(directories?.backups ?? '', snapshotName);
 
             if (!fs.existsSync(snapshotPath)) {
-                return response.sendStatus(404);
+                set.status = 404;
+                return;
             }
 
-            const pathToSettings = path.join(request.user.directories.root, SETTINGS_FILE);
+            return fs.readFileSync(snapshotPath, 'utf8');
+        } catch (error) {
+            console.error(error);
+            set.status = 500;
+        }
+    })
+    .post('/make-snapshot', (context) => {
+        const { set } = context;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
+
+        try {
+            backupUserSettings((user?.profile as Record<string, unknown>)?.handle as string, false);
+            set.status = 204;
+        } catch (error) {
+            console.error(error);
+            set.status = 500;
+        }
+    })
+    .post('/restore-snapshot', (context) => {
+        const body = context.body as Record<string, unknown>;
+        const { set } = context;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
+        const directories = user?.directories as Record<string, string> | undefined;
+
+        try {
+            const validationError = validateFileName(body?.name);
+            if (validationError) {
+                set.status = 400;
+                return { error: validationError };
+            }
+
+            const userFilesPattern = getSettingsBackupFilePrefix(
+                (user?.profile as Record<string, unknown>)?.handle as string,
+            );
+
+            if (!body?.name || !(body.name as string).startsWith(userFilesPattern)) {
+                set.status = 400;
+                return { error: 'Invalid snapshot name' };
+            }
+
+            const snapshotName = body.name as string;
+            const snapshotPath = path.join(directories?.backups ?? '', snapshotName);
+
+            if (!fs.existsSync(snapshotPath)) {
+                set.status = 404;
+                return;
+            }
+
+            const pathToSettings = path.join(directories?.root ?? '', SETTINGS_FILE);
             fs.rmSync(pathToSettings, { force: true });
             fs.copyFileSync(snapshotPath, pathToSettings);
 
-            response.sendStatus(204);
+            set.status = 204;
         } catch (error) {
             console.error(error);
-            response.sendStatus(500);
+            set.status = 500;
         }
-    },
-);
+    });
 
 /**
  * Initializes the settings endpoint

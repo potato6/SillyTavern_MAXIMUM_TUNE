@@ -1452,10 +1452,7 @@ async function populateChatCompletion(
     // Bias
     if (bias && bias.trim().length) await addToChatCompletion('bias');
 
-    const injectToMain = async (
-        prompt: any,
-        position: any,
-    ) => {
+    const injectToMain = async (prompt: any, position: any) => {
         if (chatCompletion.has('main')) {
             const message = await Message.fromPromptAsync(prompt);
             chatCompletion.insert(message, 'main', position);
@@ -2983,9 +2980,9 @@ function getReasoningEffort(settings: any = null, model: any = null) {
             case reasoning_effort_types.auto:
                 return undefined;
             case reasoning_effort_types.min:
-            if (
-                chat_completion_sources.OPENROUTER === settings.chat_completion_source &&
-                !settings.show_thoughts
+                if (
+                    chat_completion_sources.OPENROUTER === settings.chat_completion_source &&
+                    !settings.show_thoughts
                 ) {
                     return 'none';
                 }
@@ -3594,7 +3591,12 @@ export async function createGenerationParameters(
  * @returns {Promise<unknown>}
  * @throws {Error}
  */
-async function sendOpenAIRequest(type: any, messages: any, signal: any, { jsonSchema = null } = {}) {
+async function sendOpenAIRequest(
+    type: any,
+    messages: any,
+    signal: any,
+    { jsonSchema = null } = {},
+) {
     // Provide default abort signal
     if (!signal) {
         signal = new AbortController().signal;
@@ -4716,7 +4718,8 @@ export class ChatCompletion {
     canAffordAll(messages) {
         return (
             0 <=
-            this.tokenBudget - messages.reduce((total: any, message: any) => total + message.getTokens(), 0)
+            this.tokenBudget -
+                messages.reduce((total: any, message: any) => total + message.getTokens(), 0)
         );
     }
 
@@ -5390,7 +5393,8 @@ async function saveOpenAIPreset(name, settings, triggerUi = true) {
  */
 function onLogitBiasPresetChange() {
     const value = String(
-        (document.getElementById('openai_logit_bias_preset') as any)?.selectedOptions[0]?.value || '',
+        (document.getElementById('openai_logit_bias_preset') as any)?.selectedOptions[0]?.value ||
+            '',
     );
     // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     const preset = oai_settings.bias_presets[value];
@@ -5822,7 +5826,9 @@ async function onDeletePresetClick() {
     if (Object.keys(openai_setting_names).length) {
         // @ts-expect-error TS(2322) FIXME: Type 'string | undefined' is not assignable to typ... Remove this comment to see the full error message
         oai_settings.preset_settings_openai = Object.keys(openai_setting_names)[0];
-        const option = document.querySelector('#settings_preset_openai option[value="' + oai_settings.preset_settings_openai + '"]') as any;
+        const option = document.querySelector(
+            '#settings_preset_openai option[value="' + oai_settings.preset_settings_openai + '"]',
+        ) as any;
         if (option) option.selected = true;
         document.getElementById('settings_preset_openai')?.dispatchEvent(new Event('change'));
     }
@@ -5866,7 +5872,9 @@ async function onLogitBiasPresetDeleteClick() {
     if (Object.keys(oai_settings.bias_presets).length) {
         // @ts-expect-error TS(2322) FIXME: Type 'string | undefined' is not assignable to typ... Remove this comment to see the full error message
         oai_settings.bias_preset_selected = Object.keys(oai_settings.bias_presets)[0];
-        const option2 = document.querySelector('#openai_logit_bias_preset option[value="' + oai_settings.bias_preset_selected + '"]') as any;
+        const option2 = document.querySelector(
+            '#openai_logit_bias_preset option[value="' + oai_settings.bias_preset_selected + '"]',
+        ) as any;
         if (option2) option2.selected = true;
         document.getElementById('openai_logit_bias_preset')?.dispatchEvent(new Event('change'));
     }
@@ -5883,7 +5891,8 @@ function onSettingsPresetChange() {
     const presetNameBefore = oai_settings.preset_settings_openai;
 
     const presetName =
-        (document.getElementById('settings_preset_openai') as HTMLSelectElement | null)?.selectedOptions[0]?.textContent || '';
+        (document.getElementById('settings_preset_openai') as HTMLSelectElement | null)
+            ?.selectedOptions[0]?.textContent || '';
     oai_settings.preset_settings_openai = presetName;
 
     const preset = structuredClone(
@@ -7201,7 +7210,10 @@ async function onModelChange() {
         // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
         document
             .getElementById('openai_max_context')
-            .setAttribute('max', String(oai_settings.max_context_unlocked ? unlocked_max : max_128k));
+            .setAttribute(
+                'max',
+                String(oai_settings.max_context_unlocked ? unlocked_max : max_128k),
+            );
         oai_settings.openai_max_context = Math.min(
             Number(document.getElementById('openai_max_context')?.getAttribute('max') ?? 0),
             oai_settings.openai_max_context,
@@ -7297,7 +7309,9 @@ async function onModelChange() {
         oai_settings.openai_max_context = Number(
             (document.getElementById('openai_max_context') as HTMLInputElement).value,
         );
-        oai_settings.temp_openai = Number((document.getElementById('temp_openai') as HTMLInputElement).value);
+        oai_settings.temp_openai = Number(
+            (document.getElementById('temp_openai') as HTMLInputElement).value,
+        );
     }
 
     if (oai_settings.chat_completion_source === chat_completion_sources.COHERE) {
@@ -8045,7 +8059,9 @@ export function isImageInliningSupported() {
             return Boolean(
                 waiModel &&
                 Array.isArray(waiModel.properties) &&
-                waiModel.properties.some((p: any) => p.property_id === 'vision' && p.value === 'true'),
+                waiModel.properties.some(
+                    (p: any) => p.property_id === 'vision' && p.value === 'true',
+                ),
             );
         }
         default:
@@ -8260,10 +8276,8 @@ function setProxyPreset(name, url, password) {
  *
  */
 function onProxyPresetChange() {
-        const selectEl = document.getElementById('openai_proxy_preset') as HTMLSelectElement | null;
-        const value = String(
-            selectEl?.selectedOptions[0]?.value || '',
-        );
+    const selectEl = document.getElementById('openai_proxy_preset') as HTMLSelectElement | null;
+    const value = String(selectEl?.selectedOptions[0]?.value || '');
     const selectedPreset = proxies.find((preset) => preset.name === value);
 
     if (selectedPreset) {
@@ -8674,7 +8688,8 @@ export function initOpenAI() {
         .getElementById('impersonation_prompt_textarea')
         ?.addEventListener('input', function () {
             oai_settings.impersonation_prompt = String(
-                (document.getElementById('impersonation_prompt_textarea') as HTMLTextAreaElement).value,
+                (document.getElementById('impersonation_prompt_textarea') as HTMLTextAreaElement)
+                    .value,
             );
             saveSettingsDebounced();
         });
@@ -8697,7 +8712,8 @@ export function initOpenAI() {
         .getElementById('newexamplechat_prompt_textarea')
         ?.addEventListener('input', function () {
             oai_settings.new_example_chat_prompt = String(
-                (document.getElementById('newexamplechat_prompt_textarea') as HTMLTextAreaElement).value,
+                (document.getElementById('newexamplechat_prompt_textarea') as HTMLTextAreaElement)
+                    .value,
             );
             saveSettingsDebounced();
         });
@@ -8706,13 +8722,16 @@ export function initOpenAI() {
         .getElementById('continue_nudge_prompt_textarea')
         ?.addEventListener('input', function () {
             oai_settings.continue_nudge_prompt = String(
-                (document.getElementById('continue_nudge_prompt_textarea') as HTMLTextAreaElement).value,
+                (document.getElementById('continue_nudge_prompt_textarea') as HTMLTextAreaElement)
+                    .value,
             );
             saveSettingsDebounced();
         });
 
     document.getElementById('wi_format_textarea')?.addEventListener('input', function () {
-        oai_settings.wi_format = String((document.getElementById('wi_format_textarea') as HTMLTextAreaElement).value);
+        oai_settings.wi_format = String(
+            (document.getElementById('wi_format_textarea') as HTMLTextAreaElement).value,
+        );
         saveSettingsDebounced();
     });
 
@@ -8843,9 +8862,7 @@ export function initOpenAI() {
         .getElementById('oai_max_context_unlocked')
         ?.addEventListener('input', function (this: HTMLElement, _e: Event) {
             oai_settings.max_context_unlocked = !!(this as HTMLInputElement).checked;
-            document
-                .getElementById('chat_completion_source')
-                ?.dispatchEvent(new Event('change'));
+            document.getElementById('chat_completion_source')?.dispatchEvent(new Event('change'));
             saveSettingsDebounced();
         });
 

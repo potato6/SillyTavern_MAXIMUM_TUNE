@@ -1,7 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-
-import express from 'express';
+import { Elysia } from 'elysia';
 import sanitize from 'sanitize-filename';
 import { sync as writeFileAtomicSync } from 'write-file-atomic';
 import { imageSize as sizeOf } from 'image-size';
@@ -13,9 +12,6 @@ import {
     isAnimatedApng,
     thumbnailDimensions as dimensions,
 } from './image-metadata.js';
-
-export const publicRouter = express.Router();
-export const apiRouter = express.Router();
 
 export const SKIPPED_EXTENSIONS = new Set([
     '.apng',
@@ -45,72 +41,33 @@ const quality = Math.min(
 );
 const pngFormat = String(getConfigValue('thumbnails.format', 'jpg')).toLowerCase().trim() === 'png';
 
-/**
- * @typedef {'bg' | 'avatar' | 'persona'} ThumbnailType
- */
-
-/**
- * Gets a path to thumbnail folder based on the type.
- * @param {import('../users.js').UserDirectoryList} directories User directories
- * @param {ThumbnailType} type Thumbnail type
- * @returns {string} Path to the thumbnails folder
- */
 function getThumbnailFolder(
-    directories: import('../users.js').UserDirectoryList,
+    directories: Record<string, string>,
     type: 'bg' | 'avatar' | 'persona',
 ) {
-    let thumbnailFolder;
-
     switch (type) {
         case 'bg':
-            thumbnailFolder = directories.thumbnailsBg;
-            break;
+            return directories.thumbnailsBg;
         case 'avatar':
-            thumbnailFolder = directories.thumbnailsAvatar;
-            break;
+            return directories.thumbnailsAvatar;
         case 'persona':
-            thumbnailFolder = directories.thumbnailsPersona;
-            break;
+            return directories.thumbnailsPersona;
     }
-
-    return thumbnailFolder;
 }
 
-/**
- * Gets a path to the original images folder based on the type.
- * @param {import('../users.js').UserDirectoryList} directories User directories
- * @param {ThumbnailType} type Thumbnail type
- * @returns {string} Path to the original images folder
- */
-function getOriginalFolder(
-    directories: import('../users.js').UserDirectoryList,
-    type: 'bg' | 'avatar' | 'persona',
-) {
-    let originalFolder;
-
+function getOriginalFolder(directories: Record<string, string>, type: 'bg' | 'avatar' | 'persona') {
     switch (type) {
         case 'bg':
-            originalFolder = directories.backgrounds;
-            break;
+            return directories.backgrounds;
         case 'avatar':
-            originalFolder = directories.characters;
-            break;
+            return directories.characters;
         case 'persona':
-            originalFolder = directories.avatars;
-            break;
+            return directories.avatars;
     }
-
-    return originalFolder;
 }
 
-/**
- * Removes the generated thumbnail from the disk.
- * @param {import('../users.js').UserDirectoryList} directories User directories
- * @param {ThumbnailType} type Type of the thumbnail
- * @param {string} file Name of the file
- */
 export function invalidateThumbnail(
-    directories: import('../users.js').UserDirectoryList,
+    directories: Record<string, string>,
     type: 'bg' | 'avatar' | 'persona',
     file: string,
 ) {
@@ -124,23 +81,13 @@ export function invalidateThumbnail(
     }
 }
 
-/**
- * Generates or retrieves a thumbnail for a given file.
- * @param {import('../users.js').UserDirectoryList} directories - User's directory configuration.
- * @param {ThumbnailType} type - Type of thumbnail ('bg', 'avatar', 'persona').
- * @param {string} file - The filename of the image.
- * @param {boolean} [forceGenerate] - Whether to force generation even if a thumbnail exists.
- * @param {boolean|null} [isKnownAnimated] - If true, skips generation. If false, assumes static. If null, checks.
- * @returns {Promise<{path: string|null, aspectRatio: number|null, resolution: number|null}>} Path to thumbnail, its aspect ratio, and resolution.
- */
 export async function generateThumbnail(
-    directories: import('../users.js').UserDirectoryList,
+    directories: Record<string, string>,
     type: 'bg' | 'avatar' | 'persona',
     file: string,
     forceGenerate = false,
     isKnownAnimated: boolean | null = null,
 ) {
-    // If the caller has already determined the file is animated, skip processing.
     if (isKnownAnimated) {
         return { path: null, aspectRatio: null, resolution: null };
     }
@@ -154,21 +101,16 @@ export async function generateThumbnail(
     try {
         const pathToOriginalFile = path.join(originalFolder, file);
 
-        // Check if thumbnail already exists and return it if not forcing regeneration
         if (!forceGenerate && fs.existsSync(pathToCachedFile)) {
             try {
-                // Check if original image was updated after thumbnail creation
                 const originalFileExists = fs.existsSync(pathToOriginalFile);
                 if (originalFileExists) {
                     const originalStat = fs.statSync(pathToOriginalFile);
                     const cachedStat = fs.statSync(pathToCachedFile);
-
                     if (originalStat.mtimeMs > cachedStat.ctimeMs) {
-                        // Original file changed, regenerate thumbnail
                         forceGenerate = true;
                     }
                 }
-
                 if (!forceGenerate) {
                     const buffer = fs.readFileSync(pathToCachedFile);
                     const fileDimensions = sizeOf(buffer);
@@ -176,7 +118,6 @@ export async function generateThumbnail(
                         fileDimensions.height > 0
                             ? fileDimensions.width / fileDimensions.height
                             : 1.0;
-                    // When a thumbnail exists, return the current resolution from config so the JSON can be updated.
                     const resolution = getThumbnailResolution(type);
                     return { path: pathToCachedFile, aspectRatio: ratio, resolution };
                 }
@@ -193,32 +134,22 @@ export async function generateThumbnail(
 
         const fileExtension = path.extname(file).toLowerCase();
 
-        // For WebP files, we must check if they are animated, as sharp cannot process them.
-        // If isKnownAnimated is false, we assume the caller knows it is static and skip this check.
         if (fileExtension === '.webp' && isKnownAnimated !== false) {
             const buffer = fs.readFileSync(pathToOriginalFile);
             const isAnimated = isAnimatedWebP(buffer);
-            if (isAnimated) {
-                // The client is expected to handle it.
-                return { path: null, aspectRatio: null, resolution: null };
-            }
+            if (isAnimated) return { path: null, aspectRatio: null, resolution: null };
         }
 
-        // For PNG files, check if they are actually APNGs.
         if (fileExtension === '.png' && isKnownAnimated !== false) {
             const buffer = fs.readFileSync(pathToOriginalFile);
             const isAnimated = isAnimatedApng(buffer);
-            if (isAnimated) {
-                // The client is expected to handle it.
-                return { path: null, aspectRatio: null, resolution: null };
-            }
+            if (isAnimated) return { path: null, aspectRatio: null, resolution: null };
         }
 
         if (SKIPPED_EXTENSIONS.has(fileExtension)) {
             return { path: null, aspectRatio: null, resolution: null };
         }
 
-        // Process the image to generate thumbnail
         const result = await processSingleImage(file, originalFolder, thumbnailFolder, type);
         if (result.success) {
             return {
@@ -236,14 +167,6 @@ export async function generateThumbnail(
     }
 }
 
-/**
- * Processes a single image to generate its thumbnail.
- * @param {string} file - The filename of the image.
- * @param {string} originalFolder - Path to the original image folder.
- * @param {string} thumbnailFolder - Path to the thumbnail output folder.
- * @param {ThumbnailType} type - The type of thumbnail to generate.
- * @returns {Promise<{success: boolean, filename?: string, error?: string, aspectRatio?: number, resolution?: number}>} Result of the processing.
- */
 async function processSingleImage(
     file: string,
     originalFolder: string,
@@ -267,16 +190,10 @@ async function processSingleImage(
         if (type === 'bg') {
             const [configWidth, configHeight] = dimensions[type];
             const targetPixelArea = configWidth! * configHeight!;
-
-            // Calculate thumbnail dimensions to maintain target pixel area while preserving aspect ratio
-            // For aspect ratio w:h, if area = w*h and ratio = w/h, then:
-            // w = sqrt(area * ratio) and h = sqrt(area / ratio)
             const thumbWidth = Math.round(Math.sqrt(targetPixelArea * aspectRatio));
             const thumbHeight = Math.round(Math.sqrt(targetPixelArea / aspectRatio));
-
             pipeline = pipeline.resize(thumbWidth, thumbHeight);
         } else if (type === 'avatar' || type === 'persona') {
-            // Crop and resize to fixed dimensions
             const [configWidth, configHeight] = dimensions[type];
             pipeline = pipeline.resize(configWidth!, configHeight!);
         }
@@ -286,38 +203,53 @@ async function processSingleImage(
             : await pipeline.jpeg({ quality }).buffer();
 
         writeFileAtomicSync(pathToCachedFile, buffer);
-
         return { success: true, aspectRatio, resolution: thumbnailResolution };
     } catch (error) {
         console.warn(`[Thumbnails] Failed to process image ${file}:`, error);
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-        return { success: false, filename: file, error: error.message };
+        return { success: false, filename: file, error: (error as Error).message };
     }
 }
 
-/**
- * Public endpoint for serving thumbnails.
- * @param {express.Request} request - The Express request object.
- * @param {express.Response} response - The Express response object.
- */
-publicRouter.get('/', async function (request, response) {
+// Public router (GET / — serve thumbnails)
+const publicRouter = new Elysia({ prefix: '/thumbnail' }).get('/', async (context) => {
+    const { query, set } = context;
+    const user = (context as unknown as Record<string, unknown>).user as Record<
+        string,
+        unknown
+    > | null;
+    const directories = user?.directories as Record<string, string> | undefined;
+
     try {
-        const { file: rawFile, type, animated } = request.query;
-        if (typeof rawFile !== 'string' || typeof type !== 'string')
-            return response.sendStatus(400);
+        const rawFile = query.file as string | undefined;
+        const type = query.type as string | undefined;
+        const animated = query.animated as string | undefined;
+
+        if (typeof rawFile !== 'string' || typeof type !== 'string') {
+            set.status = 400;
+            return;
+        }
         if (!(type === 'bg' || type === 'avatar' || type === 'persona')) {
-            return response.sendStatus(400);
+            set.status = 400;
+            return;
         }
 
         const file = sanitize(rawFile);
-        if (file !== rawFile) return response.sendStatus(403);
+        if (file !== rawFile) {
+            set.status = 403;
+            return;
+        }
 
         const serveOriginal = () => {
-            const folder = getOriginalFolder(request.user.directories, type);
+            const folder = getOriginalFolder(
+                directories ?? {},
+                type as 'bg' | 'avatar' | 'persona',
+            );
             const pathToOriginalFile = path.resolve(path.join(folder, file));
-            if (!fs.existsSync(pathToOriginalFile)) return response.sendStatus(404);
-            invalidateFirefoxCache(pathToOriginalFile, request, response);
-            return response.sendFile(pathToOriginalFile);
+            if (!fs.existsSync(pathToOriginalFile)) {
+                set.status = 404;
+                return;
+            }
+            return new Response(Bun.file(pathToOriginalFile));
         };
 
         if (!thumbnailsEnabled) {
@@ -328,45 +260,45 @@ publicRouter.get('/', async function (request, response) {
         const fileExtension = path.extname(file).toLowerCase();
         const isAnimatedFormat = SKIPPED_EXTENSIONS.has(fileExtension);
 
-        // Serve original for animated formats or GIFs
-        if (animatedEnabled && isAnimatedFormat) {
+        if ((animatedEnabled && isAnimatedFormat) || fileExtension === '.gif') {
             return serveOriginal();
         }
 
-        if (fileExtension === '.gif') {
-            return serveOriginal();
-        }
-
-        const thumbnailFolder = getThumbnailFolder(request.user.directories, type);
+        const thumbnailFolder = getThumbnailFolder(
+            directories ?? {},
+            type as 'bg' | 'avatar' | 'persona',
+        );
         const pathToCachedFile = path.join(thumbnailFolder, file);
 
-        // Try to generate thumbnail if it doesn't exist
         if (!fs.existsSync(pathToCachedFile)) {
             const thumbResult = await generateThumbnail(
-                request.user.directories,
-                type,
+                directories ?? {},
+                type as 'bg' | 'avatar' | 'persona',
                 file,
                 false,
             );
-            // If generation failed (path is null), serve the original file
             if (!thumbResult.path) {
                 return serveOriginal();
             }
         }
 
         if (fs.existsSync(pathToCachedFile)) {
-            invalidateFirefoxCache(pathToCachedFile, request, response);
-            return response.sendFile(file, { root: thumbnailFolder, dotfiles: 'allow' });
+            return new Response(Bun.file(pathToCachedFile));
         }
 
-        // Send a 404 so the frontend can display a placeholder
-        return response.sendStatus(404);
+        set.status = 404;
     } catch (error) {
         console.error('Failed getting thumbnail', error);
-        return response.sendStatus(500);
+        set.status = 500;
     }
 });
 
-export const router = express.Router();
+// API router (currently empty, placeholder for future routes)
+const apiRouter = new Elysia();
+
+// Combined export — mounted at /thumbnail in server.ts
+const router = new Elysia();
 router.use(publicRouter);
 router.use(apiRouter);
+
+export { publicRouter, apiRouter, router };

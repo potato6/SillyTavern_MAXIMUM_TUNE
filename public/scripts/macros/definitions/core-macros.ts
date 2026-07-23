@@ -117,7 +117,7 @@ export function registerCoreMacros() {
     function splitOnTopLevelElse(content) {
         const { cst } = MacroParser.parseDocument(content);
         const macroNodes = /** @type {import('chevrotain').CstNode[]} */ (
-// @ts-expect-error TS(2339) FIXME: Property 'children' does not exist on type.
+            // @ts-expect-error TS(2339) FIXME: Property 'children' does not exist on type.
             cst?.children?.macro || []
         );
 
@@ -251,7 +251,7 @@ export function registerCoreMacros() {
         description: 'Current text from the send textarea.',
         returns: 'Current text from the send textarea.',
         handler: () =>
-// @ts-expect-error TS(2339) FIXME: Property 'querySelector' does not exist on type.
+            // @ts-expect-error TS(2339) FIXME: Property 'querySelector' does not exist on type.
             /** @type {HTMLTextAreaElement} */ (document.querySelector('#send_textarea'))?.value ??
             '',
     });

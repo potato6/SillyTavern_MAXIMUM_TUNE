@@ -113,7 +113,7 @@ class AccountStorage {
         }
 
         const hasPropertySet =
-// @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type.
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type.
             Object.hasOwn(this.#state, key) && this.#state[key] === String(value);
 
         if (hasPropertySet) {

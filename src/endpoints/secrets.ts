@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-import express from 'express';
+import { Elysia } from 'elysia';
 import { sync as writeFileAtomicSync } from 'write-file-atomic';
 import { color, getConfigValue, uuidv4 } from '../util.js';
 
@@ -527,144 +527,195 @@ export function migrateFlatSecrets(directoriesList: UserDirectoryList[]) {
     }
 }
 
-export const router = express.Router();
+export const router = new Elysia({ prefix: '/api/secrets' })
+    .post('/write', async (context) => {
+        const { set } = context;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
+        const directories = user?.directories as Record<string, string> | undefined;
+        try {
+            const body = context.body as Record<string, unknown>;
+            const { key, value, label } = body as { key: string; value: string; label: string };
 
-router.post('/write', (request, response) => {
-    try {
-        const { key, value, label } = request.body;
+            if (!key || typeof value !== 'string') {
+                set.status = 400;
+                return 'Invalid key or value';
+            }
 
-        if (!key || typeof value !== 'string') {
-            return response.status(400).send('Invalid key or value');
+            const manager = new SecretManager(directories as any);
+            const id = manager.writeSecret(key, value, label);
+
+            return { id };
+        } catch (error) {
+            console.error('Error writing secret:', error);
+            set.status = 500;
         }
-
-        const manager = new SecretManager(request.user.directories);
-        const id = manager.writeSecret(key, value, label);
-
-        return response.send({ id });
-    } catch (error) {
-        console.error('Error writing secret:', error);
-        return response.sendStatus(500);
-    }
-});
-
-router.post('/read', (request, response) => {
-    try {
-        const manager = new SecretManager(request.user.directories);
-        const state = manager.getSecretState();
-        return response.send(state);
-    } catch (error) {
-        console.error('Error reading secret state:', error);
-        return response.send({});
-    }
-});
-
-router.post('/view', (request, response) => {
-    try {
-        if (!allowKeysExposure) {
-            console.error(
-                'secrets.json could not be viewed unless allowKeysExposure in config.yaml is set to true',
-            );
-            return response.sendStatus(403);
+    })
+    .post('/read', async (context) => {
+        const { set } = context;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
+        const directories = user?.directories as Record<string, string> | undefined;
+        try {
+            const manager = new SecretManager(directories as any);
+            const state = manager.getSecretState();
+            return state;
+        } catch (error) {
+            console.error('Error reading secret state:', error);
+            return {};
         }
+    })
+    .post('/view', async (context) => {
+        const { set } = context;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
+        const directories = user?.directories as Record<string, string> | undefined;
+        try {
+            if (!allowKeysExposure) {
+                console.error(
+                    'secrets.json could not be viewed unless allowKeysExposure in config.yaml is set to true',
+                );
+                set.status = 403;
+                return;
+            }
 
-        const secrets = getAllSecrets(request.user.directories);
+            const secrets = getAllSecrets(directories as any);
 
-        if (!secrets) {
-            return response.sendStatus(404);
+            if (!secrets) {
+                set.status = 404;
+                return;
+            }
+
+            return secrets;
+        } catch (error) {
+            console.error('Error viewing secrets:', error);
+            set.status = 500;
         }
+    })
+    .post('/find', async (context) => {
+        const { set } = context;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
+        const directories = user?.directories as Record<string, string> | undefined;
+        try {
+            const body = context.body as Record<string, unknown>;
+            const { key, id } = body as { key: string; id: string };
 
-        return response.send(secrets);
-    } catch (error) {
-        console.error('Error viewing secrets:', error);
-        return response.sendStatus(500);
-    }
-});
+            if (!key) {
+                set.status = 400;
+                return 'Key is required';
+            }
 
-router.post('/find', (request, response) => {
-    try {
-        const { key, id } = request.body;
+            if (!allowKeysExposure && !EXPORTABLE_KEYS.has(key)) {
+                console.error(
+                    'Cannot fetch secrets unless allowKeysExposure in config.yaml is set to true',
+                );
+                set.status = 403;
+                return;
+            }
 
-        if (!key) {
-            return response.status(400).send('Key is required');
+            const manager = new SecretManager(directories as any);
+            const state = manager.getSecretState();
+
+            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
+            if (!state[key]) {
+                set.status = 404;
+                return;
+            }
+
+            const secretValue = manager.readSecret(key, id);
+            return { value: secretValue };
+        } catch (error) {
+            console.error('Error finding secret:', error);
+            set.status = 500;
         }
+    })
+    .post('/delete', async (context) => {
+        const { set } = context;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
+        const directories = user?.directories as Record<string, string> | undefined;
+        try {
+            const body = context.body as Record<string, unknown>;
+            const { key, id } = body as { key: string; id: string };
 
-        if (!allowKeysExposure && !EXPORTABLE_KEYS.has(key)) {
-            console.error(
-                'Cannot fetch secrets unless allowKeysExposure in config.yaml is set to true',
-            );
-            return response.sendStatus(403);
+            if (!key) {
+                set.status = 400;
+                return 'Key and ID are required';
+            }
+
+            const manager = new SecretManager(directories as any);
+            manager.deleteSecret(key, id);
+
+            set.status = 204;
+            return;
+        } catch (error) {
+            console.error('Error deleting secret:', error);
+            set.status = 500;
         }
+    })
+    .post('/rotate', async (context) => {
+        const { set } = context;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
+        const directories = user?.directories as Record<string, string> | undefined;
+        try {
+            const body = context.body as Record<string, unknown>;
+            const { key, id } = body as { key: string; id: string };
 
-        const manager = new SecretManager(request.user.directories);
-        const state = manager.getSecretState();
+            if (!key || !id) {
+                set.status = 400;
+                return 'Key and ID are required';
+            }
 
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        if (!state[key]) {
-            return response.sendStatus(404);
+            const manager = new SecretManager(directories as any);
+            manager.rotateSecret(key, id);
+
+            set.status = 204;
+            return;
+        } catch (error) {
+            console.error('Error rotating secret:', error);
+            set.status = 500;
         }
+    })
+    .post('/rename', async (context) => {
+        const { set } = context;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
+        const directories = user?.directories as Record<string, string> | undefined;
+        try {
+            const body = context.body as Record<string, unknown>;
+            const { key, id, label } = body as { key: string; id: string; label: string };
 
-        const secretValue = manager.readSecret(key, id);
-        return response.send({ value: secretValue });
-    } catch (error) {
-        console.error('Error finding secret:', error);
-        return response.sendStatus(500);
-    }
-});
+            if (!key || !id || !label) {
+                set.status = 400;
+                return 'Key, ID, and label are required';
+            }
 
-router.post('/delete', (request, response) => {
-    try {
-        const { key, id } = request.body;
+            const manager = new SecretManager(directories as any);
+            manager.renameSecret(key, id, label);
 
-        if (!key) {
-            return response.status(400).send('Key and ID are required');
+            set.status = 204;
+            return;
+        } catch (error) {
+            console.error('Error renaming secret:', error);
+            set.status = 500;
         }
-
-        const manager = new SecretManager(request.user.directories);
-        manager.deleteSecret(key, id);
-
-        return response.sendStatus(204);
-    } catch (error) {
-        console.error('Error deleting secret:', error);
-        return response.sendStatus(500);
-    }
-});
-
-router.post('/rotate', (request, response) => {
-    try {
-        const { key, id } = request.body;
-
-        if (!key || !id) {
-            return response.status(400).send('Key and ID are required');
-        }
-
-        const manager = new SecretManager(request.user.directories);
-        manager.rotateSecret(key, id);
-
-        return response.sendStatus(204);
-    } catch (error) {
-        console.error('Error rotating secret:', error);
-        return response.sendStatus(500);
-    }
-});
-
-router.post('/rename', (request, response) => {
-    try {
-        const { key, id, label } = request.body;
-
-        if (!key || !id || !label) {
-            return response.status(400).send('Key, ID, and label are required');
-        }
-
-        const manager = new SecretManager(request.user.directories);
-        manager.renameSecret(key, id, label);
-
-        return response.sendStatus(204);
-    } catch (error) {
-        console.error('Error renaming secret:', error);
-        return response.sendStatus(500);
-    }
-});
-
-router.post('/settings', async (_request, response) => {
-    return response.send({ allowKeysExposure });
-});
+    })
+    .post('/settings', async () => {
+        return { allowKeysExposure };
+    });

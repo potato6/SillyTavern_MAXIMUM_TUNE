@@ -57,7 +57,10 @@ function normalizeUsage(usage: Record<string, unknown>) {
 
 router.post('/credits', async (context) => {
     const { set } = context;
-    const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+    const user = (context as unknown as Record<string, unknown>).user as Record<
+        string,
+        unknown
+    > | null;
     const directories = user?.directories as Record<string, string> | undefined;
 
     try {

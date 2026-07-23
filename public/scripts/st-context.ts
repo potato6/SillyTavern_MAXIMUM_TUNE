@@ -251,9 +251,9 @@ export function getContext() {
         macros,
         loader,
         swipe: {
-// @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
+            // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
             left: (event, params) => swipe(event, SWIPE_DIRECTION.LEFT, params),
-// @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
+            // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
             right: (event, params) => swipe(event, SWIPE_DIRECTION.RIGHT, params),
             to: swipe,
             show: showSwipeButtons,

@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 
-import express from 'express';
+import { Elysia } from 'elysia';
 import writeFileAtomic from 'write-file-atomic';
 
 const readFile = fs.promises.readFile;
@@ -460,38 +460,58 @@ function calculateTotalGenTimeAndWordCount(
     };
 }
 
-export const router = express.Router();
+export const router = new Elysia({ prefix: '/api/stats' })
 
-/**
- * Handle a POST request to get the stats object
- */
-router.post('/get', function (request, response) {
-    const stats = STATS.get(request.user.profile.handle) || {};
-    response.send(stats);
-});
+    /**
+     * Handle a POST request to get the stats object
+     */
+    .post('/get', (context) => {
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
+        const profile = user?.profile as Record<string, unknown> | undefined;
+        const stats = STATS.get(profile?.handle) || {};
+        return stats;
+    })
 
-/**
- * Triggers the recreation of statistics from chat files.
- */
-router.post('/recreate', async function (request, response) {
-    try {
-        await recreateStats(
-            request.user.profile.handle,
-            request.user.directories.chats,
-            request.user.directories.characters,
-        );
-        return response.sendStatus(200);
-    } catch (error) {
-        console.error(error);
-        return response.sendStatus(500);
-    }
-});
+    /**
+     * Triggers the recreation of statistics from chat files.
+     */
+    .post('/recreate', async (context) => {
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
+        const profile = user?.profile as Record<string, unknown> | undefined;
+        const directories = user?.directories as Record<string, string> | undefined;
 
-/**
- * Handle a POST request to update the stats object
- */
-router.post('/update', function (request, response) {
-    if (!request.body) return response.sendStatus(400);
-    setCharStats(request.user.profile.handle, request.body);
-    return response.sendStatus(200);
-});
+        try {
+            await recreateStats(
+                profile?.handle as string,
+                directories?.chats as string,
+                directories?.characters as string,
+            );
+            return new Response(null, { status: 200 });
+        } catch (error) {
+            console.error(error);
+            return new Response(null, { status: 500 });
+        }
+    })
+
+    /**
+     * Handle a POST request to update the stats object
+     */
+    .post('/update', (context) => {
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
+        const profile = user?.profile as Record<string, unknown> | undefined;
+        const body = context.body as Record<string, unknown> | null;
+
+        if (!body) return new Response(null, { status: 400 });
+
+        setCharStats(profile?.handle as string, body);
+        return new Response(null, { status: 200 });
+    });

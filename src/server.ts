@@ -19,11 +19,39 @@ import type { App } from 'open';
 
 import { addMissingConfigValues } from './config-init.js';
 import { serverDirectory } from './server-directory.js';
-import { color, urlHostnameToIPv6, getHasIP, getVersion, getSeparator, removeColorFormatting, safeReadFileSync, setupLogLevel, setWindowTitle, getConfigValue } from './util.js';
+import {
+    color,
+    urlHostnameToIPv6,
+    getHasIP,
+    getVersion,
+    getSeparator,
+    removeColorFormatting,
+    safeReadFileSync,
+    setupLogLevel,
+    setWindowTitle,
+    getConfigValue,
+} from './util.js';
 import bunSessionMiddleware from './middleware/bun-session.js';
 
 // Express routers
-import { router as userDataRouter, initUserStorage, getCookieSecret, getCookieSessionName, ensurePublicDirectoriesExist, getUserDirectoriesList, migrateSystemPrompts, migrateUserData, requireLoginMiddleware, setUserDataMiddleware, shouldRedirectToLogin, cleanUploads, getSessionCookieAge, verifySecuritySettings, loginPageMiddleware, migratePublicOverrides } from './users.js';
+import {
+    router as userDataRouter,
+    initUserStorage,
+    getCookieSecret,
+    getCookieSessionName,
+    ensurePublicDirectoriesExist,
+    getUserDirectoriesList,
+    migrateSystemPrompts,
+    migrateUserData,
+    requireLoginMiddleware,
+    setUserDataMiddleware,
+    shouldRedirectToLogin,
+    cleanUploads,
+    getSessionCookieAge,
+    verifySecuritySettings,
+    loginPageMiddleware,
+    migratePublicOverrides,
+} from './users.js';
 import { router as usersPrivateRouter } from './endpoints/users-private.js';
 import { router as usersAdminRouter } from './endpoints/users-admin.js';
 import { router as movingUIRouter } from './endpoints/moving-ui.js';
@@ -46,7 +74,11 @@ import { router as charactersRouter, diskCache } from './endpoints/characters.js
 import { router as chatsRouter } from './endpoints/chats.js';
 import { router as groupsRouter, migrateGroupChatsMetadataFormat } from './endpoints/groups.js';
 import { router as worldInfoRouter } from './endpoints/worldinfo.js';
-import { router as statsRouter, init as statsInit, onExit as statsOnExit } from './endpoints/stats.js';
+import {
+    router as statsRouter,
+    init as statsInit,
+    onExit as statsOnExit,
+} from './endpoints/stats.js';
 import { router as contentManagerRouter, checkForNewContent } from './endpoints/content-manager.js';
 import { router as settingsRouter, init as settingsInit } from './endpoints/settings.js';
 import { router as backgroundsRouter } from './endpoints/backgrounds.js';
@@ -178,51 +210,51 @@ export function redirectDeprecatedEndpoints(app: import('express').Express) {
  */
 export function setupPrivateEndpoints(app: import('express').Express) {
     app.use('/', userDataRouter);
-    app.use('/api/users', usersPrivateRouter);
-    app.use('/api/users', usersAdminRouter);
+    app.use(mountElysia(usersPrivateRouter));
+    app.use(mountElysia(usersAdminRouter));
     app.use(mountElysia(movingUIRouter));
     app.use(mountElysia(imagesRouter));
     app.use(mountElysia(quickRepliesRouter));
     app.use(mountElysia(avatarsRouter));
     app.use(mountElysia(themesRouter));
-    app.use('/api/openai', openAiRouter);
-    app.use('/api/google', googleRouter);
+    app.use(mountElysia(openAiRouter));
+    app.use(mountElysia(googleRouter));
     app.use(mountElysia(anthropicRouter));
-    app.use('/api/tokenizers', tokenizersRouter);
+    app.use(mountElysia(tokenizersRouter));
     app.use(mountElysia(presetsRouter));
-    app.use('/api/secrets', secretsRouter);
-    app.use('/thumbnail', thumbnailRouter);
-    app.use('/api/novelai', novelAiRouter);
-    app.use('/api/extensions', extensionsRouter);
-    app.use('/api/assets', assetsRouter);
+    app.use(mountElysia(secretsRouter));
+    app.use(mountElysia(thumbnailRouter));
+    app.use(mountElysia(novelAiRouter));
+    app.use(mountElysia(extensionsRouter));
+    app.use(mountElysia(assetsRouter));
     app.use(mountElysia(filesRouter));
-    app.use('/api/characters', charactersRouter);
-    app.use('/api/chats', chatsRouter);
-    app.use('/api/groups', groupsRouter);
+    app.use(mountElysia(charactersRouter));
+    app.use(mountElysia(chatsRouter));
+    app.use(mountElysia(groupsRouter));
     app.use(mountElysia(worldInfoRouter));
-    app.use('/api/stats', statsRouter);
+    app.use(mountElysia(statsRouter));
     app.use(mountElysia(backgroundsRouter));
-    app.use('/api/sprites', spritesRouter);
-    app.use('/api/content', contentManagerRouter);
-    app.use('/api/settings', settingsRouter);
-    app.use('/api/sd', stableDiffusionRouter);
+    app.use(mountElysia(spritesRouter));
+    app.use(mountElysia(contentManagerRouter));
+    app.use(mountElysia(settingsRouter));
+    app.use(mountElysia(stableDiffusionRouter));
     app.use(mountElysia(hordeRouter));
-    app.use('/api/vector', vectorsRouter);
+    app.use(mountElysia(vectorsRouter));
     app.use(mountElysia(translateRouter));
-    app.use('/api/search', searchRouter);
-    app.use('/api/backends/text-completions', textCompletionsRouter);
+    app.use(mountElysia(searchRouter));
+    app.use(mountElysia(textCompletionsRouter));
     app.use(mountElysia(openRouterRouter));
     app.use(mountElysia(nanogptRouter));
-    app.use('/api/backends/kobold', koboldRouter);
-    app.use('/api/backends/chat-completions', chatCompletionsRouter);
+    app.use(mountElysia(koboldRouter));
+    app.use(mountElysia(chatCompletionsRouter));
     app.use(mountElysia(backendsKeysRouter));
-    app.use('/api/speech', speechRouter);
+    app.use(mountElysia(speechRouter));
     app.use(mountElysia(azureRouter));
     app.use(mountElysia(volcengineRouter));
     app.use(mountElysia(minimaxRouter));
-    app.use('/api/data-maid', dataMaidRouter);
+    app.use(mountElysia(dataMaidRouter));
     app.use(mountElysia(backupsRouter));
-    app.use('/api/image-metadata', imageMetadataRouter);
+    app.use(mountElysia(imageMetadataRouter));
 }
 
 /**
@@ -596,7 +628,7 @@ app.use(userCssMiddleware);
 app.use(express.static(path.join(serverDirectory, 'public/dist')));
 
 // Public API
-app.use('/api/users', usersPublicRouter);
+app.use(mountElysia(usersPublicRouter));
 
 // Everything below this line requires authentication
 app.use(requireLoginMiddleware);

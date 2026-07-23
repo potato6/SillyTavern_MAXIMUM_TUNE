@@ -731,7 +731,10 @@ const countPersonaDescriptionTokens = debounce(async () => {
 export function setPersonaDescription() {
     document.getElementById('your_name')!.textContent = name1;
 
-    if (power_user.persona_description_position === (persona_description_positions as any).AFTER_CHAR) {
+    if (
+        power_user.persona_description_position ===
+        (persona_description_positions as any).AFTER_CHAR
+    ) {
         power_user.persona_description_position = persona_description_positions.IN_PROMPT;
     }
 

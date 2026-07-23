@@ -101,7 +101,7 @@ export function registerWorldInfoSlashCommands(deps) {
      * @returns {Promise<string|import('./types.js').WorldInfoEntryData[]>} Entries from file or empty string
      */
     async function getEntriesFromFile(
-// @ts-expect-error TS(7006) FIXME: Parameter 'file' implicitly has an 'any' type.
+        // @ts-expect-error TS(7006) FIXME: Parameter 'file' implicitly has an 'any' type.
         file,
         { args = {}, unnamed = null, callbackName = 'getEntriesFromFile' } = {},
     ) {
@@ -154,7 +154,7 @@ export function registerWorldInfoSlashCommands(deps) {
         if (isTrueBoolean(String(create))) {
             const newName = await createWorldWithName(
                 name,
-// @ts-expect-error TS(2345) FIXME: Type is not assignable.
+                // @ts-expect-error TS(2345) FIXME: Type is not assignable.
                 `Persona Book ${name1}`
                     .replace(/[^a-z0-9 -]/gi, '_')
                     .replace(/_{2,}/g, '_')
@@ -196,7 +196,7 @@ export function registerWorldInfoSlashCommands(deps) {
             logSlashCommandWarn(
                 'getCharBookCallback: Character not found',
                 { type, name, create },
-// @ts-expect-error TS(2345) FIXME: Type is not assignable.
+                // @ts-expect-error TS(2345) FIXME: Type is not assignable.
                 { characterIdentifier },
             );
             return '';
@@ -218,7 +218,7 @@ export function registerWorldInfoSlashCommands(deps) {
         if (isTrueBoolean(String(create)) && books.length === 0) {
             const newName = await createWorldWithName(
                 name,
-// @ts-expect-error TS(2345) FIXME: Type is not assignable.
+                // @ts-expect-error TS(2345) FIXME: Type is not assignable.
                 `Character Book ${character.name}`
                     .replace(/[^a-z0-9 -]/gi, '_')
                     .replace(/_{2,}/g, '_')
@@ -271,7 +271,7 @@ export function registerWorldInfoSlashCommands(deps) {
 
         const name = await createWorldWithName(
             args.name,
-// @ts-expect-error TS(2345) FIXME: Type is not assignable.
+            // @ts-expect-error TS(2345) FIXME: Type is not assignable.
             `Chat Book ${getCurrentChatId()}`
                 .replace(/[^a-z0-9 -]/gi, '_')
                 .replace(/_{2,}/g, '_')
@@ -326,7 +326,7 @@ export function registerWorldInfoSlashCommands(deps) {
 
         const entries = await getEntriesFromFile(file, {
             args,
-// @ts-expect-error TS(2322) FIXME: Type is not assignable.
+            // @ts-expect-error TS(2322) FIXME: Type is not assignable.
             unnamed: { value },
             callbackName: 'findBookEntryCallback',
         });
@@ -383,7 +383,7 @@ export function registerWorldInfoSlashCommands(deps) {
 
         const entries = await getEntriesFromFile(file, {
             args,
-// @ts-expect-error TS(2322) FIXME: Type is not assignable.
+            // @ts-expect-error TS(2322) FIXME: Type is not assignable.
             unnamed: { uid },
             callbackName: 'getEntryFieldCallback',
         });
@@ -438,9 +438,9 @@ export function registerWorldInfoSlashCommands(deps) {
                 break;
             default:
                 fieldValue =
-// @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type.
+                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type.
                     entry[/** @type {keyof import('./types.js').WorldInfoEntryData} */ (field)] ??
-// @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type.
+                    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type.
                     newWorldInfoEntryDefinition[
                         /** @type {keyof typeof newWorldInfoEntryDefinition} */ (field)
                     ]?.default;
@@ -519,7 +519,7 @@ export function registerWorldInfoSlashCommands(deps) {
 
         // characterFilter is an object with internal fields we need to access, which may also may be null and need to be populated
         const createCharacterFilterFieldObjectIfNeeded = (
-// @ts-expect-error TS(7006) FIXME: Parameter 'currentEntry' implicitly has an 'any' type.
+            // @ts-expect-error TS(7006) FIXME: Parameter 'currentEntry' implicitly has an 'any' type.
             /** @type {import('./types.js').WorldInfoEntryData} */ currentEntry,
         ) => {
             if (!currentEntry.characterFilter) {
@@ -549,7 +549,7 @@ export function registerWorldInfoSlashCommands(deps) {
             logSlashCommandWarn(
                 'setEntryFieldCallback: Valid World Info file name is required',
                 args,
-// @ts-expect-error TS(2345) FIXME: Type is not assignable.
+                // @ts-expect-error TS(2345) FIXME: Type is not assignable.
                 { value },
             );
             return '';
@@ -595,7 +595,7 @@ export function registerWorldInfoSlashCommands(deps) {
                     .map((name) =>
                         getCharaFilename(null, {
                             manualAvatarKey: findChar({
-// @ts-expect-error TS(2322) FIXME: Type is not assignable.
+                                // @ts-expect-error TS(2322) FIXME: Type is not assignable.
                                 name,
                                 allowAvatar: true,
                                 preferCurrentChar: false,
@@ -612,7 +612,7 @@ export function registerWorldInfoSlashCommands(deps) {
                 tagNames = parseStringArray(value);
                 //Find the tag objects corresponding to each name in the user array, then return an array of the corresponding IDs
                 entry.characterFilter.tags = tags
-// @ts-expect-error TS(7005) FIXME: Variable 'tagNames' implicitly has an 'any' type.
+                    // @ts-expect-error TS(7005) FIXME: Variable 'tagNames' implicitly has an 'any' type.
                     .filter((tag) => tagNames.includes(tag.name))
                     .map((tag) => tag.id);
                 setWIOriginalDataValue(data, uid, 'character_filter', entry.characterFilter);
@@ -670,7 +670,7 @@ export function registerWorldInfoSlashCommands(deps) {
 
         const entries = await getEntriesFromFile(file, {
             args,
-// @ts-expect-error TS(2322) FIXME: Type is not assignable.
+            // @ts-expect-error TS(2322) FIXME: Type is not assignable.
             unnamed: { uid },
             callbackName: 'getTimedEffectCallback',
         });
@@ -736,7 +736,7 @@ export function registerWorldInfoSlashCommands(deps) {
 
         const entries = await getEntriesFromFile(file, {
             args,
-// @ts-expect-error TS(2322) FIXME: Type is not assignable.
+            // @ts-expect-error TS(2322) FIXME: Type is not assignable.
             unnamed: { value },
             callbackName: 'setTimedEffectCallback',
         });
@@ -832,7 +832,7 @@ export function registerWorldInfoSlashCommands(deps) {
          * @returns {SlashCommandEnumValue[]} Array of enum values for WI entry UIDs
          */
         wiUids: (
-// @ts-expect-error TS(7006) FIXME: Parameter 'executor' implicitly has an 'any' type.
+            // @ts-expect-error TS(7006) FIXME: Parameter 'executor' implicitly has an 'any' type.
             /** @type {import('./slash-commands/SlashCommandExecutor.js').SlashCommandExecutor} */ executor,
         ) => {
             // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
@@ -924,7 +924,7 @@ export function registerWorldInfoSlashCommands(deps) {
                     false,
                     false,
                     null,
-// @ts-expect-error TS(2345) FIXME: Type is not assignable.
+                    // @ts-expect-error TS(2345) FIXME: Type is not assignable.
                     commonEnumProviders.boolean('onOffToggle')(),
                 ),
                 new SlashCommandNamedArgument(

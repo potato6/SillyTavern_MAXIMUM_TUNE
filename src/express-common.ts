@@ -1,21 +1,19 @@
 import ipaddr from 'ipaddr.js';
 import ipMatching from 'ip-matching';
 import { RateLimiterRes } from 'rate-limiter-flexible';
-import express from 'express';
 import { getConfigValue } from './util.js';
 
 /**
  * Gets the IP address of the client from the request object.
- * @param {import('express').Request} req Request object
- * @returns {string} IP address of the client
  */
-export function getIpFromRequest(req: express.Request) {
-    let clientIp = req.socket.remoteAddress;
+export function getIpFromRequest(req: Record<string, unknown>) {
+    let clientIp = (req.socket as Record<string, unknown> | undefined)?.remoteAddress as
+        | string
+        | undefined;
     if (!clientIp) {
         return 'unknown';
     }
     const ip = ipaddr.parse(clientIp);
-    // Check if the IP address is IPv4-mapped IPv6 address
     if (ip.kind() === 'ipv6' && ip instanceof ipaddr.IPv6 && ip.isIPv4MappedAddress()) {
         const ipv4 = ip.toIPv4Address().toString();
         clientIp = ipv4;
@@ -27,10 +25,8 @@ export function getIpFromRequest(req: express.Request) {
 
 /**
  * Get the client IP address from the request headers.
- * @param {import('express').Request} req Express request object
- * @returns {string|undefined} The client IP address
  */
-export function getRealOrForwardedIp(req: express.Request) {
+export function getRealOrForwardedIp(req: Record<string, unknown>) {
     const xRealIpEnabled = !!getConfigValue('forwardedHeaders.xRealIp', true, 'boolean' as const);
     const cfConnectingIpEnabled = !!getConfigValue(
         'forwardedHeaders.cfConnectingIp',
@@ -43,37 +39,30 @@ export function getRealOrForwardedIp(req: express.Request) {
         'boolean' as const,
     );
 
-    // Check if X-Real-IP is available
-    if (req.headers['x-real-ip'] && xRealIpEnabled) {
-        return req.headers['x-real-ip'].toString();
+    const headers = req.headers as Record<string, string | undefined>;
+
+    if (headers['x-real-ip'] && xRealIpEnabled) {
+        return headers['x-real-ip'];
     }
 
-    // Check for CF-Connecting-IP (Cloudflare) if available
-    if (req.headers['cf-connecting-ip'] && cfConnectingIpEnabled) {
-        return req.headers['cf-connecting-ip'].toString();
+    if (headers['cf-connecting-ip'] && cfConnectingIpEnabled) {
+        return headers['cf-connecting-ip'];
     }
 
-    // Check for X-Forwarded-For and parse if available
-    if (req.headers['x-forwarded-for'] && xForwardedForEnabled) {
-        const ipList = req.headers['x-forwarded-for']
-            .toString()
+    if (headers['x-forwarded-for'] && xForwardedForEnabled) {
+        const ipList = headers['x-forwarded-for']!.toString()
             .split(',')
             .map((ip: string) => ip.trim());
         return ipList[0];
     }
 
-    // If none of the headers are available, return undefined
     return undefined;
 }
 
 /**
  * Gets the IP address of the client, optionally including the real/forwarded IP from headers.
- * Most common use cases: key for rate limiter, logging, etc. where you want to have the real client IP if behind a reverse proxy.
- * @param {import('express').Request} request Request object
- * @param {boolean} includeHeaderIp Whether to include the real/forwarded IP from headers
- * @returns {string} IP address of the client (will include "forwarded" info if includeHeaderIp is true and headers are present)
  */
-export function getIpAddress(request: express.Request, includeHeaderIp: boolean) {
+export function getIpAddress(request: Record<string, unknown>, includeHeaderIp: boolean) {
     const socketIp = getIpFromRequest(request);
     const forwardedIp = includeHeaderIp && getRealOrForwardedIp(request);
     return forwardedIp ? `${socketIp} (forwarded: ${forwardedIp})` : socketIp;
@@ -81,16 +70,11 @@ export function getIpAddress(request: express.Request, includeHeaderIp: boolean)
 
 /**
  * Checks if the request is coming from a Firefox browser.
- * @param {import('express').Request} req Request object
- * @returns {boolean} True if the request is from Firefox, false otherwise.
  */
 export { isFirefox } from './util.js';
 
 /**
  * Filters and validates IP patterns.
- * @param {string[]} entries - The list of IP patterns to validate
- * @param {(entry: string, message: string) => string} formatLog - The function to format the warning message for invalid entries
- * @returns {string[]} The list of valid IP patterns
  */
 export function filterValidIpPatterns(
     entries: string[],
@@ -104,12 +88,11 @@ export function filterValidIpPatterns(
 
     for (const entry of entries) {
         try {
-            // This will throw if the entry is not a valid IP or CIDR
             ipMatching.getMatch(entry);
             validEntries.push(entry);
         } catch (e) {
             if (typeof formatLog === 'function') {
-                    console.warn(formatLog(entry, (e as Error)?.message || 'Unknown error'));
+                console.warn(formatLog(entry, (e as Error)?.message || 'Unknown error'));
             }
         }
     }
@@ -119,15 +102,20 @@ export function filterValidIpPatterns(
 
 /**
  * Sets the Retry-After header on the response based on the rate limit information.
- * @param {import('express').Response} response Express response object
- * @param {RateLimiterRes} rateLimit The rate limit information from rate-limiter-flexible
- * @returns {import('express').Response} The response object with the Retry-After header set if applicable
  */
-export function retryAfter(response: express.Response, rateLimit: RateLimiterRes) {
+export function retryAfter(response: Record<string, unknown>, rateLimit: RateLimiterRes) {
     if (response.headersSent || !(rateLimit instanceof RateLimiterRes)) {
         return response;
     }
-    const retryAfter = Math.ceil(rateLimit.msBeforeNext / 1000);
-    response.set('Retry-After', retryAfter.toString());
+    const retryAfterMs = Math.ceil(rateLimit.msBeforeNext / 1000);
+    const set = response.set as ((key: string, value: string) => void) | undefined;
+    if (set) {
+        set('Retry-After', retryAfterMs.toString());
+    } else {
+        const setHeader = response.setHeader as ((key: string, value: string) => void) | undefined;
+        if (setHeader) {
+            setHeader('Retry-After', retryAfterMs.toString());
+        }
+    }
     return response;
 }

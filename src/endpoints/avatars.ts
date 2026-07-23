@@ -11,14 +11,20 @@ import cacheBuster from '../middleware/cacheBuster.js';
 
 export const router = new Elysia({ prefix: '/api/avatars' })
     .post('/get', (context) => {
-        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
         const directories = user?.directories as Record<string, string> | undefined;
         const images = getImages(directories?.avatars ?? '');
         return images;
     })
     .post('/delete', (context) => {
         const { body, set } = context;
-        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
         const directories = user?.directories as Record<string, string> | undefined;
         const bodyAny = body as Record<string, unknown>;
 
@@ -41,9 +47,15 @@ export const router = new Elysia({ prefix: '/api/avatars' })
     })
     .post('/upload', async (context) => {
         const { body, set } = context;
-        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
         const directories = user?.directories as Record<string, string> | undefined;
-        const file = (context as unknown as Record<string, unknown>).file as Record<string, unknown> | null;
+        const file = (context as unknown as Record<string, unknown>).file as Record<
+            string,
+            unknown
+        > | null;
 
         if (!file) {
             set.status = 400;
@@ -64,7 +76,9 @@ export const router = new Elysia({ prefix: '/api/avatars' })
                 );
             }
 
-            const filename = sanitize((body as Record<string, unknown>).overwrite_name as string || `${Date.now()}.png`);
+            const filename = sanitize(
+                ((body as Record<string, unknown>).overwrite_name as string) || `${Date.now()}.png`,
+            );
             const pathToNewFile = path.join(directories?.avatars ?? '', filename);
             writeFileAtomicSync(pathToNewFile, image);
             fs.unlinkSync(pathToUpload);

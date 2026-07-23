@@ -216,9 +216,9 @@ export class Popup {
      * @param {PopupOptions} [options] - Additional options for the popup
      */
     constructor(
-// @ts-expect-error TS(7006) FIXME: Parameter 'content' implicitly has an 'any' type.
+        // @ts-expect-error TS(7006) FIXME: Parameter 'content' implicitly has an 'any' type.
         content,
-// @ts-expect-error TS(7006) FIXME: Parameter 'type' implicitly has an 'any' type.
+        // @ts-expect-error TS(7006) FIXME: Parameter 'type' implicitly has an 'any' type.
         type,
         inputValue = '',
         {
@@ -306,8 +306,8 @@ export class Popup {
         this.cancelButton.textContent =
             typeof cancelButton === 'string'
                 ? cancelButton
-// @ts-expect-error TS(18047) FIXME: Object is possibly 'null' or 'undefined'.
-                : template.getAttribute('popup-button-cancel');
+                : // @ts-expect-error TS(18047) FIXME: Object is possibly 'null' or 'undefined'.
+                  template.getAttribute('popup-button-cancel');
         this.cancelButton.dataset.i18n = this.cancelButton.textContent;
 
         /**
@@ -513,10 +513,10 @@ export class Popup {
                 if (cancelButton === false) this.cancelButton.style.display = 'none';
                 // Override default captions for confirm on OK->Yes, CANCEL->No
                 if (!okButton)
-// @ts-expect-error TS(18047) FIXME: Object is possibly 'null' or 'undefined'.
+                    // @ts-expect-error TS(18047) FIXME: Object is possibly 'null' or 'undefined'.
                     this.okButton.textContent = template.getAttribute('popup-button-yes');
                 if (!cancelButton)
-// @ts-expect-error TS(18047) FIXME: Object is possibly 'null' or 'undefined'.
+                    // @ts-expect-error TS(18047) FIXME: Object is possibly 'null' or 'undefined'.
                     this.cancelButton.textContent = template.getAttribute('popup-button-no');
                 break;
             }
@@ -527,7 +527,7 @@ export class Popup {
                 if (cancelButton === false) this.cancelButton.style.display = 'none';
                 // Override default captions for input on OK->Save
                 if (!okButton)
-// @ts-expect-error TS(18047) FIXME: Object is possibly 'null' or 'undefined'.
+                    // @ts-expect-error TS(18047) FIXME: Object is possibly 'null' or 'undefined'.
                     this.okButton.textContent = template.getAttribute('popup-button-save');
                 break;
             }
@@ -555,7 +555,7 @@ export class Popup {
                 if (cancelButton === false) this.cancelButton.style.display = 'none';
                 // Override default captions for crop on OK->Crop
                 if (!okButton)
-// @ts-expect-error TS(18047) FIXME: Object is possibly 'null' or 'undefined'.
+                    // @ts-expect-error TS(18047) FIXME: Object is possibly 'null' or 'undefined'.
                     this.okButton.textContent = template.getAttribute('popup-button-crop');
                 break;
             }
@@ -735,7 +735,7 @@ export class Popup {
                     evt.preventDefault();
                     evt.stopPropagation();
                     const result = Number(
-// @ts-expect-error TS(18047) FIXME: Object is possibly 'null' or 'undefined'.
+                        // @ts-expect-error TS(18047) FIXME: Object is possibly 'null' or 'undefined'.
                         document.activeElement.getAttribute('data-result') ?? this.defaultResult,
                     );
 
@@ -861,7 +861,7 @@ export class Popup {
 
         if (this.customInputs?.length) {
             this.inputResults = new Map(
-// @ts-expect-error TS(7006) FIXME: Parameter 'input' implicitly has an 'any' type.
+                // @ts-expect-error TS(7006) FIXME: Parameter 'input' implicitly has an 'any' type.
                 this.customInputs.map((input) => {
                     /** @type {HTMLInputElement} */
                     const inputControl = this.dlg.querySelector(`#${input.id}`);

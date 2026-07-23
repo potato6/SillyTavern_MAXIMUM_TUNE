@@ -9,7 +9,7 @@ export class SlashCommandEnumAutoCompleteOption extends AutoCompleteOption {
     // @ts-expect-error TS(7006) FIXME: Parameter 'cmd' implicitly has an 'any' type.
     static from(cmd, enumValue) {
         const mapped =
-// @ts-expect-error TS(2339) FIXME: Property 'valueToOptionMap' does not exist on type.
+            // @ts-expect-error TS(2339) FIXME: Property 'valueToOptionMap' does not exist on type.
             this.valueToOptionMap.find((it) => enumValue instanceof it.value)?.option ?? this;
         return new mapped(cmd, enumValue);
     }
@@ -44,7 +44,7 @@ export class SlashCommandEnumAutoCompleteOption extends AutoCompleteOption {
             true,
             [],
             [],
-// @ts-expect-error TS(2345) FIXME: Type is not assignable.
+            // @ts-expect-error TS(2345) FIXME: Type is not assignable.
             null,
             this.enumValue.description,
         );

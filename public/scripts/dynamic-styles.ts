@@ -100,17 +100,17 @@ function applyDynamicFocusStyles(styleSheet, { fromExtension = false } = {}) {
             } else if (rule instanceof CSSMediaRule) {
                 // Recursively process nested @media rules
                 processRules(rule.cssRules, [
-// @ts-expect-error TS(2322) FIXME: Type is not assignable.
+                    // @ts-expect-error TS(2322) FIXME: Type is not assignable.
                     ...wrappers,
-// @ts-expect-error TS(2322) FIXME: Type is not assignable.
+                    // @ts-expect-error TS(2322) FIXME: Type is not assignable.
                     { type: 'media', conditionText: rule.conditionText },
                 ]);
             } else if (rule instanceof CSSSupportsRule) {
                 // Recursively process nested @supports rules
                 processRules(rule.cssRules, [
-// @ts-expect-error TS(2322) FIXME: Type is not assignable.
+                    // @ts-expect-error TS(2322) FIXME: Type is not assignable.
                     ...wrappers,
-// @ts-expect-error TS(2322) FIXME: Type is not assignable.
+                    // @ts-expect-error TS(2322) FIXME: Type is not assignable.
                     { type: 'supports', conditionText: rule.conditionText },
                 ]);
             } else if (rule instanceof window.CSSContainerRule) {
@@ -118,9 +118,9 @@ function applyDynamicFocusStyles(styleSheet, { fromExtension = false } = {}) {
                 // Note: conditionText contains the query like "(min-width: 300px)" or "style(color)"
                 // Using 'container' as the type ensures uniqueness separate from @media/@supports
                 processRules(rule.cssRules, [
-// @ts-expect-error TS(2322) FIXME: Type is not assignable.
+                    // @ts-expect-error TS(2322) FIXME: Type is not assignable.
                     ...wrappers,
-// @ts-expect-error TS(2322) FIXME: Type is not assignable.
+                    // @ts-expect-error TS(2322) FIXME: Type is not assignable.
                     { type: 'container', conditionText: rule.conditionText },
                 ]);
             }

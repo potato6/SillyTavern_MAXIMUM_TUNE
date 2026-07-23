@@ -100,9 +100,9 @@ function getLastMessageId({
 
         if (
             exclude_swipe_in_propress &&
-// @ts-expect-error TS(18048) FIXME: Object is possibly 'null' or 'undefined'.
+            // @ts-expect-error TS(18048) FIXME: Object is possibly 'null' or 'undefined'.
             message.swipes &&
-// @ts-expect-error TS(18048) FIXME: Object is possibly 'null' or 'undefined'.
+            // @ts-expect-error TS(18048) FIXME: Object is possibly 'null' or 'undefined'.
             message.swipe_id >= message.swipes.length
         ) {
             continue;

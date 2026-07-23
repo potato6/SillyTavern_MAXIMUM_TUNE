@@ -102,7 +102,11 @@ export function getConfig(): Record<string, unknown> {
  * @param {'number'|'boolean'|null} typeConverter - Type to convert the value to
  * @returns {any} Value for the given key
  */
-export function getConfigValue(key: string, defaultValue: any = null, typeConverter: 'number' | 'boolean' | null = null) {
+export function getConfigValue(
+    key: string,
+    defaultValue: any = null,
+    typeConverter: 'number' | 'boolean' | null = null,
+) {
     /**
      * Gets the value from environment variables or config file.
      * @returns {unknown} The retrieved value

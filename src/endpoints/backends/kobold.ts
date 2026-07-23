@@ -1,35 +1,36 @@
 import fs from 'node:fs';
-import express from 'express';
+import { Elysia } from 'elysia';
 
-import { forwardFetchResponse, delay } from '../../util.js';
-import {
-    getOverrideHeaders,
-    setAdditionalHeaders,
-    setAdditionalHeadersByType,
-} from '../../additional-headers.js';
+import { delay } from '../../util.js';
+import { getOverrideHeaders, setAdditionalHeadersByType } from '../../additional-headers.js';
 import { TEXTGEN_TYPES } from '../../constants.js';
+import type { UserDirectoryList } from '../../users.js';
 
-export const router = express.Router();
+export const router = new Elysia({ prefix: '/api/backends/kobold' });
 
-router.post('/generate', async function (request, response_generate) {
-    if (!request.body) return response_generate.sendStatus(400);
-
-    if (request.body.api_server.indexOf('localhost') != -1) {
-        request.body.api_server = request.body.api_server.replace('localhost', '127.0.0.1');
+router.post('/generate', async (context) => {
+    const body = context.body as Record<string, unknown> | null;
+    if (!body) {
+        context.set.status = 400;
+        return;
     }
 
-    const request_prompt = request.body.prompt;
+    const apiServer = (body.api_server as string) || '';
+    if (apiServer.indexOf('localhost') != -1) {
+        body.api_server = apiServer.replace('localhost', '127.0.0.1');
+    }
+
+    const request_prompt = body.prompt;
     const controller = new AbortController();
-    request.socket.removeAllListeners('close');
-    request.socket.on('close', async function () {
-        if (request.body.can_abort && !response_generate.writableEnded) {
+
+    // Listen for client disconnect — abort the upstream request on cancel
+    context.request.signal.addEventListener('abort', async () => {
+        if (body.can_abort) {
             try {
                 console.info('Aborting Kobold generation...');
-                // send abort signal to koboldcpp
-                const abortResponse = await fetch(`${request.body.api_server}/extra/abort`, {
+                const abortResponse = await fetch(`${body.api_server}/extra/abort`, {
                     method: 'POST',
                 });
-
                 if (!abortResponse.ok) {
                     console.error('Error sending abort request to Kobold:', abortResponse.status);
                 }
@@ -40,138 +41,167 @@ router.post('/generate', async function (request, response_generate) {
         controller.abort();
     });
 
-    let this_settings = {
+    let this_settings: Record<string, unknown> = {
         prompt: request_prompt,
         use_story: false,
         use_memory: false,
         use_authors_note: false,
         use_world_info: false,
-        max_context_length: request.body.max_context_length,
-        max_length: request.body.max_length,
+        max_context_length: body.max_context_length,
+        max_length: body.max_length,
     };
 
-    if (!request.body.gui_settings) {
+    if (!body.gui_settings) {
         this_settings = {
             prompt: request_prompt,
             use_story: false,
             use_memory: false,
             use_authors_note: false,
             use_world_info: false,
-            max_context_length: request.body.max_context_length,
-            max_length: request.body.max_length,
-            // @ts-expect-error TS(2322) FIXME: Type '{ prompt: any; use_story: false; use_memory:... Remove this comment to see the full error message
-            rep_pen: request.body.rep_pen,
-            rep_pen_range: request.body.rep_pen_range,
-            rep_pen_slope: request.body.rep_pen_slope,
-            temperature: request.body.temperature,
-            tfs: request.body.tfs,
-            top_a: request.body.top_a,
-            top_k: request.body.top_k,
-            top_p: request.body.top_p,
-            min_p: request.body.min_p,
-            typical: request.body.typical,
-            sampler_order: request.body.sampler_order,
-            singleline: !!request.body.singleline,
-            use_default_badwordsids: request.body.use_default_badwordsids,
-            mirostat: request.body.mirostat,
-            mirostat_eta: request.body.mirostat_eta,
-            mirostat_tau: request.body.mirostat_tau,
-            grammar: request.body.grammar,
-            sampler_seed: request.body.sampler_seed,
-        };
-        if (request.body.stop_sequence) {
-            // @ts-expect-error TS(2339) FIXME: Property 'stop_sequence' does not exist on type '{... Remove this comment to see the full error message
-            this_settings.stop_sequence = request.body.stop_sequence;
+            max_context_length: body.max_context_length,
+            max_length: body.max_length,
+            rep_pen: body.rep_pen,
+            rep_pen_range: body.rep_pen_range,
+            rep_pen_slope: body.rep_pen_slope,
+            temperature: body.temperature,
+            tfs: body.tfs,
+            top_a: body.top_a,
+            top_k: body.top_k,
+            top_p: body.top_p,
+            min_p: body.min_p,
+            typical: body.typical,
+            sampler_order: body.sampler_order,
+            singleline: !!body.singleline,
+            use_default_badwordsids: body.use_default_badwordsids,
+            mirostat: body.mirostat,
+            mirostat_eta: body.mirostat_eta,
+            mirostat_tau: body.mirostat_tau,
+            grammar: body.grammar,
+            sampler_seed: body.sampler_seed,
+        } as Record<string, unknown>;
+
+        if (body.stop_sequence) {
+            this_settings.stop_sequence = body.stop_sequence;
         }
     }
 
     console.debug(this_settings);
+
     const args = {
         body: JSON.stringify(this_settings),
         headers: Object.assign(
-            { 'Content-Type': 'application/json' },
-            getOverrideHeaders(new URL(request.body.api_server)?.host),
+            { 'Content-Type': 'application/json' } as Record<string, string>,
+            getOverrideHeaders(new URL(body.api_server as string)?.host as string),
         ),
         signal: controller.signal,
     };
 
     const MAX_RETRIES = 50;
     const delayAmount = 2500;
+
     for (let i = 0; i < MAX_RETRIES; i++) {
         try {
-            const url = request.body.streaming
-                ? `${request.body.api_server}/extra/generate/stream`
-                : `${request.body.api_server}/v1/generate`;
+            const url = body.streaming
+                ? `${body.api_server}/extra/generate/stream`
+                : `${body.api_server}/v1/generate`;
+
             const response = await fetch(url, { method: 'POST', ...args });
 
-            if (request.body.streaming) {
-                // Pipe remote SSE stream to Express response
-                await forwardFetchResponse(response, response_generate);
-                return;
-            } else {
+            if (body.streaming) {
+                // Pipe remote SSE stream through to the client
+                let statusCode = response.status;
+                if (statusCode === 401) {
+                    statusCode = 400;
+                }
+
                 if (!response.ok) {
                     const errorText = await response.text();
                     console.warn(
                         `Kobold returned error: ${response.status} ${response.statusText} ${errorText}`,
                     );
-
-                    try {
-                        const errorJson = JSON.parse(errorText);
-                        const message = errorJson?.detail?.msg || errorText;
-                        return response_generate.status(400).send({ error: { message } });
-                    } catch {
-                        return response_generate
-                            .status(400)
-                            .send({ error: { message: errorText } });
-                    }
+                    return new Response(errorText, { status: statusCode });
                 }
 
-                const data = (await response.json()) as Record<string, unknown>;
-                console.debug('Endpoint response:', data);
-                return response_generate.send(data);
+                return new Response(response.body, {
+                    status: statusCode,
+                    headers: {
+                        'Content-Type': response.headers.get('Content-Type') ?? 'text/event-stream',
+                    },
+                });
             }
-        } catch (error) {
-            // response
-            // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-            switch (error?.status) {
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.warn(
+                    `Kobold returned error: ${response.status} ${response.statusText} ${errorText}`,
+                );
+
+                try {
+                    const errorJson = JSON.parse(errorText);
+                    const message = errorJson?.detail?.msg || errorText;
+                    context.set.status = 400;
+                    return { error: { message } };
+                } catch {
+                    context.set.status = 400;
+                    return { error: { message: errorText } };
+                }
+            }
+
+            const data = (await response.json()) as Record<string, unknown>;
+            console.debug('Endpoint response:', data);
+            return data;
+        } catch (error: unknown) {
+            const err = error as Record<string, unknown>;
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            switch (err?.status) {
                 case 403:
-                case 503: // retry in case of temporary service issue, possibly caused by a queue failure?
+                case 503:
+                    // retry in case of temporary service issue, possibly caused by a queue failure
                     console.warn(`KoboldAI is busy. Retry attempt ${i + 1} of ${MAX_RETRIES}...`);
                     await delay(delayAmount);
                     break;
                 default:
-                    // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-                    if ('status' in error) {
-                        console.error('Status Code from Kobold:', error.status);
+                    if (err && 'status' in err) {
+                        console.error('Status Code from Kobold:', err.status);
                     }
-                    return response_generate.send({ error: true });
+                    return { error: true };
             }
         }
     }
 
     console.error('Max retries exceeded. Giving up.');
-    return response_generate.send({ error: true });
+    return { error: true };
 });
 
-router.post('/status', async function (request, response) {
-    if (!request.body) return response.sendStatus(400);
-    let api_server = request.body.api_server;
+router.post('/status', async (context) => {
+    const body = context.body as Record<string, unknown> | null;
+    if (!body) {
+        context.set.status = 400;
+        return;
+    }
+
+    let api_server = body.api_server as string;
     if (api_server.indexOf('localhost') != -1) {
         api_server = api_server.replace('localhost', '127.0.0.1');
     }
 
-    const args = {
-        headers: { 'Content-Type': 'application/json' },
-    };
+    const user = (context as unknown as Record<string, unknown>).user as Record<
+        string,
+        unknown
+    > | null;
 
-    setAdditionalHeaders(request, args, api_server);
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    setAdditionalHeadersByType(
+        headers,
+        (body.api_type as string) || '',
+        api_server,
+        (user?.directories as UserDirectoryList) || null,
+        body.secret_id as string | null,
+    );
 
-    const result = {};
+    const result: Record<string, unknown> = {};
 
-    /** @type {any} */
     const [koboldUnitedResponse, koboldExtraResponse, koboldModelResponse] = await Promise.all([
-        // We catch errors both from the response not having a successful HTTP status and from JSON parsing failing
-
         // Kobold United API version
         fetch(`${api_server}/v1/info/version`)
             .then((response) => {
@@ -200,45 +230,56 @@ router.post('/status', async function (request, response) {
             .catch(() => null),
     ]);
 
-    // @ts-expect-error TS(2339) FIXME: Property 'koboldUnitedVersion' does not exist on t... Remove this comment to see the full error message
-    result.koboldUnitedVersion = koboldUnitedResponse.result;
-    // @ts-expect-error TS(2339) FIXME: Property 'koboldCppVersion' does not exist on type... Remove this comment to see the full error message
-    result.koboldCppVersion = koboldExtraResponse.result;
-    // @ts-expect-error TS(2339) FIXME: Property 'result' does not exist on type '{}'.
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    result.koboldUnitedVersion = (koboldUnitedResponse as Record<string, unknown>).result;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    result.koboldCppVersion = (koboldExtraResponse as Record<string, unknown>).result;
     result.model =
         !koboldModelResponse ||
         (koboldModelResponse as Record<string, unknown>).result === 'ReadOnly'
             ? 'no_connection'
             : (koboldModelResponse as Record<string, unknown>).result;
 
-    response.send(result);
+    return result;
 });
 
-router.post('/transcribe-audio', async function (request, response) {
+router.post('/transcribe-audio', async (context) => {
     try {
-        const server = request.body.server;
+        const body = context.body as Record<string, unknown>;
+        const server = body.server as string | undefined;
 
         if (!server) {
             console.error('Server is not set');
-            return response.sendStatus(400);
+            context.set.status = 400;
+            return;
         }
 
-        if (!request.file) {
+        const file = (context as unknown as Record<string, unknown>).file as Record<
+            string,
+            unknown
+        > | null;
+
+        if (!file) {
             console.error('No audio file found');
-            return response.sendStatus(400);
+            context.set.status = 400;
+            return;
         }
 
         console.debug('Transcribing audio with KoboldCpp', server);
 
-        const fileBase64 = fs.readFileSync(request.file.path).toString('base64');
-        fs.unlinkSync(request.file.path);
+        const fileBase64 = fs.readFileSync(file.path as string).toString('base64');
+        fs.unlinkSync(file.path as string);
 
-        const headers = {};
+        const headers: Record<string, string> = {};
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
         setAdditionalHeadersByType(
             headers,
             TEXTGEN_TYPES.KOBOLDCPP,
             server,
-            request.user.directories,
+            (user?.directories as UserDirectoryList) || null,
         );
 
         const url = new URL(server);
@@ -258,33 +299,42 @@ router.post('/transcribe-audio', async function (request, response) {
         if (!result.ok) {
             const text = await result.text();
             console.error('KoboldCpp request failed', result.statusText, text);
-            return response.status(500).send(text);
+            context.set.status = 500;
+            return text;
         }
 
         const data = (await result.json()) as Record<string, unknown>;
         console.debug('KoboldCpp transcription response', data);
-        return response.json(data);
+        return data;
     } catch (error) {
         console.error('KoboldCpp transcription failed', error);
-        response.status(500).send('Internal server error');
+        context.set.status = 500;
+        return 'Internal server error';
     }
 });
 
-router.post('/embed', async function (request, response) {
+router.post('/embed', async (context) => {
     try {
-        const { server, items } = request.body;
+        const body = context.body as Record<string, unknown>;
+        const server = body.server as string | undefined;
+        const items = body.items;
 
         if (!server) {
             console.warn('KoboldCpp URL is not set');
-            return response.sendStatus(400);
+            context.set.status = 400;
+            return;
         }
 
-        const headers = {};
+        const headers: Record<string, string> = {};
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
         setAdditionalHeadersByType(
             headers,
             TEXTGEN_TYPES.KOBOLDCPP,
             server,
-            request.user.directories,
+            (user?.directories as UserDirectoryList) || null,
         );
 
         const embeddingsUrl = new URL(server);
@@ -305,7 +355,8 @@ router.post('/embed', async function (request, response) {
 
         if (!Array.isArray(data?.data)) {
             console.warn('KoboldCpp API response was not an array');
-            return response.sendStatus(500);
+            context.set.status = 500;
+            return;
         }
 
         const model = data.model || 'unknown';
@@ -313,9 +364,10 @@ router.post('/embed', async function (request, response) {
             .map((x: unknown) => (Array.isArray(x) ? x[0] : x))
             .toSorted((a: { index: number }, b: { index: number }) => a.index - b.index)
             .map((x: { embedding: unknown }) => x.embedding);
-        return response.json({ model, embeddings });
+        return { model, embeddings };
     } catch (error) {
         console.error('KoboldCpp embedding failed', error);
-        response.status(500).send('Internal server error');
+        context.set.status = 500;
+        return 'Internal server error';
     }
 });

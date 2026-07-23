@@ -1990,7 +1990,13 @@ export class SimpleAutoCompleteOption extends AutoCompleteOption {
         description = '',
         detailedDescription = null,
         type = 'simple',
-    }: { name: any; symbol?: string; description?: string; detailedDescription?: any; type?: string }) {
+    }: {
+        name: any;
+        symbol?: string;
+        description?: string;
+        detailedDescription?: any;
+        type?: string;
+    }) {
         super(name, symbol, type);
         this.#description = description;
         this.#detailedDescription = detailedDescription;

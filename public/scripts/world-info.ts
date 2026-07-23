@@ -2735,7 +2735,7 @@ export async function getWorldEntry(
                     ? entryData.characterFilter.names.length > 0
                     : false
             ) {
-                for (const name of (entryData.characterFilter?.names ?? [])) {
+                for (const name of entryData.characterFilter?.names ?? []) {
                     if (
                         !getContext().characters.find(
                             (x: Record<string, unknown>) =>

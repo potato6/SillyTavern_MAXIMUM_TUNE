@@ -40,10 +40,12 @@ export class SlashCommandClosure {
 
     /**@type {number}*/
     get commandCount() {
-        return this.executorList
-// @ts-expect-error TS(2339) FIXME: Property 'map' does not exist on type.
-            .map((executor) => executor.commandCount)
-            .reduce((sum, cur) => sum + cur, 0);
+        return (
+            this.executorList
+                // @ts-expect-error TS(2339) FIXME: Property 'map' does not exist on type.
+                .map((executor) => executor.commandCount)
+                .reduce((sum, cur) => sum + cur, 0)
+        );
     }
 
     // @ts-expect-error TS(7006) FIXME: Parameter 'parent' implicitly has an 'any' type.
@@ -122,7 +124,7 @@ export class SlashCommandClosure {
                         // Exact match
                         if (
                             i.args.length === context.list.length &&
-// @ts-expect-error TS(7006) FIXME: Parameter 'arg' implicitly has an 'any' type.
+                            // @ts-expect-error TS(7006) FIXME: Parameter 'arg' implicitly has an 'any' type.
                             i.args.every((arg, index) => arg === context.list[index])
                         ) {
                             return true;
@@ -130,7 +132,7 @@ export class SlashCommandClosure {
                         // Wildcard match - if any definition arg is '*', it matches any value at that position
                         if (i.args.length === context.list.length) {
                             return i.args.every(
-// @ts-expect-error TS(7006) FIXME: Parameter 'arg' implicitly has an 'any' type.
+                                // @ts-expect-error TS(7006) FIXME: Parameter 'arg' implicitly has an 'any' type.
                                 (arg, index) => arg === '*' || arg === context.list[index],
                             );
                         }
@@ -162,7 +164,7 @@ export class SlashCommandClosure {
         if (closures.size > 0) {
             const parts = substitutedText
                 .split(CLOSURE_BOUNDARY)
-// @ts-expect-error TS(7006) FIXME: Parameter 'part' implicitly has an 'any' type.
+                // @ts-expect-error TS(7006) FIXME: Parameter 'part' implicitly has an 'any' type.
                 .map((part) => (closures.has(part) ? closures.get(part) : part))
                 .filter(Boolean);
             return parts.length === 1 ? parts[0] : parts;
@@ -305,19 +307,19 @@ export class SlashCommandClosure {
                     // arguments is an immediate closure, otherwise you cannot step into the
                     // immediate closure
                     const hasImmediateClosureInNamedArgs = /**@type {SlashCommandExecutor}*/ (
-                        step.value
-// @ts-expect-error TS(2339) FIXME: Property 'namedArgumentList' does not exist on type.
-                    )?.namedArgumentList?.find(
-// @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
-                        (it) => it.value instanceof SlashCommandClosure && it.value.executeNow,
-                    );
+                        step.value // @ts-expect-error TS(2339) FIXME: Property 'namedArgumentList' does not exist on type.
+                    )?.namedArgumentList
+                        ?.find(
+                            // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
+                            (it) => it.value instanceof SlashCommandClosure && it.value.executeNow,
+                        );
                     const hasImmediateClosureInUnnamedArgs = /**@type {SlashCommandExecutor}*/ (
-                        step.value
-// @ts-expect-error TS(2339) FIXME: Property 'unnamedArgumentList' does not exist on type.
-                    )?.unnamedArgumentList?.find(
-// @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
-                        (it) => it.value instanceof SlashCommandClosure && it.value.executeNow,
-                    );
+                        step.value // @ts-expect-error TS(2339) FIXME: Property 'unnamedArgumentList' does not exist on type.
+                    )?.unnamedArgumentList
+                        ?.find(
+                            // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
+                            (it) => it.value instanceof SlashCommandClosure && it.value.executeNow,
+                        );
                     if (hasImmediateClosureInNamedArgs || hasImmediateClosureInUnnamedArgs) {
                         // @ts-expect-error TS(7057) FIXME: 'yield' expression implicitly results in an 'any' ... Remove this comment to see the full error message
                         this.debugController.isStepping = yield {
@@ -335,19 +337,19 @@ export class SlashCommandClosure {
                 // if stepping, have to yield before arguments are resolved if one of the arguments
                 // is an immediate closure, otherwise you cannot step into the immediate closure
                 const hasImmediateClosureInNamedArgs = /**@type {SlashCommandExecutor}*/ (
-                    step.value
-// @ts-expect-error TS(2339) FIXME: Property 'namedArgumentList' does not exist on type.
-                )?.namedArgumentList?.find(
-// @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
-                    (it) => it.value instanceof SlashCommandClosure && it.value.executeNow,
-                );
+                    step.value // @ts-expect-error TS(2339) FIXME: Property 'namedArgumentList' does not exist on type.
+                )?.namedArgumentList
+                    ?.find(
+                        // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
+                        (it) => it.value instanceof SlashCommandClosure && it.value.executeNow,
+                    );
                 const hasImmediateClosureInUnnamedArgs = /**@type {SlashCommandExecutor}*/ (
-                    step.value
-// @ts-expect-error TS(2339) FIXME: Property 'unnamedArgumentList' does not exist on type.
-                )?.unnamedArgumentList?.find(
-// @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
-                    (it) => it.value instanceof SlashCommandClosure && it.value.executeNow,
-                );
+                    step.value // @ts-expect-error TS(2339) FIXME: Property 'unnamedArgumentList' does not exist on type.
+                )?.unnamedArgumentList
+                    ?.find(
+                        // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
+                        (it) => it.value instanceof SlashCommandClosure && it.value.executeNow,
+                    );
                 if (hasImmediateClosureInNamedArgs || hasImmediateClosureInUnnamedArgs) {
                     // @ts-expect-error TS(7057) FIXME: 'yield' expression implicitly results in an 'any' ... Remove this comment to see the full error message
                     this.debugController.isStepping = yield { closure: this, executor: step.value };
@@ -460,15 +462,15 @@ export class SlashCommandClosure {
                 } catch (ex) {
                     throw new SlashCommandExecutionError(
                         ex,
-// @ts-expect-error TS(18046) FIXME: 'ex' is of type 'unknown'.
+                        // @ts-expect-error TS(18046) FIXME: 'ex' is of type 'unknown'.
                         ex.message,
-// @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type.
+                        // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type.
                         executor.name,
-// @ts-expect-error TS(2339) FIXME: Property 'start' does not exist on type.
+                        // @ts-expect-error TS(2339) FIXME: Property 'start' does not exist on type.
                         executor.start,
-// @ts-expect-error TS(2339) FIXME: Property 'end' does not exist on type.
+                        // @ts-expect-error TS(2339) FIXME: Property 'end' does not exist on type.
                         executor.end,
-// @ts-expect-error TS(2339) FIXME: Property 'fullText' does not exist on type.
+                        // @ts-expect-error TS(2339) FIXME: Property 'fullText' does not exist on type.
                         this.fullText.slice(executor.start, executor.end),
                         this.fullText,
                     );

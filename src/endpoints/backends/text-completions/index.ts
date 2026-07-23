@@ -1,13 +1,12 @@
-import express from 'express';
+import { Elysia } from 'elysia';
 
 import { TEXTGEN_TYPES } from '../../../constants.js';
 import { trimV1 } from '../../../util.js';
-import { setAdditionalHeaders } from '../../../additional-headers.js';
+import { setAdditionalHeadersByType } from '../../../additional-headers.js';
 import { getProvider, getRegisteredTypes } from './registry.js';
 import { PROVIDER_ENDPOINTS } from './types.js';
-import { proxyRequest } from '../common/proxy.js';
 
-export const router = express.Router();
+export const router = new Elysia({ prefix: '/api/backends/text-completions' });
 
 // Pre-warm all providers to avoid cold-start import compilation.
 Promise.all(
@@ -22,15 +21,14 @@ Promise.all(
 
 /**
  * Abort KoboldCpp generation request.
- * @param request
- * @param url
  */
-async function abortKoboldCppRequest(request: import('express').Request, url: string) {
+async function abortKoboldCppRequest(url: string, headers: Record<string, string>) {
     try {
         console.info('Aborting Kobold generation...');
-        const args = { method: 'POST' as const, headers: {} as Record<string, string> };
-        setAdditionalHeaders(request, args, url);
-        const abortResponse = await globalThis.fetch(`${url}/api/extra/abort`, args);
+        const abortResponse = await globalThis.fetch(`${url}/api/extra/abort`, {
+            method: 'POST',
+            headers,
+        });
         if (!abortResponse.ok) {
             console.error(
                 'Error sending abort request to Kobold:',
@@ -43,29 +41,69 @@ async function abortKoboldCppRequest(request: import('express').Request, url: st
     }
 }
 
+/**
+ * Resolve the `user` object from the Elysia context (set by the resolve bridge).
+ */
+function getUser(context: unknown): Record<string, unknown> | null {
+    return (context as Record<string, unknown>).user as Record<string, unknown> | null;
+}
+
+/**
+ * Build additional headers for a provider API call, mutating the passed object.
+ */
+function buildAdditionalHeaders(
+    headers: Record<string, string>,
+    apiType: string,
+    server: string,
+    context: unknown,
+    secretId: string | null,
+): void {
+    const user = getUser(context);
+    setAdditionalHeadersByType(
+        headers,
+        apiType,
+        server,
+        (user?.directories as Record<string, string>) ?? {},
+        secretId,
+    );
+}
+
 // ── Status ─────────────────────────────────────────────────────────────────────
 
-router.post('/status', async function (request, response) {
-    if (!request.body) return response.sendStatus(400);
+router.post('/status', async (context) => {
+    const { set } = context;
+    const body = context.body as Record<string, unknown> | undefined;
+
+    if (!body) {
+        set.status = 400;
+        return;
+    }
 
     try {
-        if (request.body.api_server.indexOf('localhost') !== -1) {
-            request.body.api_server = request.body.api_server.replace('localhost', '127.0.0.1');
+        if ((body.api_server as string).indexOf('localhost') !== -1) {
+            body.api_server = (body.api_server as string).replace('localhost', '127.0.0.1');
         }
 
-        console.debug('Trying to connect to API', request.body);
-        const baseUrl = trimV1(request.body.api_server);
-        const apiType = request.body.api_type;
+        console.debug('Trying to connect to API', body);
+        const baseUrl = trimV1(body.api_server as string);
+        const apiType = body.api_type as string;
 
-        const args = { headers: { 'Content-Type': 'application/json' } as Record<string, string> };
-        setAdditionalHeaders(request, args, baseUrl);
+        const args: { headers: Record<string, string> } = {
+            headers: { 'Content-Type': 'application/json' },
+        };
+        buildAdditionalHeaders(
+            args.headers,
+            apiType,
+            baseUrl,
+            context,
+            (body.secret_id as string) ?? null,
+        );
 
         // URL from centralised config — no switch.
         const endpoints = PROVIDER_ENDPOINTS[apiType];
         if (!endpoints) {
-            return response
-                .status(400)
-                .send({ result: 'no_connection', response: `Unknown API type: ${apiType}` });
+            set.status = 400;
+            return { result: 'no_connection', response: `Unknown API type: ${apiType}` };
         }
         const url = baseUrl + endpoints.status;
 
@@ -74,10 +112,11 @@ router.post('/status', async function (request, response) {
 
         if (!modelsReply.ok) {
             console.error(`Models endpoint returned HTTP ${modelsReply.status}`);
-            return response.status(400).json({
+            set.status = 400;
+            return {
                 result: 'no_connection',
                 response: `API returned an error: HTTP ${modelsReply.status}`,
-            });
+            };
         }
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic API shape
@@ -91,7 +130,8 @@ router.post('/status', async function (request, response) {
 
         if (!data || !Array.isArray(data.data)) {
             console.error('Models response is not an array.');
-            return response.sendStatus(400);
+            set.status = 400;
+            return;
         }
 
         const modelIds = data.data.map((x: { id: string }) => x.id);
@@ -104,7 +144,8 @@ router.post('/status', async function (request, response) {
             const modelName = await provider.getModelId(baseUrl, args.headers);
             if (modelName) {
                 result = modelName;
-                response.setHeader('x-supports-tokenization', 'true');
+                set.headers = set.headers ?? {};
+                set.headers['x-supports-tokenization'] = 'true';
             }
         }
 
@@ -119,35 +160,48 @@ router.post('/status', async function (request, response) {
             }
         }
 
-        return response.send({ result, data: data.data });
+        return { result, data: data.data };
     } catch (error) {
         console.error(error);
-        return response.sendStatus(500);
+        set.status = 500;
     }
 });
 
 // ── Props ──────────────────────────────────────────────────────────────────────
 
-router.post('/props', async function (request, response) {
-    if (!request.body.api_server) return response.sendStatus(400);
+router.post('/props', async (context) => {
+    const { set } = context;
+    const body = context.body as Record<string, unknown> | undefined;
+
+    if (!body?.api_server) {
+        set.status = 400;
+        return;
+    }
 
     try {
-        const baseUrl = trimV1(request.body.api_server);
-        const apiType = request.body.api_type;
+        const baseUrl = trimV1(body.api_server as string);
+        const apiType = body.api_type as string;
 
-        const args = { headers: {} as Record<string, string> };
-        setAdditionalHeaders(request, args, baseUrl);
+        const args: { headers: Record<string, string> } = { headers: {} };
+        buildAdditionalHeaders(
+            args.headers,
+            apiType,
+            baseUrl,
+            context,
+            (body.secret_id as string) ?? null,
+        );
 
         let propsUrl = baseUrl + '/props';
-        if (apiType === TEXTGEN_TYPES.LLAMACPP && request.body.model) {
-            propsUrl += `?model=${encodeURIComponent(request.body.model)}`;
-            console.debug(
-                `Querying llama-server props with model parameter: ${request.body.model}`,
-            );
+        if (apiType === TEXTGEN_TYPES.LLAMACPP && body.model) {
+            propsUrl += `?model=${encodeURIComponent(body.model as string)}`;
+            console.debug(`Querying llama-server props with model parameter: ${body.model}`);
         }
 
         const propsReply = await globalThis.fetch(propsUrl, args);
-        if (!propsReply.ok) return response.sendStatus(400);
+        if (!propsReply.ok) {
+            set.status = 400;
+            return;
+        }
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const props = (await propsReply.json()) as any;
@@ -165,62 +219,120 @@ router.post('/props', async function (request, response) {
         const { createHash } = await import('node:crypto');
         props.chat_template_hash = createHash('sha256').update(props.chat_template).digest('hex');
         console.debug(`Model properties: ${JSON.stringify(props)}`);
-        return response.send(props);
+        return props;
     } catch (error) {
         console.error(error);
-        return response.sendStatus(500);
+        set.status = 500;
     }
 });
 
 // ── Generate ───────────────────────────────────────────────────────────────────
 
-router.post('/generate', async function (request, response) {
-    if (!request.body) return response.sendStatus(400);
+router.post('/generate', async (context) => {
+    const { set, request: contextRequest } = context;
+    const body = context.body as Record<string, unknown> | undefined;
+
+    if (!body) {
+        set.status = 400;
+        return;
+    }
 
     try {
-        if (request.body.api_server.indexOf('localhost') !== -1) {
-            request.body.api_server = request.body.api_server.replace('localhost', '127.0.0.1');
+        if ((body.api_server as string).indexOf('localhost') !== -1) {
+            body.api_server = (body.api_server as string).replace('localhost', '127.0.0.1');
         }
 
-        const apiType = request.body.api_type;
-        const baseUrl = request.body.api_server;
-        console.debug(request.body);
+        const apiType = body.api_type as string;
+        const baseUrl = body.api_server as string;
+        console.debug(body);
 
-        // Abort handling.
+        // Abort handling — use the incoming request's signal to detect disconnect.
         const controller = new AbortController();
-        request.socket.removeAllListeners('close');
-        request.socket.on('close', async function () {
-            if (apiType === TEXTGEN_TYPES.KOBOLDCPP && !response.writableEnded) {
-                await abortKoboldCppRequest(request, trimV1(baseUrl));
+        const onAbort = async function () {
+            if (apiType === TEXTGEN_TYPES.KOBOLDCPP) {
+                const abortHeaders: Record<string, string> = {};
+                const user = getUser(context);
+                setAdditionalHeadersByType(
+                    abortHeaders,
+                    apiType,
+                    trimV1(baseUrl),
+                    (user?.directories as Record<string, string>) ?? {},
+                    (body as Record<string, unknown>).secret_id as string | null,
+                );
+                await abortKoboldCppRequest(trimV1(baseUrl), abortHeaders);
             }
             controller.abort();
-        });
+        };
+        contextRequest.signal.addEventListener('abort', onAbort, { once: true });
 
         // URL from centralised config — no switch.
         const endpoints = PROVIDER_ENDPOINTS[apiType];
         if (!endpoints) {
-            return response
-                .status(400)
-                .send({ error: true, status: 'UNKNOWN', response: `Unknown API type: ${apiType}` });
+            set.status = 400;
+            return { error: true, status: 'UNKNOWN', response: `Unknown API type: ${apiType}` };
         }
 
         const url = trimV1(baseUrl) + endpoints.generate;
         const provider = await getProvider(apiType);
-        const body = provider.buildGenerateBody
-            ? provider.buildGenerateBody(request.body)
-            : { ...request.body };
+        const generateBody = provider.buildGenerateBody
+            ? provider.buildGenerateBody(body as Record<string, unknown>)
+            : { ...body };
 
-        // Single proxy call — handles fetch, streaming, error mapping, response transforms.
-        await proxyRequest({
-            request,
-            response,
-            url,
-            body: JSON.stringify(body),
+        const fetchArgs: RequestInit = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
             signal: controller.signal,
-            stream: request.body.stream,
-            streamHandler: provider.stream,
-            transformResponse: provider.transformGenerateResponse,
-        });
+            body: JSON.stringify(generateBody),
+        };
+        const extraHeaders: Record<string, string> = {};
+        buildAdditionalHeaders(
+            extraHeaders,
+            apiType,
+            baseUrl,
+            context,
+            (body.secret_id as string) ?? null,
+        );
+        Object.assign(fetchArgs.headers as Record<string, string>, extraHeaders);
+
+        if (body.stream) {
+            // Streaming — pipe the fetch response body through as a Web Response.
+            // The mountElysia bridge writes this back to the Express response.
+            const fetchResponse = await globalThis.fetch(url, fetchArgs);
+
+            if (!fetchResponse.body) {
+                set.status = 500;
+                return {
+                    error: true,
+                    status: 'STREAM_ERROR',
+                    response: 'No response body from upstream',
+                };
+            }
+
+            return new Response(fetchResponse.body, {
+                status: fetchResponse.status,
+                statusText: fetchResponse.statusText,
+                headers: fetchResponse.headers,
+            });
+        }
+
+        // Non-streaming — read the full response and optionally transform.
+        const reply = await globalThis.fetch(url, fetchArgs);
+
+        if (reply.ok) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic API shape
+            let data = (await reply.json()) as any;
+            console.debug('Backend response:', data);
+
+            if (provider.transformGenerateResponse) {
+                data = provider.transformGenerateResponse(data);
+            }
+
+            return data;
+        }
+
+        const text = await reply.text();
+        set.status = reply.status;
+        return { error: true, status: reply.status, response: text };
     } catch (error: any) {
         const status = error?.status ?? error?.code ?? 'UNKNOWN';
         const text =
@@ -231,7 +343,12 @@ router.post('/generate', async function (request, response) {
         const value = { error: true, status, response: text };
         console.error('Endpoint error:', error);
 
-        return !response.headersSent ? response.send(value) : response.end();
+        if (typeof status === 'number') {
+            set.status = status;
+        } else {
+            set.status = 500;
+        }
+        return value;
     }
 });
 
@@ -239,167 +356,210 @@ router.post('/generate', async function (request, response) {
 // These expose distinct endpoints (download, caption-image, slots, etc.) that are
 // not covered by the generic BackendProvider interface.
 
-const ollama = express.Router();
+const ollama = new Elysia({ prefix: '/ollama' })
+    .post('/download', async (context) => {
+        const { set } = context;
+        const body = context.body as Record<string, unknown> | undefined;
 
-ollama.post('/download', async function (request, response) {
+        try {
+            if (!body?.name || !body?.api_server) {
+                set.status = 400;
+                return;
+            }
+
+            const name = body.name as string;
+            const url = String(body.api_server).replace(/\/$/, '');
+            console.debug('Pulling Ollama model:', name);
+
+            const fetchResponse = await globalThis.fetch(`${url}/api/pull`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, stream: false }),
+            });
+
+            if (!fetchResponse.ok) {
+                console.error('Download error:', fetchResponse.status, fetchResponse.statusText);
+                set.status = 500;
+                return { error: true };
+            }
+
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            console.debug('Ollama pull response:', (await fetchResponse.json()) as any);
+            return { ok: true };
+        } catch (error) {
+            console.error(error);
+            set.status = 500;
+        }
+    })
+    .post('/caption-image', async (context) => {
+        const { set } = context;
+        const body = context.body as Record<string, unknown> | undefined;
+
+        try {
+            if (!body?.server_url || !body?.model) {
+                set.status = 400;
+                return;
+            }
+
+            console.debug('Ollama caption request:', body);
+            const baseUrl = trimV1(body.server_url as string);
+
+            const fetchResponse = await globalThis.fetch(`${baseUrl}/api/generate`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    model: body.model,
+                    prompt: body.prompt,
+                    images: [body.image],
+                    stream: false,
+                }),
+            });
+
+            if (!fetchResponse.ok) {
+                const errorText = await fetchResponse.text();
+                console.error(
+                    'Ollama caption error:',
+                    fetchResponse.status,
+                    fetchResponse.statusText,
+                    errorText,
+                );
+                set.status = 500;
+                return { error: true };
+            }
+
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const data = (await fetchResponse.json()) as any;
+            console.debug('Ollama caption response:', data);
+
+            const caption = data?.response || '';
+            if (!caption) {
+                console.error('Ollama caption is empty.');
+                set.status = 500;
+                return { error: true };
+            }
+
+            return { caption };
+        } catch (error) {
+            console.error(error);
+            set.status = 500;
+        }
+    });
+
+const llamacpp = new Elysia({ prefix: '/llamacpp' })
+    .post('/props', async (context) => {
+        const { set } = context;
+        const body = context.body as Record<string, unknown> | undefined;
+
+        try {
+            if (!body?.server_url) {
+                set.status = 400;
+                return;
+            }
+
+            console.debug('LlamaCpp props request:', body);
+            const baseUrl = trimV1(body.server_url as string);
+
+            const fetchResponse = await globalThis.fetch(`${baseUrl}/props`, { method: 'GET' });
+
+            if (!fetchResponse.ok) {
+                console.error(
+                    'LlamaCpp props error:',
+                    fetchResponse.status,
+                    fetchResponse.statusText,
+                );
+                set.status = 500;
+                return { error: true };
+            }
+
+            const data = (await fetchResponse.json()) as Record<string, unknown>;
+            console.debug('LlamaCpp props response:', data);
+            return data;
+        } catch (error) {
+            console.error(error);
+            set.status = 500;
+        }
+    })
+    .post('/slots', async (context) => {
+        const { set } = context;
+        const body = context.body as Record<string, unknown> | undefined;
+
+        try {
+            if (!body?.server_url) {
+                set.status = 400;
+                return;
+            }
+            if (!/^(erase|info|restore|save)$/.test(body.action as string)) {
+                set.status = 400;
+                return;
+            }
+
+            console.debug('LlamaCpp slots request:', body);
+            const baseUrl = trimV1(body.server_url as string);
+
+            let fetchResponse;
+            if (body.action === 'info') {
+                fetchResponse = await globalThis.fetch(`${baseUrl}/slots`, { method: 'GET' });
+            } else {
+                if (!/^\d+$/.test(body.id_slot as string)) {
+                    set.status = 400;
+                    return;
+                }
+                if (body.action !== 'erase' && !body.filename) {
+                    set.status = 400;
+                    return;
+                }
+
+                fetchResponse = await globalThis.fetch(
+                    `${baseUrl}/slots/${body.id_slot}?action=${body.action}`,
+                    {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            filename:
+                                body.action !== 'erase' ? `${body.filename as string}` : undefined,
+                        }),
+                    },
+                );
+            }
+
+            if (!fetchResponse.ok) {
+                console.error(
+                    'LlamaCpp slots error:',
+                    fetchResponse.status,
+                    fetchResponse.statusText,
+                );
+                set.status = 500;
+                return { error: true };
+            }
+
+            const data = (await fetchResponse.json()) as Record<string, unknown>;
+            console.debug('LlamaCpp slots response:', data);
+            return data;
+        } catch (error) {
+            console.error(error);
+            set.status = 500;
+        }
+    });
+
+const tabby = new Elysia({ prefix: '/tabby' }).post('/download', async (context) => {
+    const { set } = context;
+    const body = context.body as Record<string, unknown> | undefined;
+
     try {
-        if (!request.body.name || !request.body.api_server) return response.sendStatus(400);
-
-        const name = request.body.name;
-        const url = String(request.body.api_server).replace(/\/$/, '');
-        console.debug('Pulling Ollama model:', name);
-
-        const fetchResponse = await globalThis.fetch(`${url}/api/pull`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, stream: false }),
-        });
-
-        if (!fetchResponse.ok) {
-            console.error('Download error:', fetchResponse.status, fetchResponse.statusText);
-            return response.status(500).send({ error: true });
-        }
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        console.debug('Ollama pull response:', (await fetchResponse.json()) as any);
-        return response.send({ ok: true });
-    } catch (error) {
-        console.error(error);
-        return response.sendStatus(500);
-    }
-});
-
-ollama.post('/caption-image', async function (request, response) {
-    try {
-        if (!request.body.server_url || !request.body.model) {
-            return response.sendStatus(400);
-        }
-
-        console.debug('Ollama caption request:', request.body);
-        const baseUrl = trimV1(request.body.server_url);
-
-        const fetchResponse = await globalThis.fetch(`${baseUrl}/api/generate`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                model: request.body.model,
-                prompt: request.body.prompt,
-                images: [request.body.image],
-                stream: false,
-            }),
-        });
-
-        if (!fetchResponse.ok) {
-            const errorText = await fetchResponse.text();
-            console.error(
-                'Ollama caption error:',
-                fetchResponse.status,
-                fetchResponse.statusText,
-                errorText,
-            );
-            return response.status(500).send({ error: true });
-        }
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const data = (await fetchResponse.json()) as any;
-        console.debug('Ollama caption response:', data);
-
-        const caption = data?.response || '';
-        if (!caption) {
-            console.error('Ollama caption is empty.');
-            return response.status(500).send({ error: true });
-        }
-
-        return response.send({ caption });
-    } catch (error) {
-        console.error(error);
-        return response.sendStatus(500);
-    }
-});
-
-const llamacpp = express.Router();
-
-llamacpp.post('/props', async function (request, response) {
-    try {
-        if (!request.body.server_url) return response.sendStatus(400);
-
-        console.debug('LlamaCpp props request:', request.body);
-        const baseUrl = trimV1(request.body.server_url);
-
-        const fetchResponse = await globalThis.fetch(`${baseUrl}/props`, { method: 'GET' });
-
-        if (!fetchResponse.ok) {
-            console.error('LlamaCpp props error:', fetchResponse.status, fetchResponse.statusText);
-            return response.status(500).send({ error: true });
-        }
-
-        const data = (await fetchResponse.json()) as Record<string, unknown>;
-        console.debug('LlamaCpp props response:', data);
-        return response.send(data);
-    } catch (error) {
-        console.error(error);
-        return response.sendStatus(500);
-    }
-});
-
-llamacpp.post('/slots', async function (request, response) {
-    try {
-        if (!request.body.server_url) return response.sendStatus(400);
-        if (!/^(erase|info|restore|save)$/.test(request.body.action))
-            return response.sendStatus(400);
-
-        console.debug('LlamaCpp slots request:', request.body);
-        const baseUrl = trimV1(request.body.server_url);
-
-        let fetchResponse;
-        if (request.body.action === 'info') {
-            fetchResponse = await globalThis.fetch(`${baseUrl}/slots`, { method: 'GET' });
-        } else {
-            if (!/^\d+$/.test(request.body.id_slot)) return response.sendStatus(400);
-            if (request.body.action !== 'erase' && !request.body.filename)
-                return response.sendStatus(400);
-
-            fetchResponse = await globalThis.fetch(
-                `${baseUrl}/slots/${request.body.id_slot}?action=${request.body.action}`,
-                {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        filename:
-                            request.body.action !== 'erase'
-                                ? `${request.body.filename}`
-                                : undefined,
-                    }),
-                },
-            );
-        }
-
-        if (!fetchResponse.ok) {
-            console.error('LlamaCpp slots error:', fetchResponse.status, fetchResponse.statusText);
-            return response.status(500).send({ error: true });
-        }
-
-        const data = (await fetchResponse.json()) as Record<string, unknown>;
-        console.debug('LlamaCpp slots response:', data);
-        return response.send(data);
-    } catch (error) {
-        console.error(error);
-        return response.sendStatus(500);
-    }
-});
-
-const tabby = express.Router();
-
-tabby.post('/download', async function (request, response) {
-    try {
-        const baseUrl = String(request.body.api_server).replace(/\/$/, '');
+        const baseUrl = String(body?.api_server).replace(/\/$/, '');
         const args: Record<string, unknown> = {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(request.body),
+            body: JSON.stringify(body),
         };
 
-        setAdditionalHeaders(request, args, baseUrl);
+        buildAdditionalHeaders(
+            args.headers as Record<string, string>,
+            body?.api_type as string,
+            baseUrl,
+            context,
+            (body?.secret_id as string) ?? null,
+        );
 
         // Check key permissions.
         const permissionResponse = await globalThis.fetch(`${baseUrl}/v1/auth/permission`, {
@@ -410,7 +570,8 @@ tabby.post('/download', async function (request, response) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const permissionJson = (await permissionResponse.json()) as any;
             if (permissionJson.permission !== 'admin') {
-                return response.status(403).send({ error: true });
+                set.status = 403;
+                return { error: true };
             }
         } else {
             console.error(
@@ -418,22 +579,24 @@ tabby.post('/download', async function (request, response) {
                 permissionResponse.status,
                 permissionResponse.statusText,
             );
-            return response.status(500).send({ error: true });
+            set.status = 500;
+            return { error: true };
         }
 
         const fetchResponse = await globalThis.fetch(`${baseUrl}/v1/download`, args as RequestInit);
         if (!fetchResponse.ok) {
             console.error('Download error:', fetchResponse.status, fetchResponse.statusText);
-            return response.status(500).send({ error: true });
+            set.status = 500;
+            return { error: true };
         }
 
-        return response.send({ ok: true });
+        return { ok: true };
     } catch (error) {
         console.error(error);
-        return response.sendStatus(500);
+        set.status = 500;
     }
 });
 
-router.use('/ollama', ollama);
-router.use('/llamacpp', llamacpp);
-router.use('/tabby', tabby);
+router.use(ollama);
+router.use(llamacpp);
+router.use(tabby);

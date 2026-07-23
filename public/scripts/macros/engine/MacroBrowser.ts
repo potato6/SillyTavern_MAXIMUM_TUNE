@@ -194,7 +194,7 @@ export class MacroBrowser {
         // Clear previous selection
         this.dom
             .querySelectorAll('.macro-item.selected')
-// @ts-expect-error TS(7006) FIXME: Parameter 'el' implicitly has an 'any' type.
+            // @ts-expect-error TS(7006) FIXME: Parameter 'el' implicitly has an 'any' type.
             .forEach((el) => el.classList.remove('selected'));
         item.classList.add('selected');
 
@@ -216,7 +216,7 @@ export class MacroBrowser {
             '<div class="macro-details-placeholder">Select a macro to view details</div>';
         this.dom
             .querySelectorAll('.macro-item.selected')
-// @ts-expect-error TS(7006) FIXME: Parameter 'el' implicitly has an 'any' type.
+            // @ts-expect-error TS(7006) FIXME: Parameter 'el' implicitly has an 'any' type.
             .forEach((el) => el.classList.remove('selected'));
 
         // If empty query, show all
@@ -226,7 +226,7 @@ export class MacroBrowser {
             }
             this.dom
                 .querySelectorAll('.macro-category-header')
-// @ts-expect-error TS(7006) FIXME: Parameter 'h' implicitly has an 'any' type.
+                // @ts-expect-error TS(7006) FIXME: Parameter 'h' implicitly has an 'any' type.
                 .forEach((h) => h.classList.remove('isFiltered'));
             return;
         }

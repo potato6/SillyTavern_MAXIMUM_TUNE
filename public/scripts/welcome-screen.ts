@@ -496,7 +496,7 @@ async function sendWelcomePanel(chats, expand = false) {
                 const groupId = chatItem.getAttribute('data-group');
                 const fileName = chatItem.getAttribute('data-file');
                 const recentChat = chats.find(
-// @ts-expect-error TS(7006) FIXME: Parameter 'c' implicitly has an 'any' type.
+                    // @ts-expect-error TS(7006) FIXME: Parameter 'c' implicitly has an 'any' type.
                     (c) =>
                         c.chat_name === fileName &&
                         ((c.is_group && c.group === groupId) ||
@@ -734,11 +734,11 @@ async function refreshWelcomeScreen({ flashChat = null } = {}) {
             const group = el.getAttribute('data-group');
             const avatar = el.getAttribute('data-avatar');
             return (
-// @ts-expect-error TS(2339) FIXME: Property 'chat_name' does not exist on type.
+                // @ts-expect-error TS(2339) FIXME: Property 'chat_name' does not exist on type.
                 file === flashChat.chat_name &&
                 // @ts-expect-error TS(2339) FIXME: Property 'is_group' does not exist on type 'never'... Remove this comment to see the full error message
                 ((flashChat.is_group && group === flashChat.group) ||
-// @ts-expect-error TS(2339) FIXME: Property 'is_group' does not exist on type.
+                    // @ts-expect-error TS(2339) FIXME: Property 'is_group' does not exist on type.
                     (!flashChat.is_group && avatar === flashChat.avatar))
             );
         });

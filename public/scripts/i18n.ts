@@ -84,7 +84,8 @@ const observer = new MutationObserver((mutations) => {
  */
 export function t(strings: any, ...values: any) {
     const str = strings.reduce(
-        (result: any, string: any, i: any) => result + string + (values[i] !== undefined ? '\\${' + i + '}' : ''),
+        (result: any, string: any, i: any) =>
+            result + string + (values[i] !== undefined ? '\\${' + i + '}' : ''),
         '',
     );
     const translatedStr = translate(str);

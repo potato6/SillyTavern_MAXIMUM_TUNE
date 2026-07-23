@@ -865,11 +865,11 @@ function parseDecorators(content) {
  */
 //MARK: checkWorldInfo
 export async function checkWorldInfo(
-// @ts-expect-error TS(7006) FIXME: Parameter 'chat' implicitly has an 'any' type.
+    // @ts-expect-error TS(7006) FIXME: Parameter 'chat' implicitly has an 'any' type.
     chat,
-// @ts-expect-error TS(7006) FIXME: Parameter 'maxContext' implicitly has an 'any' type.
+    // @ts-expect-error TS(7006) FIXME: Parameter 'maxContext' implicitly has an 'any' type.
     maxContext,
-// @ts-expect-error TS(7006) FIXME: Parameter 'isDryRun' implicitly has an 'any' type.
+    // @ts-expect-error TS(7006) FIXME: Parameter 'isDryRun' implicitly has an 'any' type.
     isDryRun,
     globalScanData = defaultGlobalScanData,
 ) {
@@ -1592,7 +1592,7 @@ export async function checkWorldInfo(
         // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         const originalAN = context.extensionPrompts[NOTE_MODULE_NAME].value;
         const ANWithWI =
-// @ts-expect-error TS(7005) FIXME: Variable 'ANTopEntries' implicitly has an 'any' type.
+            // @ts-expect-error TS(7005) FIXME: Variable 'ANTopEntries' implicitly has an 'any' type.
             `${ANTopEntries.join('\n')}\n${originalAN}\n${ANBottomEntries.join('\n')}`.replace(
                 /(^\n)|(\n$)/g,
                 '',
@@ -1602,7 +1602,7 @@ export async function checkWorldInfo(
             ANWithWI,
             chat_metadata[metadata_keys.position],
             chat_metadata[metadata_keys.depth],
-// @ts-expect-error TS(18046) FIXME: 'extension_settings.note' is of type 'unknown'.
+            // @ts-expect-error TS(18046) FIXME: 'extension_settings.note' is of type 'unknown'.
             extension_settings.note.allowWIScan,
             chat_metadata[metadata_keys.role],
         );
@@ -1621,13 +1621,13 @@ export async function checkWorldInfo(
     return {
         worldInfoBefore,
         worldInfoAfter,
-// @ts-expect-error TS(7005) FIXME: Variable 'EMEntries' implicitly has an 'any' type.
+        // @ts-expect-error TS(7005) FIXME: Variable 'EMEntries' implicitly has an 'any' type.
         EMEntries,
-// @ts-expect-error TS(7005) FIXME: Variable 'WIDepthEntries' implicitly has an 'any' type.
+        // @ts-expect-error TS(7005) FIXME: Variable 'WIDepthEntries' implicitly has an 'any' type.
         WIDepthEntries,
-// @ts-expect-error TS(7005) FIXME: Variable 'ANTopEntries' implicitly has an 'any' type.
+        // @ts-expect-error TS(7005) FIXME: Variable 'ANTopEntries' implicitly has an 'any' type.
         ANBeforeEntries: ANTopEntries,
-// @ts-expect-error TS(7005) FIXME: Variable 'ANBottomEntries' implicitly has an 'any' type.
+        // @ts-expect-error TS(7005) FIXME: Variable 'ANBottomEntries' implicitly has an 'any' type.
         ANAfterEntries: ANBottomEntries,
         outletEntries: WIOutletEntries,
         allActivatedEntries: new Set(allActivatedEntries.values()),

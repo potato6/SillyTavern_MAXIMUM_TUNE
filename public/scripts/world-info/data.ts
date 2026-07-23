@@ -133,14 +133,14 @@ export const newWorldInfoEntryDefinition = {
     triggers: {
         default: [],
         type: 'array',
-// @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
+        // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
         arrayFilter: (value) => GENERATION_TYPE_TRIGGERS.includes(value),
     },
 };
 
 export const newWorldInfoEntryTemplate = Object.fromEntries(
     Object.entries(newWorldInfoEntryDefinition)
-// @ts-expect-error TS(2339) FIXME: Property 'filter' does not exist on type.
+        // @ts-expect-error TS(2339) FIXME: Property 'filter' does not exist on type.
         .filter(([_, value]) => !value.excludeFromTemplate)
         .map(([key, value]) => [key, value.default]),
 );
@@ -711,7 +711,7 @@ export async function createNewWorldInfo(worldName, { interactive = false } = {}
         {
             interactive: interactive,
             actionName: 'Create',
-// @ts-expect-error TS(2322) FIXME: Type is not assignable.
+            // @ts-expect-error TS(2322) FIXME: Type is not assignable.
             deleteAction: (existingName) => deleteWorldInfo(existingName),
         },
     );
@@ -877,7 +877,7 @@ export async function importWorldInfo(file) {
         {
             interactive: true,
             actionName: 'Import',
-// @ts-expect-error TS(2322) FIXME: Type is not assignable.
+            // @ts-expect-error TS(2322) FIXME: Type is not assignable.
             deleteAction: (existingName) => deleteWorldInfo(existingName),
         },
     );
@@ -909,7 +909,7 @@ export async function importWorldInfo(file) {
                 // Sync the TomSelect display with the programmatic value change
                 document
                     .getElementById('world_editor_select')
-// @ts-expect-error TS(2551) FIXME: Property does not exist.
+                    // @ts-expect-error TS(2551) FIXME: Property does not exist.
                     ?.tomselect?.setValue(String(newIndex));
                 document
                     .getElementById('world_editor_select')
@@ -934,11 +934,11 @@ export async function importWorldInfo(file) {
  * @returns {Promise<boolean>} True if the move was successful, false otherwise.
  */
 export async function moveWorldInfoEntry(
-// @ts-expect-error TS(7006) FIXME: Parameter 'sourceName' implicitly has an 'any' type.
+    // @ts-expect-error TS(7006) FIXME: Parameter 'sourceName' implicitly has an 'any' type.
     sourceName,
-// @ts-expect-error TS(7006) FIXME: Parameter 'targetName' implicitly has an 'any' type.
+    // @ts-expect-error TS(7006) FIXME: Parameter 'targetName' implicitly has an 'any' type.
     targetName,
-// @ts-expect-error TS(7006) FIXME: Parameter 'uid' implicitly has an 'any' type.
+    // @ts-expect-error TS(7006) FIXME: Parameter 'uid' implicitly has an 'any' type.
     uid,
     { deleteOriginal = true } = {},
 ) {
@@ -1028,7 +1028,7 @@ export async function moveWorldInfoEntry(
 
         // Check if the currently viewed book in the editor is the source or target and reload it
         const currentEditorBookIndex = Number(
-// @ts-expect-error TS(2531) FIXME: Object is possibly 'null' or 'undefined'.
+            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null' or 'undefined'.
             (document.getElementById('world_editor_select').value = String()),
         );
         if (!isNaN(currentEditorBookIndex)) {

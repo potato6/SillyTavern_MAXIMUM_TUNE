@@ -235,7 +235,7 @@ const Def = {
             // Valid options after a macro identifier: whitespace, colon/double-colon (captured), macro end braces, or output modifier pipe.
             exits(Tokens.Macro.BeforeEnd, modes.macro_identifier_end),
             enter(Tokens.Macro.EndOfIdentifier, modes.macro_args, {
-// @ts-expect-error TS(2322) FIXME: Type is not assignable.
+                // @ts-expect-error TS(2322) FIXME: Type is not assignable.
                 andExits: modes.macro_identifier_end,
             }),
         ],
@@ -267,7 +267,7 @@ const Def = {
             using(Tokens.WhiteSpace),
 
             enter(Tokens.Filter.Identifier, modes.macro_filter_modifier_end, {
-// @ts-expect-error TS(2322) FIXME: Type is not assignable.
+                // @ts-expect-error TS(2322) FIXME: Type is not assignable.
                 andExits: modes.macro_filter_modifer,
             }),
         ],
@@ -282,7 +282,7 @@ const Def = {
             using(Tokens.WhiteSpace),
             // Consume the variable identifier and move to operator detection
             enter(Tokens.Var.Identifier, modes.var_after_identifier, {
-// @ts-expect-error TS(2322) FIXME: Type is not assignable.
+                // @ts-expect-error TS(2322) FIXME: Type is not assignable.
                 andExits: modes.var_identifier,
             }),
             // If no valid identifier found, exit back (will result in parser error)
@@ -295,55 +295,55 @@ const Def = {
             using(Tokens.Var.Operators.Increment),
             using(Tokens.Var.Operators.Decrement),
             enter(Tokens.Var.Operators.NullishCoalescingEquals, modes.var_value, {
-// @ts-expect-error TS(2322) FIXME: Type is not assignable.
+                // @ts-expect-error TS(2322) FIXME: Type is not assignable.
                 andExits: modes.var_after_identifier,
             }),
             enter(Tokens.Var.Operators.NullishCoalescing, modes.var_value, {
-// @ts-expect-error TS(2322) FIXME: Type is not assignable.
+                // @ts-expect-error TS(2322) FIXME: Type is not assignable.
                 andExits: modes.var_after_identifier,
             }),
             enter(Tokens.Var.Operators.LogicalOrEquals, modes.var_value, {
-// @ts-expect-error TS(2322) FIXME: Type is not assignable.
+                // @ts-expect-error TS(2322) FIXME: Type is not assignable.
                 andExits: modes.var_after_identifier,
             }),
             enter(Tokens.Var.Operators.LogicalOr, modes.var_value, {
-// @ts-expect-error TS(2322) FIXME: Type is not assignable.
+                // @ts-expect-error TS(2322) FIXME: Type is not assignable.
                 andExits: modes.var_after_identifier,
             }),
             enter(Tokens.Var.Operators.MinusEquals, modes.var_value, {
-// @ts-expect-error TS(2322) FIXME: Type is not assignable.
+                // @ts-expect-error TS(2322) FIXME: Type is not assignable.
                 andExits: modes.var_after_identifier,
             }),
             enter(Tokens.Var.Operators.DoubleEquals, modes.var_value, {
-// @ts-expect-error TS(2322) FIXME: Type is not assignable.
+                // @ts-expect-error TS(2322) FIXME: Type is not assignable.
                 andExits: modes.var_after_identifier,
             }),
             enter(Tokens.Var.Operators.NotEquals, modes.var_value, {
-// @ts-expect-error TS(2322) FIXME: Type is not assignable.
+                // @ts-expect-error TS(2322) FIXME: Type is not assignable.
                 andExits: modes.var_after_identifier,
             }),
             enter(Tokens.Var.Operators.GreaterThanOrEqual, modes.var_value, {
-// @ts-expect-error TS(2322) FIXME: Type is not assignable.
+                // @ts-expect-error TS(2322) FIXME: Type is not assignable.
                 andExits: modes.var_after_identifier,
             }),
             enter(Tokens.Var.Operators.GreaterThan, modes.var_value, {
-// @ts-expect-error TS(2322) FIXME: Type is not assignable.
+                // @ts-expect-error TS(2322) FIXME: Type is not assignable.
                 andExits: modes.var_after_identifier,
             }),
             enter(Tokens.Var.Operators.LessThanOrEqual, modes.var_value, {
-// @ts-expect-error TS(2322) FIXME: Type is not assignable.
+                // @ts-expect-error TS(2322) FIXME: Type is not assignable.
                 andExits: modes.var_after_identifier,
             }),
             enter(Tokens.Var.Operators.LessThan, modes.var_value, {
-// @ts-expect-error TS(2322) FIXME: Type is not assignable.
+                // @ts-expect-error TS(2322) FIXME: Type is not assignable.
                 andExits: modes.var_after_identifier,
             }),
             enter(Tokens.Var.Operators.PlusEquals, modes.var_value, {
-// @ts-expect-error TS(2322) FIXME: Type is not assignable.
+                // @ts-expect-error TS(2322) FIXME: Type is not assignable.
                 andExits: modes.var_after_identifier,
             }),
             enter(Tokens.Var.Operators.Equals, modes.var_value, {
-// @ts-expect-error TS(2322) FIXME: Type is not assignable.
+                // @ts-expect-error TS(2322) FIXME: Type is not assignable.
                 andExits: modes.var_after_identifier,
             }),
             // If we see the end, exit

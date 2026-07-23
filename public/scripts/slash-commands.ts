@@ -441,18 +441,17 @@ export function initDefaultSlashCommands() {
                     typeList: [ARGUMENT_TYPE.STRING],
                     enumList: Object.entries(CONNECT_API_MAP)
                         .toSorted(([a], [b]) => a.localeCompare(b))
-                        .map(
-                            ([api, config]: [string, any]) => {
-                                const { selected } = config;
-                                return new SlashCommandEnumValue(
-                                    api,
-                                    selected,
-                                    enumTypes.getBasedOnIndex(
-                                        UNIQUE_APIS.findIndex((x) => x === selected),
-                                    ),
-                                    selected[0].toUpperCase() ?? enumIcons.default,
-                                );
-                            }),
+                        .map(([api, config]: [string, any]) => {
+                            const { selected } = config;
+                            return new SlashCommandEnumValue(
+                                api,
+                                selected,
+                                enumTypes.getBasedOnIndex(
+                                    UNIQUE_APIS.findIndex((x) => x === selected),
+                                ),
+                                selected[0].toUpperCase() ?? enumIcons.default,
+                            );
+                        }),
                 }),
             ],
             helpString: `
@@ -741,7 +740,7 @@ export function initDefaultSlashCommands() {
                         instruct_presets.map(
                             (preset) =>
                                 new SlashCommandEnumValue(
-// @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type.
+                                    // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type.
                                     preset.name,
                                     null,
                                     enumTypes.enum,
@@ -961,9 +960,9 @@ export function initDefaultSlashCommands() {
                     throw new Error(t`quiet cannot be a closure or array`);
 
                 const char = findChar({
-// @ts-expect-error TS(2322) FIXME: Type is not assignable.
+                    // @ts-expect-error TS(2322) FIXME: Type is not assignable.
                     name: name,
-// @ts-expect-error TS(2322) FIXME: Type is not assignable.
+                    // @ts-expect-error TS(2322) FIXME: Type is not assignable.
                     filteredByTags: validateArrayArgString(args.tag, 'tag'),
                     preferCurrentChar: !isFalseBoolean(args.preferCurrent),
                     quiet: isTrueBoolean(args.quiet),
@@ -1993,7 +1992,7 @@ export function initDefaultSlashCommands() {
             callback: async ({ silent = 'true', chats = null }, name) => {
                 const renamed = await renameCharacter(name, {
                     silent: isTrueBoolean(silent),
-// @ts-expect-error TS(2322) FIXME: Type is not assignable.
+                    // @ts-expect-error TS(2322) FIXME: Type is not assignable.
                     renameChats: chats !== null ? isTrueBoolean(chats) : null,
                 });
                 return String(renamed);
@@ -2006,7 +2005,7 @@ export function initDefaultSlashCommands() {
                     [ARGUMENT_TYPE.BOOLEAN],
                     false,
                     false,
-// @ts-expect-error TS(2345) FIXME: Type is not assignable.
+                    // @ts-expect-error TS(2345) FIXME: Type is not assignable.
                     'true',
                 ),
                 new SlashCommandNamedArgument(
@@ -2015,7 +2014,7 @@ export function initDefaultSlashCommands() {
                     [ARGUMENT_TYPE.BOOLEAN],
                     false,
                     false,
-// @ts-expect-error TS(2345) FIXME: Type is not assignable.
+                    // @ts-expect-error TS(2345) FIXME: Type is not assignable.
                     '<null>',
                 ),
             ],
@@ -2666,7 +2665,7 @@ export function initDefaultSlashCommands() {
                     false,
                     false,
                     null,
-// @ts-expect-error TS(2345) FIXME: Type is not assignable.
+                    // @ts-expect-error TS(2345) FIXME: Type is not assignable.
                     commonEnumProviders.boolean('onOff')(),
                 ),
                 SlashCommandNamedArgument.fromProps({
@@ -2733,7 +2732,7 @@ export function initDefaultSlashCommands() {
                     [ARGUMENT_TYPE.BOOLEAN],
                     false,
                     false,
-// @ts-expect-error TS(2345) FIXME: Type is not assignable.
+                    // @ts-expect-error TS(2345) FIXME: Type is not assignable.
                     'off',
                     commonEnumProviders.boolean('onOff')(),
                 ),
@@ -2743,7 +2742,7 @@ export function initDefaultSlashCommands() {
                     [ARGUMENT_TYPE.BOOLEAN],
                     false,
                     false,
-// @ts-expect-error TS(2345) FIXME: Type is not assignable.
+                    // @ts-expect-error TS(2345) FIXME: Type is not assignable.
                     'on',
                     commonEnumProviders.boolean('onOff')(),
                 ),
@@ -2753,7 +2752,7 @@ export function initDefaultSlashCommands() {
                     [ARGUMENT_TYPE.LIST],
                     false,
                     false,
-// @ts-expect-error TS(2345) FIXME: Type is not assignable.
+                    // @ts-expect-error TS(2345) FIXME: Type is not assignable.
                     '[]',
                 ),
                 SlashCommandNamedArgument.fromProps({
@@ -2800,7 +2799,7 @@ export function initDefaultSlashCommands() {
                     [ARGUMENT_TYPE.BOOLEAN],
                     false,
                     false,
-// @ts-expect-error TS(2345) FIXME: Type is not assignable.
+                    // @ts-expect-error TS(2345) FIXME: Type is not assignable.
                     'on',
                     commonEnumProviders.boolean('onOff')(),
                 ),
@@ -3145,8 +3144,8 @@ export function initDefaultSlashCommands() {
                         ...commonEnumProviders.variables('scope')(executor, scope),
                         // @ts-expect-error TS(7017) FIXME: Element implicitly has an 'any' type because type ... Remove this comment to see the full error message
                         ...(typeof globalThis.qrEnumProviderExecutables === 'function'
-// @ts-expect-error TS(7017) FIXME: Element implicitly has an 'any' type.
-                            ? globalThis.qrEnumProviderExecutables()
+                            ? // @ts-expect-error TS(7017) FIXME: Element implicitly has an 'any' type.
+                              globalThis.qrEnumProviderExecutables()
                             : []),
                     ],
                 }),
@@ -3171,7 +3170,7 @@ export function initDefaultSlashCommands() {
                     [ARGUMENT_TYPE.BOOLEAN],
                     false,
                     false,
-// @ts-expect-error TS(2345) FIXME: Type is not assignable.
+                    // @ts-expect-error TS(2345) FIXME: Type is not assignable.
                     'off',
                     commonEnumProviders.boolean('onOff')(),
                 ),
@@ -3181,7 +3180,7 @@ export function initDefaultSlashCommands() {
                     [ARGUMENT_TYPE.BOOLEAN],
                     false,
                     false,
-// @ts-expect-error TS(2345) FIXME: Type is not assignable.
+                    // @ts-expect-error TS(2345) FIXME: Type is not assignable.
                     'on',
                     commonEnumProviders.boolean('onOff')(),
                 ),
@@ -3484,7 +3483,7 @@ export function initDefaultSlashCommands() {
                     [ARGUMENT_TYPE.STRING],
                     false,
                     false,
-// @ts-expect-error TS(2345) FIXME: Type is not assignable.
+                    // @ts-expect-error TS(2345) FIXME: Type is not assignable.
                     'after',
                     ['before', 'after', 'chat', 'none'],
                 ),
@@ -3494,7 +3493,7 @@ export function initDefaultSlashCommands() {
                     [ARGUMENT_TYPE.NUMBER],
                     false,
                     false,
-// @ts-expect-error TS(2345) FIXME: Type is not assignable.
+                    // @ts-expect-error TS(2345) FIXME: Type is not assignable.
                     '4',
                 ),
                 new SlashCommandNamedArgument(
@@ -3503,7 +3502,7 @@ export function initDefaultSlashCommands() {
                     [ARGUMENT_TYPE.BOOLEAN],
                     false,
                     false,
-// @ts-expect-error TS(2345) FIXME: Type is not assignable.
+                    // @ts-expect-error TS(2345) FIXME: Type is not assignable.
                     'false',
                 ),
                 SlashCommandNamedArgument.fromProps({
@@ -3528,7 +3527,7 @@ export function initDefaultSlashCommands() {
                     [ARGUMENT_TYPE.BOOLEAN],
                     false,
                     false,
-// @ts-expect-error TS(2345) FIXME: Type is not assignable.
+                    // @ts-expect-error TS(2345) FIXME: Type is not assignable.
                     'false',
                 ),
                 SlashCommandNamedArgument.fromProps({
@@ -4006,7 +4005,7 @@ export function initDefaultSlashCommands() {
             // @ts-expect-error TS(7006) FIXME: Parameter 'args' implicitly has an 'any' type.
             callback: async (args, number) => {
                 await showMoreMessages(
-// @ts-expect-error TS(2345) FIXME: Type is not assignable.
+                    // @ts-expect-error TS(2345) FIXME: Type is not assignable.
                     number && !isNaN(Number(number)) ? Number(number) : Number.MAX_SAFE_INTEGER,
                 );
                 if (isTrueBoolean(String(args?.scroll ?? ''))) {
@@ -4081,7 +4080,7 @@ export function initDefaultSlashCommands() {
                     [ARGUMENT_TYPE.STRING],
                     false,
                     false,
-// @ts-expect-error TS(2345) FIXME: Type is not assignable.
+                    // @ts-expect-error TS(2345) FIXME: Type is not assignable.
                     '',
                 ),
             ],
@@ -4718,7 +4717,7 @@ async function listInjectsCallback(args) {
             .map(([id, inject]) => {
                 const position = Object.entries(extension_prompt_types);
                 const positionName =
-// @ts-expect-error TS(18046) FIXME: 'inject' is of type 'unknown'.
+                    // @ts-expect-error TS(18046) FIXME: 'inject' is of type 'unknown'.
                     position.find(([_, value]) => value === inject.position)?.[0] ?? t`unknown`;
                 // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
                 return `* **${id}**: <code>${inject.value}</code> (${positionName}, ${t`depth`}: ${inject.depth}, ${t`scan`}: ${inject.scan ?? false}, ${t`role`}: ${inject.role ?? extension_prompt_roles.SYSTEM})`;
@@ -4809,17 +4808,17 @@ export function processChatSlashCommands() {
         console.log('Adding script injection', id);
         setExtensionPrompt(
             prefixedId,
-// @ts-expect-error TS(18046) FIXME: 'inject' is of type 'unknown'.
+            // @ts-expect-error TS(18046) FIXME: 'inject' is of type 'unknown'.
             inject.value,
-// @ts-expect-error TS(18046) FIXME: 'inject' is of type 'unknown'.
+            // @ts-expect-error TS(18046) FIXME: 'inject' is of type 'unknown'.
             inject.position,
-// @ts-expect-error TS(18046) FIXME: 'inject' is of type 'unknown'.
+            // @ts-expect-error TS(18046) FIXME: 'inject' is of type 'unknown'.
             inject.depth,
-// @ts-expect-error TS(18046) FIXME: 'inject' is of type 'unknown'.
+            // @ts-expect-error TS(18046) FIXME: 'inject' is of type 'unknown'.
             inject.scan,
-// @ts-expect-error TS(18046) FIXME: 'inject' is of type 'unknown'.
+            // @ts-expect-error TS(18046) FIXME: 'inject' is of type 'unknown'.
             inject.role,
-// @ts-expect-error TS(2345) FIXME: Type is not assignable.
+            // @ts-expect-error TS(2345) FIXME: Type is not assignable.
             filter,
         );
     }
@@ -5068,7 +5067,7 @@ async function buttonsCallback(args, text) {
                     const array =
                         result === POPUP_RESULT.AFFIRMATIVE
                             ? Array.from(multipleToggledState).map(
-// @ts-expect-error TS(2345) FIXME: Type is not assignable.
+                                  // @ts-expect-error TS(2345) FIXME: Type is not assignable.
                                   (r) => resultToButtonMap.get(r)?.text ?? '',
                               )
                             : [];
@@ -5606,12 +5605,12 @@ async function echoCallback(args, value) {
     // @ts-expect-error TS(2339) FIXME: Property 'timeOut' does not exist on type '{}'.
     if (args.timeout && !isNaN(parseInt(args.timeout))) options.timeOut = parseInt(args.timeout);
     if (args.extendedTimeout && !isNaN(parseInt(args.extendedTimeout)))
-// @ts-expect-error TS(2339) FIXME: Property 'extendedTimeOut' does not exist on type.
+        // @ts-expect-error TS(2339) FIXME: Property 'extendedTimeOut' does not exist on type.
         options.extendedTimeOut = parseInt(args.extendedTimeout);
     // @ts-expect-error TS(2339) FIXME: Property 'preventDuplicates' does not exist on typ... Remove this comment to see the full error message
     if (isTrueBoolean(args.preventDuplicates)) options.preventDuplicates = true;
     if (args.cssClass)
-// @ts-expect-error TS(2339) FIXME: Property 'toastClass' does not exist on type.
+        // @ts-expect-error TS(2339) FIXME: Property 'toastClass' does not exist on type.
         options.toastClass = [options.toastClass, args.cssClass].filter(Boolean).join(' ');
     // @ts-expect-error TS(2339) FIXME: Property 'escapeHtml' does not exist on type '{}'.
     options.escapeHtml = args.escapeHtml !== undefined ? isTrueBoolean(args.escapeHtml) : true;
@@ -6447,9 +6446,9 @@ async function createCharacterCallback(args) {
         tags: args.tags
             ? args.tags
                   .split(',')
-// @ts-expect-error TS(7006) FIXME: Parameter 't' implicitly has an 'any' type.
+                  // @ts-expect-error TS(7006) FIXME: Parameter 't' implicitly has an 'any' type.
                   .map((t) => t.trim())
-// @ts-expect-error TS(7006) FIXME: Parameter 't' implicitly has an 'any' type.
+                  // @ts-expect-error TS(7006) FIXME: Parameter 't' implicitly has an 'any' type.
                   .filter((t) => t)
             : [],
         talkativeness: args.talkativeness ?? '0.5',
@@ -8597,9 +8596,9 @@ async function executeSlashCommandsWithOptions(text, options = {}) {
         closure = parser.parse(
             text,
             true,
-// @ts-expect-error TS(2339) FIXME: Property 'parserFlags' does not exist on type.
+            // @ts-expect-error TS(2339) FIXME: Property 'parserFlags' does not exist on type.
             options.parserFlags,
-// @ts-expect-error TS(2339) FIXME: Property 'abortController' does not exist on type.
+            // @ts-expect-error TS(2339) FIXME: Property 'abortController' does not exist on type.
             options.abortController ?? new SlashCommandAbortController(),
         );
         // @ts-expect-error TS(2339) FIXME: Property 'scope' does not exist on type '{}'.

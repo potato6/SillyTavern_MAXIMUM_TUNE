@@ -87,25 +87,29 @@ async function fetchModelsByModality(
     }
 
     const filtered = (data.data as Array<Record<string, unknown>>)
-        .filter(
-            (m) =>
-                Array.isArray((m?.architecture as Record<string, unknown> | undefined)?.input_modalities),
+        .filter((m) =>
+            Array.isArray(
+                (m?.architecture as Record<string, unknown> | undefined)?.input_modalities,
+            ),
         )
         .filter(
             (m) =>
-                ((m.architecture as Record<string, string[]> | undefined)?.input_modalities)?.includes(inputModality) ?? false,
+                (
+                    m.architecture as Record<string, string[]> | undefined
+                )?.input_modalities?.includes(inputModality) ?? false,
+        )
+        .filter((m) =>
+            Array.isArray(
+                (m?.architecture as Record<string, unknown> | undefined)?.output_modalities,
+            ),
         )
         .filter(
             (m) =>
-                Array.isArray((m?.architecture as Record<string, unknown> | undefined)?.output_modalities),
+                (
+                    m.architecture as Record<string, string[]> | undefined
+                )?.output_modalities?.includes(outputModality) ?? false,
         )
-        .filter(
-            (m) =>
-                ((m.architecture as Record<string, string[]> | undefined)?.output_modalities)?.includes(outputModality) ?? false,
-        )
-        .toSorted((a, b) =>
-            (a.id as string)?.localeCompare(b.id as string) || 0,
-        );
+        .toSorted((a, b) => (a.id as string)?.localeCompare(b.id as string) || 0);
 
     return typeof mapFn === 'function' ? filtered.map(mapFn) : filtered;
 }
@@ -157,7 +161,10 @@ router.post('/models/image', async () => {
 
 router.post('/credits', async (context) => {
     const { set } = context;
-    const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+    const user = (context as unknown as Record<string, unknown>).user as Record<
+        string,
+        unknown
+    > | null;
     const directories = user?.directories as Record<string, string> | undefined;
 
     try {
@@ -198,7 +205,10 @@ router.post('/credits', async (context) => {
 router.post('/image/generate', async (context) => {
     const { body, set } = context;
     const bodyAny = body as Record<string, unknown>;
-    const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+    const user = (context as unknown as Record<string, unknown>).user as Record<
+        string,
+        unknown
+    > | null;
     const directories = user?.directories as Record<string, string> | undefined;
 
     try {

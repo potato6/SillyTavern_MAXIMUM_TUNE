@@ -1,10 +1,10 @@
 import util from 'node:util';
 import { Buffer } from 'node:buffer';
 
-import express from 'express';
+import { Elysia } from 'elysia';
 
 import { readSecret, SECRET_KEYS } from './secrets.js';
-import { readAllChunks, extractFileFromZipBuffer, forwardFetchResponse } from '../util.js';
+import { extractFileFromZipBuffer } from '../util.js';
 
 const API_NOVELAI = 'https://api.novelai.net';
 const TEXT_NOVELAI = 'https://text.novelai.net';
@@ -305,371 +305,437 @@ function calculateSkipCfgAboveSigma(width: number, height: number, modelName: st
     return Math.pow(ratio, 0.5) * magicConstant;
 }
 
-export const router = express.Router();
+export const router = new Elysia({ prefix: '/api/novelai' })
 
-router.post('/status', async function (req, res) {
-    if (!req.body) return res.sendStatus(400);
-    const api_key_novel = readSecret(req.user.directories, SECRET_KEYS.NOVEL);
+    .post('/status', async (context) => {
+        const { set } = context;
+        const body = context.body as Record<string, unknown> | null;
+        if (!body) {
+            set.status = 400;
+            return;
+        }
 
-    if (!api_key_novel) {
-        console.warn('NovelAI Access Token is missing.');
-        return res.sendStatus(400);
-    }
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
+        const directories = user?.directories as Record<string, string> | undefined;
+        const api_key_novel = directories ? readSecret(directories as any, SECRET_KEYS.NOVEL) : '';
 
-    try {
-        const response = await fetch(API_NOVELAI + '/user/subscription', {
-            method: 'GET',
+        if (!api_key_novel) {
+            console.warn('NovelAI Access Token is missing.');
+            set.status = 400;
+            return;
+        }
+
+        try {
+            const response = await fetch(API_NOVELAI + '/user/subscription', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: 'Bearer ' + api_key_novel,
+                },
+            });
+
+            if (response.ok) {
+                const data = (await response.json()) as Record<string, unknown>;
+                return data;
+            } else if (response.status == 401) {
+                console.error('NovelAI Access Token is incorrect.');
+                return { error: true };
+            } else {
+                console.warn('NovelAI returned an error:', response.statusText);
+                return { error: true };
+            }
+        } catch (error) {
+            console.error(error);
+            return { error: true };
+        }
+    })
+
+    .post('/generate', async (context) => {
+        const { request, set } = context;
+        const body = context.body as Record<string, unknown> | null;
+        if (!body) {
+            set.status = 400;
+            return;
+        }
+
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
+        const directories = user?.directories as Record<string, string> | undefined;
+        const api_key_novel = directories ? readSecret(directories as any, SECRET_KEYS.NOVEL) : '';
+
+        if (!api_key_novel) {
+            console.warn('NovelAI Access Token is missing.');
+            set.status = 400;
+            return;
+        }
+
+        // Use the request signal for abort on client disconnect
+        const signal = request.signal;
+
+        // Add customized bad words for Clio, Kayra, and Erato
+        const badWordsList = getBadWordsList(body.model as string);
+
+        if (Array.isArray(badWordsList) && Array.isArray(body.bad_words_ids)) {
+            for (const badWord of body.bad_words_ids as number[][]) {
+                if (Array.isArray(badWord) && badWord.every((x) => Number.isInteger(x))) {
+                    badWordsList.push(badWord);
+                }
+            }
+        }
+
+        // Remove empty arrays from bad words list
+        for (const badWord of badWordsList) {
+            if (badWord.length === 0) {
+                badWordsList.splice(badWordsList.indexOf(badWord), 1);
+            }
+        }
+
+        // Add default biases for dinkus and asterism
+        const logitBiasList = getLogitBiasList(body.model as string);
+
+        if (Array.isArray(logitBiasList) && Array.isArray(body.logit_bias_exp)) {
+            logitBiasList.push(...(body.logit_bias_exp as any[]));
+        }
+
+        const repPenWhitelist = getRepPenaltyWhitelist(body.model as string);
+
+        const data = {
+            input: body.input,
+            model: body.model,
+            parameters: {
+                use_string: body.use_string ?? true,
+                temperature: body.temperature,
+                max_length: body.max_length,
+                min_length: body.min_length,
+                tail_free_sampling: body.tail_free_sampling,
+                repetition_penalty: body.repetition_penalty,
+                repetition_penalty_range: body.repetition_penalty_range,
+                repetition_penalty_slope: body.repetition_penalty_slope,
+                repetition_penalty_frequency: body.repetition_penalty_frequency,
+                repetition_penalty_presence: body.repetition_penalty_presence,
+                repetition_penalty_whitelist: repPenWhitelist,
+                top_a: body.top_a,
+                top_p: body.top_p,
+                top_k: body.top_k,
+                typical_p: body.typical_p,
+                mirostat_lr: body.mirostat_lr,
+                mirostat_tau: body.mirostat_tau,
+                phrase_rep_pen: body.phrase_rep_pen,
+                stop_sequences: body.stop_sequences,
+                bad_words_ids: badWordsList.length ? badWordsList : null,
+                logit_bias_exp: logitBiasList,
+                generate_until_sentence: body.generate_until_sentence,
+                use_cache: body.use_cache,
+                return_full_text: body.return_full_text,
+                prefix: body.prefix,
+                order: body.order,
+                num_logprobs: body.num_logprobs,
+                min_p: body.min_p,
+                math1_temp: body.math1_temp,
+                math1_quad: body.math1_quad,
+                math1_quad_entropy_scale: body.math1_quad_entropy_scale,
+            },
+        };
+
+        // Tells the model to stop generation at '>'
+        if ('theme_textadventure' === body.prefix) {
+            if (
+                (body.model as string).includes('clio') ||
+                (body.model as string).includes('kayra')
+            ) {
+                (data.parameters as Record<string, unknown>).eos_token_id = 49405;
+            }
+            if ((body.model as string).includes('erato')) {
+                (data.parameters as Record<string, unknown>).eos_token_id = 29;
+            }
+        }
+
+        console.debug(util.inspect(data, { depth: 4 }));
+
+        const args = {
+            body: JSON.stringify(data),
             headers: {
                 'Content-Type': 'application/json',
                 Authorization: 'Bearer ' + api_key_novel,
             },
-        });
+            signal,
+        };
 
-        if (response.ok) {
-            const data = (await response.json()) as Record<string, unknown>;
-            return res.send(data);
-        } else if (response.status == 401) {
-            console.error('NovelAI Access Token is incorrect.');
-            return res.send({ error: true });
-        } else {
-            console.warn('NovelAI returned an error:', response.statusText);
-            return res.send({ error: true });
-        }
-    } catch (error) {
-        console.error(error);
-        return res.send({ error: true });
-    }
-});
+        try {
+            const baseURL =
+                (body.model as string).includes('kayra') || (body.model as string).includes('erato')
+                    ? TEXT_NOVELAI
+                    : API_NOVELAI;
+            const url = body.streaming ? `${baseURL}/ai/generate-stream` : `${baseURL}/ai/generate`;
+            const response = await fetch(url, { method: 'POST', ...args });
 
-router.post('/generate', async function (req, res) {
-    if (!req.body) return res.sendStatus(400);
+            if (body.streaming) {
+                // Forward the streaming response body as a ReadableStream
+                if (!response.ok) {
+                    const text = await response.text();
+                    let message = text;
+                    console.warn(
+                        `Novel API returned error: ${response.status} ${response.statusText} ${text}`,
+                    );
 
-    const api_key_novel = readSecret(req.user.directories, SECRET_KEYS.NOVEL);
+                    try {
+                        const errData = JSON.parse(text);
+                        message = errData.message;
+                    } catch {
+                        // ignore
+                    }
 
-    if (!api_key_novel) {
-        console.warn('NovelAI Access Token is missing.');
-        return res.sendStatus(400);
-    }
-
-    const controller = new AbortController();
-    req.socket.removeAllListeners('close');
-    req.socket.on('close', function () {
-        controller.abort();
-    });
-
-    // Add customized bad words for Clio, Kayra, and Erato
-    const badWordsList = getBadWordsList(req.body.model);
-
-    if (Array.isArray(badWordsList) && Array.isArray(req.body.bad_words_ids)) {
-        for (const badWord of req.body.bad_words_ids) {
-            if (Array.isArray(badWord) && badWord.every((x) => Number.isInteger(x))) {
-                badWordsList.push(badWord);
-            }
-        }
-    }
-
-    // Remove empty arrays from bad words list
-    for (const badWord of badWordsList) {
-        if (badWord.length === 0) {
-            badWordsList.splice(badWordsList.indexOf(badWord), 1);
-        }
-    }
-
-    // Add default biases for dinkus and asterism
-    const logitBiasList = getLogitBiasList(req.body.model);
-
-    if (Array.isArray(logitBiasList) && Array.isArray(req.body.logit_bias_exp)) {
-        logitBiasList.push(...req.body.logit_bias_exp);
-    }
-
-    const repPenWhitelist = getRepPenaltyWhitelist(req.body.model);
-
-    const data = {
-        input: req.body.input,
-        model: req.body.model,
-        parameters: {
-            use_string: req.body.use_string ?? true,
-            temperature: req.body.temperature,
-            max_length: req.body.max_length,
-            min_length: req.body.min_length,
-            tail_free_sampling: req.body.tail_free_sampling,
-            repetition_penalty: req.body.repetition_penalty,
-            repetition_penalty_range: req.body.repetition_penalty_range,
-            repetition_penalty_slope: req.body.repetition_penalty_slope,
-            repetition_penalty_frequency: req.body.repetition_penalty_frequency,
-            repetition_penalty_presence: req.body.repetition_penalty_presence,
-            repetition_penalty_whitelist: repPenWhitelist,
-            top_a: req.body.top_a,
-            top_p: req.body.top_p,
-            top_k: req.body.top_k,
-            typical_p: req.body.typical_p,
-            mirostat_lr: req.body.mirostat_lr,
-            mirostat_tau: req.body.mirostat_tau,
-            phrase_rep_pen: req.body.phrase_rep_pen,
-            stop_sequences: req.body.stop_sequences,
-            bad_words_ids: badWordsList.length ? badWordsList : null,
-            logit_bias_exp: logitBiasList,
-            generate_until_sentence: req.body.generate_until_sentence,
-            use_cache: req.body.use_cache,
-            return_full_text: req.body.return_full_text,
-            prefix: req.body.prefix,
-            order: req.body.order,
-            num_logprobs: req.body.num_logprobs,
-            min_p: req.body.min_p,
-            math1_temp: req.body.math1_temp,
-            math1_quad: req.body.math1_quad,
-            math1_quad_entropy_scale: req.body.math1_quad_entropy_scale,
-        },
-    };
-
-    // Tells the model to stop generation at '>'
-    if ('theme_textadventure' === req.body.prefix) {
-        if (req.body.model.includes('clio') || req.body.model.includes('kayra')) {
-            // @ts-expect-error TS(2339) FIXME: Property 'eos_token_id' does not exist on type '{ ... Remove this comment to see the full error message
-            data.parameters.eos_token_id = 49405;
-        }
-        if (req.body.model.includes('erato')) {
-            // @ts-expect-error TS(2339) FIXME: Property 'eos_token_id' does not exist on type '{ ... Remove this comment to see the full error message
-            data.parameters.eos_token_id = 29;
-        }
-    }
-
-    console.debug(util.inspect(data, { depth: 4 }));
-
-    const args = {
-        body: JSON.stringify(data),
-        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + api_key_novel },
-        signal: controller.signal,
-    };
-
-    try {
-        const baseURL =
-            req.body.model.includes('kayra') || req.body.model.includes('erato')
-                ? TEXT_NOVELAI
-                : API_NOVELAI;
-        const url = req.body.streaming ? `${baseURL}/ai/generate-stream` : `${baseURL}/ai/generate`;
-        const response = await fetch(url, { method: 'POST', ...args });
-
-        if (req.body.streaming) {
-            // Pipe remote SSE stream to Express response
-            await forwardFetchResponse(response, res);
-        } else {
-            if (!response.ok) {
-                const text = await response.text();
-                let message = text;
-                console.warn(
-                    `Novel API returned error: ${response.status} ${response.statusText} ${text}`,
-                );
-
-                try {
-                    const data = JSON.parse(text);
-                    message = data.message;
-                } catch {
-                    // ignore
+                    set.status = 500;
+                    return { error: { message } };
                 }
 
-                return res.status(500).send({ error: { message } });
+                // Avoid sending 401 responses as they reset the client Basic auth
+                return new Response(response.body, {
+                    status: response.status === 401 ? 400 : response.status,
+                });
+            } else {
+                if (!response.ok) {
+                    const text = await response.text();
+                    let message = text;
+                    console.warn(
+                        `Novel API returned error: ${response.status} ${response.statusText} ${text}`,
+                    );
+
+                    try {
+                        const errData = JSON.parse(text);
+                        message = errData.message;
+                    } catch {
+                        // ignore
+                    }
+
+                    set.status = 500;
+                    return { error: { message } };
+                }
+
+                const responseData = (await response.json()) as Record<string, unknown>;
+                console.info('NovelAI Output', responseData?.output);
+                return responseData;
             }
-
-            const data = (await response.json()) as Record<string, unknown>;
-            console.info('NovelAI Output', data?.output);
-            return res.send(data);
+        } catch {
+            return { error: true };
         }
-    } catch {
-        return res.send({ error: true });
-    }
-});
+    })
 
-router.post('/generate-image', async (request, response) => {
-    if (!request.body) {
-        return response.sendStatus(400);
-    }
-
-    const key = readSecret(request.user.directories, SECRET_KEYS.NOVEL);
-
-    if (!key) {
-        console.warn('NovelAI Access Token is missing.');
-        return response.sendStatus(400);
-    }
-
-    try {
-        console.debug('NAI Diffusion request:', request.body);
-        const generateUrl = `${IMAGE_NOVELAI}/ai/generate-image`;
-        const generateResult = await fetch(generateUrl, {
-            method: 'POST',
-            headers: {
-                Authorization: `Bearer ${key}`,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                action: 'generate',
-                input: request.body.prompt ?? '',
-                model: request.body.model ?? 'nai-diffusion',
-                parameters: {
-                    params_version: 3,
-                    prefer_brownian: true,
-                    negative_prompt: request.body.negative_prompt ?? '',
-                    height: request.body.height ?? 512,
-                    width: request.body.width ?? 512,
-                    scale: request.body.scale ?? 9,
-                    seed:
-                        request.body.seed >= 0
-                            ? request.body.seed
-                            : Math.floor(Math.random() * 9999999999),
-                    sampler: request.body.sampler ?? 'k_dpmpp_2m',
-                    noise_schedule: request.body.scheduler ?? 'karras',
-                    steps: request.body.steps ?? 28,
-                    n_samples: 1,
-                    // NAI handholding for prompts
-                    ucPreset: 0,
-                    qualityToggle: false,
-                    add_original_image: false,
-                    controlnet_strength: 1,
-                    deliberate_euler_ancestral_bug: false,
-                    dynamic_thresholding: request.body.decrisper ?? false,
-                    legacy: false,
-                    legacy_v3_extend: false,
-                    sm: request.body.sm ?? false,
-                    sm_dyn: request.body.sm_dyn ?? false,
-                    uncond_scale: 1,
-                    skip_cfg_above_sigma: request.body.variety_boost
-                        ? calculateSkipCfgAboveSigma(
-                              request.body.width ?? 512,
-                              request.body.height ?? 512,
-                              request.body.model ?? 'nai-diffusion',
-                          )
-                        : null,
-                    use_coords: false,
-                    characterPrompts: [],
-                    reference_image_multiple: [],
-                    reference_information_extracted_multiple: [],
-                    reference_strength_multiple: [],
-                    v4_negative_prompt: {
-                        caption: {
-                            base_caption: request.body.negative_prompt ?? '',
-                            char_captions: [],
-                        },
-                    },
-                    v4_prompt: {
-                        caption: {
-                            base_caption: request.body.prompt ?? '',
-                            char_captions: [],
-                        },
-                        use_coords: false,
-                        use_order: true,
-                    },
-                },
-            }),
-        });
-
-        if (!generateResult.ok) {
-            const text = await generateResult.text();
-            console.warn('NovelAI returned an error.', generateResult.statusText, text);
-            return response.sendStatus(500);
+    .post('/generate-image', async (context) => {
+        const { set } = context;
+        const body = context.body as Record<string, unknown> | null;
+        if (!body) {
+            set.status = 400;
+            return;
         }
 
-        const archiveBuffer = await generateResult.arrayBuffer();
-        const imageBuffer = await extractFileFromZipBuffer(archiveBuffer, '.png');
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
+        const directories = user?.directories as Record<string, string> | undefined;
+        const key = directories ? readSecret(directories as any, SECRET_KEYS.NOVEL) : '';
 
-        if (!imageBuffer) {
-            console.error('NovelAI generated an image, but the PNG file was not found.');
-            return response.sendStatus(500);
-        }
-
-        const originalBase64 = imageBuffer.toString('base64');
-
-        // No upscaling
-        if (isNaN(request.body.upscale_ratio) || request.body.upscale_ratio <= 1) {
-            return response.send(originalBase64);
+        if (!key) {
+            console.warn('NovelAI Access Token is missing.');
+            set.status = 400;
+            return;
         }
 
         try {
-            console.info('Upscaling image...');
-            const upscaleUrl = `${API_NOVELAI}/ai/upscale`;
-            const upscaleResult = await fetch(upscaleUrl, {
+            console.debug('NAI Diffusion request:', body);
+            const generateUrl = `${IMAGE_NOVELAI}/ai/generate-image`;
+            const generateResult = await fetch(generateUrl, {
                 method: 'POST',
                 headers: {
                     Authorization: `Bearer ${key}`,
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    image: originalBase64,
-                    height: request.body.height,
-                    width: request.body.width,
-                    scale: request.body.upscale_ratio,
+                    action: 'generate',
+                    input: body.prompt ?? '',
+                    model: body.model ?? 'nai-diffusion',
+                    parameters: {
+                        params_version: 3,
+                        prefer_brownian: true,
+                        negative_prompt: body.negative_prompt ?? '',
+                        height: body.height ?? 512,
+                        width: body.width ?? 512,
+                        scale: body.scale ?? 9,
+                        seed:
+                            (body.seed as number) >= 0
+                                ? body.seed
+                                : Math.floor(Math.random() * 9999999999),
+                        sampler: body.sampler ?? 'k_dpmpp_2m',
+                        noise_schedule: body.scheduler ?? 'karras',
+                        steps: body.steps ?? 28,
+                        n_samples: 1,
+                        // NAI handholding for prompts
+                        ucPreset: 0,
+                        qualityToggle: false,
+                        add_original_image: false,
+                        controlnet_strength: 1,
+                        deliberate_euler_ancestral_bug: false,
+                        dynamic_thresholding: body.decrisper ?? false,
+                        legacy: false,
+                        legacy_v3_extend: false,
+                        sm: body.sm ?? false,
+                        sm_dyn: body.sm_dyn ?? false,
+                        uncond_scale: 1,
+                        skip_cfg_above_sigma: body.variety_boost
+                            ? calculateSkipCfgAboveSigma(
+                                  (body.width as number) ?? 512,
+                                  (body.height as number) ?? 512,
+                                  (body.model as string) ?? 'nai-diffusion',
+                              )
+                            : null,
+                        use_coords: false,
+                        characterPrompts: [],
+                        reference_image_multiple: [],
+                        reference_information_extracted_multiple: [],
+                        reference_strength_multiple: [],
+                        v4_negative_prompt: {
+                            caption: {
+                                base_caption: body.negative_prompt ?? '',
+                                char_captions: [],
+                            },
+                        },
+                        v4_prompt: {
+                            caption: {
+                                base_caption: body.prompt ?? '',
+                                char_captions: [],
+                            },
+                            use_coords: false,
+                            use_order: true,
+                        },
+                    },
                 }),
             });
 
-            if (!upscaleResult.ok) {
-                const text = await upscaleResult.text();
-                throw new Error('NovelAI returned an error.', { cause: text });
+            if (!generateResult.ok) {
+                const text = await generateResult.text();
+                console.warn('NovelAI returned an error.', generateResult.statusText, text);
+                set.status = 500;
+                return;
             }
 
-            const upscaledArchiveBuffer = await upscaleResult.arrayBuffer();
-            const upscaledImageBuffer = await extractFileFromZipBuffer(
-                upscaledArchiveBuffer,
-                '.png',
-            );
+            const archiveBuffer = await generateResult.arrayBuffer();
+            const imageBuffer = await extractFileFromZipBuffer(archiveBuffer, '.png');
 
-            if (!upscaledImageBuffer) {
-                throw new Error('NovelAI upscaled an image, but the PNG file was not found.');
+            if (!imageBuffer) {
+                console.error('NovelAI generated an image, but the PNG file was not found.');
+                set.status = 500;
+                return;
             }
 
-            const upscaledBase64 = upscaledImageBuffer.toString('base64');
+            const originalBase64 = imageBuffer.toString('base64');
 
-            return response.send(upscaledBase64);
+            // No upscaling
+            if (isNaN(body.upscale_ratio as number) || (body.upscale_ratio as number) <= 1) {
+                return originalBase64;
+            }
+
+            try {
+                console.info('Upscaling image...');
+                const upscaleUrl = `${API_NOVELAI}/ai/upscale`;
+                const upscaleResult = await fetch(upscaleUrl, {
+                    method: 'POST',
+                    headers: {
+                        Authorization: `Bearer ${key}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        image: originalBase64,
+                        height: body.height,
+                        width: body.width,
+                        scale: body.upscale_ratio,
+                    }),
+                });
+
+                if (!upscaleResult.ok) {
+                    const text = await upscaleResult.text();
+                    throw new Error('NovelAI returned an error.', { cause: text });
+                }
+
+                const upscaledArchiveBuffer = await upscaleResult.arrayBuffer();
+                const upscaledImageBuffer = await extractFileFromZipBuffer(
+                    upscaledArchiveBuffer,
+                    '.png',
+                );
+
+                if (!upscaledImageBuffer) {
+                    throw new Error('NovelAI upscaled an image, but the PNG file was not found.');
+                }
+
+                const upscaledBase64 = upscaledImageBuffer.toString('base64');
+
+                return upscaledBase64;
+            } catch (error) {
+                console.warn(
+                    'NovelAI generated an image, but upscaling failed. Returning original image.',
+                    error,
+                );
+                return originalBase64;
+            }
         } catch (error) {
-            console.warn(
-                'NovelAI generated an image, but upscaling failed. Returning original image.',
-                error,
-            );
-            return response.send(originalBase64);
+            console.error(error);
+            set.status = 500;
         }
-    } catch (error) {
-        console.error(error);
-        return response.sendStatus(500);
-    }
-});
+    })
 
-router.post('/generate-voice', async (request, response) => {
-    const token = readSecret(request.user.directories, SECRET_KEYS.NOVEL);
+    .post('/generate-voice', async (context) => {
+        const { set } = context;
+        const body = context.body as Record<string, unknown> | null;
 
-    if (!token) {
-        console.error('NovelAI Access Token is missing.');
-        return response.sendStatus(400);
-    }
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
+        const directories = user?.directories as Record<string, string> | undefined;
+        const token = directories ? readSecret(directories as any, SECRET_KEYS.NOVEL) : '';
 
-    const text = request.body.text;
-    const voice = request.body.voice;
-
-    if (!text || !voice) {
-        return response.sendStatus(400);
-    }
-
-    try {
-        const url = `${API_NOVELAI}/ai/generate-voice?text=${encodeURIComponent(text)}&voice=-1&seed=${encodeURIComponent(voice)}&opus=false&version=v2`;
-        const result = await fetch(url, {
-            method: 'GET',
-            headers: {
-                Authorization: `Bearer ${token}`,
-                Accept: 'audio/mpeg',
-            },
-        });
-
-        if (!result.ok) {
-            const errorText = await result.text();
-            console.error('NovelAI returned an error.', result.statusText, errorText);
-            return response.sendStatus(500);
+        if (!token) {
+            console.error('NovelAI Access Token is missing.');
+            set.status = 400;
+            return;
         }
 
-        // @ts-expect-error TS(2345) FIXME: Argument of type 'ReadableStream' is not assignabl... Remove this comment to see the full error message
-        const chunks = await readAllChunks(result.body);
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-        const buffer = Buffer.concat(chunks.map((chunk: Buffer) => new Uint8Array(chunk)));
-        response.setHeader('Content-Type', 'audio/mpeg');
-        return response.send(buffer);
-    } catch (error) {
-        console.error(error);
-        return response.sendStatus(500);
-    }
-});
+        const text = body?.text as string | undefined;
+        const voice = body?.voice as string | undefined;
+
+        if (!text || !voice) {
+            set.status = 400;
+            return;
+        }
+
+        try {
+            const url = `${API_NOVELAI}/ai/generate-voice?text=${encodeURIComponent(text)}&voice=-1&seed=${encodeURIComponent(voice)}&opus=false&version=v2`;
+            const result = await fetch(url, {
+                method: 'GET',
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    Accept: 'audio/mpeg',
+                },
+            });
+
+            if (!result.ok) {
+                const errorText = await result.text();
+                console.error('NovelAI returned an error.', result.statusText, errorText);
+                set.status = 500;
+                return;
+            }
+
+            const audioBuffer = await result.arrayBuffer();
+            return new Response(audioBuffer, {
+                headers: { 'Content-Type': 'audio/mpeg' },
+            });
+        } catch (error) {
+            console.error(error);
+            set.status = 500;
+        }
+    });

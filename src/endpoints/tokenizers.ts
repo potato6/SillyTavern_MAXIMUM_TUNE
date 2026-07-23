@@ -4,7 +4,7 @@ import { Buffer } from 'node:buffer';
 import zlib from 'node:zlib';
 import { promisify } from 'node:util';
 
-import express from 'express';
+import { Elysia } from 'elysia';
 import { sync as writeFileAtomicSync } from 'write-file-atomic';
 
 import { Tokenizer } from '@agnai/web-tokenizers';
@@ -18,13 +18,14 @@ import { setAdditionalHeaders } from '../additional-headers.js';
 import { getConfigValue, isValidUrl } from '../util.js';
 import { TEXT_COMPLETION_MODELS } from './text-completion-models.js';
 
-/**
- * @typedef { (req: import('express').Request, res: import('express').Response) => Promise<import('express').Response> } TokenizationHandler
- */
 const tokenizersCache = {};
 
 const BYTES_PER_TOKEN = 3.35;
-const IS_DOWNLOAD_ALLOWED = getConfigValue('enableDownloadableTokenizers', true, 'boolean' as const);
+const IS_DOWNLOAD_ALLOWED = getConfigValue(
+    'enableDownloadableTokenizers',
+    true,
+    'boolean' as const,
+);
 const gunzip = promisify(zlib.gunzip);
 
 /**
@@ -588,29 +589,22 @@ export function countWebTokenizerTokens(tokenizer: Tokenizer | null, messages: o
  * @param {SentencePieceTokenizer} tokenizer Sentencepiece tokenizer
  * @returns {TokenizationHandler} Handler function
  */
-function createSentencepieceEncodingHandler(
-    tokenizer: SentencePieceTokenizer,
-): any {
-    /**
-     * Request handler for encoding Sentencepiece tokens.
-     * @param {import('express').Request} request The Express request object The Express request object
-     * @param {import('express').Response} response The Express response object The Express response object
-     * @returns {Promise<import('express').Response>} Promise
-     */
-    return async function (request: express.Request, response: express.Response) {
+function createSentencepieceEncodingHandler(tokenizer: SentencePieceTokenizer): any {
+    return async function ({ body, set }: { body: any; set: any }) {
         try {
-            if (!request.body) {
-                return response.sendStatus(400);
+            if (!body) {
+                set.status = 400;
+                return;
             }
 
-            const text = request.body.text || '';
+            const text = body.text || '';
             const instance = await tokenizer?.get();
             const { ids, count } = await countSentencepieceTokens(tokenizer, text);
             const chunks = instance?.encodePieces(text);
-            return response.send({ ids, count, chunks });
+            return { ids, count, chunks };
         } catch (error) {
             console.error(error);
-            return response.send({ ids: [], count: 0, chunks: [] });
+            return { ids: [], count: 0, chunks: [] };
         }
     };
 }
@@ -620,31 +614,24 @@ function createSentencepieceEncodingHandler(
  * @param {SentencePieceTokenizer} tokenizer Sentencepiece tokenizer
  * @returns {TokenizationHandler} Handler function
  */
-function createSentencepieceDecodingHandler(
-    tokenizer: SentencePieceTokenizer,
-): any {
-    /**
-     * Request handler for decoding Sentencepiece tokens.
-     * @param {import('express').Request} request The Express request object The Express request object
-     * @param {import('express').Response} response The Express response object The Express response object
-     * @returns {Promise<import('express').Response>} Promise
-     */
-    return async function (request: express.Request, response: express.Response) {
+function createSentencepieceDecodingHandler(tokenizer: SentencePieceTokenizer): any {
+    return async function ({ body, set }: { body: any; set: any }) {
         try {
-            if (!request.body) {
-                return response.sendStatus(400);
+            if (!body) {
+                set.status = 400;
+                return;
             }
 
-            const ids = request.body.ids || [];
+            const ids = body.ids || [];
             const instance = await tokenizer?.get();
             if (!instance) throw new Error('Failed to load the Sentencepiece tokenizer');
             const ops = ids.map((id: unknown) => instance.decodeIds([id]));
             const chunks = await Promise.all(ops);
             const text = chunks.join('');
-            return response.send({ text, chunks });
+            return { text, chunks };
         } catch (error) {
             console.error(error);
-            return response.send({ text: '', chunks: [] });
+            return { text: '', chunks: [] };
         }
     };
 }
@@ -655,27 +642,21 @@ function createSentencepieceDecodingHandler(
  * @returns {TokenizationHandler} Handler function
  */
 function createTiktokenEncodingHandler(modelId: string): any {
-    /**
-     * Request handler for encoding Tiktoken tokens.
-     * @param {import('express').Request} request The Express request object
-     * @param {import('express').Response} response The Express response object
-     * @returns {Promise<import('express').Response>} Promise
-     */
-    return async function (request: express.Request, response: express.Response) {
+    return async function ({ body, set }: { body: any; set: any }) {
         try {
-            if (!request.body) {
-                return response.sendStatus(400);
+            if (!body) {
+                set.status = 400;
+                return;
             }
 
-            const text = request.body.text || '';
+            const text = body.text || '';
             const tokenizer = getTiktokenTokenizer(modelId);
             const tokens = Object.values(tokenizer.encode(text));
-            // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown[]' is not assignable to ... Remove this comment to see the full error message
-            const chunks = await getTiktokenChunks(tokenizer, tokens);
-            return response.send({ ids: tokens, count: tokens.length, chunks });
+            const chunks = await getTiktokenChunks(tokenizer, tokens as number[]);
+            return { ids: tokens, count: tokens.length, chunks };
         } catch (error) {
             console.error(error);
-            return response.send({ ids: [], count: 0, chunks: [] });
+            return { ids: [], count: 0, chunks: [] };
         }
     };
 }
@@ -686,26 +667,21 @@ function createTiktokenEncodingHandler(modelId: string): any {
  * @returns {TokenizationHandler} Handler function
  */
 function createTiktokenDecodingHandler(modelId: string): any {
-    /**
-     * Request handler for decoding Tiktoken tokens.
-     * @param {import('express').Request} request The Express request object
-     * @param {import('express').Response} response The Express response object
-     * @returns {Promise<import('express').Response>} Promise
-     */
-    return async function (request: express.Request, response: express.Response) {
+    return async function ({ body, set }: { body: any; set: any }) {
         try {
-            if (!request.body) {
-                return response.sendStatus(400);
+            if (!body) {
+                set.status = 400;
+                return;
             }
 
-            const ids = request.body.ids || [];
+            const ids = body.ids || [];
             const tokenizer = getTiktokenTokenizer(modelId);
             const textBytes = tokenizer.decode(new Uint32Array(ids));
             const text = new TextDecoder().decode(textBytes);
-            return response.send({ text });
+            return { text };
         } catch (error) {
             console.error(error);
-            return response.send({ text: '' });
+            return { text: '' };
         }
     };
 }
@@ -716,28 +692,22 @@ function createTiktokenDecodingHandler(modelId: string): any {
  * @returns {TokenizationHandler} Handler function
  */
 function createWebTokenizerEncodingHandler(tokenizer: WebTokenizer): any {
-    /**
-     * Request handler for encoding WebTokenizer tokens.
-     * @param {import('express').Request} request The Express request object
-     * @param {import('express').Response} response The Express response object
-     * @returns {Promise<import('express').Response>} Promise
-     */
-    return async function (request: express.Request, response: express.Response) {
+    return async function ({ body, set }: { body: any; set: any }) {
         try {
-            if (!request.body) {
-                return response.sendStatus(400);
+            if (!body) {
+                set.status = 400;
+                return;
             }
 
-            const text = request.body.text || '';
+            const text = body.text || '';
             const instance = await tokenizer?.get();
             if (!instance) throw new Error('Failed to load the Web tokenizer');
             const tokens = Array.from(instance.encode(text));
-            // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown[]' is not assignable to ... Remove this comment to see the full error message
             const chunks = getWebTokenizersChunks(instance, tokens);
-            return response.send({ ids: tokens, count: tokens.length, chunks });
+            return { ids: tokens, count: tokens.length, chunks };
         } catch (error) {
             console.error(error);
-            return response.send({ ids: [], count: 0, chunks: [] });
+            return { ids: [], count: 0, chunks: [] };
         }
     };
 }
@@ -748,32 +718,27 @@ function createWebTokenizerEncodingHandler(tokenizer: WebTokenizer): any {
  * @returns {TokenizationHandler} Handler function
  */
 function createWebTokenizerDecodingHandler(tokenizer: WebTokenizer): any {
-    /**
-     * Request handler for decoding WebTokenizer tokens.
-     * @param {import('express').Request} request The Express request object
-     * @param {import('express').Response} response The Express response object
-     * @returns {Promise<import('express').Response>} Promise
-     */
-    return async function (request: express.Request, response: express.Response) {
+    return async function ({ body, set }: { body: any; set: any }) {
         try {
-            if (!request.body) {
-                return response.sendStatus(400);
+            if (!body) {
+                set.status = 400;
+                return;
             }
 
-            const ids = request.body.ids || [];
+            const ids = body.ids || [];
             const instance = await tokenizer?.get();
             if (!instance) throw new Error('Failed to load the Web tokenizer');
             const chunks = getWebTokenizersChunks(instance, ids);
             const text = instance.decode(new Int32Array(ids));
-            return response.send({ text, chunks });
+            return { text, chunks };
         } catch (error) {
             console.error(error);
-            return response.send({ text: '', chunks: [] });
+            return { text: '', chunks: [] };
         }
     };
 }
 
-export const router = express.Router();
+export const router = new Elysia({ prefix: '/api/tokenizers' });
 
 // ── Generic tokenizer endpoints (replaces per-tokenizer routes) ──────────────
 
@@ -784,21 +749,22 @@ export const router = express.Router();
  * Body: { text: string, tokenizer: string }
  * Response: { ids: number[], count: number, chunks?: string[] }
  */
-router.post('/encode', async function (req, res) {
+router.post('/encode', async (context: Record<string, unknown>) => {
     try {
-        const text: string = req.body.text || '';
-        const tokenizerName: string = req.body.tokenizer || 'gpt-3.5-turbo';
+        const body = context.body as Record<string, unknown>;
+        const text: string = (body.text as string) || '';
+        const tokenizerName: string = (body.tokenizer as string) || 'gpt-3.5-turbo';
 
         // SentencePiece tokenizers
         if (sentencepieceTokenizers.includes(tokenizerName)) {
             const tokenizer = getSentencepiceTokenizer(tokenizerName);
             const instance = await tokenizer?.get();
             if (!instance) {
-                return res.send({ ids: [], count: guesstimate(text), chunks: [] });
+                return { ids: [], count: guesstimate(text), chunks: [] };
             }
             const ids = instance.encodeIds(text);
             const chunks = instance.encodePieces(text);
-            return res.send({ ids, count: ids.length, chunks });
+            return { ids, count: ids.length, chunks };
         }
 
         // Web tokenizers
@@ -806,19 +772,20 @@ router.post('/encode', async function (req, res) {
             const tokenizer = getWebTokenizer(tokenizerName);
             const instance = await tokenizer?.get();
             if (!instance) {
-                return res.send({ ids: [], count: guesstimate(text), chunks: [] });
+                return { ids: [], count: guesstimate(text), chunks: [] };
             }
             const ids = Array.from(instance.encode(text));
-            return res.send({ ids, count: ids.length });
+            return { ids, count: ids.length };
         }
 
         // Tiktoken (OpenAI-compatible)
         const tiktokenTokenizer = getTiktokenTokenizer(tokenizerName);
         const ids = Array.from(tiktokenTokenizer.encode(text));
-        return res.send({ ids, count: ids.length });
+        return { ids, count: ids.length };
     } catch (error) {
         console.error('Generic encode error:', error);
-        return res.send({ ids: [], count: guesstimate(req.body.text || '') });
+        const body = context.body as Record<string, unknown>;
+        return { ids: [], count: guesstimate((body.text as string) || '') };
     }
 });
 
@@ -829,38 +796,39 @@ router.post('/encode', async function (req, res) {
  * Body: { ids: number[], tokenizer: string }
  * Response: { text: string, chunks?: string[] }
  */
-router.post('/decode', async function (req, res) {
+router.post('/decode', async (context: Record<string, unknown>) => {
     try {
-        const ids: number[] = req.body.ids || [];
-        const tokenizerName: string = req.body.tokenizer || 'gpt-3.5-turbo';
+        const body = context.body as Record<string, unknown>;
+        const ids: number[] = (body.ids as number[]) || [];
+        const tokenizerName: string = (body.tokenizer as string) || 'gpt-3.5-turbo';
 
         // SentencePiece tokenizers
         if (sentencepieceTokenizers.includes(tokenizerName)) {
             const tokenizer = getSentencepiceTokenizer(tokenizerName);
             const instance = await tokenizer?.get();
-            if (!instance) return res.send({ text: '', chunks: [] });
+            if (!instance) return { text: '', chunks: [] };
             const ops = ids.map((id: number) => instance.decodeIds([id]));
             const chunks = await Promise.all(ops);
-            return res.send({ text: chunks.join(''), chunks });
+            return { text: chunks.join(''), chunks };
         }
 
         // Web tokenizers
         if (webTokenizers.includes(tokenizerName)) {
             const tokenizer = getWebTokenizer(tokenizerName);
             const instance = await tokenizer?.get();
-            if (!instance) return res.send({ text: '', chunks: [] });
+            if (!instance) return { text: '', chunks: [] };
             const text = instance.decode(new Int32Array(ids));
-            return res.send({ text });
+            return { text };
         }
 
         // Tiktoken
         const tiktokenTokenizer = getTiktokenTokenizer(tokenizerName);
         const decoder = new TextDecoder();
         const bytes = tiktokenTokenizer.decode(new Uint32Array(ids));
-        return res.send({ text: decoder.decode(bytes) });
+        return { text: decoder.decode(bytes) };
     } catch (error) {
         console.error('Generic decode error:', error);
-        return res.send({ text: '', chunks: [] });
+        return { text: '', chunks: [] };
     }
 });
 
@@ -871,33 +839,35 @@ router.post('/decode', async function (req, res) {
  * Body: { text: string, tokenizer: string }
  * Response: { count: number }
  */
-router.post('/count', async function (req, res) {
+router.post('/count', async (context: Record<string, unknown>) => {
     try {
-        const text: string = req.body.text || '';
-        const tokenizerName: string = req.body.tokenizer || 'gpt-3.5-turbo';
+        const body = context.body as Record<string, unknown>;
+        const text: string = (body.text as string) || '';
+        const tokenizerName: string = (body.tokenizer as string) || 'gpt-3.5-turbo';
 
         // SentencePiece
         if (sentencepieceTokenizers.includes(tokenizerName)) {
             const tokenizer = getSentencepiceTokenizer(tokenizerName);
-            if (!tokenizer) return res.send({ count: guesstimate(text) });
+            if (!tokenizer) return { count: guesstimate(text) };
             const { count } = await countSentencepieceTokens(tokenizer, text);
-            return res.send({ count });
+            return { count };
         }
 
         // Web tokenizers
         if (webTokenizers.includes(tokenizerName)) {
             const tokenizer = getWebTokenizer(tokenizerName);
             const instance = await tokenizer?.get();
-            if (!instance) return res.send({ count: guesstimate(text) });
-            return res.send({ count: instance.encode(text).length });
+            if (!instance) return { count: guesstimate(text) };
+            return { count: instance.encode(text).length };
         }
 
         // Tiktoken
         const tiktokenTokenizer = getTiktokenTokenizer(tokenizerName);
-        return res.send({ count: tiktokenTokenizer.encode(text).length });
+        return { count: tiktokenTokenizer.encode(text).length };
     } catch (error) {
         console.error('Generic count error:', error);
-        return res.send({ count: guesstimate(req.body.text || '') });
+        const body = context.body as Record<string, unknown>;
+        return { count: guesstimate((body.text as string) || '') };
     }
 });
 
@@ -911,7 +881,7 @@ router.post('/count', async function (req, res) {
  * GET /api/tokenizers/map
  * Response: { tokenizers: { id: number, name: string, supportsEncode: boolean, supportsDecode: boolean }[] }
  */
-router.get('/map', function (_req, res) {
+router.get('/map', function (_context: Record<string, unknown>) {
     const nameToId: Record<string, number> = {
         gpt2: 1,
         llama: 3,
@@ -957,7 +927,7 @@ router.get('/map', function (_req, res) {
     tokenizers.push({ id: 1, name: 'gpt2', supportsEncode: true, supportsDecode: true });
     tokenizers.push({ id: 2, name: 'gpt-3.5-turbo', supportsEncode: true, supportsDecode: true });
 
-    return res.json({ tokenizers });
+    return { tokenizers };
 });
 
 // ── Legacy per-tokenizer routes (kept for backward compatibility) ────────────
@@ -993,232 +963,240 @@ router.post('/command-a/decode', createWebTokenizerDecodingHandler(commandAToken
 router.post('/nemo/decode', createWebTokenizerDecodingHandler(nemoTokenizer) as any);
 router.post('/deepseek/decode', createWebTokenizerDecodingHandler(deepseekTokenizer) as any);
 
-router.post('/openai/encode', async function (req, res) {
+router.post('/openai/encode', async (context: Record<string, unknown>) => {
     try {
-        const queryModel = String(req.query.model || '');
+        const query = context.query as Record<string, unknown>;
+        const queryModel = String(query.model || '');
 
         if (queryModel.includes('llama3') || queryModel.includes('llama-3')) {
             const handler = createWebTokenizerEncodingHandler(llama3_tokenizer);
-            return handler(req, res);
+            return handler(context);
         }
 
         if (queryModel.includes('llama')) {
             const handler = createSentencepieceEncodingHandler(spp_llama);
-            return handler(req, res);
+            return handler(context);
         }
 
         if (queryModel.includes('mistral')) {
             const handler = createSentencepieceEncodingHandler(spp_mistral);
-            return handler(req, res);
+            return handler(context);
         }
 
         if (queryModel.includes('yi')) {
             const handler = createSentencepieceEncodingHandler(spp_yi);
-            return handler(req, res);
+            return handler(context);
         }
 
         if (queryModel.includes('claude')) {
             const handler = createWebTokenizerEncodingHandler(claude_tokenizer);
-            return handler(req, res);
+            return handler(context);
         }
 
         if (queryModel.includes('gemma') || queryModel.includes('gemini')) {
             const handler = createSentencepieceEncodingHandler(spp_gemma);
-            return handler(req, res);
+            return handler(context);
         }
 
         if (queryModel.includes('jamba')) {
             const handler = createSentencepieceEncodingHandler(spp_jamba);
-            return handler(req, res);
+            return handler(context);
         }
 
         if (queryModel.includes('qwen2')) {
             const handler = createWebTokenizerEncodingHandler(qwen2Tokenizer);
-            return handler(req, res);
+            return handler(context);
         }
 
         if (queryModel.includes('command-r')) {
             const handler = createWebTokenizerEncodingHandler(commandRTokenizer);
-            return handler(req, res);
+            return handler(context);
         }
 
         if (queryModel.includes('command-a')) {
             const handler = createWebTokenizerEncodingHandler(commandATokenizer);
-            return handler(req, res);
+            return handler(context);
         }
 
         if (queryModel.includes('nemo')) {
             const handler = createWebTokenizerEncodingHandler(nemoTokenizer);
-            return handler(req, res);
+            return handler(context);
         }
 
         if (queryModel.includes('deepseek')) {
             const handler = createWebTokenizerEncodingHandler(deepseekTokenizer);
-            return handler(req, res);
+            return handler(context);
         }
 
         const model = getTokenizerModel(queryModel);
         const handler = createTiktokenEncodingHandler(model);
-        return handler(req, res);
+        return handler(context);
     } catch (error) {
         console.error(error);
-        return res.send({ ids: [], count: 0, chunks: [] });
+        return { ids: [], count: 0, chunks: [] };
     }
 });
 
-router.post('/openai/decode', async function (req, res) {
+router.post('/openai/decode', async (context: Record<string, unknown>) => {
     try {
-        const queryModel = String(req.query.model || '');
+        const query = context.query as Record<string, unknown>;
+        const queryModel = String(query.model || '');
 
         if (queryModel.includes('llama3') || queryModel.includes('llama-3')) {
             const handler = createWebTokenizerDecodingHandler(llama3_tokenizer);
-            return handler(req, res);
+            return handler(context);
         }
 
         if (queryModel.includes('llama')) {
             const handler = createSentencepieceDecodingHandler(spp_llama);
-            return handler(req, res);
+            return handler(context);
         }
 
         if (queryModel.includes('mistral')) {
             const handler = createSentencepieceDecodingHandler(spp_mistral);
-            return handler(req, res);
+            return handler(context);
         }
 
         if (queryModel.includes('yi')) {
             const handler = createSentencepieceDecodingHandler(spp_yi);
-            return handler(req, res);
+            return handler(context);
         }
 
         if (queryModel.includes('claude')) {
             const handler = createWebTokenizerDecodingHandler(claude_tokenizer);
-            return handler(req, res);
+            return handler(context);
         }
 
         if (queryModel.includes('gemma') || queryModel.includes('gemini')) {
             const handler = createSentencepieceDecodingHandler(spp_gemma);
-            return handler(req, res);
+            return handler(context);
         }
 
         if (queryModel.includes('jamba')) {
             const handler = createSentencepieceDecodingHandler(spp_jamba);
-            return handler(req, res);
+            return handler(context);
         }
 
         if (queryModel.includes('qwen2')) {
             const handler = createWebTokenizerDecodingHandler(qwen2Tokenizer);
-            return handler(req, res);
+            return handler(context);
         }
 
         if (queryModel.includes('command-r')) {
             const handler = createWebTokenizerDecodingHandler(commandRTokenizer);
-            return handler(req, res);
+            return handler(context);
         }
 
         if (queryModel.includes('command-a')) {
             const handler = createWebTokenizerDecodingHandler(commandATokenizer);
-            return handler(req, res);
+            return handler(context);
         }
 
         if (queryModel.includes('nemo')) {
             const handler = createWebTokenizerDecodingHandler(nemoTokenizer);
-            return handler(req, res);
+            return handler(context);
         }
 
         if (queryModel.includes('deepseek')) {
             const handler = createWebTokenizerDecodingHandler(deepseekTokenizer);
-            return handler(req, res);
+            return handler(context);
         }
 
         const model = getTokenizerModel(queryModel);
         const handler = createTiktokenDecodingHandler(model);
-        return handler(req, res);
+        return handler(context);
     } catch (error) {
         console.error(error);
-        return res.send({ text: '' });
+        return { text: '' };
     }
 });
 
-router.post('/openai/count', async function (req, res) {
+router.post('/openai/count', async (context: Record<string, unknown>) => {
     try {
-        if (!req.body) return res.sendStatus(400);
+        const body = context.body as Record<string, unknown>;
+        const set = context.set as Record<string, unknown>;
+        if (!body) {
+            set.status = 400;
+            return;
+        }
 
         let num_tokens = 0;
-        const queryModel = String(req.query.model || '');
+        const query = context.query as Record<string, unknown>;
+        const queryModel = String(query.model || '');
         const model = getTokenizerModel(queryModel);
 
         if (model === 'claude') {
             const instance = await claude_tokenizer.get();
             if (!instance) throw new Error('Failed to load the Claude tokenizer');
-            num_tokens = countWebTokenizerTokens(instance, req.body);
-            return res.send({ token_count: num_tokens });
+            num_tokens = countWebTokenizerTokens(instance, body as object[]);
+            return { token_count: num_tokens };
         }
 
         if (model === 'llama3' || model === 'llama-3') {
             const instance = await llama3_tokenizer.get();
             if (!instance) throw new Error('Failed to load the Llama3 tokenizer');
-            num_tokens = countWebTokenizerTokens(instance, req.body);
-            return res.send({ token_count: num_tokens });
+            num_tokens = countWebTokenizerTokens(instance, body as object[]);
+            return { token_count: num_tokens };
         }
 
         if (model === 'llama') {
-            num_tokens = await countSentencepieceArrayTokens(spp_llama, req.body);
-            return res.send({ token_count: num_tokens });
+            num_tokens = await countSentencepieceArrayTokens(spp_llama, body as object[]);
+            return { token_count: num_tokens };
         }
 
         if (model === 'mistral') {
-            num_tokens = await countSentencepieceArrayTokens(spp_mistral, req.body);
-            return res.send({ token_count: num_tokens });
+            num_tokens = await countSentencepieceArrayTokens(spp_mistral, body as object[]);
+            return { token_count: num_tokens };
         }
 
         if (model === 'yi') {
-            num_tokens = await countSentencepieceArrayTokens(spp_yi, req.body);
-            return res.send({ token_count: num_tokens });
+            num_tokens = await countSentencepieceArrayTokens(spp_yi, body as object[]);
+            return { token_count: num_tokens };
         }
 
         if (model === 'gemma' || model === 'gemini') {
-            num_tokens = await countSentencepieceArrayTokens(spp_gemma, req.body);
-            return res.send({ token_count: num_tokens });
+            num_tokens = await countSentencepieceArrayTokens(spp_gemma, body as object[]);
+            return { token_count: num_tokens };
         }
 
         if (model === 'jamba') {
-            num_tokens = await countSentencepieceArrayTokens(spp_jamba, req.body);
-            return res.send({ token_count: num_tokens });
+            num_tokens = await countSentencepieceArrayTokens(spp_jamba, body as object[]);
+            return { token_count: num_tokens };
         }
 
         if (model === 'qwen2') {
             const instance = await qwen2Tokenizer.get();
             if (!instance) throw new Error('Failed to load the Qwen2 tokenizer');
-            num_tokens = countWebTokenizerTokens(instance, req.body);
-            return res.send({ token_count: num_tokens });
+            num_tokens = countWebTokenizerTokens(instance, body as object[]);
+            return { token_count: num_tokens };
         }
 
         if (model === 'command-r') {
             const instance = await commandRTokenizer.get();
             if (!instance) throw new Error('Failed to load the Command-R tokenizer');
-            num_tokens = countWebTokenizerTokens(instance, req.body);
-            return res.send({ token_count: num_tokens });
+            num_tokens = countWebTokenizerTokens(instance, body as object[]);
+            return { token_count: num_tokens };
         }
 
         if (model === 'command-a') {
             const instance = await commandATokenizer.get();
             if (!instance) throw new Error('Failed to load the Command-A tokenizer');
-            num_tokens = countWebTokenizerTokens(instance, req.body);
-            return res.send({ token_count: num_tokens });
+            num_tokens = countWebTokenizerTokens(instance, body as object[]);
+            return { token_count: num_tokens };
         }
 
         if (model === 'nemo') {
             const instance = await nemoTokenizer.get();
             if (!instance) throw new Error('Failed to load the Nemo tokenizer');
-            num_tokens = countWebTokenizerTokens(instance, req.body);
-            return res.send({ token_count: num_tokens });
+            num_tokens = countWebTokenizerTokens(instance, body as object[]);
+            return { token_count: num_tokens };
         }
 
         if (model === 'deepseek') {
             const instance = await deepseekTokenizer.get();
             if (!instance) throw new Error('Failed to load the DeepSeek tokenizer');
-            num_tokens = countWebTokenizerTokens(instance, req.body);
-            return res.send({ token_count: num_tokens });
+            num_tokens = countWebTokenizerTokens(instance, body as object[]);
+            return { token_count: num_tokens };
         }
 
         const tokensPerName = queryModel.includes('gpt-3.5-turbo-0301') ? -1 : 1;
@@ -1227,11 +1205,11 @@ router.post('/openai/count', async function (req, res) {
 
         const tokenizer = getTiktokenTokenizer(model);
 
-        for (const msg of req.body) {
+        for (const msg of body as object[]) {
             try {
                 num_tokens += tokensPerMessage;
                 for (const [key, value] of Object.entries(msg)) {
-                    num_tokens += tokenizer.encode(value).length;
+                    num_tokens += tokenizer.encode(value as string).length;
                     if (key == 'name') {
                         num_tokens += tokensPerName;
                     }
@@ -1251,12 +1229,12 @@ router.post('/openai/count', async function (req, res) {
         // not needed for cached tokenizers
         //tokenizer.free();
 
-        res.send({ token_count: num_tokens });
+        return { token_count: num_tokens };
     } catch (error) {
         console.error('An error counting tokens, using fallback estimation method', error);
-        const jsonBody = JSON.stringify(req.body);
+        const jsonBody = JSON.stringify(context.body);
         const num_tokens = guesstimate(jsonBody);
-        res.send({ token_count: num_tokens });
+        return { token_count: num_tokens };
     }
 });
 
@@ -1267,11 +1245,14 @@ router.post('/openai/count', async function (req, res) {
  * Delegates to the provider's resolveTokenizer() when available;
  * otherwise falls back to the generic model-name heuristic.
  */
-router.post('/resolve', async function (req, res) {
+router.post('/resolve', async (context: Record<string, unknown>) => {
     try {
-        const { source, model } = req.body;
+        const body = context.body as Record<string, unknown>;
+        const set = context.set as Record<string, unknown>;
+        const { source, model } = body as Record<string, string>;
         if (!source || !model) {
-            return res.status(400).json({ error: 'source and model are required' });
+            set.status = 400;
+            return { error: 'source and model are required' };
         }
 
         // Try the chat-completion provider first
@@ -1280,26 +1261,30 @@ router.post('/resolve', async function (req, res) {
             const provider = await getChatProvider(source);
             if (provider?.resolveTokenizer) {
                 const tokenizer = provider.resolveTokenizer(model);
-                return res.json({ tokenizer });
+                return { tokenizer };
             }
         } catch {
             // Provider doesn't exist for this source — fall through
         }
 
         // Fall back to the generic model-name heuristic
-        return res.json({ tokenizer: getTokenizerModel(model) });
+        return { tokenizer: getTokenizerModel(model) };
     } catch (error) {
         console.error('Tokenizer resolution error:', error);
-        return res.json({ tokenizer: getTokenizerModel(req.body?.model || '') });
+        const body = context.body as Record<string, unknown>;
+        return { tokenizer: getTokenizerModel((body?.model as string) || '') };
     }
 });
 
-router.post('/remote/kobold/count', async function (request, response) {
-    if (!request.body) {
-        return response.sendStatus(400);
+router.post('/remote/kobold/count', async (context: Record<string, unknown>) => {
+    const body = context.body as Record<string, unknown>;
+    const set = context.set as Record<string, unknown>;
+    if (!body) {
+        set.status = 400;
+        return;
     }
-    const text = String(request.body.text) || '';
-    const baseUrl = String(request.body.url);
+    const text = String(body.text) || '';
+    const baseUrl = String(body.url);
 
     try {
         const args = {
@@ -1315,42 +1300,44 @@ router.post('/remote/kobold/count', async function (request, response) {
 
         if (!result.ok) {
             console.warn(`API returned error: ${result.status} ${result.statusText}`);
-            return response.send({ error: true });
+            return { error: true };
         }
 
         const data = (await result.json()) as { value: unknown; ids: unknown };
         const count = data.value;
         const ids = data.ids ?? [];
-        return response.send({ count, ids });
+        return { count, ids };
     } catch (error) {
         console.error(error);
-        return response.send({ error: true });
+        return { error: true };
     }
 });
 
-router.post('/remote/textgenerationwebui/encode', async function (request, response) {
-    if (!request.body) {
-        return response.sendStatus(400);
+router.post('/remote/textgenerationwebui/encode', async (context: Record<string, unknown>) => {
+    const body = context.body as Record<string, unknown>;
+    const set = context.set as Record<string, unknown>;
+    if (!body) {
+        set.status = 400;
+        return;
     }
-    const text = String(request.body.text) || '';
-    const baseUrl = String(request.body.url);
-    const model = String(request.body.model) || '';
+    const text = String(body.text) || '';
+    const baseUrl = String(body.url);
+    const model = String(body.model) || '';
 
     try {
-        const args = {
+        const args: Record<string, unknown> = {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
         };
 
-        setAdditionalHeaders(request, args, baseUrl);
+        setAdditionalHeaders(context as any, args, baseUrl);
 
         // Convert to string + remove trailing slash + /v1 suffix
         let url = String(baseUrl).replace(/\/$/, '').replace(/\/v1$/, '');
 
-        switch (request.body.api_type) {
+        switch (body.api_type) {
             case TEXTGEN_TYPES.TABBY:
                 url += '/v1/token/encode';
-                // @ts-expect-error TS(2339) FIXME: Property 'body' does not exist on type '{ method: ... Remove this comment to see the full error message
                 args.body = JSON.stringify({
                     text: text,
                     add_bos_token: false,
@@ -1359,36 +1346,31 @@ router.post('/remote/textgenerationwebui/encode', async function (request, respo
                 break;
             case TEXTGEN_TYPES.KOBOLDCPP:
                 url += '/api/extra/tokencount';
-                // @ts-expect-error TS(2339) FIXME: Property 'body' does not exist on type '{ method: ... Remove this comment to see the full error message
                 args.body = JSON.stringify({ prompt: text, special: false });
                 break;
             case TEXTGEN_TYPES.LLAMACPP:
                 url += '/tokenize';
-                // @ts-expect-error TS(2339) FIXME: Property 'body' does not exist on type '{ method: ... Remove this comment to see the full error message
                 args.body = JSON.stringify({ model: model, content: text });
                 break;
             case TEXTGEN_TYPES.VLLM:
                 url += '/tokenize';
-                // @ts-expect-error TS(2339) FIXME: Property 'body' does not exist on type '{ method: ... Remove this comment to see the full error message
                 args.body = JSON.stringify({ model: model, prompt: text });
                 break;
             case TEXTGEN_TYPES.APHRODITE:
                 url += '/v1/tokenize';
-                // @ts-expect-error TS(2339) FIXME: Property 'body' does not exist on type '{ method: ... Remove this comment to see the full error message
                 args.body = JSON.stringify({ model: model, prompt: text });
                 break;
             default:
                 url += '/v1/internal/encode';
-                // @ts-expect-error TS(2339) FIXME: Property 'body' does not exist on type '{ method: ... Remove this comment to see the full error message
                 args.body = JSON.stringify({ text: text });
                 break;
         }
 
-        const result = await fetch(url, args);
+        const result = await fetch(url, args as RequestInit);
 
         if (!result.ok) {
             console.warn(`API returned error: ${result.status} ${result.statusText}`);
-            return response.send({ error: true });
+            return { error: true };
         }
 
         const data = (await result.json()) as {
@@ -1401,9 +1383,9 @@ router.post('/remote/textgenerationwebui/encode', async function (request, respo
         const count = data?.length ?? data?.count ?? data?.value ?? data?.tokens?.length;
         const ids = data?.tokens ?? data?.ids ?? [];
 
-        return response.send({ count, ids });
+        return { count, ids };
     } catch (error) {
         console.error(error);
-        return response.send({ error: true });
+        return { error: true };
     }
 });

@@ -3,6 +3,7 @@ import fs from 'node:fs';
 
 import vectra from 'vectra';
 import express from 'express';
+import { Elysia } from 'elysia';
 import sanitize from 'sanitize-filename';
 
 const registry: Record<string, () => Promise<unknown>> = {
@@ -592,24 +593,19 @@ async function multiQueryCollection(
 
 /**
  * Performs a request to regenerate the index if it is corrupted.
- * @param {import('express').Request} req Express request object
- * @param {import('express').Response} res Express response object
+ * @param {any} context Elysia context object
  * @param {Error} error Error object
- * @returns {Promise<import('express').Response>} Promise
+ * @returns {Promise<any>} Promise
  */
-async function regenerateCorruptedIndexErrorHandler(
-    req: express.Request,
-    res: express.Response,
-    error: unknown,
-) {
-    if (error instanceof SyntaxError && !req.query.regenerated) {
-        const collectionId = String(req.body.collectionId);
-        const source = String(req.body.source) || 'openai';
-        const sourceSettings = getSourceSettings(source, req);
+async function regenerateCorruptedIndexErrorHandler(context: any, error: unknown) {
+    if (error instanceof SyntaxError && !context.query?.regenerated) {
+        const collectionId = String(context.body?.collectionId);
+        const source = String(context.body?.source) || 'openai';
+        const sourceSettings = getSourceSettings(source, context as any);
 
         if (collectionId && source) {
             const index = await getIndex(
-                req.user.directories,
+                context.user.directories,
                 collectionId,
                 source,
                 sourceSettings,
@@ -620,32 +616,38 @@ async function regenerateCorruptedIndexErrorHandler(
                 const path = index.folderPath;
                 console.warn(`Corrupted index detected at ${path}, regenerating...`);
                 await index.deleteIndex();
-                return res.redirect(307, req.originalUrl + '?regenerated=true');
+                const url = String(context.request.url);
+                const separator = url.includes('?') ? '&' : '?';
+                context.set.redirect = url + separator + 'regenerated=true';
+                context.set.status = 307;
+                return '';
             }
         }
     }
 
     console.error(error);
-    return res.sendStatus(500);
+    context.set.status = 500;
+    return '';
 }
 
-export const router = express.Router();
+export const router: any = new Elysia({ prefix: '/api/vector' });
 
-router.post('/query', async (req, res) => {
+router.post('/query', async (context: any) => {
     try {
-        if (!req.body.collectionId || !req.body.searchText) {
-            return res.sendStatus(400);
+        if (!context.body.collectionId || !context.body.searchText) {
+            context.set.status = 400;
+            return;
         }
 
-        const collectionId = String(req.body.collectionId);
-        const searchText = String(req.body.searchText);
-        const topK = Number(req.body.topK) || 10;
-        const threshold = Number(req.body.threshold) || 0.0;
-        const source = String(req.body.source) || 'openai';
-        const sourceSettings = getSourceSettings(source, req);
+        const collectionId = String(context.body.collectionId);
+        const searchText = String(context.body.searchText);
+        const topK = Number(context.body.topK) || 10;
+        const threshold = Number(context.body.threshold) || 0.0;
+        const source = String(context.body.source) || 'openai';
+        const sourceSettings = getSourceSettings(source, context as any);
 
         const results = await queryCollection(
-            req.user.directories,
+            context.user.directories,
             collectionId,
             source,
             sourceSettings,
@@ -653,27 +655,28 @@ router.post('/query', async (req, res) => {
             topK,
             threshold,
         );
-        return res.json(results);
+        return results;
     } catch (error) {
-        return regenerateCorruptedIndexErrorHandler(req, res, error);
+        return regenerateCorruptedIndexErrorHandler(context, error);
     }
 });
 
-router.post('/query-multi', async (req, res) => {
+router.post('/query-multi', async (context: any) => {
     try {
-        if (!Array.isArray(req.body.collectionIds) || !req.body.searchText) {
-            return res.sendStatus(400);
+        if (!Array.isArray(context.body.collectionIds) || !context.body.searchText) {
+            context.set.status = 400;
+            return;
         }
 
-        const collectionIds = req.body.collectionIds.map((x: unknown) => String(x));
-        const searchText = String(req.body.searchText);
-        const topK = Number(req.body.topK) || 10;
-        const threshold = Number(req.body.threshold) || 0.0;
-        const source = String(req.body.source) || 'openai';
-        const sourceSettings = getSourceSettings(source, req);
+        const collectionIds = context.body.collectionIds.map((x: unknown) => String(x));
+        const searchText = String(context.body.searchText);
+        const topK = Number(context.body.topK) || 10;
+        const threshold = Number(context.body.threshold) || 0.0;
+        const source = String(context.body.source) || 'openai';
+        const sourceSettings = getSourceSettings(source, context as any);
 
         const results = await multiQueryCollection(
-            req.user.directories,
+            context.user.directories,
             collectionIds,
             source,
             sourceSettings,
@@ -681,78 +684,97 @@ router.post('/query-multi', async (req, res) => {
             topK,
             threshold,
         );
-        return res.json(results);
+        return results;
     } catch (error) {
-        return regenerateCorruptedIndexErrorHandler(req, res, error);
+        return regenerateCorruptedIndexErrorHandler(context, error);
     }
 });
 
-router.post('/insert', async (req, res) => {
+router.post('/insert', async (context: any) => {
     try {
-        if (!Array.isArray(req.body.items) || !req.body.collectionId) {
-            return res.sendStatus(400);
+        if (!Array.isArray(context.body.items) || !context.body.collectionId) {
+            context.set.status = 400;
+            return;
         }
 
-        const collectionId = String(req.body.collectionId);
-        const items = req.body.items.map((x: { hash: unknown; text: unknown; index: unknown }) => ({
-            hash: x.hash,
-            text: x.text,
-            index: x.index,
-        }));
-        const source = String(req.body.source) || 'openai';
-        const sourceSettings = getSourceSettings(source, req);
+        const collectionId = String(context.body.collectionId);
+        const items = context.body.items.map(
+            (x: { hash: unknown; text: unknown; index: unknown }) => ({
+                hash: x.hash,
+                text: x.text,
+                index: x.index,
+            }),
+        );
+        const source = String(context.body.source) || 'openai';
+        const sourceSettings = getSourceSettings(source, context as any);
 
-        await insertVectorItems(req.user.directories, collectionId, source, sourceSettings, items);
-        return res.sendStatus(200);
+        await insertVectorItems(
+            context.user.directories,
+            collectionId,
+            source,
+            sourceSettings,
+            items,
+        );
+        context.set.status = 200;
+        return;
     } catch (error) {
-        return regenerateCorruptedIndexErrorHandler(req, res, error);
+        return regenerateCorruptedIndexErrorHandler(context, error);
     }
 });
 
-router.post('/list', async (req, res) => {
+router.post('/list', async (context: any) => {
     try {
-        if (!req.body.collectionId) {
-            return res.sendStatus(400);
+        if (!context.body.collectionId) {
+            context.set.status = 400;
+            return;
         }
 
-        const collectionId = String(req.body.collectionId);
-        const source = String(req.body.source) || 'openai';
-        const sourceSettings = getSourceSettings(source, req);
+        const collectionId = String(context.body.collectionId);
+        const source = String(context.body.source) || 'openai';
+        const sourceSettings = getSourceSettings(source, context as any);
 
         const hashes = await getSavedHashes(
-            req.user.directories,
+            context.user.directories,
             collectionId,
             source,
             sourceSettings,
         );
-        return res.json(hashes);
+        return hashes;
     } catch (error) {
-        return regenerateCorruptedIndexErrorHandler(req, res, error);
+        return regenerateCorruptedIndexErrorHandler(context, error);
     }
 });
 
-router.post('/delete', async (req, res) => {
+router.post('/delete', async (context: any) => {
     try {
-        if (!Array.isArray(req.body.hashes) || !req.body.collectionId) {
-            return res.sendStatus(400);
+        if (!Array.isArray(context.body.hashes) || !context.body.collectionId) {
+            context.set.status = 400;
+            return;
         }
 
-        const collectionId = String(req.body.collectionId);
-        const hashes = req.body.hashes.map((x: unknown) => Number(x));
-        const source = String(req.body.source) || 'openai';
-        const sourceSettings = getSourceSettings(source, req);
+        const collectionId = String(context.body.collectionId);
+        const hashes = context.body.hashes.map((x: unknown) => Number(x));
+        const source = String(context.body.source) || 'openai';
+        const sourceSettings = getSourceSettings(source, context as any);
 
-        await deleteVectorItems(req.user.directories, collectionId, source, sourceSettings, hashes);
-        return res.sendStatus(200);
+        await deleteVectorItems(
+            context.user.directories,
+            collectionId,
+            source,
+            sourceSettings,
+            hashes,
+        );
+        context.set.status = 200;
+        return;
     } catch (error) {
-        return regenerateCorruptedIndexErrorHandler(req, res, error);
+        return regenerateCorruptedIndexErrorHandler(context, error);
     }
 });
 
-router.post('/purge-all', async (req, res) => {
+router.post('/purge-all', async (context: any) => {
     try {
         for (const source of SOURCES) {
-            const sourcePath = path.join(req.user.directories.vectors, sanitize(source));
+            const sourcePath = path.join(context.user.directories.vectors, sanitize(source));
             if (!fs.existsSync(sourcePath)) {
                 continue;
             }
@@ -760,24 +782,27 @@ router.post('/purge-all', async (req, res) => {
             console.info(`Deleted vector source store at ${sourcePath}`);
         }
 
-        return res.sendStatus(200);
+        context.set.status = 200;
+        return;
     } catch (error) {
         console.error(error);
-        return res.sendStatus(500);
+        context.set.status = 500;
+        return;
     }
 });
 
-router.post('/purge', async (req, res) => {
+router.post('/purge', async (context: any) => {
     try {
-        if (!req.body.collectionId) {
-            return res.sendStatus(400);
+        if (!context.body.collectionId) {
+            context.set.status = 400;
+            return;
         }
 
-        const collectionId = String(req.body.collectionId);
+        const collectionId = String(context.body.collectionId);
 
         for (const source of SOURCES) {
             const sourcePath = path.join(
-                req.user.directories.vectors,
+                context.user.directories.vectors,
                 sanitize(source),
                 sanitize(collectionId),
             );
@@ -788,9 +813,11 @@ router.post('/purge', async (req, res) => {
             console.info(`Deleted vector index at ${sourcePath}`);
         }
 
-        return res.sendStatus(200);
+        context.set.status = 200;
+        return;
     } catch (error) {
         console.error(error);
-        return res.sendStatus(500);
+        context.set.status = 500;
+        return;
     }
 });

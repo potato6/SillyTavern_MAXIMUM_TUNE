@@ -1,4 +1,6 @@
-import express from 'express';
+import { Elysia } from 'elysia';
+import { PassThrough } from 'node:stream';
+import { Readable } from 'node:stream';
 import { CHAT_COMPLETION_SOURCES } from '../../../constants.js';
 import {
     getTokenizerModel,
@@ -12,7 +14,87 @@ import { readSecret, SECRET_KEYS } from '../../secrets.js';
 import { getChatProvider, getRegisteredSources } from './registry.js';
 import { getCachedModels, setCachedModels } from '../common/model-cache.js';
 
-export const router = express.Router();
+// Non-chained pattern for large files — type safety regained via explicit casts in each handler.
+export const router: any = new Elysia({ prefix: '/api/backends/chat-completions' });
+
+// ── Helpers ────────────────────────────────────────────────────────────────────
+
+/**
+ * Build a mock Express-like request object from the Elysia context.
+ * Many providers and helpers (listModels, readSecret, getPromptNames)
+ * access `req.body`, `req.user`, `req.user.directories`, `req.query`,
+ * and `req.headers`.  The Elysia context has all of these at the same
+ * structural paths, so we alias directly.
+ */
+function mockRequest(context: Record<string, unknown>): any {
+    return context;
+}
+
+/**
+ * Build a mock Express-like response backed by a PassThrough stream.
+ * Writes go into the stream, which is then returned as a ReadableStream
+ * body from the Elysia handler.  During bridge mode the stream is
+ * buffered by mountElysia's `.text()` call, so clients receive the full
+ * payload at once.  True streaming resumes in Phase 7 (standalone Elysia).
+ */
+function mockResponse(
+    passThrough: PassThrough,
+    set: Record<string, unknown>,
+): Record<string, unknown> {
+    let headersSent = false;
+
+    const res = Object.assign(passThrough as unknown as Record<string, unknown>, {
+        _headersSent: false,
+        get headersSent() {
+            return headersSent || this._headersSent;
+        },
+        set headersSent(v: boolean) {
+            headersSent = v;
+        },
+        statusCode: 200,
+        statusMessage: 'OK',
+        status(code: number) {
+            set.status = code;
+            this.statusCode = code;
+            return this;
+        },
+        send(data: unknown) {
+            headersSent = true;
+            if (typeof data === 'object') {
+                passThrough.end(JSON.stringify(data));
+            } else {
+                passThrough.end(String(data));
+            }
+        },
+        json(data: unknown) {
+            headersSent = true;
+            passThrough.end(JSON.stringify(data));
+        },
+        set(_field: string, _val: string) {
+            // no-op – headers are set via context.set.headers or by the bridge
+        },
+        setHeader(_field: string, _val: string) {
+            // no-op
+        },
+        writeHead(_statusCode: number, _statusMessage?: string) {
+            headersSent = true;
+        },
+        flushHeaders() {
+            // no-op
+        },
+        // Minimal socket stub — forwardFetchResponse checks `to.socket` before piping
+        socket: {
+            on(_event: string, _handler: (...args: unknown[]) => void) {
+                // no-op; cleanup isn't needed since the stream ends with provider
+            },
+            removeAllListeners() {
+                // no-op
+            },
+        },
+    });
+
+    return res;
+}
 
 // Pre-warm all providers to avoid cold-start import compilation
 // in Bun's standalone binary.  First request then hits a warm cache.
@@ -26,11 +108,17 @@ Promise.all(
 
 // ── Status ─────────────────────────────────────────────────────────────────────
 
-router.post('/status', async function (request, response) {
-    try {
-        if (!request.body) return response.sendStatus(400);
+router.post('/status', async (context: Record<string, unknown>) => {
+    const body = context.body as Record<string, unknown> | undefined;
+    const set = context.set as Record<string, unknown>;
 
-        const source = request.body.chat_completion_source;
+    try {
+        if (!body) {
+            set.status = 400;
+            return;
+        }
+
+        const source = body.chat_completion_source as string;
 
         // Special-case handling for sources that need extra context.
         if (
@@ -39,20 +127,20 @@ router.post('/status', async function (request, response) {
         ) {
             // Delegate to the gemini provider's listModels.
             const provider = await getChatProvider(source);
-            const models = await provider.listModels(request);
-            return response.send({ data: models });
+            const models = await provider.listModels(mockRequest(context));
+            return { data: models };
         }
 
         if (source === CHAT_COMPLETION_SOURCES.AZURE_OPENAI) {
             const provider = await getChatProvider(source);
-            const models = await provider.listModels(request);
-            return response.send({ data: models });
+            const models = await provider.listModels(mockRequest(context));
+            return { data: models };
         }
 
         if (source === CHAT_COMPLETION_SOURCES.WORKERS_AI) {
             const provider = await getChatProvider(source);
-            const models = await provider.listModels(request);
-            return response.send({ data: models });
+            const models = await provider.listModels(mockRequest(context));
+            return { data: models };
         }
 
         // Standard path: resolve provider source, check cache, fetch models.
@@ -62,218 +150,230 @@ router.post('/status', async function (request, response) {
         switch (source) {
             case CHAT_COMPLETION_SOURCES.OPENAI:
                 apiUrl = new URL(
-                    request.body.reverse_proxy || 'https://api.openai.com/v1',
+                    (body.reverse_proxy as string) || 'https://api.openai.com/v1',
                 ).toString();
-                apiKey = request.body.reverse_proxy
-                    ? request.body.proxy_password
+                apiKey = body.reverse_proxy
+                    ? (body.proxy_password as string)
                     : readSecret(
-                          request.user.directories,
+                          (context.user as Record<string, unknown>)?.directories as any,
                           SECRET_KEYS.OPENAI,
-                          request.body.secret_id,
+                          body.secret_id as string,
                       );
                 break;
             case CHAT_COMPLETION_SOURCES.OPENROUTER:
                 apiUrl = 'https://openrouter.ai/api/v1';
                 apiKey = readSecret(
-                    request.user.directories,
+                    (context.user as Record<string, unknown>)?.directories as any,
                     SECRET_KEYS.OPENROUTER,
-                    request.body.secret_id,
+                    body.secret_id as string,
                 );
                 break;
             case CHAT_COMPLETION_SOURCES.MISTRALAI:
                 apiUrl = new URL(
-                    request.body.reverse_proxy || 'https://api.mistral.ai/v1',
+                    (body.reverse_proxy as string) || 'https://api.mistral.ai/v1',
                 ).toString();
-                apiKey = request.body.reverse_proxy
-                    ? request.body.proxy_password
+                apiKey = body.reverse_proxy
+                    ? (body.proxy_password as string)
                     : readSecret(
-                          request.user.directories,
+                          (context.user as Record<string, unknown>)?.directories as any,
                           SECRET_KEYS.MISTRALAI,
-                          request.body.secret_id,
+                          body.secret_id as string,
                       );
                 break;
             case CHAT_COMPLETION_SOURCES.CUSTOM:
-                apiUrl = request.body.custom_url;
+                apiUrl = body.custom_url as string;
                 apiKey = readSecret(
-                    request.user.directories,
+                    (context.user as Record<string, unknown>)?.directories as any,
                     SECRET_KEYS.CUSTOM,
-                    request.body.secret_id,
+                    body.secret_id as string,
                 );
                 break;
             case CHAT_COMPLETION_SOURCES.COHERE:
                 apiUrl = 'https://api.cohere.ai/v1';
                 apiKey = readSecret(
-                    request.user.directories,
+                    (context.user as Record<string, unknown>)?.directories as any,
                     SECRET_KEYS.COHERE,
-                    request.body.secret_id,
+                    body.secret_id as string,
                 );
                 break;
             case CHAT_COMPLETION_SOURCES.CHUTES:
                 apiUrl = 'https://llm.chutes.ai/v1';
                 apiKey = readSecret(
-                    request.user.directories,
+                    (context.user as Record<string, unknown>)?.directories as any,
                     SECRET_KEYS.CHUTES,
-                    request.body.secret_id,
+                    body.secret_id as string,
                 );
                 break;
             case CHAT_COMPLETION_SOURCES.ELECTRONHUB:
                 apiUrl = 'https://api.electronhub.ai/v1';
                 apiKey = readSecret(
-                    request.user.directories,
+                    (context.user as Record<string, unknown>)?.directories as any,
                     SECRET_KEYS.ELECTRONHUB,
-                    request.body.secret_id,
+                    body.secret_id as string,
                 );
                 break;
             case CHAT_COMPLETION_SOURCES.NANOGPT:
                 apiUrl = 'https://nano-gpt.com/api/v1';
                 apiKey = readSecret(
-                    request.user.directories,
+                    (context.user as Record<string, unknown>)?.directories as any,
                     SECRET_KEYS.NANOGPT,
-                    request.body.secret_id,
+                    body.secret_id as string,
                 );
                 break;
             case CHAT_COMPLETION_SOURCES.DEEPSEEK:
                 apiUrl = new URL(
-                    request.body.reverse_proxy || 'https://api.deepseek.com',
+                    (body.reverse_proxy as string) || 'https://api.deepseek.com',
                 ).toString();
-                apiKey = request.body.reverse_proxy
-                    ? request.body.proxy_password
+                apiKey = body.reverse_proxy
+                    ? (body.proxy_password as string)
                     : readSecret(
-                          request.user.directories,
+                          (context.user as Record<string, unknown>)?.directories as any,
                           SECRET_KEYS.DEEPSEEK,
-                          request.body.secret_id,
+                          body.secret_id as string,
                       );
                 break;
             case CHAT_COMPLETION_SOURCES.XAI:
-                apiUrl = new URL(request.body.reverse_proxy || 'https://api.x.ai/v1').toString();
-                apiKey = request.body.reverse_proxy
-                    ? request.body.proxy_password
-                    : readSecret(request.user.directories, SECRET_KEYS.XAI, request.body.secret_id);
+                apiUrl = new URL(
+                    (body.reverse_proxy as string) || 'https://api.x.ai/v1',
+                ).toString();
+                apiKey = body.reverse_proxy
+                    ? (body.proxy_password as string)
+                    : readSecret(
+                          (context.user as Record<string, unknown>)?.directories as any,
+                          SECRET_KEYS.XAI,
+                          body.secret_id as string,
+                      );
                 break;
             case CHAT_COMPLETION_SOURCES.AIMLAPI:
                 apiUrl = 'https://api.aimlapi.com/v1';
                 apiKey = readSecret(
-                    request.user.directories,
+                    (context.user as Record<string, unknown>)?.directories as any,
                     SECRET_KEYS.AIMLAPI,
-                    request.body.secret_id,
+                    body.secret_id as string,
                 );
                 break;
             case CHAT_COMPLETION_SOURCES.POLLINATIONS:
                 apiUrl = 'https://gen.pollinations.ai/text';
                 apiKey = readSecret(
-                    request.user.directories,
+                    (context.user as Record<string, unknown>)?.directories as any,
                     SECRET_KEYS.POLLINATIONS,
-                    request.body.secret_id,
+                    body.secret_id as string,
                 );
                 break;
             case CHAT_COMPLETION_SOURCES.GROQ:
                 apiUrl = 'https://api.groq.com/openai/v1';
                 apiKey = readSecret(
-                    request.user.directories,
+                    (context.user as Record<string, unknown>)?.directories as any,
                     SECRET_KEYS.GROQ,
-                    request.body.secret_id,
+                    body.secret_id as string,
                 );
                 break;
             case CHAT_COMPLETION_SOURCES.COMETAPI:
                 throw new Error('This provider is temporarily disabled.');
             case CHAT_COMPLETION_SOURCES.MOONSHOT:
                 apiUrl = new URL(
-                    request.body.reverse_proxy || 'https://api.moonshot.ai/v1',
+                    (body.reverse_proxy as string) || 'https://api.moonshot.ai/v1',
                 ).toString();
-                apiKey = request.body.reverse_proxy
-                    ? request.body.proxy_password
+                apiKey = body.reverse_proxy
+                    ? (body.proxy_password as string)
                     : readSecret(
-                          request.user.directories,
+                          (context.user as Record<string, unknown>)?.directories as any,
                           SECRET_KEYS.MOONSHOT,
-                          request.body.secret_id,
+                          body.secret_id as string,
                       );
                 break;
             case CHAT_COMPLETION_SOURCES.FIREWORKS:
                 apiUrl = 'https://api.fireworks.ai/inference/v1';
                 apiKey = readSecret(
-                    request.user.directories,
+                    (context.user as Record<string, unknown>)?.directories as any,
                     SECRET_KEYS.FIREWORKS,
-                    request.body.secret_id,
+                    body.secret_id as string,
                 );
                 break;
             case CHAT_COMPLETION_SOURCES.SILICONFLOW: {
                 const { SILICONFLOW_ENDPOINT } = await import('../../../constants.js');
                 apiUrl =
-                    request.body.siliconflow_endpoint === SILICONFLOW_ENDPOINT.CN
+                    body.siliconflow_endpoint === SILICONFLOW_ENDPOINT.CN
                         ? 'https://api.siliconflow.cn/v1'
                         : 'https://api.siliconflow.com/v1';
                 apiKey = readSecret(
-                    request.user.directories,
+                    (context.user as Record<string, unknown>)?.directories as any,
                     SECRET_KEYS.SILICONFLOW,
-                    request.body.secret_id,
+                    body.secret_id as string,
                 );
                 break;
             }
             case CHAT_COMPLETION_SOURCES.ZAI: {
                 const { ZAI_ENDPOINT } = await import('../../../constants.js');
                 apiUrl = new URL(
-                    request.body.reverse_proxy ||
-                        (request.body.zai_endpoint === ZAI_ENDPOINT.CODING
+                    (body.reverse_proxy as string) ||
+                        (body.zai_endpoint === ZAI_ENDPOINT.CODING
                             ? 'https://api.z.ai/api/coding/paas/v4'
                             : 'https://api.z.ai/api/paas/v4'),
                 ).toString();
-                apiKey = request.body.reverse_proxy
-                    ? request.body.proxy_password
-                    : readSecret(request.user.directories, SECRET_KEYS.ZAI, request.body.secret_id);
+                apiKey = body.reverse_proxy
+                    ? (body.proxy_password as string)
+                    : readSecret(
+                          (context.user as Record<string, unknown>)?.directories as any,
+                          SECRET_KEYS.ZAI,
+                          body.secret_id as string,
+                      );
                 break;
             }
             case CHAT_COMPLETION_SOURCES.MINIMAX: {
                 const { MINIMAX_ENDPOINT } = await import('../../../constants.js');
                 apiUrl =
-                    request.body.minimax_endpoint === MINIMAX_ENDPOINT.CN
+                    body.minimax_endpoint === MINIMAX_ENDPOINT.CN
                         ? 'https://api.minimaxi.com/v1'
                         : 'https://api.minimax.io/v1';
                 apiKey = readSecret(
-                    request.user.directories,
+                    (context.user as Record<string, unknown>)?.directories as any,
                     SECRET_KEYS.MINIMAX,
-                    request.body.secret_id,
+                    body.secret_id as string,
                 );
                 break;
             }
             case CHAT_COMPLETION_SOURCES.CLAUDE:
                 apiUrl = new URL(
-                    request.body.reverse_proxy || 'https://api.anthropic.com/v1',
+                    (body.reverse_proxy as string) || 'https://api.anthropic.com/v1',
                 ).toString();
                 apiKey = readSecret(
-                    request.user.directories,
+                    (context.user as Record<string, unknown>)?.directories as any,
                     SECRET_KEYS.CLAUDE,
-                    request.body.secret_id,
+                    body.secret_id as string,
                 );
                 break;
             case CHAT_COMPLETION_SOURCES.AI21:
                 apiUrl = 'https://api.ai21.com/studio/v1';
                 apiKey = readSecret(
-                    request.user.directories,
+                    (context.user as Record<string, unknown>)?.directories as any,
                     SECRET_KEYS.AI21,
-                    request.body.secret_id,
+                    body.secret_id as string,
                 );
                 break;
             default: {
                 // Try the provider registry — if the provider exists, use its listModels.
                 try {
                     const provider = await getChatProvider(source);
-                    const models = await provider.listModels(request);
-                    return response.send({ data: models });
+                    const models = await provider.listModels(mockRequest(context));
+                    return { data: models };
                 } catch {
                     console.warn('Unsupported chat completion source:', source);
-                    return response.status(400).send({ error: true });
+                    set.status = 400;
+                    return { error: true };
                 }
             }
         }
 
-        if (!apiKey && !request.body.reverse_proxy && source !== CHAT_COMPLETION_SOURCES.CUSTOM) {
+        if (!apiKey && !body.reverse_proxy && source !== CHAT_COMPLETION_SOURCES.CUSTOM) {
             console.warn('Chat Completion API key is missing.');
-            return response.status(400).send({ error: true });
+            set.status = 400;
+            return { error: true };
         }
 
         // Check cache first.
         const cached = getCachedModels(source, apiUrl);
-        if (cached) return response.send({ data: cached });
+        if (cached) return { data: cached };
 
         const headers: Record<string, string> = {};
         if (apiKey) headers['Authorization'] = 'Bearer ' + apiKey;
@@ -283,7 +383,7 @@ router.post('/status', async function (request, response) {
         }
         if (source === CHAT_COMPLETION_SOURCES.CUSTOM) {
             const { mergeObjectWithYaml } = await import('../../../util.js');
-            mergeObjectWithYaml(headers, request.body.custom_include_headers);
+            mergeObjectWithYaml(headers, body.custom_include_headers as Record<string, unknown>);
         }
 
         const modelsUrl = new URL(apiUrl.replace(/\/+$/, '') + '/models');
@@ -351,55 +451,65 @@ router.post('/status', async function (request, response) {
                 }));
             }
 
-            response.send(data);
-
             // Cache the model list.
             if (Array.isArray(data?.data)) {
                 setCachedModels(source, apiUrl, data.data);
             }
+
+            return data;
         } else {
             console.error('Chat Completion status check failed.');
-            response.send({ error: true, data: { data: [] } });
+            return { error: true, data: { data: [] } };
         }
     } catch (e) {
         console.error(e);
-        if (!response.headersSent) response.send({ error: true });
-        else response.end();
+        if (!(set as any).headersSent) return { error: true };
+        // If headers already sent, there's nothing to return — the stream is closed.
+        return;
     }
 });
 
-// ── Generate ───────────────────────────────────────────────────────────────────
+// ── Generate ──────────────────────────────────────────────────────────────────
 
-router.post('/generate', async function (request, response) {
+router.post('/generate', async (context: Record<string, unknown>) => {
+    const body = context.body as Record<string, unknown> | undefined;
+    const set = context.set as Record<string, unknown>;
+
     try {
-        if (!request.body) return response.status(400).send({ error: true });
+        if (!body) {
+            set.status = 400;
+            return { error: true };
+        }
 
-        const source = request.body.chat_completion_source;
+        const source = body.chat_completion_source as string;
         const provider = await getChatProvider(source);
 
         // Apply common pre-processing before delegating to the provider.
-        const { postProcessPrompt, getPromptNames } = await import('../../../prompt-converters.js');
+        const { postProcessPrompt, getPromptNames } = await import(
+            '../../../prompt-converters.js'
+        );
         const { flattenSchema } = await import('../../../util.js');
 
-        const postProcessingType = request.body.custom_prompt_post_processing;
-        if (Array.isArray(request.body.messages) && postProcessingType) {
+        const postProcessingType = body.custom_prompt_post_processing as string;
+        if (Array.isArray(body.messages) && postProcessingType) {
             console.info('Applying custom prompt post-processing of type', postProcessingType);
-            request.body.messages = postProcessPrompt(
-                request.body.messages,
+            body.messages = postProcessPrompt(
+                body.messages,
                 postProcessingType,
-                getPromptNames(request),
+                // getPromptNames accesses req.body.* — pass context cast as any
+                getPromptNames(context as any),
             );
         }
 
-        if (request.body.json_schema?.value) {
-            request.body.json_schema.value = flattenSchema(
-                request.body.json_schema.value,
-                request.body.chat_completion_source,
+        if (body.json_schema && (body.json_schema as Record<string, unknown>)?.value) {
+            (body.json_schema as Record<string, unknown>).value = flattenSchema(
+                (body.json_schema as Record<string, unknown>).value as any,
+                body.chat_completion_source as string,
             );
         }
 
         // Reasoning effort for OpenAI/Custom sources.
-        if (request.body.reasoning_effort) {
+        if (body.reasoning_effort) {
             switch (source) {
                 case 'openai':
                 case 'custom': {
@@ -408,20 +518,43 @@ router.post('/generate', async function (request, response) {
                         OPENAI_FIXED_REASONING_EFFORT,
                         OPENAI_REASONING_EFFORT_MAP,
                     } = await import('../../../constants.js');
-                    if (OPENAI_REASONING_EFFORT_MODELS.includes(request.body.model)) {
-                        request.body.reasoning_effort =
+                    if (
+                        OPENAI_REASONING_EFFORT_MODELS.includes(body.model as string)
+                    ) {
+                        body.reasoning_effort =
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            (OPENAI_FIXED_REASONING_EFFORT as any)[request.body.model] ??
+                            (OPENAI_FIXED_REASONING_EFFORT as any)[body.model as string] ??
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            (OPENAI_REASONING_EFFORT_MAP as any)[request.body.reasoning_effort] ??
-                            request.body.reasoning_effort;
+                            (OPENAI_REASONING_EFFORT_MAP as any)[body.reasoning_effort as string] ??
+                            body.reasoning_effort;
                     }
                     break;
                 }
             }
         }
 
-        await provider.chat(request, response);
+        // ── Bridge to Express-based providers ─────────────────────────────
+        // The provider's `chat()` method expects Express req/res objects.
+        // We create mock objects backed by a PassThrough stream so writes
+        // (SSE chunks, JSON bodies) are captured and returned as the Elysia
+        // Response body.
+        //
+        // ⚠ Bridge-mode caveat: mountElysia reads the Response via .text(),
+        //    so the stream is **buffered** — clients receive the full payload
+        //    at once, not incrementally.  True streaming resumes in Phase 7
+        //    (standalone Elysia without the Express bridge).
+        const passThrough = new PassThrough();
+        const mockReq = mockRequest(context);
+        const mockRes = mockResponse(passThrough, set);
+
+        // Run the provider — it writes to the mock response stream.
+        await (provider.chat as any)(mockReq, mockRes);
+
+        // Convert the Node.js PassThrough to a Web ReadableStream for Elysia.
+        const webStream = Readable.toWeb(passThrough) as unknown as ReadableStream<Uint8Array>;
+        return new Response(webStream, {
+            headers: { 'Content-Type': 'text/event-stream' },
+        });
     } catch (error: any) {
         console.error('Generation failed', error);
         const message =
@@ -429,24 +562,31 @@ router.post('/generate', async function (request, response) {
                 ? `Connection refused: ${error.message}`
                 : error.message || 'Unknown error occurred';
 
-        if (!response.headersSent) {
-            response.status(502).send({ error: { message, ...error } });
-        } else {
-            response.end();
+        if (!(set as any).headersSent) {
+            set.status = 502;
+            return { error: { message, ...error } };
         }
+        // If headers already sent, nothing to return — the stream is closed.
+        return;
     }
 });
 
-// ── Bias / token encoding ──────────────────────────────────────────────────────
+// ── Bias / token encoding ─────────────────────────────────────────────────────
 
-router.post('/bias', async function (request, response) {
-    if (!request.body || !Array.isArray(request.body)) return response.sendStatus(400);
+router.post('/bias', async (context: Record<string, unknown>) => {
+    const body = context.body as Record<string, unknown> | undefined;
+    const set = context.set as Record<string, unknown>;
+
+    if (!body || !Array.isArray(body)) {
+        set.status = 400;
+        return;
+    }
 
     try {
         const result: Record<string, number> = {};
-        const model = getTokenizerModel(String(request.query.model || ''));
+        const model = getTokenizerModel(String((context.query as Record<string, unknown>)?.model || ''));
 
-        if (model === 'claude') return response.send(result);
+        if (model === 'claude') return result;
 
         let encodeFunction: (text: string) => Uint32Array;
 
@@ -455,7 +595,7 @@ router.post('/bias', async function (request, response) {
             const instance = await tokenizer?.get();
             if (!instance) {
                 console.error('Tokenizer not initialized:', model);
-                return response.send({});
+                return {};
             }
             encodeFunction = (text: string) => new Uint32Array(instance.encodeIds(text));
         } else if (webTokenizers.includes(model)) {
@@ -463,7 +603,7 @@ router.post('/bias', async function (request, response) {
             const instance = await tokenizer?.get();
             if (!instance) {
                 console.warn('Tokenizer not initialized:', model);
-                return response.send({});
+                return {};
             }
             encodeFunction = (text: string) => new Uint32Array(instance.encode(text));
         } else {
@@ -471,10 +611,10 @@ router.post('/bias', async function (request, response) {
             encodeFunction = tokenizer.encode.bind(tokenizer);
         }
 
-        for (const entry of request.body) {
+        for (const entry of body as unknown as Array<Record<string, unknown>>) {
             if (!entry || !entry.text) continue;
             try {
-                const tokens = getEntryTokens(entry.text, encodeFunction);
+                const tokens = getEntryTokens(entry.text as string, encodeFunction);
                 for (const token of tokens) {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     (result as any)[token] = entry.value;
@@ -484,65 +624,52 @@ router.post('/bias', async function (request, response) {
             }
         }
 
-        return response.send(result);
+        return result;
     } catch (error) {
         console.error(error);
-        return response.send({});
-    }
-
-    /**
-     *
-     * @param text
-     * @param encode
-     */
-    function getEntryTokens(text: string, encode: (text: string) => Uint32Array): Uint32Array {
-        if (text.trim().startsWith('[') && text.trim().endsWith(']')) {
-            try {
-                const json = JSON.parse(text);
-                if (Array.isArray(json) && json.every((x: unknown) => typeof x === 'number')) {
-                    return new Uint32Array(json);
-                }
-            } catch {
-                /* ignore */
-            }
-        }
-        return encode(text);
+        return {};
     }
 });
 
 // ── Process messages ──────────────────────────────────────────────────────────
 
-router.post('/process', async function (request, response) {
+router.post('/process', async (context: Record<string, unknown>) => {
+    const body = context.body as Record<string, unknown> | undefined;
+    const set = context.set as Record<string, unknown>;
+
     try {
-        if (!Array.isArray(request.body.messages)) {
-            return response.status(400).send({ error: 'Invalid messages format' });
+        if (!Array.isArray(body?.messages)) {
+            set.status = 400;
+            return { error: 'Invalid messages format' };
         }
 
-        const { postProcessPrompt, PROMPT_PROCESSING_TYPE, getPromptNames } =
-            await import('../../../prompt-converters.js');
+        const { postProcessPrompt, PROMPT_PROCESSING_TYPE, getPromptNames } = await import(
+            '../../../prompt-converters.js'
+        );
 
-        if (!Object.values(PROMPT_PROCESSING_TYPE).includes(request.body.type)) {
-            return response.status(400).send({ error: 'Unknown processing type' });
+        if (!Object.values(PROMPT_PROCESSING_TYPE).includes(body.type as string)) {
+            set.status = 400;
+            return { error: 'Unknown processing type' };
         }
 
         const messages = postProcessPrompt(
-            request.body.messages,
-            request.body.type,
-            getPromptNames(request),
+            body.messages,
+            body.type as string,
+            getPromptNames(context as any),
         );
-        return response.send({ messages });
+        return { messages };
     } catch (error) {
         console.error(error);
-        return response.sendStatus(500);
+        set.status = 500;
+        return;
     }
 });
 
 // ── Multimodal models sub-router ──────────────────────────────────────────────
 
-const multimodalModels = express.Router();
+const multimodalModels = new Elysia();
 
 /**
- *
  * @param url
  * @param headers
  */
@@ -552,59 +679,59 @@ async function fetchModels(url: string, headers?: Record<string, string>): Promi
     return response.json();
 }
 
-multimodalModels.post('/pollinations', async (_req, res) => {
+multimodalModels.post('/pollinations', async (_context: Record<string, unknown>) => {
     try {
         const data = await fetchModels('https://gen.pollinations.ai/models');
-        if (!Array.isArray(data)) return res.json([]);
+        if (!Array.isArray(data)) return [];
         const models = data
             .filter(
                 (m: { input_modalities?: string[] }) =>
                     Array.isArray(m?.input_modalities) && m.input_modalities.includes('image'),
             )
             .map((m: { name?: string }) => m.name);
-        return res.json(models);
+        return models;
     } catch (error) {
         console.error(error);
-        return res.sendStatus(500);
+        return new Response(null, { status: 500 });
     }
 });
 
-multimodalModels.post('/aimlapi', async (_req, res) => {
+multimodalModels.post('/aimlapi', async (_context: Record<string, unknown>) => {
     try {
         const data = (await fetchModels('https://api.aimlapi.com/v1/models')) as Record<
             string,
             unknown
         >;
-        if (!Array.isArray(data?.data)) return res.json([]);
-        const models = data.data
+        if (!Array.isArray(data?.data)) return [];
+        const models = (data.data as Array<Record<string, unknown>>)
             .filter((m: { features?: string[] }) =>
                 m.features?.includes('openai/chat-completion.vision'),
             )
             .map((m: { id?: string }) => m.id);
-        return res.json(models);
+        return models;
     } catch (error) {
         console.error(error);
-        return res.sendStatus(500);
+        return new Response(null, { status: 500 });
     }
 });
 
-multimodalModels.post('/nanogpt', async (_req, res) => {
+multimodalModels.post('/nanogpt', async (_context: Record<string, unknown>) => {
     try {
         const data = (await fetchModels(
             'https://nano-gpt.com/api/v1/models?detailed=true',
         )) as Record<string, unknown>;
-        if (!Array.isArray(data?.data)) return res.json([]);
-        const models = data.data
+        if (!Array.isArray(data?.data)) return [];
+        const models = (data.data as Array<Record<string, unknown>>)
             .filter((m: { capabilities?: Record<string, unknown> }) => m.capabilities?.vision)
             .map((m: { id?: string }) => m.id);
-        return res.json(models);
+        return models;
     } catch (error) {
         console.error(error);
-        return res.sendStatus(500);
+        return new Response(null, { status: 500 });
     }
 });
 
-multimodalModels.post('/electronhub', async (_req, res) => {
+multimodalModels.post('/electronhub', async (_context: Record<string, unknown>) => {
     try {
         const data = (await fetchModels('https://api.electronhub.ai/v1/models')) as Record<
             string,
@@ -613,87 +740,98 @@ multimodalModels.post('/electronhub', async (_req, res) => {
         const models = ((data.data as Array<Record<string, unknown>>) || [])
             .filter((m: { metadata?: Record<string, unknown> }) => m.metadata?.vision)
             .map((m: { id?: string }) => m.id);
-        return res.json(models);
+        return models;
     } catch (error) {
         console.error(error);
-        return res.sendStatus(500);
+        return new Response(null, { status: 500 });
     }
 });
 
-multimodalModels.post('/chutes', async (req, res) => {
+multimodalModels.post('/chutes', async (context: Record<string, unknown>) => {
     try {
-        const key = readSecret(req.user.directories, SECRET_KEYS.CHUTES);
-        if (!key) return res.json([]);
+        const user = context.user as Record<string, unknown> | null;
+        const directories = user?.directories as Record<string, string> | undefined;
+        const key = directories ? readSecret(directories as any, SECRET_KEYS.CHUTES) : '';
+        if (!key) return [];
         const data = (await fetchModels('https://llm.chutes.ai/v1/models', {
-            Authorization: `Bearer ${key}`,
+            Authorization: 'Bearer ' + key,
         })) as Record<string, unknown>;
         const models = ((data.data as Array<Record<string, unknown>>) || [])
             .filter((m: { input_modalities?: string[] }) => m.input_modalities?.includes('image'))
             .map((m: { id?: string }) => m.id);
-        return res.json(models);
+        return models;
     } catch (error) {
         console.error(error);
-        return res.sendStatus(500);
+        return new Response(null, { status: 500 });
     }
 });
 
-multimodalModels.post('/mistral', async (req, res) => {
+multimodalModels.post('/mistral', async (context: Record<string, unknown>) => {
     try {
-        const key = readSecret(req.user.directories, SECRET_KEYS.MISTRALAI);
-        if (!key) return res.json([]);
+        const user = context.user as Record<string, unknown> | null;
+        const directories = user?.directories as Record<string, string> | undefined;
+        const key = directories ? readSecret(directories as any, SECRET_KEYS.MISTRALAI) : '';
+        if (!key) return [];
         const data = (await fetchModels('https://api.mistral.ai/v1/models', {
-            Authorization: `Bearer ${key}`,
+            Authorization: 'Bearer ' + key,
         })) as Record<string, unknown>;
         const models = ((data.data as Array<Record<string, unknown>>) || [])
             .filter((m: { capabilities?: Record<string, unknown> }) => m.capabilities?.vision)
             .map((m: { id?: string }) => m.id);
-        return res.json(models);
+        return models;
     } catch (error) {
         console.error(error);
-        return res.sendStatus(500);
+        return new Response(null, { status: 500 });
     }
 });
 
-multimodalModels.post('/xai', async (req, res) => {
+multimodalModels.post('/xai', async (context: Record<string, unknown>) => {
     try {
-        const key = readSecret(req.user.directories, SECRET_KEYS.XAI);
-        if (!key) return res.json([]);
+        const user = context.user as Record<string, unknown> | null;
+        const directories = user?.directories as Record<string, string> | undefined;
+        const key = directories ? readSecret(directories as any, SECRET_KEYS.XAI) : '';
+        if (!key) return [];
         const data = (await fetchModels('https://api.x.ai/v1/language-models', {
-            Authorization: `Bearer ${key}`,
+            Authorization: 'Bearer ' + key,
         })) as Record<string, unknown>;
         const models = ((data.models as Array<Record<string, unknown>>) || [])
             .filter((m: { input_modalities?: string[] }) => m.input_modalities?.includes('image'))
             .map((m: { id?: string }) => m.id);
         if (!models.includes('grok-4-0709')) models.push('grok-4-0709');
-        return res.json(models);
+        return models;
     } catch (error) {
         console.error(error);
-        return res.sendStatus(500);
+        return new Response(null, { status: 500 });
     }
 });
 
-multimodalModels.post('/moonshot', async (req, res) => {
+multimodalModels.post('/moonshot', async (context: Record<string, unknown>) => {
     try {
-        const key = readSecret(req.user.directories, SECRET_KEYS.MOONSHOT);
-        if (!key) return res.json([]);
+        const user = context.user as Record<string, unknown> | null;
+        const directories = user?.directories as Record<string, string> | undefined;
+        const key = directories ? readSecret(directories as any, SECRET_KEYS.MOONSHOT) : '';
+        if (!key) return [];
         const data = (await fetchModels('https://api.moonshot.ai/v1/models', {
-            Authorization: `Bearer ${key}`,
+            Authorization: 'Bearer ' + key,
         })) as Record<string, unknown>;
         const models = ((data.data as Array<Record<string, unknown>>) || [])
             .filter((m: { supports_image_in?: boolean }) => m.supports_image_in)
             .map((m: { id?: string }) => m.id);
-        return res.json(models);
+        return models;
     } catch (error) {
         console.error(error);
-        return res.sendStatus(500);
+        return new Response(null, { status: 500 });
     }
 });
 
-multimodalModels.post('/workers_ai', async (req, res) => {
+multimodalModels.post('/workers_ai', async (context: Record<string, unknown>) => {
     try {
-        const key = readSecret(req.user.directories, SECRET_KEYS.WORKERS_AI);
-        const accountId = String(req.body.workers_ai_account_id || '').trim();
-        if (!key || !accountId) return res.json([]);
+        const user = context.user as Record<string, unknown> | null;
+        const directories = user?.directories as Record<string, string> | undefined;
+        const body = context.body as Record<string, unknown> | undefined;
+        const key = directories ? readSecret(directories as any, SECRET_KEYS.WORKERS_AI) : '';
+        const accountId = String((body?.workers_ai_account_id as string) || '').trim();
+        if (!key || !accountId) return [];
         const data = (await fetchModels(
             `https://api.cloudflare.com/client/v4/accounts/${encodeURIComponent(accountId)}/ai/models/search?task=Text+Generation&per_page=1000`,
             { Authorization: 'Bearer ' + key },
@@ -709,11 +847,32 @@ multimodalModels.post('/workers_ai', async (req, res) => {
                   )
                   .map((m: { name?: string }) => m.name)
             : [];
-        return res.json(models);
+        return models;
     } catch (error) {
         console.error(error);
-        return res.sendStatus(500);
+        return new Response(null, { status: 500 });
     }
 });
 
+// Mount multimodal sub-router
 router.use('/multimodal-models', multimodalModels);
+
+// ── Token encoding helper (used by /bias) ──────────────────────────────────────
+
+/**
+ * @param text
+ * @param encode
+ */
+function getEntryTokens(text: string, encode: (text: string) => Uint32Array): Uint32Array {
+    if (text.trim().startsWith('[') && text.trim().endsWith(']')) {
+        try {
+            const json = JSON.parse(text);
+            if (Array.isArray(json) && json.every((x: unknown) => typeof x === 'number')) {
+                return new Uint32Array(json);
+            }
+        } catch {
+            /* ignore */
+        }
+    }
+    return encode(text);
+}

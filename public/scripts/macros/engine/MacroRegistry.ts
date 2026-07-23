@@ -218,7 +218,7 @@ class MacroRegistry {
             for (const { alias, visible } of definition.aliases) {
                 this.#registerMacroEntry(alias, definition, {
                     primaryMacroName: name,
-// @ts-expect-error TS(2322) FIXME: Type is not assignable.
+                    // @ts-expect-error TS(2322) FIXME: Type is not assignable.
                     aliasVisible: visible,
                 });
             }
@@ -295,7 +295,7 @@ class MacroRegistry {
             // Register the alias using the shared utility
             this.#registerMacroEntry(aliasName, aliasDefinition, {
                 primaryMacroName: primaryDefinition.name,
-// @ts-expect-error TS(2322) FIXME: Type is not assignable.
+                // @ts-expect-error TS(2322) FIXME: Type is not assignable.
                 aliasVisible: visible,
             });
 
@@ -498,7 +498,7 @@ class MacroRegistry {
                 }),
             // @ts-expect-error TS(7006) FIXME: Parameter 'message' implicitly has an 'any' type.
             warn: (message, error = undefined) =>
-// @ts-expect-error TS(2345) FIXME: Type is not assignable.
+                // @ts-expect-error TS(2345) FIXME: Type is not assignable.
                 logMacroRuntimeWarning({ message, call, def, error }),
         };
 

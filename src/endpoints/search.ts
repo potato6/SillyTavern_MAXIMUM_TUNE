@@ -1,12 +1,12 @@
-import express from 'express';
+import { Elysia } from 'elysia';
 import ipRegex from 'ip-regex';
 
 import { decode } from 'html-entities';
 import { readSecret, SECRET_KEYS } from './secrets.js';
 import { trimV1 } from '../util.js';
-import { setAdditionalHeaders } from '../additional-headers.js';
+import { setAdditionalHeadersByType } from '../additional-headers.js';
 
-export const router = express.Router();
+export const router = new Elysia({ prefix: '/api/search' });
 
 // Cosplay as Chrome
 const visitHeaders = {
@@ -33,14 +33,14 @@ const visitHeaders = {
  * @returns {Promise<string>} Transcript text
  */
 async function extractTranscript(videoPageBody: string, lang: string) {
-    const RE_XML_TRANSCRIPT = /<text start="([^"]*)" dur="([^"]*)">([^<]*)<\/text>/g;
-    const splittedHTML = videoPageBody.split('"captions":');
+    const RE_XML_TRANSCRIPT = /<text start=\"([^\"]*)\" dur=\"([^\"]*)\">([^<]*)<\/text>/g;
+    const splittedHTML = videoPageBody.split('\"captions\":');
 
     if (splittedHTML.length <= 1) {
-        if (videoPageBody.includes('class="g-recaptcha"')) {
+        if (videoPageBody.includes('class=\"g-recaptcha\"')) {
             throw new Error('Too many requests');
         }
-        if (!videoPageBody.includes('"playabilityStatus":')) {
+        if (!videoPageBody.includes('\"playabilityStatus\":')) {
             throw new Error('Video is not available');
         }
         throw new Error('Transcript not available');
@@ -49,7 +49,7 @@ async function extractTranscript(videoPageBody: string, lang: string) {
     const captions = (() => {
         try {
             // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-            return JSON.parse(splittedHTML[1].split(',"videoDetails')[0].replace('\n', ''));
+            return JSON.parse(splittedHTML[1].split(',\"videoDetails')[0].replace('\\n', ''));
         } catch {
             return undefined;
         }
@@ -105,16 +105,25 @@ async function extractTranscript(videoPageBody: string, lang: string) {
     return transcriptText;
 }
 
-router.post('/serpapi', async (request, response) => {
+router.post('/serpapi', async (context) => {
+    const { set } = context;
+    const body = context.body as Record<string, unknown>;
+    const user = (context as unknown as Record<string, unknown>).user as Record<
+        string,
+        unknown
+    > | null;
+    const directories = user?.directories as Record<string, string> | undefined;
+
     try {
-        const key = readSecret(request.user.directories, SECRET_KEYS.SERPAPI);
+        const key = directories ? readSecret(directories as any, SECRET_KEYS.SERPAPI) : '';
 
         if (!key) {
             console.error('No SerpApi key found');
-            return response.sendStatus(400);
+            set.status = 400;
+            return;
         }
 
-        const { query } = request.body;
+        const query = body.query as string;
         const result = await fetch(
             `https://serpapi.com/search.json?q=${encodeURIComponent(query)}&api_key=${key}`,
         );
@@ -124,15 +133,17 @@ router.post('/serpapi', async (request, response) => {
         if (!result.ok) {
             const text = await result.text();
             console.error('SerpApi request failed', result.statusText, text);
-            return response.status(500).send(text);
+            set.status = 500;
+            return text;
         }
 
         const data = await result.json();
         console.debug('SerpApi response', data);
-        return response.json(data);
+        return data;
     } catch (error) {
         console.error(error);
-        return response.sendStatus(500);
+        set.status = 500;
+        return;
     }
 });
 
@@ -140,15 +151,19 @@ router.post('/serpapi', async (request, response) => {
  * Get the transcript of a YouTube video
  * @copyright https://github.com/Kakulukian/youtube-transcript (MIT License)
  */
-router.post('/transcript', async (request, response) => {
+router.post('/transcript', async (context) => {
+    const { set } = context;
+    const body = context.body as Record<string, unknown>;
+
     try {
-        const id = request.body.id;
-        const lang = request.body.lang;
-        const json = request.body.json;
+        const id = body.id as string;
+        const lang = body.lang as string;
+        const json = body.json as boolean;
 
         if (!id) {
             console.error('Id is required for /transcript');
-            return response.sendStatus(400);
+            set.status = 400;
+            return;
         }
 
         const videoPageResponse = await fetch(`https://www.youtube.com/watch?v=${id}`, {
@@ -162,28 +177,34 @@ router.post('/transcript', async (request, response) => {
 
         try {
             const transcriptText = await extractTranscript(videoPageBody, lang);
-            return json
-                ? response.json({ transcript: transcriptText, html: videoPageBody })
-                : response.send(transcriptText);
+            return json ? { transcript: transcriptText, html: videoPageBody } : transcriptText;
         } catch (error) {
             if (json) {
-                return response.json({ html: videoPageBody, transcript: '' });
+                return { html: videoPageBody, transcript: '' };
             }
             throw error;
         }
     } catch (error) {
         console.error(error);
-        return response.sendStatus(500);
+        set.status = 500;
+        return;
     }
 });
 
-router.post('/searxng', async (request, response) => {
+router.post('/searxng', async (context) => {
+    const { set } = context;
+    const body = context.body as Record<string, unknown>;
+
     try {
-        const { baseUrl, query, preferences, categories } = request.body;
+        const baseUrl = body.baseUrl as string;
+        const query = body.query as string;
+        const preferences = body.preferences as string;
+        const categories = body.categories as string;
 
         if (!baseUrl || !query) {
             console.error('Missing required parameters for /searxng');
-            return response.sendStatus(400);
+            set.status = 400;
+            return;
         }
 
         console.debug('SearXNG query', baseUrl, query);
@@ -193,11 +214,12 @@ router.post('/searxng', async (request, response) => {
 
         if (!mainPageRequest.ok) {
             console.error('SearXNG request failed', mainPageRequest.statusText);
-            return response.sendStatus(500);
+            set.status = 500;
+            return;
         }
 
         const mainPageText = await mainPageRequest.text();
-        const clientHref = mainPageText.match(/href="(\/client.+\.css)"/)?.[1];
+        const clientHref = mainPageText.match(/href=\"(\/client.+\.css)\"/)?.[1];
 
         if (clientHref) {
             const clientUrl = new URL(clientHref, baseUrl);
@@ -220,29 +242,40 @@ router.post('/searxng', async (request, response) => {
         if (!searchResult.ok) {
             const text = await searchResult.text();
             console.error('SearXNG request failed', searchResult.statusText, text);
-            return response.sendStatus(500);
+            set.status = 500;
+            return text;
         }
 
         const data = await searchResult.text();
-        return response.send(data);
+        return data;
     } catch (error) {
         console.error('SearXNG request failed', error);
-        return response.sendStatus(500);
+        set.status = 500;
+        return;
     }
 });
 
-router.post('/tavily', async (request, response) => {
+router.post('/tavily', async (context) => {
+    const { set } = context;
+    const body = context.body as Record<string, unknown>;
+    const user = (context as unknown as Record<string, unknown>).user as Record<
+        string,
+        unknown
+    > | null;
+    const directories = user?.directories as Record<string, string> | undefined;
+
     try {
-        const apiKey = readSecret(request.user.directories, SECRET_KEYS.TAVILY);
+        const apiKey = directories ? readSecret(directories as any, SECRET_KEYS.TAVILY) : '';
 
         if (!apiKey) {
             console.error('No Tavily key found');
-            return response.sendStatus(400);
+            set.status = 400;
+            return;
         }
 
-        const { query, include_images } = request.body;
-
-        const body = {
+        const query = body.query as string;
+        const include_images = body.include_images as boolean;
+        const requestBody = {
             query: query,
             api_key: apiKey,
             search_depth: 'basic',
@@ -260,7 +293,7 @@ router.post('/tavily', async (request, response) => {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify(body),
+            body: JSON.stringify(requestBody),
         });
 
         console.debug('Tavily query', query);
@@ -268,64 +301,95 @@ router.post('/tavily', async (request, response) => {
         if (!result.ok) {
             const text = await result.text();
             console.error('Tavily request failed', result.statusText, text);
-            return response.status(500).send(text);
+            set.status = 500;
+            return text;
         }
 
         const data = await result.json();
         console.debug('Tavily response', data);
-        return response.json(data);
+        return data;
     } catch (error) {
         console.error(error);
-        return response.sendStatus(500);
+        set.status = 500;
+        return;
     }
 });
 
-router.post('/koboldcpp', async (request, response) => {
+router.post('/koboldcpp', async (context) => {
+    const { set } = context;
+    const body = context.body as Record<string, unknown>;
+    const user = (context as unknown as Record<string, unknown>).user as Record<
+        string,
+        unknown
+    > | null;
+    const directories = user?.directories as Record<string, string> | undefined;
+
     try {
-        const { query, url } = request.body;
+        const query = body.query as string;
+        const url = body.url as string;
 
         if (!url) {
             console.error('No URL provided for KoboldCpp search');
-            return response.sendStatus(400);
+            set.status = 400;
+            return;
         }
 
         console.debug('KoboldCpp search query', query);
 
         const baseUrl = trimV1(url);
-        const args = {
+        const args: Record<string, unknown> = {
             method: 'POST',
             headers: {},
             body: JSON.stringify({ q: query }),
         };
 
-        setAdditionalHeaders(request, args, baseUrl);
-        const result = await fetch(`${baseUrl}/api/extra/websearch`, args);
+        setAdditionalHeadersByType(
+            args.headers as Record<string, unknown>,
+            body.api_type as string,
+            baseUrl,
+            directories as any,
+            body.secret_id as any,
+        );
+
+        const result = await fetch(`${baseUrl}/api/extra/websearch`, args as RequestInit);
 
         if (!result.ok) {
             const text = await result.text();
             console.error('KoboldCpp request failed', result.statusText, text);
-            return response.status(500).send(text);
+            set.status = 500;
+            return text;
         }
 
         const data = await result.json();
         console.debug('KoboldCpp search response', data);
-        return response.json(data);
+        return data;
     } catch (error) {
         console.error(error);
-        return response.sendStatus(500);
+        set.status = 500;
+        return;
     }
 });
 
-router.post('/serper', async (request, response) => {
+router.post('/serper', async (context) => {
+    const { set } = context;
+    const body = context.body as Record<string, unknown>;
+    const user = (context as unknown as Record<string, unknown>).user as Record<
+        string,
+        unknown
+    > | null;
+    const directories = user?.directories as Record<string, string> | undefined;
+
     try {
-        const key = readSecret(request.user.directories, SECRET_KEYS.SERPER);
+        const key = directories ? readSecret(directories as any, SECRET_KEYS.SERPER) : '';
 
         if (!key) {
             console.error('No Serper key found');
-            return response.sendStatus(400);
+            set.status = 400;
+            return;
         }
 
-        const { query, images } = request.body;
+        const query = body.query as string;
+        const images = body.images as boolean;
 
         const url = images
             ? 'https://google.serper.dev/images'
@@ -346,32 +410,44 @@ router.post('/serper', async (request, response) => {
         if (!result.ok) {
             const text = await result.text();
             console.warn('Serper request failed', result.statusText, text);
-            return response.status(500).send(text);
+            set.status = 500;
+            return text;
         }
 
         const data = await result.json();
         console.debug('Serper response', data);
-        return response.json(data);
+        return data;
     } catch (error) {
         console.error(error);
-        return response.sendStatus(500);
+        set.status = 500;
+        return;
     }
 });
 
-router.post('/zai', async (request, response) => {
+router.post('/zai', async (context) => {
+    const { set } = context;
+    const body = context.body as Record<string, unknown>;
+    const user = (context as unknown as Record<string, unknown>).user as Record<
+        string,
+        unknown
+    > | null;
+    const directories = user?.directories as Record<string, string> | undefined;
+
     try {
-        const key = readSecret(request.user.directories, SECRET_KEYS.ZAI);
+        const key = directories ? readSecret(directories as any, SECRET_KEYS.ZAI) : '';
 
         if (!key) {
             console.error('No Z.AI key found');
-            return response.sendStatus(400);
+            set.status = 400;
+            return;
         }
 
-        const { query } = request.body;
+        const query = body.query as string;
 
         if (!query) {
             console.error('No query provided for /zai');
-            return response.sendStatus(400);
+            set.status = 400;
+            return;
         }
 
         console.debug('Z.AI web search query', query);
@@ -392,26 +468,32 @@ router.post('/zai', async (request, response) => {
         if (!result.ok) {
             const text = await result.text();
             console.error('Z.AI request failed', result.statusText, text);
-            return response.status(500).send(text);
+            set.status = 500;
+            return text;
         }
 
         const data = await result.json();
         console.debug('Z.AI web search response', data);
-        return response.json(data);
+        return data;
     } catch (error) {
         console.error(error);
-        return response.sendStatus(500);
+        set.status = 500;
+        return;
     }
 });
 
-router.post('/visit', async (request, response) => {
+router.post('/visit', async (context) => {
+    const { set } = context;
+    const body = context.body as Record<string, unknown>;
+
     try {
-        const url = request.body.url;
-        const html = Boolean(request.body.html ?? true);
+        const url = body.url as string;
+        const html = Boolean(body.html ?? true);
 
         if (!url) {
             console.error('No url provided for /visit');
-            return response.sendStatus(400);
+            set.status = 400;
+            return;
         }
 
         try {
@@ -441,7 +523,8 @@ router.post('/visit', async (request, response) => {
             }
         } catch {
             console.error('Invalid url provided for /visit', url);
-            return response.sendStatus(400);
+            set.status = 400;
+            return;
         }
 
         console.info('Visiting web URL', url);
@@ -450,7 +533,8 @@ router.post('/visit', async (request, response) => {
 
         if (!result.ok) {
             console.error(`Visit failed ${result.status} ${result.statusText}`);
-            return response.sendStatus(500);
+            set.status = 500;
+            return;
         }
 
         const contentType = String(result.headers.get('content-type'));
@@ -458,18 +542,20 @@ router.post('/visit', async (request, response) => {
         if (html) {
             if (!contentType.includes('text/html')) {
                 console.error(`Visit failed, content-type is ${contentType}, expected text/html`);
-                return response.sendStatus(500);
+                set.status = 500;
+                return;
             }
 
             const text = await result.text();
-            return response.send(text);
+            return text;
         }
 
-        response.setHeader('Content-Type', contentType);
+        set.headers['Content-Type'] = contentType;
         const buffer = await result.arrayBuffer();
-        return response.send(Buffer.from(buffer));
+        return new Response(buffer);
     } catch (error) {
         console.error(error);
-        return response.sendStatus(500);
+        set.status = 500;
+        return;
     }
 });

@@ -106,9 +106,9 @@ export function findUnclosedScopesRegex(text) {
             // Find matching opener in stack (case-insensitive)
             // When closing an outer scope, all inner unclosed scopes are implicitly closed
             const matchIndex = stack.findLastIndex(
-// @ts-expect-error TS(18048) FIXME: Object is possibly 'null' or 'undefined'.
-            (s: any) => s.name.toLowerCase() === name.toLowerCase(),
-        );
+                // @ts-expect-error TS(18048) FIXME: Object is possibly 'null' or 'undefined'.
+                (s: any) => s.name.toLowerCase() === name.toLowerCase(),
+            );
             if (matchIndex !== -1) {
                 // Pop everything from matchIndex to end (inclusive) - closes the matched scope and all nested ones
                 stack.splice(matchIndex);
@@ -1017,7 +1017,7 @@ export async function buildMacroAutoCompleteResult(
                 if (macroDef) {
                     const scopedOption = new EnhancedMacroAutoCompleteOption(
                         macroDef,
-// @ts-expect-error TS(2345) FIXME: Type is not assignable.
+                        // @ts-expect-error TS(2345) FIXME: Type is not assignable.
                         scopedContext,
                     );
                     scopedOption.valueProvider = () => '';
@@ -1071,7 +1071,7 @@ export async function buildMacroAutoCompleteResult(
                 if (macroDef) {
                     const scopedOption = new EnhancedMacroAutoCompleteOption(
                         macroDef,
-// @ts-expect-error TS(2345) FIXME: Type is not assignable.
+                        // @ts-expect-error TS(2345) FIXME: Type is not assignable.
                         scopedContext,
                     );
                     scopedOption.valueProvider = () => '';

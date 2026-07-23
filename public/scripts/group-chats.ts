@@ -157,7 +157,7 @@ export const groupMembersFilter = new FilterHelper(
 // @ts-expect-error TS(7034) FIXME: Variable 'autoModeWorker' implicitly has type 'any... Remove this comment to see the full error message
 let autoModeWorker = null;
 const saveGroupDebounced = debounce(
-// @ts-expect-error TS(7006) FIXME: Parameter 'group' implicitly has an 'any' type.
+    // @ts-expect-error TS(7006) FIXME: Parameter 'group' implicitly has an 'any' type.
     async (group, reload) => await _save(group, reload),
     debounce_timeout.relaxed,
 );
@@ -681,15 +681,15 @@ export function getGroupCharacterCardsLazy(groupId, characterId) {
         personality: () => collectField('Personality', (c) => c.personality),
         scenario: () =>
             baseChatReplace(scenarioOverride?.trim()) ||
-// @ts-expect-error TS(7006) FIXME: Parameter 'c' implicitly has an 'any' type.
+            // @ts-expect-error TS(7006) FIXME: Parameter 'c' implicitly has an 'any' type.
             collectField('Scenario', (c) => c.scenario),
         mesExamples: () =>
             baseChatReplace(mesExamplesOverride?.trim()) ||
             collectField(
                 'Example Messages',
-// @ts-expect-error TS(7006) FIXME: Parameter 'c' implicitly has an 'any' type.
+                // @ts-expect-error TS(7006) FIXME: Parameter 'c' implicitly has an 'any' type.
                 (c) => c.mes_example,
-// @ts-expect-error TS(2345) FIXME: Type is not assignable.
+                // @ts-expect-error TS(2345) FIXME: Type is not assignable.
                 (x) => (!x.startsWith('<START>') ? `<START>\n${x}` : x),
             ),
     });
@@ -1250,9 +1250,9 @@ async function generateGroupWrapper(byAutoMode, type = null, params = {}) {
         } else if (activationStrategy === group_activation_strategy.MANUAL && !isUserInput) {
             activatedMembers = shuffle(enabledMembers)
                 .slice(0, 1)
-// @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
+                // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
                 .map((x) => characters.findIndex((y) => y.avatar === x))
-// @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
+                // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
                 .filter((x) => x !== -1);
         }
 
@@ -1490,8 +1490,8 @@ function activatePooledOrder(members, lastMessage, isUserInput) {
             !lastMessage.is_user &&
             lastMessage.original_avatar;
         const randomPool = lastMessageAvatar
-// @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
-            ? members.filter((x) => x !== lastMessage.original_avatar)
+            ? // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
+              members.filter((x) => x !== lastMessage.original_avatar)
             : members;
         activatedMember = randomPool[Math.floor(Math.random() * randomPool.length)];
     }
@@ -2452,7 +2452,7 @@ async function uploadGroupAvatar(event) {
     const filename = _thisGroup ? `${_thisGroup.id}_${humanizedDateTime()}` : humanizedDateTime();
     const thumbnailUrl = await saveBase64AsFile(
         thumbnail,
-// @ts-expect-error TS(7005) FIXME: Variable 'openGroupId' implicitly has an 'any' type.
+        // @ts-expect-error TS(7005) FIXME: Variable 'openGroupId' implicitly has an 'any' type.
         String(openGroupId ?? ''),
         filename,
         'jpg',
@@ -2687,15 +2687,15 @@ async function createGroup() {
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     const allowSelfResponses = !!document.getElementById('rm_group_allow_self_responses').checked;
     const activationStrategy =
-// @ts-expect-error TS(2339) FIXME: Property 'querySelector' does not exist on type.
+        // @ts-expect-error TS(2339) FIXME: Property 'querySelector' does not exist on type.
         Number(document.querySelector('#rm_group_activation_strategy :checked')?.value) ||
         group_activation_strategy.NATURAL;
     const generationMode =
-// @ts-expect-error TS(2339) FIXME: Property 'querySelector' does not exist on type.
+        // @ts-expect-error TS(2339) FIXME: Property 'querySelector' does not exist on type.
         Number(document.querySelector('#rm_group_generation_mode :checked')?.value) ||
         group_generation_mode.SWAP;
     const autoModeDelay =
-// @ts-expect-error TS(2531) FIXME: Object is possibly 'null' or 'undefined'.
+        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null' or 'undefined'.
         Number(document.getElementById('rm_group_automode_delay').value) || DEFAULT_AUTO_MODE_DELAY;
     // @ts-expect-error TS(7005) FIXME: Variable 'newGroupMembers' implicitly has an 'any[... Remove this comment to see the full error message
     const members = newGroupMembers;

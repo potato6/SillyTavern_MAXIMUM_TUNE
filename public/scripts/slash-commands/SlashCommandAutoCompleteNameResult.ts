@@ -158,7 +158,7 @@ export class SlashCommandAutoCompleteNameResult extends AutoCompleteNameResult {
                 name,
                 start,
                 notProvidedNamedArguments.map(
-// @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
+                    // @ts-expect-error TS(7006) FIXME: Parameter 'it' implicitly has an 'any' type.
                     (it) =>
                         new SlashCommandNamedArgumentAutoCompleteOption(it, this.executor.command),
                 ),

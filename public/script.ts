@@ -4641,7 +4641,11 @@ class StreamingProcessor {
                 await eventSource.emit(event_types.STREAM_TOKEN_RECEIVED, text);
                 await sw.tick(
                     async () =>
-                        await this.onProgressStreaming(this.messageId, this.continueMessage + text, undefined as any),
+                        await this.onProgressStreaming(
+                            this.messageId,
+                            this.continueMessage + text,
+                            undefined as any,
+                        ),
                 );
             }
             // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
@@ -4838,8 +4842,9 @@ export async function generateRawData({
                     };
                 } else {
                     const isHorde = api === 'koboldhorde';
-                    const koboldSettings =
-                        (koboldai_settings as any)[(koboldai_setting_names as any)[kai_settings.preset_settings]];
+                    const koboldSettings = (koboldai_settings as any)[
+                        (koboldai_setting_names as any)[kai_settings.preset_settings]
+                    ];
                     generateData = getKoboldGenerationData(
                         prompt.toString(),
                         koboldSettings as any,
@@ -4853,8 +4858,9 @@ export async function generateRawData({
                 break;
             // @ts-expect-error TS(2678) FIXME: Type '"novel"' is not comparable to type 'null'.
             case 'novel': {
-                const novelSettings =
-                    novelai_settings[(novelai_setting_names as any)[nai_settings.preset_settings_novel]] as any;
+                const novelSettings = novelai_settings[
+                    (novelai_setting_names as any)[nai_settings.preset_settings_novel]
+                ] as any;
                 generateData = getNovelGenerationData(
                     prompt,
                     novelSettings,
@@ -5483,7 +5489,9 @@ export async function Generate(
     // Collect messages with usable content
     const canUseTools = ToolManager.isToolCallingSupported();
     const canPerformToolCalls =
-        !dryRun && ToolManager.canPerformToolCalls(type) && (depth as number) < ToolManager.RECURSE_LIMIT;
+        !dryRun &&
+        ToolManager.canPerformToolCalls(type) &&
+        (depth as number) < ToolManager.RECURSE_LIMIT;
     // @ts-expect-error TS(2339) FIXME: Property 'is_system' does not exist on type 'never... Remove this comment to see the full error message
     let coreChat: SillyTavern.ChatMessage[] = chat.filter(
         (x) => !x.is_system || (canUseTools && Array.isArray(x.extra?.tool_invocations)),
@@ -6408,8 +6416,9 @@ export async function Generate(
 
             if (kai_settings.preset_settings != 'gui') {
                 const isHorde = main_api == 'koboldhorde';
-                const presetSettings =
-                    (koboldai_settings as any)[(koboldai_setting_names as any)[kai_settings.preset_settings]];
+                const presetSettings = (koboldai_settings as any)[
+                    (koboldai_setting_names as any)[kai_settings.preset_settings]
+                ];
                 const maxContext =
                     adjustedParams && horde_settings.auto_adjust_context_length
                         ? adjustedParams.maxContextLength
@@ -6440,8 +6449,9 @@ export async function Generate(
         }
         case 'novel': {
             const cfgValues = useCfgPrompt ? { guidanceScale: cfgGuidanceScale } : null;
-            const presetSettings =
-                novelai_settings[novelai_setting_names[nai_settings.preset_settings_novel]!]! as any;
+            const presetSettings = novelai_settings[
+                novelai_setting_names[nai_settings.preset_settings_novel]!
+            ]! as any;
             generate_data = getNovelGenerationData(
                 finalPrompt as string,
                 presetSettings,
@@ -6963,7 +6973,13 @@ async function doChatInject(messages, isContinue) {
 
         for (const role of roles) {
             const extensionPrompt = String(
-                await getExtensionPrompt(extension_prompt_types.IN_CHAT, i as any, separator, role as any, wrap),
+                await getExtensionPrompt(
+                    extension_prompt_types.IN_CHAT,
+                    i as any,
+                    separator,
+                    role as any,
+                    wrap,
+                ),
             ).trimStart();
             const isNarrator = role === extension_prompt_roles.SYSTEM;
             const isUser = role === extension_prompt_roles.USER;
@@ -8092,7 +8108,10 @@ export function cleanUpMessage(
     }
 
     if ((getMessage as string).indexOf('<|endoftext|>') != -1) {
-        getMessage = (getMessage as string).substring(0, (getMessage as string).indexOf('<|endoftext|>'));
+        getMessage = (getMessage as string).substring(
+            0,
+            (getMessage as string).indexOf('<|endoftext|>'),
+        );
     }
     const isInstruct = power_user.instruct.enabled && main_api !== 'openai';
     const isNotEmpty = (str: any) => str && str.trim() !== '';
@@ -8550,7 +8569,9 @@ export async function saveReply(
             gen_finished: item.gen_finished,
             extra: swipeInfoExtra,
         };
-        const swipeInfoArray = Array.from({ length: swipes.length }, () => structuredClone(swipeInfo));
+        const swipeInfoArray = Array.from({ length: swipes.length }, () =>
+            structuredClone(swipeInfo),
+        );
         // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
         parseReasoningInSwipes(swipes, swipeInfoArray, item.extra?.reasoning_duration);
         // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
@@ -9367,7 +9388,7 @@ async function read_avatar_load(input) {
                 'Set the crop position of the avatar image',
                 POPUP_TYPE.CROP,
                 '',
-                { cropImage: fileData as any, },
+                { cropImage: fileData as any },
             );
             const croppedImage = await dlg.show();
 
@@ -12056,7 +12077,10 @@ export async function createOrEditCharacter(e) {
 
             $('#character_cross').trigger('click'); //closes the advanced character editing popup
             const fields = [
-                { id: '#character_name_pole', callback: (value: any) => (create_save.name = value) },
+                {
+                    id: '#character_name_pole',
+                    callback: (value: any) => (create_save.name = value),
+                },
                 {
                     id: '#description_textarea',
                     callback: (value: any) => (create_save.description = value),
@@ -13693,11 +13717,7 @@ function initCharacterSearch() {
     ];
     if ('MESSAGE_UPDATED' in event_types) renderEvents.push(event_types.MESSAGE_UPDATED);
     else if ('MESSAGE_EDITED' in (event_types as Record<string, unknown>))
-        renderEvents.push(
-            (event_types as Record<string, unknown>)[
-                'MESSAGE_EDITED'
-            ] as any,
-        );
+        renderEvents.push((event_types as Record<string, unknown>)['MESSAGE_EDITED'] as any);
 
     for (const event of renderEvents) {
         eventSource.on(event, addExecuteButtonToCodeBlocks);

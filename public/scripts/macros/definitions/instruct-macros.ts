@@ -16,13 +16,13 @@ export function registerInstructMacros() {
      * @param {string} [category]
      */
     function registerSimple(
-// @ts-expect-error TS(7006) FIXME: Parameter 'names' implicitly has an 'any' type.
+        // @ts-expect-error TS(7006) FIXME: Parameter 'names' implicitly has an 'any' type.
         names,
-// @ts-expect-error TS(7006) FIXME: Parameter 'getValue' implicitly has an 'any' type.
+        // @ts-expect-error TS(7006) FIXME: Parameter 'getValue' implicitly has an 'any' type.
         getValue,
-// @ts-expect-error TS(7006) FIXME: Parameter 'isEnabled' implicitly has an 'any' type.
+        // @ts-expect-error TS(7006) FIXME: Parameter 'isEnabled' implicitly has an 'any' type.
         isEnabled,
-// @ts-expect-error TS(7006) FIXME: Parameter 'description' implicitly has an 'any' type.
+        // @ts-expect-error TS(7006) FIXME: Parameter 'description' implicitly has an 'any' type.
         description,
         category = MacroCategory.PROMPTS,
     ) {

@@ -30,7 +30,11 @@ const GEMINI_MEDIA_RESOLUTION = {
     high: 'media_resolution_high',
 };
 
-const enableThoughtSignatures = !!getConfigValue('gemini.thoughtSignatures', true, 'boolean' as const);
+const enableThoughtSignatures = !!getConfigValue(
+    'gemini.thoughtSignatures',
+    true,
+    'boolean' as const,
+);
 
 type Message = Record<string, any>;
 
