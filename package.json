@@ -13,12 +13,6 @@
     "sideEffects": false,
     "main": "server.js",
     "scripts": {
-        "init": "bun src/server-init.js",
-        "start": "bun server.ts",
-        "debug": "bun --inspect server.ts",
-        "start:global": "bun server.js --global",
-        "start:electron": "cd ./src/electron && npm run start",
-        "start:no-csrf": "bun server.js --disableCsrf",
         "build:lib": "bun scripts/build-lib.js",
         "lint": "bun x oxlint --quiet",
         "lint:fix": "bun x oxlint --quiet --fix",
