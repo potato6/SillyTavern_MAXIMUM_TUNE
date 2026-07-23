@@ -20,7 +20,7 @@ async function main() {
     }
 
     try {
-        await import('./src/server.js');
+        await import('./src/server-elysia.ts'); // Pure Elysia server
     } catch (error) {
         console.error('A critical error has occurred while starting the server:', error);
     }

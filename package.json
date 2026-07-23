@@ -14,8 +14,8 @@
     "main": "server.js",
     "scripts": {
         "init": "bun src/server-init.js",
-        "start": "bun server.js",
-        "debug": "bun --inspect server.js",
+        "start": "bun server.ts",
+        "debug": "bun --inspect server.ts",
         "start:global": "bun server.js --global",
         "start:electron": "cd ./src/electron && npm run start",
         "start:no-csrf": "bun server.js --disableCsrf",

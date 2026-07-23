@@ -3,25 +3,20 @@
  *
  * Every Elysia router is mounted directly (no mountElysia bridge).
  * Streaming responses flow natively through Bun/Elysia's HTTP server.
- * Express remains only for the middleware adapter layer.
  */
 
+import path from 'node:path';
+import fs from 'node:fs';
+import { createHmac, timingSafeEqual, randomBytes } from 'node:crypto';
 import { Elysia } from 'elysia';
 import { cors } from '@elysiajs/cors';
 import { staticPlugin } from '@elysiajs/static';
-import { createHmac, timingSafeEqual, randomBytes } from 'node:crypto';
-import path from 'node:path';
-import fs from 'node:fs';
+import type { Request as ExpressRequest, Response as ExpressResponse, NextFunction } from 'express';
 
 import { serverDirectory } from './server-directory.js';
 import { color, getVersion, getSeparator, removeColorFormatting, safeReadFileSync, setWindowTitle, getConfigValue, getHasIP, setupLogLevel, urlHostnameToIPv6 } from './util.js';
-import { serverEvents, EVENT_NAMES } from './server.js';
 import { UPLOADS_DIRECTORY } from './constants.js';
 import { loadPlugins } from './plugin-loader.js';
-import initRequestProxy from './request-proxy.js';
-import initPrivateRequestFilter from './private-request-filter.js';
-
-// ── Auth / user imports ───────────────────────────────────────────────────────
 
 import {
     initUserStorage, ensurePublicDirectoriesExist, migrateUserData, migrateSystemPrompts,
@@ -30,18 +25,14 @@ import {
     setUserDataMiddleware, requireLoginMiddleware, shouldRedirectToLogin, loginPageMiddleware,
 } from './users.js';
 
-// ── Middleware imports (Express-based, adapted via Elysia hooks) ──────────────
-
 import hostWhitelistMiddleware from './middleware/hostWhitelist.js';
 import accessLoggerMiddleware, { getAccessLogPath, migrateAccessLog } from './middleware/accessLogWriter.js';
 import basicAuthMiddleware from './middleware/basicAuth.js';
-import getWhitelistMiddleware from './middleware/whitelist.js';
 import corsProxyMiddleware from './middleware/corsProxy.js';
 import getLibServeMiddleware from './middleware/lib-serve.js';
-import userCssMiddleware from './middleware/userCss.js';
 import cacheBuster from './middleware/cacheBuster.js';
 
-// ── Elysia router imports ─────────────────────────────────────────────────────
+// ── All Elysia routers ────────────────────────────────────────────────────────
 
 import { router as userDataRouter } from './users.js';
 import { router as usersPublicRouter } from './endpoints/users-public.js';
@@ -91,7 +82,54 @@ import { router as backupsRouter } from './endpoints/backups.js';
 import { router as imageMetadataRouter } from './endpoints/image-metadata.js';
 import { router as volcengineRouter } from './endpoints/volcengine.js';
 
-// ── Session plugin (Elysia-native replacement for bun-session) ─────────────────
+import EventEmitter from 'node:events';
+
+// ── Server events (local copy, avoids importing from server.ts which boots Express) ──
+
+export const serverEvents = new EventEmitter();
+process.serverEvents = serverEvents;
+export default serverEvents;
+
+export const EVENT_NAMES = Object.freeze({
+    SERVER_STARTED: 'server-started',
+});
+
+// ── Generic Express-to-Elysia middleware adapter ───────────────────────────────
+// Wraps `(req, res, next) => void` middleware into an Elysia onBeforeHandle hook.
+// Used for middleware that decides pass/fail and doesn't render responses inline.
+
+function adaptMiddleware(mw: (req: any, res: any, next: any) => void) {
+    return async ({ request, set, ...rest }: any) => {
+        const url = new URL(request.url);
+        const mockReq: any = {
+            session: rest.session,
+            headers: Object.fromEntries(request.headers),
+            path: url.pathname,
+            method: request.method,
+            url: request.url,
+            originalUrl: request.url,
+            ip: request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+                || request.headers.get('x-real-ip')
+                || '127.0.0.1',
+            query: Object.fromEntries(url.searchParams),
+        };
+        let responded = false;
+        const mockRes: any = {
+            status(code: number) { set.status = code; return this; },
+            send(body: any) { responded = true; },
+            json(body: any) { responded = true; },
+            sendStatus(code: number) { set.status = code; responded = true; },
+            setHeader() {},
+            getHeaders() { return {}; },
+            end() { responded = true; },
+        };
+        return new Promise<void>((resolve, reject) => {
+            mw(mockReq, mockRes, (err?: any) => err ? reject(err) : resolve());
+        });
+    };
+}
+
+// ── Session plugin ────────────────────────────────────────────────────────────
 
 const encoder = new TextEncoder();
 
@@ -111,24 +149,21 @@ function unsafeDecodeSession(value: string): { data: Record<string, unknown> | n
     };
 }
 
-function sessionPlugin(config: { name: string; maxAge: number; secret: string; httpOnly?: boolean; sameSite?: string }) {
+function sessionPlugin(config: { name: string; maxAge: number; secret: string }) {
     const { name, maxAge, secret } = config;
     return (app: any) => {
-        // Track dirty state per-request on a WeakMap
         const dirtyMap = new WeakMap<object, boolean>();
         const markDirty = (target: any) => dirtyMap.set(target, true);
 
         return app
-            .derive({ as: 'global' }, ({ cookie, set }: any) => {
+            .derive({ as: 'global' }, ({ cookie }: any) => {
                 let session: Record<string, unknown> = {};
                 const raw = cookie[name]?.value as string | undefined;
                 if (raw) {
                     const decoded = unsafeDecodeSession(raw);
                     if (decoded?.data && typeof decoded.sig === 'string') {
                         const expected = signSession(raw.slice(0, raw.indexOf('.')), secret);
-                        const sigBuf = encoder.encode(decoded.sig);
-                        const expBuf = encoder.encode(expected);
-                        if (sigBuf.byteLength === expBuf.byteLength && timingSafeEqual(sigBuf, expBuf)) {
+                        if (timingSafeEqual(encoder.encode(decoded.sig), encoder.encode(expected))) {
                             session = decoded.data;
                         }
                     }
@@ -139,7 +174,7 @@ function sessionPlugin(config: { name: string; maxAge: number; secret: string; h
                 });
                 return { session: proxy };
             })
-            .onAfterHandle({ as: 'global' }, ({ cookie, session, set }: any) => {
+            .onAfterHandle({ as: 'global' }, ({ cookie, session }: any) => {
                 if (!session) return;
                 const isDirty = dirtyMap.has(session);
                 if (!isDirty && !session.touch) return;
@@ -162,8 +197,8 @@ export function buildApp() {
     const cliArgs = globalThis.COMMAND_LINE_ARGS;
     const app = new Elysia();
 
-    // ── Global error handler / 404 ──────────────────────────────────────────
-    app.onError(({ code, error, set }) => {
+    // 404 handler
+    app.onError(({ code, set }) => {
         if (code === 'NOT_FOUND') {
             const notFound = safeReadFileSync(path.join(globalThis.DATA_ROOT, '_errors', 'url-not-found.html')) ?? '';
             set.status = 404;
@@ -171,7 +206,7 @@ export function buildApp() {
         }
     });
 
-    // ── Security headers ────────────────────────────────────────────────────
+    // Security headers
     app.onBeforeHandle({ as: 'global' }, ({ set }) => {
         const h = set.headers as Record<string, string>;
         h['X-Content-Type-Options'] ??= 'nosniff';
@@ -181,7 +216,7 @@ export function buildApp() {
         h['Permissions-Policy'] ??= 'camera=(), microphone=(), geolocation=()';
     });
 
-    // ── CORS ────────────────────────────────────────────────────────────────
+    // CORS
     const corsEnabled = getConfigValue('cors.enabled', true, 'boolean' as any);
     if (corsEnabled) {
         const corsOrigin = String(getConfigValue('cors.origin', '*', 'string' as any) ?? '*');
@@ -197,148 +232,140 @@ export function buildApp() {
         app.use(cors(opts));
     }
 
-    // ── Host whitelist ──────────────────────────────────────────────────────
-    app.onBeforeHandle({ as: 'global' }, hostWhitelistMiddleware as any);
+    // Host whitelist
+    app.onBeforeHandle({ as: 'global' }, adaptMiddleware(hostWhitelistMiddleware));
 
-    // ── Basic auth ───────────────────────────────────────────────────────────
+    // Basic auth
     if (cliArgs?.listen && cliArgs?.basicAuthMode) {
-        app.onBeforeHandle({ as: 'global' }, basicAuthMiddleware as any);
+        app.onBeforeHandle({ as: 'global' }, adaptMiddleware(basicAuthMiddleware));
     }
 
-    // ── Access logger ────────────────────────────────────────────────────────
+    // Access logger
     if (cliArgs?.listen) {
-        const logger = accessLoggerMiddleware();
-        app.onBeforeHandle({ as: 'global' }, logger as any);
+        app.onBeforeHandle({ as: 'global' }, adaptMiddleware(accessLoggerMiddleware()));
     }
 
-    // ── Session ──────────────────────────────────────────────────────────────
+    // Response time
+    app.onBeforeHandle({ as: 'global' }, ({ request }: any) => {
+        (request as any).__startTime = performance.now();
+    });
+    app.onAfterHandle({ as: 'global' }, ({ request, set }: any) => {
+        const start = (request as any).__startTime;
+        if (start) {
+            (set.headers as Record<string, string>)['X-Response-Time'] = `${(performance.now() - start).toFixed(3)}ms`;
+        }
+    });
+
+    // Session
     app.use(sessionPlugin({
         name: getCookieSessionName(),
         maxAge: getSessionCookieAge() ?? 400 * 24 * 60 * 60 * 1000,
         secret: getCookieSecret(globalThis.DATA_ROOT),
     }));
 
-    // ── User data ────────────────────────────────────────────────────────────
-    // Adapt setUserDataMiddleware (Express-based) to Elysia's derive
+    // User data
     app.derive({ as: 'global' }, async ({ session, request }: any) => {
-        // Build an Express-compatible mock request for the middleware
         const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
             || request.headers.get('x-real-ip')
-            || request.headers.get('x-forwarded-host')
             || '127.0.0.1';
-        const mockReq: Record<string, any> = {
-            session,
-            ip,
-            headers: {},
-            originalUrl: request.url,
-            path: new URL(request.url).pathname,
-            method: request.method,
+        const url = new URL(request.url);
+        const mockReq: any = {
+            session, ip, headers: Object.fromEntries(request.headers),
+            path: url.pathname, method: request.method, originalUrl: request.url,
         };
-        // Copy headers from the Web Request
-        request.headers.forEach((v: string, k: string) => { mockReq.headers[k] = v; });
-
-        // Run the Express middleware inline
-        // (It sets mockReq.user based on session data)
-        try {
-            await new Promise<void>((resolve, reject) => {
-                setUserDataMiddleware(mockReq as any, null as any, (err?: any) => err ? reject(err) : resolve());
-            });
-        } catch (err) {
-            console.error('setUserDataMiddleware error:', err);
-        }
-
+        await new Promise<void>((resolve, reject) => {
+            setUserDataMiddleware(mockReq, null as any, (err?: any) => err ? reject(err) : resolve());
+        });
         return { user: mockReq.user ?? null };
     });
 
-    // ── CSRF ──────────────────────────────────────────────────────────────────
+    // CSRF
     if (!cliArgs?.disableCsrf) {
         const CSRF_SECRET = process.env['CSRF_SECRET'] || randomBytes(64).toString('hex');
         app.get('/csrf-token', ({ request }: any) => {
             const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
-                || request.headers.get('x-real-ip')
-                || 'anonymous';
+                || request.headers.get('x-real-ip') || 'anonymous';
             return { token: Bun.CSRF.generate(CSRF_SECRET, { sessionId: ip, expiresIn: 86400000 } as any) };
         });
-        app.guard({}, (g: any) => g.onBeforeHandle({ as: 'global' }, ({ request, set }: any) => {
+        app.onBeforeHandle({ as: 'global' }, ({ request, set }: any) => {
             if (['GET', 'HEAD', 'OPTIONS'].includes(request.method)) return;
             if (request.url?.includes('/proxy/')) return;
             const token = request.headers.get('x-csrf-token');
             const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
-                || request.headers.get('x-real-ip')
-                || 'anonymous';
+                || request.headers.get('x-real-ip') || 'anonymous';
             if (!token || !Bun.CSRF.verify(token, { secret: CSRF_SECRET, sessionId: ip } as any)) {
                 set.status = 403;
                 return { error: 'Invalid CSRF token. Please refresh the page and try again.' };
             }
-        }));
+        });
     } else {
         console.warn('\nCSRF protection is disabled.\n');
         app.get('/csrf-token', () => ({ token: 'disabled' }));
     }
 
-    // ── Static files ────────────────────────────────────────────────────────
+    // User CSS
+    app.get('/css/user.css', async ({ set }: any) => {
+        const userCssPath = path.resolve(path.join(globalThis.DATA_ROOT, '_css', 'user.css'));
+        if (fs.existsSync(userCssPath)) return new Response(Bun.file(userCssPath));
+        set.status = 404;
+    });
+
+    // Static files (lib-serve, then static)
     const libMiddleware = getLibServeMiddleware();
-    app.use(libMiddleware as any);
-    app.use(userCssMiddleware as any);
+    app.onBeforeHandle({ as: 'global' }, adaptMiddleware(libMiddleware));
     app.use(staticPlugin({
         assets: path.join(serverDirectory, 'public/dist'),
         prefix: '/',
-        alwaysStatic: true,
         indexHTML: false,
-        staticLimit: 0,
+        alwaysStatic: true,
     }));
 
-    // ── Index + public routes ───────────────────────────────────────────────
-    app.get('/', ({ request, set }: any) => {
+    // Route handlers
+    app.get('/', async ({ request, set }: any) => {
         if (shouldRedirectToLogin(request)) {
             const q = request.url.split('?')[1];
             set.redirect = q ? `/login?${q}` : '/login';
+            set.status = 302;
             return;
         }
-        return new Response(Bun.file(path.join(serverDirectory, 'public/dist', 'index.html')));
+        const indexHtml = await fs.promises.readFile(
+            path.join(serverDirectory, 'public/dist', 'index.html'),
+            'utf-8',
+        );
+        return new Response(indexHtml, {
+            headers: { 'Content-Type': 'text/html; charset=utf-8' },
+        });
     });
 
     app.get('/callback{/:source}', ({ params, request, set }: any) => {
-        const source = params?.source;
         const q = request.url?.split('?')[1];
         const sp = new URLSearchParams();
-        if (source) sp.set('source', source);
+        if (params?.source) sp.set('source', params.source);
         if (q) sp.set('query', q);
         set.redirect = `/?${sp.toString()}`;
         set.status = 307;
     });
 
-    app.get('/login', loginPageMiddleware as any);
+    app.get('/login', adaptMiddleware(loginPageMiddleware as any));
 
-    // ── Public API (before auth gate) ───────────────────────────────────────
+    // Public API
     app.use(usersPublicRouter as any);
 
-    // ── Auth gate ────────────────────────────────────────────────────────────
+    // Auth gate
     app.guard({}, (g: any) => g.onBeforeHandle({ as: 'global' }, ({ user, set }: any) => {
-        if (!user) {
-            set.status = 401;
-            return { error: 'Not authenticated' };
-        }
+        if (!user) { set.status = 401; return { error: 'Not authenticated' }; }
     }));
 
-    // ── Ping, CORS proxy, multer ─────────────────────────────────────────────
+    // Ping
     app.post('/api/ping', ({ request, session, set }: any) => {
         if (request.query?.extend && session) session.touch = Date.now();
         set.status = 204;
     });
 
-    if (cliArgs?.enableCorsProxy) {
-        // CORS proxy — mounted on /proxy
-        // TODO: mount corsProxyMiddleware properly
-    }
+    // Version
+    app.get('/version', async () => { const v = await getVersion(); return v; });
 
-    // ── Version endpoint ─────────────────────────────────────────────────────
-    app.get('/version', async () => {
-        const v = await getVersion();
-        return v;
-    });
-
-    // ── Mount all routers ────────────────────────────────────────────────────
+    // Mount all routers
     const routers = [
         userDataRouter, usersPrivateRouter, usersAdminRouter,
         movingUIRouter, imagesRouter, quickRepliesRouter, avatarsRouter,
@@ -353,9 +380,7 @@ export function buildApp() {
         speechRouter, azureRouter, volcengineRouter, minimaxRouter,
         dataMaidRouter, backupsRouter, imageMetadataRouter,
     ];
-    for (const r of routers) {
-        app.use(r as any);
-    }
+    for (const r of routers) app.use(r as any);
 
     return app;
 }
@@ -386,58 +411,35 @@ async function start() {
     const pluginsDirectory = path.join(serverDirectory, 'plugins');
     const cleanupPlugins = await loadPlugins(app as any, pluginsDirectory);
 
-    // Elysia-native HTTP server — no Express, no bridge
     const listenUrl = cliArgs.getIPv4ListenUrl();
     const port = Number(listenUrl.port) || 8000;
+    let host = cliArgs.listen ? listenUrl.hostname : (cliArgs.enableIPv6 !== false ? '::1' : '127.0.0.1');
 
-    // Determine listen host
-    let host: string | undefined;
-    if (cliArgs.listen) {
-        host = listenUrl.hostname;
-    } else {
-        const ipv6 = cliArgs.enableIPv6 !== false;
-        host = ipv6 ? '::1' : '127.0.0.1';
-    }
+    const serverOptions: any = { port, hostname: host, reusePort: true };
 
-    const serverOptions: any = {
-        port,
-        hostname: host,
-        reusePort: true,
-    };
-
-    // SSL
-    if (cliArgs.ssl) {
-        const certPath = cliArgs.certPath;
-        const keyPath = cliArgs.keyPath;
-        if (certPath && keyPath && fs.existsSync(certPath) && fs.existsSync(keyPath)) {
+    if (cliArgs.ssl && cliArgs.certPath && cliArgs.keyPath) {
+        if (fs.existsSync(cliArgs.certPath) && fs.existsSync(cliArgs.keyPath)) {
             serverOptions.tls = {
-                cert: fs.readFileSync(certPath),
-                key: fs.readFileSync(keyPath),
+                cert: fs.readFileSync(cliArgs.certPath),
+                key: fs.readFileSync(cliArgs.keyPath),
                 passphrase: cliArgs.keyPassphrase ?? '',
             };
         } else {
-            console.error('SSL certificate or key not found. Starting without SSL.');
+            console.error('SSL cert/key not found. Starting without SSL.');
         }
     }
 
     const server = app.listen(serverOptions);
 
     process.on('SIGINT', async () => {
-        await statsOnExit();
-        if (typeof cleanupPlugins === 'function') await cleanupPlugins();
-        diskCache.dispose();
-        server.stop();
-        process.exit();
+        await statsOnExit(); if (typeof cleanupPlugins === 'function') await cleanupPlugins();
+        diskCache.dispose(); server.stop(); process.exit();
     });
     process.on('SIGTERM', async () => {
-        await statsOnExit();
-        if (typeof cleanupPlugins === 'function') await cleanupPlugins();
-        diskCache.dispose();
-        server.stop();
-        process.exit();
+        await statsOnExit(); if (typeof cleanupPlugins === 'function') await cleanupPlugins();
+        diskCache.dispose(); server.stop(); process.exit();
     });
 
-    // Log startup
     const hostname = cliArgs.listen ? `0.0.0.0:${port}` : `localhost:${port}`;
     console.log(`\n${'='.repeat(hostname.length + 10)}`);
     console.log(`Go to: http://${hostname}/ to open SillyTavern`);
