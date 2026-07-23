@@ -23,7 +23,7 @@ import {
     this_chid,
 } from '../script.js';
 import { power_user } from './power-user.js';
-import { world_names } from './world-info.js';
+import { world_names, openWorldInfoEditor } from './world-info.js';
 import { getTokenCountAsync } from './tokenizers.js';
 import {
     createPaginator,
@@ -55,7 +55,6 @@ import { FILTER_TYPES, FilterHelper } from './filters.js';
 import { groups, selected_group } from './group-chats.js';
 import { POPUP_RESULT, POPUP_TYPE, Popup, callGenericPopup } from './popup.js';
 import { t } from './i18n.js';
-import { openWorldInfoEditor } from './world-info.js';
 import { renderTemplateAsync } from './templates.js';
 import { saveMetadataDebounced } from './extensions.js';
 import { accountStorage } from './util/AccountStorage.js';

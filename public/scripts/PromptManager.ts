@@ -86,9 +86,7 @@ const registerPromptManagerMigration = () => {
         }
     };
 
-    // @ts-expect-error TS(7006) FIXME: Parameter 'settings' implicitly has an 'any' type.
     eventSource.on(event_types.SETTINGS_LOADED_BEFORE, (settings) => migrate(settings));
-    // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
     eventSource.on(event_types.OAI_PRESET_CHANGED_BEFORE, (event) =>
         migrate(event.preset, event.savePreset, event.presetName),
     );
@@ -983,7 +981,6 @@ class PromptManager {
                 .getElementById(jailbreakElementId)
                 .addEventListener('blur', handleQuickEditSave);
         }
-
         // Re-render when chat history changes.
         eventSource.on(event_types.MESSAGE_DELETED, () => this.renderDebounced());
         eventSource.on(event_types.MESSAGE_EDITED, () => this.renderDebounced());
@@ -995,28 +992,24 @@ class PromptManager {
         eventSource.on(event_types.CHATCOMPLETION_MODEL_CHANGED, () => this.renderDebounced());
 
         // Re-render when the character changes.
-        // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
         eventSource.on(event_types.CHAT_LOADED, (event) => {
             this.handleCharacterSelected(event);
             this.saveServiceSettings().then(() => this.render(false));
         });
 
         // Re-render when the character gets edited.
-        // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
         eventSource.on(event_types.CHARACTER_EDITED, (event) => {
             this.handleCharacterUpdated(event);
             this.saveServiceSettings().then(() => this.renderDebounced());
         });
 
         // Re-render when the group changes.
-        // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
         eventSource.on('groupSelected', (event) => {
             this.handleGroupSelected(event);
             this.saveServiceSettings().then(() => this.renderDebounced());
         });
 
         // Sanitize settings after character has been deleted.
-        // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
         eventSource.on(event_types.CHARACTER_DELETED, (event) => {
             this.handleCharacterDeleted(event);
             this.saveServiceSettings().then(() => this.renderDebounced());

@@ -593,11 +593,9 @@ export function initItemizedPrompts() {
         }
     });
 
-    // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
     eventSource.on(event_types.CHAT_DELETED, async (name) => {
         await deleteItemizedPrompts(name);
     });
-    // @ts-expect-error TS(7006) FIXME: Parameter 'name' implicitly has an 'any' type.
     eventSource.on(event_types.GROUP_CHAT_DELETED, async (name) => {
         await deleteItemizedPrompts(name);
     });

@@ -1042,8 +1042,6 @@ export function initWelcomeScreen() {
     for (const event of events) {
         eventSource.makeFirst(event, openWelcomeScreen);
     }
-
-    // @ts-expect-error TS(7006) FIXME: Parameter 'target' implicitly has an 'any' type.
     eventSource.on(event_types.CHARACTER_MANAGEMENT_DROPDOWN, (target) => {
         if (target !== 'set_as_assistant') {
             return;
@@ -1051,7 +1049,6 @@ export function initWelcomeScreen() {
         assignCharacterAsAssistant(this_chid);
     });
 
-    // @ts-expect-error TS(7006) FIXME: Parameter 'oldAvatar' implicitly has an 'any' type... Remove this comment to see the full error message
     eventSource.on(event_types.CHARACTER_RENAMED, (oldAvatar, newAvatar) => {
         if (oldAvatar === getPermanentAssistantAvatar()) {
             accountStorage.setItem(assistantAvatarKey, newAvatar);
@@ -1060,7 +1057,6 @@ export function initWelcomeScreen() {
 
     eventSource.on(
         event_types.CHAT_RENAMED,
-// @ts-expect-error TS(7031) FIXME: Parameter 'avatarId' implicitly has an 'any' type.
         async ({ avatarId, groupId, oldFileName, newFileName }) => {
             PinnedChatsManager.rename(
                 { avatar: avatarId, group: groupId, file_name: oldFileName },

@@ -21,13 +21,6 @@ import { TEXT_COMPLETION_MODELS } from './text-completion-models.js';
 /**
  * @typedef { (req: import('express').Request, res: import('express').Response) => Promise<import('express').Response> } TokenizationHandler
  */
-type TokenizationHandler = (req: express.Request, res: express.Response) => Promise<express.Response>;
-
-type Crop = any;
-
-/**
- * @type {{[key: string]: import('tiktoken').Tiktoken}} Tokenizers cache
- */
 const tokenizersCache = {};
 
 const BYTES_PER_TOKEN = 3.35;

@@ -2867,7 +2867,6 @@ function groupModelsByVendor(array, source) {
         case chat_completion_sources.ELECTRONHUB:
             return array.reduce((acc: Map<string, object[]>, curr: any) => {
                 const vendor: any = '' + ((curr as any).name || (curr as any).id || 'Other');
-                const vendorStr: string = vendor.split(':')[0].trim() || 'Other';
                 if (!acc.has(vendor)) {
                     acc.set(vendor, []);
                 }

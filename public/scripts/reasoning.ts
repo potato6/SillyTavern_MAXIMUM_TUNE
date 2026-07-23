@@ -1932,7 +1932,6 @@ function registerReasoningAppEvents() {
     };
 
     for (const event of [event_types.MESSAGE_RECEIVED, event_types.MESSAGE_UPDATED]) {
-        // @ts-expect-error TS(7006) FIXME: Parameter 'idx' implicitly has an 'any' type.
         eventSource.on(event, (/** @type {number} */ idx) => eventHandler(event, idx));
     }
 

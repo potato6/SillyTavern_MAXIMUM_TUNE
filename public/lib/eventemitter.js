@@ -27,6 +27,7 @@ if (typeof Array.prototype.indexOf === 'function') {
 /**
  * Creates an event emitter.
  * @param {string[]} autoFireAfterEmit Auto-fire event names
+ * @constructor
  */
 var EventEmitter = function (autoFireAfterEmit = []) {
     this.events = {};

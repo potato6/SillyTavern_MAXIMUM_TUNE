@@ -2,18 +2,11 @@ import express from 'express';
 
 import AIHorde from '@zeldafan0225/ai_horde';
 
-import { getVersion, delay, Cache } from '../util.js';
-import { readSecret, SECRET_KEYS } from './secrets.js';
+import { getVersion } from '../util.js';
 
 // Local type aliases for @zeldafan0225/ai_horde
-const ModelGenerationInputStableSamplers = undefined as any;
 const ModelInterrogationFormTypes = { Captions: 'captions' } as any;
-const HordeAsyncRequestStates = undefined as any;
 
-const ANONYMOUS_KEY = '0000000000';
-const HORDE_TEXT_MODEL_METADATA_URL =
-    'https://raw.githubusercontent.com/db0/AI-Horde-text-model-reference/main/db.json';
-const cache = new Cache(60 * 1000);
 export const router = express.Router();
 
 /**
@@ -61,30 +54,6 @@ function sanitizeHordeImagePrompt(prompt: string) {
 }
 
 export { sanitizeHordeImagePrompt };
-
-/**
- * Gets the raw text model list from the horde API.
- * @returns {Promise<import('../util.js').CacheEntry>} Raw text model metadata
- */
-async function getRawTextModelMetadata() {
-    const cacheKey = 'text_model_metadata';
-    const cached = cache.get(cacheKey);
-    if (cached) {
-        return cached;
-    }
-    try {
-        const response = await fetch(HORDE_TEXT_MODEL_METADATA_URL);
-        if (!response.ok) {
-            throw new Error('Failed to fetch text model metadata');
-        }
-        const data = await response.json();
-        cache.set(cacheKey, data);
-        return data;
-    } catch (error) {
-        console.error('Failed to fetch text model metadata', error);
-        throw error;
-    }
-}
 
 /**
  * Get available image generation models from the horde.

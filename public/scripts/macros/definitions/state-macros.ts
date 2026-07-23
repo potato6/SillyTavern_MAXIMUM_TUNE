@@ -16,7 +16,6 @@ function ensureLastGenerationTypeTracking() {
     lastGenerationTypeTrackingInitialized = true;
 
     try {
-        // @ts-expect-error TS(7006) FIXME: Parameter 'type' implicitly has an 'any' type.
         eventSource?.on?.(event_types.GENERATION_STARTED, (type, _params, isDryRun) => {
             if (isDryRun) return;
             lastGenerationTypeValue = type || 'normal';

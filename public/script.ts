@@ -6063,7 +6063,7 @@ export async function Generate(
         }
     }
 
-    let mesSend: any[] = [];
+    const mesSend: any[] = [];
     console.debug('calling runGenerate');
 
     if (isContinue) {
@@ -9619,8 +9619,8 @@ async function getChatResult() {
     await printMessages();
     select_selected_character(this_chid);
 
-    await eventSource.emit(event_types.CHAT_CHANGED, getCurrentChatId()).catch((e) => {
-        console.warn('CHAT_CHANGED handler threw:', e?.message);
+    await eventSource.emit(event_types.CHAT_CHANGED, getCurrentChatId()).catch((e: unknown) => {
+        console.warn('CHAT_CHANGED handler threw:', e instanceof Error ? e.message : e);
     });
     if (freshChat) await eventSource.emit(event_types.CHAT_CREATED);
 
@@ -14540,7 +14540,7 @@ function initCharacterSearch() {
     ////////////////// OPTIMIZED RANGE SLIDER LISTENERS////////////////
 
     let sliderLocked = true;
-    let sliderTimer = null as any;
+    const sliderTimer = null as any;
 
     $("input[type='range']").on('touchstart', function () {
         // Unlock the slider after 300ms
