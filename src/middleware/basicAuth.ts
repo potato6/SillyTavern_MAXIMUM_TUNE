@@ -34,7 +34,7 @@ const basicAuthMiddleware = async function (
     };
 
     try {
-        const ip = getIpAddress(request, PREFER_REAL_IP_HEADER);
+        const ip = getIpAddress(request as unknown as Record<string, unknown>, PREFER_REAL_IP_HEADER);
 
         const basicAuthUserName = getConfigValue('basicAuthUser.username');
         const basicAuthUserPassword = getConfigValue('basicAuthUser.password');
@@ -93,11 +93,11 @@ const basicAuthMiddleware = async function (
         if (error instanceof RateLimiterRes) {
             console.error(
                 'Basic auth failed: Rate limited from',
-                getIpAddress(request, PREFER_REAL_IP_HEADER),
+                getIpAddress(request as unknown as Record<string, unknown>, PREFER_REAL_IP_HEADER),
                 request.method,
                 request.originalUrl,
             );
-            return retryAfter(response, error).sendStatus(429);
+            return retryAfter(response as unknown as Record<string, unknown>, error).sendStatus(429);
         }
         console.error('Basic auth error:', error);
         return response.sendStatus(500);

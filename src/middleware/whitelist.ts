@@ -87,8 +87,8 @@ export default async function getWhitelistMiddleware() {
     await addDockerHostsToWhitelist();
 
     return function (req: express.Request, res: express.Response, next: express.NextFunction) {
-        const clientIp = getIpFromRequest(req);
-        const forwardedIp = enableForwardedWhitelist && getRealOrForwardedIp(req);
+        const clientIp = getIpFromRequest(req as unknown as Record<string, unknown>);
+        const forwardedIp = enableForwardedWhitelist && getRealOrForwardedIp(req as unknown as Record<string, unknown>);
         const userAgent = req.headers['user-agent'];
 
         /**

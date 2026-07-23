@@ -14,7 +14,7 @@ import {
 
 export const router: any = new Elysia({ prefix: '/api/openai' });
 
-router.post('/caption-image', async (context) => {
+router.post('/caption-image', async (context: any) => {
     const { set } = context;
     const body = context.body as Record<string, unknown>;
     const user = (context as unknown as Record<string, unknown>).user as Record<
@@ -46,8 +46,8 @@ router.post('/caption-image', async (context) => {
 
         if (body.api === 'custom') {
             key = readSecret(directories as any, SECRET_KEYS.CUSTOM);
-            mergeObjectWithYaml(bodyParams, body.custom_include_body as Record<string, unknown>);
-            mergeObjectWithYaml(headers, body.custom_include_headers as Record<string, unknown>);
+            mergeObjectWithYaml(bodyParams, body.custom_include_body as string);
+            mergeObjectWithYaml(headers, body.custom_include_headers as string);
         }
 
         if (body.api === 'openrouter') {
@@ -146,7 +146,7 @@ router.post('/caption-image', async (context) => {
         }
 
         if (body.api === 'custom') {
-            excludeKeysByYaml(captionBody, body.custom_exclude_body as Record<string, unknown>);
+            excludeKeysByYaml(captionBody, body.custom_exclude_body as string);
         }
 
         let apiUrl = '';
@@ -258,8 +258,7 @@ router.post('/caption-image', async (context) => {
             messages.push({
                 role: 'user',
                 content: [],
-                image_url: (imgMessage?.content as Array<Record<string, unknown>>)?.[1]?.image_url
-                    ?.url,
+                image_url: ((imgMessage?.content as Array<Record<string, unknown>> | undefined)?.[1]?.image_url as { url?: string })?.url,
             });
         }
 
@@ -268,7 +267,7 @@ router.post('/caption-image', async (context) => {
             (body.api_type as string) || '',
             apiUrl,
             directories as any,
-            body.secret_id,
+            body.secret_id as string | null,
         );
         console.debug('Multimodal captioning request', captionBody);
 
@@ -307,7 +306,7 @@ router.post('/caption-image', async (context) => {
     }
 });
 
-router.post('/generate-voice', async (context) => {
+router.post('/generate-voice', async (context: any) => {
     const { set } = context;
     const body = context.body as Record<string, unknown>;
     const user = (context as unknown as Record<string, unknown>).user as Record<
@@ -369,7 +368,7 @@ router.post('/generate-voice', async (context) => {
 });
 
 // ElectronHub TTS proxy
-router.post('/electronhub/generate-voice', async (context) => {
+router.post('/electronhub/generate-voice', async (context: any) => {
     const { set } = context;
     const body = context.body as Record<string, unknown>;
     const user = (context as unknown as Record<string, unknown>).user as Record<
@@ -453,7 +452,7 @@ router.post('/electronhub/generate-voice', async (context) => {
 });
 
 // ElectronHub model list
-router.post('/electronhub/models', async (context) => {
+router.post('/electronhub/models', async (context: any) => {
     const { set } = context;
     const user = (context as unknown as Record<string, unknown>).user as Record<
         string,
@@ -494,7 +493,7 @@ router.post('/electronhub/models', async (context) => {
 });
 
 // Chutes TTS
-router.post('/chutes/generate-voice', async (context) => {
+router.post('/chutes/generate-voice', async (context: any) => {
     const { set } = context;
     const body = context.body as Record<string, unknown>;
     const user = (context as unknown as Record<string, unknown>).user as Record<
@@ -550,7 +549,7 @@ router.post('/chutes/generate-voice', async (context) => {
     }
 });
 
-router.post('/chutes/models/embedding', async (context) => {
+router.post('/chutes/models/embedding', async (context: any) => {
     const { set } = context;
     const user = (context as unknown as Record<string, unknown>).user as Record<
         string,
@@ -598,7 +597,7 @@ router.post('/chutes/models/embedding', async (context) => {
     }
 });
 
-router.post('/nanogpt/models/embedding', async (context) => {
+router.post('/nanogpt/models/embedding', async (context: any) => {
     const { set } = context;
     const user = (context as unknown as Record<string, unknown>).user as Record<
         string,
@@ -644,7 +643,7 @@ router.post('/nanogpt/models/embedding', async (context) => {
     }
 });
 
-router.post('/siliconflow/models/embedding', async (context) => {
+router.post('/siliconflow/models/embedding', async (context: any) => {
     const { set } = context;
     const body = context.body as Record<string, unknown>;
     const user = (context as unknown as Record<string, unknown>).user as Record<
@@ -696,7 +695,7 @@ router.post('/siliconflow/models/embedding', async (context) => {
     }
 });
 
-router.post('/workers-ai/models/embedding', async (context) => {
+router.post('/workers-ai/models/embedding', async (context: any) => {
     const { set } = context;
     const body = context.body as Record<string, unknown>;
     const user = (context as unknown as Record<string, unknown>).user as Record<
@@ -754,7 +753,7 @@ router.post('/workers-ai/models/embedding', async (context) => {
     }
 });
 
-router.post('/generate-image', async (context) => {
+router.post('/generate-image', async (context: any) => {
     const { set } = context;
     const body = context.body as Record<string, unknown>;
     const user = (context as unknown as Record<string, unknown>).user as Record<
@@ -799,7 +798,7 @@ router.post('/generate-image', async (context) => {
     }
 });
 
-router.post('/generate-video', async (context) => {
+router.post('/generate-video', async (context: any) => {
     const { set } = context;
     const body = context.body as Record<string, unknown>;
     const user = (context as unknown as Record<string, unknown>).user as Record<
@@ -1111,7 +1110,7 @@ router.post(
     }),
 );
 
-router.post('/chutes/transcribe-audio', async (context) => {
+router.post('/chutes/transcribe-audio', async (context: any) => {
     const { set } = context;
     const body = context.body as Record<string, unknown>;
     const user = (context as unknown as Record<string, unknown>).user as Record<

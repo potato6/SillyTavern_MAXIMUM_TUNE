@@ -86,10 +86,9 @@ export const router = new Elysia({ prefix: '/api/users' })
             );
 
             const viewModels = await Promise.all(viewModelPromises);
-            // @ts-expect-error TS(7006) FIXME: Parameter 'x' implicitly has an 'any' type.
             viewModels.sort(
-                (x: { created: number }, y: { created: number }) =>
-                    (x.created ?? 0) - (y.created ?? 0),
+                (x: unknown, y: unknown) =>
+                    ((x as { created: number }).created ?? 0) - ((y as { created: number }).created ?? 0),
             );
             return viewModels;
         } catch (error) {

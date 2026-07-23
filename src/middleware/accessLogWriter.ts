@@ -36,7 +36,7 @@ export function migrateAccessLog() {
  */
 export default function accessLoggerMiddleware() {
     return function (req: Request, res: Response, next: NextFunction) {
-        const clientIp = getIpAddress(req, true);
+        const clientIp = getIpAddress(req as unknown as Record<string, unknown>, true);
         const userAgent = req.headers['user-agent'];
 
         if (!knownIPs.has(clientIp)) {

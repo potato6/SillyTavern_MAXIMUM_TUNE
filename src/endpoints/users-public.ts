@@ -113,7 +113,7 @@ router.post('/login', async (context: Record<string, unknown>) => {
             return { error: 'Invalid handle or password' };
         }
 
-        const accountVersion = getAccountVersion();
+        const accountVersion = getAccountVersion(userRecord);
         const token = crypto.randomBytes(64).toString('hex');
         const mfaToken = crypto.randomBytes(64).toString('hex');
 
@@ -129,7 +129,7 @@ router.post('/login', async (context: Record<string, unknown>) => {
 
         // Set session TTL
         const ttl = rememberMe ? 30 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000;
-        storage.setTTL(sessionKey, ttl);
+        (storage as any).setTTL(sessionKey, ttl);
 
         await loginLimiter.delete(ip);
 
