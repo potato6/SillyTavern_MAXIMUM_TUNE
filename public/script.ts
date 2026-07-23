@@ -265,6 +265,7 @@ import {
     formatInstructModeStoryString,
     getInstructStoppingSequences,
 } from './scripts/instruct-mode.js';
+import { renderChatTemplate, buildChatMessages } from './scripts/chat-templates.js';
 import { initLocales, t } from './scripts/i18n.js';
 import {
     getFriendlyTokenizerName,
@@ -6386,6 +6387,22 @@ export async function Generate(
     }
 
     let finalPrompt = await getCombinedPrompt(false);
+
+    // When a model provides a chat_template, render the full prompt with it
+    // instead of using the instruct/context preset pipeline.
+    if (isInstruct && power_user.chat_template && main_api !== 'openai') {
+        const ctMessages = await buildChatMessages({
+            storyStringParams,
+            mesExamplesArray,
+            coreChat,
+            quiet_prompt: quiet_prompt as string | undefined,
+            quietToLoud: quietToLoud as boolean | undefined,
+        });
+        finalPrompt = renderChatTemplate(ctMessages, power_user.chat_template, {
+            add_generation_prompt: type !== 'continue',
+        });
+        console.debug(`Chat template rendered prompt (${finalPrompt.length} chars)`);
+    }
 
     const eventData = { prompt: finalPrompt, dryRun: dryRun };
     await eventSource.emit(event_types.GENERATE_AFTER_COMBINE_PROMPTS, eventData);

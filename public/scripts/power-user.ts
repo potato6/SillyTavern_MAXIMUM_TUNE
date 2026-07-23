@@ -299,6 +299,8 @@ export const power_user = {
     model_templates_mappings: {},
     /** The chat template hash of the currently loaded model, if any; used when deriving mappings */
     chat_template_hash: '',
+    /** The raw chat template of the currently loaded model, if any; used for direct Jinja rendering */
+    chat_template: '',
 
     sysprompt: {
         enabled: true,
@@ -2178,6 +2180,7 @@ export async function loadPowerUserSettings(
 
     // Reset the saved chat template hash
     power_user.chat_template_hash = '';
+    power_user.chat_template = '';
 
     const singleLineEl = document.getElementById('single_line') as HTMLInputElement | null;
     if (singleLineEl) singleLineEl.checked = power_user.single_line;

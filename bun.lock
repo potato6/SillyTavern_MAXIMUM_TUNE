@@ -10,6 +10,7 @@
         "@agnai/web-tokenizers": "^0.1.6-pre3",
         "@elysiajs/cors": "^1.4.2",
         "@elysiajs/static": "^1.4.10",
+        "@huggingface/jinja": "^0.5.9",
         "@iconfu/svg-inject": "^2.0.1",
         "@mozilla/readability": "^0.6.0",
         "@nyariv/sandboxjs": "^0.9.6",
@@ -123,6 +124,8 @@
     "@grpc/grpc-js": ["@grpc/grpc-js@1.14.4", "", { "dependencies": { "@grpc/proto-loader": "^0.8.0", "@js-sdsl/ordered-map": "^4.4.2" } }, "sha512-k9Dj3DV/itK9D06Y8f190Qgop7/Ui+D0njFV3LHMPwPT75DpXLQohE9Wmz0QElrJnzsjB7KPWiKJbOl7IPDArQ=="],
 
     "@grpc/proto-loader": ["@grpc/proto-loader@0.8.1", "", { "dependencies": { "lodash.camelcase": "^4.3.0", "long": "^5.0.0", "protobufjs": "^7.5.5", "yargs": "^17.7.2" }, "bin": { "proto-loader-gen-types": "build/bin/proto-loader-gen-types.js" } }, "sha512-wtF6h+DY6M3YaDBPAmvuuA6jV8Sif9MjtOI5euKFWRgCDl5PeDpPsHR9u2l6St5ceY8AZgoNDww5+HvEsXFsGg=="],
+
+    "@huggingface/jinja": ["@huggingface/jinja@0.5.9", "", {}, "sha512-uWTG+l3VJRsl7EXxYizuL3P+cCPoc3cRqbWWRcQN0FhejRfbdq0RNhCmbY/YDtnTcz9icdLYuLDjsnz4d8JMuw=="],
 
     "@iconfu/svg-inject": ["@iconfu/svg-inject@2.0.1", "", {}, "sha512-4bECes/rA650jPUaibwZo4gHL1iAgmw7lUnMLEN6c3BZwJ5P4d3RjBgWN7Ar5iqrCfjpx5W6ssjQTVLk4RfqNw=="],
 

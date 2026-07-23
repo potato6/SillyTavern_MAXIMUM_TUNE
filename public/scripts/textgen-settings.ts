@@ -944,6 +944,7 @@ async function getStatusTextgen() {
                         chat_template_hash: string;
                     };
                     power_user.chat_template_hash = chat_template_hash;
+                    power_user.chat_template = chat_template;
 
                     if (wantsContextSize && 'default_generation_settings' in data) {
                         const backend_max_context = (
@@ -968,7 +969,6 @@ async function getStatusTextgen() {
                     )[chat_template_hash] as Record<string, unknown> | undefined;
                     const derivedTemplate = await deriveTemplatesFromChatTemplate(
                         chat_template,
-                        chat_template_hash,
                     );
                     const { context, instruct } = (savedTemplate ?? derivedTemplate) as {
                         context?: string;

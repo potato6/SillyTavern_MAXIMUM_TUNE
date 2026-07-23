@@ -29,6 +29,7 @@
         "@agnai/web-tokenizers": "^0.1.6-pre3",
         "@elysiajs/cors": "^1.4.2",
         "@elysiajs/static": "^1.4.10",
+        "@huggingface/jinja": "^0.5.9",
         "@iconfu/svg-inject": "^2.0.1",
         "@mozilla/readability": "^0.6.0",
         "@nyariv/sandboxjs": "^0.9.6",
