@@ -1170,7 +1170,7 @@ function createRouteHandler(directoryFn: (context: any) => string) {
                 return;
             }
             const exists = fs.existsSync(fullPath);
-            if (!exists) {
+            if (!exists || !fs.statSync(fullPath).isFile()) {
                 context.set.status = 404;
                 return;
             }
@@ -1204,7 +1204,7 @@ function createExtensionsRouteHandler(directoryFn: (context: any) => string) {
                 return;
             }
             const existsLocal = fs.existsSync(localPath);
-            if (existsLocal) {
+            if (existsLocal && fs.statSync(localPath).isFile()) {
                 return new Response(Bun.file(localPath));
             }
 
@@ -1214,7 +1214,7 @@ function createExtensionsRouteHandler(directoryFn: (context: any) => string) {
                 return;
             }
             const existsGlobal = fs.existsSync(globalPath);
-            if (existsGlobal) {
+            if (existsGlobal && fs.statSync(globalPath).isFile()) {
                 return new Response(Bun.file(globalPath));
             }
 
