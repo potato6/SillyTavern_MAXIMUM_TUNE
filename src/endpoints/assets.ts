@@ -9,7 +9,7 @@ import { UNSAFE_EXTENSIONS } from '../constants.js';
 import { clientRelativePath, isValidUrl } from '../util.js';
 import { getHostFromUrl, isHostWhitelisted } from './content-manager.js';
 
-const VALID_CATEGORIES = ['bgm', 'ambient', 'blip', 'live2d', 'vrm', 'character', 'temp'];
+const VALID_CATEGORIES = new Set(['bgm', 'ambient', 'blip', 'live2d', 'vrm', 'character', 'temp']);
 
 export function validateAssetFileName(inputFilename: string) {
     if (!/^[a-zA-Z0-9_\-\.]+$/.test(inputFilename)) {
@@ -51,7 +51,7 @@ export const router = new Elysia({ prefix: '/api/assets' })
                 return { error: 'No asset name specified' };
             }
 
-            if (!category || !VALID_CATEGORIES.includes(category)) {
+            if (!category || !VALID_CATEGORIES.has(category)) {
                 (set.set as (code: number) => void)?.(400);
                 return { error: 'Invalid or missing category' };
             }
@@ -196,7 +196,7 @@ export const router = new Elysia({ prefix: '/api/assets' })
 
         try {
             const category = body.category as string;
-            if (!category || !VALID_CATEGORIES.includes(category)) {
+            if (!category || !VALID_CATEGORIES.has(category)) {
                 (set.set as (code: number) => void)?.(400);
                 return { error: 'Invalid or missing category' };
             }

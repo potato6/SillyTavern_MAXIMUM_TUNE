@@ -33,14 +33,14 @@ const visitHeaders = {
  * @returns {Promise<string>} Transcript text
  */
 async function extractTranscript(videoPageBody: string, lang: string) {
-    const RE_XML_TRANSCRIPT = /<text start=\"([^\"]*)\" dur=\"([^\"]*)\">([^<]*)<\/text>/g;
-    const splittedHTML = videoPageBody.split('\"captions\":');
+    const RE_XML_TRANSCRIPT = /<text start="([^"]*)" dur="([^"]*)">([^<]*)<\/text>/g;
+    const splittedHTML = videoPageBody.split('"captions":');
 
     if (splittedHTML.length <= 1) {
-        if (videoPageBody.includes('class=\"g-recaptcha\"')) {
+        if (videoPageBody.includes('class="g-recaptcha"')) {
             throw new Error('Too many requests');
         }
-        if (!videoPageBody.includes('\"playabilityStatus\":')) {
+        if (!videoPageBody.includes('"playabilityStatus":')) {
             throw new Error('Video is not available');
         }
         throw new Error('Transcript not available');
@@ -49,7 +49,7 @@ async function extractTranscript(videoPageBody: string, lang: string) {
     const captions = (() => {
         try {
             // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-            return JSON.parse(splittedHTML[1].split(',\"videoDetails')[0].replace('\\n', ''));
+            return JSON.parse(splittedHTML[1].split(',"videoDetails')[0].replace('\\n', ''));
         } catch {
             return undefined;
         }
@@ -219,7 +219,7 @@ router.post('/searxng', async (context) => {
         }
 
         const mainPageText = await mainPageRequest.text();
-        const clientHref = mainPageText.match(/href=\"(\/client.+\.css)\"/)?.[1];
+        const clientHref = mainPageText.match(/href="(\/client.+\.css)"/)?.[1];
 
         if (clientHref) {
             const clientUrl = new URL(clientHref, baseUrl);

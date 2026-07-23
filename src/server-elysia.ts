@@ -5,36 +5,30 @@
  * Streaming responses flow natively through Bun/Elysia's HTTP server.
  */
 
+import { createHmac, timingSafeEqual, randomBytes } from 'node:crypto';
 import path from 'node:path';
 import fs from 'node:fs';
-import { createHmac, timingSafeEqual, randomBytes } from 'node:crypto';
+import EventEmitter from 'node:events';
 import { Elysia } from 'elysia';
 import { cors } from '@elysiajs/cors';
 import { staticPlugin } from '@elysiajs/static';
-import type { Request as ExpressRequest, Response as ExpressResponse, NextFunction } from 'express';
 
 import { serverDirectory } from './server-directory.js';
-import { color, getVersion, getSeparator, removeColorFormatting, safeReadFileSync, setWindowTitle, getConfigValue, getHasIP, setupLogLevel, urlHostnameToIPv6 } from './util.js';
-import { UPLOADS_DIRECTORY } from './constants.js';
+import { safeReadFileSync, getConfigValue, setupLogLevel, getVersion } from './util.js';
 import { loadPlugins } from './plugin-loader.js';
+
+import hostWhitelistMiddleware from './middleware/hostWhitelist.js';
+import accessLoggerMiddleware, { migrateAccessLog } from './middleware/accessLogWriter.js';
+import basicAuthMiddleware from './middleware/basicAuth.js';
+import getLibServeMiddleware from './middleware/lib-serve.js';
 
 import {
     initUserStorage, ensurePublicDirectoriesExist, migrateUserData, migrateSystemPrompts,
     migratePublicOverrides, verifySecuritySettings, getUserDirectoriesList, cleanUploads,
     getCookieSecret, getCookieSessionName, getSessionCookieAge,
-    setUserDataMiddleware, requireLoginMiddleware, shouldRedirectToLogin, loginPageMiddleware,
+    setUserDataMiddleware, shouldRedirectToLogin, loginPageMiddleware,
+    router as userDataRouter,
 } from './users.js';
-
-import hostWhitelistMiddleware from './middleware/hostWhitelist.js';
-import accessLoggerMiddleware, { getAccessLogPath, migrateAccessLog } from './middleware/accessLogWriter.js';
-import basicAuthMiddleware from './middleware/basicAuth.js';
-import corsProxyMiddleware from './middleware/corsProxy.js';
-import getLibServeMiddleware from './middleware/lib-serve.js';
-import cacheBuster from './middleware/cacheBuster.js';
-
-// ── All Elysia routers ────────────────────────────────────────────────────────
-
-import { router as userDataRouter } from './users.js';
 import { router as usersPublicRouter } from './endpoints/users-public.js';
 import { router as usersPrivateRouter } from './endpoints/users-private.js';
 import { router as usersAdminRouter } from './endpoints/users-admin.js';
@@ -82,8 +76,6 @@ import { router as backupsRouter } from './endpoints/backups.js';
 import { router as imageMetadataRouter } from './endpoints/image-metadata.js';
 import { router as volcengineRouter } from './endpoints/volcengine.js';
 
-import EventEmitter from 'node:events';
-
 // ── Server events (local copy, avoids importing from server.ts which boots Express) ──
 
 export const serverEvents = new EventEmitter();
@@ -113,15 +105,14 @@ function adaptMiddleware(mw: (req: any, res: any, next: any) => void) {
                 || '127.0.0.1',
             query: Object.fromEntries(url.searchParams),
         };
-        let responded = false;
         const mockRes: any = {
             status(code: number) { set.status = code; return this; },
-            send(body: any) { responded = true; },
-            json(body: any) { responded = true; },
-            sendStatus(code: number) { set.status = code; responded = true; },
+            send() {},
+            json() {},
+            sendStatus(code: number) { set.status = code; },
             setHeader() {},
             getHeaders() { return {}; },
-            end() { responded = true; },
+            end() {},
         };
         return new Promise<void>((resolve, reject) => {
             mw(mockReq, mockRes, (err?: any) => err ? reject(err) : resolve());
@@ -413,7 +404,7 @@ async function start() {
 
     const listenUrl = cliArgs.getIPv4ListenUrl();
     const port = Number(listenUrl.port) || 8000;
-    let host = cliArgs.listen ? listenUrl.hostname : (cliArgs.enableIPv6 !== false ? '::1' : '127.0.0.1');
+    const host = cliArgs.listen ? listenUrl.hostname : (cliArgs.enableIPv6 !== false ? '::1' : '127.0.0.1');
 
     const serverOptions: any = { port, hostname: host, reusePort: true };
 
