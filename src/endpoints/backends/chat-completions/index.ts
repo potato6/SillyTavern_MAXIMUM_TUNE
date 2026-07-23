@@ -539,16 +539,25 @@ router.post('/generate', async (context: Record<string, unknown>) => {
         // (SSE chunks, JSON bodies) are captured and returned as the Elysia
         // Response body.
         //
-        // ⚠ Bridge-mode caveat: mountElysia reads the Response via .text(),
-        //    so the stream is **buffered** — clients receive the full payload
-        //    at once, not incrementally.  True streaming resumes in Phase 7
-        //    (standalone Elysia without the Express bridge).
+        // Unlike the original Express code, we do NOT await the provider
+        // call — we fire it and return the stream immediately so chunks
+        // flow to the client in real time.  Error handling is done via
+        // the catch handler below.
         const passThrough = new PassThrough();
         const mockReq = mockRequest(context);
         const mockRes = mockResponse(passThrough, set);
 
-        // Run the provider — it writes to the mock response stream.
-        await (provider.chat as any)(mockReq, mockRes);
+        // Fire provider — chunks will be written to passThrough as they arrive.
+        (provider.chat as any)(mockReq, mockRes).catch((error: any) => {
+            console.error('Generation failed', error);
+            if (!passThrough.destroyed) {
+                const message =
+                    error.code === 'ECONNREFUSED'
+                        ? `Connection refused: ${error.message}`
+                        : error.message || 'Unknown error occurred';
+                passThrough.destroy(new Error(message));
+            }
+        });
 
         // Convert the Node.js PassThrough to a Web ReadableStream for Elysia.
         const webStream = Readable.toWeb(passThrough) as unknown as ReadableStream<Uint8Array>;
