@@ -33,7 +33,7 @@ router.post('/ping', async (context: any) => {
     const user = (context as any).user;
     const headers = context.headers;
     try {
-        const url = new URL(body.url);
+        const url = new URL((body.url as string));
         url.pathname = '/sdapi/v1/options';
 
         const result = await fetch(url, {
@@ -67,7 +67,7 @@ router.post('/upscalers', async (context: any) => {
          *
          */
         async function getUpscalerModels() {
-            const url = new URL(body.url);
+            const url = new URL((body.url as string));
             url.pathname = '/sdapi/v1/upscalers';
 
             const result = await fetch(url, {
@@ -89,7 +89,7 @@ router.post('/upscalers', async (context: any) => {
          *
          */
         async function getLatentUpscalers() {
-            const url = new URL(body.url);
+            const url = new URL((body.url as string));
             url.pathname = '/sdapi/v1/latent-upscale-modes';
 
             const result = await fetch(url, {
@@ -130,9 +130,9 @@ router.post('/vaes', async (context: any) => {
     const user = (context as any).user;
     const headers = context.headers;
     try {
-        const autoUrl = new URL(body.url);
+        const autoUrl = new URL((body.url as string));
         autoUrl.pathname = '/sdapi/v1/sd-vae';
-        const forgeUrl = new URL(body.url);
+        const forgeUrl = new URL((body.url as string));
         forgeUrl.pathname = '/sdapi/v1/sd-modules';
 
         const requestInit = {
@@ -172,7 +172,7 @@ router.post('/samplers', async (context: any) => {
     const user = (context as any).user;
     const headers = context.headers;
     try {
-        const url = new URL(body.url);
+        const url = new URL((body.url as string));
         url.pathname = '/sdapi/v1/samplers';
 
         const result = await fetch(url, {
@@ -203,7 +203,7 @@ router.post('/schedulers', async (context: any) => {
     const user = (context as any).user;
     const headers = context.headers;
     try {
-        const url = new URL(body.url);
+        const url = new URL((body.url as string));
         url.pathname = '/sdapi/v1/schedulers';
 
         const result = await fetch(url, {
@@ -234,7 +234,7 @@ router.post('/models', async (context: any) => {
     const user = (context as any).user;
     const headers = context.headers;
     try {
-        const url = new URL(body.url);
+        const url = new URL((body.url as string));
         url.pathname = '/sdapi/v1/sd-models';
 
         const result = await fetch(url, {
@@ -268,7 +268,7 @@ router.post('/get-model', async (context: any) => {
     const user = (context as any).user;
     const headers = context.headers;
     try {
-        const url = new URL(body.url);
+        const url = new URL((body.url as string));
         url.pathname = '/sdapi/v1/options';
 
         const result = await fetch(url, {
@@ -297,7 +297,7 @@ router.post('/set-model', async (context: any) => {
          *
          */
         async function getProgress() {
-            const url = new URL(body.url);
+            const url = new URL((body.url as string));
             url.pathname = '/sdapi/v1/progress';
 
             const result = await fetch(url, {
@@ -309,7 +309,7 @@ router.post('/set-model', async (context: any) => {
             return await result.json();
         }
 
-        const url = new URL(body.url);
+        const url = new URL((body.url as string));
         url.pathname = '/sdapi/v1/options';
 
         const options = {
@@ -368,7 +368,7 @@ router.post('/generate', async (context: any) => {
     const response = context as any;
     try {
         try {
-            const optionsUrl = new URL(body.url);
+            const optionsUrl = new URL((body.url as string));
             optionsUrl.pathname = '/sdapi/v1/options';
             const optionsResult = await fetch(optionsUrl, {
                 headers: { Authorization: getBasicAuthHeader(body.auth) },
@@ -389,7 +389,7 @@ router.post('/generate', async (context: any) => {
         (req as any).socket.removeAllListeners('close');
         (req as any).socket.on('close', function () {
             if (!response.writableEnded) {
-                const interruptUrl = new URL(body.url);
+                const interruptUrl = new URL((body.url as string));
                 interruptUrl.pathname = '/sdapi/v1/interrupt';
                 fetch(interruptUrl, {
                     method: 'POST',
@@ -400,7 +400,7 @@ router.post('/generate', async (context: any) => {
         });
 
         console.debug('SD WebUI request:', body);
-        const txt2imgUrl = new URL(body.url);
+        const txt2imgUrl = new URL((body.url as string));
         txt2imgUrl.pathname = '/sdapi/v1/txt2img';
         const result = await fetch(txt2imgUrl, {
             method: 'POST',
@@ -433,7 +433,7 @@ router.post('/sd-next/upscalers', async (context: any) => {
     const user = (context as any).user;
     const headers = context.headers;
     try {
-        const url = new URL(body.url);
+        const url = new URL((body.url as string));
         url.pathname = '/sdapi/v1/upscalers';
 
         const result = await fetch(url, {
@@ -480,7 +480,7 @@ comfy.post('/ping', async (context: any) => {
     const user = (context as any).user;
     const headers = context.headers;
     try {
-        const url = new URL(body.url.replace(/\/+$/, '') + '/system_stats');
+        const url = new URL((body.url as string).replace(/\/+$/, '') + '/system_stats');
 
         const result = await fetch(url);
         if (!result.ok) {
@@ -503,7 +503,7 @@ comfy.post('/samplers', async (context: any) => {
     const user = (context as any).user;
     const headers = context.headers;
     try {
-        const url = new URL(body.url.replace(/\/+$/, '') + '/object_info');
+        const url = new URL((body.url as string).replace(/\/+$/, '') + '/object_info');
 
         const result = await fetch(url);
         if (!result.ok) {
@@ -528,7 +528,7 @@ comfy.post('/models', async (context: any) => {
     const user = (context as any).user;
     const headers = context.headers;
     try {
-        const url = new URL(body.url.replace(/\/+$/, '') + '/object_info');
+        const url = new URL((body.url as string).replace(/\/+$/, '') + '/object_info');
 
         const result = await fetch(url);
         if (!result.ok) {
@@ -577,7 +577,7 @@ comfy.post('/schedulers', async (context: any) => {
     const user = (context as any).user;
     const headers = context.headers;
     try {
-        const url = new URL(body.url.replace(/\/+$/, '') + '/object_info');
+        const url = new URL((body.url as string).replace(/\/+$/, '') + '/object_info');
 
         const result = await fetch(url);
         if (!result.ok) {
@@ -602,7 +602,7 @@ comfy.post('/vaes', async (context: any) => {
     const user = (context as any).user;
     const headers = context.headers;
     try {
-        const url = new URL(body.url.replace(/\/+$/, '') + '/object_info');
+        const url = new URL((body.url as string).replace(/\/+$/, '') + '/object_info');
 
         const result = await fetch(url);
         if (!result.ok) {
@@ -667,7 +667,7 @@ comfy.post('/save-workflow', async (context: any) => {
             user.directories.comfyWorkflows,
             sanitize(String(body.file_name)),
         );
-        writeFileAtomicSync(filePath, body.workflow, 'utf8');
+        writeFileAtomicSync(filePath, body.workflow as string, 'utf8');
         const data = getComfyWorkflows(user.directories);
         return data;
     } catch (error) {
@@ -702,8 +702,6 @@ comfy.post('/delete-workflow', async (context: any) => {
 
 comfy.post(
     '/rename-workflow',
-    getFileNameValidationFunction('old_name'),
-    getFileNameValidationFunction('new_name'),
     async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
@@ -740,6 +738,22 @@ comfy.post(
             return;
         }
     },
+    {
+        beforeHandle: [
+            (ctx: any) => {
+                const fn = getFileNameValidationFunction('old_name');
+                const req = ctx as any;
+                req.body = ctx.body;
+                return fn(ctx as any, {} as any, () => {});
+            },
+            (ctx: any) => {
+                const fn = getFileNameValidationFunction('new_name');
+                const req = ctx as any;
+                req.body = ctx.body;
+                return fn(ctx as any, {} as any, () => {});
+            },
+        ],
+    },
 );
 
 interface ComfyHistoryItem {
@@ -775,13 +789,13 @@ comfy.post('/generate', async (context: any) => {
     const response = context as any;
     try {
         let item: ComfyHistoryItem | undefined;
-        const url = new URL(body.url.replace(/\/+$/, '') + '/prompt');
+        const url = new URL((body.url as string).replace(/\/+$/, '') + '/prompt');
 
         const controller = new AbortController();
         (req as any).socket.removeAllListeners('close');
         (req as any).socket.on('close', function () {
             if (!response.writableEnded && !item) {
-                const interruptUrl = new URL(body.url.replace(/\/+$/, '') + '/interrupt');
+                const interruptUrl = new URL((body.url as string).replace(/\/+$/, '') + '/interrupt');
                 fetch(interruptUrl, {
                     method: 'POST',
                     headers: { Authorization: getBasicAuthHeader(body.auth) },
@@ -792,7 +806,7 @@ comfy.post('/generate', async (context: any) => {
 
         const promptResult = await fetch(url, {
             method: 'POST',
-            body: body.prompt,
+            body: body.prompt as unknown as string,
         });
         if (!promptResult.ok) {
             const text = await promptResult.text();
@@ -801,7 +815,7 @@ comfy.post('/generate', async (context: any) => {
 
         const data = (await promptResult.json()) as { prompt_id: string };
         const id = data.prompt_id;
-        const historyUrl = new URL(body.url.replace(/\/+$/, '') + '/history');
+        const historyUrl = new URL((body.url as string).replace(/\/+$/, '') + '/history');
         while (true) {
             const result = await fetch(historyUrl);
             if (!result.ok) {
@@ -846,7 +860,7 @@ comfy.post('/generate', async (context: any) => {
         if (!imgInfo) {
             throw new Error('ComfyUI did not return any recognizable outputs.');
         }
-        const imgUrl = new URL(body.url.replace(/\/+$/, '') + '/view');
+        const imgUrl = new URL((body.url as string).replace(/\/+$/, '') + '/view');
         imgUrl.search = `?filename=${imgInfo.filename}&subfolder=${imgInfo.subfolder}&type=${imgInfo.type}`;
         const imgResponse = await fetch(imgUrl);
         if (!imgResponse.ok) {
@@ -879,7 +893,7 @@ comfyRunPod.post('/ping', async (context: any) => {
             return;
         }
 
-        const url = new URL(body.url.replace(/\/+$/, '') + '/health');
+        const url = new URL((body.url as string).replace(/\/+$/, '') + '/health');
 
         const result = await fetch(url, {
             method: 'GET',
@@ -921,13 +935,13 @@ comfyRunPod.post('/generate', async (context: any) => {
         // eslint-disable-next-line prefer-const
         let jobId: string | undefined;
         let item: { filename: string; data: string } | undefined;
-        const url = new URL(body.url.replace(/\/+$/, '') + '/run');
+        const url = new URL((body.url as string).replace(/\/+$/, '') + '/run');
 
         const controller = new AbortController();
         (req as any).socket.removeAllListeners('close');
         (req as any).socket.on('close', function () {
             if (!response.writableEnded && !item) {
-                const interruptUrl = new URL(body.url.replace(/\/+$/, '') + `/cancel/${jobId}`);
+                const interruptUrl = new URL((body.url as string).replace(/\/+$/, '') + `/cancel/${jobId}`);
                 fetch(interruptUrl, {
                     method: 'POST',
                     headers: { Authorization: `Bearer ${key}` },
@@ -935,7 +949,7 @@ comfyRunPod.post('/generate', async (context: any) => {
             }
             controller.abort();
         });
-        const workflow = JSON.parse(body.prompt).prompt;
+        const workflow = JSON.parse((body.prompt as string)).prompt;
         const wrappedWorkflow = workflow?.input?.workflow
             ? workflow
             : { input: { workflow: workflow } };
@@ -955,7 +969,7 @@ comfyRunPod.post('/generate', async (context: any) => {
 
         const data = (await promptResult.json()) as { id: string };
         jobId = data.id;
-        const statusUrl = new URL(body.url.replace(/\/+$/, '') + `/status/${jobId}`);
+        const statusUrl = new URL((body.url as string).replace(/\/+$/, '') + `/status/${jobId}`);
         while (true) {
             const result = await fetch(statusUrl, {
                 method: 'GET',
@@ -1062,7 +1076,7 @@ together.post('/generate', async (context: any) => {
                 steps: body.steps,
                 n: 1,
                 // Limited to 10000 on playground, works fine with more.
-                seed: body.seed >= 0 ? body.seed : Math.floor(Math.random() * 10_000_000),
+                seed: (body.seed as number) >= 0 ? (body.seed as number) : Math.floor(Math.random() * 10_000_000),
             }),
             headers: {
                 'Content-Type': 'application/json',
@@ -1106,7 +1120,7 @@ sdcpp.post('/ping', async (context: any) => {
     const user = (context as any).user;
     const headers = context.headers;
     try {
-        const url = new URL(body.url.replace(/\/+$/, '') + '/v1/images/generations');
+        const url = new URL((body.url as string).replace(/\/+$/, '') + '/v1/images/generations');
 
         const result = await fetch(url, { method: 'OPTIONS' });
         if (!result.ok) {
@@ -1129,7 +1143,7 @@ sdcpp.post('/models', async (context: any) => {
     const user = (context as any).user;
     const headers = context.headers;
     try {
-        const url = new URL(body.url.replace(/\/+$/, '') + '/v1/models');
+        const url = new URL((body.url as string).replace(/\/+$/, '') + '/v1/models');
 
         const result = await fetch(url);
         if (!result.ok) {
@@ -1152,7 +1166,7 @@ sdcpp.post('/generate', async (context: any) => {
     const user = (context as any).user;
     const headers = context.headers;
     try {
-        const url = new URL(body.url.replace(/\/+$/, '') + '/sdapi/v1/txt2img');
+        const url = new URL((body.url as string).replace(/\/+$/, '') + '/sdapi/v1/txt2img');
 
         const payload = {
             model: body.model,
@@ -1168,7 +1182,7 @@ sdcpp.post('/generate', async (context: any) => {
             scheduler: body.scheduler,
             // sd.cpp produces blank images when clip_skip is 1, which is the
             // default (no skipping). Only send clip_skip when it's > 1.
-            clip_skip: body.clip_skip > 1 ? body.clip_skip : undefined,
+            clip_skip: (body.clip_skip as number) > 1 ? (body.clip_skip as number) : undefined,
         };
 
         for (const [key, value] of Object.entries(payload)) {
@@ -1211,7 +1225,7 @@ drawthings.post('/ping', async (context: any) => {
     const user = (context as any).user;
     const headers = context.headers;
     try {
-        const url = new URL(body.url);
+        const url = new URL((body.url as string));
         url.pathname = '/';
 
         const result = await fetch(url, {
@@ -1238,7 +1252,7 @@ drawthings.post('/get-model', async (context: any) => {
     const user = (context as any).user;
     const headers = context.headers;
     try {
-        const url = new URL(body.url);
+        const url = new URL((body.url as string));
         url.pathname = '/';
 
         const result = await fetch(url, {
@@ -1262,7 +1276,7 @@ drawthings.post('/get-upscaler', async (context: any) => {
     const user = (context as any).user;
     const headers = context.headers;
     try {
-        const url = new URL(body.url);
+        const url = new URL((body.url as string));
         url.pathname = '/';
 
         const result = await fetch(url, {
@@ -1288,7 +1302,7 @@ drawthings.post('/generate', async (context: any) => {
     try {
         console.debug('SD DrawThings API request:', body);
 
-        const url = new URL(body.url);
+        const url = new URL((body.url as string));
         url.pathname = '/sdapi/v1/txt2img';
 
         const requestBody = { ...body };
@@ -1362,12 +1376,12 @@ pollinations.post('/generate', async (context: any) => {
         }
 
         const promptUrl = new URL(
-            `https://gen.pollinations.ai/image/${encodeURIComponent(body.prompt)}`,
+            `https://gen.pollinations.ai/image/${encodeURIComponent((body.prompt as string))}`,
         );
         const params = new URLSearchParams({
             model: String(body.model),
             negative_prompt: String(body.negative_prompt),
-            seed: String(body.seed >= 0 ? body.seed : Math.floor(Math.random() * 10_000_000)),
+            seed: String((body.seed as number) >= 0 ? (body.seed as number) : Math.floor(Math.random() * 10_000_000)),
             width: String(body.width ?? 1024),
             height: String(body.height ?? 1024),
         });
@@ -1421,7 +1435,8 @@ stability.post('/generate', async (context: any) => {
             return;
         }
 
-        const { payload, model } = body;
+        const payload = body.payload as Record<string, unknown>;
+        const model = body.model as string;
 
         console.debug('Stability AI request:', model, payload);
 
@@ -2680,7 +2695,7 @@ workersai.post('/generate', async (context: any) => {
             height: body.height ? Number(body.height) : undefined,
             num_steps: body.steps ? Number(body.steps) : undefined,
             guidance: body.scale ? Number(body.scale) : undefined,
-            seed: body.seed >= 0 ? Number(body.seed) : undefined,
+            seed: (body.seed as number) >= 0 ? Number((body.seed as number)) : undefined,
         };
 
         // Remove undefined values
@@ -2752,20 +2767,20 @@ workersai.post('/generate', async (context: any) => {
     }
 });
 
-router.use('/comfy', comfy);
-router.use('/comfyrunpod', comfyRunPod);
-router.use('/together', together);
-router.use('/sdcpp', sdcpp);
-router.use('/drawthings', drawthings);
-router.use('/pollinations', pollinations);
-router.use('/stability', stability);
-router.use('/huggingface', huggingface);
-router.use('/chutes', chutes);
-router.use('/electronhub', electronhub);
-router.use('/nanogpt', nanogpt);
-router.use('/bfl', bfl);
-router.use('/falai', falai);
-router.use('/xai', xai);
-router.use('/aimlapi', aimlapi);
-router.use('/zai', zai);
-router.use('/workersai', workersai);
+(router as any).use('/comfy', comfy);
+(router as any).use('/comfyrunpod', comfyRunPod);
+(router as any).use('/together', together);
+(router as any).use('/sdcpp', sdcpp);
+(router as any).use('/drawthings', drawthings);
+(router as any).use('/pollinations', pollinations);
+(router as any).use('/stability', stability);
+(router as any).use('/huggingface', huggingface);
+(router as any).use('/chutes', chutes);
+(router as any).use('/electronhub', electronhub);
+(router as any).use('/nanogpt', nanogpt);
+(router as any).use('/bfl', bfl);
+(router as any).use('/falai', falai);
+(router as any).use('/xai', xai);
+(router as any).use('/aimlapi', aimlapi);
+(router as any).use('/zai', zai);
+(router as any).use('/workersai', workersai);
