@@ -21,6 +21,7 @@
 
 import type { Request as ExpressRequest, Response as ExpressResponse, NextFunction } from 'express';
 import { Elysia } from 'elysia';
+import { Readable } from 'node:stream';
 
 /** Symbol key for storing Express context on the Web Request object. */
 const CTX_SYM = Symbol('elysia-ctx');
@@ -96,9 +97,8 @@ export function mountElysia(elysiaApp: { fetch: (req: Request) => Response | Pro
                 return next();
             }
 
-            // Write Elysia Response back to Express.
+            // Write Elysia Response headers back to Express.
             if (res.headersSent) return;
-
             res.status(webRes.status);
             webRes.headers.forEach((value, key) => {
                 if (!key.startsWith('x-node-')) {
@@ -106,14 +106,25 @@ export function mountElysia(elysiaApp: { fetch: (req: Request) => Response | Pro
                 }
             });
 
-            // Use arrayBuffer for binary content types to avoid UTF-8 corruption
-            const ct = webRes.headers.get('content-type') ?? '';
-            if (ct.startsWith('text/') || ct.includes('json') || ct.includes('xml') || ct.includes('javascript') || ct.includes('svg')) {
-                const bodyText = await webRes.text();
-                res.send(bodyText || undefined);
+            // ── Stream or buffer the response body ──────────────────────
+            if (webRes.body) {
+                if (webRes.headers.get('content-type')?.includes('event-stream')) {
+                    // SSE / streaming — pipe directly to preserve real-time chunks
+                    const nodeStream = Readable.fromWeb(webRes.body as any);
+                    nodeStream.pipe(res);
+                } else {
+                    // Buffered: use arrayBuffer for binary, text otherwise
+                    const ct = webRes.headers.get('content-type') ?? '';
+                    if (ct.startsWith('text/') || ct.includes('json') || ct.includes('xml') || ct.includes('javascript') || ct.includes('svg')) {
+                        const bodyText = await webRes.text();
+                        res.send(bodyText || undefined);
+                    } else {
+                        const bodyBuffer = await webRes.arrayBuffer();
+                        res.send(new Uint8Array(bodyBuffer));
+                    }
+                }
             } else {
-                const bodyBuffer = await webRes.arrayBuffer();
-                res.send(new Uint8Array(bodyBuffer));
+                res.end();
             }
         } catch (err) {
             next(err);
