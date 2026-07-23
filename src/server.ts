@@ -182,12 +182,12 @@ export function setupPrivateEndpoints(app: import('express').Express) {
     app.use('/api/users', usersAdminRouter);
     app.use(mountElysia(movingUIRouter));
     app.use('/api/images', imagesRouter);
-    app.use('/api/quick-replies', quickRepliesRouter);
+    app.use(mountElysia(quickRepliesRouter));
     app.use('/api/avatars', avatarsRouter);
     app.use(mountElysia(themesRouter));
     app.use('/api/openai', openAiRouter);
     app.use('/api/google', googleRouter);
-    app.use('/api/anthropic', anthropicRouter);
+    app.use(mountElysia(anthropicRouter));
     app.use('/api/tokenizers', tokenizersRouter);
     app.use('/api/presets', presetsRouter);
     app.use('/api/secrets', secretsRouter);
@@ -206,7 +206,7 @@ export function setupPrivateEndpoints(app: import('express').Express) {
     app.use('/api/content', contentManagerRouter);
     app.use('/api/settings', settingsRouter);
     app.use('/api/sd', stableDiffusionRouter);
-    app.use('/api/horde', hordeRouter);
+    app.use(mountElysia(hordeRouter));
     app.use('/api/vector', vectorsRouter);
     app.use('/api/translate', translateRouter);
     app.use('/api/search', searchRouter);
