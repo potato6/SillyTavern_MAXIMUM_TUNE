@@ -46,8 +46,9 @@ export function mountElysia(elysiaApp: { fetch: (req: Request) => Response | Pro
             const url = new URL(req.originalUrl ?? req.url, `${protocol}://${host}`);
 
             let body: BodyInit | null = null;
+            const contentType = (req.headers['content-type'] as string) || '';
             if (req.method !== 'GET' && req.method !== 'HEAD') {
-                if (typeof req.body === 'object') {
+                if (typeof req.body === 'object' && !(req.body instanceof Buffer)) {
                     body = JSON.stringify(req.body);
                 } else if (typeof req.body === 'string') {
                     body = req.body;
@@ -55,6 +56,13 @@ export function mountElysia(elysiaApp: { fetch: (req: Request) => Response | Pro
             }
 
             const headers = new Headers(req.headers as Record<string, string>);
+
+            // If multer parsed the body into a JSON object, the Content-Type
+            // no longer matches (was multipart/form-data). Update it so Elysia
+            // can parse the body correctly.
+            if (body && typeof body === 'string' && contentType.includes('multipart/form-data')) {
+                headers.set('Content-Type', 'application/json');
+            }
             const webReq = new Request(url, { method: req.method, headers, body });
 
             // Attach Express user/session/file directly to the Web Request object
