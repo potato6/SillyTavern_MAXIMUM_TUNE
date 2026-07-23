@@ -934,7 +934,7 @@ router.post('/generate-video', async (context: any) => {
     }
 });
 
-const custom = new Elysia();
+const custom = new Elysia({ prefix: '/custom' });
 
 custom.post('/generate-voice', async (context) => {
     const { set } = context;
@@ -990,7 +990,7 @@ custom.post('/generate-voice', async (context) => {
     }
 });
 
-router.use('/custom', custom);
+router.use(custom);
 
 /**
  * Creates a transcribe-audio endpoint handler for a given provider.

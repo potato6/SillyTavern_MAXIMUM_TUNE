@@ -667,7 +667,7 @@ router.post('/process', async (context: Record<string, unknown>) => {
 
 // ── Multimodal models sub-router ──────────────────────────────────────────────
 
-const multimodalModels = new Elysia();
+const multimodalModels = new Elysia({ prefix: '/multimodal-models' });
 
 /**
  * @param url
@@ -855,7 +855,7 @@ multimodalModels.post('/workers_ai', async (context: Record<string, unknown>) =>
 });
 
 // Mount multimodal sub-router
-router.use('/multimodal-models', multimodalModels);
+router.use(multimodalModels);
 
 // ── Token encoding helper (used by /bias) ──────────────────────────────────────
 

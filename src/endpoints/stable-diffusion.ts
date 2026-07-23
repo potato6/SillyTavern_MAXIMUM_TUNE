@@ -471,7 +471,7 @@ router.post('/sd-next/upscalers', async (context: any) => {
     }
 });
 
-const comfy = new Elysia();
+const comfy = new Elysia({ prefix: '/comfy' });
 
 comfy.post('/ping', async (context: any) => {
     const body = context.body as Record<string, unknown>;
@@ -876,7 +876,7 @@ comfy.post('/generate', async (context: any) => {
     }
 });
 
-const comfyRunPod = new Elysia();
+const comfyRunPod = new Elysia({ prefix: '/comfyrunpod' });
 
 comfyRunPod.post('/ping', async (context: any) => {
     const body = context.body as Record<string, unknown>;
@@ -998,7 +998,7 @@ comfyRunPod.post('/generate', async (context: any) => {
     }
 });
 
-const together = new Elysia();
+const together = new Elysia({ prefix: '/together' });
 
 together.post('/models', async (context: any) => {
     const body = context.body as Record<string, unknown>;
@@ -1111,7 +1111,7 @@ together.post('/generate', async (context: any) => {
     }
 });
 
-const sdcpp = new Elysia();
+const sdcpp = new Elysia({ prefix: '/sdcpp' });
 
 sdcpp.post('/ping', async (context: any) => {
     const body = context.body as Record<string, unknown>;
@@ -1216,7 +1216,7 @@ sdcpp.post('/generate', async (context: any) => {
     }
 });
 
-const drawthings = new Elysia();
+const drawthings = new Elysia({ prefix: '/drawthings' });
 
 drawthings.post('/ping', async (context: any) => {
     const body = context.body as Record<string, unknown>;
@@ -1333,7 +1333,7 @@ drawthings.post('/generate', async (context: any) => {
     }
 });
 
-const pollinations = new Elysia();
+const pollinations = new Elysia({ prefix: '/pollinations' });
 
 pollinations.post('/models', async ({ set }) => {
     try {
@@ -1418,7 +1418,7 @@ pollinations.post('/generate', async (context: any) => {
     }
 });
 
-const stability = new Elysia();
+const stability = new Elysia({ prefix: '/stability' });
 
 stability.post('/generate', async (context: any) => {
     const body = context.body as Record<string, unknown>;
@@ -1487,7 +1487,7 @@ stability.post('/generate', async (context: any) => {
     }
 });
 
-const huggingface = new Elysia();
+const huggingface = new Elysia({ prefix: '/huggingface' });
 
 huggingface.post('/generate', async (context: any) => {
     const body = context.body as Record<string, unknown>;
@@ -1534,7 +1534,7 @@ huggingface.post('/generate', async (context: any) => {
     }
 });
 
-const electronhub = new Elysia();
+const electronhub = new Elysia({ prefix: '/electronhub' });
 
 electronhub.post('/models', async (context: any) => {
     const body = context.body as Record<string, unknown>;
@@ -1699,7 +1699,7 @@ electronhub.post('/sizes', async (context: any) => {
     return { sizes };
 });
 
-const chutes = new Elysia();
+const chutes = new Elysia({ prefix: '/chutes' });
 
 chutes.post('/models', async (context: any) => {
     const body = context.body as Record<string, unknown>;
@@ -1802,7 +1802,7 @@ chutes.post('/generate', async (context: any) => {
     }
 });
 
-const nanogpt = new Elysia();
+const nanogpt = new Elysia({ prefix: '/nanogpt' });
 
 nanogpt.post('/models', async (context: any) => {
     const body = context.body as Record<string, unknown>;
@@ -1902,7 +1902,7 @@ nanogpt.post('/generate', async (context: any) => {
     }
 });
 
-const bfl = new Elysia();
+const bfl = new Elysia({ prefix: '/bfl' });
 
 bfl.post('/generate', async (context: any) => {
     const body = context.body as Record<string, unknown>;
@@ -2034,7 +2034,7 @@ bfl.post('/generate', async (context: any) => {
     }
 });
 
-const falai = new Elysia();
+const falai = new Elysia({ prefix: '/falai' });
 
 falai.post('/models', async ({ set }) => {
     try {
@@ -2203,7 +2203,7 @@ falai.post('/generate', async (context: any) => {
     }
 });
 
-const xai = new Elysia();
+const xai = new Elysia({ prefix: '/xai' });
 
 xai.post('/generate', async (context: any) => {
     const body = context.body as Record<string, unknown>;
@@ -2269,7 +2269,7 @@ xai.post('/generate', async (context: any) => {
     }
 });
 
-const aimlapi = new Elysia();
+const aimlapi = new Elysia({ prefix: '/aimlapi' });
 
 aimlapi.post('/models', async (context: any) => {
     const body = context.body as Record<string, unknown>;
@@ -2374,7 +2374,7 @@ aimlapi.post('/generate-image', async (context: any) => {
     }
 });
 
-const zai = new Elysia();
+const zai = new Elysia({ prefix: '/zai' });
 
 zai.post('/generate', async (context: any) => {
     const body = context.body as Record<string, unknown>;
@@ -2595,7 +2595,7 @@ zai.post('/generate-video', async (context: any) => {
     }
 });
 
-const workersai = new Elysia();
+const workersai = new Elysia({ prefix: '/workersai' });
 
 workersai.post('/models', async (context: any) => {
     const body = context.body as Record<string, unknown>;
@@ -2767,20 +2767,20 @@ workersai.post('/generate', async (context: any) => {
     }
 });
 
-(router as any).use('/comfy', comfy);
-(router as any).use('/comfyrunpod', comfyRunPod);
-(router as any).use('/together', together);
-(router as any).use('/sdcpp', sdcpp);
-(router as any).use('/drawthings', drawthings);
-(router as any).use('/pollinations', pollinations);
-(router as any).use('/stability', stability);
-(router as any).use('/huggingface', huggingface);
-(router as any).use('/chutes', chutes);
-(router as any).use('/electronhub', electronhub);
-(router as any).use('/nanogpt', nanogpt);
-(router as any).use('/bfl', bfl);
-(router as any).use('/falai', falai);
-(router as any).use('/xai', xai);
-(router as any).use('/aimlapi', aimlapi);
-(router as any).use('/zai', zai);
-(router as any).use('/workersai', workersai);
+(router as any).use(comfy);
+(router as any).use(comfyRunPod);
+(router as any).use(together);
+(router as any).use(sdcpp);
+(router as any).use(drawthings);
+(router as any).use(pollinations);
+(router as any).use(stability);
+(router as any).use(huggingface);
+(router as any).use(chutes);
+(router as any).use(electronhub);
+(router as any).use(nanogpt);
+(router as any).use(bfl);
+(router as any).use(falai);
+(router as any).use(xai);
+(router as any).use(aimlapi);
+(router as any).use(zai);
+(router as any).use(workersai);
