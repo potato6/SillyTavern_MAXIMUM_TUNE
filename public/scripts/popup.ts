@@ -589,6 +589,9 @@ export class Popup {
             this.content.appendChild(content);
         } else if (typeof content === 'string') {
             this.content.innerHTML = content;
+        } else if (content && typeof content === 'object' && 'length' in content && content[0] instanceof HTMLElement) {
+            // Duck-type check for cash-dom instances from a different module instance
+            this.content.appendChild(content[0]);
         } else {
             console.warn(
                 'Unknown popup text type. Should be jQuery, HTMLElement or string.',

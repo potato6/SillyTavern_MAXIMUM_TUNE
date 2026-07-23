@@ -123,7 +123,8 @@ export function getScriptsByType(scriptType: any, { allowedOnly } = DEFAULT_GET_
             if (allowedOnly && !extension_settings?.preset_allowed_regex?.[getCurrentPresetAPI()]?.includes(getCurrentPresetName())) {
                 return [];
             }
-            const presetManager = getPresetManager()!;
+            const presetManager = getPresetManager();
+            if (!presetManager) return [];
             const presetScripts = presetManager.readPresetExtensionField({ path: 'regex_scripts' });
             return Array.isArray(presetScripts) ? presetScripts : [];
         }

@@ -1411,10 +1411,14 @@ export function getCurrentDreamGenModelTokenizer() {
     }
 }
 
+let _initTextGenModelsDone = false;
+
 /**
  *
  */
 export function initTextGenModels() {
+    if (_initTextGenModelsDone) return;
+    _initTextGenModelsDone = true;
     document.getElementById('mancer_model')?.addEventListener('change', onMancerModelSelect);
     document
         .getElementById('model_togetherai_select')

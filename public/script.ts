@@ -11885,7 +11885,7 @@ function openAlternateGreetings() {
         menu_type == 'create'
             ? create_save.alternate_greetings
             : characters[chid].data.alternate_greetings;
-    const popup = new Popup(template, POPUP_TYPE.TEXT, '', {
+    const popup = new Popup(template[0], POPUP_TYPE.TEXT, '', {
         wide: true,
         large: true,
         allowVerticalScrolling: true,
