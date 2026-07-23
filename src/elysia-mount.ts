@@ -8,7 +8,7 @@
  * At runtime:
  *   1. Express middleware chain sets `req.user` / `req.session` as usual.
  *   2. This bridge captures them and passes via `x-elysia-ctx` header.
- *   3. The Elysia app's global `resolve` plugin extracts them into context.
+ *   3. A parent Elysia instance with a `resolve` plugin extracts them into context.
  *   4. Handlers access `user` / `session` directly in their context.
  *
  * When Elysia returns 404 (route not matched), we call `next()` so other
@@ -19,6 +19,25 @@
  */
 
 import type { Request as ExpressRequest, Response as ExpressResponse, NextFunction } from 'express';
+import { Elysia } from 'elysia';
+
+// Resolve plugin used by every bridged router to extract user/session/file
+// from the x-elysia-ctx header that mountElysia sets.
+const bridgeResolve = new Elysia({ name: 'mount-elysia-bridge' })
+    .resolve(({ request }) => {
+        const raw = request.headers.get('x-elysia-ctx');
+        if (!raw) return {};
+        try {
+            const ctx = JSON.parse(raw) as Record<string, unknown>;
+            return {
+                user: ctx.user ?? null,
+                session: ctx.session ?? null,
+                file: ctx.file ?? null,
+            };
+        } catch {
+            return {};
+        }
+    });
 
 /**
  * Wrap an Elysia instance so it can be used as Express middleware.
@@ -27,6 +46,10 @@ import type { Request as ExpressRequest, Response as ExpressResponse, NextFuncti
  * The bridge 404-passthrough ensures only matching routes are handled.
  */
 export function mountElysia(elysiaApp: { fetch: (req: Request) => Response | Promise<Response> }) {
+    // Wrap the router in a parent that has the resolve plugin.
+    // This ensures user/session/file are available in EVERY router's context.
+    const wrapped = new Elysia().use(bridgeResolve).use(elysiaApp as any);
+
     return async (req: ExpressRequest, res: ExpressResponse, next: NextFunction) => {
         try {
             // Build a Web Request from the Express request.
@@ -54,7 +77,6 @@ export function mountElysia(elysiaApp: { fetch: (req: Request) => Response | Pro
             if (user) ctx.user = user;
             if (session) ctx.session = session;
             if (file) {
-                // Multer file — pass metadata; handler reads from disk via file.path
                 ctx.file = {
                     fieldname: file.fieldname,
                     originalname: file.originalname,
@@ -76,8 +98,8 @@ export function mountElysia(elysiaApp: { fetch: (req: Request) => Response | Pro
                 body,
             });
 
-            // Dispatch to Elysia.
-            const webRes = await elysiaApp.fetch(webReq);
+            // Dispatch to wrapped Elysia (has resolve plugin + user router).
+            const webRes = await wrapped.fetch(webReq);
 
             // 404 = Elysia didn't match → let unconverted middleware handle it.
             if (webRes.status === 404) {

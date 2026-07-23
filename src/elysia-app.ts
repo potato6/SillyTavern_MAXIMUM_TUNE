@@ -23,6 +23,25 @@ import { Elysia } from 'elysia';
 import { cors } from '@elysiajs/cors';
 import { staticPlugin } from '@elysiajs/static';
 
+// ── Bridge resolve plugin ──────────────────────────────────────────────
+// Reads user/session/file from x-elysia-ctx header set by mountElysia.
+// Apply this to every standalone Elysia router.
+export const bridgePlugin = new Elysia({ name: 'bridge-resolve' })
+    .resolve(({ request }) => {
+        const raw = request.headers.get('x-elysia-ctx');
+        if (!raw) return {};
+        try {
+            const ctx = JSON.parse(raw) as Record<string, unknown>;
+            return {
+                user: ctx.user ?? null,
+                session: ctx.session ?? null,
+                file: ctx.file ?? null,
+            };
+        } catch {
+            return {};
+        }
+    });
+
 // ── Configuration ────────────────────────────────────────────────────────────
 
 export interface ElysiaAppConfig {
