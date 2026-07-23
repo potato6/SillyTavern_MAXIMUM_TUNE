@@ -208,7 +208,7 @@ export function setupPrivateEndpoints(app: import('express').Express) {
     app.use('/api/sd', stableDiffusionRouter);
     app.use(mountElysia(hordeRouter));
     app.use('/api/vector', vectorsRouter);
-    app.use('/api/translate', translateRouter);
+    app.use(mountElysia(translateRouter));
     app.use('/api/search', searchRouter);
     app.use('/api/backends/text-completions', textCompletionsRouter);
     app.use(mountElysia(openRouterRouter));
