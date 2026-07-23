@@ -1,72 +1,77 @@
 import path from 'node:path';
 import fs from 'node:fs';
-
-import express from 'express';
+import { Elysia } from 'elysia';
 import sanitize from 'sanitize-filename';
 import { sync as writeFileAtomicSync } from 'write-file-atomic';
 
 import { getImages, tryParse } from '../util.js';
-import { getFileNameValidationFunction } from '../middleware/validateFileName.js';
 import { applyAvatarCropResize } from './characters.js';
 import { invalidateThumbnail } from './thumbnails.js';
 import cacheBuster from '../middleware/cacheBuster.js';
 
-export const router = express.Router();
+export const router = new Elysia({ prefix: '/api/avatars' })
+    .post('/get', (context) => {
+        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const directories = user?.directories as Record<string, string> | undefined;
+        const images = getImages(directories?.avatars ?? '');
+        return images;
+    })
+    .post('/delete', (context) => {
+        const { body, set } = context;
+        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const directories = user?.directories as Record<string, string> | undefined;
+        const bodyAny = body as Record<string, unknown>;
 
-router.post('/get', function (request, response) {
-    const images = getImages(request.user.directories.avatars);
-    response.send(images);
-});
+        const avatar = bodyAny.avatar as string;
+        if (avatar !== sanitize(avatar)) {
+            console.error('Malicious avatar name prevented');
+            set.status = 403;
+            return;
+        }
 
-router.post('/delete', getFileNameValidationFunction('avatar'), function (request, response) {
-    if (!request.body) return response.sendStatus(400);
+        const fileName = path.join(directories?.avatars ?? '', sanitize(avatar));
 
-    if (request.body.avatar !== sanitize(request.body.avatar)) {
-        console.error('Malicious avatar name prevented');
-        return response.sendStatus(403);
-    }
+        if (fs.existsSync(fileName)) {
+            fs.unlinkSync(fileName);
+            invalidateThumbnail(directories as any, 'persona', sanitize(avatar));
+            return { result: 'ok' };
+        }
 
-    const fileName = path.join(request.user.directories.avatars, sanitize(request.body.avatar));
+        set.status = 404;
+    })
+    .post('/upload', async (context) => {
+        const { body, set } = context;
+        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const directories = user?.directories as Record<string, string> | undefined;
+        const file = (context as unknown as Record<string, unknown>).file as Record<string, unknown> | null;
 
-    if (fs.existsSync(fileName)) {
-        fs.unlinkSync(fileName);
-        invalidateThumbnail(request.user.directories, 'persona', sanitize(request.body.avatar));
-        return response.send({ result: 'ok' });
-    }
-
-    return response.sendStatus(404);
-});
-
-router.post(
-    '/upload',
-    getFileNameValidationFunction('overwrite_name'),
-    async (request, response) => {
-        if (!request.file) return response.sendStatus(400);
+        if (!file) {
+            set.status = 400;
+            return;
+        }
 
         try {
-            const pathToUpload = path.join(request.file.destination, request.file.filename);
-            const crop = tryParse(request.query.crop as string);
+            const pathToUpload = path.join(file.destination as string, file.filename as string);
+            const crop = tryParse((body as Record<string, unknown>).crop as string);
             const fileBuffer = fs.readFileSync(pathToUpload);
             const image = await applyAvatarCropResize(fileBuffer, crop);
 
-            // Remove previous thumbnail and bust cache if overwriting
-            if (request.body.overwrite_name) {
+            if ((body as Record<string, unknown>).overwrite_name) {
                 invalidateThumbnail(
-                    request.user.directories,
+                    directories as any,
                     'persona',
-                    sanitize(request.body.overwrite_name),
+                    sanitize((body as Record<string, unknown>).overwrite_name as string),
                 );
-                cacheBuster.bust(request, response);
             }
 
-            const filename = sanitize(request.body.overwrite_name || `${Date.now()}.png`);
-            const pathToNewFile = path.join(request.user.directories.avatars, filename);
+            const filename = sanitize((body as Record<string, unknown>).overwrite_name as string || `${Date.now()}.png`);
+            const pathToNewFile = path.join(directories?.avatars ?? '', filename);
             writeFileAtomicSync(pathToNewFile, image);
             fs.unlinkSync(pathToUpload);
-            return response.send({ path: filename });
+            return { path: filename };
         } catch (err) {
             console.error('Error uploading user avatar:', err);
-            return response.status(400).send('Is not a valid image');
+            set.status = 400;
+            return 'Is not a valid image';
         }
-    },
-);
+    });

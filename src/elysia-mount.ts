@@ -45,12 +45,29 @@ export function mountElysia(elysiaApp: { fetch: (req: Request) => Response | Pro
 
             const headers = new Headers(req.headers as Record<string, string>);
 
-            // Pass Express augmentations (user, session) to Elysia via header.
+            // Pass Express augmentations (user, session, file) to Elysia via header.
             const reqAny = req as unknown as Record<string, unknown>;
             const user = reqAny.user as Record<string, unknown> | null;
             const session = reqAny.session as Record<string, unknown> | null;
-            if (user || session) {
-                headers.set('x-elysia-ctx', JSON.stringify({ user, session }));
+            const file = reqAny.file as Record<string, unknown> | null;
+            const ctx: Record<string, unknown> = {};
+            if (user) ctx.user = user;
+            if (session) ctx.session = session;
+            if (file) {
+                // Multer file — pass metadata; handler reads from disk via file.path
+                ctx.file = {
+                    fieldname: file.fieldname,
+                    originalname: file.originalname,
+                    encoding: file.encoding,
+                    mimetype: file.mimetype,
+                    destination: file.destination,
+                    filename: file.filename,
+                    path: file.path,
+                    size: file.size,
+                };
+            }
+            if (Object.keys(ctx).length > 0) {
+                headers.set('x-elysia-ctx', JSON.stringify(ctx));
             }
 
             const webReq = new Request(url, {

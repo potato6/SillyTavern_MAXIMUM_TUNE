@@ -183,7 +183,7 @@ export function setupPrivateEndpoints(app: import('express').Express) {
     app.use(mountElysia(movingUIRouter));
     app.use('/api/images', imagesRouter);
     app.use(mountElysia(quickRepliesRouter));
-    app.use('/api/avatars', avatarsRouter);
+    app.use(mountElysia(avatarsRouter));
     app.use(mountElysia(themesRouter));
     app.use('/api/openai', openAiRouter);
     app.use('/api/google', googleRouter);
@@ -201,7 +201,7 @@ export function setupPrivateEndpoints(app: import('express').Express) {
     app.use('/api/groups', groupsRouter);
     app.use('/api/worldinfo', worldInfoRouter);
     app.use('/api/stats', statsRouter);
-    app.use('/api/backgrounds', backgroundsRouter);
+    app.use(mountElysia(backgroundsRouter));
     app.use('/api/sprites', spritesRouter);
     app.use('/api/content', contentManagerRouter);
     app.use('/api/settings', settingsRouter);

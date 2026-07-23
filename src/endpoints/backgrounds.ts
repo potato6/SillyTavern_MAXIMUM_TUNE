@@ -1,7 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-
-import express from 'express';
+import { Elysia } from 'elysia';
 import sanitize from 'sanitize-filename';
 
 import { invalidateThumbnail } from './thumbnails.js';
@@ -13,166 +12,172 @@ import {
     getOrGenerateMetadataBatch,
 } from './image-metadata.js';
 import { getImages } from '../util.js';
-import { getFileNameValidationFunction } from '../middleware/validateFileName.js';
 
-export const router = express.Router();
+export const router = new Elysia({ prefix: '/api/backgrounds' })
+    .post('/all', async (context) => {
+        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const directories = user?.directories as Record<string, string> | undefined;
 
-router.post('/all', async function (request, response) {
-    try {
-        const images = getImages(request.user.directories.backgrounds);
-        const config = { width: thumbnailDimensions.bg[0], height: thumbnailDimensions.bg[1] };
+        try {
+            const images = getImages(directories?.backgrounds ?? '');
+            const config = { width: thumbnailDimensions.bg[0], height: thumbnailDimensions.bg[1] };
 
-        // Get metadata for all images to provide isAnimated flag to client
-        const relativePaths = images.map((img) => path.join('backgrounds', img));
-        const { results: metadataMap } = await getOrGenerateMetadataBatch(
-            request.user.directories.root,
-            relativePaths,
-            'bg',
-        );
+            const relativePaths = images.map((img) => path.join('backgrounds', img));
+            const { results: metadataMap } = await getOrGenerateMetadataBatch(
+                directories?.root ?? '',
+                relativePaths,
+                'bg',
+            );
 
-        // Build response with metadata for each image
-        const imagesWithMetadata = images.map((img) => {
-            const relativePath = path.join('backgrounds', img);
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-            const metadata = metadataMap[relativePath];
-            return {
-                filename: img,
-                isAnimated: metadata?.isAnimated ?? false,
-            };
-        });
+            const imagesWithMetadata = images.map((img) => {
+                const relativePath = path.join('backgrounds', img);
+                const metadata = (metadataMap as Record<string, unknown>)?.[relativePath] as Record<string, unknown> | undefined;
+                return {
+                    filename: img,
+                    isAnimated: metadata?.isAnimated ?? false,
+                };
+            });
 
-        response.json({ images: imagesWithMetadata, config });
-    } catch (error) {
-        console.error('[Backgrounds] Error fetching backgrounds:', error);
-        response.status(500).json({ error: 'Failed to fetch backgrounds' });
-    }
-});
+            return { images: imagesWithMetadata, config };
+        } catch (error) {
+            console.error('[Backgrounds] Error fetching backgrounds:', error);
+            return new Response(JSON.stringify({ error: 'Failed to fetch backgrounds' }), { status: 500 });
+        }
+    })
+    .post('/folders', async (context) => {
+        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const directories = user?.directories as Record<string, string> | undefined;
 
-/**
- * POST /api/backgrounds/folders
- * Returns folders and per-image folderIds from the metadata index.
- * Loaded separately from /all to avoid blocking image rendering.
- */
-router.post('/folders', async function (request, response) {
-    try {
-        const index = await readMetadataIndex(request.user.directories.root);
-        const folders = index.folders || [];
+        try {
+            const index = await readMetadataIndex(directories?.root ?? '');
+            const folders = index.folders || [];
 
-        // Build a slim map of image → folderIds for the frontend
-        /** @type {Object.<string, string[]>} */
-        const imageFolderMap = {};
-        for (const [relativePath, meta] of Object.entries(index.images)) {
-            if (Array.isArray(meta.folderIds) && meta.folderIds.length > 0) {
-                // Strip the directory prefix to get just the filename
-                const filename = relativePath.split('/').pop() || relativePath;
-                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                imageFolderMap[filename] = meta.folderIds;
+            const imageFolderMap: Record<string, string[]> = {};
+            for (const [relativePath, meta] of Object.entries(index.images)) {
+                if (Array.isArray(meta.folderIds) && meta.folderIds.length > 0) {
+                    const filename = relativePath.split('/').pop() || relativePath;
+                    imageFolderMap[filename] = meta.folderIds;
+                }
             }
+
+            return { folders, imageFolderMap };
+        } catch (error) {
+            console.error('[Backgrounds] Folders endpoint error:', error);
+            return new Response(JSON.stringify({ error: 'Internal server error.' }), { status: 500 });
         }
+    })
+    .post('/delete', (context) => {
+        const { body, set } = context;
+        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const directories = user?.directories as Record<string, string> | undefined;
+        const bodyAny = body as Record<string, unknown>;
 
-        response.json({ folders, imageFolderMap });
-    } catch (error) {
-        console.error('[Backgrounds] Folders endpoint error:', error);
-        response.status(500).json({ error: 'Internal server error.' });
-    }
-});
+        try {
+            if (!bodyAny) {
+                set.status = 400;
+                return;
+            }
 
-router.post('/delete', getFileNameValidationFunction('bg'), async function (request, response) {
-    try {
-        if (!request.body) return response.sendStatus(400);
+            const bg = bodyAny.bg as string;
+            if (bg !== sanitize(bg)) {
+                console.error('Malicious bg name prevented');
+                set.status = 403;
+                return;
+            }
 
-        if (request.body.bg !== sanitize(request.body.bg)) {
-            console.error('Malicious bg name prevented');
-            return response.sendStatus(403);
+            const fileName = path.join(directories?.backgrounds ?? '', sanitize(bg));
+
+            if (!fs.existsSync(fileName)) {
+                console.error('BG file not found');
+                set.status = 400;
+                return;
+            }
+
+            fs.unlinkSync(fileName);
+            invalidateThumbnail(directories as any, 'bg', bg);
+
+            const relativePath = path.join('backgrounds', bg);
+            removeMetadata(directories?.root ?? '', relativePath).catch((err: Error) => {
+                console.warn('[Backgrounds] Failed to remove metadata:', err.message);
+            });
+
+            return 'ok';
+        } catch (err) {
+            console.error(err);
+            set.status = 500;
         }
+    })
+    .post('/rename', (context) => {
+        const { body, set } = context;
+        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const directories = user?.directories as Record<string, string> | undefined;
+        const bodyAny = body as Record<string, unknown>;
 
-        const fileName = path.join(request.user.directories.backgrounds, sanitize(request.body.bg));
+        try {
+            if (!bodyAny) {
+                set.status = 400;
+                return;
+            }
 
-        if (!fs.existsSync(fileName)) {
-            console.error('BG file not found');
-            return response.sendStatus(400);
-        }
+            const oldFileName = path.join(directories?.backgrounds ?? '', sanitize(bodyAny.old_bg as string));
+            const newFileName = path.join(directories?.backgrounds ?? '', sanitize(bodyAny.new_bg as string));
 
-        fs.unlinkSync(fileName);
-        invalidateThumbnail(request.user.directories, 'bg', request.body.bg);
+            if (!fs.existsSync(oldFileName)) {
+                console.error('BG file not found');
+                set.status = 400;
+                return;
+            }
 
-        // Remove metadata for deleted image
-        const relativePath = path.join('backgrounds', request.body.bg);
-        await removeMetadata(request.user.directories.root, relativePath).catch((err) => {
-            console.warn('[Backgrounds] Failed to remove metadata:', err.message);
-        });
+            if (fs.existsSync(newFileName)) {
+                console.error('New BG file already exists');
+                set.status = 400;
+                return;
+            }
 
-        return response.send('ok');
-    } catch (err) {
-        console.error(err);
-        response.sendStatus(500);
-    }
-});
+            fs.copyFileSync(oldFileName, newFileName);
+            fs.unlinkSync(oldFileName);
+            invalidateThumbnail(directories as any, 'bg', bodyAny.old_bg as string);
 
-router.post('/rename', async function (request, response) {
-    try {
-        if (!request.body) return response.sendStatus(400);
-
-        const oldFileName = path.join(
-            request.user.directories.backgrounds,
-            sanitize(request.body.old_bg),
-        );
-        const newFileName = path.join(
-            request.user.directories.backgrounds,
-            sanitize(request.body.new_bg),
-        );
-
-        if (!fs.existsSync(oldFileName)) {
-            console.error('BG file not found');
-            return response.sendStatus(400);
-        }
-
-        if (fs.existsSync(newFileName)) {
-            console.error('New BG file already exists');
-            return response.sendStatus(400);
-        }
-
-        fs.copyFileSync(oldFileName, newFileName);
-        fs.unlinkSync(oldFileName);
-        invalidateThumbnail(request.user.directories, 'bg', request.body.old_bg);
-
-        // Update metadata for renamed image
-        const oldRelativePath = path.join('backgrounds', request.body.old_bg);
-        const newRelativePath = path.join('backgrounds', request.body.new_bg);
-        await renameMetadata(request.user.directories.root, oldRelativePath, newRelativePath).catch(
-            (err) => {
+            const oldRelativePath = path.join('backgrounds', bodyAny.old_bg as string);
+            const newRelativePath = path.join('backgrounds', bodyAny.new_bg as string);
+            renameMetadata(directories?.root ?? '', oldRelativePath, newRelativePath).catch((err: Error) => {
                 console.warn('[Backgrounds] Failed to rename metadata:', err.message);
-            },
-        );
+            });
 
-        return response.send('ok');
-    } catch (err) {
-        console.error(err);
-        response.sendStatus(500);
-    }
-});
+            return 'ok';
+        } catch (err) {
+            console.error(err);
+            set.status = 500;
+        }
+    })
+    .post('/upload', async (context) => {
+        const { set } = context;
+        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const directories = user?.directories as Record<string, string> | undefined;
+        const file = (context as unknown as Record<string, unknown>).file as Record<string, unknown> | null;
 
-router.post('/upload', async function (request, response) {
-    try {
-        if (!request.body || !request.file) return response.sendStatus(400);
+        try {
+            if (!file) {
+                set.status = 400;
+                return;
+            }
 
-        const img_path = path.join(request.file.destination, request.file.filename);
-        const filename = sanitize(request.file.originalname);
-        fs.copyFileSync(img_path, path.join(request.user.directories.backgrounds, filename));
-        fs.unlinkSync(img_path);
-        invalidateThumbnail(request.user.directories, 'bg', filename);
+            const img_path = path.join(file.destination as string, file.filename as string);
+            const filename = sanitize(file.originalname as string);
+            fs.copyFileSync(img_path, path.join(directories?.backgrounds ?? '', filename));
+            fs.unlinkSync(img_path);
+            invalidateThumbnail(directories as any, 'bg', filename);
 
-        // Generate metadata for the new image
-        const relativePath = path.join('backgrounds', filename);
-        await getOrGenerateMetadataBatch(request.user.directories.root, [relativePath], 'bg').catch(
-            (err) => {
-                console.warn('[Backgrounds] Failed to generate metadata for upload:', err.message);
-            },
-        );
+            const relativePath = path.join('backgrounds', filename);
+            getOrGenerateMetadataBatch(directories?.root ?? '', [relativePath], 'bg').catch(
+                (err: Error) => {
+                    console.warn('[Backgrounds] Failed to generate metadata for upload:', err.message);
+                },
+            );
 
-        response.send(filename);
-    } catch (err) {
-        console.error(err);
-        response.sendStatus(500);
-    }
-});
+            return filename;
+        } catch (err) {
+            console.error(err);
+            set.status = 500;
+        }
+    });

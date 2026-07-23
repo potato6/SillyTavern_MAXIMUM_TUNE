@@ -92,6 +92,7 @@ export function createElysiaApp(config?: ElysiaAppConfig): Elysia {
             return {
                 user: ctx.user ?? null,
                 session: ctx.session ?? null,
+                file: ctx.file ?? null,
             };
         } catch {
             return {};
