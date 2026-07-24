@@ -14482,15 +14482,24 @@ function initCharacterSearch() {
         } else if (id == 'option_impersonate') {
             if (is_send_press == false || fromSlashCommand) {
                 const text = String($('#send_textarea').val() ?? '').trim();
-                is_send_press = true;
-                $('#send_textarea')
-                    .val('')[0]!
-                    .dispatchEvent(new Event('input', { bubbles: true }));
-                await sendMessageAsUser(text, null);
-                await eventSource.emit(event_types.USER_MESSAGE_RENDERED, chat.length - 1);
-                scrollChatToBottom();
                 if (main_api !== 'openai') {
+                    // Text-generation: create user message + continue
+                    is_send_press = true;
+                    $('#send_textarea')
+                        .val('')[0]!
+                        .dispatchEvent(new Event('input', { bubbles: true }));
+                    await sendMessageAsUser(text, null);
+                    await eventSource.emit(event_types.USER_MESSAGE_RENDERED, chat.length - 1);
+                    scrollChatToBottom();
                     await Generate('continue', buildOrFillAdditionalArgs());
+                } else {
+                    // Chat-completion: use impersonate pipeline with text as quiet_prompt
+                    // AI output goes into textarea for review, no message created yet
+                    is_send_press = true;
+                    $('#send_textarea')
+                        .val('')[0]!
+                        .dispatchEvent(new Event('input', { bubbles: true }));
+                    await Generate('impersonate', { quiet_prompt: text, quietToLoud: true });
                 }
             }
         } else if (id == 'option_impersonate_bot') {
