@@ -187,50 +187,46 @@ export type ChatTemplateMessage = {
 function enforceAlternation(messages: ChatTemplateMessage[]): ChatTemplateMessage[] {
     if (messages.length <= 1) return messages;
 
-    const result: ChatTemplateMessage[] = [messages[0]!];
+    // HuggingFace chat templates expect the first non-system message to be
+    // 'user'.  SillyTavern chats typically start with the character greeting
+    // (assistant).  Prepend a synthetic empty user message so the alternation
+    // counter doesn't immediately fail.
+    const result: ChatTemplateMessage[] = [];
 
-    for (let i = 1; i < messages.length; i++) {
-        const curr = messages[i]!;
-        const prev = result[result.length - 1]!;
+    let loopStart = 0;
 
-        // 'system' only at position 0 — merge into existing system or drop
-        if (curr.role === 'system') {
-            if (result[0]!.role === 'system') {
-                const systemMsg = result[0]!;
-                if (curr.content) {
-                    systemMsg.content = systemMsg.content
-                        ? systemMsg.content + '\n\n' + curr.content
-                        : curr.content;
-                }
-            }
-            continue;
+    if (messages[0]!.role === 'system') {
+        result.push(messages[0]!);
+        loopStart = 1;
+        if (messages.length > 1 && messages[1]!.role !== 'user') {
+            result.push({ role: 'user', content: '' });
         }
+    } else if (messages[0]!.role !== 'user') {
+        // assistant-first (character greeting) — inject dummy user
+        result.push({ role: 'user', content: '' });
+    }
 
-        // 'tool' messages are always kept (follow tool_calls or previous tool)
+    // Push all messages from loopStart into result, then run the merge pass
+    for (let i = loopStart; i < messages.length; i++) {
+        result.push(messages[i]!);
+    }
+
+    // Merge pass: walk result and handle consecutive same-role messages
+    const merged: ChatTemplateMessage[] = [result[0]!];
+    for (let i = 1; i < result.length; i++) {
+        const curr = result[i]!;
+        const prev = merged[merged.length - 1]!;
+
+        // 'tool' messages always pass through
         if (curr.role === 'tool') {
-            result.push(curr);
+            merged.push(curr);
             continue;
         }
 
-        // user/assistant — check alternation
+        // Same role — merge depending on tool_calls
         if (curr.role === prev.role) {
-            // The template's validation counter skips assistant messages
-            // that carry tool_calls (and tool results).  Merging strategy
-            // depends on which message has tool_calls:
-            //
-            //   1) bare assistant → assistant(tool_calls)
-            //      Merge forward: transfer tool_calls + combine content.
-            //      The merged message is skipped by the counter, so the
-            //      alternation stays in sync.
-            //
-            //   2) assistant(tool_calls) → bare assistant
-            //      Keep separate.  The bare assistant is the *response*
-            //      after tool results — it's a counted turn.
-            //
-            //   3) bare → bare (both same role, no tool_calls)
-            //      Merge content into previous.
             if (curr.tool_calls && !prev.tool_calls) {
-                // case 1: transfer tool_calls into the preceding message
+                // bare assistant → assistant(tool_calls): merge forward
                 prev.tool_calls = curr.tool_calls;
                 if (curr.content) {
                     prev.content = prev.content
@@ -238,10 +234,10 @@ function enforceAlternation(messages: ChatTemplateMessage[]): ChatTemplateMessag
                         : curr.content;
                 }
             } else if (prev.tool_calls && !curr.tool_calls) {
-                // case 2: tool_calls turn is done; this is the follow-up response
-                result.push(curr);
+                // assistant(tool_calls) → bare assistant: keep separate (follow-up response)
+                merged.push(curr);
             } else {
-                // case 3: plain same-role messages — merge content
+                // plain same-role: merge content
                 if (curr.content) {
                     prev.content = prev.content
                         ? prev.content + '\n\n' + curr.content
@@ -252,10 +248,10 @@ function enforceAlternation(messages: ChatTemplateMessage[]): ChatTemplateMessag
         }
 
         // Alternation is correct
-        result.push(curr);
+        merged.push(curr);
     }
 
-    return result;
+    return merged;
 }
 
 export interface BuildChatMessagesParams {
