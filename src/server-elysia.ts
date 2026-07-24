@@ -20,6 +20,7 @@ import { loadPlugins } from './plugin-loader.js';
 import hostWhitelistMiddleware from './middleware/hostWhitelist.js';
 import basicAuthMiddleware from './middleware/basicAuth.js';
 import accessLoggerMiddleware, { migrateAccessLog } from './middleware/accessLogWriter.js';
+import cacheBuster from './middleware/cacheBuster.js';
 
 import {
     initUserStorage, ensurePublicDirectoriesExist, migrateUserData, migrateSystemPrompts,
@@ -325,20 +326,27 @@ export function buildApp() {
     }));
 
     // Route handlers
-    app.get('/', async ({ request, set }: any) => {
+    app.get('/', async ({ request, set, user }: any) => {
+        // Cache busting — set Clear-Site-Data before any response
+        const bustCache = cacheBuster.getClearSiteDataValue(user, request.headers.get('user-agent') || '');
+
         if (shouldRedirectToLogin(request)) {
             const q = request.url.split('?')[1];
             set.redirect = q ? `/login?${q}` : '/login';
             set.status = 302;
             return;
         }
+
+        const headers: Record<string, string> = { 'Content-Type': 'text/html; charset=utf-8' };
+        if (bustCache) {
+            headers['Clear-Site-Data'] = bustCache;
+        }
+
         const indexHtml = await fs.promises.readFile(
             path.join(serverDirectory, 'public/dist', 'index.html'),
             'utf-8',
         );
-        return new Response(indexHtml, {
-            headers: { 'Content-Type': 'text/html; charset=utf-8' },
-        });
+        return new Response(indexHtml, { headers });
     });
 
     app.get('/callback{/:source}', ({ params, request, set }: any) => {

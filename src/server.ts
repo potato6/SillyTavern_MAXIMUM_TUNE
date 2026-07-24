@@ -603,7 +603,13 @@ if (!cliArgs.disableCsrf) {
 }
 
 // Static files
-app.get('/', cacheBuster.middleware, (request, response) => {
+app.get('/', (request, response) => {
+    // Cache busting
+    const bustCache = cacheBuster.getClearSiteDataValue(request.user, request.headers['user-agent'] || '');
+    if (bustCache) {
+        response.setHeader('Clear-Site-Data', bustCache);
+    }
+
     if (shouldRedirectToLogin(request)) {
         const query = request.url.split('?')[1];
         return response.redirect(query ? `/login?${query}` : '/login');
