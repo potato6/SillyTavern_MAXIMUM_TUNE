@@ -14,11 +14,6 @@ const PUBLIC_DIR = 'public';
 const DIST_DIR = 'public/dist';
 const COMMIT_HASH_FILE = path.join(DIST_DIR, '.commit-hash');
 
-/**
- * Recursively copy static assets.
- * @param {string} src Source directory path
- * @param {string} dest Destination directory path
- */
 function copyRecursiveSync(src: string, dest: string) {
     if (!existsSync(dest)) {
         mkdirSync(dest, { recursive: true });
@@ -34,14 +29,13 @@ function copyRecursiveSync(src: string, dest: string) {
             if (entry.name === 'dist') continue;
             copyRecursiveSync(srcPath, destPath);
         } else {
-            // Exclude only .ts and .css files, as they will be built and minified by Bun.
-            if (entry.name.endsWith('.ts') || entry.name.endsWith('.css')) {
-                continue;
-            }
+            if (entry.name.endsWith('.ts') || entry.name.endsWith('.css')) continue;
             copyFileSync(srcPath, destPath);
         }
     }
 }
+
+// ── Check if we can skip the build ──────────────────────────────────────────
 
 const git = simpleGit();
 const status = await git.status();
@@ -53,23 +47,23 @@ if (!isDirty) {
     if (existsSync(COMMIT_HASH_FILE)) {
         const storedHash = readFileSync(COMMIT_HASH_FILE, 'utf-8').trim();
         if (storedHash === commitHash) {
-            console.log(`Commit ${commitHash} already built. Skipping.`);
+            console.log(`✓ Up to date (${commitHash.slice(0, 12)})`);
             process.exit(0);
         }
-        console.log(`Commit changed from ${storedHash} to ${commitHash}. Rebuilding.`);
-    } else {
-        console.log('No previous build hash found. Building fresh.');
     }
-} else {
-    console.log('Working tree is dirty. Cleaning and rebuilding.');
 }
+
+if (isDirty) {
+    console.log('⚠ Dirty tree — rebuilding');
+}
+
+// ── Frontend ────────────────────────────────────────────────────────────────
 
 if (existsSync(DIST_DIR)) {
     rmSync(DIST_DIR, { recursive: true, force: true });
 }
 mkdirSync(DIST_DIR, { recursive: true });
 
-console.log('Cleaning and copying static assets (including HTML templates)...');
 copyRecursiveSync(PUBLIC_DIR, DIST_DIR);
 
 const allTs = [...new Bun.Glob('public/**/*.ts').scanSync()].filter(
@@ -80,7 +74,6 @@ const allCss = [...new Bun.Glob('public/**/*.css').scanSync()].filter(
 );
 const entrypoints = [...allTs, ...allCss];
 
-console.log('Building, bundling, and minifying scripts and styles...');
 const result = await Bun.build({
     entrypoints,
     outdir: DIST_DIR,
@@ -105,34 +98,34 @@ const result = await Bun.build({
     sourcemap: 'linked',
     splitting: true,
     format: 'esm',
-    minify: false, //disable while debugging
+    minify: true,
 });
 
 if (!result.success) {
-    console.error('Build failed:');
+    console.error('✗ Frontend build failed:');
     for (const message of result.logs) {
-        console.error(message);
+        console.error(`  ${message}`);
     }
     process.exit(1);
-} else {
-    console.log(`Build completed successfully! Generated ${result.outputs.length} files.`);
-
-    if (!isDirty) {
-        const commitHash = await git.revparse(['HEAD']);
-        writeFileSync(COMMIT_HASH_FILE, commitHash, 'utf-8');
-        console.log(`Stored build commit hash: ${commitHash}`);
-    }
 }
 
-// Copy pre-built vendor CSS that isn't processed by Bun.build
-// (ToastUI CSS is loaded at runtime by the editor)
-const TOASTUI_CSS = 'node_modules/@toast-ui/editor/dist/toastui-editor.css';
+console.log(`✓ Frontend: ${result.outputs.length} files`);
+
+if (!isDirty) {
+    const commitHash = await git.revparse(['HEAD']);
+    writeFileSync(COMMIT_HASH_FILE, commitHash, 'utf-8');
+}
+
+// Copy pre-built vendor CSS not processed by Bun.build
 const VENDOR_CSS_DEST = 'public/dist/lib/toastui/';
 mkdirSync(VENDOR_CSS_DEST, { recursive: true });
-copyFileSync(TOASTUI_CSS, path.join(VENDOR_CSS_DEST, 'toastui-editor.css'));
-console.log('Copied ToastUI CSS assets.');
+copyFileSync(
+    'node_modules/@toast-ui/editor/dist/toastui-editor.css',
+    path.join(VENDOR_CSS_DEST, 'toastui-editor.css'),
+);
 
-console.log('Compiling backend binary...');
+// ── Backend binary ──────────────────────────────────────────────────────────
+
 const serverResult = await Bun.build({
     entrypoints: ['server.ts'],
     outdir: 'dist/server',
@@ -140,18 +133,18 @@ const serverResult = await Bun.build({
     compile: {
         outfile: 'SillyTavern',
     },
-    minify: false,
-    bytecode: false, // causing build errors rn, but i plan to enable as soon as its stable
+    minify: true,
+    bytecode: false,
     sourcemap: 'linked',
     external: ['@huggingface/transformers'],
 });
 
 if (!serverResult.success) {
-    console.error('Backend build failed:');
+    console.error('✗ Backend build failed:');
     for (const message of serverResult.logs) {
-        console.error(message);
+        console.error(`  ${message}`);
     }
     process.exit(1);
-} else {
-    console.log('Backend binary compiled successfully.');
 }
+
+console.log('✓ Backend: SillyTavern');
