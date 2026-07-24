@@ -708,7 +708,10 @@ async function countTokensFromTextgenAPI(str, resolve) {
 
     const response = await fetch(TOKENIZER_REMOTE_TEXTGEN, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': await getCsrfToken(),
+        },
         body: JSON.stringify(getTextgenAPITokenizationParams(str)),
     });
     const data = await response.json();
@@ -766,7 +769,10 @@ async function genericCountTokens(tokenizerName, str, resolve) {
     try {
         const response = await fetch(`${TOKENIZER_BASE}/count`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': await getCsrfToken(),
+            },
             body: JSON.stringify({ text: str, tokenizer: tokenizerName }),
         });
         const data = await response.json();
@@ -787,7 +793,10 @@ async function genericGetTextTokens(tokenizerName, str) {
     try {
         const response = await fetch(`${TOKENIZER_BASE}/encode`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': await getCsrfToken(),
+            },
             body: JSON.stringify({ text: str, tokenizer: tokenizerName }),
         });
         const data = await response.json();
@@ -835,7 +844,10 @@ async function getTextTokensFromTextgenAPI(str, resolve) {
     let ids = [];
     const response = await fetch(TOKENIZER_REMOTE_TEXTGEN, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': await getCsrfToken(),
+        },
         body: JSON.stringify(getTextgenAPITokenizationParams(str)),
     });
     const data = await response.json();

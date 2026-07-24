@@ -134,7 +134,7 @@ export async function bindModelTemplates(power_user, online_status) {
  * @returns The rendered prompt string
  */
 export function renderChatTemplate(
-    messages: Array<{ role: string; content: string }>,
+    messages: ChatTemplateMessage[],
     chatTemplate: string,
     options: {
         bos_token?: string;
@@ -160,7 +160,101 @@ export function renderChatTemplate(
     return result;
 }
 
-export type ChatTemplateMessage = { role: string; content: string };
+export type ChatTemplateMessage = {
+    role: string;
+    content: string | null;
+    tool_calls?: Array<{ type: string; function: { name: string; arguments: string }; id: string }>;
+    tool_call_id?: string;
+};
+
+/**
+ * Enforces strict HuggingFace role alternation on a messages array.
+ *
+ * Rules:
+ *  - An optional 'system' message is only allowed at position 0; additional
+ *    system messages are dropped (their content merged into the first message).
+ *  - After position 0, 'user' and 'assistant' must strictly alternate.
+ *  - Consecutive same-role messages (user+user or assistant+assistant) have
+ *    their content merged into the first occurrence.
+ *  - 'tool' messages are kept as-is (they follow assistant.tool_calls or
+ *    consecutive tool results).
+ *  - An 'assistant' message with tool_calls preserves its dedicated slot
+ *    (a subsequent non-tool assistant message is merged into it rather than
+ *    creating a duplicate).
+ */
+function enforceAlternation(messages: ChatTemplateMessage[]): ChatTemplateMessage[] {
+    if (messages.length <= 1) return messages;
+
+    const result: ChatTemplateMessage[] = [messages[0]!];
+
+    for (let i = 1; i < messages.length; i++) {
+        const curr = messages[i]!;
+        const prev = result[result.length - 1]!;
+
+        // 'system' only at position 0 — merge into existing system or drop
+        if (curr.role === 'system') {
+            if (result[0]!.role === 'system') {
+                const systemMsg = result[0]!;
+                if (curr.content) {
+                    systemMsg.content = systemMsg.content
+                        ? systemMsg.content + '\n\n' + curr.content
+                        : curr.content;
+                }
+            }
+            continue;
+        }
+
+        // 'tool' messages are always kept (follow tool_calls or previous tool)
+        if (curr.role === 'tool') {
+            result.push(curr);
+            continue;
+        }
+
+        // user/assistant — check alternation
+        if (curr.role === prev.role) {
+            // The template's validation counter skips assistant messages
+            // that carry tool_calls (and tool results).  Merging strategy
+            // depends on which message has tool_calls:
+            //
+            //   1) bare assistant → assistant(tool_calls)
+            //      Merge forward: transfer tool_calls + combine content.
+            //      The merged message is skipped by the counter, so the
+            //      alternation stays in sync.
+            //
+            //   2) assistant(tool_calls) → bare assistant
+            //      Keep separate.  The bare assistant is the *response*
+            //      after tool results — it's a counted turn.
+            //
+            //   3) bare → bare (both same role, no tool_calls)
+            //      Merge content into previous.
+            if (curr.tool_calls && !prev.tool_calls) {
+                // case 1: transfer tool_calls into the preceding message
+                prev.tool_calls = curr.tool_calls;
+                if (curr.content) {
+                    prev.content = prev.content
+                        ? prev.content + '\n\n' + curr.content
+                        : curr.content;
+                }
+            } else if (prev.tool_calls && !curr.tool_calls) {
+                // case 2: tool_calls turn is done; this is the follow-up response
+                result.push(curr);
+            } else {
+                // case 3: plain same-role messages — merge content
+                if (curr.content) {
+                    prev.content = prev.content
+                        ? prev.content + '\n\n' + curr.content
+                        : curr.content;
+                }
+            }
+            continue;
+        }
+
+        // Alternation is correct
+        result.push(curr);
+    }
+
+    return result;
+}
 
 export interface BuildChatMessagesParams {
     storyStringParams: {
@@ -215,24 +309,69 @@ export async function buildChatMessages(params: BuildChatMessagesParams): Promis
         const cleaned = example.replace(/<START>/i, '{Example Dialogue:}').replace(/\r/gm, '');
         const parsed = parseExampleIntoIndividual(cleaned, true);
         for (const msg of parsed) {
-            messages.push({ role: String(msg.role), content: String(msg.content) });
+            // parseExampleIntoIndividual returns role='system' with name='example_user'/'example_assistant'
+            // HuggingFace templates need proper user/assistant roles for alternation
+            const role = msg.name === 'example_user'
+                ? 'user'
+                : (msg.name === 'example_assistant' ? 'assistant' : String(msg.role));
+            messages.push({
+                role: role,
+                content: String(msg.content),
+            });
         }
     }
 
     // 3. Core chat (already has extension injections + jailbreak)
     for (const item of params.coreChat) {
         if (item?.extra?.ignore) continue; // IGNORE_SYMBOL check
-        const role = item.is_system ? 'system' : (item.is_user ? 'user' : 'assistant');
-        messages.push({ role, content: item.mes ?? '' });
+
+        // Non-tool system messages break HuggingFace alternation; skip them.
+        // Tool-call related system messages are handled separately below.
+        if (item.is_system && !Array.isArray(item.extra?.tool_invocations)) continue;
+
+        if (Array.isArray(item.extra?.tool_invocations)) {
+            // Split a single tool invocation message into HuggingFace format:
+            //   assistant (with tool_calls) → tool (result) for each invocation
+
+            // Safety: content should be empty/null when tool_calls are present
+            messages.push({
+                role: 'assistant',
+                content: item.mes ?? '',
+                tool_calls: item.extra.tool_invocations.map((inv: any) => ({
+                    type: 'function',
+                    function: {
+                        name: inv.name,
+                        arguments: inv.parameters,
+                    },
+                    id: inv.id,
+                })),
+            });
+
+            for (const inv of item.extra.tool_invocations) {
+                messages.push({
+                    role: 'tool',
+                    content: String(inv.result ?? ''),
+                    tool_call_id: inv.id,
+                });
+            }
+        } else {
+            const role = item.is_user ? 'user' : 'assistant';
+            messages.push({ role, content: item.mes ?? '' });
+        }
     }
 
     // 4. Quiet prompt
     if (params.quiet_prompt) {
+        // 'system' role only allowed as the first message; if we already have
+        // messages fall back to 'assistant' to preserve alternation.
+        const quietRole = params.quietToLoud
+            ? 'assistant'
+            : (messages.length === 0 ? 'system' : 'assistant');
         messages.push({
-            role: params.quietToLoud ? 'assistant' : 'system',
+            role: quietRole,
             content: params.quiet_prompt,
         });
     }
 
-    return messages;
+    return enforceAlternation(messages);
 }
