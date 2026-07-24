@@ -34,7 +34,10 @@ const basicAuthMiddleware = async function (
     };
 
     try {
-        const ip = getIpAddress(request as unknown as Record<string, unknown>, PREFER_REAL_IP_HEADER);
+        const ip = getIpAddress(
+            request as unknown as Record<string, unknown>,
+            PREFER_REAL_IP_HEADER,
+        );
 
         const basicAuthUserName = getConfigValue('basicAuthUser.username');
         const basicAuthUserPassword = getConfigValue('basicAuthUser.password');

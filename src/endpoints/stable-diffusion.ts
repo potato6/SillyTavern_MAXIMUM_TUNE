@@ -30,7 +30,7 @@ router.post('/ping', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
     try {
-        const url = new URL((body.url as string));
+        const url = new URL(body.url as string);
         url.pathname = '/sdapi/v1/options';
 
         const result = await fetch(url, {
@@ -61,7 +61,7 @@ router.post('/upscalers', async (context: any) => {
          *
          */
         async function getUpscalerModels() {
-            const url = new URL((body.url as string));
+            const url = new URL(body.url as string);
             url.pathname = '/sdapi/v1/upscalers';
 
             const result = await fetch(url, {
@@ -83,7 +83,7 @@ router.post('/upscalers', async (context: any) => {
          *
          */
         async function getLatentUpscalers() {
-            const url = new URL((body.url as string));
+            const url = new URL(body.url as string);
             url.pathname = '/sdapi/v1/latent-upscale-modes';
 
             const result = await fetch(url, {
@@ -121,9 +121,9 @@ router.post('/vaes', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
     try {
-        const autoUrl = new URL((body.url as string));
+        const autoUrl = new URL(body.url as string);
         autoUrl.pathname = '/sdapi/v1/sd-vae';
-        const forgeUrl = new URL((body.url as string));
+        const forgeUrl = new URL(body.url as string);
         forgeUrl.pathname = '/sdapi/v1/sd-modules';
 
         const requestInit = {
@@ -160,7 +160,7 @@ router.post('/samplers', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
     try {
-        const url = new URL((body.url as string));
+        const url = new URL(body.url as string);
         url.pathname = '/sdapi/v1/samplers';
 
         const result = await fetch(url, {
@@ -188,7 +188,7 @@ router.post('/schedulers', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
     try {
-        const url = new URL((body.url as string));
+        const url = new URL(body.url as string);
         url.pathname = '/sdapi/v1/schedulers';
 
         const result = await fetch(url, {
@@ -216,7 +216,7 @@ router.post('/models', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
     try {
-        const url = new URL((body.url as string));
+        const url = new URL(body.url as string);
         url.pathname = '/sdapi/v1/sd-models';
 
         const result = await fetch(url, {
@@ -247,7 +247,7 @@ router.post('/get-model', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
     try {
-        const url = new URL((body.url as string));
+        const url = new URL(body.url as string);
         url.pathname = '/sdapi/v1/options';
 
         const result = await fetch(url, {
@@ -273,7 +273,7 @@ router.post('/set-model', async (context: any) => {
          *
          */
         async function getProgress() {
-            const url = new URL((body.url as string));
+            const url = new URL(body.url as string);
             url.pathname = '/sdapi/v1/progress';
 
             const result = await fetch(url, {
@@ -285,7 +285,7 @@ router.post('/set-model', async (context: any) => {
             return await result.json();
         }
 
-        const url = new URL((body.url as string));
+        const url = new URL(body.url as string);
         url.pathname = '/sdapi/v1/options';
 
         const options = {
@@ -342,7 +342,7 @@ router.post('/generate', async (context: any) => {
     const response = context as any;
     try {
         try {
-            const optionsUrl = new URL((body.url as string));
+            const optionsUrl = new URL(body.url as string);
             optionsUrl.pathname = '/sdapi/v1/options';
             const optionsResult = await fetch(optionsUrl, {
                 headers: { Authorization: getBasicAuthHeader(body.auth) },
@@ -363,7 +363,7 @@ router.post('/generate', async (context: any) => {
         (req as any).socket.removeAllListeners('close');
         (req as any).socket.on('close', function () {
             if (!response.writableEnded) {
-                const interruptUrl = new URL((body.url as string));
+                const interruptUrl = new URL(body.url as string);
                 interruptUrl.pathname = '/sdapi/v1/interrupt';
                 fetch(interruptUrl, {
                     method: 'POST',
@@ -374,7 +374,7 @@ router.post('/generate', async (context: any) => {
         });
 
         console.debug('SD WebUI request:', body);
-        const txt2imgUrl = new URL((body.url as string));
+        const txt2imgUrl = new URL(body.url as string);
         txt2imgUrl.pathname = '/sdapi/v1/txt2img';
         const result = await fetch(txt2imgUrl, {
             method: 'POST',
@@ -404,7 +404,7 @@ router.post('/sd-next/upscalers', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
     try {
-        const url = new URL((body.url as string));
+        const url = new URL(body.url as string);
         url.pathname = '/sdapi/v1/upscalers';
 
         const result = await fetch(url, {
@@ -650,9 +650,9 @@ comfy.post('/delete-workflow', async (context: any) => {
 comfy.post(
     '/rename-workflow',
     async (context: any) => {
-    const body = context.body as Record<string, unknown>;
-    const set = context.set;
-    const user = (context as any).user;
+        const body = context.body as Record<string, unknown>;
+        const set = context.set;
+        const user = (context as any).user;
         try {
             const oldName = sanitize(String(body.old_name));
             const newName = sanitize(String(body.new_name));
@@ -661,22 +661,26 @@ comfy.post(
                 path.extname(oldName).toLowerCase() !== '.json' ||
                 path.extname(newName).toLowerCase() !== '.json'
             ) {
-                set.status = 400; return 'Only JSON workflow files are allowed';
+                set.status = 400;
+                return 'Only JSON workflow files are allowed';
             }
 
             const oldPath = path.join(user.directories.comfyWorkflows, oldName);
             const newPath = path.join(user.directories.comfyWorkflows, newName);
 
             if (!fs.existsSync(oldPath)) {
-                set.status = 404; return 'Workflow not found';
+                set.status = 404;
+                return 'Workflow not found';
             }
 
             if (fs.existsSync(newPath)) {
-                set.status = 409; return 'A workflow with that name already exists';
+                set.status = 409;
+                return 'A workflow with that name already exists';
             }
 
             fs.renameSync(oldPath, newPath);
-            set.status = 204; return;
+            set.status = 204;
+            return;
         } catch (error) {
             console.error('ComfyUI workflow rename failed', error);
             set.status = 500;
@@ -738,7 +742,9 @@ comfy.post('/generate', async (context: any) => {
         (req as any).socket.removeAllListeners('close');
         (req as any).socket.on('close', function () {
             if (!response.writableEnded && !item) {
-                const interruptUrl = new URL((body.url as string).replace(/\/+$/, '') + '/interrupt');
+                const interruptUrl = new URL(
+                    (body.url as string).replace(/\/+$/, '') + '/interrupt',
+                );
                 fetch(interruptUrl, {
                     method: 'POST',
                     headers: { Authorization: getBasicAuthHeader(body.auth) },
@@ -815,7 +821,8 @@ comfy.post('/generate', async (context: any) => {
     } catch (error) {
         console.error('ComfyUI error:', error);
         // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-        set.status = 500; return error.message;
+        set.status = 500;
+        return error.message;
     }
 });
 
@@ -881,7 +888,9 @@ comfyRunPod.post('/generate', async (context: any) => {
         (req as any).socket.removeAllListeners('close');
         (req as any).socket.on('close', function () {
             if (!response.writableEnded && !item) {
-                const interruptUrl = new URL((body.url as string).replace(/\/+$/, '') + `/cancel/${jobId}`);
+                const interruptUrl = new URL(
+                    (body.url as string).replace(/\/+$/, '') + `/cancel/${jobId}`,
+                );
                 fetch(interruptUrl, {
                     method: 'POST',
                     headers: { Authorization: `Bearer ${key}` },
@@ -889,7 +898,7 @@ comfyRunPod.post('/generate', async (context: any) => {
             }
             controller.abort();
         });
-        const workflow = JSON.parse((body.prompt as string)).prompt;
+        const workflow = JSON.parse(body.prompt as string).prompt;
         const wrappedWorkflow = workflow?.input?.workflow
             ? workflow
             : { input: { workflow: workflow } };
@@ -934,7 +943,8 @@ comfyRunPod.post('/generate', async (context: any) => {
     } catch (error) {
         console.error('ComfyUI error:', error);
         // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-        set.status = 500; return error.message;
+        set.status = 500;
+        return error.message;
     }
 });
 
@@ -1011,7 +1021,10 @@ together.post('/generate', async (context: any) => {
                 steps: body.steps,
                 n: 1,
                 // Limited to 10000 on playground, works fine with more.
-                seed: (body.seed as number) >= 0 ? (body.seed as number) : Math.floor(Math.random() * 10_000_000),
+                seed:
+                    (body.seed as number) >= 0
+                        ? (body.seed as number)
+                        : Math.floor(Math.random() * 10_000_000),
             }),
             headers: {
                 'Content-Type': 'application/json',
@@ -1148,7 +1161,7 @@ drawthings.post('/ping', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
     try {
-        const url = new URL((body.url as string));
+        const url = new URL(body.url as string);
         url.pathname = '/';
 
         const result = await fetch(url, {
@@ -1172,7 +1185,7 @@ drawthings.post('/get-model', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
     try {
-        const url = new URL((body.url as string));
+        const url = new URL(body.url as string);
         url.pathname = '/';
 
         const result = await fetch(url, {
@@ -1193,7 +1206,7 @@ drawthings.post('/get-upscaler', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
     try {
-        const url = new URL((body.url as string));
+        const url = new URL(body.url as string);
         url.pathname = '/';
 
         const result = await fetch(url, {
@@ -1216,7 +1229,7 @@ drawthings.post('/generate', async (context: any) => {
     try {
         console.debug('SD DrawThings API request:', body);
 
-        const url = new URL((body.url as string));
+        const url = new URL(body.url as string);
         url.pathname = '/sdapi/v1/txt2img';
 
         const requestBody = { ...body };
@@ -1288,12 +1301,16 @@ pollinations.post('/generate', async (context: any) => {
         }
 
         const promptUrl = new URL(
-            `https://gen.pollinations.ai/image/${encodeURIComponent((body.prompt as string))}`,
+            `https://gen.pollinations.ai/image/${encodeURIComponent(body.prompt as string)}`,
         );
         const params = new URLSearchParams({
             model: String(body.model),
             negative_prompt: String(body.negative_prompt),
-            seed: String((body.seed as number) >= 0 ? (body.seed as number) : Math.floor(Math.random() * 10_000_000)),
+            seed: String(
+                (body.seed as number) >= 0
+                    ? (body.seed as number)
+                    : Math.floor(Math.random() * 10_000_000),
+            ),
             width: String(body.width ?? 1024),
             height: String(body.height ?? 1024),
         });
@@ -2085,7 +2102,8 @@ falai.post('/generate', async (context: any) => {
     } catch (error) {
         console.error(error);
         // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
-        set.status = 500; return error.cause || error.message;
+        set.status = 500;
+        return error.cause || error.message;
     }
 });
 
@@ -2209,7 +2227,10 @@ aimlapi.post('/generate-image', async (context: any) => {
     const user = (context as any).user;
     try {
         const key = readSecret(user.directories, SECRET_KEYS.AIMLAPI);
-        if (!key) { set.status = 400; return; }
+        if (!key) {
+            set.status = 400;
+            return;
+        }
 
         console.debug('AI/ML API image request:', body);
 
@@ -2224,7 +2245,8 @@ aimlapi.post('/generate-image', async (context: any) => {
         });
         if (!apiRes.ok) {
             const err = await apiRes.text();
-            set.status = 500; return err;
+            set.status = 500;
+            return err;
         }
         const data = (await apiRes.json()) as {
             images?: Array<{ b64_json?: string; base64?: string; url?: string }>;
@@ -2232,7 +2254,10 @@ aimlapi.post('/generate-image', async (context: any) => {
         };
 
         const imgObj = Array.isArray(data.images) ? data.images[0] : data.data?.[0];
-        if (!imgObj) { set.status = 500; return 'No image returned'; }
+        if (!imgObj) {
+            set.status = 500;
+            return 'No image returned';
+        }
 
         let base64;
         if (imgObj.b64_json || imgObj.base64) {
@@ -2249,7 +2274,8 @@ aimlapi.post('/generate-image', async (context: any) => {
         return { format: 'png', data: base64 };
     } catch (e) {
         console.error(e);
-        set.status = 500; return 'Internal error';
+        set.status = 500;
+        return 'Internal error';
     }
 });
 
@@ -2400,7 +2426,8 @@ zai.post('/generate-video', async (context: any) => {
         for (let attempt = 0; attempt < 30; attempt++) {
             if (controller.signal.aborted) {
                 console.info('Z.AI video generation aborted by client');
-                set.status = 500; return 'Video generation aborted by client';
+                set.status = 500;
+                return 'Video generation aborted by client';
             }
 
             await delay(5000 + attempt * 1000);
@@ -2419,7 +2446,8 @@ zai.post('/generate-video', async (context: any) => {
             if (!pollResponse.ok) {
                 const text = await pollResponse.text();
                 console.warn('Z.AI video job polling failed', pollResponse.statusText, text);
-                set.status = 500; return text;
+                set.status = 500;
+                return text;
             }
 
             const pollResult = (await pollResponse.json()) as {
@@ -2430,7 +2458,8 @@ zai.post('/generate-video', async (context: any) => {
 
             if (pollResult.task_status === 'FAIL') {
                 console.warn('Z.AI video generation failed', pollResult);
-                set.status = 500; return 'Video generation failed';
+                set.status = 500;
+                return 'Video generation failed';
             }
 
             if (pollResult.task_status === 'SUCCESS') {
@@ -2451,7 +2480,8 @@ zai.post('/generate-video', async (context: any) => {
                         contentResponse.statusText,
                         text,
                     );
-                    set.status = 500; return text;
+                    set.status = 500;
+                    return text;
                 }
 
                 const contentBuffer = await contentResponse.arrayBuffer();
@@ -2567,7 +2597,7 @@ workersai.post('/generate', async (context: any) => {
             height: body.height ? Number(body.height) : undefined,
             num_steps: body.steps ? Number(body.steps) : undefined,
             guidance: body.scale ? Number(body.scale) : undefined,
-            seed: (body.seed as number) >= 0 ? Number((body.seed as number)) : undefined,
+            seed: (body.seed as number) >= 0 ? Number(body.seed as number) : undefined,
         };
 
         // Remove undefined values
@@ -2612,7 +2642,8 @@ workersai.post('/generate', async (context: any) => {
                 result.statusText,
                 text,
             );
-            set.status = 500; return text;
+            set.status = 500;
+            return text;
         }
 
         const contentType = result.headers.get('content-type') || '';

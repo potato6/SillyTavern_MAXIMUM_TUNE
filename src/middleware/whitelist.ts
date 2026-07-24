@@ -88,7 +88,9 @@ export default async function getWhitelistMiddleware() {
 
     return function (req: express.Request, res: express.Response, next: express.NextFunction) {
         const clientIp = getIpFromRequest(req as unknown as Record<string, unknown>);
-        const forwardedIp = enableForwardedWhitelist && getRealOrForwardedIp(req as unknown as Record<string, unknown>);
+        const forwardedIp =
+            enableForwardedWhitelist &&
+            getRealOrForwardedIp(req as unknown as Record<string, unknown>);
         const userAgent = req.headers['user-agent'];
 
         /**

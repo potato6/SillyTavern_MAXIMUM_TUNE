@@ -11,9 +11,7 @@ import { get, set, unset, isUndefined, forEach, isPlainObject, cloneDeep } from 
 import storage from 'node-persist';
 
 import { AVATAR_WIDTH, AVATAR_HEIGHT, DEFAULT_AVATAR_PATH } from '../constants.js';
-import {
-    forbiddenRegExp,
-} from '../middleware/validateFileName.js';
+import { forbiddenRegExp } from '../middleware/validateFileName.js';
 import {
     deepMerge,
     humanizedDateTime,

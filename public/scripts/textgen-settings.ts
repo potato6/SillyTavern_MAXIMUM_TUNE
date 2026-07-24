@@ -967,9 +967,7 @@ async function getStatusTextgen() {
                     const savedTemplate = (
                         power_user.model_templates_mappings as Record<string, unknown>
                     )[chat_template_hash] as Record<string, unknown> | undefined;
-                    const derivedTemplate = await deriveTemplatesFromChatTemplate(
-                        chat_template,
-                    );
+                    const derivedTemplate = await deriveTemplatesFromChatTemplate(chat_template);
                     const { context, instruct } = (savedTemplate ?? derivedTemplate) as {
                         context?: string;
                         instruct?: string;

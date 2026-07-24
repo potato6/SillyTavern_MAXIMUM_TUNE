@@ -54,7 +54,9 @@ function getAssociatedSlider(input: HTMLInputElement): HTMLInputElement | null {
         input.closest('div') ??
         input.parentElement;
 
-    return /** @type {HTMLInputElement | null} */ (parent ? parent.querySelector('input[type="range"]') : null);
+    return /** @type {HTMLInputElement | null} */ (
+        parent ? parent.querySelector('input[type="range"]') : null
+    );
 }
 
 /**

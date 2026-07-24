@@ -258,7 +258,10 @@ router.post('/caption-image', async (context: any) => {
             messages.push({
                 role: 'user',
                 content: [],
-                image_url: ((imgMessage?.content as Array<Record<string, unknown>> | undefined)?.[1]?.image_url as { url?: string })?.url,
+                image_url: (
+                    (imgMessage?.content as Array<Record<string, unknown>> | undefined)?.[1]
+                        ?.image_url as { url?: string }
+                )?.url,
             });
         }
 

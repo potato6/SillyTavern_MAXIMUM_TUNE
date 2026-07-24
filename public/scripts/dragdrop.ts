@@ -136,7 +136,10 @@ export class DragAndDropHandler {
         event.stopPropagation();
 
         clearTimeout(this.dragLeaveTimeout);
-        this.dragLeaveTimeout = setTimeout(this._boundRemoveDragOver, debounce_timeout.quick) as unknown as number;
+        this.dragLeaveTimeout = setTimeout(
+            this._boundRemoveDragOver,
+            debounce_timeout.quick,
+        ) as unknown as number;
     }
 
     /**

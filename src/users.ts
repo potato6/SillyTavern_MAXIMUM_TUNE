@@ -1185,7 +1185,9 @@ function createRouteHandler(directoryFn: (context: any) => string) {
                 context.set.headers ??= {};
                 context.set.headers['Cache-Control'] = 'must-understand, no-store';
             }
-            return new Response(Bun.file(fullPath), { headers: { 'Content-Type': Bun.file(fullPath).type || 'application/octet-stream' } });
+            return new Response(Bun.file(fullPath), {
+                headers: { 'Content-Type': Bun.file(fullPath).type || 'application/octet-stream' },
+            });
         } catch {
             context.set.status = 500;
             return;
@@ -1210,7 +1212,11 @@ function createExtensionsRouteHandler(directoryFn: (context: any) => string) {
             }
             const existsLocal = fs.existsSync(localPath);
             if (existsLocal && fs.statSync(localPath).isFile()) {
-                return new Response(Bun.file(localPath), { headers: { 'Content-Type': Bun.file(localPath).type || 'application/octet-stream' } });
+                return new Response(Bun.file(localPath), {
+                    headers: {
+                        'Content-Type': Bun.file(localPath).type || 'application/octet-stream',
+                    },
+                });
             }
 
             const globalPath = path.join(PUBLIC_DIRECTORIES.globalExtensions, filePath);
@@ -1220,7 +1226,11 @@ function createExtensionsRouteHandler(directoryFn: (context: any) => string) {
             }
             const existsGlobal = fs.existsSync(globalPath);
             if (existsGlobal && fs.statSync(globalPath).isFile()) {
-                return new Response(Bun.file(globalPath), { headers: { 'Content-Type': Bun.file(globalPath).type || 'application/octet-stream' } });
+                return new Response(Bun.file(globalPath), {
+                    headers: {
+                        'Content-Type': Bun.file(globalPath).type || 'application/octet-stream',
+                    },
+                });
             }
 
             context.set.status = 404;
@@ -1352,15 +1362,14 @@ router.all(
     '/user/files/*',
     createRouteHandler((context: any) => (context as any).user.directories.files),
 );
-router.all(
-    '/scripts/extensions/third-party/*',
-    async (context: any) => {
-        const enabled = !!getConfigValue('extensions.enabled', true, 'boolean');
-        if (!enabled) {
-            context.set.status = 404;
-            return;
-        }
-        const handler = createExtensionsRouteHandler((ctx: any) => (ctx as any).user.directories.extensions);
-        return handler(context);
-    },
-);
+router.all('/scripts/extensions/third-party/*', async (context: any) => {
+    const enabled = !!getConfigValue('extensions.enabled', true, 'boolean');
+    if (!enabled) {
+        context.set.status = 404;
+        return;
+    }
+    const handler = createExtensionsRouteHandler(
+        (ctx: any) => (ctx as any).user.directories.extensions,
+    );
+    return handler(context);
+});

@@ -35,7 +35,12 @@ const CTX_SYM = Symbol('elysia-ctx');
 export function mountElysia(elysiaApp: { fetch: (req: Request) => Response | Promise<Response> }) {
     const wrapped = new Elysia()
         .resolve(({ request }) => {
-            return (request as unknown as Record<symbol, unknown>)[CTX_SYM] as Record<string, unknown> ?? {};
+            return (
+                ((request as unknown as Record<symbol, unknown>)[CTX_SYM] as Record<
+                    string,
+                    unknown
+                >) ?? {}
+            );
         })
         .use(elysiaApp as any);
 
@@ -115,7 +120,13 @@ export function mountElysia(elysiaApp: { fetch: (req: Request) => Response | Pro
                 } else {
                     // Buffered: use arrayBuffer for binary, text otherwise
                     const ct = webRes.headers.get('content-type') ?? '';
-                    if (ct.startsWith('text/') || ct.includes('json') || ct.includes('xml') || ct.includes('javascript') || ct.includes('svg')) {
+                    if (
+                        ct.startsWith('text/') ||
+                        ct.includes('json') ||
+                        ct.includes('xml') ||
+                        ct.includes('javascript') ||
+                        ct.includes('svg')
+                    ) {
                         const bodyText = await webRes.text();
                         res.send(bodyText || undefined);
                     } else {

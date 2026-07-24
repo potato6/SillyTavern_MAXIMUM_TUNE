@@ -484,9 +484,7 @@ router.post('/generate', async (context: Record<string, unknown>) => {
         const provider = await getChatProvider(source);
 
         // Apply common pre-processing before delegating to the provider.
-        const { postProcessPrompt, getPromptNames } = await import(
-            '../../../prompt-converters.js'
-        );
+        const { postProcessPrompt, getPromptNames } = await import('../../../prompt-converters.js');
         const { flattenSchema } = await import('../../../util.js');
 
         const postProcessingType = body.custom_prompt_post_processing as string;
@@ -517,9 +515,7 @@ router.post('/generate', async (context: Record<string, unknown>) => {
                         OPENAI_FIXED_REASONING_EFFORT,
                         OPENAI_REASONING_EFFORT_MAP,
                     } = await import('../../../constants.js');
-                    if (
-                        OPENAI_REASONING_EFFORT_MODELS.includes(body.model as string)
-                    ) {
+                    if (OPENAI_REASONING_EFFORT_MODELS.includes(body.model as string)) {
                         body.reasoning_effort =
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             (OPENAI_FIXED_REASONING_EFFORT as any)[body.model as string] ??
@@ -592,7 +588,9 @@ router.post('/bias', async (context: Record<string, unknown>) => {
 
     try {
         const result: Record<string, number> = {};
-        const model = getTokenizerModel(String((context.query as Record<string, unknown>)?.model || ''));
+        const model = getTokenizerModel(
+            String((context.query as Record<string, unknown>)?.model || ''),
+        );
 
         if (model === 'claude') return result;
 
@@ -651,9 +649,8 @@ router.post('/process', async (context: Record<string, unknown>) => {
             return { error: 'Invalid messages format' };
         }
 
-        const { postProcessPrompt, PROMPT_PROCESSING_TYPE, getPromptNames } = await import(
-            '../../../prompt-converters.js'
-        );
+        const { postProcessPrompt, PROMPT_PROCESSING_TYPE, getPromptNames } =
+            await import('../../../prompt-converters.js');
 
         if (!Object.values(PROMPT_PROCESSING_TYPE).includes(body.type as string)) {
             set.status = 400;

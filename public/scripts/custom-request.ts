@@ -257,7 +257,8 @@ export class TextCompletionService {
         // Sequential string concatenation is highly optimized via V8 ConsString
         let formattedPrompt = '';
         const promptLength = prompt.length;
-        const prefillActive = promptLength > 0 ? prompt[promptLength - 1].role === 'assistant' : false;
+        const prefillActive =
+            promptLength > 0 ? prompt[promptLength - 1].role === 'assistant' : false;
 
         for (let i = 0; i < promptLength; i++) {
             const message = prompt[i];
@@ -350,7 +351,9 @@ export class TextCompletionService {
                     requestData.stop = stoppingStrings;
                     requestData.stopping_strings = stoppingStrings;
                 } else {
-                    console.warn(`Instruct preset "${instructName}" not found, using basic formatting`);
+                    console.warn(
+                        `Instruct preset "${instructName}" not found, using basic formatting`,
+                    );
 
                     let flatPrompt = '';
                     for (let i = 0; i < prompt.length; i++) {
@@ -378,7 +381,9 @@ export class TextCompletionService {
                 if (preset) {
                     requestData = this.presetToGeneratePayload(preset, {}, requestData);
                 } else {
-                    console.warn(`Preset "${presetName}" not found, continuing with default settings`);
+                    console.warn(
+                        `Preset "${presetName}" not found, continuing with default settings`,
+                    );
                 }
             } else {
                 console.warn('Preset manager not found, continuing with default settings');
@@ -409,7 +414,10 @@ export class TextCompletionService {
             }
 
             if (instructPreset) {
-                const seqArr = [instructPreset.stop_sequence, instructPreset.input_sequence] as string[];
+                const seqArr = [
+                    instructPreset.stop_sequence,
+                    instructPreset.input_sequence,
+                ] as string[];
                 for (let i = 0; i < seqArr.length; i++) {
                     const sequence = seqArr[i];
                     if (sequence?.trim()) {
@@ -420,7 +428,10 @@ export class TextCompletionService {
                     }
                 }
 
-                const outSeqArr = [instructPreset.output_sequence, instructPreset.last_output_sequence] as string[];
+                const outSeqArr = [
+                    instructPreset.output_sequence,
+                    instructPreset.last_output_sequence,
+                ] as string[];
                 for (let i = 0; i < outSeqArr.length; i++) {
                     const sequences = outSeqArr[i]!;
                     if (sequences) {
@@ -651,7 +662,9 @@ export class ChatCompletionService {
                 if (preset) {
                     requestData = await this.presetToGeneratePayload(preset, {}, requestData);
                 } else {
-                    console.warn(`Preset "${presetName}" not found, continuing with default settings`);
+                    console.warn(
+                        `Preset "${presetName}" not found, continuing with default settings`,
+                    );
                 }
             } else {
                 console.warn('Preset manager not found, continuing with default settings');

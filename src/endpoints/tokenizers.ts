@@ -1140,12 +1140,18 @@ router.post('/openai/count', async (context: Record<string, unknown>) => {
         }
 
         if (model === 'llama') {
-            num_tokens = await countSentencepieceArrayTokens(spp_llama, body as unknown as object[]);
+            num_tokens = await countSentencepieceArrayTokens(
+                spp_llama,
+                body as unknown as object[],
+            );
             return { token_count: num_tokens };
         }
 
         if (model === 'mistral') {
-            num_tokens = await countSentencepieceArrayTokens(spp_mistral, body as unknown as object[]);
+            num_tokens = await countSentencepieceArrayTokens(
+                spp_mistral,
+                body as unknown as object[],
+            );
             return { token_count: num_tokens };
         }
 
@@ -1155,12 +1161,18 @@ router.post('/openai/count', async (context: Record<string, unknown>) => {
         }
 
         if (model === 'gemma' || model === 'gemini') {
-            num_tokens = await countSentencepieceArrayTokens(spp_gemma, body as unknown as object[]);
+            num_tokens = await countSentencepieceArrayTokens(
+                spp_gemma,
+                body as unknown as object[],
+            );
             return { token_count: num_tokens };
         }
 
         if (model === 'jamba') {
-            num_tokens = await countSentencepieceArrayTokens(spp_jamba, body as unknown as object[]);
+            num_tokens = await countSentencepieceArrayTokens(
+                spp_jamba,
+                body as unknown as object[],
+            );
             return { token_count: num_tokens };
         }
 

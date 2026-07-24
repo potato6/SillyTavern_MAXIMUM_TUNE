@@ -88,7 +88,8 @@ export const router = new Elysia({ prefix: '/api/users' })
             const viewModels = await Promise.all(viewModelPromises);
             viewModels.sort(
                 (x: unknown, y: unknown) =>
-                    ((x as { created: number }).created ?? 0) - ((y as { created: number }).created ?? 0),
+                    ((x as { created: number }).created ?? 0) -
+                    ((y as { created: number }).created ?? 0),
             );
             return viewModels;
         } catch (error) {

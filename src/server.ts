@@ -605,7 +605,10 @@ if (!cliArgs.disableCsrf) {
 // Static files
 app.get('/', (request, response) => {
     // Cache busting
-    const bustCache = cacheBuster.getClearSiteDataValue(request.user, request.headers['user-agent'] || '');
+    const bustCache = cacheBuster.getClearSiteDataValue(
+        request.user,
+        request.headers['user-agent'] || '',
+    );
     if (bustCache) {
         response.setHeader('Clear-Site-Data', bustCache);
     }

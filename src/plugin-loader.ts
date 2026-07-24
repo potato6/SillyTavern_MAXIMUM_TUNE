@@ -64,9 +64,10 @@ function createPluginRouter(): { elysiaRouter: Elysia } {
                             path: url.pathname,
                             method: request.method,
                             url: request.url,
-                            ip: request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
-                                || request.headers.get('x-real-ip')
-                                || '127.0.0.1',
+                            ip:
+                                request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+                                request.headers.get('x-real-ip') ||
+                                '127.0.0.1',
                             session: context.session,
                             user: context.user,
                         };
@@ -75,21 +76,35 @@ function createPluginRouter(): { elysiaRouter: Elysia } {
                         let bodySent: any = undefined;
                         let statusCode = 200;
                         const res: any = {
-                            status(code: number) { statusCode = code; return this; },
-                            send(body: any) { bodySent = body; },
-                            json(body: any) { bodySent = body; },
-                            sendStatus(code: number) { statusCode = code; bodySent = undefined; },
+                            status(code: number) {
+                                statusCode = code;
+                                return this;
+                            },
+                            send(body: any) {
+                                bodySent = body;
+                            },
+                            json(body: any) {
+                                bodySent = body;
+                            },
+                            sendStatus(code: number) {
+                                statusCode = code;
+                                bodySent = undefined;
+                            },
                             setHeader() {},
-                            getHeaders() { return {}; },
+                            getHeaders() {
+                                return {};
+                            },
                             end() {},
-                            type() { return this; },
+                            type() {
+                                return this;
+                            },
                             attachment() {},
                         };
 
                         // Run Express-style handlers in sequence
                         for (const handler of handlers) {
                             await new Promise<void>((resolve, reject) => {
-                                handler(req, res, (err?: any) => err ? reject(err) : resolve());
+                                handler(req, res, (err?: any) => (err ? reject(err) : resolve()));
                             });
                             if (bodySent !== undefined) break;
                         }
@@ -281,7 +296,9 @@ async function updatePlugins(pluginsPath: string) {
 
     if (!Bun.which('git')) {
         console.error(
-            color.red('Git is not installed. Please install Git to enable auto-updating of server plugins.'),
+            color.red(
+                'Git is not installed. Please install Git to enable auto-updating of server plugins.',
+            ),
         );
         return;
     }
@@ -305,9 +322,13 @@ async function updatePlugins(pluginsPath: string) {
             pluginsToUpdate++;
             await pluginRepo.pull();
             const latestCommit = await pluginRepo.revparse(['HEAD']);
-            console.log(`Plugin ${color.green(directory)} updated to commit ${color.cyan(latestCommit)}`);
+            console.log(
+                `Plugin ${color.green(directory)} updated to commit ${color.cyan(latestCommit)}`,
+            );
         } catch (error) {
-            console.error(color.red(`Failed to update plugin ${directory}: ${(error as any).message}`));
+            console.error(
+                color.red(`Failed to update plugin ${directory}: ${(error as any).message}`),
+            );
         }
     }
 

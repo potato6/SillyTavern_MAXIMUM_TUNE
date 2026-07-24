@@ -211,7 +211,9 @@ export function initDynamicStyles() {
     for (let i = 0; i < sheets.length; i++) {
         const sheet = sheets[i]!;
         try {
-            const isExtension = sheet.href ? sheet.href.toLowerCase().includes('scripts/extensions') : false;
+            const isExtension = sheet.href
+                ? sheet.href.toLowerCase().includes('scripts/extensions')
+                : false;
             applyDynamicFocusStyles(sheet, { fromExtension: isExtension });
         } catch (e) {
             console.warn('Failed to process stylesheet on initial load:', e);

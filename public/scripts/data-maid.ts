@@ -356,7 +356,8 @@ class DataMaidDialog {
     // @ts-expect-error TS(7006) FIXME: Parameter 'prop' implicitly has an 'any' type.
     async view(prop, hash, name) {
         const url = this.getViewUrl(hash);
-        const isImage = prop === 'images' || prop === 'avatarThumbnails' || prop === 'backgroundThumbnails';
+        const isImage =
+            prop === 'images' || prop === 'avatarThumbnails' || prop === 'backgroundThumbnails';
 
         const element = isImage
             ? await this.getViewElement(url, name)

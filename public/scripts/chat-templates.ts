@@ -147,7 +147,15 @@ export function renderChatTemplate(
         return '';
     }
 
-    console.debug('[CT] messages:', messages.map(m => `${m.role}${m.tool_calls ? '☎' : ''}${m.tool_call_id ? '→' : ''} "${(m.content ?? '').slice(0, 80)}"`).join(' | '));
+    console.debug(
+        '[CT] messages:',
+        messages
+            .map(
+                (m) =>
+                    `${m.role}${m.tool_calls ? '☎' : ''}${m.tool_call_id ? '→' : ''} "${(m.content ?? '').slice(0, 80)}"`,
+            )
+            .join(' | '),
+    );
 
     const template = new Template(chatTemplate);
 
@@ -156,7 +164,7 @@ export function renderChatTemplate(
         bos_token: options.bos_token ?? '',
         eos_token: options.eos_token ?? '',
         add_generation_prompt: options.add_generation_prompt ?? false,
-        ...(options.extra),
+        ...options.extra,
     });
 
     return result;
@@ -280,7 +288,9 @@ export interface BuildChatMessagesParams {
  * as a system message, parses examples into individual messages, and maps
  * coreChat items to their appropriate roles.
  */
-export async function buildChatMessages(params: BuildChatMessagesParams): Promise<ChatTemplateMessage[]> {
+export async function buildChatMessages(
+    params: BuildChatMessagesParams,
+): Promise<ChatTemplateMessage[]> {
     const messages: ChatTemplateMessage[] = [];
 
     // 1. System-level context from story string (raw, no pre-formatting)
@@ -309,9 +319,12 @@ export async function buildChatMessages(params: BuildChatMessagesParams): Promis
         for (const msg of parsed) {
             // parseExampleIntoIndividual returns role='system' with name='example_user'/'example_assistant'
             // HuggingFace templates need proper user/assistant roles for alternation
-            const role = msg.name === 'example_user'
-                ? 'user'
-                : (msg.name === 'example_assistant' ? 'assistant' : String(msg.role));
+            const role =
+                msg.name === 'example_user'
+                    ? 'user'
+                    : msg.name === 'example_assistant'
+                      ? 'assistant'
+                      : String(msg.role);
             messages.push({
                 role: role,
                 content: String(msg.content),
@@ -364,7 +377,9 @@ export async function buildChatMessages(params: BuildChatMessagesParams): Promis
         // messages fall back to 'assistant' to preserve alternation.
         const quietRole = params.quietToLoud
             ? 'assistant'
-            : (messages.length === 0 ? 'system' : 'assistant');
+            : messages.length === 0
+              ? 'system'
+              : 'assistant';
         messages.push({
             role: quietRole,
             content: params.quiet_prompt,

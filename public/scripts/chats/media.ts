@@ -74,7 +74,11 @@ export function expandMessageMedia(messageId: number, mediaIndex: number): HTMLE
     const mediaAttachment = message.extra.media[mediaIndex]!;
     const title = mediaAttachment.title || '';
 
-    const mediaElement = createExpandedMediaElement(mediaAttachment.type, mediaAttachment.url, title);
+    const mediaElement = createExpandedMediaElement(
+        mediaAttachment.type,
+        mediaAttachment.url,
+        title,
+    );
     if (!mediaElement) return null;
 
     const mediaHolder = document.createElement('div');

@@ -23,10 +23,20 @@ import accessLoggerMiddleware, { migrateAccessLog } from './middleware/accessLog
 import cacheBuster from './middleware/cacheBuster.js';
 
 import {
-    initUserStorage, ensurePublicDirectoriesExist, migrateUserData, migrateSystemPrompts,
-    migratePublicOverrides, verifySecuritySettings, getUserDirectoriesList, cleanUploads,
-    getCookieSecret, getCookieSessionName, getSessionCookieAge,
-    setUserDataMiddleware, shouldRedirectToLogin, loginPageMiddleware,
+    initUserStorage,
+    ensurePublicDirectoriesExist,
+    migrateUserData,
+    migrateSystemPrompts,
+    migratePublicOverrides,
+    verifySecuritySettings,
+    getUserDirectoriesList,
+    cleanUploads,
+    getCookieSecret,
+    getCookieSessionName,
+    getSessionCookieAge,
+    setUserDataMiddleware,
+    shouldRedirectToLogin,
+    loginPageMiddleware,
     router as userDataRouter,
 } from './users.js';
 import { router as usersPublicRouter } from './endpoints/users-public.js';
@@ -52,7 +62,11 @@ import { router as charactersRouter, diskCache } from './endpoints/characters.js
 import { router as chatsRouter } from './endpoints/chats.js';
 import { router as groupsRouter, migrateGroupChatsMetadataFormat } from './endpoints/groups.js';
 import { router as worldInfoRouter } from './endpoints/worldinfo.js';
-import { router as statsRouter, init as statsInit, onExit as statsOnExit } from './endpoints/stats.js';
+import {
+    router as statsRouter,
+    init as statsInit,
+    onExit as statsOnExit,
+} from './endpoints/stats.js';
 import { router as contentManagerRouter, checkForNewContent } from './endpoints/content-manager.js';
 import { router as settingsRouter, init as settingsInit } from './endpoints/settings.js';
 import { router as backgroundsRouter } from './endpoints/backgrounds.js';
@@ -100,22 +114,30 @@ function adaptMiddleware(mw: (req: any, res: any, next: any) => void) {
             method: request.method,
             url: request.url,
             originalUrl: request.url,
-            ip: request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
-                || request.headers.get('x-real-ip')
-                || '127.0.0.1',
+            ip:
+                request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+                request.headers.get('x-real-ip') ||
+                '127.0.0.1',
             query: Object.fromEntries(url.searchParams),
         };
         const mockRes: any = {
-            status(code: number) { set.status = code; return this; },
+            status(code: number) {
+                set.status = code;
+                return this;
+            },
             send() {},
             json() {},
-            sendStatus(code: number) { set.status = code; },
+            sendStatus(code: number) {
+                set.status = code;
+            },
             setHeader() {},
-            getHeaders() { return {}; },
+            getHeaders() {
+                return {};
+            },
             end() {},
         };
         return new Promise<void>((resolve, reject) => {
-            mw(mockReq, mockRes, (err?: any) => err ? reject(err) : resolve());
+            mw(mockReq, mockRes, (err?: any) => (err ? reject(err) : resolve()));
         });
     };
 }
@@ -128,13 +150,18 @@ function signSession(payload: string, secret: string): string {
     return createHmac('sha256', secret).update(payload).digest('base64url');
 }
 
-function unsafeDecodeSession(value: string): { data: Record<string, unknown> | null; sig: string } | null {
+function unsafeDecodeSession(
+    value: string,
+): { data: Record<string, unknown> | null; sig: string } | null {
     const dot = value.indexOf('.');
     if (dot === -1) return null;
     return {
         data: (() => {
-            try { return JSON.parse(Buffer.from(value.slice(0, dot), 'base64url').toString('utf8')); }
-            catch { return null; }
+            try {
+                return JSON.parse(Buffer.from(value.slice(0, dot), 'base64url').toString('utf8'));
+            } catch {
+                return null;
+            }
         })(),
         sig: value.slice(dot + 1),
     };
@@ -154,14 +181,22 @@ function sessionPlugin(config: { name: string; maxAge: number; secret: string })
                     const decoded = unsafeDecodeSession(raw);
                     if (decoded?.data && typeof decoded.sig === 'string') {
                         const expected = signSession(raw.slice(0, raw.indexOf('.')), secret);
-                        if (timingSafeEqual(encoder.encode(decoded.sig), encoder.encode(expected))) {
+                        if (
+                            timingSafeEqual(encoder.encode(decoded.sig), encoder.encode(expected))
+                        ) {
                             session = decoded.data;
                         }
                     }
                 }
                 const proxy = new Proxy(session, {
-                    set(t, p, v) { markDirty(t); return Reflect.set(t, p, v); },
-                    deleteProperty(t, p) { markDirty(t); return Reflect.deleteProperty(t, p); },
+                    set(t, p, v) {
+                        markDirty(t);
+                        return Reflect.set(t, p, v);
+                    },
+                    deleteProperty(t, p) {
+                        markDirty(t);
+                        return Reflect.deleteProperty(t, p);
+                    },
                 });
                 return { session: proxy };
             })
@@ -177,7 +212,13 @@ function sessionPlugin(config: { name: string; maxAge: number; secret: string })
                 const payload = Buffer.from(JSON.stringify(plain), 'utf8').toString('base64url');
                 const sig = signSession(payload, secret);
                 const maxAgeSeconds = Math.floor(maxAge / 1000);
-                cookie[name] = { value: `${payload}.${sig}`, path: '/', httpOnly: true, sameSite: 'lax', maxAge: maxAgeSeconds };
+                cookie[name] = {
+                    value: `${payload}.${sig}`,
+                    path: '/',
+                    httpOnly: true,
+                    sameSite: 'lax',
+                    maxAge: maxAgeSeconds,
+                };
             });
     };
 }
@@ -191,9 +232,14 @@ export function buildApp() {
     // 404 handler
     app.onError(({ code, set }) => {
         if (code === 'NOT_FOUND') {
-            const notFound = safeReadFileSync(path.join(globalThis.DATA_ROOT, '_errors', 'url-not-found.html')) ?? '';
+            const notFound =
+                safeReadFileSync(
+                    path.join(globalThis.DATA_ROOT, '_errors', 'url-not-found.html'),
+                ) ?? '';
             set.status = 404;
-            return new Response(notFound, { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
+            return new Response(notFound, {
+                headers: { 'Content-Type': 'text/html; charset=utf-8' },
+            });
         }
     });
 
@@ -211,12 +257,34 @@ export function buildApp() {
     const corsEnabled = getConfigValue('cors.enabled', true, 'boolean' as any);
     if (corsEnabled) {
         const corsOrigin = String(getConfigValue('cors.origin', '*', 'string' as any) ?? '*');
-        const corsMethods = getConfigValue('cors.methods', ['OPTIONS'] as any, 'object' as any) as string[];
-        const corsAllowedHeaders = getConfigValue('cors.allowedHeaders', [] as any, 'object' as any) as string[];
-        const corsExposedHeaders = getConfigValue('cors.exposedHeaders', [] as any, 'object' as any) as string[];
-        const corsCredentials = getConfigValue('cors.credentials', false as any, 'boolean' as any) as boolean;
-        const corsMaxAge = getConfigValue('cors.maxAge', null as any, 'number' as any) as number | null;
-        const opts: any = { origin: corsOrigin, methods: corsMethods, credentials: corsCredentials };
+        const corsMethods = getConfigValue(
+            'cors.methods',
+            ['OPTIONS'] as any,
+            'object' as any,
+        ) as string[];
+        const corsAllowedHeaders = getConfigValue(
+            'cors.allowedHeaders',
+            [] as any,
+            'object' as any,
+        ) as string[];
+        const corsExposedHeaders = getConfigValue(
+            'cors.exposedHeaders',
+            [] as any,
+            'object' as any,
+        ) as string[];
+        const corsCredentials = getConfigValue(
+            'cors.credentials',
+            false as any,
+            'boolean' as any,
+        ) as boolean;
+        const corsMaxAge = getConfigValue('cors.maxAge', null as any, 'number' as any) as
+            | number
+            | null;
+        const opts: any = {
+            origin: corsOrigin,
+            methods: corsMethods,
+            credentials: corsCredentials,
+        };
         if (corsAllowedHeaders.length) opts.allowedHeaders = corsAllowedHeaders;
         if (corsExposedHeaders.length) opts.exposeHeaders = corsExposedHeaders;
         if (corsMaxAge !== null) opts.maxAge = corsMaxAge;
@@ -243,29 +311,39 @@ export function buildApp() {
     app.onAfterHandle({ as: 'global' }, ({ request, set }: any) => {
         const start = (request as any).__startTime;
         if (start) {
-            (set.headers as Record<string, string>)['X-Response-Time'] = `${(performance.now() - start).toFixed(3)}ms`;
+            (set.headers as Record<string, string>)['X-Response-Time'] =
+                `${(performance.now() - start).toFixed(3)}ms`;
         }
     });
 
     // Session
-    app.use(sessionPlugin({
-        name: getCookieSessionName(),
-        maxAge: getSessionCookieAge() ?? 400 * 24 * 60 * 60 * 1000,
-        secret: getCookieSecret(globalThis.DATA_ROOT),
-    }));
+    app.use(
+        sessionPlugin({
+            name: getCookieSessionName(),
+            maxAge: getSessionCookieAge() ?? 400 * 24 * 60 * 60 * 1000,
+            secret: getCookieSecret(globalThis.DATA_ROOT),
+        }),
+    );
 
     // User data
     app.derive({ as: 'global' }, async ({ session, request }: any) => {
-        const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
-            || request.headers.get('x-real-ip')
-            || '127.0.0.1';
+        const ip =
+            request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+            request.headers.get('x-real-ip') ||
+            '127.0.0.1';
         const url = new URL(request.url);
         const mockReq: any = {
-            session, ip, headers: Object.fromEntries(request.headers),
-            path: url.pathname, method: request.method, originalUrl: request.url,
+            session,
+            ip,
+            headers: Object.fromEntries(request.headers),
+            path: url.pathname,
+            method: request.method,
+            originalUrl: request.url,
         };
         await new Promise<void>((resolve, reject) => {
-            setUserDataMiddleware(mockReq, null as any, (err?: any) => err ? reject(err) : resolve());
+            setUserDataMiddleware(mockReq, null as any, (err?: any) =>
+                err ? reject(err) : resolve(),
+            );
         });
         return { user: mockReq.user ?? null };
     });
@@ -274,16 +352,25 @@ export function buildApp() {
     if (!cliArgs?.disableCsrf) {
         const CSRF_SECRET = process.env['CSRF_SECRET'] || randomBytes(64).toString('hex');
         app.get('/csrf-token', ({ request }: any) => {
-            const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
-                || request.headers.get('x-real-ip') || 'anonymous';
-            return { token: Bun.CSRF.generate(CSRF_SECRET, { sessionId: ip, expiresIn: 86400000 } as any) };
+            const ip =
+                request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+                request.headers.get('x-real-ip') ||
+                'anonymous';
+            return {
+                token: Bun.CSRF.generate(CSRF_SECRET, {
+                    sessionId: ip,
+                    expiresIn: 86400000,
+                } as any),
+            };
         });
         app.onBeforeHandle({ as: 'global' }, ({ request, set }: any) => {
             if (['GET', 'HEAD', 'OPTIONS'].includes(request.method)) return;
             if (request.url?.includes('/proxy/')) return;
             const token = request.headers.get('x-csrf-token');
-            const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
-                || request.headers.get('x-real-ip') || 'anonymous';
+            const ip =
+                request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+                request.headers.get('x-real-ip') ||
+                'anonymous';
             if (!token || !Bun.CSRF.verify(token, { secret: CSRF_SECRET, sessionId: ip } as any)) {
                 set.status = 403;
                 return { error: 'Invalid CSRF token. Please refresh the page and try again.' };
@@ -297,7 +384,10 @@ export function buildApp() {
     // User CSS
     app.get('/css/user.css', async ({ set }: any) => {
         const userCssPath = path.resolve(path.join(globalThis.DATA_ROOT, '_css', 'user.css'));
-        if (fs.existsSync(userCssPath)) return new Response(Bun.file(userCssPath), { headers: { 'Content-Type': 'text/css; charset=utf-8' } });
+        if (fs.existsSync(userCssPath))
+            return new Response(Bun.file(userCssPath), {
+                headers: { 'Content-Type': 'text/css; charset=utf-8' },
+            });
         set.status = 404;
     });
 
@@ -318,17 +408,22 @@ export function buildApp() {
     });
 
     // Static files — @elysiajs/static handles Content-Type automatically
-    app.use(staticPlugin({
-        assets: path.join(serverDirectory, 'public/dist'),
-        prefix: '/',
-        indexHTML: false,
-        alwaysStatic: true,
-    }));
+    app.use(
+        staticPlugin({
+            assets: path.join(serverDirectory, 'public/dist'),
+            prefix: '/',
+            indexHTML: false,
+            alwaysStatic: true,
+        }),
+    );
 
     // Route handlers
     app.get('/', async ({ request, set, user }: any) => {
         // Cache busting — set Clear-Site-Data before any response
-        const bustCache = cacheBuster.getClearSiteDataValue(user, request.headers.get('user-agent') || '');
+        const bustCache = cacheBuster.getClearSiteDataValue(
+            user,
+            request.headers.get('user-agent') || '',
+        );
 
         if (shouldRedirectToLogin(request)) {
             const q = request.url.split('?')[1];
@@ -364,9 +459,14 @@ export function buildApp() {
     app.use(usersPublicRouter as any);
 
     // Auth gate
-    app.guard({}, (g: any) => g.onBeforeHandle({ as: 'global' }, ({ user, set }: any) => {
-        if (!user) { set.status = 401; return { error: 'Not authenticated' }; }
-    }));
+    app.guard({}, (g: any) =>
+        g.onBeforeHandle({ as: 'global' }, ({ user, set }: any) => {
+            if (!user) {
+                set.status = 401;
+                return { error: 'Not authenticated' };
+            }
+        }),
+    );
 
     // Ping
     app.post('/api/ping', ({ request, session, set }: any) => {
@@ -375,22 +475,59 @@ export function buildApp() {
     });
 
     // Version
-    app.get('/version', async () => { const v = await getVersion(); return v; });
+    app.get('/version', async () => {
+        const v = await getVersion();
+        return v;
+    });
 
     // Mount all routers
     const routers = [
-        userDataRouter, usersPrivateRouter, usersAdminRouter,
-        movingUIRouter, imagesRouter, quickRepliesRouter, avatarsRouter,
-        themesRouter, openAiRouter, googleRouter, anthropicRouter,
-        tokenizersRouter, presetsRouter, secretsRouter, thumbnailRouter,
-        novelAiRouter, extensionsRouter, assetsRouter, filesRouter,
-        charactersRouter, chatsRouter, groupsRouter, worldInfoRouter,
-        statsRouter, backgroundsRouter, spritesRouter, contentManagerRouter,
-        settingsRouter, stableDiffusionRouter, hordeRouter, vectorsRouter,
-        translateRouter, searchRouter, textCompletionsRouter, openRouterRouter,
-        nanogptRouter, koboldRouter, chatCompletionsRouter, backendsKeysRouter,
-        speechRouter, azureRouter, volcengineRouter, minimaxRouter,
-        dataMaidRouter, backupsRouter, imageMetadataRouter,
+        userDataRouter,
+        usersPrivateRouter,
+        usersAdminRouter,
+        movingUIRouter,
+        imagesRouter,
+        quickRepliesRouter,
+        avatarsRouter,
+        themesRouter,
+        openAiRouter,
+        googleRouter,
+        anthropicRouter,
+        tokenizersRouter,
+        presetsRouter,
+        secretsRouter,
+        thumbnailRouter,
+        novelAiRouter,
+        extensionsRouter,
+        assetsRouter,
+        filesRouter,
+        charactersRouter,
+        chatsRouter,
+        groupsRouter,
+        worldInfoRouter,
+        statsRouter,
+        backgroundsRouter,
+        spritesRouter,
+        contentManagerRouter,
+        settingsRouter,
+        stableDiffusionRouter,
+        hordeRouter,
+        vectorsRouter,
+        translateRouter,
+        searchRouter,
+        textCompletionsRouter,
+        openRouterRouter,
+        nanogptRouter,
+        koboldRouter,
+        chatCompletionsRouter,
+        backendsKeysRouter,
+        speechRouter,
+        azureRouter,
+        volcengineRouter,
+        minimaxRouter,
+        dataMaidRouter,
+        backupsRouter,
+        imageMetadataRouter,
     ];
     for (const r of routers) app.use(r as any);
 
@@ -448,7 +585,11 @@ async function start() {
 
     const listenUrl = cliArgs.getIPv4ListenUrl();
     const port = Number(listenUrl.port) || 8000;
-    const host = cliArgs.listen ? listenUrl.hostname : (cliArgs.enableIPv6 !== false ? '::1' : '127.0.0.1');
+    const host = cliArgs.listen
+        ? listenUrl.hostname
+        : cliArgs.enableIPv6 !== false
+          ? '::1'
+          : '127.0.0.1';
 
     const serverOptions: any = { port, hostname: host, reusePort: true };
 
@@ -467,12 +608,18 @@ async function start() {
     const server = app.listen(serverOptions);
 
     process.on('SIGINT', async () => {
-        await statsOnExit(); if (typeof cleanupPlugins === 'function') await cleanupPlugins();
-        diskCache.dispose(); server.stop(); process.exit();
+        await statsOnExit();
+        if (typeof cleanupPlugins === 'function') await cleanupPlugins();
+        diskCache.dispose();
+        server.stop();
+        process.exit();
     });
     process.on('SIGTERM', async () => {
-        await statsOnExit(); if (typeof cleanupPlugins === 'function') await cleanupPlugins();
-        diskCache.dispose(); server.stop(); process.exit();
+        await statsOnExit();
+        if (typeof cleanupPlugins === 'function') await cleanupPlugins();
+        diskCache.dispose();
+        server.stop();
+        process.exit();
     });
 
     const hostname = cliArgs.listen ? `0.0.0.0:${port}` : `localhost:${port}`;
@@ -483,4 +630,7 @@ async function start() {
     serverEvents.emit(EVENT_NAMES.SERVER_STARTED, { url: new URL(`http://${hostname}/`) });
 }
 
-start().catch((err: any) => { console.error('Startup failed:', err); process.exit(1); });
+start().catch((err: any) => {
+    console.error('Startup failed:', err);
+    process.exit(1);
+});

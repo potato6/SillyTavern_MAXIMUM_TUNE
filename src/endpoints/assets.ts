@@ -13,7 +13,10 @@ const VALID_CATEGORIES = new Set(['bgm', 'ambient', 'blip', 'live2d', 'vrm', 'ch
 
 export function validateAssetFileName(inputFilename: string) {
     if (!/^[a-zA-Z0-9_\-.]+$/.test(inputFilename)) {
-        return { error: true, message: "Illegal character in filename; only alphanumeric, '_', '-' are accepted." };
+        return {
+            error: true,
+            message: "Illegal character in filename; only alphanumeric, '_', '-' are accepted.",
+        };
     }
 
     const inputExtension = path.extname(inputFilename).toLowerCase();
@@ -36,7 +39,10 @@ export const router = new Elysia({ prefix: '/api/assets' })
     .post('/upload', async (context: Record<string, unknown>) => {
         const set = context.set as Record<string, unknown>;
         const body = context.body as Record<string, unknown>;
-        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
         const directories = user?.directories as Record<string, string> | undefined;
 
         try {
@@ -114,7 +120,11 @@ export const router = new Elysia({ prefix: '/api/assets' })
 
                 const fileStream = fs.createWriteStream(pathToUpload);
                 if (response.body) {
-                    await finished(Readable.fromWeb(response.body as unknown as import('stream/web').ReadableStream).pipe(fileStream));
+                    await finished(
+                        Readable.fromWeb(
+                            response.body as unknown as import('stream/web').ReadableStream,
+                        ).pipe(fileStream),
+                    );
                 }
                 const relative = clientRelativePath(directories?.root ?? '', pathToUpload);
                 return { path: relative };
@@ -131,7 +141,10 @@ export const router = new Elysia({ prefix: '/api/assets' })
     .post('/delete', (context: Record<string, unknown>) => {
         const set = context.set as Record<string, unknown>;
         const body = context.body as Record<string, unknown>;
-        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
         const directories = user?.directories as Record<string, string> | undefined;
 
         try {
@@ -162,7 +175,10 @@ export const router = new Elysia({ prefix: '/api/assets' })
     .post('/download', (context: Record<string, unknown>) => {
         const set = context.set as Record<string, unknown>;
         const body = context.body as Record<string, unknown>;
-        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
         const directories = user?.directories as Record<string, string> | undefined;
 
         try {
@@ -191,7 +207,10 @@ export const router = new Elysia({ prefix: '/api/assets' })
     .post('/list', (context: Record<string, unknown>) => {
         const set = context.set as Record<string, unknown>;
         const body = context.body as Record<string, unknown>;
-        const user = (context as unknown as Record<string, unknown>).user as Record<string, unknown> | null;
+        const user = (context as unknown as Record<string, unknown>).user as Record<
+            string,
+            unknown
+        > | null;
         const directories = user?.directories as Record<string, string> | undefined;
 
         try {

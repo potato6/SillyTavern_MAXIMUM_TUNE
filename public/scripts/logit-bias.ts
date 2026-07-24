@@ -119,7 +119,8 @@ function createLogitBiasListItem(entry, logitBias, containerSelector, listElemen
     });
 
     // Use the passed list element to avoid redundant DOM queries
-    const list = listElement || document.querySelector(containerSelector).querySelector('.logit_bias_list');
+    const list =
+        listElement || document.querySelector(containerSelector).querySelector('.logit_bias_list');
     list.prepend(template);
 }
 

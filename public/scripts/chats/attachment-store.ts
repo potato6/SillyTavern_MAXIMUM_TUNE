@@ -133,7 +133,7 @@ export async function populateFileAttachment(
             const slug = getStringHash(file.name);
             const fileNamePrefix = `${Date.now()}_${slug}`;
 
-            const fileBase64 = await getBase64Async(file) as string;
+            const fileBase64 = (await getBase64Async(file)) as string;
 
             // Fast string slice (avoids Array heap allocation from .split)
             const commaIndex = fileBase64.indexOf(',');
