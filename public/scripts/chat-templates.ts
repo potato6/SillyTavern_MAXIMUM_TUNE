@@ -185,7 +185,7 @@ export type ChatTemplateMessage = {
  *    creating a duplicate).
  */
 function enforceAlternation(messages: ChatTemplateMessage[]): ChatTemplateMessage[] {
-    if (messages.length <= 1) return messages;
+    if (messages.length === 0) return messages;
 
     // HuggingFace chat templates expect the first non-system message to be
     // 'user'.  SillyTavern chats typically start with the character greeting
