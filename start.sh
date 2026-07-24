@@ -14,6 +14,6 @@ bun install &&
 
 echo "Entering SillyTavern..."
 
-./dist/server/server "$@"
+./dist/server/SillyTavern "$@"
 
 

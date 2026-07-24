@@ -110,9 +110,8 @@ async function openToastPopup(
         large: true,
 
         onOpen: async () => {
-            // 1. Load ToastUI CSS
+            // 1. Load ToastUI base CSS (theme comes from SillyTavern CSS vars instead of separate dark CSS)
             await loadCSS('/lib/toastui/toastui-editor.css');
-            await loadCSS('/lib/toastui/theme/toastui-editor-dark.css');
 
             // 2. Dynamically import ToastUI Editor
             // @ts-expect-error ToastUI Editor types not available
@@ -164,9 +163,10 @@ async function openToastPopup(
                 },
             });
 
-            // 4. Inject theme styles into the content area (CSS vars cascade — no iframe)
+            // 4. Inject theme styles — using SillyTavern CSS variables instead of a separate dark CSS file
             const themeStyle = document.createElement('style');
             themeStyle.textContent = `
+                /* ── Content area (editor body) ── */
                 .ProseMirror,
                 .toastui-editor-contents {
                     background: var(--SmartThemeBlurTintColor, #1a1a2e);
@@ -193,6 +193,120 @@ async function openToastPopup(
                 /* Quotation marks inherit the "Quote Text" theme color */
                 .toastui-editor-contents .quote-text {
                     color: var(--SmartThemeQuoteColor, #e18a24);
+                }
+
+                /* ── UI Chrome — inherited from SillyTavern theme variables ── */
+                .toastui-editor-dark.toastui-editor-defaultUI {
+                    border-color: var(--SmartThemeBorderColor, #494c56);
+                    color: var(--SmartThemeBodyColor, #eee);
+                }
+                .toastui-editor-dark .toastui-editor-md-container,
+                .toastui-editor-dark .toastui-editor-ww-container {
+                    background-color: var(--SmartThemeBlurTintColor, #121212);
+                }
+                .toastui-editor-dark .toastui-editor-defaultUI-toolbar {
+                    background-color: var(--SmartThemeBlurTintColor, #232428);
+                    border-bottom-color: var(--SmartThemeBorderColor, #303238);
+                }
+                .toastui-editor-dark .toastui-editor-toolbar-icons {
+                    background-position-y: -49px;
+                    border-color: transparent;
+                }
+                .toastui-editor-dark .toastui-editor-toolbar-icons:not(:disabled):hover {
+                    background-color: var(--SmartThemeShadowColor, #36383f);
+                    border-color: var(--SmartThemeBorderColor, #36383f);
+                }
+                .toastui-editor-dark .toastui-editor-toolbar-divider {
+                    background-color: var(--SmartThemeBorderColor, #303238);
+                }
+                .toastui-editor-dark .toastui-editor-tooltip {
+                    background-color: var(--SmartThemeBlurTintColor, #535662);
+                }
+                .toastui-editor-dark .toastui-editor-tooltip .arrow {
+                    background-color: var(--SmartThemeBlurTintColor, #535662);
+                }
+                .toastui-editor-dark .toastui-editor-defaultUI-toolbar .scroll-sync::before {
+                    color: var(--SmartThemeEmColor, #8f939f);
+                }
+                .toastui-editor-dark .toastui-editor-defaultUI-toolbar .scroll-sync.active::before {
+                    color: var(--SmartThemeQuoteColor, #67ccff);
+                }
+                .toastui-editor-dark .toastui-editor-defaultUI-toolbar .switch {
+                    background-color: var(--SmartThemeBorderColor, #2b4455);
+                }
+                .toastui-editor-dark .toastui-editor-defaultUI-toolbar .switch::before {
+                    background-color: var(--SmartThemeBodyColor, #8f939f);
+                }
+                .toastui-editor-dark .toastui-editor-defaultUI-toolbar input:checked + .switch::before {
+                    background-color: var(--SmartThemeQuoteColor, #67ccff);
+                }
+                .toastui-editor-dark .toastui-editor-main .toastui-editor-md-splitter {
+                    background-color: var(--SmartThemeBorderColor, #303238);
+                }
+                .toastui-editor-dark .toastui-editor-mode-switch {
+                    border-top-color: var(--SmartThemeBorderColor, #393b42);
+                    background-color: var(--SmartThemeBlurTintColor, #121212);
+                }
+                .toastui-editor-dark .toastui-editor-mode-switch .tab-item {
+                    border-color: var(--SmartThemeBorderColor, #393b42);
+                    background-color: transparent;
+                    color: var(--SmartThemeEmColor, #757a86);
+                }
+                .toastui-editor-dark .toastui-editor-mode-switch .tab-item.active {
+                    border-top-color: var(--SmartThemeBlurTintColor, #121212);
+                    background-color: var(--SmartThemeBlurTintColor, #121212);
+                    color: var(--SmartThemeBodyColor, #eee);
+                }
+                .toastui-editor-dark .toastui-editor-popup,
+                .toastui-editor-dark .toastui-editor-context-menu {
+                    background-color: var(--SmartThemeBlurTintColor, #121212);
+                    box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.08);
+                    border-color: var(--SmartThemeBorderColor, #494c56);
+                }
+                .toastui-editor-dark .toastui-editor-popup-add-heading ul li:hover {
+                    background-color: var(--SmartThemeShadowColor, #36383f);
+                }
+                .toastui-editor-dark .toastui-editor-popup-body label {
+                    color: var(--SmartThemeEmColor, #9a9da3);
+                }
+                .toastui-editor-dark .toastui-editor-popup-body input[type='text'] {
+                    background-color: transparent;
+                    color: var(--SmartThemeBodyColor, #eee);
+                    border-color: var(--SmartThemeBorderColor, #303238);
+                }
+                .toastui-editor-dark .toastui-editor-popup-body input[type='text']:focus {
+                    outline-color: var(--SmartThemeQuoteColor, #67ccff);
+                }
+                .toastui-editor-dark .toastui-editor-md-tab-container {
+                    background-color: var(--SmartThemeBlurTintColor, #232428);
+                    border-bottom-color: var(--SmartThemeBorderColor, #303238);
+                }
+                .toastui-editor-dark .toastui-editor-md-tab-container .tab-item {
+                    border-color: var(--SmartThemeBorderColor, #393b42);
+                    background-color: transparent;
+                    color: var(--SmartThemeEmColor, #757a86);
+                }
+                .toastui-editor-dark .toastui-editor-md-tab-container .tab-item.active {
+                    border-bottom-color: var(--SmartThemeBlurTintColor, #121212);
+                    background-color: var(--SmartThemeBlurTintColor, #121212);
+                    color: var(--SmartThemeBodyColor, #eee);
+                }
+                .toastui-editor-dark .toastui-editor-context-menu .menu-group {
+                    border-bottom-color: var(--SmartThemeBorderColor, #303238);
+                    color: var(--SmartThemeBodyColor, #eee);
+                }
+                .toastui-editor-dark .toastui-editor-context-menu .menu-item span::before {
+                    background-position-y: -126px;
+                }
+                .toastui-editor-dark .toastui-editor-context-menu li:not(.disabled):hover {
+                    background-color: var(--SmartThemeShadowColor, #36383f);
+                }
+                .toastui-editor-dark .toastui-editor-context-menu li.disabled {
+                    color: var(--SmartThemeEmColor, #969aa5);
+                }
+                .toastui-editor-dark .toastui-editor-dropdown-toolbar {
+                    border-color: var(--SmartThemeBorderColor, #494c56);
+                    background-color: var(--SmartThemeBlurTintColor, #232428);
                 }
             `;
             container.appendChild(themeStyle);

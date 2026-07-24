@@ -127,11 +127,9 @@ if (!result.success) {
 // Copy pre-built vendor CSS that isn't processed by Bun.build
 // (ToastUI CSS is loaded at runtime by the editor)
 const TOASTUI_CSS = 'node_modules/@toast-ui/editor/dist/toastui-editor.css';
-const TOASTUI_CSS_DARK = 'node_modules/@toast-ui/editor/dist/theme/toastui-editor-dark.css';
 const VENDOR_CSS_DEST = 'public/dist/lib/toastui/';
-mkdirSync(path.join(VENDOR_CSS_DEST, 'theme'), { recursive: true });
+mkdirSync(VENDOR_CSS_DEST, { recursive: true });
 copyFileSync(TOASTUI_CSS, path.join(VENDOR_CSS_DEST, 'toastui-editor.css'));
-copyFileSync(TOASTUI_CSS_DARK, path.join(VENDOR_CSS_DEST, 'theme/toastui-editor-dark.css'));
 console.log('Copied ToastUI CSS assets.');
 
 console.log('Compiling backend binary...');
@@ -139,7 +137,9 @@ const serverResult = await Bun.build({
     entrypoints: ['server.ts'],
     outdir: 'dist/server',
     target: 'bun',
-    compile: true,
+    compile: {
+        outfile: 'SillyTavern',
+    },
     minify: false,
     bytecode: false, // causing build errors rn, but i plan to enable as soon as its stable
     sourcemap: 'linked',
