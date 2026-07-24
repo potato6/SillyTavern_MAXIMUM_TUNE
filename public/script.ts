@@ -14489,7 +14489,9 @@ function initCharacterSearch() {
                 await sendMessageAsUser(text, null);
                 await eventSource.emit(event_types.USER_MESSAGE_RENDERED, chat.length - 1);
                 scrollChatToBottom();
-                await Generate('continue', buildOrFillAdditionalArgs());
+                if (main_api !== 'openai') {
+                    await Generate('continue', buildOrFillAdditionalArgs());
+                }
             }
         } else if (id == 'option_impersonate_bot') {
             if (is_send_press == false || fromSlashCommand) {
