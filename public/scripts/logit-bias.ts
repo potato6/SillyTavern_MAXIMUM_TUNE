@@ -25,7 +25,7 @@ export function displayLogitBias(logitBias, containerSelector) {
 
     for (const entry of logitBias) {
         if (entry) {
-            createLogitBiasListItem(entry, logitBias, containerSelector);
+            createLogitBiasListItem(entry, logitBias, containerSelector, list);
         }
     }
 
@@ -41,13 +41,15 @@ export function displayLogitBias(logitBias, containerSelector) {
         delay: getSortableDelay(),
         handle: '.drag-handle',
         onEnd: function () {
-            // @ts-expect-error TS(7034) FIXME: Variable 'order' implicitly has type 'any[]' in so... Remove this comment to see the full error message
-            const order = [];
-            for (const child of sortableEl.children) {
-                order.unshift(child.dataset.id);
+            const children = sortableEl.children;
+            // Use a Map for O(1) lookups instead of array.indexOf which is O(N) per sort comparison
+            const orderMap = new Map();
+            let idx = 0;
+            // Replicate the original unshift behavior by iterating backwards
+            for (let i = children.length - 1; i >= 0; i--) {
+                orderMap.set(children[i].dataset.id, idx++);
             }
-            // @ts-expect-error TS(7005) FIXME: Variable 'order' implicitly has an 'any[]' type.
-            logitBias.sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id));
+            logitBias.sort((a, b) => orderMap.get(a.id) - orderMap.get(b.id));
             console.log('Logit bias reordered:', logitBias);
             saveSettingsDebounced();
         },
@@ -75,9 +77,10 @@ export function createNewLogitBiasEntry(logitBias, containerSelector) {
  * @param {object} entry Logit bias entry
  * @param {object[]} logitBias Array of logit bias objects
  * @param {string} containerSelector Container element ID
+ * @param {HTMLElement} [listElement] Pre-selected list element
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'entry' implicitly has an 'any' type.
-function createLogitBiasListItem(entry, logitBias, containerSelector) {
+function createLogitBiasListItem(entry, logitBias, containerSelector, listElement = null) {
     const id = entry.id;
     // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
     const template = /** @type {HTMLElement} */ (
@@ -114,7 +117,10 @@ function createLogitBiasListItem(entry, logitBias, containerSelector) {
         BIAS_CACHE.delete(containerSelector);
         saveSettingsDebounced();
     });
-    document.querySelector(containerSelector).querySelector('.logit_bias_list').prepend(template);
+
+    // Use the passed list element to avoid redundant DOM queries
+    const list = listElement || document.querySelector(containerSelector).querySelector('.logit_bias_list');
+    list.prepend(template);
 }
 
 /**
@@ -129,37 +135,36 @@ export function getLogitBiasListResult(biasPreset, tokenizerType, getBiasObject)
     const result = [];
 
     for (const entry of biasPreset) {
-        if (entry.text?.length > 0) {
-            const text = entry.text.trim();
+        // Trim once and check length to avoid multiple string allocations and property accesses
+        const text = entry?.text?.trim();
 
-            // Skip empty lines
-            if (text.length === 0) {
-                continue;
-            }
+        // Skip empty lines or missing text
+        if (!text) {
+            continue;
+        }
 
-            // Verbatim text
-            if (text.startsWith('{') && text.endsWith('}')) {
-                const tokens = getTextTokens(tokenizerType, text.slice(1, -1));
-                result.push(getBiasObject(entry.value, tokens));
-            } else if (text.startsWith('[') && text.endsWith(']')) {
-                // Raw token ids, JSON serialized
-                try {
-                    const tokens = JSON.parse(text);
+        // Verbatim text
+        if (text.startsWith('{') && text.endsWith('}')) {
+            const tokens = getTextTokens(tokenizerType, text.slice(1, -1));
+            result.push(getBiasObject(entry.value, tokens));
+        } else if (text.startsWith('[') && text.endsWith(']')) {
+            // Raw token ids, JSON serialized
+            try {
+                const tokens = JSON.parse(text);
 
-                    if (Array.isArray(tokens) && tokens.every((t) => Number.isInteger(t))) {
-                        result.push(getBiasObject(entry.value, tokens));
-                    } else {
-                        throw new Error('Not an array of integers');
-                    }
-                } catch (err) {
-                    console.log(`Failed to parse logit bias token list: ${text}`, err);
+                if (Array.isArray(tokens) && tokens.every((t) => Number.isInteger(t))) {
+                    result.push(getBiasObject(entry.value, tokens));
+                } else {
+                    throw new Error('Not an array of integers');
                 }
-            } else {
-                // Text with a leading space
-                const biasText = ` ${text}`;
-                const tokens = getTextTokens(tokenizerType, biasText);
-                result.push(getBiasObject(entry.value, tokens));
+            } catch (err) {
+                console.log(`Failed to parse logit bias token list: ${text}`, err);
             }
+        } else {
+            // Text with a leading space
+            const biasText = ` ${text}`;
+            const tokens = getTextTokens(tokenizerType, biasText);
+            result.push(getBiasObject(entry.value, tokens));
         }
     }
     return result;
