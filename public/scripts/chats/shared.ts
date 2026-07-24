@@ -12,8 +12,11 @@ import { renderExtensionTemplateAsync } from '../extensions.js';
 /**
  * Renders an extension template and returns the first child element.
  *
- * Eliminates the 6-line boilerplate of:
- *   templateHTML → createElement('div') → innerHTML → firstElementChild → guard
+ * Eliminates the boilerplate of parsing HTML strings.
+ * Uses a <template> tag to parse HTML into an inert DocumentFragment,
+ * which avoids layout thrashing and prevents subresources (like images)
+ * from aggressively pre-loading before insertion.
+ *
  * @param templateName
  * @param group
  * @param data
@@ -26,9 +29,9 @@ export async function loadTemplate(
 ): Promise<Element | null> {
     try {
         const templateHTML = await renderExtensionTemplateAsync(group, templateName, data);
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = templateHTML;
-        const template = tempDiv.firstElementChild;
+        const temp = document.createElement('template');
+        temp.innerHTML = templateHTML;
+        const template = temp.content.firstElementChild;
         if (!template) {
             console.error(`Template "${group}/${templateName}" rendered no root element`);
         }
@@ -195,14 +198,29 @@ export function mergeFilesIntoDataTransfer(
 ): DataTransfer {
     const dt = new DataTransfer();
 
-    for (const file of existing) {
-        dt.items.add(file);
+    const existingLen = existing.length;
+    for (let i = 0; i < existingLen; i++) {
+        dt.items.add(existing[i]!);
     }
 
-    for (const file of incoming) {
-        const isDuplicate = Array.from(dt.files).some((f) => isSameFile(f, file));
+    const incomingLen = incoming.length;
+    for (let i = 0; i < incomingLen; i++) {
+        const incomingFile = incoming[i]!;
+        let isDuplicate = false;
+
+        const currentFiles = dt.files;
+        const currentFilesLen = currentFiles.length;
+
+        // Fast inner loop bypasses Array.from() closure and object allocation
+        for (let j = 0; j < currentFilesLen; j++) {
+            if (isSameFile(currentFiles[j]!, incomingFile)) {
+                isDuplicate = true;
+                break;
+            }
+        }
+
         if (!isDuplicate) {
-            dt.items.add(file);
+            dt.items.add(incomingFile);
         }
     }
 

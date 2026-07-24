@@ -17,12 +17,20 @@ import { humanFileSize, timestampToMoment } from './utils.js';
 class DataMaidDialog {
     DATA_MAID_CATEGORIES: Record<string, unknown>;
     container: HTMLElement | null;
+    spinner: HTMLElement | null;
+    placeholder: HTMLElement | null;
+    resultsList: HTMLElement | null;
     isScanning: boolean;
-    token: AbortController | null;
+    token: string | null; // Changed to string based on usage
+
     constructor() {
-        this.token = null;
+        // Pre-initialize all properties in a fixed order to ensure a stable V8 Hidden Class (Map)
         this.container = null;
+        this.spinner = null;
+        this.placeholder = null;
+        this.resultsList = null;
         this.isScanning = false;
+        this.token = null;
 
         this.DATA_MAID_CATEGORIES = {
             files: {
@@ -101,6 +109,7 @@ class DataMaidDialog {
 
     /**
      * Sets up the dialog UI elements and event listeners.
+     * Cache DOM lookups to avoid polymorphic queries on the hot path.
      * @private
      */
     async setupDialogUI() {
@@ -109,9 +118,12 @@ class DataMaidDialog {
         this.container.classList.add('dataMaidDialogContainer');
         this.container.innerHTML = template;
 
+        this.spinner = this.container.querySelector('.dataMaidSpinner');
+        this.placeholder = this.container.querySelector('.dataMaidPlaceholder');
+        this.resultsList = this.container.querySelector('.dataMaidResultsList');
+
         const startButton = this.container.querySelector('.dataMaidStartButton');
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        startButton.addEventListener('click', () => this.handleScanClick());
+        startButton?.addEventListener('click', () => this.handleScanClick());
     }
 
     /**
@@ -125,17 +137,15 @@ class DataMaidDialog {
         }
 
         try {
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-            const resultsList = this.container.querySelector('.dataMaidResultsList');
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-            resultsList.innerHTML = '';
+            if (this.resultsList) this.resultsList.innerHTML = '';
+
             this.showSpinner();
             this.isScanning = true;
 
             const report = await this.getReport();
 
             this.hideSpinner();
-            await this.renderReport(report, resultsList);
+            await this.renderReport(report, this.resultsList);
             this.token = report.token;
         } catch (error) {
             this.hideSpinner();
@@ -151,14 +161,8 @@ class DataMaidDialog {
      * @private
      */
     showSpinner() {
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        const spinner = this.container.querySelector('.dataMaidSpinner');
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        const placeholder = this.container.querySelector('.dataMaidPlaceholder');
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        placeholder.classList.add('displayNone');
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        spinner.classList.remove('displayNone');
+        this.placeholder?.classList.add('displayNone');
+        this.spinner?.classList.remove('displayNone');
     }
 
     /**
@@ -166,20 +170,19 @@ class DataMaidDialog {
      * @private
      */
     hideSpinner() {
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        const spinner = this.container.querySelector('.dataMaidSpinner');
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        spinner.classList.add('displayNone');
+        this.spinner?.classList.add('displayNone');
     }
 
     /**
      * Renders the Data Maid report into the results list.
      * @param {DataMaidReportResult} report
-     * @param {Element} resultsList
+     * @param {Element | null} resultsList
      * @private
      */
     // @ts-expect-error TS(7006) FIXME: Parameter 'report' implicitly has an 'any' type.
     async renderReport(report, resultsList) {
+        if (!resultsList) return;
+
         for (const [prop, data] of Object.entries(this.DATA_MAID_CATEGORIES)) {
             const category = await this.renderCategory(
                 prop,
@@ -189,10 +192,10 @@ class DataMaidDialog {
                 data.description,
                 (report as any).report[prop],
             );
-            if (!category) {
-                continue;
+
+            if (category) {
+                resultsList.appendChild(category);
             }
-            resultsList.appendChild(category);
         }
         this.displayEmptyPlaceholder();
     }
@@ -202,16 +205,9 @@ class DataMaidDialog {
      * @private
      */
     displayEmptyPlaceholder() {
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        const resultsList = this.container.querySelector('.dataMaidResultsList');
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        if (resultsList.children.length === 0) {
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-            const placeholder = this.container.querySelector('.dataMaidPlaceholder');
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-            placeholder.classList.remove('displayNone');
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-            placeholder.textContent = t`No items found to clean up. Come back later!`;
+        if (this.resultsList && this.resultsList.children.length === 0 && this.placeholder) {
+            this.placeholder.classList.remove('displayNone');
+            this.placeholder.textContent = t`No items found to clean up. Come back later!`;
         }
     }
 
@@ -230,87 +226,91 @@ class DataMaidDialog {
             return null;
         }
 
+        let totalSize = 0;
+        const viewModelItems = [];
+
+        // Single pass map/reduce is better for V8's optimizer
+        const sortedItems = items.toSorted((a, b) => b.mtime - a.mtime);
+
+        for (let i = 0; i < sortedItems.length; i++) {
+            const item = sortedItems[i];
+            totalSize += item.size;
+            viewModelItems.push({
+                ...item,
+                size: humanFileSize(item.size),
+                date: timestampToMoment(item.mtime).format('L LT'),
+            });
+        }
+
         const viewModel = {
             name: name,
             description: description,
-            totalSize: humanFileSize(items.reduce((sum, item) => sum + item.size, 0)),
+            totalSize: humanFileSize(totalSize),
             totalItems: items.length,
-            items: items
-                .toSorted((a, b) => b.mtime - a.mtime)
-                .map((item) => ({
-                    ...item,
-                    size: humanFileSize(item.size),
-                    date: timestampToMoment(item.mtime).format('L LT'),
-                })),
+            items: viewModelItems,
         };
 
         const template = await renderTemplateAsync('dataMaidCategory', viewModel);
         const categoryElement = document.createElement('div');
         categoryElement.innerHTML = template;
-        categoryElement.querySelectorAll('.dataMaidItemView').forEach((button) => {
-            button.addEventListener('click', async () => {
-                const item = button.closest('.dataMaidItem');
-                const hash = item?.getAttribute('data-hash');
-                const itemName = items.find((i) => i.hash === hash)?.name;
-                if (hash) {
-                    await this.view(prop, hash, itemName);
-                }
-            });
-        });
-        categoryElement.querySelectorAll('.dataMaidItemDownload').forEach((button) => {
-            button.addEventListener('click', async () => {
-                const item = button.closest('.dataMaidItem');
-                const hash = item?.getAttribute('data-hash');
-                if (hash) {
-                    await this.download(items, hash);
-                }
-            });
-        });
-        categoryElement.querySelectorAll('.dataMaidDeleteAll').forEach((button) => {
-            button.addEventListener('click', async (event) => {
+
+        // V8 Event Delegation: One listener replaces hundreds of function closures
+        categoryElement.addEventListener('click', async (event) => {
+            const target = event.target;
+            if (!(target instanceof Element)) return;
+
+            // Handle "Delete All" for category
+            if (target.closest('.dataMaidDeleteAll')) {
                 event.stopPropagation();
                 const confirm = await Popup.show.confirm(
                     t`Are you sure?`,
                     t`This will permanently delete all files in this category. THIS CANNOT BE UNDONE!`,
                 );
-                if (!confirm) {
-                    return;
+                if (!confirm) return;
+
+                const hashes = [];
+                for (let i = 0; i < items.length; i++) {
+                    if (items[i].hash) hashes.push(items[i].hash);
                 }
 
-                const hashes = items.map((item) => item.hash).filter((hash) => hash);
                 await this.delete(hashes);
-
                 categoryElement.remove();
                 this.displayEmptyPlaceholder();
-            });
-        });
-        categoryElement.querySelectorAll('.dataMaidItemDelete').forEach((button) => {
-            button.addEventListener('click', async () => {
-                const item = button.closest('.dataMaidItem');
-                const hash = item?.getAttribute('data-hash');
-                if (hash) {
-                    const confirm = await Popup.show.confirm(
-                        t`Are you sure?`,
-                        t`This will permanently delete the file. THIS CANNOT BE UNDONE!`,
-                    );
-                    if (!confirm) {
-                        return;
-                    }
-                    if (await this.delete([hash])) {
-                        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-                        item.remove();
-                        items.splice(
-                            items.findIndex((i) => i.hash === hash),
-                            1,
-                        );
-                        if (items.length === 0) {
-                            categoryElement.remove();
-                            this.displayEmptyPlaceholder();
-                        }
+                return;
+            }
+
+            // Handle per-item interactions
+            const itemEl = target.closest('.dataMaidItem');
+            if (!itemEl) return;
+
+            const hash = itemEl.getAttribute('data-hash');
+            if (!hash) return;
+
+            if (target.closest('.dataMaidItemView')) {
+                const itemName = items.find((i) => i.hash === hash)?.name;
+                await this.view(prop, hash, itemName);
+            } else if (target.closest('.dataMaidItemDownload')) {
+                await this.download(items, hash);
+            } else if (target.closest('.dataMaidItemDelete')) {
+                const confirm = await Popup.show.confirm(
+                    t`Are you sure?`,
+                    t`This will permanently delete the file. THIS CANNOT BE UNDONE!`,
+                );
+                if (!confirm) return;
+
+                if (await this.delete([hash])) {
+                    itemEl.remove();
+                    const idx = items.findIndex((i) => i.hash === hash);
+                    if (idx !== -1) items.splice(idx, 1);
+
+                    if (items.length === 0) {
+                        categoryElement.remove();
+                        this.displayEmptyPlaceholder();
                     }
                 }
-            });
+            }
         });
+
         return categoryElement;
     }
 
@@ -322,8 +322,7 @@ class DataMaidDialog {
      */
     // @ts-expect-error TS(7006) FIXME: Parameter 'hash' implicitly has an 'any' type.
     getViewUrl(hash) {
-        // @ts-expect-error TS(2345) FIXME: Argument of type 'AbortController | null' is not a... Remove this comment to see the full error message
-        return `/api/data-maid/view?hash=${encodeURIComponent(hash)}&token=${encodeURIComponent(this.token)}`;
+        return `/api/data-maid/view?hash=${encodeURIComponent(hash)}&token=${encodeURIComponent(this.token || '')}`;
     }
 
     /**
@@ -334,15 +333,14 @@ class DataMaidDialog {
      */
     // @ts-expect-error TS(7006) FIXME: Parameter 'items' implicitly has an 'any' type.
     async download(items, hash) {
-        // @ts-expect-error TS(7006) FIXME: Parameter 'i' implicitly has an 'any' type.
-        const item = items.find((i) => i.hash === hash);
-        if (!item) {
-            return;
-        }
+        const item = items.find((i: any) => i.hash === hash);
+        if (!item) return;
+
         const url = this.getViewUrl(hash);
         const a = document.createElement('a');
         a.href = url;
-        a.download = item?.name || hash;
+        a.download = item.name || hash;
+
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -358,10 +356,12 @@ class DataMaidDialog {
     // @ts-expect-error TS(7006) FIXME: Parameter 'prop' implicitly has an 'any' type.
     async view(prop, hash, name) {
         const url = this.getViewUrl(hash);
-        const isImage = ['images', 'avatarThumbnails', 'backgroundThumbnails'].includes(prop);
+        const isImage = prop === 'images' || prop === 'avatarThumbnails' || prop === 'backgroundThumbnails';
+
         const element = isImage
             ? await this.getViewElement(url, name)
             : await this.getTextViewElement(url);
+
         await callGenericPopup(element, POPUP_TYPE.DISPLAY, '', { large: true, wide: true });
     }
 
@@ -400,11 +400,17 @@ class DataMaidDialog {
      */
     // @ts-expect-error TS(7006) FIXME: Parameter 'url' implicitly has an 'any' type.
     async getViewElement(url, name) {
-        const isVideo = VIDEO_EXTENSIONS.includes(name.split('.').pop());
+        // Fast extension extraction (avoids Array heap allocation via string splitting)
+        const extIndex = name.lastIndexOf('.');
+        const extension = extIndex !== -1 ? name.slice(extIndex + 1) : name;
+
+        const isVideo = VIDEO_EXTENSIONS.includes(extension);
         const mediaElement = document.createElement(isVideo ? 'video' : 'img');
+
         if (mediaElement instanceof HTMLVideoElement) {
             mediaElement.controls = true;
         }
+
         mediaElement.src = url;
         mediaElement.classList.add('dataMaidImageView');
         return mediaElement;
@@ -421,9 +427,11 @@ class DataMaidDialog {
         const response = await fetch(url);
         const text = await response.text();
         const element = document.createElement('textarea');
+
         element.classList.add('dataMaidTextView');
         element.readOnly = true;
         element.textContent = text;
+
         return element;
     }
 

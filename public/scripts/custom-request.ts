@@ -123,7 +123,10 @@ export class TextCompletionService {
         min_p,
         ...props
     }) {
-        const payload = {
+        // Construct the object predictably.
+        // JSON.stringify natively ignores undefined properties.
+        // Avoiding 'delete' ensures V8 maintains a stable hidden class (Map) for payload objects.
+        return {
             stream,
             prompt,
             max_tokens,
@@ -135,17 +138,6 @@ export class TextCompletionService {
             min_p,
             ...props,
         };
-
-        // Remove undefined values to avoid API errors
-        Object.keys(payload).forEach((key) => {
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-            if (payload[key] === undefined) {
-                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                delete payload[key];
-            }
-        });
-
-        return payload;
     }
 
     /**
@@ -199,7 +191,6 @@ export class TextCompletionService {
         if (!response.ok) {
             const text = await response.text();
             tryParseStreamingError(response, text, { quiet: true });
-
             throw new Error(`Got response status ${response.status}`);
         }
 
@@ -208,11 +199,12 @@ export class TextCompletionService {
         response.body.pipeThrough(eventStream);
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         const reader = eventStream.readable.getReader();
+
         return async function* streamData() {
             let text = '';
-            // @ts-expect-error TS(7034) FIXME: Variable 'swipes' implicitly has type 'any[]' in s... Remove this comment to see the full error message
-            const swipes = [];
+            const swipes: string[] = [];
             const state = { reasoning: '' };
+
             while (true) {
                 const { done, value } = await reader.read();
                 if (done) return;
@@ -224,8 +216,11 @@ export class TextCompletionService {
 
                 if (data?.choices?.[0]?.index > 0) {
                     const swipeIndex = data.choices[0].index - 1;
-                    // @ts-expect-error TS(7005) FIXME: Variable 'swipes' implicitly has an 'any[]' type.
-                    swipes[swipeIndex] = (swipes[swipeIndex] || '') + data.choices[0].text;
+                    // Direct assignment to prevent '||' truthiness evaluation on every chunk
+                    if (swipes[swipeIndex] === undefined) {
+                        swipes[swipeIndex] = '';
+                    }
+                    swipes[swipeIndex] += data.choices[0].text;
                 } else {
                     const newText = data?.choices?.[0]?.text || data?.content || '';
                     text += newText;
@@ -245,36 +240,32 @@ export class TextCompletionService {
      */
     // @ts-expect-error TS(7006) FIXME: Parameter 'prompt' implicitly has an 'any' type.
     static constructPrompt(prompt, instructPreset, instructSettings) {
-        // InstructPreset may either be a name or itself a preset
         if (typeof instructPreset === 'string') {
             const instructPresetManager = getPresetManager('instruct');
             instructPreset = instructPresetManager?.getCompletionPresetByName(instructPreset);
         }
 
-        // Clone the preset to avoid modifying the original
         instructPreset = structuredClone(instructPreset);
         if (instructSettings) {
-            // apply any additional settings
             Object.assign(instructPreset, instructSettings);
         }
 
-        // Make the type check shut up. We 100% don't have a string here.
         if (typeof instructPreset === 'string') {
             return;
         }
 
-        // Format messages using instruct formatting
-        const formattedMessages = [];
-        const prefillActive =
-            prompt.length > 0 ? prompt[prompt.length - 1].role === 'assistant' : false;
-        for (const message of prompt) {
-            let messageContent = message.content;
-            if (!message.ignoreInstruct) {
-                const isLastMessage = message === prompt[prompt.length - 1];
+        // Sequential string concatenation is highly optimized via V8 ConsString
+        let formattedPrompt = '';
+        const promptLength = prompt.length;
+        const prefillActive = promptLength > 0 ? prompt[promptLength - 1].role === 'assistant' : false;
 
-                // This complicated logic means:
-                // 1. If prefill is not active, format all messages
-                // 2. If prefill is active, format all messages except the last one
+        for (let i = 0; i < promptLength; i++) {
+            const message = prompt[i];
+            let messageContent = message.content;
+
+            if (!message.ignoreInstruct) {
+                const isLastMessage = i === promptLength - 1;
+
                 if (!isLastMessage || !prefillActive) {
                     messageContent = formatInstructModeChat(
                         message.name ?? message.role,
@@ -282,42 +273,38 @@ export class TextCompletionService {
                         message.role === 'user',
                         message.role === 'system',
                         undefined,
-                        name1, // for macros
-                        name2, // for macros
+                        name1,
+                        name2,
                         undefined,
                         instructPreset,
                     );
                 }
 
-                // Add prompt formatting for the last message.
-                // e.g. "<|im_start|>assistant"
                 if (isLastMessage) {
                     let last_line = formatInstructModePrompt(
-                        'assistant', // for sequences using {{name}}
-                        false, // not an impersonation
-                        prefillActive ? message.content : undefined, // if using prefill, last message is the prefill
-                        name1, // for macros
-                        name2, // for macros
-                        true, // quiet
+                        'assistant',
+                        false,
+                        prefillActive ? message.content : undefined,
+                        name1,
+                        name2,
+                        true,
                         false,
                         instructPreset,
                     );
 
                     if (prefillActive) {
-                        // content is the prefilled message
                         if (last_line.endsWith('\n') && !message.content.endsWith('\n')) {
-                            last_line = last_line.slice(0, -1); // remove newline after prefill if it's not in the prefill itself
+                            last_line = last_line.slice(0, -1);
                         }
                         messageContent = last_line;
                     } else {
-                        // append last line to content (e.g. "<|im_start|>assistant:")
                         messageContent += last_line;
                     }
                 }
             }
-            formattedMessages.push(messageContent);
+            formattedPrompt += messageContent;
         }
-        return formattedMessages.join('');
+        return formattedPrompt;
     }
 
     /**
@@ -337,13 +324,12 @@ export class TextCompletionService {
         // @ts-expect-error TS(2339) FIXME: Property 'presetName' does not exist on type '{}'.
         const { presetName, instructName } = options;
 
-        // remove any undefined params in given request data
         requestData = this.createRequestData(requestData);
 
         /** @type {InstructSettings | undefined} */
         let instructPreset;
         const prompt = requestData.prompt;
-        // Handle instruct formatting if requested
+
         if (Array.isArray(prompt)) {
             if (instructName) {
                 const instructPresetManager = getPresetManager('instruct');
@@ -364,30 +350,35 @@ export class TextCompletionService {
                     requestData.stop = stoppingStrings;
                     requestData.stopping_strings = stoppingStrings;
                 } else {
-                    console.warn(
-                        `Instruct preset "${instructName}" not found, using basic formatting`,
-                    );
-                    requestData.prompt = prompt.map((x) => x.content).join('\n\n');
+                    console.warn(`Instruct preset "${instructName}" not found, using basic formatting`);
+
+                    let flatPrompt = '';
+                    for (let i = 0; i < prompt.length; i++) {
+                        flatPrompt += prompt[i].content;
+                        if (i < prompt.length - 1) flatPrompt += '\n\n';
+                    }
+                    requestData.prompt = flatPrompt;
                 }
             } else {
-                requestData.prompt = prompt.map((x) => x.content).join('\n\n');
+                let flatPrompt = '';
+                for (let i = 0; i < prompt.length; i++) {
+                    flatPrompt += prompt[i].content;
+                    if (i < prompt.length - 1) flatPrompt += '\n\n';
+                }
+                requestData.prompt = flatPrompt;
             }
         } else if (typeof prompt === 'string') {
             requestData.prompt = prompt;
         }
 
-        // Apply generation preset if specified
         if (presetName) {
             const presetManager = getPresetManager(this.TYPE);
             if (presetManager) {
                 const preset = presetManager.getCompletionPresetByName(presetName);
                 if (preset) {
-                    // Convert preset to payload and merge with custom data
                     requestData = this.presetToGeneratePayload(preset, {}, requestData);
                 } else {
-                    console.warn(
-                        `Preset "${presetName}" not found, continuing with default settings`,
-                    );
+                    console.warn(`Preset "${presetName}" not found, continuing with default settings`);
                 }
             } else {
                 console.warn('Preset manager not found, continuing with default settings');
@@ -396,20 +387,19 @@ export class TextCompletionService {
 
         const response = await this.sendRequest(requestData, extractData, signal);
 
-        // Remove stopping strings from the end
         if (!requestData.stream && extractData) {
             /** @type {ExtractedData} */
             const extractedData = response;
-
             let message = extractedData.content;
 
             message = message.replace(/[^\S\r\n]+$/gm, '');
 
             if (requestData.stopping_strings) {
-                for (const stoppingString of requestData.stopping_strings) {
+                for (let i = 0; i < requestData.stopping_strings.length; i++) {
+                    const stoppingString = requestData.stopping_strings[i];
                     if (stoppingString.length) {
                         for (let j = stoppingString.length; j > 0; j--) {
-                            if (message.slice(-j) === stoppingString.slice(0, j)) {
+                            if (message.endsWith(stoppingString.slice(0, j))) {
                                 message = message.slice(0, -j);
                                 break;
                             }
@@ -419,32 +409,30 @@ export class TextCompletionService {
             }
 
             if (instructPreset) {
-                ([instructPreset.stop_sequence, instructPreset.input_sequence] as string[]).forEach(
-                    (sequence: string) => {
-                        if (sequence?.trim()) {
-                            const index = message.indexOf(sequence);
-                            if (index !== -1) {
-                                message = message.substring(0, index);
+                const seqArr = [instructPreset.stop_sequence, instructPreset.input_sequence] as string[];
+                for (let i = 0; i < seqArr.length; i++) {
+                    const sequence = seqArr[i];
+                    if (sequence?.trim()) {
+                        const index = message.indexOf(sequence);
+                        if (index !== -1) {
+                            message = message.substring(0, index);
+                        }
+                    }
+                }
+
+                const outSeqArr = [instructPreset.output_sequence, instructPreset.last_output_sequence] as string[];
+                for (let i = 0; i < outSeqArr.length; i++) {
+                    const sequences = outSeqArr[i]!;
+                    if (sequences) {
+                        const lines = sequences.split('\n');
+                        for (let j = 0; j < lines.length; j++) {
+                            const line = lines[j]!.trim();
+                            if (line !== '') {
+                                message = message.replaceAll(line, '');
                             }
                         }
-                    },
-                );
-
-                (
-                    [
-                        instructPreset.output_sequence,
-                        instructPreset.last_output_sequence,
-                    ] as string[]
-                ).forEach((sequences: string) => {
-                    if (sequences) {
-                        sequences
-                            .split('\n')
-                            .filter((line) => line.trim() !== '')
-                            .forEach((line) => {
-                                message = message.replaceAll(line, '');
-                            });
                     }
-                });
+                }
             }
 
             extractedData.content = message;
@@ -467,17 +455,19 @@ export class TextCompletionService {
             throw new Error('Invalid preset: must be an object');
         }
 
-        // apply preset overrides
         preset = { ...preset, ...overridePreset };
 
-        // Only take fields from the preset specified in setting_names to use as TextCompletionSettings
         const settings = structuredClone(textgenerationwebui_settings);
-        for (const [key, value] of Object.entries(preset)) {
-            if (!setting_names.includes(key)) continue;
-            settings[key] = value;
+        const presetKeys = Object.keys(preset);
+
+        // Basic for-loop avoids allocating the extra [key, value] tuple arrays created by Object.entries
+        for (let i = 0; i < presetKeys.length; i++) {
+            const key = presetKeys[i]!;
+            if (setting_names.includes(key)) {
+                settings[key] = preset[key];
+            }
         }
 
-        // convert to a generation payload
         const payload = createTextGenGenerationData(
             settings,
             // @ts-expect-error TS(2339) FIXME: Property 'model' does not exist on type.
@@ -487,7 +477,6 @@ export class TextCompletionService {
             preset.genamt,
         );
 
-        // apply overrides
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return this.createRequestData({ ...payload, ...overridePayload } as any);
     }
@@ -525,7 +514,8 @@ export class ChatCompletionService {
         custom_prompt_post_processing,
         ...props
     }) {
-        const payload = {
+        // Avoiding 'delete payload[key]' to maintain stable shapes. JSON.stringify ignores undefined values.
+        return {
             stream,
             messages,
             model,
@@ -539,17 +529,6 @@ export class ChatCompletionService {
             use_sysprompt: true,
             ...props,
         };
-
-        // Remove undefined values to avoid API errors
-        Object.keys(payload).forEach((key) => {
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-            if (payload[key] === undefined) {
-                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                delete payload[key];
-            }
-        });
-
-        return payload;
     }
 
     /**
@@ -590,7 +569,7 @@ export class ChatCompletionService {
                     ignoreShowThoughts: true,
                 }),
             };
-            // Try parse JSON
+
             if (data.json_schema) {
                 result.content = JSON.parse(
                     extractJsonFromData(json, {
@@ -606,7 +585,6 @@ export class ChatCompletionService {
         if (!response.ok) {
             const text = await response.text();
             tryParseStreamingError(response, text, { quiet: true });
-
             throw new Error(`Got response status ${response.status}`);
         }
 
@@ -615,16 +593,19 @@ export class ChatCompletionService {
         response.body.pipeThrough(eventStream);
         // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
         const reader = eventStream.readable.getReader();
+
         return async function* streamData() {
             let text = '';
-            // @ts-expect-error TS(7034) FIXME: Variable 'swipes' implicitly has type 'any[]' in s... Remove this comment to see the full error message
-            const swipes = [];
+            const swipes: string[] = [];
             const state = { reasoning: '', images: [], signature: '', toolSignatures: {} };
+
             while (true) {
                 const { done, value } = await reader.read();
                 if (done) return;
+
                 const rawData = value.data;
                 if (rawData === '[DONE]') return;
+
                 tryParseStreamingError(response, rawData, { quiet: true });
                 const parsed = JSON.parse(rawData);
 
@@ -632,15 +613,18 @@ export class ChatCompletionService {
                     chatCompletionSource: data.chat_completion_source,
                     overrideShowThoughts: true as unknown as null | undefined,
                 });
+
                 if (Array.isArray(parsed?.choices) && parsed?.choices?.[0]?.index > 0) {
                     const swipeIndex = parsed.choices[0].index - 1;
-                    // @ts-expect-error TS(7005) FIXME: Variable 'swipes' implicitly has an 'any[]' type.
-                    swipes[swipeIndex] = (swipes[swipeIndex] || '') + reply;
+                    if (swipes[swipeIndex] === undefined) {
+                        swipes[swipeIndex] = '';
+                    }
+                    swipes[swipeIndex] += reply;
                 } else {
                     text += reply;
                 }
 
-                yield { text, swipes: swipes, state };
+                yield { text, swipes, state };
             }
         };
     }
@@ -660,18 +644,14 @@ export class ChatCompletionService {
         const { presetName } = options;
         requestData = this.createRequestData(requestData);
 
-        // Apply generation preset if specified
         if (presetName) {
             const presetManager = getPresetManager(this.TYPE);
             if (presetManager) {
                 const preset = presetManager.getCompletionPresetByName(presetName);
                 if (preset) {
-                    // Convert preset to payload and merge with custom parameters
                     requestData = await this.presetToGeneratePayload(preset, {}, requestData);
                 } else {
-                    console.warn(
-                        `Preset "${presetName}" not found, continuing with default settings`,
-                    );
+                    console.warn(`Preset "${presetName}" not found, continuing with default settings`);
                 }
             } else {
                 console.warn('Preset manager not found, continuing with default settings');
@@ -695,39 +675,40 @@ export class ChatCompletionService {
             throw new Error('Invalid preset: must be an object');
         }
 
-        // apply preset overrides
         preset = { ...preset, ...overridePreset };
 
-        // Fix any fields before converting to settings
         preset.bias_preset_selected =
-            preset.bias_presets !== undefined ? preset.bias_preset_selected : undefined; // presets might have bias_preset_selected but not bias_presets, but settings need both or neither.
+            preset.bias_presets !== undefined ? preset.bias_preset_selected : undefined;
 
-        // Convert from preset to ChatCompletionSettings
         const settings = structuredClone(oai_settings);
-        for (const [key, value] of Object.entries(preset)) {
+        const presetKeys = Object.keys(preset);
+
+        for (let i = 0; i < presetKeys.length; i++) {
+            const key = presetKeys[i];
             // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             const settingToUpdate = settingsToUpdate[key];
-            if (!settingToUpdate) continue;
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-            settings[settingToUpdate[1]] = value;
+            if (settingToUpdate) {
+                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
+                settings[settingToUpdate[1]] = preset[key];
+            }
         }
 
-        // Ensure api-url is properly applied for all sources that accept it
-        [
+        const endpointFields = [
             'custom_url',
             'vertexai_region',
             'zai_endpoint',
             'siliconflow_endpoint',
             'minimax_endpoint',
-        ].forEach((field) => {
-            // The order is: connection profile => CC preset => CC settings
+        ];
+
+        for (let i = 0; i < endpointFields.length; i++) {
+            const field = endpointFields[i];
             // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             overridePayload[field] =
                 // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type.
                 overridePayload[field] || settings[field] || oai_settings[field];
-        });
+        }
 
-        // Convert from settings to generation payload
         const data = await createGenerationParameters(
             settings,
             // @ts-expect-error TS(2339) FIXME: Property 'model' does not exist on type.
@@ -738,7 +719,6 @@ export class ChatCompletionService {
         );
         const payload = data.generate_data;
 
-        // apply overrides
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return this.createRequestData({ ...payload, ...overridePayload } as any);
     }

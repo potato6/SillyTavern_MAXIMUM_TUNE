@@ -20,6 +20,43 @@ import { SCROLL_BEHAVIOR, SWIPE_DIRECTION, MEDIA_DISPLAY } from '../constants.js
 import { clamp } from '../utils.js';
 import { deleteMediaFromServer } from './attachment-store.js';
 
+// ── DOM Helpers ────────────────────────────────────────────────
+
+/**
+ * Creates an image element for media expansion
+ */
+function createExpandedImageElement(url: string, title: string): HTMLImageElement {
+    const img = document.createElement('img');
+    img.src = url;
+    if (title) img.alt = title;
+    img.style.maxWidth = '100%';
+    img.style.maxHeight = '100%';
+    return img;
+}
+
+/**
+ * Creates a video element for media expansion
+ */
+function createExpandedVideoElement(url: string): HTMLVideoElement {
+    const video = document.createElement('video');
+    video.src = url;
+    video.controls = true;
+    video.style.maxWidth = '100%';
+    video.style.maxHeight = '100%';
+    return video;
+}
+
+/**
+ * Routes to the correct media element factory based on type
+ */
+function createExpandedMediaElement(type: string, url: string, title: string): HTMLElement {
+    if (type === 'video') {
+        return createExpandedVideoElement(url);
+    }
+    // Default to image for 'image' or unknown types
+    return createExpandedImageElement(url, title);
+}
+
 // ── Expand ────────────────────────────────────────────────────
 
 /**
@@ -37,45 +74,7 @@ export function expandMessageMedia(messageId: number, mediaIndex: number): HTMLE
     const mediaAttachment = message.extra.media[mediaIndex]!;
     const title = mediaAttachment.title || '';
 
-    /**
-     *
-     */
-    function getMediaElement(): HTMLElement | null {
-        /**
-         *
-         */
-        function getImageElement(): HTMLImageElement {
-            const img = document.createElement('img');
-            img.src = mediaAttachment.url;
-            img.alt = title;
-            img.style.maxWidth = '100%';
-            img.style.maxHeight = '100%';
-            return img;
-        }
-
-        /**
-         *
-         */
-        function getVideoElement(): HTMLVideoElement {
-            const video = document.createElement('video');
-            video.src = mediaAttachment.url;
-            video.controls = true;
-            video.style.maxWidth = '100%';
-            video.style.maxHeight = '100%';
-            return video;
-        }
-
-        switch (mediaAttachment.type) {
-            case 'image':
-                return getImageElement();
-            case 'video':
-                return getVideoElement();
-            default:
-                return getImageElement();
-        }
-    }
-
-    const mediaElement = getMediaElement();
+    const mediaElement = createExpandedMediaElement(mediaAttachment.type, mediaAttachment.url, title);
     if (!mediaElement) return null;
 
     const mediaHolder = document.createElement('div');
@@ -118,7 +117,7 @@ export async function deleteMessageMedia(
     mediaIndex: number,
     messageBlock: Element | null,
 ): Promise<void> {
-    if (isNaN(messageId) || isNaN(mediaIndex)) {
+    if (Number.isNaN(Number(messageId)) || Number.isNaN(Number(mediaIndex))) {
         console.warn('Invalid message ID or media index');
         return;
     }
@@ -161,33 +160,38 @@ export async function deleteMessageMedia(
         return;
     }
 
-    if (mediaIndex < 0 || mediaIndex >= message.extra.media.length) {
+    const mediaArr = message.extra.media;
+    if (mediaIndex < 0 || mediaIndex >= mediaArr.length) {
         console.warn('Invalid media index for message');
         return;
     }
 
-    deleteUrls.push(message.extra.media[mediaIndex].url);
-    message.extra.media.splice(mediaIndex, 1);
+    deleteUrls.push(mediaArr[mediaIndex].url);
+    mediaArr.splice(mediaIndex, 1);
 
     if (message.extra.media_index === mediaIndex) {
         const newIndex = mediaIndex > 0 ? mediaIndex - 1 : 0;
-        message.extra.media_index = clamp(newIndex, 0, message.extra.media.length - 1);
+        message.extra.media_index = clamp(newIndex, 0, mediaArr.length - 1);
     }
 
     if (value === POPUP_RESULT.CUSTOM1) {
-        for (const media of message.extra.media) {
-            deleteUrls.push(media.url);
+        for (let i = 0; i < mediaArr.length; i++) {
+            deleteUrls.push(mediaArr[i].url);
         }
-        delete message.extra.media;
-        delete message.extra.inline_image;
-        delete message.extra.title;
-        delete message.extra.append_title;
+
+        // V8 shape optimization: Avoid `delete`, use `undefined` to preserve hidden classes
+        message.extra.media = undefined;
+        message.extra.inline_image = undefined;
+        message.extra.title = undefined;
+        message.extra.append_title = undefined;
     }
 
     if (deleteFromServer) {
-        for (const url of deleteUrls) {
-            if (!url) continue;
-            await deleteMediaFromServer(url, true);
+        for (let i = 0; i < deleteUrls.length; i++) {
+            const url = deleteUrls[i];
+            if (url) {
+                await deleteMediaFromServer(url, true);
+            }
         }
     }
 
@@ -208,7 +212,7 @@ export async function switchMessageMediaDisplay(
     messageBlock: Element | null,
     targetDisplay: string,
 ): Promise<void> {
-    if (isNaN(messageId)) {
+    if (Number.isNaN(Number(messageId))) {
         console.warn('Invalid message ID');
         return;
     }
@@ -242,9 +246,11 @@ export async function onImageSwiped(
     direction: string,
 ): Promise<void> {
     const animationClass = 'fa-fade';
-    const messageMedia = element.querySelectorAll('.mes_img, .mes_video');
 
-    if (messageMedia.length > 0 && messageMedia[0]!.classList.contains(animationClass)) {
+    // querySelector is O(1) allocation compared to querySelectorAll's NodeList mapping
+    const messageMedia = element.querySelector('.mes_img, .mes_video');
+
+    if (messageMedia && messageMedia.classList.contains(animationClass)) {
         return;
     }
 
@@ -266,19 +272,20 @@ export async function onImageSwiped(
 
     await eventSource.emit(event_types.IMAGE_SWIPED, { message, element, direction });
 
-    if (media.length === 1) {
+    const mediaLength = media.length;
+    if (mediaLength === 1) {
         console.warn('Only one media item in the message, swiping is not applicable');
         return;
     }
 
     if (direction === SWIPE_DIRECTION.LEFT) {
-        const newIndex = currentIndex === 0 ? media.length - 1 : currentIndex - 1;
+        const newIndex = currentIndex === 0 ? mediaLength - 1 : currentIndex - 1;
         message.extra!.media_index = newIndex;
     }
 
     if (direction === SWIPE_DIRECTION.RIGHT) {
-        const newIndex = currentIndex === media.length - 1 ? 0 : currentIndex + 1;
-        message.extra!.media_index = newIndex >= media.length ? 0 : newIndex;
+        const newIndex = currentIndex === mediaLength - 1 ? 0 : currentIndex + 1;
+        message.extra!.media_index = newIndex >= mediaLength ? 0 : newIndex;
     }
 
     await saveChatConditional();

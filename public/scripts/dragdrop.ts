@@ -8,12 +8,12 @@ import { debounce_timeout } from './constants.js';
 export class DragAndDropHandler {
     /** @private */ selector;
     /** @private */ onDropCallback;
-    // @ts-expect-error TS(7008) FIXME: Member 'dragLeaveTimeout' implicitly has an 'any' ... Remove this comment to see the full error message
     /** @private */ dragLeaveTimeout;
     /** @private */ noAnimation;
     /** @private */ _boundDragOver;
     /** @private */ _boundDragLeave;
     /** @private */ _boundDrop;
+    /** @private */ _boundRemoveDragOver;
 
     /**
      * Create a DragAndDropHandler
@@ -26,7 +26,8 @@ export class DragAndDropHandler {
     constructor(selector, onDropCallback, { noAnimation = false } = {}) {
         this.selector = selector;
         this.onDropCallback = onDropCallback;
-        this.dragLeaveTimeout = null;
+        // Initialize as 0 to keep it a fast Smi (Small Integer) in browser engines
+        this.dragLeaveTimeout = 0;
         this.noAnimation = noAnimation;
 
         // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
@@ -35,6 +36,9 @@ export class DragAndDropHandler {
         this._boundDragLeave = (e) => this._handleIfMatch(e, this.handleDragLeave);
         // @ts-expect-error TS(7006) FIXME: Parameter 'e' implicitly has an 'any' type.
         this._boundDrop = (e) => this._handleIfMatch(e, this.handleDrop);
+
+        // Pre-bind to avoid closure allocation on hot drag paths
+        this._boundRemoveDragOver = this._removeDragOver.bind(this);
 
         this.init();
     }
@@ -46,10 +50,13 @@ export class DragAndDropHandler {
      */
     // @ts-expect-error TS(7006) FIXME: Parameter 'event' implicitly has an 'any' type.
     _handleIfMatch(event, handler) {
-        if (
-            this.selector === 'body' ||
-            (event.target instanceof Element && event.target.closest(this.selector))
-        ) {
+        if (this.selector === 'body') {
+            handler.call(this, event);
+            return;
+        }
+
+        const target = event.target;
+        if (target instanceof Element && target.closest(this.selector)) {
             handler.call(this, event);
         }
     }
@@ -62,11 +69,10 @@ export class DragAndDropHandler {
         document.body.removeEventListener('dragleave', this._boundDragLeave);
         document.body.removeEventListener('drop', this._boundDrop);
 
-        document.querySelectorAll(this.selector).forEach((el) => {
-            if (el.matches('drop_target no_animation')) {
-                el.remove();
-            }
-        });
+        const targets = document.querySelectorAll(this.selector);
+        for (let i = 0; i < targets.length; i++) {
+            targets[i].classList.remove('drop_target', 'no_animation', 'dragover');
+        }
     }
 
     /**
@@ -79,11 +85,14 @@ export class DragAndDropHandler {
         document.body.addEventListener('dragleave', this._boundDragLeave);
         document.body.addEventListener('drop', this._boundDrop);
 
-        document.querySelectorAll(this.selector).forEach((el) => el.classList.add('drop_target'));
-        if (this.noAnimation)
-            document
-                .querySelectorAll(this.selector)
-                .forEach((el) => el.classList.add('no_animation'));
+        const targets = document.querySelectorAll(this.selector);
+        for (let i = 0; i < targets.length; i++) {
+            const classList = targets[i].classList;
+            classList.add('drop_target');
+            if (this.noAnimation) {
+                classList.add('no_animation');
+            }
+        }
     }
 
     /**
@@ -95,13 +104,26 @@ export class DragAndDropHandler {
         event.preventDefault();
         event.stopPropagation();
         clearTimeout(this.dragLeaveTimeout);
-        document
-            .querySelectorAll(this.selector)
-            .forEach((el) => el.classList.add('drop_target', 'dragover'));
-        if (this.noAnimation)
-            document
-                .querySelectorAll(this.selector)
-                .forEach((el) => el.classList.add('no_animation'));
+
+        const targets = document.querySelectorAll(this.selector);
+        for (let i = 0; i < targets.length; i++) {
+            const classList = targets[i].classList;
+            classList.add('drop_target', 'dragover');
+            if (this.noAnimation) {
+                classList.add('no_animation');
+            }
+        }
+    }
+
+    /**
+     * Removes the dragover class from targets (used by timeout)
+     * @private
+     */
+    _removeDragOver() {
+        const targets = document.querySelectorAll(this.selector);
+        for (let i = 0; i < targets.length; i++) {
+            targets[i].classList.remove('dragover');
+        }
     }
 
     /**
@@ -114,11 +136,7 @@ export class DragAndDropHandler {
         event.stopPropagation();
 
         clearTimeout(this.dragLeaveTimeout);
-        this.dragLeaveTimeout = setTimeout(() => {
-            document
-                .querySelectorAll(this.selector)
-                .forEach((el) => el.classList.remove('dragover'));
-        }, debounce_timeout.quick);
+        this.dragLeaveTimeout = setTimeout(this._boundRemoveDragOver, debounce_timeout.quick) as unknown as number;
     }
 
     /**
@@ -130,7 +148,8 @@ export class DragAndDropHandler {
         event.preventDefault();
         event.stopPropagation();
         clearTimeout(this.dragLeaveTimeout);
-        document.querySelectorAll(this.selector).forEach((el) => el.classList.remove('dragover'));
+
+        this._removeDragOver();
 
         const files = Array.from(event.dataTransfer?.files ?? []);
         this.onDropCallback(files, event);

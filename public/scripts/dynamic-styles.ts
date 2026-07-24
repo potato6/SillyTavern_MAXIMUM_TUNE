@@ -3,15 +3,99 @@ let dynamicStyleSheet: CSSStyleSheet | null = null;
 /** @type {CSSStyleSheet} */
 let dynamicExtensionStyleSheet: CSSStyleSheet | null = null;
 
+const PLACEHOLDER = ':__PLACEHOLDER__';
+
+type WrapperCond = { type: string; conditionText: string };
+
+/**
+ * Builds a stable signature string for a chain of wrapper conditions so we can distinguish
+ * identical selectors under different contexts (e.g., different @media queries)
+ */
+function getWrapperSignature(wrappers: WrapperCond[]): string {
+    let signature = '';
+    for (let i = 0; i < wrappers.length; i++) {
+        if (i > 0) signature += ';';
+        signature += wrappers[i]!.type + ':' + wrappers[i]!.conditionText;
+    }
+    return signature;
+}
+
+/**
+ * Processes the CSS rules and separates selectors for hover and focus
+ */
+function processRules(
+    rules: CSSRuleList,
+    wrappers: WrapperCond[],
+    hoverRules: { baseSelector: string; rule: CSSStyleRule; wrappers: WrapperCond[] }[],
+    focusRules: Set<string>,
+) {
+    if (!rules) return;
+
+    for (let i = 0; i < rules.length; i++) {
+        const rule = rules[i]!;
+
+        if (rule instanceof CSSImportRule) {
+            let nextWrappers = wrappers;
+            if (rule.media && rule.media.mediaText) {
+                // Slice is faster than array spreading [...wrappers]
+                nextWrappers = wrappers.slice();
+                nextWrappers.push({ type: 'media', conditionText: rule.media.mediaText });
+            }
+            if (rule.styleSheet) {
+                processRules(rule.styleSheet.cssRules, nextWrappers, hoverRules, focusRules);
+            }
+        } else if (rule instanceof CSSStyleRule) {
+            const selectorText = rule.selectorText;
+
+            // V8 Fast Path Bailout: Skip split/allocations entirely if neither state exists
+            if (!selectorText.includes(':hover') && !selectorText.includes(':focus')) continue;
+
+            const selectors = selectorText.split(',');
+            for (let j = 0; j < selectors.length; j++) {
+                const selector = selectors[j]!.trim();
+                const isHover = selector.includes(':hover');
+                const isFocus = selector.includes(':focus');
+
+                if (isHover && isFocus) {
+                    continue; // Rules containing both hover and focus are very specific and should never be automatically touched
+                } else if (isHover) {
+                    const baseSelector = selector.replace(/:hover/g, PLACEHOLDER).trim();
+                    hoverRules.push({ baseSelector, rule, wrappers: wrappers.slice() });
+                } else if (isFocus) {
+                    const baseSelector = selector
+                        .replace(/:focus(-within|-visible)?/g, PLACEHOLDER)
+                        .trim();
+                    focusRules.add(`${baseSelector}|${getWrapperSignature(wrappers)}`);
+                }
+            }
+        } else if (rule instanceof CSSMediaRule) {
+            const nextWrappers = wrappers.slice();
+            nextWrappers.push({ type: 'media', conditionText: rule.conditionText });
+            processRules(rule.cssRules, nextWrappers, hoverRules, focusRules);
+        } else if (rule instanceof CSSSupportsRule) {
+            const nextWrappers = wrappers.slice();
+            nextWrappers.push({ type: 'supports', conditionText: rule.conditionText });
+            processRules(rule.cssRules, nextWrappers, hoverRules, focusRules);
+        } else if (window.CSSContainerRule && rule instanceof window.CSSContainerRule) {
+            const nextWrappers = wrappers.slice();
+            nextWrappers.push({ type: 'container', conditionText: rule.conditionText });
+            processRules(rule.cssRules, nextWrappers, hoverRules, focusRules);
+        }
+    }
+}
+
 /**
  * An observer that will check if any new stylesheets are added to the head
  * @type {MutationObserver}
  */
-const observer = new MutationObserver((mutations) => {
-    mutations.forEach((mutation) => {
-        if (mutation.type !== 'childList') return;
+const observer = new MutationObserver((mutations: MutationRecord[]) => {
+    for (let i = 0; i < mutations.length; i++) {
+        const mutation = mutations[i]!;
+        if (mutation.type !== 'childList') continue;
 
-        mutation.addedNodes.forEach((node) => {
+        const addedNodes = mutation.addedNodes;
+        for (let j = 0; j < addedNodes.length; j++) {
+            const node = addedNodes[j]!;
             if (
                 node instanceof HTMLLinkElement &&
                 node.tagName === 'LINK' &&
@@ -25,8 +109,8 @@ const observer = new MutationObserver((mutations) => {
                     }
                 });
             }
-        });
-    });
+        }
+    }
 });
 
 /**
@@ -39,153 +123,53 @@ const observer = new MutationObserver((mutations) => {
 function applyDynamicFocusStyles(styleSheet, { fromExtension = false } = {}) {
     /** @typedef {{ type: 'media'|'supports'|'container', conditionText: string }} WrapperCond */
     /** @type {{baseSelector: string, rule: CSSStyleRule, wrappers: WrapperCond[]}[]} */
-    // @ts-expect-error TS(7034) FIXME: Variable 'hoverRules' implicitly has type 'any[]' ... Remove this comment to see the full error message
-    const hoverRules = [];
+    const hoverRules: { baseSelector: string; rule: CSSStyleRule; wrappers: WrapperCond[] }[] = [];
     /** @type {Set<string>} */
-    const focusRules = new Set();
+    const focusRules = new Set<string>();
 
-    const PLACEHOLDER = ':__PLACEHOLDER__';
-
-    /**
-     * Builds a stable signature string for a chain of wrapper conditions so we can distinguish
-     * identical selectors under different contexts (e.g., different @media queries)
-     * @param {WrapperCond[]} wrappers
-     * @returns {string}
-     */
-    // @ts-expect-error TS(7006) FIXME: Parameter 'wrappers' implicitly has an 'any' type.
-    function wrapperSignature(wrappers) {
-        // @ts-expect-error TS(7006) FIXME: Parameter 'w' implicitly has an 'any' type.
-        return wrappers.map((w) => `${w.type}:${w.conditionText}`).join(';');
+    if (styleSheet && styleSheet.cssRules) {
+        processRules(styleSheet.cssRules, [], hoverRules, focusRules);
     }
-
-    /**
-     * Processes the CSS rules and separates selectors for hover and focus
-     * @param {CSSRuleList} rules - The CSS rules to process
-     * @param {WrapperCond[]} wrappers - Current chain of wrapper conditions (@media/@supports/etc.)
-     */
-    // @ts-expect-error TS(7006) FIXME: Parameter 'rules' implicitly has an 'any' type.
-    function processRules(rules, wrappers = []) {
-        Array.from(rules).forEach((rule) => {
-            if (rule instanceof CSSImportRule) {
-                // Make sure that @import rules are processed recursively
-                // If the @import has media conditions, treat them as wrappers as well
-                /** @type {WrapperCond[]} */
-                const extra =
-                    rule.media && rule.media.mediaText
-                        ? [{ type: 'media', conditionText: rule.media.mediaText }]
-                        : [];
-                // @ts-expect-error TS(2345) FIXME: Argument of type '{ type: string; conditionText: s... Remove this comment to see the full error message
-                processImportedStylesheet(rule.styleSheet, [...wrappers, ...extra]);
-            } else if (rule instanceof CSSStyleRule) {
-                // Separate multiple selectors on a rule
-                const selectors = rule.selectorText.split(',').map((s) => s.trim());
-
-                // We collect all hover and focus rules to be able to later decide which hover rules don't have a matching focus rule
-                selectors.forEach((selector) => {
-                    const isHover = selector.includes(':hover'),
-                        isFocus = selector.includes(':focus');
-                    if (isHover && isFocus) {
-                        // We currently do nothing here. Rules containing both hover and focus are very specific and should never be automatically touched
-                    } else if (isHover) {
-                        const baseSelector = selector.replace(/:hover/g, PLACEHOLDER).trim();
-                        hoverRules.push({ baseSelector, rule, wrappers: [...wrappers] });
-                    } else if (isFocus) {
-                        // We need to make sure that we remember all existing :focus, :focus-within and :focus-visible rules
-                        const baseSelector = selector
-                            .replace(/:focus(-within|-visible)?/g, PLACEHOLDER)
-                            .trim();
-                        focusRules.add(`${baseSelector}|${wrapperSignature(wrappers)}`);
-                    }
-                });
-            } else if (rule instanceof CSSMediaRule) {
-                // Recursively process nested @media rules
-                processRules(rule.cssRules, [
-                    // @ts-expect-error TS(2322) FIXME: Type is not assignable.
-                    ...wrappers,
-                    // @ts-expect-error TS(2322) FIXME: Type is not assignable.
-                    { type: 'media', conditionText: rule.conditionText },
-                ]);
-            } else if (rule instanceof CSSSupportsRule) {
-                // Recursively process nested @supports rules
-                processRules(rule.cssRules, [
-                    // @ts-expect-error TS(2322) FIXME: Type is not assignable.
-                    ...wrappers,
-                    // @ts-expect-error TS(2322) FIXME: Type is not assignable.
-                    { type: 'supports', conditionText: rule.conditionText },
-                ]);
-            } else if (rule instanceof window.CSSContainerRule) {
-                // Recursively process nested @container rules (if supported by the browser)
-                // Note: conditionText contains the query like "(min-width: 300px)" or "style(color)"
-                // Using 'container' as the type ensures uniqueness separate from @media/@supports
-                processRules(rule.cssRules, [
-                    // @ts-expect-error TS(2322) FIXME: Type is not assignable.
-                    ...wrappers,
-                    // @ts-expect-error TS(2322) FIXME: Type is not assignable.
-                    { type: 'container', conditionText: rule.conditionText },
-                ]);
-            }
-        });
-    }
-
-    /**
-     * Processes the CSS rules of an imported stylesheet recursively
-     * @param {CSSStyleSheet} sheet - The imported stylesheet to process
-     * @param {WrapperCond[]} wrappers - Wrapper conditions inherited from (at)import media
-     */
-    // @ts-expect-error TS(7006) FIXME: Parameter 'sheet' implicitly has an 'any' type.
-    function processImportedStylesheet(sheet, wrappers = []) {
-        if (sheet && sheet.cssRules) {
-            processRules(sheet.cssRules, wrappers);
-        }
-    }
-
-    processRules(styleSheet.cssRules, []);
 
     /** @type {CSSStyleSheet} */
-    let targetStyleSheet = null;
+    let targetStyleSheet: CSSStyleSheet | null = null;
 
-    // Now finally create the dynamic focus rules
-    // @ts-expect-error TS(7005) FIXME: Variable 'hoverRules' implicitly has an 'any[]' ty... Remove this comment to see the full error message
-    hoverRules.forEach(({ baseSelector, rule, wrappers }) => {
-        if (!focusRules.has(`${baseSelector}|${wrapperSignature(wrappers)}`)) {
-            // Only initialize the dynamic stylesheet if needed
+    for (let i = 0; i < hoverRules.length; i++) {
+        const { baseSelector, rule, wrappers } = hoverRules[i]!;
+        const signature = getWrapperSignature(wrappers);
+
+        if (!focusRules.has(`${baseSelector}|${signature}`)) {
             targetStyleSheet ??= getDynamicStyleSheet({ fromExtension });
 
-            // The closest keyboard-equivalent to :hover styling is utilizing the :focus-visible rule from modern browsers.
-            // It let's the browser decide whether a focus highlighting is expected and makes sense.
-            // So we take all :hover rules that don't have a manually defined focus rule yet, and create their
-            // :focus-visible counterpart, which will make the styling work the same for keyboard and mouse.
-            // If something like :focus-within or a more specific selector like `.blah:has(:focus-visible)` for elements inside,
-            // it should be manually defined in CSS.
             const focusSelector = rule.selectorText.replace(/:hover/g, ':focus-visible');
 
-            // Skip pseudo-elements (::before, ::after, ::-webkit-scrollbar, etc.)
-            // as they cannot have :focus-visible appended (invalid CSS syntax)
             if (focusSelector.includes('::')) {
-                return;
+                continue;
             }
+
             let focusRule = `${focusSelector} { ${rule.style.cssText} }`;
 
-            // Wrap the generated rule into the same @media/@supports/@container chain (if any)
             if (wrappers.length > 0) {
-                // Build nested blocks from outermost to innermost
-                // Example: @media (x) { @supports (y) { <rule> } }
-                // @ts-expect-error TS(7006) FIXME: Parameter 'inner' implicitly has an 'any' type.
-                focusRule = wrappers.reduceRight((inner, w) => {
-                    if (w.type === 'media') return `@media ${w.conditionText} { ${inner} }`;
-                    if (w.type === 'supports') return `@supports ${w.conditionText} { ${inner} }`;
-                    if (w.type === 'container') return `@container ${w.conditionText} { ${inner} }`;
-                    return inner;
-                }, focusRule);
+                // Reverse loop avoids the closure allocation created by reduceRight
+                for (let w = wrappers.length - 1; w >= 0; w--) {
+                    const wrapper = wrappers[w]!;
+                    if (wrapper.type === 'media') {
+                        focusRule = `@media ${wrapper.conditionText} { ${focusRule} }`;
+                    } else if (wrapper.type === 'supports') {
+                        focusRule = `@supports ${wrapper.conditionText} { ${focusRule} }`;
+                    } else if (wrapper.type === 'container') {
+                        focusRule = `@container ${wrapper.conditionText} { ${focusRule} }`;
+                    }
+                }
             }
 
             try {
-                targetStyleSheet.insertRule(focusRule, targetStyleSheet.cssRules.length);
+                targetStyleSheet!.insertRule(focusRule, targetStyleSheet!.cssRules.length);
             } catch (e) {
                 console.warn('Failed to insert focus rule:', e);
             }
         }
-    });
+    }
 }
 
 /**
@@ -218,20 +202,19 @@ function getDynamicStyleSheet({ fromExtension = false } = {}) {
  * Initializes dynamic styles for ST
  */
 export function initDynamicStyles() {
-    // Start observing the head for any new added stylesheets
     observer.observe(document.head, {
         childList: true,
         subtree: true,
     });
 
-    // Process all stylesheets on initial load
-    Array.from(document.styleSheets).forEach((sheet) => {
+    const sheets = document.styleSheets;
+    for (let i = 0; i < sheets.length; i++) {
+        const sheet = sheets[i]!;
         try {
-            applyDynamicFocusStyles(sheet, {
-                fromExtension: sheet.href?.toLowerCase().includes('scripts/extensions') == true,
-            });
+            const isExtension = sheet.href ? sheet.href.toLowerCase().includes('scripts/extensions') : false;
+            applyDynamicFocusStyles(sheet, { fromExtension: isExtension });
         } catch (e) {
             console.warn('Failed to process stylesheet on initial load:', e);
         }
-    });
+    }
 }

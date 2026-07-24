@@ -123,17 +123,25 @@ export async function populateFileAttachment(
     try {
         if (!message) return;
         if (!message.extra || typeof message.extra !== 'object') message.extra = {};
-        const fileInput = document.getElementById(inputId);
-        if (!(fileInput instanceof HTMLInputElement)) return;
 
-        for (const file of fileInput.files!) {
+        const fileInput = document.getElementById(inputId);
+        if (!(fileInput instanceof HTMLInputElement) || !fileInput.files) return;
+
+        const files = fileInput.files;
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i]!;
             const slug = getStringHash(file.name);
             const fileNamePrefix = `${Date.now()}_${slug}`;
-            const fileBase64 = await getBase64Async(file);
-            let base64Data = (fileBase64 as string).split(',')[1];
-            const extension = getFileExtension(file);
 
+            const fileBase64 = await getBase64Async(file) as string;
+
+            // Fast string slice (avoids Array heap allocation from .split)
+            const commaIndex = fileBase64.indexOf(',');
+            let base64Data = commaIndex !== -1 ? fileBase64.substring(commaIndex + 1) : fileBase64;
+
+            const extension = getFileExtension(file);
             const mediaType = MEDIA_TYPE.getFromMime(file.type);
+
             if (mediaType) {
                 const imageUrl = await saveBase64AsFile(
                     base64Data,
@@ -195,7 +203,12 @@ export async function populateFileAttachment(
  * @param files Files to attach
  */
 export async function onFileAttach(files: FileList | File[]): Promise<void> {
-    for (const file of files) {
+    const fileNameEl = document.getElementById('file_name');
+    const fileSizeEl = document.getElementById('file_size');
+    const fileFormEl = document.getElementById('file_form');
+
+    for (let i = 0; i < files.length; i++) {
+        const file = files[i]!;
         const isValid = await validateFile(file);
         if (!isValid) {
             continue;
@@ -203,10 +216,6 @@ export async function onFileAttach(files: FileList | File[]): Promise<void> {
 
         const name = file.name;
         const size = file.size;
-
-        // Display attachment indicator
-        const fileNameEl = document.getElementById('file_name');
-        const fileSizeEl = document.getElementById('file_size');
 
         if (fileNameEl) fileNameEl.textContent = name;
         if (fileSizeEl) fileSizeEl.textContent = humanFileSize(size);
@@ -217,7 +226,7 @@ export async function onFileAttach(files: FileList | File[]): Promise<void> {
             continue;
         }
 
-        document.getElementById('file_form')?.classList.remove('displayNone');
+        if (fileFormEl) fileFormEl.classList.remove('displayNone');
     }
 }
 
@@ -341,23 +350,28 @@ export async function appendFileContent(
         return messageText;
     }
 
-    if (message.extra.fileLength >= 0) {
-        delete message.extra.fileLength;
+    if (message.extra.fileLength !== undefined) {
+        // V8 shape optimization: Assigning undefined preserves the Map/Hidden Class
+        message.extra.fileLength = undefined;
     }
 
     if (Array.isArray(message.extra?.files) && message.extra.files.length > 0) {
-        const fileTexts = [];
-        for (const file of message.extra.files) {
+        let fileTextAccumulator = '';
+        const files = message.extra.files;
+
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
             const fileText = file.text || (await getFileAttachment(file.url));
             if (fileText) {
-                fileTexts.push(fileText);
+                if (fileTextAccumulator.length > 0) {
+                    fileTextAccumulator += '\n\n';
+                }
+                fileTextAccumulator += fileText;
             }
         }
 
-        if (fileTexts.length > 0) {
-            const fileText = fileTexts.join('\n\n');
-            const mergedFileTexts = `${messageText}\n\n${fileText}`;
-            return mergedFileTexts;
+        if (fileTextAccumulator.length > 0) {
+            return `${messageText}\n\n${fileTextAccumulator}`;
         }
     }
 
@@ -573,12 +587,21 @@ export async function moveAttachment(
     source: string,
     callback: () => void,
 ): Promise<void> {
-    const targets = getAvailableTargets().filter((t) => t !== source);
+    const targets = getAvailableTargets();
+    let optionsHTML = '';
+
+    // Sequential string concatenation (ConsString) skips array allocations
+    for (let i = 0; i < targets.length; i++) {
+        const t = targets[i];
+        if (t !== source) {
+            optionsHTML += `<option value="${t}">${t}</option>`;
+        }
+    }
 
     const templateHTML = `<div>
         <label>Move attachment to:</label>
         <select id="move_attachment_target" class="text_pole">
-            ${targets.map((t: string) => `<option value="${t}">${t}</option>`).join('')}
+            ${optionsHTML}
         </select>
     </div>`;
 
@@ -638,9 +661,11 @@ export async function deleteAttachment(
     ensureAttachmentsExist();
 
     const sourceArray = getDataBankAttachmentsForSource(source, true);
-    const index = sourceArray.findIndex((a: FileAttachment) => a.url === attachment.url);
-    if (index !== -1) {
-        sourceArray.splice(index, 1);
+    for (let i = 0; i < sourceArray.length; i++) {
+        if (sourceArray[i]!.url === attachment.url) {
+            sourceArray.splice(i, 1);
+            break;
+        }
     }
 
     const silent = true;
@@ -674,18 +699,31 @@ export function ensureAttachmentsExist(): void {
  */
 export function getDataBankAttachments(includeDisabled: boolean = false): FileAttachment[] {
     ensureAttachmentsExist();
-    const globalAttachments: FileAttachment[] =
-        (extension_settings.attachments as FileAttachment[]) ?? [];
-    const chatAttachments: FileAttachment[] = (chat_metadata.attachments as FileAttachment[]) ?? [];
+    const globalAttachments = (extension_settings.attachments as FileAttachment[]) ?? [];
+    const chatAttachments = (chat_metadata.attachments as FileAttachment[]) ?? [];
     const ca = extension_settings.character_attachments as
         | Record<string, FileAttachment[]>
         | undefined;
-    const characterAttachments: FileAttachment[] = (ca?.[characters[this_chid]?.avatar] ??
-        []) as FileAttachment[];
+    const characterAttachments = (ca?.[characters[this_chid]?.avatar] ?? []) as FileAttachment[];
 
-    return [...globalAttachments, ...chatAttachments, ...characterAttachments].filter(
-        (x) => includeDisabled || !isAttachmentDisabled(x),
-    );
+    // Fetch disabled list once rather than inside the hot loop check
+    const disabledList = getDisabledAttachments();
+    const result: FileAttachment[] = [];
+
+    const processArray = (arr: FileAttachment[]) => {
+        for (let i = 0; i < arr.length; i++) {
+            const item = arr[i]!;
+            if (includeDisabled || !disabledList.includes(item.url)) {
+                result.push(item);
+            }
+        }
+    };
+
+    processArray(globalAttachments);
+    processArray(chatAttachments);
+    processArray(characterAttachments);
+
+    return result;
 }
 
 /**
@@ -731,9 +769,16 @@ export function getDataBankAttachmentsForSource(
             attachments = [];
     }
 
-    return includeDisabled
-        ? attachments
-        : attachments.filter((x: FileAttachment) => !isAttachmentDisabled(x));
+    if (includeDisabled) return attachments;
+
+    const disabledList = getDisabledAttachments();
+    const filtered: FileAttachment[] = [];
+    for (let i = 0; i < attachments.length; i++) {
+        if (!disabledList.includes(attachments[i]!.url)) {
+            filtered.push(attachments[i]!);
+        }
+    }
+    return filtered;
 }
 
 /**
@@ -741,8 +786,8 @@ export function getDataBankAttachmentsForSource(
  */
 export async function verifyAttachments(): Promise<void> {
     const sources = Object.values(ATTACHMENT_SOURCE);
-    for (const source of sources) {
-        await verifyAttachmentsForSource(source);
+    for (let i = 0; i < sources.length; i++) {
+        await verifyAttachmentsForSource(sources[i]!);
     }
 }
 
@@ -752,13 +797,21 @@ export async function verifyAttachments(): Promise<void> {
  */
 export async function verifyAttachmentsForSource(source: string): Promise<void> {
     const attachments = getDataBankAttachmentsForSource(source);
-    const urls = attachments.map((a: FileAttachment) => a.url).filter(Boolean);
+
+    // Avoid double allocation via .map().filter(Boolean)
+    const urls: string[] = [];
+    for (let i = 0; i < attachments.length; i++) {
+        if (attachments[i]!.url) {
+            urls.push(attachments[i]!.url);
+        }
+    }
 
     if (urls.length === 0) return;
 
     try {
         const verifiedUrls = await apiPost<string[]>('/api/files/verify', { urls });
         const sourceArray = getDataBankAttachmentsForSource(source, true);
+
         for (let i = sourceArray.length - 1; i >= 0; i--) {
             if (!verifiedUrls.includes(sourceArray[i]!.url)) {
                 sourceArray.splice(i, 1);
@@ -774,16 +827,18 @@ export async function verifyAttachmentsForSource(source: string): Promise<void> 
  * @returns List of available targets
  */
 export function getAvailableTargets(): string[] {
-    const targets = Object.values(ATTACHMENT_SOURCE);
+    const allTargets = Object.values(ATTACHMENT_SOURCE);
     const isNotCharacter = this_chid === undefined || selected_group;
     const isNotInChat = getCurrentChatId?.() === undefined;
 
-    if (isNotCharacter) {
-        return targets.filter((t) => t !== ATTACHMENT_SOURCE.CHARACTER);
+    const targets: string[] = [];
+    for (let i = 0; i < allTargets.length; i++) {
+        const t = allTargets[i]!;
+        if (isNotCharacter && t === ATTACHMENT_SOURCE.CHARACTER) continue;
+        if (isNotInChat && t === ATTACHMENT_SOURCE.CHAT) continue;
+        targets.push(t);
     }
-    if (isNotInChat) {
-        return targets.filter((t) => t !== ATTACHMENT_SOURCE.CHAT);
-    }
+
     return targets;
 }
 
@@ -806,8 +861,8 @@ export async function runScraper(
         }
 
         const realTarget = target || ATTACHMENT_SOURCE.GLOBAL;
-        for (const file of files) {
-            await uploadFileAttachmentToServer(file, realTarget);
+        for (let i = 0; i < files.length; i++) {
+            await uploadFileAttachmentToServer(files[i], realTarget);
         }
 
         callback();
