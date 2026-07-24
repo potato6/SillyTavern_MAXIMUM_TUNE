@@ -3537,6 +3537,13 @@ export function substituteParams(content: any, options: any = {}) {
 }
 
 /**
+ * @deprecated Use `substituteParams(content, { dynamicMacros, postProcessFn })` instead.
+ */
+export function substituteParamsExtended(content: any, additionalMacro: any = {}, postProcessFn: any = (x: any) => x) {
+    return substituteParams(content, { dynamicMacros: additionalMacro, postProcessFn });
+}
+
+/**
  * Gets stopping sequences for the prompt.
  * @param {boolean} isImpersonate A request is made to impersonate a user
  * @param {boolean} isContinue A request is made to continue the message

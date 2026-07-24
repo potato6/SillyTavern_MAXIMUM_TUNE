@@ -18805,6 +18805,107 @@
                 function () {
                     return this;
                 };
+            $.fn.slideUp =
+                $.fn.slideUp ||
+                function (duration, complete) {
+                    if (typeof duration === 'function') { complete = duration; duration = 400; }
+                    duration = duration || 400;
+                    var that = this;
+                    this.each(function () {
+                        var el = this;
+                        var h = el.offsetHeight;
+                        if (h === 0) { el.style.display = 'none'; return; }
+                        el.style.transition = 'height ' + (duration / 1000) + 's ease, padding ' + (duration / 1000) + 's ease, margin ' + (duration / 1000) + 's ease';
+                        el.style.overflow = 'hidden';
+                        el.style.height = h + 'px';
+                        el.style.paddingTop = getComputedStyle(el).paddingTop;
+                        el.style.paddingBottom = getComputedStyle(el).paddingBottom;
+                        el.style.marginTop = getComputedStyle(el).marginTop;
+                        el.style.marginBottom = getComputedStyle(el).marginBottom;
+                        requestAnimationFrame(function () {
+                            el.style.height = '0';
+                            el.style.paddingTop = '0';
+                            el.style.paddingBottom = '0';
+                            el.style.marginTop = '0';
+                            el.style.marginBottom = '0';
+                        });
+                        var handler = function () {
+                            el.style.display = 'none';
+                            el.style.height = '';
+                            el.style.paddingTop = '';
+                            el.style.paddingBottom = '';
+                            el.style.marginTop = '';
+                            el.style.marginBottom = '';
+                            el.style.overflow = '';
+                            el.style.transition = '';
+                            el.removeEventListener('transitionend', handler);
+                            if (typeof complete === 'function') complete.call(el);
+                        };
+                        el.addEventListener('transitionend', handler);
+                        if (duration === 0) handler();
+                    });
+                    return that;
+                };
+            $.fn.slideDown =
+                $.fn.slideDown ||
+                function (duration, complete) {
+                    if (typeof duration === 'function') { complete = duration; duration = 400; }
+                    duration = duration || 400;
+                    var that = this;
+                    this.each(function () {
+                        var el = this;
+                        el.style.removeProperty('display');
+                        if (getComputedStyle(el).display === 'none') el.style.display = 'block';
+                        el.style.overflow = 'hidden';
+                        el.style.height = '0';
+                        el.style.paddingTop = '0';
+                        el.style.paddingBottom = '0';
+                        el.style.marginTop = '0';
+                        el.style.marginBottom = '0';
+                        var targetH = el.scrollHeight;
+                        var targetPT = getComputedStyle(el).paddingTop;
+                        var targetPB = getComputedStyle(el).paddingBottom;
+                        var targetMT = getComputedStyle(el).marginTop;
+                        var targetMB = getComputedStyle(el).marginBottom;
+                        el.style.transition = 'height ' + (duration / 1000) + 's ease, padding ' + (duration / 1000) + 's ease, margin ' + (duration / 1000) + 's ease';
+                        requestAnimationFrame(function () {
+                            el.style.height = targetH + 'px';
+                            el.style.paddingTop = targetPT;
+                            el.style.paddingBottom = targetPB;
+                            el.style.marginTop = targetMT;
+                            el.style.marginBottom = targetMB;
+                        });
+                        var handler = function () {
+                            el.style.height = '';
+                            el.style.paddingTop = '';
+                            el.style.paddingBottom = '';
+                            el.style.marginTop = '';
+                            el.style.marginBottom = '';
+                            el.style.overflow = '';
+                            el.style.transition = '';
+                            el.removeEventListener('transitionend', handler);
+                            if (typeof complete === 'function') complete.call(el);
+                        };
+                        el.addEventListener('transitionend', handler);
+                        if (duration === 0) handler();
+                    });
+                    return that;
+                };
+            $.fn.slideToggle =
+                $.fn.slideToggle ||
+                function (duration, complete) {
+                    if (typeof duration === 'function') { complete = duration; duration = 400; }
+                    var that = this;
+                    this.each(function () {
+                        var el = this;
+                        if (el.style.display === 'none' || getComputedStyle(el).display === 'none') {
+                            $(el).slideDown(duration, complete);
+                        } else {
+                            $(el).slideUp(duration, complete);
+                        }
+                    });
+                    return that;
+                };
             // Fix .is() to handle jQuery pseudo-selectors cash-dom doesn't support
             var _is = $.fn.is;
             $.fn.is = function (selector) {
@@ -18977,6 +19078,28 @@
         </script>
         <script src="lib/cropper.min.js"></script>
         <script src="lib/notyf.min.js"></script>
+        <script>
+            window.toastr = (function () {
+                var n = new Notyf({
+                    duration: 3000,
+                    position: { x: 'right', y: 'top' },
+                    dismissible: true,
+                });
+                function shim(method, message, title, opts) {
+                    if (title) message = '<strong>' + title + '</strong><br>' + message;
+                    var options = { type: method === 'warning' ? 'warning' : method, message: message };
+                    if (opts && opts.timeOut) options.duration = opts.timeOut;
+                    return n.open(options);
+                }
+                return {
+                    error: function (msg, title, opts) { return shim('error', msg, title, opts); },
+                    success: function (msg, title, opts) { return shim('success', msg, title, opts); },
+                    info: function (msg, title, opts) { return shim('info', msg, title, opts); },
+                    warning: function (msg, title, opts) { return shim('warning', msg, title, opts); },
+                    clear: function () { n.dismissAll(); },
+                };
+            })();
+        </script>
         <script src="lib/toolcool-color-picker.js"></script>
         <script type="module" src="lib/structured-clone/monkey-patch.js"></script>
         <script type="module" src="lib/eventemitter.js"></script>
