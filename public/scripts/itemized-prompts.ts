@@ -9,13 +9,17 @@ import { renderTemplateAsync } from './templates.js';
 import { getFriendlyTokenizerName, getTokenCountAsync } from './tokenizers.js';
 import { copyText } from './utils.js';
 
-// @ts-expect-error TS(7034) FIXME: Variable 'PromptArrayItemForRawPromptDisplay' impl... Remove this comment to see the full error message
-let PromptArrayItemForRawPromptDisplay;
-// @ts-expect-error TS(7034) FIXME: Variable 'priorPromptArrayItemForRawPromptDisplay'... Remove this comment to see the full error message
-let priorPromptArrayItemForRawPromptDisplay;
-
+let PromptArrayItemForRawPromptDisplay: number;
+let priorPromptArrayItemForRawPromptDisplay: number;
 const promptStorage = localspace.createInstance({ name: 'SillyTavern_Prompts' });
-export let itemizedPrompts = [];
+export let itemizedPrompts: any[] = [];
+
+const flatten = (rawPrompt: any) =>
+  Array.isArray(rawPrompt) ? rawPrompt.map((x: any) => x.content).join('\n') : rawPrompt;
+
+const getFriendlyName = (value: any) =>
+  document.querySelector(`#rm_api_block select option[value="${value}"]`)?.textContent ||
+  value;
 
 /**
  * Gets the itemized prompts for a chat.
@@ -23,23 +27,23 @@ export let itemizedPrompts = [];
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'chatId' implicitly has an 'any' type.
 export async function loadItemizedPrompts(chatId) {
-    try {
-        if (!chatId) {
-            itemizedPrompts = [];
-            return;
-        }
-
-        itemizedPrompts = (await promptStorage.getItem(chatId)) ?? [];
-
-        if (!itemizedPrompts) {
-            itemizedPrompts = [];
-        }
-
-        await eventSource.emit(event_types.ITEMIZED_PROMPTS_LOADED, { chatId: chatId });
-    } catch {
-        console.log('Error loading itemized prompts for chat', chatId);
-        itemizedPrompts = [];
+  try {
+    if (!chatId) {
+      itemizedPrompts = [];
+      return;
     }
+
+    itemizedPrompts = (await promptStorage.getItem(chatId)) ?? [];
+
+    if (!itemizedPrompts) {
+      itemizedPrompts = [];
+    }
+
+    await eventSource.emit(event_types.ITEMIZED_PROMPTS_LOADED, { chatId: chatId });
+  } catch {
+    console.log('Error loading itemized prompts for chat', chatId);
+    itemizedPrompts = [];
+  }
 }
 
 /**
@@ -48,16 +52,16 @@ export async function loadItemizedPrompts(chatId) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'chatId' implicitly has an 'any' type.
 export async function saveItemizedPrompts(chatId) {
-    try {
-        if (!chatId) {
-            return;
-        }
-
-        await promptStorage.setItem(chatId, itemizedPrompts);
-        await eventSource.emit(event_types.ITEMIZED_PROMPTS_SAVED, { chatId: chatId });
-    } catch {
-        console.log('Error saving itemized prompts for chat', chatId);
+  try {
+    if (!chatId) {
+      return;
     }
+
+    await promptStorage.setItem(chatId, itemizedPrompts);
+    await eventSource.emit(event_types.ITEMIZED_PROMPTS_SAVED, { chatId: chatId });
+  } catch {
+    console.log('Error saving itemized prompts for chat', chatId);
+  }
 }
 
 /**
@@ -68,19 +72,17 @@ export async function saveItemizedPrompts(chatId) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'mesId' implicitly has an 'any' type.
 export async function replaceItemizedPromptText(mesId, promptText) {
-    if (!Array.isArray(itemizedPrompts)) {
-        itemizedPrompts = [];
-    }
+  if (!Array.isArray(itemizedPrompts)) {
+    itemizedPrompts = [];
+  }
 
-    // @ts-expect-error TS(2339) FIXME: Property 'mesId' does not exist on type 'never'.
-    const itemizedPrompt = itemizedPrompts.find((x) => x.mesId === mesId);
+  const itemizedPrompt = itemizedPrompts.find((x: any) => x.mesId === mesId);
 
-    if (!itemizedPrompt) {
-        return;
-    }
+  if (!itemizedPrompt) {
+    return;
+  }
 
-    // @ts-expect-error TS(2339) FIXME: Property 'rawPrompt' does not exist on type 'never... Remove this comment to see the full error message
-    itemizedPrompt.rawPrompt = promptText;
+  itemizedPrompt.rawPrompt = promptText;
 }
 
 /**
@@ -89,32 +91,32 @@ export async function replaceItemizedPromptText(mesId, promptText) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'chatId' implicitly has an 'any' type.
 export async function deleteItemizedPrompts(chatId) {
-    try {
-        if (!chatId) {
-            return;
-        }
-
-        await promptStorage.removeItem(chatId);
-        await eventSource.emit(event_types.ITEMIZED_PROMPTS_DELETED, {
-            chatId: chatId,
-            all: false,
-        });
-    } catch {
-        console.log('Error deleting itemized prompts for chat', chatId);
+  try {
+    if (!chatId) {
+      return;
     }
+
+    await promptStorage.removeItem(chatId);
+    await eventSource.emit(event_types.ITEMIZED_PROMPTS_DELETED, {
+      chatId: chatId,
+      all: false,
+    });
+  } catch {
+    console.log('Error deleting itemized prompts for chat', chatId);
+  }
 }
 
 /**
  * Empties the itemized prompts array and caches.
  */
 export async function clearItemizedPrompts() {
-    try {
-        await promptStorage.clear();
-        itemizedPrompts = [];
-        await eventSource.emit(event_types.ITEMIZED_PROMPTS_DELETED, { all: true });
-    } catch {
-        console.log('Error clearing itemized prompts');
-    }
+  try {
+    await promptStorage.clear();
+    itemizedPrompts = [];
+    await eventSource.emit(event_types.ITEMIZED_PROMPTS_DELETED, { all: true });
+  } catch {
+    console.log('Error clearing itemized prompts');
+  }
 }
 
 /**
@@ -125,267 +127,180 @@ export async function clearItemizedPrompts() {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'itemizedPrompts' implicitly has an 'any... Remove this comment to see the full error message
 export async function itemizedParams(itemizedPrompts, thisPromptSet, incomingMesId) {
-    const params = {
-        charDescriptionTokens: await getTokenCountAsync(
-            itemizedPrompts[thisPromptSet].charDescription,
-        ),
-        charPersonalityTokens: await getTokenCountAsync(
-            itemizedPrompts[thisPromptSet].charPersonality,
-        ),
-        scenarioTextTokens: await getTokenCountAsync(itemizedPrompts[thisPromptSet].scenarioText),
-        userPersonaStringTokens: await getTokenCountAsync(
-            itemizedPrompts[thisPromptSet].userPersona,
-        ),
-        worldInfoStringTokens: await getTokenCountAsync(
-            itemizedPrompts[thisPromptSet].worldInfoString,
-        ),
-        allAnchorsTokens: await getTokenCountAsync(itemizedPrompts[thisPromptSet].allAnchors),
-        summarizeStringTokens: await getTokenCountAsync(
-            itemizedPrompts[thisPromptSet].summarizeString,
-        ),
-        authorsNoteStringTokens: await getTokenCountAsync(
-            itemizedPrompts[thisPromptSet].authorsNoteString,
-        ),
-        smartContextStringTokens: await getTokenCountAsync(
-            itemizedPrompts[thisPromptSet].smartContextString,
-        ),
-        beforeScenarioAnchorTokens: await getTokenCountAsync(
-            itemizedPrompts[thisPromptSet].beforeScenarioAnchor,
-        ),
-        afterScenarioAnchorTokens: await getTokenCountAsync(
-            itemizedPrompts[thisPromptSet].afterScenarioAnchor,
-        ),
-        zeroDepthAnchorTokens: await getTokenCountAsync(
-            itemizedPrompts[thisPromptSet].zeroDepthAnchor,
-        ), // TODO: unused
-        thisPrompt_padding: itemizedPrompts[thisPromptSet].padding,
-        this_main_api: itemizedPrompts[thisPromptSet].main_api,
-        chatInjects: await getTokenCountAsync(itemizedPrompts[thisPromptSet].chatInjects),
-        chatVectorsStringTokens: await getTokenCountAsync(
-            itemizedPrompts[thisPromptSet].chatVectorsString,
-        ),
-        dataBankVectorsStringTokens: await getTokenCountAsync(
-            itemizedPrompts[thisPromptSet].dataBankVectorsString,
-        ),
-        modelUsed: chat[incomingMesId]?.extra?.model,
-        apiUsed: chat[incomingMesId]?.extra?.api,
-        presetName: itemizedPrompts[thisPromptSet].presetName || t`(Unknown)`,
-        messagesCount: String(itemizedPrompts[thisPromptSet].messagesCount ?? ''),
-        examplesCount: String(itemizedPrompts[thisPromptSet].examplesCount ?? ''),
-    };
+  // Cache array access to avoid repeated lookups and maintain stable references
+  const promptData = itemizedPrompts[thisPromptSet];
 
-    // @ts-expect-error TS(7006) FIXME: Parameter 'value' implicitly has an 'any' type.
-    const getFriendlyName = (value) =>
-        document.querySelector(`#rm_api_block select option[value="${value}"]`)?.textContent ||
-        value;
+  // Pre-initialize all fields to ensure V8 creates a single stable hidden class (map)
+  // for the params object, preventing shape transitions and megamorphic property access.
+  const params = {
+    charDescriptionTokens: await getTokenCountAsync(promptData.charDescription),
+    charPersonalityTokens: await getTokenCountAsync(promptData.charPersonality),
+    scenarioTextTokens: await getTokenCountAsync(promptData.scenarioText),
+    userPersonaStringTokens: await getTokenCountAsync(promptData.userPersona),
+    worldInfoStringTokens: await getTokenCountAsync(promptData.worldInfoString),
+    allAnchorsTokens: await getTokenCountAsync(promptData.allAnchors),
+    summarizeStringTokens: await getTokenCountAsync(promptData.summarizeString),
+    authorsNoteStringTokens: await getTokenCountAsync(promptData.authorsNoteString),
+    smartContextStringTokens: await getTokenCountAsync(promptData.smartContextString),
+    beforeScenarioAnchorTokens: await getTokenCountAsync(promptData.beforeScenarioAnchor),
+    afterScenarioAnchorTokens: await getTokenCountAsync(promptData.afterScenarioAnchor),
+    zeroDepthAnchorTokens: await getTokenCountAsync(promptData.zeroDepthAnchor),
+    thisPrompt_padding: promptData.padding,
+    this_main_api: promptData.main_api,
+    chatInjects: await getTokenCountAsync(promptData.chatInjects),
+    chatVectorsStringTokens: await getTokenCountAsync(promptData.chatVectorsString),
+    dataBankVectorsStringTokens: await getTokenCountAsync(promptData.dataBankVectorsString),
+    modelUsed: chat[incomingMesId]?.extra?.model,
+    apiUsed: chat[incomingMesId]?.extra?.api,
+    presetName: promptData.presetName || t`(Unknown)`,
+    messagesCount: String(promptData.messagesCount ?? ''),
+    examplesCount: String(promptData.examplesCount ?? ''),
 
-    if (params.apiUsed) {
-        params.apiUsed = getFriendlyName(params.apiUsed);
-    }
+    // Pre-initialized conditional/derived fields
+    mainApiFriendlyName: '',
+    ActualChatHistoryTokens: 0,
+    oaiMainTokens: 0,
+    oaiStartTokens: 0,
+    examplesStringTokens: 0,
+    oaiPromptTokens: 0,
+    oaiBiasTokens: 0,
+    oaiJailbreakTokens: 0,
+    oaiNudgeTokens: 0,
+    oaiImpersonateTokens: 0,
+    oaiNsfwTokens: 0,
+    finalPromptTokens: 0,
+    thisPrompt_max_context: 0,
+    oaiStartTokensPercentage: '',
+    storyStringTokensPercentage: '',
+    ActualChatHistoryTokensPercentage: '',
+    promptBiasTokensPercentage: '',
+    worldInfoStringTokensPercentage: '',
+    allAnchorsTokensPercentage: '',
+    selectedTokenizer: '',
+    oaiSystemTokens: 0,
+    oaiSystemTokensPercentage: '',
+    storyStringTokens: 0,
+    mesSendStringTokens: 0,
+    instructionTokens: 0,
+    promptBiasTokens: 0,
+    totalTokensInPrompt: 0,
+    thisPrompt_actual: 0,
+  };
 
-    if (params.this_main_api) {
-        // @ts-expect-error TS(2339) FIXME: Property 'mainApiFriendlyName' does not exist on t... Remove this comment to see the full error message
-        params.mainApiFriendlyName = getFriendlyName(params.this_main_api);
-    }
+  if (params.apiUsed) {
+    params.apiUsed = getFriendlyName(params.apiUsed);
+  }
 
-    if (params.chatInjects) {
-        // @ts-expect-error TS(2339) FIXME: Property 'ActualChatHistoryTokens' does not exist ... Remove this comment to see the full error message
-        params.ActualChatHistoryTokens = params.ActualChatHistoryTokens - params.chatInjects;
-    }
+  if (params.this_main_api) {
+    params.mainApiFriendlyName = getFriendlyName(params.this_main_api);
+  }
 
-    if (params.this_main_api == 'openai') {
-        //for OAI API
-        //console.log('-- Counting OAI Tokens');
+  if (params.chatInjects) {
+    params.ActualChatHistoryTokens = params.ActualChatHistoryTokens - params.chatInjects;
+  }
 
-        //params.finalPromptTokens = itemizedPrompts[thisPromptSet].oaiTotalTokens;
-        // @ts-expect-error TS(2339) FIXME: Property 'oaiMainTokens' does not exist on type '{... Remove this comment to see the full error message
-        params.oaiMainTokens = itemizedPrompts[thisPromptSet].oaiMainTokens;
-        // @ts-expect-error TS(2339) FIXME: Property 'oaiStartTokens' does not exist on type '... Remove this comment to see the full error message
-        params.oaiStartTokens = itemizedPrompts[thisPromptSet].oaiStartTokens;
-        // @ts-expect-error TS(2339) FIXME: Property 'ActualChatHistoryTokens' does not exist ... Remove this comment to see the full error message
-        params.ActualChatHistoryTokens = itemizedPrompts[thisPromptSet].oaiConversationTokens;
-        // @ts-expect-error TS(2339) FIXME: Property 'examplesStringTokens' does not exist on ... Remove this comment to see the full error message
-        params.examplesStringTokens = itemizedPrompts[thisPromptSet].oaiExamplesTokens;
-        // @ts-expect-error TS(2339) FIXME: Property 'oaiPromptTokens' does not exist on type ... Remove this comment to see the full error message
-        params.oaiPromptTokens =
-            itemizedPrompts[thisPromptSet].oaiPromptTokens -
-            (params.afterScenarioAnchorTokens + params.beforeScenarioAnchorTokens) +
-            // @ts-expect-error TS(2339) FIXME: Property 'examplesStringTokens' does not exist on type.
-            params.examplesStringTokens;
-        // @ts-expect-error TS(2339) FIXME: Property 'oaiBiasTokens' does not exist on type '{... Remove this comment to see the full error message
-        params.oaiBiasTokens = itemizedPrompts[thisPromptSet].oaiBiasTokens;
-        // @ts-expect-error TS(2339) FIXME: Property 'oaiJailbreakTokens' does not exist on ty... Remove this comment to see the full error message
-        params.oaiJailbreakTokens = itemizedPrompts[thisPromptSet].oaiJailbreakTokens;
-        // @ts-expect-error TS(2339) FIXME: Property 'oaiNudgeTokens' does not exist on type '... Remove this comment to see the full error message
-        params.oaiNudgeTokens = itemizedPrompts[thisPromptSet].oaiNudgeTokens;
-        // @ts-expect-error TS(2339) FIXME: Property 'oaiImpersonateTokens' does not exist on ... Remove this comment to see the full error message
-        params.oaiImpersonateTokens = itemizedPrompts[thisPromptSet].oaiImpersonateTokens;
-        // @ts-expect-error TS(2339) FIXME: Property 'oaiNsfwTokens' does not exist on type '{... Remove this comment to see the full error message
-        params.oaiNsfwTokens = itemizedPrompts[thisPromptSet].oaiNsfwTokens;
-        // @ts-expect-error TS(2339) FIXME: Property 'finalPromptTokens' does not exist on typ... Remove this comment to see the full error message
-        params.finalPromptTokens =
-            // @ts-expect-error TS(2339) FIXME: Property 'oaiStartTokens' does not exist on type '... Remove this comment to see the full error message
-            params.oaiStartTokens +
-            // @ts-expect-error TS(2339) FIXME: Property 'oaiPromptTokens' does not exist on type ... Remove this comment to see the full error message
-            params.oaiPromptTokens +
-            // @ts-expect-error TS(2339) FIXME: Property 'oaiMainTokens' does not exist on type '{... Remove this comment to see the full error message
-            params.oaiMainTokens +
-            // @ts-expect-error TS(2339) FIXME: Property 'oaiNsfwTokens' does not exist on type '{... Remove this comment to see the full error message
-            params.oaiNsfwTokens +
-            // @ts-expect-error TS(2339) FIXME: Property 'oaiBiasTokens' does not exist on type '{... Remove this comment to see the full error message
-            params.oaiBiasTokens +
-            // @ts-expect-error TS(2339) FIXME: Property 'oaiImpersonateTokens' does not exist on ... Remove this comment to see the full error message
-            params.oaiImpersonateTokens +
-            // @ts-expect-error TS(2339) FIXME: Property 'oaiJailbreakTokens' does not exist on ty... Remove this comment to see the full error message
-            params.oaiJailbreakTokens +
-            // @ts-expect-error TS(2339) FIXME: Property 'oaiNudgeTokens' does not exist on type '... Remove this comment to see the full error message
-            params.oaiNudgeTokens +
-            // @ts-expect-error TS(2339) FIXME: Property 'ActualChatHistoryTokens' does not exist ... Remove this comment to see the full error message
-            params.ActualChatHistoryTokens +
-            //charDescriptionTokens +
-            //charPersonalityTokens +
-            //allAnchorsTokens +
-            params.worldInfoStringTokens +
-            params.beforeScenarioAnchorTokens +
-            params.afterScenarioAnchorTokens;
-        // Max context size - max completion tokens
-        // @ts-expect-error TS(2339) FIXME: Property 'thisPrompt_max_context' does not exist o... Remove this comment to see the full error message
-        params.thisPrompt_max_context =
-            oai_settings.openai_max_context - oai_settings.openai_max_tokens;
+  if (params.this_main_api == 'openai') {
+    //for OAI API
+    params.oaiMainTokens = promptData.oaiMainTokens;
+    params.oaiStartTokens = promptData.oaiStartTokens;
+    params.ActualChatHistoryTokens = promptData.oaiConversationTokens;
+    params.examplesStringTokens = promptData.oaiExamplesTokens;
+    params.oaiPromptTokens =
+      promptData.oaiPromptTokens -
+      (params.afterScenarioAnchorTokens + params.beforeScenarioAnchorTokens) +
+      params.examplesStringTokens;
+    params.oaiBiasTokens = promptData.oaiBiasTokens;
+    params.oaiJailbreakTokens = promptData.oaiJailbreakTokens;
+    params.oaiNudgeTokens = promptData.oaiNudgeTokens;
+    params.oaiImpersonateTokens = promptData.oaiImpersonateTokens;
+    params.oaiNsfwTokens = promptData.oaiNsfwTokens;
 
-        //console.log('-- applying % on OAI tokens');
-        // @ts-expect-error TS(2339) FIXME: Property 'oaiStartTokensPercentage' does not exist... Remove this comment to see the full error message
-        params.oaiStartTokensPercentage =
-            // @ts-expect-error TS(2339) FIXME: Property 'oaiStartTokens' does not exist on type.
-            ((params.oaiStartTokens / params.finalPromptTokens) * 100).toFixed(2);
-        // @ts-expect-error TS(2339) FIXME: Property 'storyStringTokensPercentage' does not ex... Remove this comment to see the full error message
-        params.storyStringTokensPercentage = (
-            ((params.afterScenarioAnchorTokens +
-                params.beforeScenarioAnchorTokens +
-                // @ts-expect-error TS(2339) FIXME: Property 'oaiPromptTokens' does not exist on type.
-                params.oaiPromptTokens) /
-                // @ts-expect-error TS(2339) FIXME: Property 'finalPromptTokens' does not exist on type.
-                params.finalPromptTokens) *
-            100
-        ).toFixed(2);
-        // @ts-expect-error TS(2339) FIXME: Property 'ActualChatHistoryTokensPercentage' does ... Remove this comment to see the full error message
-        params.ActualChatHistoryTokensPercentage =
-            // @ts-expect-error TS(2339) FIXME: Property 'ActualChatHistoryTokens' does not exist on type.
-            ((params.ActualChatHistoryTokens / params.finalPromptTokens) * 100).toFixed(2);
-        // @ts-expect-error TS(2339) FIXME: Property 'promptBiasTokensPercentage' does not exi... Remove this comment to see the full error message
-        params.promptBiasTokensPercentage =
-            // @ts-expect-error TS(2339) FIXME: Property 'oaiBiasTokens' does not exist on type.
-            ((params.oaiBiasTokens / params.finalPromptTokens) * 100).toFixed(2);
-        // @ts-expect-error TS(2339) FIXME: Property 'worldInfoStringTokensPercentage' does no... Remove this comment to see the full error message
-        params.worldInfoStringTokensPercentage =
-            // @ts-expect-error TS(2339) FIXME: Property 'worldInfoStringTokens' does not exist on type.
-            ((params.worldInfoStringTokens / params.finalPromptTokens) * 100).toFixed(2);
-        // @ts-expect-error TS(2339) FIXME: Property 'allAnchorsTokensPercentage' does not exi... Remove this comment to see the full error message
-        params.allAnchorsTokensPercentage =
-            // @ts-expect-error TS(2339) FIXME: Property 'allAnchorsTokens' does not exist on type.
-            ((params.allAnchorsTokens / params.finalPromptTokens) * 100).toFixed(2);
-        // @ts-expect-error TS(2339) FIXME: Property 'selectedTokenizer' does not exist on typ... Remove this comment to see the full error message
-        params.selectedTokenizer = getFriendlyTokenizerName(params.this_main_api).tokenizerName;
-        // @ts-expect-error TS(2339) FIXME: Property 'oaiSystemTokens' does not exist on type ... Remove this comment to see the full error message
-        params.oaiSystemTokens =
-            // @ts-expect-error TS(2339) FIXME: Property 'oaiImpersonateTokens' does not exist on type.
-            params.oaiImpersonateTokens +
-            // @ts-expect-error TS(2339) FIXME: Property 'oaiJailbreakTokens' does not exist on type.
-            params.oaiJailbreakTokens +
-            // @ts-expect-error TS(2339) FIXME: Property 'oaiNudgeTokens' does not exist on type.
-            params.oaiNudgeTokens +
-            // @ts-expect-error TS(2339) FIXME: Property 'oaiStartTokens' does not exist on type.
-            params.oaiStartTokens +
-            // @ts-expect-error TS(2339) FIXME: Property 'oaiNsfwTokens' does not exist on type.
-            params.oaiNsfwTokens +
-            // @ts-expect-error TS(2339) FIXME: Property 'oaiMainTokens' does not exist on type.
-            params.oaiMainTokens;
-        // @ts-expect-error TS(2339) FIXME: Property 'oaiSystemTokensPercentage' does not exis... Remove this comment to see the full error message
-        params.oaiSystemTokensPercentage =
-            // @ts-expect-error TS(2339) FIXME: Property 'oaiSystemTokens' does not exist on type.
-            ((params.oaiSystemTokens / params.finalPromptTokens) * 100).toFixed(2);
-    } else {
-        //for non-OAI APIs
-        //console.log('-- Counting non-OAI Tokens');
-        // @ts-expect-error TS(2339) FIXME: Property 'finalPromptTokens' does not exist on typ... Remove this comment to see the full error message
-        params.finalPromptTokens = await getTokenCountAsync(
-            itemizedPrompts[thisPromptSet].finalPrompt,
-        );
-        // @ts-expect-error TS(2339) FIXME: Property 'storyStringTokens' does not exist on typ... Remove this comment to see the full error message
-        params.storyStringTokens =
-            (await getTokenCountAsync(itemizedPrompts[thisPromptSet].storyString)) -
-            params.worldInfoStringTokens;
-        // @ts-expect-error TS(2339) FIXME: Property 'examplesStringTokens' does not exist on ... Remove this comment to see the full error message
-        params.examplesStringTokens = await getTokenCountAsync(
-            itemizedPrompts[thisPromptSet].examplesString,
-        );
-        // @ts-expect-error TS(2339) FIXME: Property 'mesSendStringTokens' does not exist on t... Remove this comment to see the full error message
-        params.mesSendStringTokens = await getTokenCountAsync(
-            itemizedPrompts[thisPromptSet].mesSendString,
-        );
-        // @ts-expect-error TS(2339) FIXME: Property 'ActualChatHistoryTokens' does not exist ... Remove this comment to see the full error message
-        params.ActualChatHistoryTokens =
-            // @ts-expect-error TS(2339) FIXME: Property 'mesSendStringTokens' does not exist on type.
-            params.mesSendStringTokens -
-            (params.allAnchorsTokens -
-                (params.beforeScenarioAnchorTokens + params.afterScenarioAnchorTokens)) +
-            power_user.token_padding;
-        // @ts-expect-error TS(2339) FIXME: Property 'instructionTokens' does not exist on typ... Remove this comment to see the full error message
-        params.instructionTokens = await getTokenCountAsync(
-            itemizedPrompts[thisPromptSet].instruction,
-        );
-        // @ts-expect-error TS(2339) FIXME: Property 'promptBiasTokens' does not exist on type... Remove this comment to see the full error message
-        params.promptBiasTokens = await getTokenCountAsync(
-            itemizedPrompts[thisPromptSet].promptBias,
-        );
+    params.finalPromptTokens =
+      params.oaiStartTokens +
+      params.oaiPromptTokens +
+      params.oaiMainTokens +
+      params.oaiNsfwTokens +
+      params.oaiBiasTokens +
+      params.oaiImpersonateTokens +
+      params.oaiJailbreakTokens +
+      params.oaiNudgeTokens +
+      params.ActualChatHistoryTokens +
+      params.worldInfoStringTokens +
+      params.beforeScenarioAnchorTokens +
+      params.afterScenarioAnchorTokens;
 
-        // @ts-expect-error TS(2339) FIXME: Property 'totalTokensInPrompt' does not exist on t... Remove this comment to see the full error message
-        params.totalTokensInPrompt =
-            // @ts-expect-error TS(2339) FIXME: Property 'storyStringTokens' does not exist on typ... Remove this comment to see the full error message
-            params.storyStringTokens + //chardefs total
-            params.worldInfoStringTokens +
-            // @ts-expect-error TS(2339) FIXME: Property 'examplesStringTokens' does not exist on ... Remove this comment to see the full error message
-            params.examplesStringTokens + // example messages
-            // @ts-expect-error TS(2339) FIXME: Property 'ActualChatHistoryTokens' does not exist ... Remove this comment to see the full error message
-            params.ActualChatHistoryTokens + //chat history
-            params.allAnchorsTokens + // AN and/or legacy anchors
-            //afterScenarioAnchorTokens +       //only counts if AN is set to 'after scenario'
-            //zeroDepthAnchorTokens +           //same as above, even if AN not on 0 depth
-            // @ts-expect-error TS(2339) FIXME: Property 'promptBiasTokens' does not exist on type... Remove this comment to see the full error message
-            params.promptBiasTokens; //{{}}
-        //- thisPrompt_padding;  //not sure this way of calculating is correct, but the math results in same value as 'finalPrompt'
-        // @ts-expect-error TS(2339) FIXME: Property 'thisPrompt_max_context' does not exist o... Remove this comment to see the full error message
-        params.thisPrompt_max_context = itemizedPrompts[thisPromptSet].this_max_context;
-        // @ts-expect-error TS(2339) FIXME: Property 'thisPrompt_actual' does not exist on typ... Remove this comment to see the full error message
-        params.thisPrompt_actual = params.thisPrompt_max_context - params.thisPrompt_padding;
+    params.thisPrompt_max_context =
+      oai_settings.openai_max_context - oai_settings.openai_max_tokens;
 
-        //console.log('-- applying % on non-OAI tokens');
-        // @ts-expect-error TS(2339) FIXME: Property 'storyStringTokensPercentage' does not ex... Remove this comment to see the full error message
-        params.storyStringTokensPercentage =
-            // @ts-expect-error TS(2339) FIXME: Property 'storyStringTokens' does not exist on type.
-            ((params.storyStringTokens / params.totalTokensInPrompt) * 100).toFixed(2);
-        // @ts-expect-error TS(2339) FIXME: Property 'ActualChatHistoryTokensPercentage' does ... Remove this comment to see the full error message
-        params.ActualChatHistoryTokensPercentage =
-            // @ts-expect-error TS(2339) FIXME: Property 'ActualChatHistoryTokens' does not exist on type.
-            ((params.ActualChatHistoryTokens / params.totalTokensInPrompt) * 100).toFixed(2);
-        // @ts-expect-error TS(2339) FIXME: Property 'promptBiasTokensPercentage' does not exi... Remove this comment to see the full error message
-        params.promptBiasTokensPercentage =
-            // @ts-expect-error TS(2339) FIXME: Property 'promptBiasTokens' does not exist on type.
-            ((params.promptBiasTokens / params.totalTokensInPrompt) * 100).toFixed(2);
-        // @ts-expect-error TS(2339) FIXME: Property 'worldInfoStringTokensPercentage' does no... Remove this comment to see the full error message
-        params.worldInfoStringTokensPercentage =
-            // @ts-expect-error TS(2339) FIXME: Property 'worldInfoStringTokens' does not exist on type.
-            ((params.worldInfoStringTokens / params.totalTokensInPrompt) * 100).toFixed(2);
-        // @ts-expect-error TS(2339) FIXME: Property 'allAnchorsTokensPercentage' does not exi... Remove this comment to see the full error message
-        params.allAnchorsTokensPercentage =
-            // @ts-expect-error TS(2339) FIXME: Property 'allAnchorsTokens' does not exist on type.
-            ((params.allAnchorsTokens / params.totalTokensInPrompt) * 100).toFixed(2);
-        // @ts-expect-error TS(2339) FIXME: Property 'selectedTokenizer' does not exist on typ... Remove this comment to see the full error message
-        params.selectedTokenizer =
-            itemizedPrompts[thisPromptSet]?.tokenizer ||
-            getFriendlyTokenizerName(params.this_main_api).tokenizerName;
-    }
-    return params;
+    params.oaiStartTokensPercentage =
+      ((params.oaiStartTokens / params.finalPromptTokens) * 100).toFixed(2);
+    params.storyStringTokensPercentage = (
+      ((params.afterScenarioAnchorTokens +
+        params.beforeScenarioAnchorTokens +
+        params.oaiPromptTokens) /
+        params.finalPromptTokens) *
+      100
+    ).toFixed(2);
+    params.ActualChatHistoryTokensPercentage =
+      ((params.ActualChatHistoryTokens / params.finalPromptTokens) * 100).toFixed(2);
+    params.promptBiasTokensPercentage =
+      ((params.oaiBiasTokens / params.finalPromptTokens) * 100).toFixed(2);
+    params.worldInfoStringTokensPercentage =
+      ((params.worldInfoStringTokens / params.finalPromptTokens) * 100).toFixed(2);
+    params.allAnchorsTokensPercentage =
+      ((params.allAnchorsTokens / params.finalPromptTokens) * 100).toFixed(2);
+    params.selectedTokenizer = getFriendlyTokenizerName(params.this_main_api).tokenizerName ?? '';
+    params.oaiSystemTokens =
+      params.oaiImpersonateTokens +
+      params.oaiJailbreakTokens +
+      params.oaiNudgeTokens +
+      params.oaiStartTokens +
+      params.oaiNsfwTokens +
+      params.oaiMainTokens;
+    params.oaiSystemTokensPercentage =
+      ((params.oaiSystemTokens / params.finalPromptTokens) * 100).toFixed(2);
+  } else {
+    //for non-OAI APIs
+    params.finalPromptTokens = await getTokenCountAsync(promptData.finalPrompt);
+    params.storyStringTokens =
+      (await getTokenCountAsync(promptData.storyString)) -
+      params.worldInfoStringTokens;
+    params.examplesStringTokens = await getTokenCountAsync(promptData.examplesString);
+    params.mesSendStringTokens = await getTokenCountAsync(promptData.mesSendString);
+    params.ActualChatHistoryTokens =
+      params.mesSendStringTokens -
+      (params.allAnchorsTokens -
+        (params.beforeScenarioAnchorTokens + params.afterScenarioAnchorTokens)) +
+      power_user.token_padding;
+    params.instructionTokens = await getTokenCountAsync(promptData.instruction);
+    params.promptBiasTokens = await getTokenCountAsync(promptData.promptBias);
+
+    params.totalTokensInPrompt =
+      params.storyStringTokens +
+      params.worldInfoStringTokens +
+      params.examplesStringTokens +
+      params.ActualChatHistoryTokens +
+      params.allAnchorsTokens +
+      params.promptBiasTokens;
+
+    params.thisPrompt_max_context = promptData.this_max_context;
+    params.thisPrompt_actual = params.thisPrompt_max_context - params.thisPrompt_padding;
+
+    params.storyStringTokensPercentage =
+      ((params.storyStringTokens / params.totalTokensInPrompt) * 100).toFixed(2);
+    params.ActualChatHistoryTokensPercentage =
+      ((params.ActualChatHistoryTokens / params.totalTokensInPrompt) * 100).toFixed(2);
+    params.promptBiasTokensPercentage =
+      ((params.promptBiasTokens / params.totalTokensInPrompt) * 100).toFixed(2);
+    params.worldInfoStringTokensPercentage =
+      ((params.worldInfoStringTokens / params.totalTokensInPrompt) * 100).toFixed(2);
+    params.allAnchorsTokensPercentage =
+      ((params.allAnchorsTokens / params.totalTokensInPrompt) * 100).toFixed(2);
+    params.selectedTokenizer =
+      promptData?.tokenizer ||
+      getFriendlyTokenizerName(params.this_main_api).tokenizerName;
+  }
+  return params;
 }
 
 /**
@@ -395,25 +310,20 @@ export async function itemizedParams(itemizedPrompts, thisPromptSet, incomingMes
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'itemizedPrompts' implicitly has an 'any... Remove this comment to see the full error message
 export function findItemizedPromptSet(itemizedPrompts, incomingMesId) {
-    let thisPromptSet = undefined;
-    priorPromptArrayItemForRawPromptDisplay = -1;
+  let thisPromptSet = undefined;
+  priorPromptArrayItemForRawPromptDisplay = -1;
 
-    for (let i = 0; i < itemizedPrompts.length; i++) {
-        console.log(`looking for ${incomingMesId} vs ${itemizedPrompts[i].mesId}`);
-        if (itemizedPrompts[i].mesId === incomingMesId) {
-            console.log(`found matching mesID ${i}`);
-            thisPromptSet = i;
-            PromptArrayItemForRawPromptDisplay = i;
-            console.log(
-                `wanting to raw display of ArrayItem: ${PromptArrayItemForRawPromptDisplay} which is mesID ${incomingMesId}`,
-            );
-            console.log(itemizedPrompts[thisPromptSet]);
-            break;
-        } else if (itemizedPrompts[i].rawPrompt) {
-            priorPromptArrayItemForRawPromptDisplay = i;
-        }
+  for (let i = 0; i < itemizedPrompts.length; i++) {
+    const item = itemizedPrompts[i];
+    if (item.mesId === incomingMesId) {
+      thisPromptSet = i;
+      PromptArrayItemForRawPromptDisplay = i;
+      break;
+    } else if (item.rawPrompt) {
+      priorPromptArrayItemForRawPromptDisplay = i;
     }
-    return thisPromptSet;
+  }
+  return thisPromptSet;
 }
 
 /**
@@ -423,160 +333,142 @@ export function findItemizedPromptSet(itemizedPrompts, incomingMesId) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'itemizedPrompts' implicitly has an 'any... Remove this comment to see the full error message
 export async function promptItemize(itemizedPrompts, requestedMesId) {
-    console.log('PROMPT ITEMIZE ENTERED');
-    const incomingMesId = Number(requestedMesId);
-    console.debug(`looking for MesId ${incomingMesId}`);
-    const thisPromptSet = findItemizedPromptSet(itemizedPrompts, incomingMesId);
+  console.log('PROMPT ITEMIZE ENTERED');
+  const incomingMesId = Number(requestedMesId);
+  console.debug(`looking for MesId ${incomingMesId}`);
+  const thisPromptSet = findItemizedPromptSet(itemizedPrompts, incomingMesId);
 
-    if (thisPromptSet === undefined) {
-        console.log(`couldnt find the right mesId. looked for ${incomingMesId}`);
-        console.log(itemizedPrompts);
-        return null;
-    }
+  if (thisPromptSet === undefined) {
+    console.log(`couldnt find the right mesId. looked for ${incomingMesId}`);
+    console.log(itemizedPrompts);
+    return null;
+  }
 
-    const params = await itemizedParams(itemizedPrompts, thisPromptSet, incomingMesId);
-    // @ts-expect-error TS(7006) FIXME: Parameter 'rawPrompt' implicitly has an 'any' type... Remove this comment to see the full error message
-    const flatten = (rawPrompt) =>
-        Array.isArray(rawPrompt) ? rawPrompt.map((x) => x.content).join('\n') : rawPrompt;
+  const params = await itemizedParams(itemizedPrompts, thisPromptSet, incomingMesId);
 
-    const template =
-        params.this_main_api == 'openai'
-            ? await renderTemplateAsync('itemizationChat', params)
-            : await renderTemplateAsync('itemizationText', params);
+  const template =
+    params.this_main_api == 'openai'
+      ? await renderTemplateAsync('itemizationChat', params)
+      : await renderTemplateAsync('itemizationText', params);
 
-    const popup = new Popup(template, POPUP_TYPE.TEXT);
+  const popup = new Popup(template, POPUP_TYPE.TEXT);
 
-    /** @type {HTMLElement} */
-    const diffPrevPrompt = popup.dlg.querySelector('#diffPrevPrompt');
-    // @ts-expect-error TS(7005) FIXME: Variable 'priorPromptArrayItemForRawPromptDisplay'... Remove this comment to see the full error message
-    if (priorPromptArrayItemForRawPromptDisplay >= 0) {
-        diffPrevPrompt.style.display = '';
-        diffPrevPrompt.addEventListener('click', function () {
-            const dmp = new DiffMatchPatch();
-            const text1 = flatten(
-                // @ts-expect-error TS(7005) FIXME: Variable 'priorPromptArrayItemForRawPromptDisplay' implicitly has an 'any' type.
-                itemizedPrompts[priorPromptArrayItemForRawPromptDisplay].rawPrompt,
-            );
-            // @ts-expect-error TS(7005) FIXME: Variable 'PromptArrayItemForRawPromptDisplay' impl... Remove this comment to see the full error message
-            const text2 = flatten(itemizedPrompts[PromptArrayItemForRawPromptDisplay].rawPrompt);
+  /** @type {HTMLElement} */
+  const diffPrevPrompt = popup.dlg.querySelector('#diffPrevPrompt');
+  if (priorPromptArrayItemForRawPromptDisplay >= 0) {
+    diffPrevPrompt.style.display = '';
+    diffPrevPrompt.addEventListener('click', function() {
+      const dmp = new DiffMatchPatch();
+      const text1 = flatten(
+        itemizedPrompts[priorPromptArrayItemForRawPromptDisplay].rawPrompt,
+      );
+      const text2 = flatten(itemizedPrompts[PromptArrayItemForRawPromptDisplay].rawPrompt);
 
-            dmp.Diff_Timeout = 2.0;
+      dmp.Diff_Timeout = 2.0;
 
-            const d = dmp.diff_main(text1, text2);
-            let ds = dmp.diff_prettyHtml(d);
-            // make it readable
-            ds = ds.replaceAll('background:#e6ffe6;', 'background:#b9f3b9; color:black;');
-            ds = ds.replaceAll('background:#ffe6e6;', 'background:#f5b4b4; color:black;');
-            ds = ds.replaceAll('&para;', '');
-            const container = document.createElement('div');
-            container.innerHTML = DOMPurify.sanitize(ds);
-            const rawPromptWrapper = document.getElementById('rawPromptWrapper');
-            // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-            rawPromptWrapper.replaceChildren(container);
-            const rawPromptPopup = document.getElementById('rawPromptPopup');
-            if (rawPromptPopup) {
-                rawPromptPopup.style.display =
-                    getComputedStyle(rawPromptPopup).display === 'none' ? '' : 'none';
-            }
-        });
-    } else {
-        diffPrevPrompt.style.display = 'none';
-    }
-    popup.dlg
-        .querySelector('#copyPromptToClipboard')
-        .addEventListener('pointerup', async function () {
-            // @ts-expect-error TS(7005) FIXME: Variable 'PromptArrayItemForRawPromptDisplay' impl... Remove this comment to see the full error message
-            const rawPrompt = itemizedPrompts[PromptArrayItemForRawPromptDisplay].rawPrompt;
-            let rawPromptValues = rawPrompt;
+      const d = dmp.diff_main(text1, text2);
+      let ds = dmp.diff_prettyHtml(d);
+      // make it readable
+      ds = ds.replaceAll('background:#e6ffe6;', 'background:#b9f3b9; color:black;');
+      ds = ds.replaceAll('background:#ffe6e6;', 'background:#f5b4b4; color:black;');
+      ds = ds.replaceAll('&para;', '');
+      const container = document.createElement('div');
+      container.innerHTML = DOMPurify.sanitize(ds);
+      const rawPromptWrapper = document.getElementById('rawPromptWrapper');
+      // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
+      rawPromptWrapper.replaceChildren(container);
+      const rawPromptPopup = document.getElementById('rawPromptPopup');
+      if (rawPromptPopup) {
+        rawPromptPopup.style.display =
+          getComputedStyle(rawPromptPopup).display === 'none' ? '' : 'none';
+      }
+    });
+  } else {
+    diffPrevPrompt.style.display = 'none';
+  }
 
-            if (Array.isArray(rawPrompt)) {
-                rawPromptValues = rawPrompt.map((x) => x.content).join('\n');
-            }
-
-            await copyText(rawPromptValues);
-            notyf.info(t`Copied!`);
-        });
-
-    popup.dlg.querySelector('#showRawPrompt').addEventListener('click', async function () {
-        //console.log(itemizedPrompts[PromptArrayItemForRawPromptDisplay].rawPrompt);
-        // @ts-expect-error TS(7005) FIXME: Variable 'PromptArrayItemForRawPromptDisplay' impl... Remove this comment to see the full error message
-        console.log(PromptArrayItemForRawPromptDisplay);
-        console.log(itemizedPrompts);
-        // @ts-expect-error TS(7005) FIXME: Variable 'PromptArrayItemForRawPromptDisplay' impl... Remove this comment to see the full error message
-        console.log(itemizedPrompts[PromptArrayItemForRawPromptDisplay].rawPrompt);
-
-        // @ts-expect-error TS(7005) FIXME: Variable 'PromptArrayItemForRawPromptDisplay' impl... Remove this comment to see the full error message
-        const rawPrompt = flatten(itemizedPrompts[PromptArrayItemForRawPromptDisplay].rawPrompt);
-
-        // Mobile needs special handholding. The side-view on the popup wouldn't work,
-        // so we just show an additional popup for this.
-        if (isMobile()) {
-            const content = document.createElement('div');
-            content.classList.add('tokenItemizingMaintext');
-            content.innerText = rawPrompt;
-            // @ts-expect-error TS(2345) FIXME: Argument of type 'null' is not assignable to param... Remove this comment to see the full error message
-            const popup = new Popup(content, POPUP_TYPE.TEXT, null, {
-                allowVerticalScrolling: true,
-                leftAlign: true,
-            });
-            await popup.show();
-            return;
-        }
-
-        //let DisplayStringifiedPrompt = JSON.stringify(itemizedPrompts[PromptArrayItemForRawPromptDisplay].rawPrompt).replace(/\n+/g, '<br>');
-        const rawPromptWrapper = document.getElementById('rawPromptWrapper');
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        rawPromptWrapper.innerText = rawPrompt;
-        const rawPromptPopup = document.getElementById('rawPromptPopup');
-        if (rawPromptPopup) {
-            rawPromptPopup.style.display =
-                getComputedStyle(rawPromptPopup).display === 'none' ? '' : 'none';
-        }
+  popup.dlg
+    .querySelector('#copyPromptToClipboard')
+    .addEventListener('pointerup', async function() {
+      const rawPrompt = itemizedPrompts[PromptArrayItemForRawPromptDisplay].rawPrompt;
+      await copyText(flatten(rawPrompt));
+      notyf.info(t`Copied!`);
     });
 
-    await popup.show();
+  popup.dlg.querySelector('#showRawPrompt').addEventListener('click', async function() {
+    //console.log(itemizedPrompts[PromptArrayItemForRawPromptDisplay].rawPrompt);
+    console.log(PromptArrayItemForRawPromptDisplay);
+    console.log(itemizedPrompts);
+    console.log(itemizedPrompts[PromptArrayItemForRawPromptDisplay].rawPrompt);
+
+    const rawPrompt = flatten(itemizedPrompts[PromptArrayItemForRawPromptDisplay].rawPrompt);
+
+    // Mobile needs special handholding. The side-view on the popup wouldn't work,
+    // so we just show an additional popup for this.
+    if (isMobile()) {
+      const content = document.createElement('div');
+      content.classList.add('tokenItemizingMaintext');
+      content.innerText = rawPrompt;
+      // @ts-expect-error TS(2345) FIXME: Argument of type 'null' is not assignable to param... Remove this comment to see the full error message
+      const popup = new Popup(content, POPUP_TYPE.TEXT, null, {
+        allowVerticalScrolling: true,
+        leftAlign: true,
+      });
+      await popup.show();
+      return;
+    }
+
+    const rawPromptWrapper = document.getElementById('rawPromptWrapper');
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
+    rawPromptWrapper.innerText = rawPrompt;
+    const rawPromptPopup = document.getElementById('rawPromptPopup');
+    if (rawPromptPopup) {
+      rawPromptPopup.style.display =
+        getComputedStyle(rawPromptPopup).display === 'none' ? '' : 'none';
+    }
+  });
+
+  await popup.show();
 }
 
 /**
  *
  */
 export function initItemizedPrompts() {
-    registerDebugFunction(
-        'clearPrompts',
-        'Delete itemized prompts',
-        'Deletes all itemized prompts from the local storage.',
-        async () => {
-            await clearItemizedPrompts();
-            notyf.info('Itemized prompts deleted.');
-            if (getCurrentChatId()) {
-                await reloadCurrentChat();
-            }
-        },
-    );
+  registerDebugFunction(
+    'clearPrompts',
+    'Delete itemized prompts',
+    'Deletes all itemized prompts from the local storage.',
+    async () => {
+      await clearItemizedPrompts();
+      notyf.info('Itemized prompts deleted.');
+      if (getCurrentChatId()) {
+        await reloadCurrentChat();
+      }
+    },
+  );
 
-    document.addEventListener('pointerup', async function (event) {
-        // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
-        const target = event.target.closest('.mes_prompt');
-        if (!target) {
-            return;
-        }
-        const mesIdForItemization = target.closest('.mes')?.getAttribute('mesId');
-        console.log(`looking for mesID: ${mesIdForItemization}`);
-        if (
-            mesIdForItemization &&
-            itemizedPrompts.length !== undefined &&
-            itemizedPrompts.length !== 0
-        ) {
-            await promptItemize(itemizedPrompts, mesIdForItemization);
-        }
-    });
+  document.addEventListener('pointerup', async function(event) {
+    // @ts-expect-error TS(2531) FIXME: Object is possibly 'null'.
+    const target = event.target.closest('.mes_prompt');
+    if (!target) {
+      return;
+    }
+    const mesIdForItemization = target.closest('.mes')?.getAttribute('mesId');
+    console.log(`looking for mesID: ${mesIdForItemization}`);
 
-    eventSource.on(event_types.CHAT_DELETED, async (name) => {
-        await deleteItemizedPrompts(name);
-    });
-    eventSource.on(event_types.GROUP_CHAT_DELETED, async (name) => {
-        await deleteItemizedPrompts(name);
-    });
+    // Simplified length check to avoid redundant property accesses
+    if (mesIdForItemization && itemizedPrompts.length > 0) {
+      await promptItemize(itemizedPrompts, mesIdForItemization);
+    }
+  });
+
+  eventSource.on(event_types.CHAT_DELETED, async (name) => {
+    await deleteItemizedPrompts(name);
+  });
+  eventSource.on(event_types.GROUP_CHAT_DELETED, async (name) => {
+    await deleteItemizedPrompts(name);
+  });
 }
 
 /**
@@ -586,27 +478,21 @@ export function initItemizedPrompts() {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'sourceMessageId' implicitly has an 'any... Remove this comment to see the full error message
 export function swapItemizedPrompts(sourceMessageId, targetMessageId) {
-    if (!Array.isArray(itemizedPrompts)) {
-        return;
+  if (!Array.isArray(itemizedPrompts)) {
+    return;
+  }
+
+  // Replaced double filter().forEach() with a single pass to avoid intermediate array allocations
+  for (let i = 0; i < itemizedPrompts.length; i++) {
+    const prompt = itemizedPrompts[i]!;
+    if (prompt.mesId === sourceMessageId) {
+      prompt.mesId = targetMessageId;
+    } else if (prompt.mesId === targetMessageId) {
+      prompt.mesId = sourceMessageId;
     }
+  }
 
-    // @ts-expect-error TS(2339) FIXME: Property 'mesId' does not exist on type 'never'.
-    const sourcePrompts = itemizedPrompts.filter((x) => x.mesId === sourceMessageId);
-    // @ts-expect-error TS(2339) FIXME: Property 'mesId' does not exist on type 'never'.
-    const targetPrompts = itemizedPrompts.filter((x) => x.mesId === targetMessageId);
-
-    sourcePrompts.forEach((prompt) => {
-        // @ts-expect-error TS(2339) FIXME: Property 'mesId' does not exist on type 'never'.
-        prompt.mesId = targetMessageId;
-    });
-
-    targetPrompts.forEach((prompt) => {
-        // @ts-expect-error TS(2339) FIXME: Property 'mesId' does not exist on type 'never'.
-        prompt.mesId = sourceMessageId;
-    });
-
-    // @ts-expect-error TS(2339) FIXME: Property 'mesId' does not exist on type 'never'.
-    itemizedPrompts.sort((a, b) => a.mesId - b.mesId);
+  itemizedPrompts.sort((a, b) => a.mesId - b.mesId);
 }
 
 /**
@@ -616,16 +502,21 @@ export function swapItemizedPrompts(sourceMessageId, targetMessageId) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'messageId' implicitly has an 'any' type... Remove this comment to see the full error message
 export function deleteItemizedPromptForMessage(messageId) {
-    if (!Array.isArray(itemizedPrompts)) {
-        return;
-    }
+  if (!Array.isArray(itemizedPrompts)) {
+    return;
+  }
 
-    // @ts-expect-error TS(2339) FIXME: Property 'mesId' does not exist on type 'never'.
-    itemizedPrompts = itemizedPrompts.filter((x) => x.mesId !== messageId);
-
-    // @ts-expect-error TS(2339) FIXME: Property 'mesId' does not exist on type 'never'.
-    for (const prompt of itemizedPrompts.filter((x) => x.mesId > messageId)) {
-        // @ts-expect-error TS(2339) FIXME: Property 'mesId' does not exist on type 'never'.
-        prompt.mesId -= 1;
+  // Replaced filter().filter().for...of with a single pass array reconstruction
+  const newPrompts: any[] = [];
+  for (let i = 0; i < itemizedPrompts.length; i++) {
+    const prompt = itemizedPrompts[i]!;
+    if (prompt.mesId === messageId) {
+      continue;
     }
+    if (prompt.mesId > messageId) {
+      prompt.mesId -= 1;
+    }
+    newPrompts.push(prompt);
+  }
+  itemizedPrompts = newPrompts;
 }

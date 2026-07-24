@@ -3135,7 +3135,6 @@ function updateMessageItemizedPromptButton(
 ) {
     //if we have itemized messages, and the array isn't null..
     if (!message.is_user && Array.isArray(itemizedPrompts) && itemizedPrompts.length > 0) {
-        // @ts-expect-error TS(2339) FIXME: Property 'mesId' does not exist on type 'never'.
         const itemizedPrompt = itemizedPrompts.find((x) => Number(x.mesId) === Number(messageId));
         if (itemizedPrompt) {
             messageElement.find('.mes_prompt').show();
@@ -6607,10 +6606,8 @@ export async function Generate(
         );
 
         if (itemizedIndex !== -1) {
-            // @ts-expect-error TS(2322) FIXME: Type 'any' is not assignable to type 'never'.
             itemizedPrompts[itemizedIndex] = additionalPromptStuff;
         } else {
-            // @ts-expect-error TS(2345) FIXME: Argument of type 'any' is not assignable to parame... Remove this comment to see the full error message
             itemizedPrompts.push(additionalPromptStuff);
         }
 
