@@ -52,7 +52,7 @@ function createPluginRouter(): { elysiaRouter: Elysia } {
                     // Elysia route handlers receive (context) not (req, res, next)
                     // We wrap Express-style handlers to extract req/res from context
                     const wrappedHandler = async (context: any) => {
-                        const { request, set, ...rest } = context;
+                        const { request, set } = context;
                         const url = new URL(request.url);
 
                         // Build mock Express req

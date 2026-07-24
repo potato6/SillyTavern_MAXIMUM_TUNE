@@ -154,7 +154,7 @@ export function renderChatTemplate(
         bos_token: options.bos_token ?? '',
         eos_token: options.eos_token ?? '',
         add_generation_prompt: options.add_generation_prompt ?? false,
-        ...(options.extra ?? {}),
+        ...(options.extra),
     });
 
     return result;
