@@ -14486,11 +14486,9 @@ function initCharacterSearch() {
                 $('#send_textarea')
                     .val('')[0]!
                     .dispatchEvent(new Event('input', { bubbles: true }));
-                if (text) {
-                    await sendMessageAsUser(text, null);
-                    await eventSource.emit(event_types.USER_MESSAGE_RENDERED, chat.length - 1);
-                    scrollChatToBottom();
-                }
+                await sendMessageAsUser(text, null);
+                await eventSource.emit(event_types.USER_MESSAGE_RENDERED, chat.length - 1);
+                scrollChatToBottom();
                 await Generate('continue', buildOrFillAdditionalArgs());
             }
         } else if (id == 'option_impersonate_bot') {
