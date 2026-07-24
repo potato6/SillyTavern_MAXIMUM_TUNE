@@ -938,15 +938,12 @@ export const entitiesFilter = new FilterHelper(printCharactersDebounced);
  * @param root0.omitContentType
  */
 export function getRequestHeaders({ omitContentType = false } = {}) {
-    const headers = {
-        'Content-Type': 'application/json',
-        'X-CSRF-Token': token,
-    };
+    const headers: Record<string, string> = {};
 
-    if (omitContentType) {
-        // @ts-expect-error TS(2790) FIXME: The operand of a 'delete' operator must be optiona... Remove this comment to see the full error message
-        delete headers['Content-Type'];
+    if (!omitContentType) {
+        headers['Content-Type'] = 'application/json';
     }
+    headers['X-CSRF-Token'] = token;
 
     return headers;
 }
@@ -4203,7 +4200,6 @@ class StreamingProcessor {
     reasoningSignature: string | null;
     result: string;
     sendTextarea: HTMLTextAreaElement;
-    // @ts-expect-error TS(2564) FIXME: Property 'stoppingStrings' has no initializer and ... Remove this comment to see the full error message
     stoppingStrings: string[];
     swipes: string[];
     timeStarted: Date;
@@ -4258,6 +4254,8 @@ class StreamingProcessor {
         this.images = [];
         /** @type {string?} */
         this.reasoningSignature = null;
+        /** @type {string[]} */
+        this.stoppingStrings = [];
     }
 
     /**
@@ -4476,10 +4474,14 @@ class StreamingProcessor {
 
         if (Array.isArray(this.swipes) && this.swipes.length > 0) {
             // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-            const swipeInfoExtra = structuredClone(message.extra ?? {});
-            delete swipeInfoExtra.token_count;
-            delete swipeInfoExtra.reasoning;
-            delete swipeInfoExtra.reasoning_duration;
+            const src = message.extra ?? {};
+            // Copy all properties except token_count, reasoning, reasoning_duration (avoids delete → shape destruction)
+            const swipeInfoExtra: Record<string, unknown> = {};
+            for (const key of Object.keys(src)) {
+                if (key !== 'token_count' && key !== 'reasoning' && key !== 'reasoning_duration') {
+                    swipeInfoExtra[key] = (src as Record<string, unknown>)[key];
+                }
+            }
             const swipeInfo = {
                 // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
                 send_date: message.send_date,
@@ -7271,32 +7273,33 @@ export async function sendMessageAsUser(
 ) {
     messageText = getRegexedString(messageText, regex_placement.USER_INPUT);
 
-    const message = {
+    const extraFields: Record<string, unknown> = {
+        isSmallSys: compact,
+        token_count: void 0,
+        bias: void 0,
+    };
+    const message: Record<string, unknown> = {
         name: name,
         is_user: true,
         is_system: false,
         send_date: getMessageTimeStamp(),
         mes: substituteParams(messageText),
-        extra: {
-            isSmallSys: compact,
-        },
+        extra: extraFields,
+        force_avatar: void 0,
     };
 
     if (power_user.message_token_count_enabled) {
-        // @ts-expect-error TS(2339) FIXME: Property 'token_count' does not exist on type '{ i... Remove this comment to see the full error message
-        message.extra.token_count = await getTokenCountAsync(message.mes, 0);
+        extraFields.token_count = await getTokenCountAsync(message.mes as string, undefined as any);
     }
 
     // Lock user avatar to a persona.
     if (avatar in power_user.personas) {
-        // @ts-expect-error TS(2339) FIXME: Property 'force_avatar' does not exist on type '{ ... Remove this comment to see the full error message
         message.force_avatar = getThumbnailUrl('persona', avatar);
     }
 
     if (messageBias) {
-        // @ts-expect-error TS(2339) FIXME: Property 'bias' does not exist on type '{ isSmallS... Remove this comment to see the full error message
-        message.extra.bias = messageBias;
-        message.mes = removeMacros(message.mes);
+        extraFields.bias = messageBias;
+        message.mes = removeMacros(message.mes as string);
     }
 
     await populateFileAttachment(message);
@@ -8463,40 +8466,31 @@ export async function saveReply(
             await eventSource.emit(event_types.CHARACTER_MESSAGE_RENDERED, chat_id, type);
     } else {
         console.debug('entering chat update routine for non-swipe post');
-        const newMessage = {};
+        const defaultExtra: Record<string, unknown> = {
+            api: getGeneratingApi(),
+            model: getGeneratingModel(undefined),
+            reasoning: reasoning,
+            reasoning_duration: null,
+            reasoning_signature: reasoningSignature,
+        };
+        const newMessage: Record<string, unknown> = {
+            name: name2,
+            is_user: false,
+            send_date: getMessageTimeStamp(),
+            mes: power_user.trim_spaces ? getMessage.trim() : getMessage,
+            title: title,
+            extra: defaultExtra,
+            gen_started: generation_started,
+            gen_finished: generationFinished,
+            swipe_id: void 0,
+            swipes: void 0,
+            swipe_info: void 0,
+            force_avatar: void 0,
+            original_avatar: void 0,
+        };
         chat.push(newMessage);
-        // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type '{}'.
-        newMessage.extra = {};
-        // @ts-expect-error TS(2339) FIXME: Property 'name' does not exist on type '{}'.
-        newMessage.name = name2;
-        // @ts-expect-error TS(2339) FIXME: Property 'is_user' does not exist on type '{}'.
-        newMessage.is_user = false;
-        // @ts-expect-error TS(2339) FIXME: Property 'send_date' does not exist on type '{}'.
-        newMessage.send_date = getMessageTimeStamp();
-        // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type '{}'.
-        newMessage.extra.api = getGeneratingApi();
-        // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type '{}'.
-        newMessage.extra.model = getGeneratingModel();
-        // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type '{}'.
-        newMessage.extra.reasoning = reasoning;
-        // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type '{}'.
-        newMessage.extra.reasoning_duration = null;
-        // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type '{}'.
-        newMessage.extra.reasoning_signature = reasoningSignature;
-        if (power_user.trim_spaces) {
-            getMessage = getMessage.trim();
-        }
-        // @ts-expect-error TS(2339) FIXME: Property 'mes' does not exist on type '{}'.
-        newMessage.mes = getMessage;
-        // @ts-expect-error TS(2339) FIXME: Property 'title' does not exist on type '{}'.
-        newMessage.title = title;
-        // @ts-expect-error TS(2339) FIXME: Property 'gen_started' does not exist on type '{}'... Remove this comment to see the full error message
-        newMessage.gen_started = generation_started;
-        // @ts-expect-error TS(2339) FIXME: Property 'gen_finished' does not exist on type '{}... Remove this comment to see the full error message
-        newMessage.gen_finished = generationFinished;
 
         if (power_user.message_token_count_enabled) {
-            // @ts-expect-error TS(2339) FIXME: Property 'mes' does not exist on type '{}'.
             const tokenCountText = (reasoning || '') + newMessage.mes;
             // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type '{}'.
             newMessage.extra.token_count = await getTokenCountAsync(tokenCountText, 0);
@@ -8508,9 +8502,7 @@ export async function saveReply(
             if (characters[this_chid].avatar != 'none') {
                 avatarImg = getThumbnailUrl('avatar', characters[this_chid].avatar);
             }
-            // @ts-expect-error TS(2339) FIXME: Property 'force_avatar' does not exist on type '{}... Remove this comment to see the full error message
             newMessage.force_avatar = avatarImg;
-            // @ts-expect-error TS(2339) FIXME: Property 'original_avatar' does not exist on type ... Remove this comment to see the full error message
             newMessage.original_avatar = characters[this_chid].avatar;
             // @ts-expect-error TS(2339) FIXME: Property 'extra' does not exist on type '{}'.
             newMessage.extra.gen_id = group_generation_id;
@@ -9673,35 +9665,34 @@ function getFirstMessage() {
     const firstMes = characters[this_chid]?.first_mes || '';
     const alternateGreetings = characters[this_chid]?.data?.alternate_greetings;
 
-    const message = {
+    const message: Record<string, unknown> = {
         name: name2,
         is_user: false,
         is_system: false,
         send_date: getMessageTimeStamp(),
         mes: getRegexedString(firstMes, regex_placement.AI_OUTPUT),
         extra: {},
+        swipe_id: void 0,
+        swipes: void 0,
+        swipe_info: void 0,
     };
 
     if (Array.isArray(alternateGreetings) && alternateGreetings.length > 0) {
         const swipes = [
-            message.mes,
-            ...alternateGreetings.map((greeting) =>
+            message.mes as string,
+            ...alternateGreetings.map((greeting: string) =>
                 getRegexedString(greeting, regex_placement.AI_OUTPUT),
             ),
         ];
 
         if (!message.mes) {
             swipes.shift();
-            // @ts-expect-error TS(2322) FIXME: Type 'string | undefined' is not assignable to typ... Remove this comment to see the full error message
             message.mes = swipes[0];
         }
 
-        // @ts-expect-error TS(2339) FIXME: Property 'swipe_id' does not exist on type '{ name... Remove this comment to see the full error message
         message.swipe_id = 0;
-        // @ts-expect-error TS(2339) FIXME: Property 'swipes' does not exist on type '{ name: ... Remove this comment to see the full error message
         message.swipes = swipes;
-        // @ts-expect-error TS(2339) FIXME: Property 'swipe_info' does not exist on type '{ na... Remove this comment to see the full error message
-        message.swipe_info = swipes.map((_) => ({
+        message.swipe_info = swipes.map((_: string) => ({
             send_date: message.send_date,
             gen_started: void 0,
             gen_finished: void 0,
@@ -9729,67 +9720,77 @@ export async function openCharacterChat(file_name) {
 
 ////////// OPTIMZED MAIN API CHANGE FUNCTION ////////////
 
+interface ApiElementsGroup {
+    apiStreaming: Cash;
+    apiSettings: Cash;
+    apiConnector: Cash;
+    apiPresets: Cash;
+    apiRanges: Cash;
+    maxContextElem: Cash;
+    amountGenElem: Cash;
+}
+
+// Static API element map — built once, not on every API change
+const apiElements: Record<string, ApiElementsGroup> = {
+    koboldhorde: {
+        apiStreaming: $('#NULL_SELECTOR'),
+        apiSettings: $('#kobold_api-settings'),
+        apiConnector: $('#kobold_horde'),
+        apiPresets: $('#kobold_api-presets'),
+        apiRanges: $('#range_block'),
+        maxContextElem: $('#max_context_block'),
+        amountGenElem: $('#amount_gen_block'),
+    },
+    kobold: {
+        apiStreaming: $('#streaming_kobold_block'),
+        apiSettings: $('#kobold_api-settings'),
+        apiConnector: $('#kobold_api'),
+        apiPresets: $('#kobold_api-presets'),
+        apiRanges: $('#range_block'),
+        maxContextElem: $('#max_context_block'),
+        amountGenElem: $('#amount_gen_block'),
+    },
+    textgenerationwebui: {
+        apiStreaming: $('#streaming_textgenerationwebui_block'),
+        apiSettings: $('#textgenerationwebui_api-settings'),
+        apiConnector: $('#textgenerationwebui_api'),
+        apiPresets: $('#textgenerationwebui_api-presets'),
+        apiRanges: $('#range_block_textgenerationwebui'),
+        maxContextElem: $('#max_context_block'),
+        amountGenElem: $('#amount_gen_block'),
+    },
+    novel: {
+        apiStreaming: $('#streaming_novel_block'),
+        apiSettings: $('#novel_api-settings'),
+        apiConnector: $('#novel_api'),
+        apiPresets: $('#novel_api-presets'),
+        apiRanges: $('#range_block_novel'),
+        maxContextElem: $('#max_context_block'),
+        amountGenElem: $('#amount_gen_block'),
+    },
+    openai: {
+        apiStreaming: $('#NULL_SELECTOR'),
+        apiSettings: $('#openai_settings'),
+        apiConnector: $('#openai_api'),
+        apiPresets: $('#openai_api-presets'),
+        apiRanges: $('#range_block_openai'),
+        maxContextElem: $('#max_context_block'),
+        amountGenElem: $('#amount_gen_block'),
+    },
+};
+
 /**
  *
  * @param api
  */
 export function changeMainAPI(api = null) {
-    const selectedVal = api ?? $('#main_api').val();
-    //console.log(selectedVal);
-    const apiElements = {
-        koboldhorde: {
-            apiStreaming: $('#NULL_SELECTOR'),
-            apiSettings: $('#kobold_api-settings'),
-            apiConnector: $('#kobold_horde'),
-            apiPresets: $('#kobold_api-presets'),
-            apiRanges: $('#range_block'),
-            maxContextElem: $('#max_context_block'),
-            amountGenElem: $('#amount_gen_block'),
-        },
-        kobold: {
-            apiStreaming: $('#streaming_kobold_block'),
-            apiSettings: $('#kobold_api-settings'),
-            apiConnector: $('#kobold_api'),
-            apiPresets: $('#kobold_api-presets'),
-            apiRanges: $('#range_block'),
-            maxContextElem: $('#max_context_block'),
-            amountGenElem: $('#amount_gen_block'),
-        },
-        textgenerationwebui: {
-            apiStreaming: $('#streaming_textgenerationwebui_block'),
-            apiSettings: $('#textgenerationwebui_api-settings'),
-            apiConnector: $('#textgenerationwebui_api'),
-            apiPresets: $('#textgenerationwebui_api-presets'),
-            apiRanges: $('#range_block_textgenerationwebui'),
-            maxContextElem: $('#max_context_block'),
-            amountGenElem: $('#amount_gen_block'),
-        },
-        novel: {
-            apiStreaming: $('#streaming_novel_block'),
-            apiSettings: $('#novel_api-settings'),
-            apiConnector: $('#novel_api'),
-            apiPresets: $('#novel_api-presets'),
-            apiRanges: $('#range_block_novel'),
-            maxContextElem: $('#max_context_block'),
-            amountGenElem: $('#amount_gen_block'),
-        },
-        openai: {
-            apiStreaming: $('#NULL_SELECTOR'),
-            apiSettings: $('#openai_settings'),
-            apiConnector: $('#openai_api'),
-            apiPresets: $('#openai_api-presets'),
-            apiRanges: $('#range_block_openai'),
-            maxContextElem: $('#max_context_block'),
-            amountGenElem: $('#amount_gen_block'),
-        },
-    };
+    const selectedVal = (api ?? $('#main_api').val()) as string;
     //console.log('--- apiElements--- ');
     //console.log(apiElements);
 
     //first, disable everything so the old elements stop showing
-    for (const apiName in apiElements) {
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        const apiObj = apiElements[apiName];
+    for (const apiName of Object.keys(apiElements)) {
+        const apiObj = apiElements[apiName]!;
         //do not hide items to then proceed to immediately show them.
         if (selectedVal === apiName) {
             continue;
@@ -9803,8 +9804,7 @@ export function changeMainAPI(api = null) {
 
     //then, find and enable the active item.
     //This is split out of the loop so that different apis can share settings divs
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-    const activeItem = apiElements[selectedVal];
+    const activeItem = apiElements[selectedVal]!;
 
     if (activeItem) {
         activeItem.apiStreaming.css('display', 'block');
