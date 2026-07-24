@@ -13797,14 +13797,13 @@ function initCharacterSearch() {
     $('#send_textarea').on('focusin focus click', () => {
         S_TAPreviouslyFocused = true;
     });
-    $('#send_but, #option_regenerate, #option_continue, #option_impersonate_bot, #mes_continue, #mes_impersonate, #mes_impersonate_bot').on(
-        'click',
-        () => {
-            if (S_TAPreviouslyFocused) {
-                $('#send_textarea').trigger('focus');
-            }
-        },
-    );
+    $(
+        '#send_but, #option_regenerate, #option_continue, #option_impersonate_bot, #mes_continue, #mes_impersonate, #mes_impersonate_bot',
+    ).on('click', () => {
+        if (S_TAPreviouslyFocused) {
+            $('#send_textarea').trigger('focus');
+        }
+    });
     $(document).on('click', (event) => {
         if ($(':focus').attr('id') !== 'send_textarea') {
             const validIDs = [
@@ -14482,8 +14481,17 @@ function initCharacterSearch() {
             }
         } else if (id == 'option_impersonate') {
             if (is_send_press == false || fromSlashCommand) {
+                const text = String($('#send_textarea').val() ?? '').trim();
                 is_send_press = true;
-                Generate('impersonate', buildOrFillAdditionalArgs());
+                $('#send_textarea')
+                    .val('')[0]!
+                    .dispatchEvent(new Event('input', { bubbles: true }));
+                if (text) {
+                    await sendMessageAsUser(text, null);
+                    await eventSource.emit(event_types.USER_MESSAGE_RENDERED, chat.length - 1);
+                    scrollChatToBottom();
+                }
+                await Generate('continue', buildOrFillAdditionalArgs());
             }
         } else if (id == 'option_impersonate_bot') {
             if (is_send_press == false || fromSlashCommand) {
@@ -14492,7 +14500,9 @@ function initCharacterSearch() {
                     return;
                 }
                 is_send_press = true;
-                $('#send_textarea').val('')[0]!.dispatchEvent(new Event('input', { bubbles: true }));
+                $('#send_textarea')
+                    .val('')[0]!
+                    .dispatchEvent(new Event('input', { bubbles: true }));
                 await sendMessageAsAssistant(text);
                 await eventSource.emit(event_types.USER_MESSAGE_RENDERED, chat.length - 1);
                 is_send_press = false;
