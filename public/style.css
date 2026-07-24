@@ -977,6 +977,10 @@ body .panelControlBar {
     order: 1;
 }
 
+#mes_impersonate_bot {
+    order: 1;
+}
+
 #send_form .mes_stop {
     display: none;
     order: 2;

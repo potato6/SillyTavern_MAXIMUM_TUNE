@@ -7326,6 +7326,43 @@ export async function sendMessageAsUser(
 }
 
 /**
+ * Sends a message as the AI (character), bypassing generation.
+ * @param {string} messageText Message text
+ * @returns {Promise<object>} The message object
+ */
+export async function sendMessageAsAssistant(messageText: string) {
+    messageText = getRegexedString(messageText, regex_placement.AI_OUTPUT);
+
+    const extraFields: Record<string, unknown> = {
+        isSmallSys: false,
+        token_count: void 0,
+    };
+
+    const message: Record<string, unknown> = {
+        name: name2,
+        is_user: false,
+        is_system: false,
+        send_date: getMessageTimeStamp(),
+        mes: substituteParams(messageText),
+        extra: extraFields,
+        force_avatar: void 0,
+    };
+
+    if (power_user.message_token_count_enabled) {
+        extraFields.token_count = await getTokenCountAsync(message.mes as string, undefined as any);
+    }
+
+    chat.push(message);
+    await saveChatConditional();
+    const chat_id = chat.length - 1;
+    await eventSource.emit(event_types.MESSAGE_SENT, chat_id);
+    addOneMessage(message);
+    await eventSource.emit(event_types.CHARACTER_MESSAGE_RENDERED, chat_id);
+
+    return message;
+}
+
+/**
  * Gets the maximum context token limit (the full context window size before subtracting response length).
  * @returns {number} The maximum context token limit for the current API.
  */
@@ -13760,7 +13797,7 @@ function initCharacterSearch() {
     $('#send_textarea').on('focusin focus click', () => {
         S_TAPreviouslyFocused = true;
     });
-    $('#send_but, #option_regenerate, #option_continue, #mes_continue, #mes_impersonate').on(
+    $('#send_but, #option_regenerate, #option_continue, #option_impersonate_bot, #mes_continue, #mes_impersonate, #mes_impersonate_bot').on(
         'click',
         () => {
             if (S_TAPreviouslyFocused) {
@@ -13774,10 +13811,12 @@ function initCharacterSearch() {
                 'options_button',
                 'send_but',
                 'mes_impersonate',
+                'mes_impersonate_bot',
                 'mes_continue',
                 'send_textarea',
                 'option_regenerate',
                 'option_continue',
+                'option_impersonate_bot',
             ];
             // @ts-expect-error TS(2592) FIXME: Cannot find name '$'. Do you need to install type ... Remove this comment to see the full error message
             if (!validIDs.includes($(event.target).attr('id'))) {
@@ -13819,6 +13858,10 @@ function initCharacterSearch() {
 
     $('#mes_impersonate').on('click', function () {
         $('#option_impersonate').trigger('click');
+    });
+
+    $('#mes_impersonate_bot').on('click', function () {
+        $('#option_impersonate_bot').trigger('click');
     });
 
     $('#mes_continue').on('click', function () {
@@ -14441,6 +14484,19 @@ function initCharacterSearch() {
             if (is_send_press == false || fromSlashCommand) {
                 is_send_press = true;
                 Generate('impersonate', buildOrFillAdditionalArgs());
+            }
+        } else if (id == 'option_impersonate_bot') {
+            if (is_send_press == false || fromSlashCommand) {
+                const text = String($('#send_textarea').val() ?? '').trim();
+                if (!text) {
+                    return;
+                }
+                is_send_press = true;
+                $('#send_textarea').val('')[0]!.dispatchEvent(new Event('input', { bubbles: true }));
+                await sendMessageAsAssistant(text);
+                await eventSource.emit(event_types.USER_MESSAGE_RENDERED, chat.length - 1);
+                is_send_press = false;
+                scrollChatToBottom();
             }
         } else if (id == 'option_continue') {
             if (swipeState == SWIPE_STATE.EDITING) {

@@ -147,6 +147,8 @@ export function renderChatTemplate(
         return '';
     }
 
+    console.debug('[CT] messages:', messages.map(m => `${m.role}${m.tool_calls ? '☎' : ''}${m.tool_call_id ? '→' : ''} "${(m.content ?? '').slice(0, 80)}"`).join(' | '));
+
     const template = new Template(chatTemplate);
 
     const result = template.render({
