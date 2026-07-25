@@ -18899,6 +18899,23 @@
                     });
                     return that;
                 };
+            // Hardened addClass/removeClass — bypass cash-dom's getSplitValues
+            // in case of edge cases; use native classList.add/remove directly
+            var _addClass = $.fn.addClass;
+            $.fn.addClass = function (classes) {
+                if (typeof classes !== 'string') return _addClass.apply(this, arguments);
+                var list = (classes.match(/\S+/g) || [classes]);
+                this.each(function () { this.classList.add.apply(this.classList, list); });
+                return this;
+            };
+            var _removeClass = $.fn.removeClass;
+            $.fn.removeClass = function (classes) {
+                if (!arguments.length) return this.attr('class', '');
+                if (typeof classes !== 'string') return _removeClass.apply(this, arguments);
+                var list = (classes.match(/\S+/g) || [classes]);
+                this.each(function () { this.classList.remove.apply(this.classList, list); });
+                return this;
+            };
             // Fix .is() to handle jQuery pseudo-selectors cash-dom doesn't support
             var _is = $.fn.is;
             $.fn.is = function (selector) {
