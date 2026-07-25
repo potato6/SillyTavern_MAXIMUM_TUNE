@@ -2730,7 +2730,12 @@ export function loadMovingUIState() {
                 if (elmnt) {
                     console.debug(`loading state for ${elmntName}`);
                     for (const [prop, value] of Object.entries(elmntState)) {
-                        (elmnt as HTMLElement).style.setProperty(prop, value, 'important');
+                        // CSS length properties need px suffix — JSON stores numbers unitless
+                        const lengthProps = new Set(['top', 'left', 'right', 'bottom', 'width', 'height']);
+                        const val = lengthProps.has(prop) && typeof value === 'number'
+                            ? `${value}px`
+                            : value as string;
+                        (elmnt as HTMLElement).style.setProperty(prop, val, 'important');
                     }
                 } else {
                     console.debug(`skipping ${elmntName} because it doesn't exist in the DOM`);
