@@ -64,4 +64,4 @@ shell.nix
 .bun
 server
 dist
-_webpack/
+_bun/

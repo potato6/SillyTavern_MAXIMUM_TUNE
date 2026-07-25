@@ -6,8 +6,8 @@ const appVersion = await getVersion();
 
 function getOutputDirectory(forceDist = false) {
     const webpackRoot = forceDist
-        ? path.resolve(process.cwd(), 'dist', '_webpack')
-        : path.resolve(globalThis.DATA_ROOT || process.cwd(), '_webpack');
+        ? path.resolve(process.cwd(), 'dist', '_bun')
+        : path.resolve(globalThis.DATA_ROOT || path.resolve(process.cwd(), 'data'), '_bun');
 
     const cacheVersion = crypto
         .createHash('shake256', { outputLength: 8 })

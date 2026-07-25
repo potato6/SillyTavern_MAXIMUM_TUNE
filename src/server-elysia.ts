@@ -394,7 +394,7 @@ export function buildApp() {
     // Lib file serving (replaces Express webpack-dev-middleware)
     app.get('/lib.js', async ({ set }: any) => {
         const appVersion = await getVersion();
-        const webpackRoot = path.resolve(globalThis.DATA_ROOT || process.cwd(), '_webpack');
+        const webpackRoot = path.resolve(globalThis.DATA_ROOT || process.cwd(), '_bun');
         const cacheSeed = JSON.stringify([appVersion.pkgVersion, appVersion.gitRevision, 'bun']);
         const cacheVersion = Bun.hash(cacheSeed).toString(16);
         const outputPath = path.join(webpackRoot, cacheVersion, 'output');
@@ -542,7 +542,7 @@ async function buildLibBundle() {
     console.log();
     console.log('Compiling frontend libraries with Bun...');
     const appVersion = await getVersion();
-    const webpackRoot = path.resolve(globalThis.DATA_ROOT || process.cwd(), '_webpack');
+    const webpackRoot = path.resolve(globalThis.DATA_ROOT || process.cwd(), '_bun');
     const cacheSeed = JSON.stringify([appVersion.pkgVersion, appVersion.gitRevision, 'bun']);
     const cacheVersion = Bun.hash(cacheSeed).toString(16);
     const outdir = path.join(webpackRoot, cacheVersion, 'output');

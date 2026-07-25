@@ -11,8 +11,8 @@ import { getVersion } from '../util.js';
 async function getLibOutputPath(forceDist = false) {
     const appVersion = await getVersion();
     const webpackRoot = forceDist
-        ? path.resolve(process.cwd(), 'dist', '_webpack')
-        : path.resolve(globalThis.DATA_ROOT || process.cwd(), '_webpack');
+        ? path.resolve(process.cwd(), 'dist', '_bun')
+        : path.resolve(globalThis.DATA_ROOT || process.cwd(), '_bun');
 
     const cacheVersion = crypto
         .createHash('shake256', { outputLength: 8 })
