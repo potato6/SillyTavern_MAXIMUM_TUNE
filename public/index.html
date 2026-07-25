@@ -18801,14 +18801,27 @@
             $.fn.slideUp =
                 $.fn.slideUp ||
                 function (duration, complete) {
-                    if (typeof duration === 'function') { complete = duration; duration = 400; }
+                    if (typeof duration === 'function') {
+                        complete = duration;
+                        duration = 400;
+                    }
                     duration = duration || 400;
                     var that = this;
                     this.each(function () {
                         var el = this;
                         var h = el.offsetHeight;
-                        if (h === 0) { el.style.display = 'none'; return; }
-                        el.style.transition = 'height ' + (duration / 1000) + 's ease, padding ' + (duration / 1000) + 's ease, margin ' + (duration / 1000) + 's ease';
+                        if (h === 0) {
+                            el.style.display = 'none';
+                            return;
+                        }
+                        el.style.transition =
+                            'height ' +
+                            duration / 1000 +
+                            's ease, padding ' +
+                            duration / 1000 +
+                            's ease, margin ' +
+                            duration / 1000 +
+                            's ease';
                         el.style.overflow = 'hidden';
                         el.style.height = h + 'px';
                         el.style.paddingTop = getComputedStyle(el).paddingTop;
@@ -18842,7 +18855,10 @@
             $.fn.slideDown =
                 $.fn.slideDown ||
                 function (duration, complete) {
-                    if (typeof duration === 'function') { complete = duration; duration = 400; }
+                    if (typeof duration === 'function') {
+                        complete = duration;
+                        duration = 400;
+                    }
                     duration = duration || 400;
                     var that = this;
                     this.each(function () {
@@ -18860,7 +18876,14 @@
                         var targetPB = getComputedStyle(el).paddingBottom;
                         var targetMT = getComputedStyle(el).marginTop;
                         var targetMB = getComputedStyle(el).marginBottom;
-                        el.style.transition = 'height ' + (duration / 1000) + 's ease, padding ' + (duration / 1000) + 's ease, margin ' + (duration / 1000) + 's ease';
+                        el.style.transition =
+                            'height ' +
+                            duration / 1000 +
+                            's ease, padding ' +
+                            duration / 1000 +
+                            's ease, margin ' +
+                            duration / 1000 +
+                            's ease';
                         requestAnimationFrame(function () {
                             el.style.height = targetH + 'px';
                             el.style.paddingTop = targetPT;
@@ -18887,11 +18910,17 @@
             $.fn.slideToggle =
                 $.fn.slideToggle ||
                 function (duration, complete) {
-                    if (typeof duration === 'function') { complete = duration; duration = 400; }
+                    if (typeof duration === 'function') {
+                        complete = duration;
+                        duration = 400;
+                    }
                     var that = this;
                     this.each(function () {
                         var el = this;
-                        if (el.style.display === 'none' || getComputedStyle(el).display === 'none') {
+                        if (
+                            el.style.display === 'none' ||
+                            getComputedStyle(el).display === 'none'
+                        ) {
                             $(el).slideDown(duration, complete);
                         } else {
                             $(el).slideUp(duration, complete);
@@ -18901,19 +18930,24 @@
                 };
             // Hardened addClass/removeClass — bypass cash-dom's getSplitValues
             // in case of edge cases; use native classList.add/remove directly
+            // NOTE: Must guard against non-Element nodes (Text nodes from parseHTML childNodes)
             var _addClass = $.fn.addClass;
             $.fn.addClass = function (classes) {
                 if (typeof classes !== 'string') return _addClass.apply(this, arguments);
-                var list = (classes.match(/\S+/g) || [classes]);
-                this.each(function () { this.classList.add.apply(this.classList, list); });
+                var list = classes.match(/\S+/g) || [classes];
+                this.each(function () {
+                    if (this.nodeType === 1) this.classList.add.apply(this.classList, list);
+                });
                 return this;
             };
             var _removeClass = $.fn.removeClass;
             $.fn.removeClass = function (classes) {
                 if (!arguments.length) return this.attr('class', '');
                 if (typeof classes !== 'string') return _removeClass.apply(this, arguments);
-                var list = (classes.match(/\S+/g) || [classes]);
-                this.each(function () { this.classList.remove.apply(this.classList, list); });
+                var list = classes.match(/\S+/g) || [classes];
+                this.each(function () {
+                    if (this.nodeType === 1) this.classList.remove.apply(this.classList, list);
+                });
                 return this;
             };
             // Fix .is() to handle jQuery pseudo-selectors cash-dom doesn't support
@@ -19033,6 +19067,7 @@
                 if (typeof cls === 'string' && cls.includes(' ')) {
                     var classes = cls.split(' ');
                     for (var i = 0; i < this.length; i++) {
+                        if (this[i].nodeType !== 1) continue;
                         for (var j = 0; j < classes.length; j++) {
                             this[i].classList.toggle(classes[j]);
                         }
@@ -19097,16 +19132,29 @@
                 });
                 function shim(method, message, title, opts) {
                     if (title) message = '<strong>' + title + '</strong><br>' + message;
-                    var options = { type: method === 'warning' ? 'warning' : method, message: message };
+                    var options = {
+                        type: method === 'warning' ? 'warning' : method,
+                        message: message,
+                    };
                     if (opts && opts.timeOut) options.duration = opts.timeOut;
                     return n.open(options);
                 }
                 return {
-                    error: function (msg, title, opts) { return shim('error', msg, title, opts); },
-                    success: function (msg, title, opts) { return shim('success', msg, title, opts); },
-                    info: function (msg, title, opts) { return shim('info', msg, title, opts); },
-                    warning: function (msg, title, opts) { return shim('warning', msg, title, opts); },
-                    clear: function () { n.dismissAll(); },
+                    error: function (msg, title, opts) {
+                        return shim('error', msg, title, opts);
+                    },
+                    success: function (msg, title, opts) {
+                        return shim('success', msg, title, opts);
+                    },
+                    info: function (msg, title, opts) {
+                        return shim('info', msg, title, opts);
+                    },
+                    warning: function (msg, title, opts) {
+                        return shim('warning', msg, title, opts);
+                    },
+                    clear: function () {
+                        n.dismissAll();
+                    },
                 };
             })();
         </script>
