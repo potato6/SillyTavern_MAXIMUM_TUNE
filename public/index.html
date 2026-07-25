@@ -14,6 +14,7 @@
         <meta name="robots" content="noindex, nofollow" />
         <meta name="theme-color" content="#333" />
         <style>
+            @layer platform, extensions;
             /* Put critical CSS here. The rest should go in stylesheets. */
             body {
                 background-color: rgb(36, 36, 37);
@@ -51,57 +52,49 @@
         <link rel="preload" as="style" href="css/mobile-styles.css" />
         <link rel="preload" as="style" href="css/user.css" />
         <link rel="manifest" crossorigin="use-credentials" href="manifest.json" />
-        <link href="webfonts/NotoSans/stylesheet.css" rel="stylesheet" />
-        <link href="webfonts/NotoSansMono/stylesheet.css" rel="stylesheet" />
-        <link href="css/fontawesome.min.css" rel="stylesheet" />
-        <link href="css/solid.min.css" rel="stylesheet" />
-        <link href="css/brands.min.css" rel="stylesheet" />
-        <link href="css/bright.min.css" rel="stylesheet" />
-        <link href="css/cropper.min.css" rel="stylesheet" />
-        <link href="lib/notyf.min.css" rel="stylesheet" />
-        <link rel="apple-touch-icon" sizes="57x57" href="img/apple-icon-57x57.png" />
-        <link rel="apple-touch-icon" sizes="72x72" href="img/apple-icon-72x72.png" />
-        <link rel="apple-touch-icon" sizes="114x114" href="img/apple-icon-114x114.png" />
-        <link rel="stylesheet" href="css/animations.css" />
-        <link rel="stylesheet" href="css/popup.css" />
-        <link rel="stylesheet" href="css/promptmanager.css" />
-        <link rel="stylesheet" href="css/loader.css" />
-        <link rel="stylesheet" href="css/character-group-overlay.css" />
-        <link rel="stylesheet" href="css/file-form.css" />
-        <link rel="stylesheet" href="css/logprobs.css" />
-        <link rel="stylesheet" href="css/accounts.css" />
-        <link rel="stylesheet" href="css/tags.css" />
-        <link rel="stylesheet" href="css/scrollable-button.css" />
-        <link rel="stylesheet" href="css/welcome.css" />
-        <link rel="stylesheet" href="css/data-maid.css" />
-        <link rel="stylesheet" href="css/secrets.css" />
-        <link rel="stylesheet" href="css/backgrounds.css" />
-        <link rel="stylesheet" href="css/chat-backups.css" />
-        <link rel="stylesheet" href="css/streaming-display.css" />
-        <link
-            rel="preload"
-            href="style.css"
-            as="style"
-            onload="
-                this.onload = null;
-                this.rel = 'stylesheet';
-            "
-        />
+        <link rel="preload" as="style" href="style.css" />
+        <style media="all">
+            @import url('webfonts/NotoSans/stylesheet.css') layer(platform);
+            @import url('webfonts/NotoSansMono/stylesheet.css') layer(platform);
+            @import url('css/fontawesome.min.css') layer(platform);
+            @import url('css/solid.min.css') layer(platform);
+            @import url('css/brands.min.css') layer(platform);
+            @import url('css/bright.min.css') layer(platform);
+            @import url('css/cropper.min.css') layer(platform);
+            @import url('lib/notyf.min.css') layer(platform);
+            @import url('css/animations.css') layer(platform);
+            @import url('css/popup.css') layer(platform);
+            @import url('css/promptmanager.css') layer(platform);
+            @import url('css/loader.css') layer(platform);
+            @import url('css/character-group-overlay.css') layer(platform);
+            @import url('css/file-form.css') layer(platform);
+            @import url('css/logprobs.css') layer(platform);
+            @import url('css/accounts.css') layer(platform);
+            @import url('css/tags.css') layer(platform);
+            @import url('css/scrollable-button.css') layer(platform);
+            @import url('css/welcome.css') layer(platform);
+            @import url('css/data-maid.css') layer(platform);
+            @import url('css/secrets.css') layer(platform);
+            @import url('css/backgrounds.css') layer(platform);
+            @import url('css/chat-backups.css') layer(platform);
+            @import url('css/streaming-display.css') layer(platform);
+            @import url('style.css') layer(platform);
+            @import url('css/st-tailwind.css') layer(platform);
+            @import url('css/rm-groups.css') layer(platform);
+            @import url('css/group-avatars.css') layer(platform);
+            @import url('css/toggle-dependent.css') layer(platform);
+            @import url('css/world-info.css') layer(platform);
+            @import url('css/extensions-panel.css') layer(platform);
+            @import url('css/mobile-styles.css') layer(platform);
+            @import url('css/macros.css') layer(platform);
+            @import url('css/user.css') layer(platform);
+            @import url('css/tom-select.min.css') layer(platform);
+            @import url('css/tom-select-overrides.css') layer(platform);
+            @import url('css/nouislider.min.css') layer(platform);
+            @import url('css/nouislider-overrides.css') layer(platform);
+        </style>
         <noscript><link rel="stylesheet" href="style.css" /></noscript>
-        <link rel="stylesheet" type="text/css" href="css/st-tailwind.css" />
-        <link rel="stylesheet" type="text/css" href="css/rm-groups.css" />
-        <link rel="stylesheet" type="text/css" href="css/group-avatars.css" />
-        <link rel="stylesheet" type="text/css" href="css/toggle-dependent.css" />
-        <link rel="stylesheet" type="text/css" href="css/world-info.css" />
-        <link rel="stylesheet" type="text/css" href="css/extensions-panel.css" />
-        <link rel="stylesheet" type="text/css" href="css/mobile-styles.css" />
-        <link rel="stylesheet" type="text/css" href="css/macros.css" />
-        <link rel="stylesheet" type="text/css" href="css/user.css" />
         <link rel="icon" type="image/x-icon" href="favicon.ico" />
-        <link href="css/tom-select.min.css" rel="stylesheet" />
-        <link href="css/tom-select-overrides.css" rel="stylesheet" />
-        <link href="css/nouislider.min.css" rel="stylesheet" />
-        <link href="css/nouislider-overrides.css" rel="stylesheet" />
     </head>
 
     <body class="no-blur">

@@ -938,19 +938,20 @@ function addExtensionStyle(name: string, manifest: Record<string, unknown>): Pro
         const url = `/scripts/extensions/${name}/${manifest.css as string}`;
         const id = sanitizeSelector(`${name}-css`);
 
-        if (!document.querySelector(`link[id="${id}"]`)) {
-            const link = document.createElement('link');
-            link.id = id;
-            link.rel = 'stylesheet';
-            link.type = 'text/css';
-            link.href = url;
-            link.onload = function () {
-                resolve();
-            };
-            link.onerror = function (e) {
-                reject(e);
-            };
-            document.head.appendChild(link);
+        if (!document.querySelector(`style[id="${id}"]`)) {
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    return response.text();
+                })
+                .then(cssText => {
+                    const style = document.createElement('style');
+                    style.id = id;
+                    style.textContent = `@layer extensions {\n${cssText}\n}`;
+                    document.head.appendChild(style);
+                    resolve();
+                })
+                .catch(reject);
         }
     });
 }
