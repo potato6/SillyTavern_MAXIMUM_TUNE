@@ -658,6 +658,19 @@ export function dragElement(elmnt: HTMLElement) {
         savePositionAndSize();
     });
 
+    function captureElementDimensions() {
+        const rect = elmnt.getBoundingClientRect();
+        const style = getComputedStyle(elmnt);
+        height = rect.height;
+        width = rect.width;
+        top = rect.top;
+        left = rect.left;
+        right = parseInt(style.right, 10);
+        bottom = parseInt(style.bottom, 10);
+        if (isNaN(right)) right = 0;
+        if (isNaN(bottom)) bottom = 0;
+    }
+
     function dragMouseDown(e: MouseEvent) {
         if (e) {
             actionType = 'drag';
@@ -665,6 +678,7 @@ export function dragElement(elmnt: HTMLElement) {
             e.preventDefault();
             pos3 = e.clientX;
             pos4 = e.clientY;
+            captureElementDimensions();
         }
         document.addEventListener('mouseup', closeDragElement);
         document.addEventListener('mousemove', elementDrag);
@@ -723,6 +737,7 @@ export function dragElement(elmnt: HTMLElement) {
         if (isNearRight && isNearBottom) {
             actionType = 'resize';
             isMouseDown = true;
+            captureElementDimensions();
             dragObserver.observe(elmnt, { attributes: true, attributeFilter: ['style'] });
         }
     });
