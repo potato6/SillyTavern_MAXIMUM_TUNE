@@ -10,7 +10,7 @@ import { get, set, unset, isUndefined, forEach, isPlainObject, cloneDeep } from 
 
 import storage from 'node-persist';
 
-import { AVATAR_WIDTH, AVATAR_HEIGHT, DEFAULT_AVATAR_PATH } from '../constants.js';
+import { AVATAR_WIDTH, AVATAR_HEIGHT, DEFAULT_AVATAR_PATH, UPLOADS_DIRECTORY } from '../constants.js';
 import { forbiddenRegExp } from '../middleware/validateFileName.js';
 import {
     deepMerge,
@@ -2102,15 +2102,32 @@ export const router = new Elysia({ prefix: '/api/characters' })
             },
         } as any;
 
-        if (!body || !uploadedFile) {
+        if (!body) {
             set.status = 400;
             return;
         }
 
-        const uploadPath = path.join(
-            uploadedFile.destination as string,
-            uploadedFile.filename as string,
-        );
+        let uploadPath: string;
+        const elysiaFile = body.avatar;
+
+        if (uploadedFile) {
+            // Express bridge mode — multer already wrote the file to disk
+            uploadPath = path.join(
+                uploadedFile.destination as string,
+                uploadedFile.filename as string,
+            );
+        } else if (typeof elysiaFile === 'object' && elysiaFile !== null && 'arrayBuffer' in (elysiaFile as any)) {
+            // Elysia-native mode — file is a File object in body.avatar
+            const fileObj = elysiaFile as File;
+            const buffer = Buffer.from(await fileObj.arrayBuffer());
+            const uploadsDir = path.join(globalThis.DATA_ROOT as string, UPLOADS_DIRECTORY);
+            const tempName = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+            uploadPath = path.join(uploadsDir, tempName);
+            await fsPromises.writeFile(uploadPath, buffer);
+        } else {
+            set.status = 400;
+            return;
+        }
         const format = body.file_type as string;
         const preservedFileName = getPreservedName({ body } as any);
 
