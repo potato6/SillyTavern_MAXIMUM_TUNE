@@ -173,10 +173,21 @@ async function openToastPopup(
                     color: var(--SmartThemeBodyColor, #e0e0e0);
                     text-align: left;
                 }
+                /* Override hardcoded light-theme colors on content children
+                   that have higher specificity than the parent rule above */
+                .toastui-editor-contents p,
                 .toastui-editor-contents h1,
                 .toastui-editor-contents h2,
                 .toastui-editor-contents h3,
-                .toastui-editor-contents h4 { color: var(--SmartThemeBodyColor, #e0e0e0); }
+                .toastui-editor-contents h4,
+                .toastui-editor-contents h5,
+                .toastui-editor-contents h6,
+                .toastui-editor-contents blockquote p,
+                .toastui-editor-contents li,
+                .toastui-editor-contents dd,
+                .toastui-editor-contents dt {
+                    color: var(--SmartThemeBodyColor, #e0e0e0);
+                }
                 .toastui-editor-contents blockquote {
                     border-left-color: var(--SmartThemeQuoteColor, #e18a24);
                     color: var(--SmartThemeEmColor, #919191);
@@ -189,7 +200,6 @@ async function openToastPopup(
                     background: var(--black50a, rgba(0,0,0,0.5));
                 }
                 .toastui-editor-contents strong { color: var(--SmartThemeBodyColor, #e0e0e0); }
-                .toastui-editor-contents em { color: var(--SmartThemeEmColor, #919191); }
                 /* Quotation marks inherit the "Quote Text" theme color */
                 .toastui-editor-contents .quote-text {
                     color: var(--SmartThemeQuoteColor, #e18a24);
@@ -198,6 +208,9 @@ async function openToastPopup(
                 /* ── UI Chrome — inherited from SillyTavern theme variables ── */
                 .toastui-editor-dark.toastui-editor-defaultUI {
                     border-color: var(--SmartThemeBorderColor, #494c56);
+                    color: var(--SmartThemeBodyColor, #eee);
+                }
+                .toastui-editor-dark .toastui-editor-defaultUI button {
                     color: var(--SmartThemeBodyColor, #eee);
                 }
                 .toastui-editor-dark .toastui-editor-md-container,
@@ -211,6 +224,7 @@ async function openToastPopup(
                 .toastui-editor-dark .toastui-editor-toolbar-icons {
                     background-position-y: -49px;
                     border-color: transparent;
+                    color: var(--SmartThemeBodyColor, #eee);
                 }
                 .toastui-editor-dark .toastui-editor-toolbar-icons:not(:disabled):hover {
                     background-color: var(--SmartThemeShadowColor, #36383f);

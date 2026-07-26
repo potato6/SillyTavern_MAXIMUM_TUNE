@@ -98,7 +98,7 @@ const result = await Bun.build({
     sourcemap: 'linked',
     splitting: true,
     format: 'esm',
-    minify: true,
+    minify: false,
 });
 
 if (!result.success) {
@@ -133,7 +133,7 @@ const serverResult = await Bun.build({
     compile: {
         outfile: 'SillyTavern',
     },
-    minify: true,
+    minify: false,
     bytecode: false,
     sourcemap: 'linked',
     external: ['@huggingface/transformers'],
