@@ -148,9 +148,7 @@ export async function syncOpenRouterProvidersForModel(modelId: string, providers
     };
 
     if (!modelId || !modelId.includes('/')) {
-        providersEl
-            ?.querySelectorAll('option')
-            .forEach((el: HTMLOptionElement) => (el.disabled = false));
+        enableAllOptions(providersEl);
         refreshWarningState();
         return;
     }
@@ -170,9 +168,7 @@ export async function syncOpenRouterProvidersForModel(modelId: string, providers
         const providerNames = await response.json();
 
         if (!Array.isArray(providerNames) || providerNames.length === 0) {
-            providersEl
-                ?.querySelectorAll('option')
-                .forEach((el: HTMLOptionElement) => (el.disabled = false));
+            enableAllOptions(providersEl);
             refreshWarningState();
             return;
         }
@@ -202,9 +198,7 @@ export async function syncNanoGptProvidersForModel(modelId: string, providersSel
     };
 
     if (!modelId) {
-        providersEl
-            ?.querySelectorAll('option')
-            .forEach((el: HTMLOptionElement) => (el.disabled = false));
+        enableAllOptions(providersEl);
         refreshWarningState();
         return;
     }
@@ -225,9 +219,7 @@ export async function syncNanoGptProvidersForModel(modelId: string, providersSel
         const providerIds = Array.isArray(data?.providers) ? data.providers : [];
 
         if (!data?.supportsProviderSelection || providerIds.length === 0) {
-            providersEl?.querySelectorAll('option').forEach((el: HTMLOptionElement) => {
-                el.disabled = Boolean(el.value);
-            });
+            disableAllOptions(providersEl, true);
             providersEl?.dispatchEvent(new Event('change'));
             refreshWarningState();
             return;
@@ -267,8 +259,71 @@ export function updateNanoGptProvidersWarning(providersSelector: string) {
         ?.classList.toggle('displayNone', !showWarning);
 }
 
+// ─── Helpers to reduce code duplication ────────────────────────────────────────
+
 /**
- /**
+ * Batch-populate a &lt;select&gt; (or &lt;datalist&gt;) with model &lt;option&gt; elements.
+ * Uses a DocumentFragment for a single reflow and caches the element reference.
+ *
+ * @param selectEl  The target select or datalist element.
+ * @param models    Array of models to render.
+ * @param currentValue  Currently selected model id (matched against model.id).
+ * @param options
+ * @param options.labelFn   Display label. Default: `m.id`.
+ * @param options.filterFn  Skip models that don't match. Default: all pass.
+ */
+function populateModelSelect(
+    selectEl: HTMLElement | null,
+    models: ApiModel[],
+    currentValue: unknown,
+    options?: {
+        labelFn?: (model: ApiModel) => string;
+        filterFn?: (model: ApiModel) => boolean;
+    },
+): void {
+    if (!selectEl) return;
+
+    const { labelFn = (m: ApiModel) => m.id, filterFn = () => true } = options ?? {};
+    const selectedId = String(currentValue ?? '');
+
+    selectEl.innerHTML = '';
+    const frag = document.createDocumentFragment();
+
+    for (const model of models) {
+        if (!filterFn(model)) continue;
+        const option = document.createElement('option');
+        option.value = model.id;
+        option.textContent = labelFn(model);
+        option.selected = model.id === selectedId;
+        frag.appendChild(option);
+    }
+
+    selectEl.appendChild(frag);
+}
+
+/**
+ * Enable every &lt;option&gt; inside a provider select.
+ */
+function enableAllOptions(selectEl: Element | null): void {
+    selectEl?.querySelectorAll('option').forEach((el) => {
+        (el as HTMLOptionElement).disabled = false;
+    });
+}
+
+/**
+ * Disable every &lt;option&gt; inside a provider select.
+ * @param selectEl  The select element.
+ * @param skipEmpty  If true, options with an empty value are left enabled.
+ */
+function disableAllOptions(selectEl: Element | null, skipEmpty?: boolean): void {
+    selectEl?.querySelectorAll('option').forEach((el) => {
+        const opt = el as HTMLOptionElement;
+        if (skipEmpty && !opt.value) return;
+        opt.disabled = true;
+    });
+}
+
+/**
  * @param data
  */
 export async function loadOllamaModels(data: ApiModel[]) {
@@ -335,15 +390,7 @@ export async function loadTabbyModels(data: ApiModel[]) {
         textgen_settings.tabby_model = tabbyModels[0]?.id || '';
     }
 
-    const tabbyModelEl = document.getElementById('tabby_model');
-    if (tabbyModelEl) tabbyModelEl.innerHTML = '';
-    for (const model of tabbyModels) {
-        const option = document.createElement('option');
-        option.value = model.id;
-        option.text = model.id;
-        option.selected = model.id === textgen_settings.tabby_model;
-        document.getElementById('tabby_model')?.appendChild(option);
-    }
+    populateModelSelect(document.getElementById('tabby_model'), tabbyModels, textgen_settings.tabby_model);
 }
 
 /**
@@ -364,15 +411,7 @@ export async function loadLlamaCppModels(data: ApiModel[]) {
         textgen_settings.llamacpp_model = llamacppModels[0]?.id || '';
     }
 
-    const llamacppModelEl = document.getElementById('llamacpp_model');
-    if (llamacppModelEl) llamacppModelEl.innerHTML = '';
-    for (const model of llamacppModels) {
-        const option = document.createElement('option');
-        option.value = model.id;
-        option.text = model.id;
-        option.selected = model.id === textgen_settings.llamacpp_model;
-        document.getElementById('llamacpp_model')?.appendChild(option);
-    }
+    populateModelSelect(document.getElementById('llamacpp_model'), llamacppModels, textgen_settings.llamacpp_model);
 }
 
 /**
@@ -392,20 +431,10 @@ export async function loadTogetherAIModels(data: ApiModel[]) {
         textgen_settings.togetherai_model = data[0]?.id || '';
     }
 
-    const togetheraiSelectEl = document.getElementById('model_togetherai_select');
-    if (togetheraiSelectEl) togetheraiSelectEl.innerHTML = '';
-    for (const model of data) {
-        // Hey buddy, I think you've got the wrong door.
-        if (model.type === 'image') {
-            continue;
-        }
-
-        const option = document.createElement('option');
-        option.value = model.id;
-        option.text = model.display_name ?? model.id;
-        option.selected = model.id === textgen_settings.togetherai_model;
-        document.getElementById('model_togetherai_select')?.appendChild(option);
-    }
+    populateModelSelect(document.getElementById('model_togetherai_select'), data, textgen_settings.togetherai_model, {
+        labelFn: (m) => m.display_name ?? m.id,
+        filterFn: (m) => m.type !== 'image',
+    });
 }
 
 /**
@@ -425,19 +454,9 @@ export async function loadInfermaticAIModels(data: ApiModel[]) {
         textgen_settings.infermaticai_model = data[0]?.id || '';
     }
 
-    const infermaticaiSelectEl = document.getElementById('model_infermaticai_select');
-    if (infermaticaiSelectEl) infermaticaiSelectEl.innerHTML = '';
-    for (const model of data) {
-        if (model.display_type === 'image') {
-            continue;
-        }
-
-        const option = document.createElement('option');
-        option.value = model.id;
-        option.text = model.id;
-        option.selected = model.id === textgen_settings.infermaticai_model;
-        document.getElementById('model_infermaticai_select')?.appendChild(option);
-    }
+    populateModelSelect(document.getElementById('model_infermaticai_select'), data, textgen_settings.infermaticai_model, {
+        filterFn: (m) => m.display_type !== 'image',
+    });
 }
 
 /**
@@ -451,15 +470,8 @@ export function loadGenericModels(data: ApiModel[]) {
     }
 
     data.sort((a, b) => a.id.localeCompare(b.id));
-    const dataList = document.getElementById('generic_model_fill');
-    if (dataList) dataList.innerHTML = '';
 
-    for (const model of data) {
-        const option = document.createElement('option');
-        option.value = model.id;
-        option.text = model.id;
-        dataList?.appendChild(option);
-    }
+    populateModelSelect(document.getElementById('generic_model_fill'), data, '');
 }
 
 /**
@@ -478,19 +490,9 @@ export async function loadDreamGenModels(data: ApiModel[]) {
         textgen_settings.dreamgen_model = data[0]?.id || '';
     }
 
-    const dreamgenSelectEl = document.getElementById('model_dreamgen_select');
-    if (dreamgenSelectEl) dreamgenSelectEl.innerHTML = '';
-    for (const model of data) {
-        if (model.display_type === 'image') {
-            continue;
-        }
-
-        const option = document.createElement('option');
-        option.value = model.id;
-        option.text = model.id;
-        option.selected = model.id === textgen_settings.dreamgen_model;
-        document.getElementById('model_dreamgen_select')?.appendChild(option);
-    }
+    populateModelSelect(document.getElementById('model_dreamgen_select'), data, textgen_settings.dreamgen_model, {
+        filterFn: (m) => m.display_type !== 'image',
+    });
 }
 
 /**
@@ -510,15 +512,9 @@ export async function loadMancerModels(data: ApiModel[]) {
         textgen_settings.mancer_model = data[0]?.id || '';
     }
 
-    const mancerModelEl = document.getElementById('mancer_model');
-    if (mancerModelEl) mancerModelEl.innerHTML = '';
-    for (const model of data) {
-        const option = document.createElement('option');
-        option.value = model.id;
-        option.text = model.name ?? model.id;
-        option.selected = model.id === textgen_settings.mancer_model;
-        document.getElementById('mancer_model')?.appendChild(option);
-    }
+    populateModelSelect(document.getElementById('mancer_model'), data, textgen_settings.mancer_model, {
+        labelFn: (m) => m.name ?? m.id,
+    });
 }
 
 /**
@@ -538,15 +534,9 @@ export async function loadOpenRouterModels(data: ApiModel[]) {
         textgen_settings.openrouter_model = data[0]?.id || '';
     }
 
-    const openrouterModelEl = document.getElementById('openrouter_model');
-    if (openrouterModelEl) openrouterModelEl.innerHTML = '';
-    for (const model of data) {
-        const option = document.createElement('option');
-        option.value = model.id;
-        option.text = model.name ?? model.id;
-        option.selected = model.id === textgen_settings.openrouter_model;
-        document.getElementById('openrouter_model')?.appendChild(option);
-    }
+    populateModelSelect(document.getElementById('openrouter_model'), data, textgen_settings.openrouter_model, {
+        labelFn: (m) => m.name ?? m.id,
+    });
 
     // Calculate the cost of the selected model + update on settings change
     calculateOpenRouterCost();
@@ -572,15 +562,7 @@ export async function loadVllmModels(data: ApiModel[]) {
         textgen_settings.vllm_model = data[0]?.id || '';
     }
 
-    const vllmModelEl = document.getElementById('vllm_model');
-    if (vllmModelEl) vllmModelEl.innerHTML = '';
-    for (const model of data) {
-        const option = document.createElement('option');
-        option.value = model.id;
-        option.text = model.id;
-        option.selected = model.id === textgen_settings.vllm_model;
-        document.getElementById('vllm_model')?.appendChild(option);
-    }
+    populateModelSelect(document.getElementById('vllm_model'), data, textgen_settings.vllm_model);
 }
 
 /**
@@ -599,15 +581,7 @@ export async function loadAphroditeModels(data: ApiModel[]) {
         textgen_settings.aphrodite_model = data[0]?.id || '';
     }
 
-    const aphroditeModelEl = document.getElementById('aphrodite_model');
-    if (aphroditeModelEl) aphroditeModelEl.innerHTML = '';
-    for (const model of data) {
-        const option = document.createElement('option');
-        option.value = model.id;
-        option.text = model.id;
-        option.selected = model.id === textgen_settings.aphrodite_model;
-        document.getElementById('aphrodite_model')?.appendChild(option);
-    }
+    populateModelSelect(document.getElementById('aphrodite_model'), data, textgen_settings.aphrodite_model);
 }
 let featherlessCurrentPage = 1;
 
@@ -832,15 +806,7 @@ export async function loadFeatherlessModels(data: ApiModel[]) {
     }
 
     // Required to keep the /model command function
-    const featherlessModelEl = document.getElementById('featherless_model');
-    if (featherlessModelEl) featherlessModelEl.innerHTML = '';
-    for (const model of data) {
-        const option = document.createElement('option');
-        option.value = model.id;
-        option.text = model.id;
-        option.selected = model.id === textgen_settings.featherless_model;
-        document.getElementById('featherless_model')?.appendChild(option);
-    }
+    populateModelSelect(document.getElementById('featherless_model'), data, textgen_settings.featherless_model);
 }
 
 /**
@@ -901,9 +867,7 @@ document.addEventListener('DOMContentLoaded', function () {
  *
  */
 function onMancerModelSelect() {
-    const modelId = String(
-        (document.getElementById('mancer_model') as HTMLSelectElement | null)?.value ?? '',
-    );
+    const modelId = (document.getElementById('mancer_model') as HTMLSelectElement | null)?.value ?? '';
     textgen_settings.mancer_model = modelId;
     document.getElementById('api_button_textgenerationwebui')?.click();
 
@@ -915,37 +879,25 @@ function onMancerModelSelect() {
  *
  */
 function onTogetherModelSelect() {
-    const modelName = String(
-        (document.getElementById('model_togetherai_select') as HTMLSelectElement | null)?.value ??
-            '',
-    );
+    const modelName = (document.getElementById('model_togetherai_select') as HTMLSelectElement | null)?.value ?? '';
     textgen_settings.togetherai_model = modelName;
     document.getElementById('api_button_textgenerationwebui')?.click();
     const model = togetherModels.find((x) => x.id === modelName);
     setGenerationParamsFromPreset({ max_length: model?.context_length ?? 0 });
 }
 
-/**
- *
- */
+/** */
 function onInfermaticAIModelSelect() {
-    const modelName = String(
-        (document.getElementById('model_infermaticai_select') as HTMLSelectElement | null)?.value ??
-            '',
-    );
+    const modelName = (document.getElementById('model_infermaticai_select') as HTMLSelectElement | null)?.value ?? '';
     textgen_settings.infermaticai_model = modelName;
     document.getElementById('api_button_textgenerationwebui')?.click();
     const model = infermaticAIModels.find((x) => x.id === modelName);
     setGenerationParamsFromPreset({ max_length: model?.context_length ?? 0 });
 }
 
-/**
- *
- */
+/** */
 function onDreamGenModelSelect() {
-    const modelName = String(
-        (document.getElementById('model_dreamgen_select') as HTMLSelectElement | null)?.value ?? '',
-    );
+    const modelName = (document.getElementById('model_dreamgen_select') as HTMLSelectElement | null)?.value ?? '';
     textgen_settings.dreamgen_model = modelName;
     document.getElementById('api_button_textgenerationwebui')?.click();
     // TODO(DreamGen): Consider retuning max_tokens from API and setting it here.
@@ -955,9 +907,7 @@ function onDreamGenModelSelect() {
  *
  */
 function onOllamaModelSelect() {
-    const modelId = String(
-        (document.getElementById('ollama_model') as HTMLSelectElement | null)?.value ?? '',
-    );
+    const modelId = (document.getElementById('ollama_model') as HTMLSelectElement | null)?.value ?? '';
     textgen_settings.ollama_model = modelId;
     document.getElementById('api_button_textgenerationwebui')?.click();
 }
@@ -966,9 +916,7 @@ function onOllamaModelSelect() {
  *
  */
 function onTabbyModelSelect() {
-    const modelId = String(
-        (document.getElementById('tabby_model') as HTMLSelectElement | null)?.value ?? '',
-    );
+    const modelId = (document.getElementById('tabby_model') as HTMLSelectElement | null)?.value ?? '';
     textgen_settings.tabby_model = modelId;
     document.getElementById('api_button_textgenerationwebui')?.click();
 }
@@ -977,9 +925,7 @@ function onTabbyModelSelect() {
  *
  */
 function onLlamaCppModelSelect() {
-    const modelId = String(
-        (document.getElementById('llamacpp_model') as HTMLSelectElement | null)?.value ?? '',
-    );
+    const modelId = (document.getElementById('llamacpp_model') as HTMLSelectElement | null)?.value ?? '';
     textgen_settings.llamacpp_model = modelId;
     document.getElementById('api_button_textgenerationwebui')?.click();
 }
@@ -988,9 +934,7 @@ function onLlamaCppModelSelect() {
  *
  */
 function onOpenRouterModelSelect() {
-    const modelId = String(
-        (document.getElementById('openrouter_model') as HTMLSelectElement | null)?.value ?? '',
-    );
+    const modelId = (document.getElementById('openrouter_model') as HTMLSelectElement | null)?.value ?? '';
     textgen_settings.openrouter_model = modelId;
     document.getElementById('api_button_textgenerationwebui')?.click();
     const model = openRouterModels.find((x) => x.id === modelId);
@@ -1002,9 +946,7 @@ function onOpenRouterModelSelect() {
  *
  */
 function onVllmModelSelect() {
-    const modelId = String(
-        (document.getElementById('vllm_model') as HTMLSelectElement | null)?.value ?? '',
-    );
+    const modelId = (document.getElementById('vllm_model') as HTMLSelectElement | null)?.value ?? '';
     textgen_settings.vllm_model = modelId;
     document.getElementById('api_button_textgenerationwebui')?.click();
 }
@@ -1013,9 +955,7 @@ function onVllmModelSelect() {
  *
  */
 function onAphroditeModelSelect() {
-    const modelId = String(
-        (document.getElementById('aphrodite_model') as HTMLSelectElement | null)?.value ?? '',
-    );
+    const modelId = (document.getElementById('aphrodite_model') as HTMLSelectElement | null)?.value ?? '';
     textgen_settings.aphrodite_model = modelId;
     document.getElementById('api_button_textgenerationwebui')?.click();
 }
@@ -1441,25 +1381,19 @@ export function initTextGenModels() {
     document.getElementById('tabby_download_model')?.addEventListener('click', downloadTabbyModel);
     document.getElementById('tabby_model')?.addEventListener('change', onTabbyModelSelect);
     document.getElementById('llamacpp_model')?.addEventListener('change', onLlamaCppModelSelect);
-    document
-        .getElementById('featherless_model')
-        ?.addEventListener('change', () =>
-            onFeatherlessModelSelect(
-                String(
-                    (document.getElementById('featherless_model') as HTMLSelectElement)?.value ??
-                        '',
-                ),
-            ),
-        );
+    document.getElementById('featherless_model')?.addEventListener('change', function () {
+        onFeatherlessModelSelect((this as HTMLSelectElement).value);
+    });
 
+    // ── Provider select population ────────────────────────────────────────
     // Provider lists are fetched from the backend asynchronously;
     // populate selects from pre-loaded arrays, and re-populate if they arrive later.
 
     const providersSelect = document.querySelector('.openrouter_providers');
     const populateOpenRouterProviders = () => {
         if (!providersSelect || !openRouterProviders.length) return;
-        // Avoid double-populating
         if (providersSelect.querySelectorAll('option').length > 0) return;
+        const frag = document.createDocumentFragment();
         for (const provider of openRouterProviders) {
             const option = document.createElement('option');
             option.value =
@@ -1470,8 +1404,9 @@ export function initTextGenModels() {
                 typeof provider === 'string'
                     ? provider
                     : (provider as { name?: string }).name || '';
-            providersSelect.appendChild(option);
+            frag.appendChild(option);
         }
+        providersSelect.appendChild(frag);
     };
     populateOpenRouterProviders();
 
@@ -1479,12 +1414,14 @@ export function initTextGenModels() {
     const populateNanoGptProviders = () => {
         if (!nanoGptProvidersSelect || !nanoGptProviders.length) return;
         if (nanoGptProvidersSelect.querySelectorAll('option').length > 0) return;
+        const frag = document.createDocumentFragment();
         for (const provider of nanoGptProviders) {
             const option = document.createElement('option');
             option.value = provider.id;
             option.textContent = provider.label;
-            nanoGptProvidersSelect.appendChild(option);
+            frag.appendChild(option);
         }
+        nanoGptProvidersSelect.appendChild(frag);
     };
     populateNanoGptProviders();
 
@@ -1492,82 +1429,35 @@ export function initTextGenModels() {
     loadOpenRouterProviders().then(populateOpenRouterProviders);
     loadNanoGptProviders().then(populateNanoGptProviders);
 
+    // ── TomSelect initialization ──────────────────────────────────────────
     if (!isMobile()) {
-        new TomSelect(document.getElementById('mancer_model'), {
-            maxItems: 1,
-            placeholder: t`Select a model`,
-            render: {
-                option: function (data: Record<string, unknown>, _escape: (t: string) => string) {
-                    return getMancerModelTemplate(data);
-                },
-            },
-        });
-        new TomSelect(document.getElementById('model_togetherai_select'), {
-            maxItems: 1,
-            placeholder: t`Select a model`,
-            render: {
-                option: function (data: Record<string, unknown>, _escape: (t: string) => string) {
-                    return getTogetherModelTemplate(data);
-                },
-            },
-        });
-        new TomSelect(document.getElementById('ollama_model'), {
-            maxItems: 1,
-            placeholder: t`Select a model`,
-        });
-        new TomSelect(document.getElementById('tabby_model'), {
-            maxItems: 1,
-            placeholder: t`[Currently loaded]`,
-        });
-        new TomSelect(document.getElementById('llamacpp_model'), {
-            maxItems: 1,
-            placeholder: t`[Currently loaded]`,
-        });
-        new TomSelect(document.getElementById('model_infermaticai_select'), {
-            maxItems: 1,
-            placeholder: t`Select a model`,
-            render: {
-                option: function (data: Record<string, unknown>, _escape: (t: string) => string) {
-                    return getInfermaticAIModelTemplate(data);
-                },
-            },
-        });
-        new TomSelect(document.getElementById('model_dreamgen_select'), {
-            maxItems: 1,
-            placeholder: t`Select a model`,
-            render: {
-                option: function (data: Record<string, unknown>, _escape: (t: string) => string) {
-                    return getDreamGenModelTemplate(data);
-                },
-            },
-        });
-        new TomSelect(document.getElementById('openrouter_model'), {
-            maxItems: 1,
-            placeholder: t`Select a model`,
-            render: {
-                option: function (data: Record<string, unknown>, _escape: (t: string) => string) {
-                    return getOpenRouterModelTemplate(data);
-                },
-            },
-        });
-        new TomSelect(document.getElementById('vllm_model'), {
-            maxItems: 1,
-            placeholder: t`Select a model`,
-            render: {
-                option: function (data: Record<string, unknown>, _escape: (t: string) => string) {
-                    return getVllmModelTemplate(data);
-                },
-            },
-        });
-        new TomSelect(document.getElementById('aphrodite_model'), {
-            maxItems: 1,
-            placeholder: t`Select a model`,
-            render: {
-                option: function (data: Record<string, unknown>, _escape: (t: string) => string) {
-                    return getAphroditeModelTemplate(data);
-                },
-            },
-        });
+        const modelSelects: Array<{
+            id: string;
+            placeholder: string;
+            renderFn?: (option: Record<string, unknown>, _escape: (t: string) => string) => string;
+        }> = [
+            { id: 'mancer_model', placeholder: t`Select a model`, renderFn: getMancerModelTemplate },
+            { id: 'model_togetherai_select', placeholder: t`Select a model`, renderFn: getTogetherModelTemplate },
+            { id: 'ollama_model', placeholder: t`Select a model` },
+            { id: 'tabby_model', placeholder: t`[Currently loaded]` },
+            { id: 'llamacpp_model', placeholder: t`[Currently loaded]` },
+            { id: 'model_infermaticai_select', placeholder: t`Select a model`, renderFn: getInfermaticAIModelTemplate },
+            { id: 'model_dreamgen_select', placeholder: t`Select a model`, renderFn: getDreamGenModelTemplate },
+            { id: 'openrouter_model', placeholder: t`Select a model`, renderFn: getOpenRouterModelTemplate },
+            { id: 'vllm_model', placeholder: t`Select a model`, renderFn: getVllmModelTemplate },
+            { id: 'aphrodite_model', placeholder: t`Select a model`, renderFn: getAphroditeModelTemplate },
+        ];
+
+        for (const { id, placeholder, renderFn } of modelSelects) {
+            const el = document.getElementById(id);
+            if (!el) continue;
+            const config: Record<string, unknown> = { maxItems: 1, placeholder };
+            if (renderFn) {
+                config.render = { option: renderFn };
+            }
+            new TomSelect(el, config);
+        }
+
         new TomSelect(document.querySelector('.openrouter_quantizations'), {
             maxItems: null,
             plugins: ['remove_button'],
