@@ -401,11 +401,18 @@ async function sendWelcomePanel(chats, expand = false) {
                 });
             });
         });
-        fragment.querySelectorAll('.recentChat').forEach((item) => {
-            item.addEventListener('click', () => {
-                const avatarId = item.getAttribute('data-avatar');
-                const groupId = item.getAttribute('data-group');
-                const fileName = item.getAttribute('data-file');
+        fragment.querySelectorAll('.welcomePanel').forEach((root) => {
+            root.addEventListener('click', (event) => {
+                if (!(event.target instanceof HTMLElement)) {
+                    return;
+                }
+                const chatItem = event.target.closest('.recentChat');
+                if (!(chatItem instanceof HTMLElement)) {
+                    return;
+                }
+                const avatarId = chatItem.getAttribute('data-avatar');
+                const groupId = chatItem.getAttribute('data-group');
+                const fileName = chatItem.getAttribute('data-file');
                 if (avatarId && fileName) {
                     void openRecentCharacterChat(avatarId, fileName);
                 }
@@ -526,13 +533,31 @@ async function sendWelcomePanel(chats, expand = false) {
 }
 
 /**
+ * Strips the file extension from a string.
+ * @param {string} s
+ * @returns {string}
+ */
+// @ts-expect-error TS(7006) FIXME: Parameter 's' implicitly has an 'any' type.
+function stripAvatarExt(s) {
+    return typeof s === 'string' ? s.replace(/\.[^/.]+$/, '') : '';
+}
+
+/**
  * Opens a recent character chat.
  * @param {string} avatarId Avatar file name
  * @param {string} fileName Chat file name
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'avatarId' implicitly has an 'any' type.
 async function openRecentCharacterChat(avatarId, fileName) {
-    const characterId = characters.findIndex((x) => x.avatar === avatarId);
+    let characterId = characters.findIndex((x) => x.avatar === avatarId);
+
+    // Fallback: try matching avatars without file extension
+    // Handles mismatches where recent chat data stores avatar without .png
+    // or character was reimported with a different extension
+    if (characterId === -1) {
+        characterId = characters.findIndex((x) => stripAvatarExt(x.avatar) === stripAvatarExt(avatarId));
+    }
+
     if (characterId === -1) {
         console.error(`Character not found for avatar ID: ${avatarId}`);
         return;
@@ -590,7 +615,12 @@ async function openRecentGroupChat(groupId, fileName) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'avatarId' implicitly has an 'any' type.
 async function renameRecentCharacterChat(avatarId, fileName) {
-    const characterId = characters.findIndex((x) => x.avatar === avatarId);
+    let characterId = characters.findIndex((x) => x.avatar === avatarId);
+
+    if (characterId === -1) {
+        characterId = characters.findIndex((x) => stripAvatarExt(x.avatar) === stripAvatarExt(avatarId));
+    }
+
     if (characterId === -1) {
         console.error(`Character not found for avatar ID: ${avatarId}`);
         return;
@@ -659,7 +689,12 @@ async function renameRecentGroupChat(groupId, fileName) {
  */
 // @ts-expect-error TS(7006) FIXME: Parameter 'avatarId' implicitly has an 'any' type.
 async function deleteRecentCharacterChat(avatarId, fileName) {
-    const characterId = characters.findIndex((x) => x.avatar === avatarId);
+    let characterId = characters.findIndex((x) => x.avatar === avatarId);
+
+    if (characterId === -1) {
+        characterId = characters.findIndex((x) => stripAvatarExt(x.avatar) === stripAvatarExt(avatarId));
+    }
+
     if (characterId === -1) {
         console.error(`Character not found for avatar ID: ${avatarId}`);
         return;
