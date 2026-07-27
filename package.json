@@ -31,6 +31,7 @@
         "@elysiajs/static": "^1.4.10",
         "@huggingface/jinja": "^0.5.9",
         "@iconfu/svg-inject": "^2.0.1",
+        "@minify-html/node": "^0.18.1",
         "@mozilla/readability": "^0.6.0",
         "@nyariv/sandboxjs": "^0.9.6",
         "@toast-ui/editor": "^3.2.2",
