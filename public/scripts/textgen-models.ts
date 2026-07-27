@@ -1300,40 +1300,18 @@ function calculateOpenRouterCost() {
 }
 
 /**
- *
+ * Maps OpenRouter model architecture tokenizer names to internal tokenizer constants.
  */
-export function getCurrentOpenRouterModelTokenizer() {
-    const modelId = (textgen_settings as Record<string, unknown>).openrouter_model as
-        | string
-        | undefined;
-    const model = openRouterModels.find((x) => x.id === modelId);
-    if (modelId?.includes('jamba')) {
-        return tokenizers.JAMBA;
-    }
-    const modelArchitecture = model
-        ? ((model as unknown as Record<string, unknown>).architecture as Record<string, unknown>)
-        : undefined;
-    switch (modelArchitecture?.tokenizer as string | undefined) {
-        case 'Llama2':
-            return tokenizers.LLAMA;
-        case 'Llama3':
-            return tokenizers.LLAMA3;
-        case 'Yi':
-            return tokenizers.YI;
-        case 'Mistral':
-            return tokenizers.MISTRAL;
-        case 'Gemini':
-            return tokenizers.GEMMA;
-        case 'Claude':
-            return tokenizers.CLAUDE;
-        case 'Cohere':
-            return tokenizers.COMMAND_R;
-        case 'Qwen':
-            return tokenizers.QWEN2;
-        default:
-            return tokenizers.OPENAI;
-    }
-}
+export const OPENROUTER_TOKENIZER_MAP: Record<string, number> = {
+    'Llama2': tokenizers.LLAMA,
+    'Llama3': tokenizers.LLAMA3,
+    'Yi': tokenizers.YI,
+    'Mistral': tokenizers.MISTRAL,
+    'Gemini': tokenizers.GEMMA,
+    'Claude': tokenizers.CLAUDE,
+    'Cohere': tokenizers.COMMAND_R,
+    'Qwen': tokenizers.QWEN2,
+};
 
 /**
  *

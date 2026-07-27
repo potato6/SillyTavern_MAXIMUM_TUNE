@@ -21,7 +21,8 @@ import {
 } from './textgen-settings.js';
 import {
     getCurrentDreamGenModelTokenizer,
-    getCurrentOpenRouterModelTokenizer,
+    openRouterModels,
+    OPENROUTER_TOKENIZER_MAP,
 } from './textgen-models.js';
 
 /** @type {string} */
@@ -298,7 +299,12 @@ export function getTokenizerBestMatch(forApi) {
                 forApi === 'textgenerationwebui' &&
                 textgen_settings.type === textgen_types.OPENROUTER
             ) {
-                return getCurrentOpenRouterModelTokenizer();
+                const modelId = String(textgen_settings.openrouter_model ?? '');
+                if (modelId.includes('jamba')) return tokenizers.JAMBA;
+                const model = openRouterModels.find((x) => x.id === modelId);
+                const arch = model as { architecture?: { tokenizer?: string } } | undefined;
+                const tokenizerName = arch?.architecture?.tokenizer;
+                return (tokenizerName && OPENROUTER_TOKENIZER_MAP[tokenizerName]) ?? tokenizers.OPENAI;
             }
             if (
                 forApi === 'textgenerationwebui' &&

@@ -38,7 +38,6 @@ import { SECRET_KEYS, writeSecret } from './secrets.js';
 import { getEventSourceStream } from './sse-stream.js';
 import {
     getCurrentDreamGenModelTokenizer,
-    getCurrentOpenRouterModelTokenizer,
     loadAphroditeModels,
     loadDreamGenModels,
     loadFeatherlessModels,
@@ -51,6 +50,8 @@ import {
     loadTabbyModels,
     loadTogetherAIModels,
     loadVllmModels,
+    openRouterModels,
+    OPENROUTER_TOKENIZER_MAP,
     updateOpenRouterProvidersWarning,
     type ApiModel,
 } from './textgen-models.js';
@@ -483,7 +484,12 @@ function getTokenizerForTokenIds() {
     }
 
     if (textgenerationwebui_settings.type === OPENROUTER) {
-        return getCurrentOpenRouterModelTokenizer();
+        const modelId = String(textgenerationwebui_settings.openrouter_model ?? '');
+        if (modelId.includes('jamba')) return tokenizers.JAMBA;
+        const model = openRouterModels.find((x) => x.id === modelId);
+        const arch = model as { architecture?: { tokenizer?: string } } | undefined;
+        const tokenizerName = arch?.architecture?.tokenizer;
+        return (tokenizerName && OPENROUTER_TOKENIZER_MAP[tokenizerName]) ?? tokenizers.OPENAI;
     }
 
     if (textgenerationwebui_settings.type === DREAMGEN) {
