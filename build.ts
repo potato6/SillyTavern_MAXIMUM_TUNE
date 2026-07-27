@@ -9,6 +9,7 @@ import {
 } from 'node:fs';
 import path from 'node:path';
 import { simpleGit } from 'simple-git';
+import minifyHtml from '@minify-html/node';
 
 const PUBLIC_DIR = 'public';
 const DIST_DIR = 'public/dist';
@@ -31,6 +32,22 @@ function copyRecursiveSync(src: string, dest: string) {
         } else {
             if (entry.name.endsWith('.ts') || entry.name.endsWith('.css')) continue;
             copyFileSync(srcPath, destPath);
+        }
+    }
+}
+
+// ── HTML minification ──────────────────────────────────────────────────────
+
+function minifyHtmlInDir(dir: string) {
+    const entries = readdirSync(dir, { withFileTypes: true });
+    for (const entry of entries) {
+        const fullPath = path.join(dir, entry.name);
+        if (entry.isDirectory()) {
+            minifyHtmlInDir(fullPath);
+        } else if (entry.name.endsWith('.html')) {
+            const content = readFileSync(fullPath);
+            const minified = minifyHtml.minify(content, {});
+            writeFileSync(fullPath, minified);
         }
     }
 }
@@ -65,6 +82,7 @@ if (existsSync(DIST_DIR)) {
 mkdirSync(DIST_DIR, { recursive: true });
 
 copyRecursiveSync(PUBLIC_DIR, DIST_DIR);
+minifyHtmlInDir(DIST_DIR);
 
 const allTs = [...new Bun.Glob('public/**/*.ts').scanSync()].filter(
     (f) => !f.startsWith('public/lib/tinymce/'),
