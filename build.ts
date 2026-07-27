@@ -46,7 +46,15 @@ function minifyHtmlInDir(dir: string) {
             minifyHtmlInDir(fullPath);
         } else if (entry.name.endsWith('.html')) {
             const content = readFileSync(fullPath);
-            const minified = minifyHtml.minify(content, {});
+            const minified = minifyHtml.minify(content, {
+                // Aggressive but safe options per WHATWG parsing spec
+                allow_noncompliant_unquoted_attribute_values: true,
+                allow_optimal_entities: true,
+                allow_removing_spaces_between_attributes: true,
+                minify_doctype: true,
+                minify_css: true,
+                minify_js: true,
+            });
             writeFileSync(fullPath, minified);
         }
     }
