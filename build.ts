@@ -130,11 +130,12 @@ const serverResult = await Bun.build({
     entrypoints: ['server.ts'],
     outdir: 'dist/server',
     target: 'bun',
+    format: 'esm',
     compile: {
         outfile: 'SillyTavern',
     },
     minify: true,
-    bytecode: false,
+    bytecode: true,
     sourcemap: 'linked',
     external: ['@huggingface/transformers'],
 });

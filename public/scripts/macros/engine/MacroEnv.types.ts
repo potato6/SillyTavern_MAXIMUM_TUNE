@@ -7,6 +7,8 @@
  * @module MacroEnv
  */
 
+export {};
+
 /**
  * @typedef {{
  *   generateId: () => string,
