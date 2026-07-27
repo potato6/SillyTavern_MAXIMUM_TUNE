@@ -7,7 +7,7 @@
  * @module MacroEnv
  */
 
-export {};
+
 
 /**
  * @typedef {{

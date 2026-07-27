@@ -10,7 +10,12 @@ import { get, set, unset, isUndefined, forEach, isPlainObject, cloneDeep } from 
 
 import storage from 'node-persist';
 
-import { AVATAR_WIDTH, AVATAR_HEIGHT, DEFAULT_AVATAR_PATH, UPLOADS_DIRECTORY } from '../constants.js';
+import {
+    AVATAR_WIDTH,
+    AVATAR_HEIGHT,
+    DEFAULT_AVATAR_PATH,
+    UPLOADS_DIRECTORY,
+} from '../constants.js';
 import { forbiddenRegExp } from '../middleware/validateFileName.js';
 import {
     deepMerge,
@@ -2116,7 +2121,11 @@ export const router = new Elysia({ prefix: '/api/characters' })
                 uploadedFile.destination as string,
                 uploadedFile.filename as string,
             );
-        } else if (typeof elysiaFile === 'object' && elysiaFile !== null && 'arrayBuffer' in (elysiaFile as any)) {
+        } else if (
+            typeof elysiaFile === 'object' &&
+            elysiaFile !== null &&
+            'arrayBuffer' in (elysiaFile as any)
+        ) {
             // Elysia-native mode — file is a File object in body.avatar
             const fileObj = elysiaFile as File;
             const buffer = Buffer.from(await fileObj.arrayBuffer());

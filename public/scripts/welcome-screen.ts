@@ -555,7 +555,9 @@ async function openRecentCharacterChat(avatarId, fileName) {
     // Handles mismatches where recent chat data stores avatar without .png
     // or character was reimported with a different extension
     if (characterId === -1) {
-        characterId = characters.findIndex((x) => stripAvatarExt(x.avatar) === stripAvatarExt(avatarId));
+        characterId = characters.findIndex(
+            (x) => stripAvatarExt(x.avatar) === stripAvatarExt(avatarId),
+        );
     }
 
     if (characterId === -1) {
@@ -618,7 +620,9 @@ async function renameRecentCharacterChat(avatarId, fileName) {
     let characterId = characters.findIndex((x) => x.avatar === avatarId);
 
     if (characterId === -1) {
-        characterId = characters.findIndex((x) => stripAvatarExt(x.avatar) === stripAvatarExt(avatarId));
+        characterId = characters.findIndex(
+            (x) => stripAvatarExt(x.avatar) === stripAvatarExt(avatarId),
+        );
     }
 
     if (characterId === -1) {
@@ -692,7 +696,9 @@ async function deleteRecentCharacterChat(avatarId, fileName) {
     let characterId = characters.findIndex((x) => x.avatar === avatarId);
 
     if (characterId === -1) {
-        characterId = characters.findIndex((x) => stripAvatarExt(x.avatar) === stripAvatarExt(avatarId));
+        characterId = characters.findIndex(
+            (x) => stripAvatarExt(x.avatar) === stripAvatarExt(avatarId),
+        );
     }
 
     if (characterId === -1) {
