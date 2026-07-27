@@ -1300,20 +1300,6 @@ function calculateOpenRouterCost() {
 }
 
 /**
- * Maps OpenRouter model architecture tokenizer names to internal tokenizer constants.
- */
-export const OPENROUTER_TOKENIZER_MAP: Record<string, number> = {
-    'Llama2': tokenizers.LLAMA,
-    'Llama3': tokenizers.LLAMA3,
-    'Yi': tokenizers.YI,
-    'Mistral': tokenizers.MISTRAL,
-    'Gemini': tokenizers.GEMMA,
-    'Claude': tokenizers.CLAUDE,
-    'Cohere': tokenizers.COMMAND_R,
-    'Qwen': tokenizers.QWEN2,
-};
-
-/**
  *
  */
 export function getCurrentDreamGenModelTokenizer() {

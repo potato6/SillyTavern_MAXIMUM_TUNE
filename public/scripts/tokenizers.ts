@@ -22,7 +22,6 @@ import {
 import {
     getCurrentDreamGenModelTokenizer,
     openRouterModels,
-    OPENROUTER_TOKENIZER_MAP,
 } from './textgen-models.js';
 
 /** @type {string} */
@@ -72,6 +71,21 @@ export const tokenizers = {
     DEEPSEEK: 18,
     COMMAND_A: 19,
     BEST_MATCH: 99,
+};
+
+/**
+ * Maps OpenRouter model architecture tokenizer names to internal tokenizer constants.
+ * Lives here (not in textgen-models.ts) to avoid circular-dependency TDZ at module load.
+ */
+export const OPENROUTER_TOKENIZER_MAP: Record<string, number> = {
+    'Llama2': tokenizers.LLAMA,
+    'Llama3': tokenizers.LLAMA3,
+    'Yi': tokenizers.YI,
+    'Mistral': tokenizers.MISTRAL,
+    'Gemini': tokenizers.GEMMA,
+    'Claude': tokenizers.CLAUDE,
+    'Cohere': tokenizers.COMMAND_R,
+    'Qwen': tokenizers.QWEN2,
 };
 
 // A list of local tokenizers that support encoding and decoding token ids.

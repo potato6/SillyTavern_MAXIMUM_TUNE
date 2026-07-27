@@ -51,7 +51,6 @@ import {
     loadTogetherAIModels,
     loadVllmModels,
     openRouterModels,
-    OPENROUTER_TOKENIZER_MAP,
     updateOpenRouterProvidersWarning,
     type ApiModel,
 } from './textgen-models.js';
@@ -63,6 +62,7 @@ import {
     getTextTokens,
     getTokenizerBestMatch,
     tokenizers,
+    OPENROUTER_TOKENIZER_MAP,
 } from './tokenizers.js';
 import { AbortReason } from './util/AbortReason.js';
 import { getSortableDelay, onlyUnique, arraysEqual, isObject } from './utils.js';
