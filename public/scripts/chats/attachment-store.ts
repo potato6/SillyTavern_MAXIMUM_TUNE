@@ -855,7 +855,7 @@ export async function runScraper(
 ): Promise<void> {
     try {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const files = await (ScraperManager as any).runScraper(scraperId);
+        const files = await (ScraperManager as any).runDataBankScraper(scraperId);
         if (!files || files.length === 0) {
             return;
         }
