@@ -180,6 +180,133 @@ export const SERVER_INPUTS: Record<string, string> = {
 };
 
 const KOBOLDCPP_ORDER = [6, 0, 1, 3, 4, 2, 5];
+
+/**
+ * Provider configuration registry.
+ * Each entry describes a text completion backend — its server URL, model
+ * settings, model-loader callback, and behavioral flags.  Generic code
+ * reads this table instead of switching on the type string.
+ */
+interface ProviderConfig {
+    /** Fixed server URL (providers without a user-visible URL input). */
+    serverUrl?: string | (() => string);
+    /** CSS selector for the server URL <input> (providers with a user URL). */
+    serverInput?: string;
+    /** Key in textgenerationwebui_settings holding the selected model ID. */
+    modelKey?: string;
+    /** Called after a successful status check to populate the model <select>. */
+    loadModels?: (data: ApiModel[]) => void;
+    /** Online-status text after model load. Default: settings[modelKey]. */
+    statusText?: string | ((settings: Record<string, unknown>, responseData?: Record<string, unknown>) => string);
+    /** Custom model-name resolution for getTextGenModel(). Default: settings[modelKey]. */
+    getModel?: (settings: Record<string, unknown>) => string;
+    /** Which param-set to merge in createTextGenGenerationData(). */
+    paramSet?: 'vllm' | 'aphrodite' | 'default';
+    /** Logprobs format expected by parseTextgenLogprobs(). */
+    logprobsFormat?: 'top_logprobs' | 'llamacpp';
+    /** top_k uses -1 instead of 0 for 'disabled'. */
+    specialTopK?: boolean;
+    /** Supports chat-template derivation. */
+    supportsChatTemplate?: boolean;
+    /** Provider allows bypassing the status-check. */
+    canBypassStatusCheck?: boolean;
+}
+
+const PROVIDERS: Record<string, ProviderConfig> = {
+    [textgen_types.OOBA]: {
+        serverInput: SERVER_INPUTS[textgen_types.OOBA],
+        modelKey: 'custom_model',
+        canBypassStatusCheck: true,
+        paramSet: 'default',
+    },
+    [textgen_types.MANCER]: {
+        // MANCER_SERVER is mutable (user can change it via debug prompt)
+        serverUrl: () => MANCER_SERVER,
+        modelKey: 'mancer_model',
+        loadModels: loadMancerModels,
+        paramSet: 'default',
+    },
+    [textgen_types.VLLM]: {
+        serverInput: SERVER_INPUTS[textgen_types.VLLM],
+        modelKey: 'vllm_model',
+        loadModels: loadVllmModels,
+        specialTopK: true,
+        paramSet: 'vllm',
+    },
+    [textgen_types.APHRODITE]: {
+        serverInput: SERVER_INPUTS[textgen_types.APHRODITE],
+        modelKey: 'aphrodite_model',
+        loadModels: loadAphroditeModels,
+        specialTopK: true,
+        paramSet: 'aphrodite',
+    },
+    [textgen_types.TABBY]: {
+        serverInput: SERVER_INPUTS[textgen_types.TABBY],
+        modelKey: 'tabby_model',
+        loadModels: loadTabbyModels,
+        logprobsFormat: 'top_logprobs',
+        paramSet: 'default',
+        statusText: (s, d) => (s.tabby_model as string) || (d?.result as string) || '',
+    },
+    [textgen_types.KOBOLDCPP]: {
+        serverInput: SERVER_INPUTS[textgen_types.KOBOLDCPP],
+        logprobsFormat: 'top_logprobs',
+        supportsChatTemplate: true,
+    },
+    [textgen_types.TOGETHERAI]: {
+        serverUrl: TOGETHERAI_SERVER,
+        modelKey: 'togetherai_model',
+        loadModels: loadTogetherAIModels,
+    },
+    [textgen_types.LLAMACPP]: {
+        serverInput: SERVER_INPUTS[textgen_types.LLAMACPP],
+        modelKey: 'llamacpp_model',
+        loadModels: loadLlamaCppModels,
+        logprobsFormat: 'llamacpp',
+        supportsChatTemplate: true,
+        statusText: (s, d) => (s.llamacpp_model as string) || (d?.result as string) || t`Connected`,
+    },
+    [textgen_types.OLLAMA]: {
+        serverInput: SERVER_INPUTS[textgen_types.OLLAMA],
+        modelKey: 'ollama_model',
+        loadModels: loadOllamaModels,
+        statusText: (s) => (s.ollama_model as string) || t`Connected`,
+    },
+    [textgen_types.INFERMATICAI]: {
+        serverUrl: INFERMATICAI_SERVER,
+        modelKey: 'infermaticai_model',
+        loadModels: loadInfermaticAIModels,
+        specialTopK: true,
+        paramSet: 'vllm',
+    },
+    [textgen_types.DREAMGEN]: {
+        serverUrl: DREAMGEN_SERVER,
+        modelKey: 'dreamgen_model',
+        loadModels: loadDreamGenModels,
+    },
+    [textgen_types.OPENROUTER]: {
+        serverUrl: OPENROUTER_SERVER,
+        modelKey: 'openrouter_model',
+        loadModels: loadOpenRouterModels,
+    },
+    [textgen_types.FEATHERLESS]: {
+        serverUrl: FEATHERLESS_SERVER,
+        modelKey: 'featherless_model',
+        loadModels: loadFeatherlessModels,
+    },
+    [textgen_types.HUGGINGFACE]: {
+        serverInput: SERVER_INPUTS[textgen_types.HUGGINGFACE],
+        getModel: () => 'tgi',
+    },
+    [textgen_types.GENERIC]: {
+        serverInput: SERVER_INPUTS[textgen_types.GENERIC],
+        modelKey: 'generic_model',
+        loadModels: loadGenericModels,
+        canBypassStatusCheck: true,
+        statusText: (s, d) => (s.generic_model as string) || (d?.result as string) || t`Connected`,
+    },
+};
+
 export const textgenerationwebui_settings: Record<string, unknown> = {
     temp: 0.7,
     temperature_last: true,
@@ -392,26 +519,16 @@ export function validateTextGenUrl() {
  */
 export function getTextGenServer(type: string | null = null) {
     const selectedType = type ?? (textgenerationwebui_settings.type as string);
-    switch (selectedType) {
-        case FEATHERLESS:
-            return FEATHERLESS_SERVER;
-        case MANCER:
-            return MANCER_SERVER;
-        case TOGETHERAI:
-            return TOGETHERAI_SERVER;
-        case INFERMATICAI:
-            return INFERMATICAI_SERVER;
-        case DREAMGEN:
-            return DREAMGEN_SERVER;
-        case OPENROUTER:
-            return OPENROUTER_SERVER;
-        default:
-            return (
-                (textgenerationwebui_settings.server_urls as Record<string, string>)[
-                    selectedType
-                ] ?? ''
-            );
+    const provider = PROVIDERS[selectedType];
+    if (provider) {
+        if (typeof provider.serverUrl === 'function') return provider.serverUrl();
+        if (provider.serverUrl) return provider.serverUrl;
     }
+    return (
+        (textgenerationwebui_settings.server_urls as Record<string, string>)[
+            selectedType
+        ] ?? ''
+    );
 }
 
 /**
@@ -823,9 +940,8 @@ async function getStatusTextgen() {
     BIAS_CACHE.delete(BIAS_KEY);
 
     if (
-        [textgen_types.GENERIC, textgen_types.OOBA].includes(
-            textgenerationwebui_settings.type as string,
-        ) &&
+        PROVIDERS[textgenerationwebui_settings.type as string]
+            ?.canBypassStatusCheck &&
         textgenerationwebui_settings.bypass_status_check
     ) {
         setOnlineStatus(t`Status check bypassed`);
@@ -849,53 +965,26 @@ async function getStatusTextgen() {
         }
 
         const data = (await response.json()) as Record<string, unknown>;
-        if (textgenerationwebui_settings.type === textgen_types.MANCER) {
-            loadMancerModels(data?.data as ApiModel[]);
-            setOnlineStatus(textgenerationwebui_settings.mancer_model as string);
-        } else if (textgenerationwebui_settings.type === textgen_types.TOGETHERAI) {
-            loadTogetherAIModels(data?.data as ApiModel[]);
-            setOnlineStatus(textgenerationwebui_settings.togetherai_model as string);
-        } else if (textgenerationwebui_settings.type === textgen_types.OLLAMA) {
-            loadOllamaModels(data?.data as ApiModel[]);
-            setOnlineStatus((textgenerationwebui_settings.ollama_model as string) || t`Connected`);
-        } else if (textgenerationwebui_settings.type === textgen_types.INFERMATICAI) {
-            loadInfermaticAIModels(data?.data as ApiModel[]);
-            setOnlineStatus(textgenerationwebui_settings.infermaticai_model as string);
-        } else if (textgenerationwebui_settings.type === textgen_types.DREAMGEN) {
-            loadDreamGenModels(data?.data as ApiModel[]);
-            setOnlineStatus(textgenerationwebui_settings.dreamgen_model as string);
-        } else if (textgenerationwebui_settings.type === textgen_types.OPENROUTER) {
-            loadOpenRouterModels(data?.data as ApiModel[]);
-            setOnlineStatus(textgenerationwebui_settings.openrouter_model as string);
-        } else if (textgenerationwebui_settings.type === textgen_types.VLLM) {
-            loadVllmModels(data?.data as ApiModel[]);
-            setOnlineStatus(textgenerationwebui_settings.vllm_model as string);
-        } else if (textgenerationwebui_settings.type === textgen_types.APHRODITE) {
-            loadAphroditeModels(data?.data as ApiModel[]);
-            setOnlineStatus(textgenerationwebui_settings.aphrodite_model as string);
-        } else if (textgenerationwebui_settings.type === textgen_types.FEATHERLESS) {
-            loadFeatherlessModels(data?.data as ApiModel[]);
-            setOnlineStatus(textgenerationwebui_settings.featherless_model as string);
-        } else if (textgenerationwebui_settings.type === textgen_types.TABBY) {
-            loadTabbyModels(data?.data as ApiModel[]);
-            setOnlineStatus(
-                (textgenerationwebui_settings.tabby_model as string) || (data?.result as string),
-            );
-        } else if (textgenerationwebui_settings.type === textgen_types.LLAMACPP) {
-            loadLlamaCppModels(data?.data as ApiModel[]);
-            setOnlineStatus(
-                (textgenerationwebui_settings.llamacpp_model as string) ||
-                    (data?.result as string) ||
-                    t`Connected`,
-            );
-        } else if (textgenerationwebui_settings.type === textgen_types.GENERIC) {
-            loadGenericModels(data?.data as ApiModel[]);
-            setOnlineStatus(
-                (textgenerationwebui_settings.generic_model as string) ||
-                    (data?.result as string) ||
-                    t`Connected`,
-            );
+        const type = textgenerationwebui_settings.type as string;
+        const provider = PROVIDERS[type];
+
+        // Load models if the provider has a loader
+        if (provider?.loadModels) {
+            provider.loadModels(data?.data as ApiModel[]);
+        }
+
+        // Determine online status text
+        if (provider) {
+            if (provider.statusText) {
+                const st = typeof provider.statusText === 'function'
+                    ? provider.statusText(textgenerationwebui_settings, data as Record<string, unknown>)
+                    : provider.statusText;
+                setOnlineStatus(st);
+            } else if (provider.modelKey) {
+                setOnlineStatus(textgenerationwebui_settings[provider.modelKey] as string);
+            }
         } else {
+            // Unknown provider — fall back to the API response
             setOnlineStatus(data?.result as string);
         }
 
@@ -919,9 +1008,8 @@ async function getStatusTextgen() {
             !autoSelected && power_user.instruct.enabled && power_user.instruct_derived;
         const wantsContextDerivation = !autoSelected && power_user.context_derived;
         const wantsContextSize = power_user.context_size_derived;
-        const supportsChatTemplate = [textgen_types.KOBOLDCPP, textgen_types.LLAMACPP].includes(
-            textgenerationwebui_settings.type as string,
-        );
+        const supportsChatTemplate = PROVIDERS[textgenerationwebui_settings.type as string]
+            ?.supportsChatTemplate;
 
         if (
             supportsChatTemplate &&
@@ -1137,11 +1225,7 @@ export function initTextGenSettings() {
             const type = String(this.value);
             textgenerationwebui_settings.type = type;
 
-            if (
-                [VLLM, APHRODITE, INFERMATICAI].includes(
-                    textgenerationwebui_settings.type as string,
-                )
-            ) {
+            if (PROVIDERS[textgenerationwebui_settings.type as string]?.specialTopK) {
                 document
                     .getElementById('mirostat_mode_textgenerationwebui')
                     ?.setAttribute('step', '2');
@@ -1209,9 +1293,7 @@ export function initTextGenSettings() {
         samplerResetButton.addEventListener('click', function () {
             const inputs: Record<string, unknown> = {
                 temp_textgenerationwebui: 1,
-                top_k_textgenerationwebui: [INFERMATICAI, APHRODITE, VLLM].includes(
-                    textgenerationwebui_settings.type as string,
-                )
+                top_k_textgenerationwebui: PROVIDERS[textgenerationwebui_settings.type as string]?.specialTopK
                     ? -1
                     : 0,
                 top_p_textgenerationwebui: 1,
@@ -1333,9 +1415,7 @@ export function initTextGenSettings() {
                 //special handling for vLLM/Aphrodite using -1 as disabled instead of 0
                 if (
                     target.getAttribute('id') === 'top_k_textgenerationwebui' &&
-                    [INFERMATICAI, APHRODITE, VLLM].includes(
-                        textgenerationwebui_settings.type as string,
-                    ) &&
+                    PROVIDERS[textgenerationwebui_settings.type as string]?.specialTopK &&
                     value === 0
                 ) {
                     if (id) textgenerationwebui_settings[id] = -1;
@@ -1719,52 +1799,48 @@ export function parseTextgenLogprobs(token: string, logprobs: unknown) {
         return null;
     }
 
-    switch (textgenerationwebui_settings.type as string) {
-        case KOBOLDCPP:
-        case TABBY:
-        case VLLM:
-        case APHRODITE:
-        case MANCER:
-        case INFERMATICAI:
-        case OOBA: {
-            /** @type {Record<string, number>[]} */
-            const topLogprobs = (logprobs as Record<string, unknown>).top_logprobs as
-                | Record<string, number>[]
-                | undefined;
-            if (!topLogprobs?.length) {
+    const format = PROVIDERS[textgenerationwebui_settings.type as string]?.logprobsFormat;
+
+    // Common top_logprobs format (KoboldCPP, Tabby, vLLM, Aphrodite, Mancer, InfermaticAI, Ooba)
+    if (format === 'top_logprobs') {
+        const topLogprobs = (logprobs as Record<string, unknown>).top_logprobs as
+            | Record<string, number>[]
+            | undefined;
+        if (!topLogprobs?.length) {
+            return null;
+        }
+        const candidates = Object.entries(topLogprobs[0]!);
+        return { token, topLogprobs: candidates };
+    }
+
+    // llama.cpp uses a different logprobs structure
+    if (format === 'llamacpp') {
+        const lpArray = logprobs as Record<string, unknown>[] | undefined;
+        if (!lpArray?.length) {
+            return null;
+        }
+
+        if (lpArray?.[0]?.probs) {
+            const candidates = (
+                lpArray?.[0]?.probs as Array<Record<string, unknown>> | undefined
+            )?.map((x) => [x.tok_str, x.prob]);
+            if (!candidates) {
                 return null;
             }
-            const candidates = Object.entries(topLogprobs[0]!);
+            return { token, topLogprobs: candidates };
+        } else if (lpArray?.[0]?.top_logprobs) {
+            const candidates = (
+                lpArray?.[0]?.top_logprobs as Array<Record<string, unknown>> | undefined
+            )?.map((x) => [x.token, Math.exp(x.logprob as number)]);
+            if (!candidates) {
+                return null;
+            }
             return { token, topLogprobs: candidates };
         }
-        case LLAMACPP: {
-            const lpArray = logprobs as Record<string, unknown>[] | undefined;
-            if (!lpArray?.length) {
-                return null;
-            }
-
-            if (lpArray?.[0]?.probs) {
-                const candidates = (
-                    lpArray?.[0]?.probs as Array<Record<string, unknown>> | undefined
-                )?.map((x) => [x.tok_str, x.prob]);
-                if (!candidates) {
-                    return null;
-                }
-                return { token, topLogprobs: candidates };
-            } else if (lpArray?.[0]?.top_logprobs) {
-                const candidates = (
-                    lpArray?.[0]?.top_logprobs as Array<Record<string, unknown>> | undefined
-                )?.map((x) => [x.token, Math.exp(x.logprob as number)]);
-                if (!candidates) {
-                    return null;
-                }
-                return { token, topLogprobs: candidates };
-            }
-            return null;
-        }
-        default:
-            return null;
+        return null;
     }
+
+    return null;
 }
 
 /**
@@ -1852,53 +1928,22 @@ function toIntArray(string: string) {
  */
 export function getTextGenModel(settings: Record<string, unknown> | null = null) {
     settings = settings ?? textgenerationwebui_settings;
-    switch (settings.type as string) {
-        case OOBA:
-            if (settings.custom_model as string) {
-                return settings.custom_model as string;
-            }
-            break;
-        case GENERIC:
-            if (settings.generic_model as string) {
-                return settings.generic_model as string;
-            }
-            break;
-        case MANCER:
-            return settings.mancer_model as string;
-        case TOGETHERAI:
-            return settings.togetherai_model as string;
-        case INFERMATICAI:
-            return settings.infermaticai_model as string;
-        case DREAMGEN:
-            return settings.dreamgen_model as string;
-        case OPENROUTER:
-            return settings.openrouter_model as string;
-        case VLLM:
-            return settings.vllm_model as string;
-        case APHRODITE:
-            return settings.aphrodite_model as string;
-        case OLLAMA:
-            if (!settings.ollama_model) {
-                notyf.error(t`No Ollama model selected.`, 'Text Completion API');
-                throw new Error('No Ollama model selected');
-            }
-            return settings.ollama_model as string;
-        case FEATHERLESS:
-            return settings.featherless_model as string;
-        case HUGGINGFACE:
-            return 'tgi';
-        case TABBY:
-            if (settings.tabby_model as string) {
-                return settings.tabby_model as string;
-            }
-            break;
-        case LLAMACPP:
-            if (settings.llamacpp_model as string) {
-                return settings.llamacpp_model as string;
-            }
-            break;
-        default:
-            return undefined as unknown as string;
+    const type = settings.type as string;
+    const provider = PROVIDERS[type];
+
+    // Custom getter (e.g. HuggingFace always returns 'tgi')
+    if (provider?.getModel) return provider.getModel(settings);
+
+    // Standard model-key lookup
+    if (provider?.modelKey) {
+        const model = settings[provider.modelKey] as string | undefined;
+        if (model) return model;
+
+        // Ollama requires a model
+        if (type === OLLAMA) {
+            notyf.error(t`No Ollama model selected.`, 'Text Completion API');
+            throw new Error('No Ollama model selected');
+        }
     }
 
     return undefined as unknown as string;
@@ -2218,20 +2263,13 @@ export function createTextGenGenerationData(
         params.n = canMultiSwipe ? settings.n : 1;
     }
 
-    switch (settings.type as string) {
-        case VLLM:
-        case INFERMATICAI:
-            Object.assign(params, vllmParams);
-            break;
-
-        case APHRODITE:
-            // set params to aphroditeParams
-            Object.assign(params, aphroditeParams);
-            break;
-
-        default:
-            Object.assign(params, nonAphroditeParams);
-            break;
+    const paramSet = PROVIDERS[settings.type as string]?.paramSet ?? 'default';
+    if (paramSet === 'vllm') {
+        Object.assign(params, vllmParams);
+    } else if (paramSet === 'aphrodite') {
+        Object.assign(params, aphroditeParams);
+    } else {
+        Object.assign(params, nonAphroditeParams);
     }
 
     if (Array.isArray(settings.logit_bias) && (settings.logit_bias as unknown[]).length) {
