@@ -1056,10 +1056,10 @@ export function isHostWhitelisted(host: string) {
 
 export const router = new Elysia({ prefix: '/api/content' })
     .post('/importURL', async (context) => {
-        const { set, body } = context;
-        const bodyAny = body as Record<string, unknown>;
+        const { set } = context;
+        const bodyAny = context.body as Record<string, unknown> | undefined;
 
-        if (!bodyAny.url) {
+        if (!bodyAny?.url) {
             set.status = 400;
             return;
         }
@@ -1156,10 +1156,10 @@ export const router = new Elysia({ prefix: '/api/content' })
         }
     })
     .post('/importUUID', async (context) => {
-        const { set, body } = context;
-        const bodyAny = body as Record<string, unknown>;
+        const { set } = context;
+        const bodyAny = context.body as Record<string, unknown> | undefined;
 
-        if (!bodyAny.url) {
+        if (!bodyAny?.url) {
             set.status = 400;
             return;
         }
