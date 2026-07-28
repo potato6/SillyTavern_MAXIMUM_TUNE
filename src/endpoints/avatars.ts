@@ -1,5 +1,6 @@
 import path from 'node:path';
 import fs from 'node:fs';
+import fsp from 'node:fs/promises';
 import { Elysia } from 'elysia';
 import sanitize from 'sanitize-filename';
 import { sync as writeFileAtomicSync } from 'write-file-atomic';
@@ -7,6 +8,7 @@ import { sync as writeFileAtomicSync } from 'write-file-atomic';
 import { getImages, tryParse } from '../util.js';
 import { applyAvatarCropResize } from './characters.js';
 import { invalidateThumbnail } from './thumbnails.js';
+import { UPLOADS_DIRECTORY } from '../constants.js';
 
 export const router = new Elysia({ prefix: '/api/avatars' })
     .post('/get', (context) => {
@@ -51,20 +53,44 @@ export const router = new Elysia({ prefix: '/api/avatars' })
             unknown
         > | null;
         const directories = user?.directories as Record<string, string> | undefined;
-        const file = (context as unknown as Record<string, unknown>).file as Record<
+        const uploadedFile = (context as unknown as Record<string, unknown>).file as Record<
             string,
             unknown
         > | null;
 
-        if (!file) {
+        if (!uploadedFile && (!body || !(body as Record<string, unknown>).avatar)) {
             set.status = 400;
             return;
         }
 
         try {
-            const pathToUpload = path.join(file.destination as string, file.filename as string);
+            let pathToUpload: string | null = null;
+            let needsCleanup = false;
+
+            if (uploadedFile) {
+                // Express bridge mode — multer already wrote the file to disk
+                pathToUpload = path.join(
+                    uploadedFile.destination as string,
+                    uploadedFile.filename as string,
+                );
+                needsCleanup = true;
+            } else {
+                // Elysia-native mode — file is a File object in body.avatar
+                const fileObj = (body as Record<string, unknown>).avatar as File;
+                if (typeof fileObj !== 'object' || !fileObj || !('arrayBuffer' in fileObj)) {
+                    set.status = 400;
+                    return;
+                }
+                const buffer = Buffer.from(await fileObj.arrayBuffer());
+                const uploadsDir = path.join(globalThis.DATA_ROOT as string, UPLOADS_DIRECTORY);
+                const tempName = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+                pathToUpload = path.join(uploadsDir, tempName);
+                await fsp.writeFile(pathToUpload, buffer);
+                needsCleanup = true;
+            }
+
             const crop = tryParse((body as Record<string, unknown>).crop as string);
-            const fileBuffer = fs.readFileSync(pathToUpload);
+            const fileBuffer = fs.readFileSync(pathToUpload!);
             const image = await applyAvatarCropResize(fileBuffer, crop);
 
             if ((body as Record<string, unknown>).overwrite_name) {
@@ -80,7 +106,11 @@ export const router = new Elysia({ prefix: '/api/avatars' })
             );
             const pathToNewFile = path.join(directories?.avatars ?? '', filename);
             writeFileAtomicSync(pathToNewFile, image);
-            fs.unlinkSync(pathToUpload);
+
+            if (needsCleanup && pathToUpload && fs.existsSync(pathToUpload)) {
+                fs.unlinkSync(pathToUpload);
+            }
+
             return { path: filename };
         } catch (err) {
             console.error('Error uploading user avatar:', err);
