@@ -1,127 +1,183 @@
-import fs from 'node:fs';
+import fsp from 'node:fs/promises';
 import path from 'node:path';
 import { Elysia } from 'elysia';
 import sanitize from 'sanitize-filename';
-import { sync as writeFileAtomicSync } from 'write-file-atomic';
+import writeFileAtomic from 'write-file-atomic';
 
 import { getDefaultPresetFile, getDefaultPresets } from './content-manager.js';
+
+interface UserDirectories {
+    koboldAI_Settings?: string;
+    novelAI_Settings?: string;
+    textGen_Settings?: string;
+    openAI_Settings?: string;
+    instruct?: string;
+    context?: string;
+    sysprompt?: string;
+    reasoning?: string;
+    [key: string]: unknown;
+}
+
+interface UserContext {
+    directories?: UserDirectories;
+    [key: string]: unknown;
+}
+
+interface PresetSettings {
+    folder: string | null;
+    extension: string | null;
+}
 
 /**
  * Gets the folder and extension for the preset settings based on the API source ID.
  */
-function getPresetSettingsByAPI(apiId: string, directories: Record<string, string>) {
+function getPresetSettingsByAPI(
+    apiId: string,
+    directories: Record<string, string>,
+): PresetSettings {
     switch (apiId) {
         case 'kobold':
         case 'koboldhorde':
-            return { folder: directories.koboldAI_Settings, extension: '.json' };
+            return { folder: directories.koboldAI_Settings ?? null, extension: '.json' };
         case 'novel':
-            return { folder: directories.novelAI_Settings, extension: '.json' };
+            return { folder: directories.novelAI_Settings ?? null, extension: '.json' };
         case 'textgenerationwebui':
-            return { folder: directories.textGen_Settings, extension: '.json' };
+            return { folder: directories.textGen_Settings ?? null, extension: '.json' };
         case 'openai':
-            return { folder: directories.openAI_Settings, extension: '.json' };
+            return { folder: directories.openAI_Settings ?? null, extension: '.json' };
         case 'instruct':
-            return { folder: directories.instruct, extension: '.json' };
+            return { folder: directories.instruct ?? null, extension: '.json' };
         case 'context':
-            return { folder: directories.context, extension: '.json' };
+            return { folder: directories.context ?? null, extension: '.json' };
         case 'sysprompt':
-            return { folder: directories.sysprompt, extension: '.json' };
+            return { folder: directories.sysprompt ?? null, extension: '.json' };
         case 'reasoning':
-            return { folder: directories.reasoning, extension: '.json' };
+            return { folder: directories.reasoning ?? null, extension: '.json' };
         default:
             return { folder: null, extension: null };
     }
 }
 
 export const router = new Elysia({ prefix: '/api/presets' })
-    .post('/save', (context) => {
-        const { body, set } = context;
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
-        const directories = user?.directories as Record<string, string> | undefined;
-        const bodyAny = body as Record<string, unknown> | null;
+    .post('/save', async (context) => {
+        const { set } = context;
+        const ctx = context as Record<string, unknown>;
+        const bodyAny = ctx.body as Record<string, unknown> | undefined;
+        const user = ctx.user as UserContext | undefined;
+        const directories = user?.directories;
 
-        const name = sanitize(bodyAny?.name as string);
-        if (!bodyAny?.preset || !name) {
+        if (!bodyAny || !bodyAny.preset) {
             set.status = 400;
             return;
         }
 
-        const settings = getPresetSettingsByAPI(bodyAny.apiId as string, directories ?? {});
-        const filename = name + settings.extension;
-
-        if (!settings.folder) {
+        const rawName = bodyAny.name;
+        if (typeof rawName !== 'string' || rawName.length === 0) {
             set.status = 400;
             return;
         }
 
+        const name = sanitize(rawName);
+        if (name.length === 0) {
+            set.status = 400;
+            return;
+        }
+
+        const apiId = typeof bodyAny.apiId === 'string' ? bodyAny.apiId : '';
+        const settings = getPresetSettingsByAPI(apiId, (directories ?? {}) as Record<string, string>);
+
+        if (!settings.folder || !settings.extension) {
+            set.status = 400;
+            return;
+        }
+
+        const filename = `${name}${settings.extension}`;
         const fullpath = path.join(settings.folder, filename);
-        writeFileAtomicSync(fullpath, JSON.stringify(bodyAny.preset, null, 4), 'utf-8');
+
+        await writeFileAtomic(fullpath, JSON.stringify(bodyAny.preset, null, 4), 'utf-8');
         return { name };
     })
-    .post('/delete', (context) => {
-        const { body, set } = context;
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
-        const directories = user?.directories as Record<string, string> | undefined;
-        const bodyAny = body as Record<string, unknown> | null;
+    .post('/delete', async (context) => {
+        const { set } = context;
+        const ctx = context as Record<string, unknown>;
+        const bodyAny = ctx.body as Record<string, unknown> | undefined;
+        const user = ctx.user as UserContext | undefined;
+        const directories = user?.directories;
 
-        const name = sanitize(bodyAny?.name as string);
-        if (!name) {
+        if (!bodyAny) {
             set.status = 400;
             return;
         }
 
-        const settings = getPresetSettingsByAPI(bodyAny?.apiId as string, directories ?? {});
-        const filename = name + settings.extension;
-
-        if (!settings.folder) {
+        const rawName = bodyAny.name;
+        if (typeof rawName !== 'string' || rawName.length === 0) {
             set.status = 400;
             return;
         }
 
+        const name = sanitize(rawName);
+        if (name.length === 0) {
+            set.status = 400;
+            return;
+        }
+
+        const apiId = typeof bodyAny.apiId === 'string' ? bodyAny.apiId : '';
+        const settings = getPresetSettingsByAPI(apiId, (directories ?? {}) as Record<string, string>);
+
+        if (!settings.folder || !settings.extension) {
+            set.status = 400;
+            return;
+        }
+
+        const filename = `${name}${settings.extension}`;
         const fullpath = path.join(settings.folder, filename);
 
-        if (fs.existsSync(fullpath)) {
-            fs.unlinkSync(fullpath);
+        try {
+            await fsp.unlink(fullpath);
             set.status = 204;
-        } else {
-            set.status = 404;
+        } catch (err: any) {
+            if (err?.code === 'ENOENT') {
+                set.status = 404;
+                return;
+            }
+            throw err;
         }
     })
-    .post('/restore', (context) => {
-        const { body, set } = context;
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
-        const directories = user?.directories as Record<string, string> | undefined;
-        const bodyAny = body as Record<string, unknown> | null;
+    .post('/restore', async (context) => {
+        const { set } = context;
+        const ctx = context as Record<string, unknown>;
+        const bodyAny = ctx.body as Record<string, unknown> | undefined;
+        const user = ctx.user as UserContext | undefined;
+        const directories = user?.directories;
 
         try {
-            const settings = getPresetSettingsByAPI(bodyAny?.apiId as string, directories ?? {});
-            const name = sanitize(bodyAny?.name as string);
+            const apiId = typeof bodyAny?.apiId === 'string' ? bodyAny.apiId : '';
+            const settings = getPresetSettingsByAPI(apiId, (directories ?? {}) as Record<string, string>);
+
+            const rawName = bodyAny?.name;
+            const name = typeof rawName === 'string' ? sanitize(rawName) : '';
+
             const defaultPresets = getDefaultPresets(directories as any);
+            let defaultPreset: Record<string, unknown> | undefined;
 
-            const defaultPreset = defaultPresets.find(
-                (p: Record<string, unknown>) => p.name === name && p.folder === settings.folder,
-            );
-
-            const result: Record<string, unknown> = { isDefault: false, preset: {} };
-
-            if (defaultPreset) {
-                result.isDefault = true;
-                result.preset =
-                    getDefaultPresetFile(
-                        (defaultPreset as Record<string, unknown>).filename as string,
-                    ) || {};
+            const targetFolder = settings.folder;
+            if (name.length > 0 && targetFolder) {
+                for (let i = 0; i < defaultPresets.length; i++) {
+                    const p = defaultPresets[i] as Record<string, unknown>;
+                    if (p.name === name && p.folder === targetFolder) {
+                        defaultPreset = p;
+                        break;
+                    }
+                }
             }
 
-            return result;
+            if (defaultPreset) {
+                const presetFilename = defaultPreset.filename as string;
+                const presetContent = (await getDefaultPresetFile(presetFilename)) || {};
+                return { isDefault: true, preset: presetContent };
+            }
+
+            return { isDefault: false, preset: {} };
         } catch (error) {
             console.error(error);
             set.status = 500;
