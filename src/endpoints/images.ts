@@ -1,4 +1,4 @@
-import fs from 'node:fs';
+import fsp from 'node:fs/promises';
 import path from 'node:path';
 import { Buffer } from 'node:buffer';
 import { Elysia } from 'elysia';
@@ -7,24 +7,24 @@ import sanitize from 'sanitize-filename';
 import { clientRelativePath, removeFileExtension, getImages, isPathUnderParent } from '../util.js';
 import { MEDIA_EXTENSIONS, MEDIA_REQUEST_TYPE } from '../constants.js';
 
-function ensureDirectoryExistence(filePath: string) {
-    const dirname = path.dirname(filePath);
-    if (fs.existsSync(dirname)) {
-        return true;
-    }
-    ensureDirectoryExistence(dirname);
-    fs.mkdirSync(dirname);
+interface UserDirectories {
+    userImages?: string;
+    root?: string;
+    [key: string]: unknown;
+}
+
+interface UserContext {
+    directories?: UserDirectories;
+    [key: string]: unknown;
 }
 
 export const router = new Elysia({ prefix: '/api/images' })
     .post('/upload', async (context) => {
         const { set } = context;
-        const body = context.body as Record<string, unknown>;
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
-        const directories = user?.directories as Record<string, string> | undefined;
+        const ctx = context as Record<string, unknown>;
+        const body = ctx.body as Record<string, unknown> | undefined;
+        const user = ctx.user as UserContext | undefined;
+        const directories = user?.directories;
 
         try {
             if (!body) {
@@ -32,53 +32,57 @@ export const router = new Elysia({ prefix: '/api/images' })
                 return { error: 'No data provided' };
             }
 
-            const { image, format } = body as { image?: string; format?: string };
+            const image = body.image;
+            const format = body.format;
 
-            if (!image) {
+            if (typeof image !== 'string' || image.length === 0) {
                 set.status = 400;
                 return { error: 'No image data provided' };
             }
 
-            const validFormat = MEDIA_EXTENSIONS.includes(format ?? '');
-            if (!validFormat) {
+            const formatStr = typeof format === 'string' ? format : '';
+            if (!MEDIA_EXTENSIONS.includes(formatStr)) {
                 set.status = 400;
                 return { error: 'Invalid image format' };
             }
 
+            const rawFilename = body.filename;
             let filename: string;
-            if (body.filename) {
-                filename = `${removeFileExtension(body.filename as string)}.${format}`;
+            if (typeof rawFilename === 'string' && rawFilename.length > 0) {
+                filename = `${removeFileExtension(rawFilename)}.${formatStr}`;
             } else {
-                filename = `${Date.now()}.${format}`;
+                filename = `${Date.now()}.${formatStr}`;
             }
 
-            let pathToNewFile = path.join(directories?.userImages ?? '', sanitize(filename));
-            if (body.ch_name) {
-                pathToNewFile = path.join(
-                    directories?.userImages ?? '',
-                    sanitize(body.ch_name as string),
-                    sanitize(filename),
-                );
+            const userImagesDir = directories?.userImages ?? '';
+            const sanitizedFilename = sanitize(filename);
+            let pathToNewFile: string;
+
+            const chName = body.ch_name;
+            if (typeof chName === 'string' && chName.length > 0) {
+                pathToNewFile = path.join(userImagesDir, sanitize(chName), sanitizedFilename);
+            } else {
+                pathToNewFile = path.join(userImagesDir, sanitizedFilename);
             }
 
-            ensureDirectoryExistence(pathToNewFile);
+            await fsp.mkdir(path.dirname(pathToNewFile), { recursive: true });
             const imageBuffer = Buffer.from(image, 'base64');
-            await fs.promises.writeFile(pathToNewFile, new Uint8Array(imageBuffer));
-            return { path: clientRelativePath(directories?.root ?? '', pathToNewFile) };
+            await fsp.writeFile(pathToNewFile, imageBuffer);
+
+            const rootDir = directories?.root ?? '';
+            return { path: clientRelativePath(rootDir, pathToNewFile) };
         } catch (error) {
             console.error(error);
             set.status = 500;
             return { error: 'Failed to save the image' };
         }
     })
-    .post('/list/:folder?', (context) => {
-        const { params, body, set } = context;
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
-        const directories = user?.directories as Record<string, string> | undefined;
-        const bodyAny = body as Record<string, unknown>;
+    .post('/list/:folder?', async (context) => {
+        const { params, set } = context;
+        const ctx = context as Record<string, unknown>;
+        const bodyAny = (ctx.body ?? {}) as Record<string, unknown>;
+        const user = ctx.user as UserContext | undefined;
+        const directories = user?.directories;
 
         try {
             let folder = params.folder;
@@ -92,18 +96,21 @@ export const router = new Elysia({ prefix: '/api/images' })
             }
 
             folder = bodyAny.folder as string;
-            if (!folder) {
+            if (typeof folder !== 'string' || folder.length === 0) {
                 set.status = 400;
                 return { error: 'No folder specified' };
             }
 
-            const directoryPath = path.join(directories?.userImages ?? '', sanitize(folder));
+            const userImagesDir = directories?.userImages ?? '';
+            const directoryPath = path.join(userImagesDir, sanitize(folder));
             const type = Number(bodyAny.type ?? MEDIA_REQUEST_TYPE.IMAGE);
-            const sort = (bodyAny.sortField as string) || 'date';
-            const order = (bodyAny.sortOrder as string) || 'asc';
+            const sort = typeof bodyAny.sortField === 'string' ? bodyAny.sortField : 'date';
+            const order = typeof bodyAny.sortOrder === 'string' ? bodyAny.sortOrder : 'asc';
 
-            if (!fs.existsSync(directoryPath)) {
-                fs.mkdirSync(directoryPath, { recursive: true });
+            try {
+                await fsp.access(directoryPath);
+            } catch {
+                await fsp.mkdir(directoryPath, { recursive: true });
             }
 
             const images = getImages(directoryPath, sort, type);
@@ -117,58 +124,70 @@ export const router = new Elysia({ prefix: '/api/images' })
             return { error: 'Unable to retrieve files' };
         }
     })
-    .post('/folders', (context) => {
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
-        const directories = user?.directories as Record<string, string> | undefined;
+    .post('/folders', async (context) => {
+        const { set } = context;
+        const ctx = context as Record<string, unknown>;
+        const user = ctx.user as UserContext | undefined;
+        const directories = user?.directories;
 
         try {
             const directoryPath = directories?.userImages ?? '';
-            if (!fs.existsSync(directoryPath)) {
-                fs.mkdirSync(directoryPath, { recursive: true });
+
+            let dirents: import('node:fs').Dirent[];
+            try {
+                dirents = await fsp.readdir(directoryPath, { withFileTypes: true });
+            } catch {
+                await fsp.mkdir(directoryPath, { recursive: true });
+                return [];
             }
 
-            const folders = fs
-                .readdirSync(directoryPath, { withFileTypes: true })
-                .filter((dirent) => dirent.isDirectory())
-                .map((dirent) => dirent.name);
+            const folders: string[] = [];
+            for (const dirent of dirents) {
+                if (dirent.isDirectory()) {
+                    folders.push(dirent.name);
+                }
+            }
 
             return folders;
         } catch (error) {
             console.error(error);
-            return new Response(JSON.stringify({ error: 'Unable to retrieve folders' }), {
-                status: 500,
-            });
+            set.status = 500;
+            return { error: 'Unable to retrieve folders' };
         }
     })
     .post('/delete', async (context) => {
-        const { body, set } = context;
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
-        const directories = user?.directories as Record<string, string> | undefined;
-        const bodyAny = body as Record<string, unknown>;
+        const { set } = context;
+        const ctx = context as Record<string, unknown>;
+        const bodyAny = (ctx.body ?? {}) as Record<string, unknown>;
+        const user = ctx.user as UserContext | undefined;
+        const directories = user?.directories;
 
         try {
-            const reqPath = bodyAny.path as string;
-            if (!reqPath) {
-                return new Response('No path specified', { status: 400 });
+            const reqPath = bodyAny.path;
+            if (typeof reqPath !== 'string' || reqPath.length === 0) {
+                set.status = 400;
+                return 'No path specified';
             }
 
-            const pathToDelete = path.join(directories?.root ?? '', reqPath);
-            if (!isPathUnderParent(directories?.userImages ?? '', pathToDelete)) {
-                return new Response('Invalid path', { status: 400 });
+            const rootDir = directories?.root ?? '';
+            const userImagesDir = directories?.userImages ?? '';
+            const pathToDelete = path.join(rootDir, reqPath);
+
+            if (!isPathUnderParent(userImagesDir, pathToDelete)) {
+                set.status = 400;
+                return 'Invalid path';
             }
 
-            if (!fs.existsSync(pathToDelete)) {
-                return new Response('File not found', { status: 404 });
+            try {
+                await fsp.unlink(pathToDelete);
+                set.status = 204;
+            } catch (err: any) {
+                if (err?.code === 'ENOENT') {
+                    set.status = 404;
+                    return 'File not found';
+                }
+                throw err;
             }
-
-            fs.unlinkSync(pathToDelete);
-            set.status = 204;
         } catch (error) {
             console.error(error);
             set.status = 500;
