@@ -1,11 +1,12 @@
 import fs from 'node:fs';
+import fsp from 'node:fs/promises';
 import path from 'node:path';
 import zlib from 'node:zlib';
 import { Buffer } from 'node:buffer';
 
 import { Elysia } from 'elysia';
 import sanitize from 'sanitize-filename';
-import { sync as writeFileAtomicSync } from 'write-file-atomic';
+import writeFileAtomic from 'write-file-atomic';
 
 import { getConfigValue, color, setPermissionsSync, isValidUrl } from '../util.js';
 import { write } from '../character-card-parser.js';
@@ -27,12 +28,17 @@ const USER_AGENT = 'SillyTavern';
  * @property {string} type - Content type identifier
  * @property {string} [name] - Display name of the content item
  * @property {string|null} [folder] - Parent folder path
+ * @property {string} [scope] - Scope of the content item
  */
+interface ContentItem {
+    filename: string;
+    type: string;
+    name?: string;
+    folder?: string | null;
+    scope?: string;
+    [key: string]: unknown;
+}
 
-/**
- * @typedef {string} ContentType
- * @enum {string}
- */
 export const CONTENT_TYPES = {
     SETTINGS: 'settings',
     CHARACTER: 'character',
@@ -56,9 +62,6 @@ export const CONTENT_TYPES = {
     STYLESHEET: 'stylesheet',
 };
 
-/**
- * @enum {string}
- */
 export const CONTENT_SCOPE = {
     USER: 'user',
     GLOBAL: 'global',
@@ -66,12 +69,13 @@ export const CONTENT_SCOPE = {
 
 /**
  * Gets the scope of a content type.
- * @param {CONTENT_TYPES} type Content type
- * @returns {CONTENT_SCOPE} Resolved content scope
+ * @param {string} type Content type
+ * @returns {string} Resolved content scope
  */
 function getScopeByType(type: string) {
-    const globalTypes = [CONTENT_TYPES.ERROR_PAGE, CONTENT_TYPES.STYLESHEET];
-    return globalTypes.includes(type) ? CONTENT_SCOPE.GLOBAL : CONTENT_SCOPE.USER;
+    return type === CONTENT_TYPES.ERROR_PAGE || type === CONTENT_TYPES.STYLESHEET
+        ? CONTENT_SCOPE.GLOBAL
+        : CONTENT_SCOPE.USER;
 }
 
 /**
@@ -82,15 +86,21 @@ function getScopeByType(type: string) {
 export function getDefaultPresets(directories: UserDirectoryList) {
     try {
         const contentIndex = getContentIndex(CONTENT_SCOPE.USER);
-        const presets = [];
+        const presets: ContentItem[] = [];
 
         for (const contentItem of contentIndex) {
+            const type = contentItem.type;
             if (
-                contentItem.type.endsWith('_preset') ||
-                ['instruct', 'context', 'sysprompt', 'reasoning'].includes(contentItem.type)
+                type.endsWith('_preset') ||
+                type === 'instruct' ||
+                type === 'context' ||
+                type === 'sysprompt' ||
+                type === 'reasoning'
             ) {
-                contentItem.name = path.parse(contentItem.filename).name;
-                contentItem.folder = getUserTargetByType(contentItem.type, directories);
+                const fileName = contentItem.filename;
+                const lastDot = fileName.lastIndexOf('.');
+                contentItem.name = lastDot !== -1 ? fileName.slice(0, lastDot) : fileName;
+                contentItem.folder = getUserTargetByType(type, directories);
                 presets.push(contentItem);
             }
         }
@@ -105,17 +115,12 @@ export function getDefaultPresets(directories: UserDirectoryList) {
 /**
  * Gets a default JSON file from the content directory.
  * @param {string} filename Name of the file to get
- * @returns {object | null} JSON object or null if the file doesn't exist
+ * @returns {Promise<object | null>} JSON object or null if the file doesn't exist
  */
-export function getDefaultPresetFile(filename: string) {
+export async function getDefaultPresetFile(filename: string) {
     try {
         const contentPath = path.join(contentDirectory, filename);
-
-        if (!fs.existsSync(contentPath)) {
-            return null;
-        }
-
-        const fileContent = fs.readFileSync(contentPath, 'utf8');
+        const fileContent = await fsp.readFile(contentPath, 'utf8');
         return JSON.parse(fileContent);
     } catch (err) {
         console.warn(`Failed to get default file ${filename}`, err);
@@ -129,63 +134,71 @@ export function getDefaultPresetFile(filename: string) {
  * @param {string} contentLogPath Path to the content log file
  * @param {(type: string) => string | null} resolveTarget Function to resolve the target directory for a content type
  * @param {string[]} [forceCategories] List of categories to force check (even if content check is skipped)
- * @returns {boolean} Whether any content was added
+ * @returns {Promise<boolean>} Whether any content was added
  */
-function seedContent(
+async function seedContent(
     contentIndex: ContentItem[],
     contentLogPath: string,
     resolveTarget: (type: string) => string | null,
     forceCategories?: string[],
 ) {
     let anyContentAdded = false;
-    const contentLog = getContentLog(contentLogPath);
+    const contentLog = await getContentLogAsync(contentLogPath);
+    const logSet = new Set(contentLog);
 
     for (const contentItem of contentIndex) {
-        if (
-            contentLog.includes(contentItem.filename) &&
-            !forceCategories?.includes(contentItem.type)
-        ) {
+        const fn = contentItem.filename;
+
+        if (logSet.has(fn) && !forceCategories?.includes(contentItem.type)) {
             continue;
         }
 
         if (!contentItem.folder) {
-            console.warn(`Content file ${contentItem.filename} has no parent folder`);
+            console.warn(`Content file ${fn} has no parent folder`);
             continue;
         }
 
-        const contentPath = path.join(contentItem.folder, contentItem.filename);
+        const contentPath = path.join(contentItem.folder, fn);
 
-        if (!fs.existsSync(contentPath)) {
-            console.warn(`Content file ${contentItem.filename} is missing`);
+        try {
+            await fsp.access(contentPath);
+        } catch {
+            console.warn(`Content file ${fn} is missing`);
             continue;
         }
 
         const contentTarget = resolveTarget(contentItem.type);
 
         if (!contentTarget) {
-            console.warn(
-                `Content file ${contentItem.filename} has unknown type ${contentItem.type}`,
-            );
+            console.warn(`Content file ${fn} has unknown type ${contentItem.type}`);
             continue;
         }
 
-        const basePath = path.parse(contentItem.filename).base;
+        const lastSlash = Math.max(fn.lastIndexOf('/'), fn.lastIndexOf('\\'));
+        const basePath = lastSlash !== -1 ? fn.slice(lastSlash + 1) : fn;
         const targetPath = path.join(contentTarget, basePath);
-        contentLog.push(contentItem.filename);
 
-        if (fs.existsSync(targetPath)) {
-            console.warn(`Content file ${contentItem.filename} already exists in ${contentTarget}`);
-            continue;
+        if (!logSet.has(fn)) {
+            contentLog.push(fn);
+            logSet.add(fn);
         }
 
-        fs.mkdirSync(contentTarget, { recursive: true });
-        fs.cpSync(contentPath, targetPath, { recursive: true, force: false });
+        try {
+            await fsp.access(targetPath);
+            console.warn(`Content file ${fn} already exists in ${contentTarget}`);
+            continue;
+        } catch {
+            // target file does not exist, proceed
+        }
+
+        await fsp.mkdir(contentTarget, { recursive: true });
+        await fsp.cp(contentPath, targetPath, { recursive: true, force: false });
         setPermissionsSync(targetPath);
-        console.info(`Content file ${contentItem.filename} copied to ${contentTarget}`);
+        console.info(`Content file ${fn} copied to ${contentTarget}`);
         anyContentAdded = true;
     }
 
-    writeFileAtomicSync(contentLogPath, contentLog.join('\n'));
+    await writeFileAtomic(contentLogPath, contentLog.join('\n'));
     return anyContentAdded;
 }
 
@@ -201,8 +214,10 @@ async function seedContentForUser(
     directories: UserDirectoryList,
     forceCategories: string[],
 ) {
-    if (!fs.existsSync(directories.root)) {
-        fs.mkdirSync(directories.root, { recursive: true });
+    try {
+        await fsp.mkdir(directories.root, { recursive: true });
+    } catch {
+        // Directory exists
     }
 
     const contentLogPath = path.join(directories.root, 'content.log');
@@ -275,45 +290,53 @@ export async function checkForNewContent(
 
 /**
  * Gets combined content index from the content and scaffold directories.
- * @param {CONTENT_SCOPE} scope Scope of content to get
+ * @param {string} scope Scope of content to get
  * @returns {ContentItem[]} Array of content index
  */
 function getContentIndex(scope = CONTENT_SCOPE.USER) {
-    const result = [];
+    const result: ContentItem[] = [];
 
-    if (fs.existsSync(scaffoldIndexPath)) {
+    try {
         const scaffoldIndexText = fs.readFileSync(scaffoldIndexPath, 'utf8');
         const scaffoldIndex = JSON.parse(scaffoldIndexText);
         if (Array.isArray(scaffoldIndex)) {
-            scaffoldIndex.forEach((item) => {
+            for (const item of scaffoldIndex) {
                 item.folder = scaffoldDirectory;
                 item.scope = getScopeByType(item.type);
-            });
-            result.push(...scaffoldIndex);
+                if (item.scope === scope) {
+                    result.push(item);
+                }
+            }
         }
+    } catch {
+        // Scaffold index unreadable or missing
     }
 
-    if (fs.existsSync(contentIndexPath)) {
+    try {
         const contentIndexText = fs.readFileSync(contentIndexPath, 'utf8');
         const contentIndex = JSON.parse(contentIndexText);
         if (Array.isArray(contentIndex)) {
-            contentIndex.forEach((item) => {
+            for (const item of contentIndex) {
                 item.folder = contentDirectory;
                 item.scope = getScopeByType(item.type);
-            });
-            result.push(...contentIndex);
+                if (item.scope === scope) {
+                    result.push(item);
+                }
+            }
         }
+    } catch {
+        // Content index unreadable or missing
     }
 
-    return result.filter((item) => item.scope === scope);
+    return result;
 }
 
 /**
  * Gets content by type and format.
  * @param {string} type Type of content
  * @param {'json'|'string'|'raw'} format Format of content
- * @param {CONTENT_SCOPE} scope Scope of content to get
- * @returns {string[]|Buffer[]} Array of content
+ * @param {string} scope Scope of content to get
+ * @returns {string[]|Buffer[]|object[]} Array of content
  */
 export function getContentOfType(
     type: string,
@@ -321,28 +344,24 @@ export function getContentOfType(
     scope = CONTENT_SCOPE.USER,
 ) {
     const contentIndex = getContentIndex(scope);
-    const indexItems = contentIndex.filter((item) => item.type === type && item.folder);
-    const files = [];
-    for (const item of indexItems) {
-        if (!item.folder) {
+    const files: (string | Buffer | object)[] = [];
+
+    for (const item of contentIndex) {
+        if (item.type !== type || !item.folder) {
             continue;
         }
         try {
             const filePath = path.join(item.folder, item.filename);
             const fileContent = fs.readFileSync(filePath);
-            switch (format) {
-                case 'json':
-                    files.push(JSON.parse(fileContent.toString()));
-                    break;
-                case 'string':
-                    files.push(fileContent.toString());
-                    break;
-                case 'raw':
-                    files.push(fileContent);
-                    break;
+            if (format === 'json') {
+                files.push(JSON.parse(fileContent.toString('utf8')));
+            } else if (format === 'string') {
+                files.push(fileContent.toString('utf8'));
+            } else if (format === 'raw') {
+                files.push(fileContent);
             }
         } catch {
-            // Ignore errors
+            // Ignore unreadable file
         }
     }
     return files;
@@ -350,7 +369,7 @@ export function getContentOfType(
 
 /**
  * Gets the target directory for the specified asset type.
- * @param {ContentType} type Asset type
+ * @param {string} type Asset type
  * @param {UserDirectoryList} directories User directories
  * @returns {string | null} Target directory
  */
@@ -399,7 +418,7 @@ export function getUserTargetByType(type: string, directories: UserDirectoryList
 
 /**
  * Gets the target directory for global content types.
- * @param {CONTENT_TYPES} type Content type
+ * @param {string} type Content type
  * @returns {string | null} Target directory
  */
 export function getGlobalTargetByType(type: string) {
@@ -416,24 +435,30 @@ export function getGlobalTargetByType(type: string) {
 /**
  * Gets the content log from the content log file.
  * @param {string} contentLogPath Path to the content log file
- * @returns {string[]} Array of content log lines
+ * @returns {Promise<string[]>} Array of content log lines
  */
-function getContentLog(contentLogPath: string) {
-    if (!fs.existsSync(contentLogPath)) {
+async function getContentLogAsync(contentLogPath: string): Promise<string[]> {
+    try {
+        const contentLogText = await fsp.readFile(contentLogPath, 'utf8');
+        return contentLogText.split('\n');
+    } catch {
         return [];
     }
-
-    const contentLogText = fs.readFileSync(contentLogPath, 'utf8');
-    return contentLogText.split('\n');
 }
 
 /**
  * Downloads a lorebook from Chub.
  * @param {string} id - Chub lorebook identifier
- * @returns {Promise<{buffer: Buffer, fileName: string, fileType: string}>}
+ * @returns {Promise<{buffer: Buffer, fileName: string, fileType: string | null}>}
  */
 async function downloadChubLorebook(id: string) {
-    const [lorebooks, creatorName, projectName] = id.split('/') as [string, string, string];
+    const slashIdx1 = id.indexOf('/');
+    const slashIdx2 = id.indexOf('/', slashIdx1 + 1);
+
+    const lorebooks = slashIdx1 !== -1 ? id.slice(0, slashIdx1) : id;
+    const creatorName = slashIdx1 !== -1 && slashIdx2 !== -1 ? id.slice(slashIdx1 + 1, slashIdx2) : '';
+    const projectName = slashIdx2 !== -1 ? id.slice(slashIdx2 + 1) : '';
+
     const result = await fetch(
         `https://api.chub.ai/api/${lorebooks}/${creatorName}/${projectName}`,
         {
@@ -448,7 +473,6 @@ async function downloadChubLorebook(id: string) {
         throw new Error('Failed to fetch lorebook metadata');
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- API response shape unknown
     const metadata = (await result.json()) as any;
     const projectId = metadata.node?.id;
 
@@ -468,9 +492,8 @@ async function downloadChubLorebook(id: string) {
         throw new Error('Failed to download lorebook');
     }
 
-    const name = projectName;
     const buffer = Buffer.from(await downloadResult.arrayBuffer());
-    const fileName = `${sanitize(name)}.json`;
+    const fileName = `${sanitize(projectName)}.json`;
     const fileType = downloadResult.headers.get('content-type');
 
     return { buffer, fileName, fileType };
@@ -482,7 +505,10 @@ async function downloadChubLorebook(id: string) {
  * @returns {Promise<{buffer: Buffer, fileName: string, fileType: string}>}
  */
 async function downloadChubCharacter(id: string) {
-    const [creatorName, projectName] = id.split('/');
+    const slashIdx = id.indexOf('/');
+    const creatorName = slashIdx !== -1 ? id.slice(0, slashIdx) : id;
+    const projectName = slashIdx !== -1 ? id.slice(slashIdx + 1) : '';
+
     const result = await fetch(
         `https://api.chub.ai/api/characters/${creatorName}/${projectName}?full=true`,
         {
@@ -502,7 +528,6 @@ async function downloadChubCharacter(id: string) {
     };
     const { definition, topics } = metadata.node;
 
-    /** @type {TavernCardV2} */
     const characterCard = {
         data: {
             name: definition.name,
@@ -526,9 +551,7 @@ async function downloadChubCharacter(id: string) {
     };
 
     const defaultAvatarPath = path.join(serverDirectory, DEFAULT_AVATAR_PATH);
-    const defaultAvatarBuffer = fs.readFileSync(defaultAvatarPath);
-
-    let imageBuffer = defaultAvatarBuffer;
+    let imageBuffer = await fsp.readFile(defaultAvatarPath);
 
     const imageUrl = metadata.node?.max_res_url;
 
@@ -569,7 +592,6 @@ async function downloadPygmalionCharacter(id: string) {
     }
 
     try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic nested API response access
         const avatarUrl = (characterData as Record<string, any>)?.data?.avatar;
 
         if (!avatarUrl) {
@@ -598,7 +620,6 @@ async function downloadPygmalionCharacter(id: string) {
 }
 
 /**
- *
  * @param {string} str
  * @returns { { id: string, type: "character" | "lorebook" } | null }
  */
@@ -612,33 +633,29 @@ function parseChubUrl(str: string) {
 
     let domainIndex = -1;
 
-    splitStr.forEach((part: string, index: number) => {
+    for (const [i, part] of splitStr.entries()) {
         if (
             part === 'www.chub.ai' ||
             part === 'chub.ai' ||
             part === 'www.characterhub.org' ||
             part === 'characterhub.org'
         ) {
-            domainIndex = index;
+            domainIndex = i;
+            break;
         }
-    });
+    }
 
     const lastTwo = domainIndex !== -1 ? splitStr.slice(domainIndex + 1) : splitStr;
-
-    // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-    const firstPart = lastTwo[0].toLowerCase();
+    const firstPart = (lastTwo[0] ?? '').toLowerCase();
 
     if (firstPart === 'characters' || firstPart === 'lorebooks') {
         const type = firstPart === 'characters' ? 'character' : 'lorebook';
         const id = type === 'character' ? lastTwo.slice(1).join('/') : lastTwo.join('/');
-        return {
-            id: id,
-            type: type,
-        };
+        return { id, type };
     } else if (length === 2) {
         return {
             id: lastTwo.join('/'),
-            type: 'character',
+            type: 'character' as const,
         };
     }
 
@@ -648,22 +665,16 @@ function parseChubUrl(str: string) {
 /**
  * Downloads a character from JannyAI.
  * @param {string} uuid - UUID of the character
- * @returns {Promise<{buffer: Buffer, fileName: string, fileType: string}>}
+ * @returns {Promise<{buffer: Buffer, fileName: string, fileType: string | null}>}
  */
 async function downloadJannyCharacter(uuid: string) {
-    // This endpoint is being guarded behind Bot Fight Mode of Cloudflare
-    // So hosted ST on Azure/AWS/GCP/Collab might get blocked by IP
-    // Should work normally on self-host PC/Android
     const result = await fetch('https://api.jannyai.com/api/v1/download', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            characterId: uuid,
-        }),
+        body: JSON.stringify({ characterId: uuid }),
     });
 
     if (result.ok) {
-        /** @type {{ status: string; downloadUrl: string }} */
         const downloadResult = (await result.json()) as { status: string; downloadUrl: string };
         if (downloadResult.status === 'ok') {
             const imageResult = await fetch(downloadResult.downloadUrl);
@@ -695,13 +706,13 @@ async function downloadAICCCharacter(id: string) {
             throw new Error(`Failed to download character: ${response.statusText}`);
         }
 
-        const contentType = response.headers.get('content-type') || 'image/png'; // Default to 'image/png' if header is missing
+        const contentType = response.headers.get('content-type') || 'image/png';
         const buffer = Buffer.from(await response.arrayBuffer());
-        const fileName = `${sanitize(id)}.png`; // Assuming PNG, but adjust based on actual content or headers
+        const fileName = `${sanitize(id)}.png`;
 
         return {
-            buffer: buffer,
-            fileName: fileName,
+            buffer,
+            fileName,
             fileType: contentType,
         };
     } catch (error) {
@@ -719,14 +730,11 @@ function parseAICC(url: string) {
     try {
         if (isValidUrl(url)) {
             const urlObj = new URL(url);
-            // Split the path and remove empty strings caused by trailing slashes
             const parts = urlObj.pathname.split('/').filter(Boolean);
             if (parts.length >= 2) {
-                // Always grab the last two segments (author/character)
                 return `${parts[parts.length - 2]}/${parts[parts.length - 1]}`;
             }
         } else {
-            // Fallback for relative paths or raw "author/character" strings
             const parts = url.split('/').filter(Boolean);
             if (parts.length >= 2) {
                 return `${parts[parts.length - 2]}/${parts[parts.length - 1]}`;
@@ -749,25 +757,22 @@ async function downloadGenericPng(url: string) {
 
         if (result.ok) {
             const buffer = Buffer.from(await result.arrayBuffer());
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-            let fileName = sanitize(result.url.split('?')[0].split('/').toReversed()[0]);
-            const contentType = result.headers.get('content-type') || 'image/png'; //yoink it from AICC function lol
+            const rawUrl = result.url.split('?')[0] ?? result.url;
+            const lastSlash = Math.max(rawUrl.lastIndexOf('/'), rawUrl.lastIndexOf('\\'));
+            const rawName = lastSlash !== -1 ? rawUrl.slice(lastSlash + 1) : rawUrl;
+            let fileName = sanitize(rawName);
+            const contentType = result.headers.get('content-type') || 'image/png';
 
-            // The `importCharacter()` function detects the MIME (content-type) of the file
-            // using its file extension. The problem is that not all third-party APIs serve
-            // their cards with a `.png` extension. To support more third-party sites,
-            // dynamically append the `.png` extension to the filename if it doesn't
-            // already have a file extension.
             if (contentType === 'image/png') {
-                const ext = fileName.match(/\.(\w+)$/); // Same regex used by `importCharacter()`
-                if (!ext) {
+                const hasExt = fileName.lastIndexOf('.') > 0;
+                if (!hasExt) {
                     fileName += '.png';
                 }
             }
 
             return {
-                buffer: buffer,
-                fileName: fileName,
+                buffer,
+                fileName,
                 fileType: contentType,
             };
         }
@@ -784,8 +789,6 @@ async function downloadGenericPng(url: string) {
  * @returns {string | null} UUID of the character
  */
 function parseRisuUrl(url: string) {
-    // Example: https://realm.risuai.net/character/7adb0ed8d81855c820b3506980fb40f054ceef010ff0c4bab73730c0ebe92279
-    // or https://realm.risuai.net/character/7adb0ed8-d818-55c8-20b3-506980fb40f0
     const pattern = /^https?:\/\/realm\.risuai\.net\/character\/([a-f0-9-]+)\/?$/i;
     const match = url.match(pattern);
     return match ? match[1] : null;
@@ -823,10 +826,6 @@ function isPerchanceUUID(uuid: string) {
     if (!uuid) {
         return false;
     }
-
-    //example: Personality_Advisor~6903e991c90fd1dba52c036d917e99c6.gz
-    //charactername~uuid.gz
-
     const uuidRegex = /^\w+~[a-f0-9]{32}\.gz$/;
     return uuidRegex.test(uuid);
 }
@@ -837,9 +836,9 @@ function isPerchanceUUID(uuid: string) {
  * @returns {string} Slug of the character
  */
 function parsePerchanceSlug(url: string) {
-    // Example: https://perchance.org/ai-character-chat?data=Personality_Advisor~6903e991c90fd1dba52c036d917e99c6.gz
-    // or: Personality_Advisor~6903e991c90fd1dba52c036d917e99c6.gz
-    return url?.split('~')[1] || '';
+    if (!url) return '';
+    const tildeIdx = url.indexOf('~');
+    return tildeIdx !== -1 ? url.slice(tildeIdx + 1) : '';
 }
 
 /**
@@ -848,8 +847,6 @@ function parsePerchanceSlug(url: string) {
  * @returns {Promise<{buffer: Buffer, fileName: string, fileType: string} | null>}
  */
 async function downloadPerchanceCharacter(slug: string) {
-    // example of slug
-    // 6903e991c90fd1dba52c036d917e99c6.gz
     const perchanceBaseURL = 'https://user.uploads.dev/file';
 
     try {
@@ -859,14 +856,10 @@ async function downloadPerchanceCharacter(slug: string) {
             headers: { 'Content-Type': 'application/json', 'User-Agent': USER_AGENT },
         });
 
-        //decompress gzipped content
         if (result.ok) {
             const perchanceChar = await extractPerchanceCharacterFromGz(result);
-
             const avatarUrl = perchanceChar.avatar?.url;
-
-            //check if avatarURL is a base64 of any image type
-            const isAvatarBase64 = avatarUrl && avatarUrl.startsWith('data:image/');
+            const isAvatarBase64 = Boolean(avatarUrl && avatarUrl.startsWith('data:image/'));
 
             const charData = {
                 name: perchanceChar.name || 'Unnamed Perchance Character',
@@ -884,7 +877,7 @@ async function downloadPerchanceCharacter(slug: string) {
                 personality: perchanceChar.reminderMessage || '',
                 extensions: {
                     perchance_data: {
-                        slug: slug,
+                        slug,
                         char_url: charURL,
                         uuid: perchanceChar.uuid || null,
                         avatar_url: isAvatarBase64 ? null : avatarUrl || null,
@@ -897,7 +890,6 @@ async function downloadPerchanceCharacter(slug: string) {
 
             const avatarBuffer = await fetchPerchanceAvatar(avatarUrl, isAvatarBase64);
 
-            // Character card
             const buffer = write(
                 avatarBuffer,
                 JSON.stringify({
@@ -922,22 +914,19 @@ async function downloadPerchanceCharacter(slug: string) {
 /**
  * Extracts Perchance character data from a gzipped response.
  * @param {Response} result Fetch response containing gzipped character data
- * @returns {Promise<object>} Parsed Perchance character data
+ * @returns {Promise<any>} Parsed Perchance character data
  * @throws {Error} If the character data is invalid or missing required fields
  */
 async function extractPerchanceCharacterFromGz(result: Response) {
     const compressedBuffer = await result.arrayBuffer();
     const decompressedBuffer = zlib.gunzipSync(compressedBuffer);
 
-    // inside the gz file, there is a file of the same name without extensions, but it is a json file
-
     if (!decompressedBuffer || decompressedBuffer.length === 0) {
         console.error('Perchance character data is empty or invalid');
         throw new Error('Failed to download character: Invalid Perchance character data');
     }
 
-    // Parse the decompressed JSON
-    const perchanceCharData = JSON.parse(decompressedBuffer.toString());
+    const perchanceCharData = JSON.parse(decompressedBuffer.toString('utf8'));
 
     if (!perchanceCharData?.addCharacter) {
         console.error('Perchance character data is missing addCharacter field', perchanceCharData);
@@ -955,7 +944,7 @@ async function extractPerchanceCharacterFromGz(result: Response) {
  */
 async function fetchPerchanceAvatar(avatarUrl: string, isAvatarBase64: boolean) {
     const defaultAvatarPath = path.join(serverDirectory, DEFAULT_AVATAR_PATH);
-    const defaultAvatarBuffer = fs.readFileSync(defaultAvatarPath);
+    const defaultAvatarBuffer = await fsp.readFile(defaultAvatarPath);
 
     if (!avatarUrl || (!isAvatarBase64 && !isValidUrl(avatarUrl))) {
         console.warn(
@@ -965,22 +954,19 @@ async function fetchPerchanceAvatar(avatarUrl: string, isAvatarBase64: boolean) 
     }
 
     if (isAvatarBase64) {
-        // check if avatarUrl is a png
         const isPng = avatarUrl.startsWith('data:image/png;base64,');
-        const base64 = avatarUrl.split(',')[1];
-        // @ts-expect-error TS(2769) FIXME: No overload matches this call.
+        const commaIdx = avatarUrl.indexOf(',');
+        const base64 = commaIdx !== -1 ? avatarUrl.slice(commaIdx + 1) : avatarUrl;
         const buffer = Buffer.from(base64, 'base64');
 
         if (isPng) {
             return buffer;
         } else {
-            // use Bun.image to convert the base64 to PNG if it's not PNG
             console.debug('Perchance character avatar is not PNG, converting to PNG...');
             return await new Bun.Image(buffer).png().buffer();
         }
     }
 
-    // Fetch avatar from URL
     console.log('Fetching Perchance avatar from URL:', avatarUrl);
     const avatarResponse = await fetch(avatarUrl, { headers: { 'User-Agent': USER_AGENT } });
 
@@ -995,7 +981,6 @@ async function fetchPerchanceAvatar(avatarUrl: string, isAvatarBase64: boolean) 
                 `Perchance character avatar is not PNG: ${avatarContentType}. Converting to PNG...`,
             );
 
-            // use Bun.image to convert the image to PNG if it's not PNG
             return await new Bun.Image(avatarBuffer).png().buffer();
         }
     }
@@ -1022,13 +1007,9 @@ async function fetchPerchanceAvatar(avatarUrl: string, isAvatarBase64: boolean) 
  * @returns {string | null} UUID of the character
  */
 function getUuidFromUrl(url: string) {
-    // Extract UUID from URL
     const uuidRegex = /[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/;
     const matches = url.match(uuidRegex);
-
-    // Check if UUID is found
-    const uuid = matches ? matches[0] : null;
-    return uuid;
+    return matches ? matches[0] : null;
 }
 
 /**
@@ -1038,8 +1019,7 @@ function getUuidFromUrl(url: string) {
  */
 export function getHostFromUrl(url: string) {
     try {
-        const urlObj = new URL(url);
-        return urlObj.hostname;
+        return new URL(url).hostname;
     } catch {
         return '';
     }
@@ -1057,17 +1037,19 @@ export function isHostWhitelisted(host: string) {
 export const router = new Elysia({ prefix: '/api/content' })
     .post('/importURL', async (context) => {
         const { set } = context;
-        const bodyAny = context.body as Record<string, unknown> | undefined;
+        const ctx = context as Record<string, unknown>;
+        const bodyAny = ctx.body as Record<string, unknown> | undefined;
 
-        if (!bodyAny?.url) {
+        const rawUrl = bodyAny?.url;
+        if (!rawUrl || typeof rawUrl !== 'string') {
             set.status = 400;
             return;
         }
 
         try {
-            const url = bodyAny.url as string;
+            const url = rawUrl;
             const host = getHostFromUrl(url);
-            let result;
+            let result: { buffer: Buffer; fileName: string; fileType: string | null } | null = null;
 
             const isChub = host.includes('chub.ai') || host.includes('characterhub.org');
             const isJannnyContent = host.includes('janitorai');
@@ -1083,7 +1065,6 @@ export const router = new Elysia({ prefix: '/api/content' })
                     set.status = 404;
                     return;
                 }
-
                 result = await downloadPygmalionCharacter(uuid);
             } else if (isJannnyContent) {
                 const uuid = getUuidFromUrl(url);
@@ -1091,7 +1072,6 @@ export const router = new Elysia({ prefix: '/api/content' })
                     set.status = 404;
                     return;
                 }
-
                 result = await downloadJannyCharacter(uuid);
             } else if (isAICharacterCardsContent) {
                 const AICCParsed = parseAICC(url);
@@ -1119,7 +1099,6 @@ export const router = new Elysia({ prefix: '/api/content' })
                     set.status = 404;
                     return;
                 }
-
                 result = await downloadRisuCharacter(uuid);
             } else if (isPerchance) {
                 const perchanceSlug = parsePerchanceSlug(url);
@@ -1133,7 +1112,7 @@ export const router = new Elysia({ prefix: '/api/content' })
                 result = await downloadGenericPng(url);
             } else {
                 console.error(
-                    `Received an import for "${getHostFromUrl(url)}", but site is not whitelisted. This domain must be added to the config key "whitelistImportDomains" to allow import from this source.`,
+                    `Received an import for "${host}", but site is not whitelisted. This domain must be added to the config key "whitelistImportDomains" to allow import from this source.`,
                 );
                 set.status = 404;
                 return;
@@ -1148,7 +1127,7 @@ export const router = new Elysia({ prefix: '/api/content' })
             set.headers['Content-Disposition'] =
                 `attachment; filename="${encodeURI(result.fileName)}"`;
             set.headers['X-Custom-Content-Type'] = 'character';
-            return new Response(result.buffer);
+            return new Response(result.buffer as BodyInit);
         } catch (error) {
             console.error('Importing custom content failed', error);
             set.status = 500;
@@ -1157,19 +1136,21 @@ export const router = new Elysia({ prefix: '/api/content' })
     })
     .post('/importUUID', async (context) => {
         const { set } = context;
-        const bodyAny = context.body as Record<string, unknown> | undefined;
+        const ctx = context as Record<string, unknown>;
+        const bodyAny = ctx.body as Record<string, unknown> | undefined;
 
-        if (!bodyAny?.url) {
+        const rawUrl = bodyAny?.url;
+        if (!rawUrl || typeof rawUrl !== 'string') {
             set.status = 400;
             return;
         }
 
         try {
-            const uuid = bodyAny.url as string;
-            let result;
+            const uuid = rawUrl;
+            let result: { buffer: Buffer; fileName: string; fileType: string | null } | null = null;
 
             const isJannny = uuid.includes('_character');
-            const isPygmalion = !isJannny && uuid.length == 36;
+            const isPygmalion = !isJannny && uuid.length === 36;
             const isAICC = uuid.startsWith('AICC/');
             const isPerchance = isPerchanceUUID(uuid);
             const uuidType = uuid.includes('lorebook') ? 'lorebook' : 'character';
@@ -1178,10 +1159,14 @@ export const router = new Elysia({ prefix: '/api/content' })
                 console.info('Downloading Pygmalion character:', uuid);
                 result = await downloadPygmalionCharacter(uuid);
             } else if (isJannny) {
-                console.info('Downloading Janitor character:', uuid.split('_')[0]);
-                result = await downloadJannyCharacter(uuid.split('_')[0] ?? '');
+                const jannyId = uuid.split('_')[0] ?? '';
+                console.info('Downloading Janitor character:', jannyId);
+                result = await downloadJannyCharacter(jannyId);
             } else if (isAICC) {
-                const [, author, card] = uuid.split('/');
+                const slashIdx1 = uuid.indexOf('/');
+                const slashIdx2 = uuid.indexOf('/', slashIdx1 + 1);
+                const author = slashIdx1 !== -1 && slashIdx2 !== -1 ? uuid.slice(slashIdx1 + 1, slashIdx2) : '';
+                const card = slashIdx2 !== -1 ? uuid.slice(slashIdx2 + 1) : '';
                 console.info('Downloading AICC character:', `${author}/${card}`);
                 result = await downloadAICCCharacter(`${author}/${card}`);
             } else if (isPerchance) {
@@ -1209,7 +1194,7 @@ export const router = new Elysia({ prefix: '/api/content' })
             set.headers['Content-Disposition'] =
                 `attachment; filename="${encodeURI(result.fileName)}"`;
             set.headers['X-Custom-Content-Type'] = uuidType;
-            return new Response(result.buffer);
+            return new Response(result.buffer as BodyInit);
         } catch (error) {
             console.error('Importing custom content failed', error);
             set.status = 500;
