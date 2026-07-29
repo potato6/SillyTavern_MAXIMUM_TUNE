@@ -55,6 +55,7 @@ function validateAvatarUrlField(body: unknown): boolean {
         if (value != null) {
             return !forbiddenRegExp.test(String(value));
         }
+        return true;
     }
     return true;
 }
