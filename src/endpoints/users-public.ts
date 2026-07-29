@@ -23,7 +23,7 @@ function generateRecoveryCode(): string {
     return String(crypto.randomInt(100000, 1000000));
 }
 
-export const router = new Elysia({ prefix: '/api/users' });
+export const router = new Elysia({ prefix: '/api/users', aot: false });
 
 const loginLimiter = new RateLimiterMemory({
     points: LOGIN_POINTS > 0 ? LOGIN_POINTS : Number.MAX_SAFE_INTEGER,

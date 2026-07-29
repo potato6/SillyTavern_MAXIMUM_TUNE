@@ -18,7 +18,7 @@ interface UserContext {
     [key: string]: unknown;
 }
 
-export const router = new Elysia({ prefix: '/api/images' })
+export const router = new Elysia({ prefix: '/api/images', aot: false })
     .post('/upload', async (context) => {
         const { set } = context;
 

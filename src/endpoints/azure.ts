@@ -1,7 +1,7 @@
 import { Elysia } from 'elysia';
 import { readSecret, SECRET_KEYS } from './secrets.js';
 
-export const router = new Elysia({ prefix: '/api/azure' })
+export const router = new Elysia({ prefix: '/api/azure', aot: false })
     .post('/list', async (context) => {
         const { body, set } = context;
         const user = context.user as Record<string, unknown> | null;

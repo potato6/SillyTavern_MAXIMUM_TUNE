@@ -20,7 +20,7 @@ interface UserContext {
     [key: string]: unknown;
 }
 
-export const router = new Elysia({ prefix: '/api/avatars' })
+export const router = new Elysia({ prefix: '/api/avatars', aot: false })
     .post('/get', (context) => {
         const user = context.user as UserContext | undefined;
         const avatarsDir = user?.directories?.avatars ?? '';

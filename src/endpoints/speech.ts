@@ -4,9 +4,9 @@ import { Elysia } from 'elysia';
 import mime from 'mime-types';
 import { readSecret, SECRET_KEYS } from './secrets.js';
 
-export const router = new Elysia({ prefix: '/api/speech' })
+export const router = new Elysia({ prefix: '/api/speech', aot: false })
     .use(
-        new Elysia({ prefix: '/pollinations' })
+        new Elysia({ prefix: '/pollinations', aot: false })
             .post('/voices', async () => {
                 try {
                     const model = 'openai-audio';
@@ -111,7 +111,7 @@ export const router = new Elysia({ prefix: '/api/speech' })
             }),
     )
     .use(
-        new Elysia({ prefix: '/elevenlabs' })
+        new Elysia({ prefix: '/elevenlabs', aot: false })
             .post('/voices', async (context) => {
                 const { set } = context;
                 const user = context.user as Record<string, unknown> | null;

@@ -9,7 +9,7 @@ const DEEPLX_URL_DEFAULT = 'http://127.0.0.1:1188/translate';
 const ONERING_URL_DEFAULT = 'http://127.0.0.1:4990/translate';
 const LINGVA_DEFAULT = 'https://lingva.ml/api/v1';
 
-export const router = new Elysia({ prefix: '/api/translate' });
+export const router = new Elysia({ prefix: '/api/translate', aot: false });
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 

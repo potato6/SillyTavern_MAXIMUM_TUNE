@@ -213,7 +213,7 @@ async function processSingleImage(
 }
 
 // Public router (GET / — serve thumbnails)
-const publicRouter = new Elysia({ prefix: '/thumbnail' }).get('/', async (context) => {
+const publicRouter = new Elysia({ prefix: '/thumbnail', aot: false }).get('/', async (context) => {
     const { query, set } = context;
     const user = context.user as Record<string, unknown> | null;
     const directories = user?.directories as Record<string, string> | undefined;
@@ -293,10 +293,10 @@ const publicRouter = new Elysia({ prefix: '/thumbnail' }).get('/', async (contex
 });
 
 // API router (currently empty, placeholder for future routes)
-const apiRouter = new Elysia();
+const apiRouter = new Elysia({ aot: false });
 
 // Combined export — mounted at /thumbnail in server.ts
-const router = new Elysia();
+const router = new Elysia({ aot: false });
 router.use(publicRouter);
 router.use(apiRouter);
 

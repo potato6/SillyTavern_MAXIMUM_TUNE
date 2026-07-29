@@ -14,7 +14,7 @@ import { getChatProvider, getRegisteredSources } from './registry.js';
 import { getCachedModels, setCachedModels } from '../common/model-cache.js';
 
 // Non-chained pattern for large files — type safety regained via explicit casts in each handler.
-export const router: any = new Elysia({ prefix: '/api/backends/chat-completions' });
+export const router: any = new Elysia({ prefix: '/api/backends/chat-completions', aot: false });
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -672,7 +672,7 @@ router.post('/process', async (context: Record<string, unknown>) => {
 
 // ── Multimodal models sub-router ──────────────────────────────────────────────
 
-const multimodalModels = new Elysia({ prefix: '/multimodal-models' });
+const multimodalModels = new Elysia({ prefix: '/multimodal-models', aot: false });
 
 /**
  * @param url

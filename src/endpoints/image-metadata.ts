@@ -566,7 +566,7 @@ export async function unassignImagesFromFolder(
     await writeMetadataIndex(userDataRoot, index);
 }
 
-export const router = new Elysia({ prefix: '/api/image-metadata' })
+export const router = new Elysia({ prefix: '/api/image-metadata', aot: false })
 
     /**
      * POST /api/image-metadata/folders/get

@@ -24,7 +24,7 @@ function getComfyWorkflows(directories: import('../users.js').UserDirectoryList)
         .toSorted(Intl.Collator().compare);
 }
 
-export const router = new Elysia({ prefix: '/api/sd' });
+export const router = new Elysia({ prefix: '/api/sd', aot: false });
 
 router.post('/ping', async (context: any) => {
     const body = context.body as Record<string, unknown>;
@@ -442,7 +442,7 @@ router.post('/sd-next/upscalers', async (context: any) => {
     }
 });
 
-const comfy = new Elysia({ prefix: '/comfy' });
+const comfy = new Elysia({ prefix: '/comfy', aot: false });
 
 comfy.post('/ping', async (context: any) => {
     const body = context.body as Record<string, unknown>;
@@ -825,7 +825,7 @@ comfy.post('/generate', async (context: any) => {
     }
 });
 
-const comfyRunPod = new Elysia({ prefix: '/comfyrunpod' });
+const comfyRunPod = new Elysia({ prefix: '/comfyrunpod', aot: false });
 
 comfyRunPod.post('/ping', async (context: any) => {
     const body = context.body as Record<string, unknown>;
@@ -946,7 +946,7 @@ comfyRunPod.post('/generate', async (context: any) => {
     }
 });
 
-const together = new Elysia({ prefix: '/together' });
+const together = new Elysia({ prefix: '/together', aot: false });
 
 together.post('/models', async (context: any) => {
     const set = context.set;
@@ -1057,7 +1057,7 @@ together.post('/generate', async (context: any) => {
     }
 });
 
-const sdcpp = new Elysia({ prefix: '/sdcpp' });
+const sdcpp = new Elysia({ prefix: '/sdcpp', aot: false });
 
 sdcpp.post('/ping', async (context: any) => {
     const body = context.body as Record<string, unknown>;
@@ -1153,7 +1153,7 @@ sdcpp.post('/generate', async (context: any) => {
     }
 });
 
-const drawthings = new Elysia({ prefix: '/drawthings' });
+const drawthings = new Elysia({ prefix: '/drawthings', aot: false });
 
 drawthings.post('/ping', async (context: any) => {
     const body = context.body as Record<string, unknown>;
@@ -1258,7 +1258,7 @@ drawthings.post('/generate', async (context: any) => {
     }
 });
 
-const pollinations = new Elysia({ prefix: '/pollinations' });
+const pollinations = new Elysia({ prefix: '/pollinations', aot: false });
 
 pollinations.post('/models', async ({ set }) => {
     try {
@@ -1345,7 +1345,7 @@ pollinations.post('/generate', async (context: any) => {
     }
 });
 
-const stability = new Elysia({ prefix: '/stability' });
+const stability = new Elysia({ prefix: '/stability', aot: false });
 
 stability.post('/generate', async (context: any) => {
     const body = context.body as Record<string, unknown>;
@@ -1412,7 +1412,7 @@ stability.post('/generate', async (context: any) => {
     }
 });
 
-const huggingface = new Elysia({ prefix: '/huggingface' });
+const huggingface = new Elysia({ prefix: '/huggingface', aot: false });
 
 huggingface.post('/generate', async (context: any) => {
     const body = context.body as Record<string, unknown>;
@@ -1457,7 +1457,7 @@ huggingface.post('/generate', async (context: any) => {
     }
 });
 
-const electronhub = new Elysia({ prefix: '/electronhub' });
+const electronhub = new Elysia({ prefix: '/electronhub', aot: false });
 
 electronhub.post('/models', async (context: any) => {
     const set = context.set;
@@ -1614,7 +1614,7 @@ electronhub.post('/sizes', async (context: any) => {
     return { sizes };
 });
 
-const chutes = new Elysia({ prefix: '/chutes' });
+const chutes = new Elysia({ prefix: '/chutes', aot: false });
 
 chutes.post('/models', async (context: any) => {
     const set = context.set;
@@ -1712,7 +1712,7 @@ chutes.post('/generate', async (context: any) => {
     }
 });
 
-const nanogpt = new Elysia({ prefix: '/nanogpt' });
+const nanogpt = new Elysia({ prefix: '/nanogpt', aot: false });
 
 nanogpt.post('/models', async (context: any) => {
     const set = context.set;
@@ -1807,7 +1807,7 @@ nanogpt.post('/generate', async (context: any) => {
     }
 });
 
-const bfl = new Elysia({ prefix: '/bfl' });
+const bfl = new Elysia({ prefix: '/bfl', aot: false });
 
 bfl.post('/generate', async (context: any) => {
     const body = context.body as Record<string, unknown>;
@@ -1937,7 +1937,7 @@ bfl.post('/generate', async (context: any) => {
     }
 });
 
-const falai = new Elysia({ prefix: '/falai' });
+const falai = new Elysia({ prefix: '/falai', aot: false });
 
 falai.post('/models', async ({ set }) => {
     try {
@@ -2104,7 +2104,7 @@ falai.post('/generate', async (context: any) => {
     }
 });
 
-const xai = new Elysia({ prefix: '/xai' });
+const xai = new Elysia({ prefix: '/xai', aot: false });
 
 xai.post('/generate', async (context: any) => {
     const body = context.body as Record<string, unknown>;
@@ -2168,7 +2168,7 @@ xai.post('/generate', async (context: any) => {
     }
 });
 
-const aimlapi = new Elysia({ prefix: '/aimlapi' });
+const aimlapi = new Elysia({ prefix: '/aimlapi', aot: false });
 
 aimlapi.post('/models', async (context: any) => {
     const set = context.set;
@@ -2276,7 +2276,7 @@ aimlapi.post('/generate-image', async (context: any) => {
     }
 });
 
-const zai = new Elysia({ prefix: '/zai' });
+const zai = new Elysia({ prefix: '/zai', aot: false });
 
 zai.post('/generate', async (context: any) => {
     const body = context.body as Record<string, unknown>;
@@ -2498,7 +2498,7 @@ zai.post('/generate-video', async (context: any) => {
     }
 });
 
-const workersai = new Elysia({ prefix: '/workersai' });
+const workersai = new Elysia({ prefix: '/workersai', aot: false });
 
 workersai.post('/models', async (context: any) => {
     const body = context.body as Record<string, unknown>;

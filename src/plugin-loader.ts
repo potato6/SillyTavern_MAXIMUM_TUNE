@@ -40,7 +40,7 @@ const isESModule = (file: string) => path.extname(file) === '.mjs';
 // an Elysia instance with matching handlers.
 
 function createPluginRouter(): { elysiaRouter: Elysia } {
-    const router = new Elysia();
+    const router = new Elysia({ aot: false });
     const methods = ['get', 'post', 'put', 'patch', 'delete', 'all'] as const;
 
     // Proxy that intercepts method calls (router.get, router.post, etc.)

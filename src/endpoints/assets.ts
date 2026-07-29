@@ -35,7 +35,7 @@ export function validateAssetFileName(inputFilename: string) {
     return { error: false };
 }
 
-export const router = new Elysia({ prefix: '/api/assets' })
+export const router = new Elysia({ prefix: '/api/assets', aot: false })
     .post('/upload', async (context: Record<string, unknown>) => {
         const set = context.set as Record<string, unknown>;
         const body = context.body as Record<string, unknown>;

@@ -2,7 +2,7 @@ import { Buffer } from 'node:buffer';
 import { Elysia } from 'elysia';
 import { readSecret, SECRET_KEYS } from './secrets.js';
 
-export const router = new Elysia({ prefix: '/api/volcengine' });
+export const router = new Elysia({ prefix: '/api/volcengine', aot: false });
 
 router.post('/generate-voice', async (context) => {
     const { set } = context;

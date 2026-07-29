@@ -35,7 +35,7 @@ interface MetadataIndex {
     images: Record<string, MetadataItem>;
 }
 
-export const router = new Elysia({ prefix: '/api/backgrounds' })
+export const router = new Elysia({ prefix: '/api/backgrounds', aot: false })
     .post('/all', async (context) => {
         const user = context.user as UserContext | undefined;
         const directories = user?.directories;

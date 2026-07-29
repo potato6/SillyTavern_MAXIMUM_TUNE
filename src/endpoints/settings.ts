@@ -331,7 +331,7 @@ function validateFileName(name: unknown): string | null {
     return null;
 }
 
-export const router = new Elysia({ prefix: '/api/settings' })
+export const router = new Elysia({ prefix: '/api/settings', aot: false })
     .post('/save', async (context: any) => {
         const body = context.body as Record<string, unknown> | undefined;
         const user = context.user as UserContext | undefined;

@@ -217,7 +217,7 @@ export async function migrateGroupChatsMetadataFormat(userDirectories: Record<st
     }
 }
 
-export const router = new Elysia({ prefix: '/api/groups' })
+export const router = new Elysia({ prefix: '/api/groups', aot: false })
     .post('/all', async (context) => {
         const user = context.user as UserContext | undefined;
         const directories = user?.directories;

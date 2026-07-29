@@ -600,7 +600,7 @@ export async function migrateFlatSecrets(directoriesList: UserDirectoryList[]) {
     }
 }
 
-export const router = new Elysia({ prefix: '/api/secrets' })
+export const router = new Elysia({ prefix: '/api/secrets', aot: false })
     .post('/write', async (context) => {
         const { set } = context;
 

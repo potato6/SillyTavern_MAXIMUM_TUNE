@@ -68,7 +68,7 @@ export async function readWorldInfoFileAsync(
     }
 }
 
-export const router = new Elysia({ prefix: '/api/worldinfo' })
+export const router = new Elysia({ prefix: '/api/worldinfo', aot: false })
     .post('/list', async (context) => {
         const { set } = context;
 

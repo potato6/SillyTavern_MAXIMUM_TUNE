@@ -3,7 +3,7 @@ import mime from 'mime-types';
 import { readSecret, SECRET_KEYS } from './secrets.js';
 import { OPENROUTER_HEADERS } from '../constants.js';
 
-export const router = new Elysia({ prefix: '/api/openrouter' });
+export const router = new Elysia({ prefix: '/api/openrouter', aot: false });
 const API_OPENROUTER = 'https://openrouter.ai/api/v1';
 
 /**

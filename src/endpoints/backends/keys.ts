@@ -8,7 +8,7 @@ import { IMAGE_KEYS } from './keys/image.js';
 import { SEARCH_KEYS } from './keys/search.js';
 import { MISC_KEYS } from './keys/misc.js';
 
-export const router = new Elysia({ prefix: '/api/backends/keys' })
+export const router = new Elysia({ prefix: '/api/backends/keys', aot: false })
     /**
      * GET /
      *

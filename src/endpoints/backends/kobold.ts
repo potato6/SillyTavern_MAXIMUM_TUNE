@@ -6,7 +6,7 @@ import { getOverrideHeaders, setAdditionalHeadersByType } from '../../additional
 import { TEXTGEN_TYPES } from '../../constants.js';
 import type { UserDirectoryList } from '../../users.js';
 
-export const router = new Elysia({ prefix: '/api/backends/kobold' });
+export const router = new Elysia({ prefix: '/api/backends/kobold', aot: false });
 
 router.post('/generate', async (context) => {
     const body = context.body as Record<string, unknown> | null;

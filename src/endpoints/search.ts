@@ -6,7 +6,7 @@ import { readSecret, SECRET_KEYS } from './secrets.js';
 import { trimV1 } from '../util.js';
 import { setAdditionalHeadersByType } from '../additional-headers.js';
 
-export const router = new Elysia({ prefix: '/api/search' });
+export const router = new Elysia({ prefix: '/api/search', aot: false });
 
 // Cosplay as browser
 const visitHeaders = {

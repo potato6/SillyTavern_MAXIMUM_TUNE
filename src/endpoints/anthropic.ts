@@ -1,7 +1,7 @@
 import { Elysia } from 'elysia';
 import { readSecret, SECRET_KEYS } from './secrets.js';
 
-export const router = new Elysia({ prefix: '/api/anthropic' }).post(
+export const router = new Elysia({ prefix: '/api/anthropic', aot: false }).post(
     '/caption-image',
     async (context) => {
         const { set } = context;

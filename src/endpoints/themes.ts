@@ -14,7 +14,7 @@ interface UserContext {
     [key: string]: unknown;
 }
 
-export const router = new Elysia({ prefix: '/api/themes' })
+export const router = new Elysia({ prefix: '/api/themes', aot: false })
     .post('/save', async (context: any) => {
         const { set } = context;
 

@@ -1146,7 +1146,7 @@ async function mergeCharacterUpdate(
     return { ok: true };
 }
 
-export const router = new Elysia({ prefix: '/api/characters' })
+export const router = new Elysia({ prefix: '/api/characters', aot: false })
     .post('/create', async (context) => {
         const { set } = context;
 

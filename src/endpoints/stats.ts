@@ -481,7 +481,7 @@ function setCharStats(handle: string, stats: Record<string, unknown>) {
     STATS.set(handle, stats);
 }
 
-export const router = new Elysia({ prefix: '/api/stats' })
+export const router = new Elysia({ prefix: '/api/stats', aot: false })
 
     /**
      * Handle a POST request to get the stats object

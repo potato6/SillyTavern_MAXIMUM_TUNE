@@ -304,7 +304,7 @@ function calculateSkipCfgAboveSigma(width: number, height: number, modelName: st
     return Math.pow(ratio, 0.5) * magicConstant;
 }
 
-export const router = new Elysia({ prefix: '/api/novelai' })
+export const router = new Elysia({ prefix: '/api/novelai', aot: false })
 
     .post('/status', async (context) => {
         const { set } = context;

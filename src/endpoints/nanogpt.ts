@@ -1,7 +1,7 @@
 import { Elysia } from 'elysia';
 import { readSecret, SECRET_KEYS } from './secrets.js';
 
-export const router = new Elysia({ prefix: '/api/nanogpt' });
+export const router = new Elysia({ prefix: '/api/nanogpt', aot: false });
 const API_NANOGPT = 'https://nano-gpt.com/api';
 
 /**

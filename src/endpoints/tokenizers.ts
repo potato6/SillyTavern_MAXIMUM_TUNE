@@ -635,7 +635,7 @@ function createWebTokenizerDecodingHandler(tokenizer: WebTokenizer): any {
     };
 }
 
-export const router = new Elysia({ prefix: '/api/tokenizers' });
+export const router = new Elysia({ prefix: '/api/tokenizers', aot: false });
 
 // ── Generic tokenizer endpoints (replaces per-tokenizer routes) ──────────────
 

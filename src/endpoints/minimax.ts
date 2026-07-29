@@ -1,7 +1,7 @@
 import { Elysia } from 'elysia';
 import { readSecret, SECRET_KEYS } from './secrets.js';
 
-export const router = new Elysia({ prefix: '/api/minimax' });
+export const router = new Elysia({ prefix: '/api/minimax', aot: false });
 
 // Audio format MIME type mapping
 const getAudioMimeType = (format: string) => {

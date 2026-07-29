@@ -125,7 +125,7 @@ export function importRisuSprites(
     }
 }
 
-export const router = new Elysia({ prefix: '/api/sprites' })
+export const router = new Elysia({ prefix: '/api/sprites', aot: false })
     .get('/get', (context: any) => {
         const { query } = context;
         const user = context.user as Record<string, unknown> | null;

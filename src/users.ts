@@ -1337,7 +1337,7 @@ export async function getAllEnabledUsers() {
 /**
  * Express router for serving files from the user's directories.
  */
-export const router = new Elysia();
+export const router = new Elysia({ aot: false });
 router.all(
     '/backgrounds/*',
     createRouteHandler((context: any) => context.user.directories.backgrounds),

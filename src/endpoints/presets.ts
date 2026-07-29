@@ -58,7 +58,7 @@ function getPresetSettingsByAPI(
     }
 }
 
-export const router = new Elysia({ prefix: '/api/presets' })
+export const router = new Elysia({ prefix: '/api/presets', aot: false })
     .post('/save', async (context: any) => {
         const { set } = context;
 

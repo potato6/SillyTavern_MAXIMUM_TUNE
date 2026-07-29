@@ -630,7 +630,7 @@ async function regenerateCorruptedIndexErrorHandler(context: any, error: unknown
     return '';
 }
 
-export const router: any = new Elysia({ prefix: '/api/vector' });
+export const router: any = new Elysia({ prefix: '/api/vector', aot: false });
 
 router.post('/query', async (context: any) => {
     try {

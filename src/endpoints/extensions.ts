@@ -79,7 +79,7 @@ async function checkIfRepoIsUpToDate(extensionPath: string) {
     };
 }
 
-export const router = new Elysia({ prefix: '/api/extensions' })
+export const router = new Elysia({ prefix: '/api/extensions', aot: false })
     .onBeforeHandle((context) => {
         const enabled = !!getConfigValue('extensions.enabled', true, 'boolean');
         if (!enabled) {

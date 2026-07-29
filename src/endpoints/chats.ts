@@ -614,7 +614,7 @@ export async function getChatDataAsync(chatFilePath: string): Promise<object[]> 
     }
 }
 
-export const router = new Elysia({ prefix: '/api/chats' })
+export const router = new Elysia({ prefix: '/api/chats', aot: false })
 
     .post('/save', async (context) => {
         const { set } = context;

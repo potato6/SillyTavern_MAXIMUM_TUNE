@@ -51,7 +51,7 @@ interface UserContext {
     [key: string]: unknown;
 }
 
-export const router = new Elysia({ prefix: '/api/users' })
+export const router = new Elysia({ prefix: '/api/users', aot: false })
     .post('/logout', (context) => {
         const { set } = context;
 

@@ -227,7 +227,7 @@ function sessionPlugin(config: { name: string; maxAge: number; secret: string })
 
 export function buildApp() {
     const cliArgs = globalThis.COMMAND_LINE_ARGS;
-    const app = new Elysia();
+    const app = new Elysia({ aot: false });
 
     // 404 handler
     app.onError(({ code, set }) => {

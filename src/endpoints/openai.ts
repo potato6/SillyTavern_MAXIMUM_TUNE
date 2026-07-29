@@ -12,7 +12,7 @@ import {
     ZAI_ENDPOINT,
 } from '../constants.js';
 
-export const router: any = new Elysia({ prefix: '/api/openai' });
+export const router: any = new Elysia({ prefix: '/api/openai', aot: false });
 
 router.post('/caption-image', async (context: any) => {
     const { set } = context;
@@ -904,7 +904,7 @@ router.post('/generate-video', async (context: any) => {
     }
 });
 
-const custom = new Elysia({ prefix: '/custom' });
+const custom = new Elysia({ prefix: '/custom', aot: false });
 
 custom.post('/generate-voice', async (context) => {
     const { set } = context;

@@ -4,7 +4,7 @@ import { Elysia } from 'elysia';
 import sanitize from 'sanitize-filename';
 import { sync as writeFileAtomicSync } from 'write-file-atomic';
 
-export const router = new Elysia({ prefix: '/api/quick-replies' })
+export const router = new Elysia({ prefix: '/api/quick-replies', aot: false })
     .post('/save', (context) => {
         const { body, set } = context;
         const user = context.user as Record<string, unknown> | null;

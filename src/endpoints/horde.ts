@@ -6,7 +6,7 @@ import { getVersion } from '../util.js';
 // Local type aliases for @zeldafan0225/ai_horde
 const ModelInterrogationFormTypes = { Captions: 'captions' } as any;
 
-export const router = new Elysia({ prefix: '/api/horde' })
+export const router = new Elysia({ prefix: '/api/horde', aot: false })
     /**
      * Get available image generation models from the horde.
      */

@@ -269,7 +269,7 @@ export async function getGoogleApiConfig(
     return { url, headers, apiName, baseUrl, safetySettings };
 }
 
-export const router = new Elysia({ prefix: '/api/google' });
+export const router = new Elysia({ prefix: '/api/google', aot: false });
 
 router.post('/caption-image', async (context) => {
     const { set } = context;

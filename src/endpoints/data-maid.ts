@@ -751,7 +751,7 @@ export class DataMaidService {
     }
 }
 
-export const router = new Elysia({ prefix: '/api/data-maid' })
+export const router = new Elysia({ prefix: '/api/data-maid', aot: false })
     .post('/report', async (context) => {
         const { set } = context;
         const user = context.user as Record<string, unknown> | null;

@@ -6,7 +6,7 @@ import { setAdditionalHeadersByType } from '../../../additional-headers.js';
 import { getProvider, getRegisteredTypes } from './registry.js';
 import { PROVIDER_ENDPOINTS } from './types.js';
 
-export const router = new Elysia({ prefix: '/api/backends/text-completions' });
+export const router = new Elysia({ prefix: '/api/backends/text-completions', aot: false });
 
 // Pre-warm all providers to avoid cold-start import compilation.
 Promise.all(
@@ -356,7 +356,7 @@ router.post('/generate', async (context) => {
 // These expose distinct endpoints (download, caption-image, slots, etc.) that are
 // not covered by the generic BackendProvider interface.
 
-const ollama = new Elysia({ prefix: '/ollama' })
+const ollama = new Elysia({ prefix: '/ollama', aot: false })
     .post('/download', async (context) => {
         const { set } = context;
         const body = context.body as Record<string, unknown> | undefined;
@@ -445,7 +445,7 @@ const ollama = new Elysia({ prefix: '/ollama' })
         }
     });
 
-const llamacpp = new Elysia({ prefix: '/llamacpp' })
+const llamacpp = new Elysia({ prefix: '/llamacpp', aot: false })
     .post('/props', async (context) => {
         const { set } = context;
         const body = context.body as Record<string, unknown> | undefined;
@@ -541,7 +541,7 @@ const llamacpp = new Elysia({ prefix: '/llamacpp' })
         }
     });
 
-const tabby = new Elysia({ prefix: '/tabby' }).post('/download', async (context) => {
+const tabby = new Elysia({ prefix: '/tabby', aot: false }).post('/download', async (context) => {
     const { set } = context;
     const body = context.body as Record<string, unknown> | undefined;
 

@@ -1035,7 +1035,7 @@ export function isHostWhitelisted(host: string) {
     return WHITELIST_GENERIC_URL_DOWNLOAD_SOURCES.includes(host);
 }
 
-export const router = new Elysia({ prefix: '/api/content' })
+export const router = new Elysia({ prefix: '/api/content', aot: false })
     .post('/importURL', async (context) => {
         const { set } = context;
 

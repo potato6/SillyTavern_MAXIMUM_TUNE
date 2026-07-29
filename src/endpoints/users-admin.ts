@@ -52,7 +52,7 @@ function requireAdmin(context: Record<string, unknown>): boolean {
     return Boolean(user?.profile?.admin);
 }
 
-export const router = new Elysia({ prefix: '/api/users' })
+export const router = new Elysia({ prefix: '/api/users', aot: false })
     .post('/get', async (context) => {
         const { set } = context;
 

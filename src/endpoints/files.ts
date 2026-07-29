@@ -24,7 +24,7 @@ interface UserContext {
     [key: string]: unknown;
 }
 
-export const router = new Elysia({ prefix: '/api/files' })
+export const router = new Elysia({ prefix: '/api/files', aot: false })
     .post('/sanitize-filename', (context) => {
         const { set } = context;
 
