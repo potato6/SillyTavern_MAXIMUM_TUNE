@@ -1,4 +1,4 @@
-import fs from 'node:fs';
+import fsp from 'node:fs/promises';
 import path from 'node:path';
 import { Elysia } from 'elysia';
 import sanitize from 'sanitize-filename';
@@ -13,106 +13,151 @@ import {
 } from './image-metadata.js';
 import { getImages } from '../util.js';
 
+interface UserDirectories {
+    backgrounds?: string;
+    root?: string;
+    [key: string]: unknown;
+}
+
+interface UserContext {
+    directories?: UserDirectories;
+    [key: string]: unknown;
+}
+
+interface MetadataItem {
+    isAnimated?: boolean;
+    folderIds?: string[];
+    [key: string]: unknown;
+}
+
+interface MetadataIndex {
+    folders?: unknown[];
+    images: Record<string, MetadataItem>;
+}
+
 export const router = new Elysia({ prefix: '/api/backgrounds' })
     .post('/all', async (context) => {
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
-        const directories = user?.directories as Record<string, string> | undefined;
+        const ctx = context as Record<string, unknown>;
+        const user = ctx.user as UserContext | undefined;
+        const directories = user?.directories;
+        const backgroundsDir = directories?.backgrounds ?? '';
+        const rootDir = directories?.root ?? '';
 
         try {
-            const images = getImages(directories?.backgrounds ?? '');
-            const config = { width: thumbnailDimensions.bg[0], height: thumbnailDimensions.bg[1] };
+            const images = getImages(backgroundsDir);
+            const relativePaths = images.map((img) => path.join('backgrounds', String(img)));
 
-            const relativePaths = images.map((img) => path.join('backgrounds', img));
             const { results: metadataMap } = await getOrGenerateMetadataBatch(
-                directories?.root ?? '',
+                rootDir,
                 relativePaths,
                 'bg',
             );
 
+            const metaRecord = metadataMap as Record<string, MetadataItem | undefined> | undefined;
+
             const imagesWithMetadata = images.map((img) => {
-                const relativePath = path.join('backgrounds', img);
-                const metadata = (metadataMap as Record<string, unknown>)?.[relativePath] as
-                    | Record<string, unknown>
-                    | undefined;
+                const relPath = path.join('backgrounds', String(img));
+                const metadata = metaRecord?.[relPath];
                 return {
                     filename: img,
-                    isAnimated: metadata?.isAnimated ?? false,
+                    isAnimated: Boolean(metadata?.isAnimated),
                 };
             });
+
+            const bgDims = thumbnailDimensions.bg;
+            const config = {
+                width: bgDims?.[0] ?? 160,
+                height: bgDims?.[1] ?? 90,
+            };
 
             return { images: imagesWithMetadata, config };
         } catch (error) {
             console.error('[Backgrounds] Error fetching backgrounds:', error);
-            return new Response(JSON.stringify({ error: 'Failed to fetch backgrounds' }), {
-                status: 500,
-            });
+            const { set } = context;
+            set.status = 500;
+            return { error: 'Failed to fetch backgrounds' };
         }
     })
     .post('/folders', async (context) => {
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
-        const directories = user?.directories as Record<string, string> | undefined;
+        const ctx = context as Record<string, unknown>;
+        const user = ctx.user as UserContext | undefined;
+        const rootDir = user?.directories?.root ?? '';
 
         try {
-            const index = await readMetadataIndex(directories?.root ?? '');
+            const index = (await readMetadataIndex(rootDir)) as unknown as MetadataIndex;
             const folders = index.folders || [];
+            const images = index.images || {};
 
             const imageFolderMap: Record<string, string[]> = {};
-            for (const [relativePath, meta] of Object.entries(index.images)) {
-                if (Array.isArray(meta.folderIds) && meta.folderIds.length > 0) {
-                    const filename = relativePath.split('/').pop() || relativePath;
-                    imageFolderMap[filename] = meta.folderIds;
+
+            for (const relativePath in images) {
+                if (Object.hasOwn(images, relativePath)) {
+                    const meta = images[relativePath];
+                    const folderIds = meta?.folderIds;
+
+                    if (Array.isArray(folderIds) && folderIds.length > 0) {
+                        const lastSlash = Math.max(
+                            relativePath.lastIndexOf('/'),
+                            relativePath.lastIndexOf('\\'),
+                        );
+                        const filename =
+                            lastSlash !== -1 ? relativePath.slice(lastSlash + 1) : relativePath;
+                        imageFolderMap[filename] = folderIds;
+                    }
                 }
             }
 
             return { folders, imageFolderMap };
         } catch (error) {
             console.error('[Backgrounds] Folders endpoint error:', error);
-            return new Response(JSON.stringify({ error: 'Internal server error.' }), {
-                status: 500,
-            });
+            const { set } = context;
+            set.status = 500;
+            return { error: 'Internal server error.' };
         }
     })
-    .post('/delete', (context) => {
-        const { body, set } = context;
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
-        const directories = user?.directories as Record<string, string> | undefined;
-        const bodyAny = body as Record<string, unknown>;
+    .post('/delete', async (context) => {
+        const { set } = context;
+        const ctx = context as Record<string, unknown>;
+        const body = ctx.body as Record<string, unknown> | undefined;
 
         try {
-            if (!bodyAny) {
+            if (!body) {
                 set.status = 400;
                 return;
             }
 
-            const bg = bodyAny.bg as string;
-            if (bg !== sanitize(bg)) {
+            const bg = body.bg;
+            if (typeof bg !== 'string') {
+                set.status = 400;
+                return;
+            }
+
+            const sanitizedBg = sanitize(bg);
+            if (bg !== sanitizedBg) {
                 console.error('Malicious bg name prevented');
                 set.status = 403;
                 return;
             }
 
-            const fileName = path.join(directories?.backgrounds ?? '', sanitize(bg));
+            const user = ctx.user as UserContext | undefined;
+            const directories = user?.directories;
+            const backgroundsDir = directories?.backgrounds ?? '';
+            const rootDir = directories?.root ?? '';
 
-            if (!fs.existsSync(fileName)) {
+            const fileName = path.join(backgroundsDir, sanitizedBg);
+
+            try {
+                await fsp.unlink(fileName);
+            } catch {
                 console.error('BG file not found');
                 set.status = 400;
                 return;
             }
 
-            fs.unlinkSync(fileName);
-            invalidateThumbnail(directories as any, 'bg', bg);
+            invalidateThumbnail(directories as any, 'bg', sanitizedBg);
 
-            const relativePath = path.join('backgrounds', bg);
-            removeMetadata(directories?.root ?? '', relativePath).catch((err: Error) => {
+            const relativePath = path.join('backgrounds', sanitizedBg);
+            removeMetadata(rootDir, relativePath).catch((err: Error) => {
                 console.warn('[Backgrounds] Failed to remove metadata:', err.message);
             });
 
@@ -122,53 +167,64 @@ export const router = new Elysia({ prefix: '/api/backgrounds' })
             set.status = 500;
         }
     })
-    .post('/rename', (context) => {
-        const { body, set } = context;
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
-        const directories = user?.directories as Record<string, string> | undefined;
-        const bodyAny = body as Record<string, unknown>;
+    .post('/rename', async (context) => {
+        const { set } = context;
+        const ctx = context as Record<string, unknown>;
+        const body = ctx.body as Record<string, unknown> | undefined;
 
         try {
-            if (!bodyAny) {
+            if (!body) {
                 set.status = 400;
                 return;
             }
 
-            const oldFileName = path.join(
-                directories?.backgrounds ?? '',
-                sanitize(bodyAny.old_bg as string),
-            );
-            const newFileName = path.join(
-                directories?.backgrounds ?? '',
-                sanitize(bodyAny.new_bg as string),
-            );
+            const oldBg = body.old_bg;
+            const newBg = body.new_bg;
 
-            if (!fs.existsSync(oldFileName)) {
+            if (typeof oldBg !== 'string' || typeof newBg !== 'string') {
+                set.status = 400;
+                return;
+            }
+
+            const sanitizedOldBg = sanitize(oldBg);
+            const sanitizedNewBg = sanitize(newBg);
+
+            const user = ctx.user as UserContext | undefined;
+            const directories = user?.directories;
+            const backgroundsDir = directories?.backgrounds ?? '';
+            const rootDir = directories?.root ?? '';
+
+            const oldFileName = path.join(backgroundsDir, sanitizedOldBg);
+            const newFileName = path.join(backgroundsDir, sanitizedNewBg);
+
+            try {
+                await fsp.access(oldFileName);
+            } catch {
                 console.error('BG file not found');
                 set.status = 400;
                 return;
             }
 
-            if (fs.existsSync(newFileName)) {
+            try {
+                await fsp.access(newFileName);
                 console.error('New BG file already exists');
                 set.status = 400;
                 return;
+            } catch {
+                // target file does not exist, proceed
             }
 
-            fs.copyFileSync(oldFileName, newFileName);
-            fs.unlinkSync(oldFileName);
-            invalidateThumbnail(directories as any, 'bg', bodyAny.old_bg as string);
+            await fsp.copyFile(oldFileName, newFileName);
+            await fsp.unlink(oldFileName);
 
-            const oldRelativePath = path.join('backgrounds', bodyAny.old_bg as string);
-            const newRelativePath = path.join('backgrounds', bodyAny.new_bg as string);
-            renameMetadata(directories?.root ?? '', oldRelativePath, newRelativePath).catch(
-                (err: Error) => {
-                    console.warn('[Backgrounds] Failed to rename metadata:', err.message);
-                },
-            );
+            invalidateThumbnail(directories as any, 'bg', sanitizedOldBg);
+
+            const oldRelativePath = path.join('backgrounds', sanitizedOldBg);
+            const newRelativePath = path.join('backgrounds', sanitizedNewBg);
+
+            renameMetadata(rootDir, oldRelativePath, newRelativePath).catch((err: Error) => {
+                console.warn('[Backgrounds] Failed to rename metadata:', err.message);
+            });
 
             return 'ok';
         } catch (err) {
@@ -178,37 +234,39 @@ export const router = new Elysia({ prefix: '/api/backgrounds' })
     })
     .post('/upload', async (context) => {
         const { set } = context;
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
-        const directories = user?.directories as Record<string, string> | undefined;
-        const file = (context as unknown as Record<string, unknown>).file as Record<
-            string,
-            unknown
-        > | null;
+        const ctx = context as Record<string, unknown>;
+        const user = ctx.user as UserContext | undefined;
+        const file = ctx.file as
+            | { destination?: string; filename?: string; originalname?: string }
+            | undefined;
 
         try {
-            if (!file) {
+            if (!file || !file.destination || !file.filename || !file.originalname) {
                 set.status = 400;
                 return;
             }
 
-            const img_path = path.join(file.destination as string, file.filename as string);
-            const filename = sanitize(file.originalname as string);
-            fs.copyFileSync(img_path, path.join(directories?.backgrounds ?? '', filename));
-            fs.unlinkSync(img_path);
+            const imgPath = path.join(file.destination, file.filename);
+            const filename = sanitize(file.originalname);
+
+            const directories = user?.directories;
+            const backgroundsDir = directories?.backgrounds ?? '';
+            const rootDir = directories?.root ?? '';
+
+            const destPath = path.join(backgroundsDir, filename);
+
+            await fsp.copyFile(imgPath, destPath);
+            await fsp.unlink(imgPath);
+
             invalidateThumbnail(directories as any, 'bg', filename);
 
             const relativePath = path.join('backgrounds', filename);
-            getOrGenerateMetadataBatch(directories?.root ?? '', [relativePath], 'bg').catch(
-                (err: Error) => {
-                    console.warn(
-                        '[Backgrounds] Failed to generate metadata for upload:',
-                        err.message,
-                    );
-                },
-            );
+            getOrGenerateMetadataBatch(rootDir, [relativePath], 'bg').catch((err: Error) => {
+                console.warn(
+                    '[Backgrounds] Failed to generate metadata for upload:',
+                    err.message,
+                );
+            });
 
             return filename;
         } catch (err) {
