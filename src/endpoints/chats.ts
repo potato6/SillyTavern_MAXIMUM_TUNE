@@ -1,11 +1,12 @@
 import fs from 'node:fs';
+import fsp from 'node:fs/promises';
 import path from 'node:path';
 import readline from 'node:readline';
 import process from 'node:process';
 
 import { Elysia } from 'elysia';
 import sanitize from 'sanitize-filename';
-import { sync as writeFileAtomicSync } from 'write-file-atomic';
+import writeFileAtomic from 'write-file-atomic';
 import { throttle, isObjectLike } from 'es-toolkit/compat';
 
 import { forbiddenRegExp } from '../middleware/validateFileName.js';
@@ -16,9 +17,6 @@ import {
     generateTimestamp,
     removeOldBackups,
     formatBytes,
-    tryWriteFileSync,
-    tryReadFileSync,
-    tryDeleteFile,
     readFirstLine,
     isPathUnderParent,
 } from '../util.js';
@@ -32,6 +30,21 @@ export const CHAT_BACKUPS_PREFIX = 'chat_';
 
 type ChatMatchFunction = (textArray: string[]) => boolean;
 
+interface UserDirectories {
+    chats?: string;
+    groupChats?: string;
+    backups?: string;
+    characters?: string;
+    groups?: string;
+    [key: string]: unknown;
+}
+
+interface UserContext {
+    directories?: UserDirectories;
+    profile?: { handle?: string };
+    [key: string]: unknown;
+}
+
 /**
  * Checks the avatar_url field in the request body for forbidden characters.
  * Mimics the behaviour of the Express validateAvatarUrlMiddleware.
@@ -39,10 +52,8 @@ type ChatMatchFunction = (textArray: string[]) => boolean;
 function validateAvatarUrlField(body: unknown): boolean {
     if (body && typeof body === 'object' && 'avatar_url' in (body as Record<string, unknown>)) {
         const value = (body as Record<string, unknown>).avatar_url;
-        if (value != null && typeof (value as any).toString === 'function') {
-            if (forbiddenRegExp.test(String(value))) {
-                return false;
-            }
+        if (value != null) {
+            return !forbiddenRegExp.test(String(value));
         }
     }
     return true;
@@ -65,28 +76,25 @@ function backupChat(
         if (!isBackupEnabled) {
             return;
         }
-        if (!fs.existsSync(directory)) {
-            console.error(
-                `The chat couldn't be backed up because no directory exists at ${directory}!`,
-            );
-        }
-        // replace non-alphanumeric characters with underscores
-        name = sanitize(name)
+
+        const sanitizedName = sanitize(name)
             .replace(/[^a-z0-9]/gi, '_')
             .toLowerCase();
 
         const backupFile = path.join(
             directory,
-            `${backupPrefix}${name}_${generateTimestamp()}.jsonl`,
+            `${backupPrefix}${sanitizedName}_${generateTimestamp()}.jsonl`,
         );
 
-        tryWriteFileSync(backupFile, data);
-        removeOldBackups(directory, `${backupPrefix}${name}_`);
+        writeFileAtomic(backupFile, data).catch((err) => {
+            console.error(`Write atomic backup failed for ${name}`, err);
+        });
+
+        removeOldBackups(directory, `${backupPrefix}${sanitizedName}_`);
         if (isNaN(maxTotalChatBackups) || maxTotalChatBackups < 0) {
             return;
         }
-        // @ts-expect-error TS(2345) FIXME: Argument of type 'number' is not assignable to par... Remove this comment to see the full error message
-        removeOldBackups(directory, backupPrefix, maxTotalChatBackups);
+        removeOldBackups(directory, backupPrefix, maxTotalChatBackups as any);
     } catch (err) {
         console.error(`Could not backup chat for ${name}`, err);
     }
@@ -95,7 +103,7 @@ function backupChat(
 /**
  * @type {Map<string, import('es-toolkit/compat').DebouncedFunc<typeof backupChat>>}
  */
-const backupFunctions = new Map();
+const backupFunctions = new Map<string, any>();
 
 /**
  * Gets a backup function for a user.
@@ -103,13 +111,12 @@ const backupFunctions = new Map();
  * @returns {typeof backupChat} Backup function
  */
 function getBackupFunction(handle: string) {
-    if (!backupFunctions.has(handle)) {
-        backupFunctions.set(
-            handle,
-            throttle(backupChat, throttleInterval, { leading: true, trailing: true }),
-        );
+    let fn = backupFunctions.get(handle);
+    if (!fn) {
+        fn = throttle(backupChat, throttleInterval, { leading: true, trailing: true });
+        backupFunctions.set(handle, fn);
     }
-    return backupFunctions.get(handle) || (() => {});
+    return fn;
 }
 
 /**
@@ -125,7 +132,7 @@ function getPreviewMessage(lastMessage: string): string {
     }
 
     return lastMessage.length > strlen
-        ? '...' + lastMessage.substring(lastMessage.length - strlen)
+        ? '...' + lastMessage.slice(lastMessage.length - strlen)
         : lastMessage;
 }
 
@@ -142,43 +149,43 @@ process.on('exit', () => {
  * @param {object} jsonData JSON data
  * @returns {string} Chat data
  */
-function importOobaChat(userName: string, characterName: string, jsonData: object): string {
-    /** @type {object[]} */
-    const chat = [
-        {
-            chat_metadata: {},
-            user_name: 'unused',
-            character_name: 'unused',
-        },
+function importOobaChat(userName: string, characterName: string, jsonData: Record<string, any>): string {
+    const dataVisible = jsonData.data_visible;
+    if (!Array.isArray(dataVisible)) return '';
+
+    const count = dataVisible.length;
+    const lines: string[] = [
+        JSON.stringify({ chat_metadata: {}, user_name: 'unused', character_name: 'unused' }),
     ];
 
-    // @ts-expect-error TS(2339) FIXME: Property 'data_visible' does not exist on type 'ob... Remove this comment to see the full error message
-    for (const arr of jsonData.data_visible) {
+    for (let i = 0; i < count; i++) {
+        const arr = dataVisible[i];
+        if (!Array.isArray(arr)) continue;
         if (arr[0]) {
-            const userMessage = {
-                name: userName,
-                is_user: true,
-                send_date: new Date().toISOString(),
-                mes: arr[0],
-                extra: {},
-            };
-            // @ts-expect-error TS(2345) FIXME: Argument of type '{ name: string; is_user: boolean... Remove this comment to see the full error message
-            chat.push(userMessage);
+            lines.push(
+                JSON.stringify({
+                    name: userName,
+                    is_user: true,
+                    send_date: new Date().toISOString(),
+                    mes: arr[0],
+                    extra: {},
+                }),
+            );
         }
         if (arr[1]) {
-            const charMessage = {
-                name: characterName,
-                is_user: false,
-                send_date: new Date().toISOString(),
-                mes: arr[1],
-                extra: {},
-            };
-            // @ts-expect-error TS(2345) FIXME: Argument of type '{ name: string; is_user: boolean... Remove this comment to see the full error message
-            chat.push(charMessage);
+            lines.push(
+                JSON.stringify({
+                    name: characterName,
+                    is_user: false,
+                    send_date: new Date().toISOString(),
+                    mes: arr[1],
+                    extra: {},
+                }),
+            );
         }
     }
 
-    return chat.map((obj) => JSON.stringify(obj)).join('\n');
+    return lines.join('\n');
 }
 
 /**
@@ -188,21 +195,18 @@ function importOobaChat(userName: string, characterName: string, jsonData: objec
  * @param {object} jsonData Chat data
  * @returns {string} Chat data
  */
-function importAgnaiChat(userName: string, characterName: string, jsonData: object): string {
-    /** @type {object[]} */
-    const chat = [
-        {
-            chat_metadata: {},
-            user_name: 'unused',
-            character_name: 'unused',
-        },
-    ];
+function importAgnaiChat(userName: string, characterName: string, jsonData: Record<string, any>): string {
+    const messages = jsonData.messages;
+    if (!Array.isArray(messages)) return '';
 
-    // @ts-expect-error TS(2339) FIXME: Property 'messages' does not exist on type 'object... Remove this comment to see the full error message
-    for (const message of jsonData.messages) {
-        const isUser = !!message.userId;
-        chat.push({
-            // @ts-expect-error TS(2345) FIXME: Argument of type '{ name: string; is_user: boolean... Remove this comment to see the full error message
+    const count = messages.length;
+    const lines: string[] = Array.from({ length: count + 1 });
+    lines[0] = JSON.stringify({ chat_metadata: {}, user_name: 'unused', character_name: 'unused' });
+
+    for (let i = 0; i < count; i++) {
+        const message = messages[i];
+        const isUser = Boolean(message.userId);
+        lines[i + 1] = JSON.stringify({
             name: isUser ? userName : characterName,
             is_user: isUser,
             send_date: new Date().toISOString(),
@@ -211,7 +215,7 @@ function importAgnaiChat(userName: string, characterName: string, jsonData: obje
         });
     }
 
-    return chat.map((obj) => JSON.stringify(obj)).join('\n');
+    return lines.join('\n');
 }
 
 /**
@@ -221,41 +225,39 @@ function importAgnaiChat(userName: string, characterName: string, jsonData: obje
  * @param {object} jsonData JSON data
  * @returns {string[]} Converted data
  */
-function importCAIChat(userName: string, characterName: string, jsonData: object): string[] {
-    /**
-     * Converts the chat data to suitable format.
-     * @param {object} history Imported chat data
-     * @returns {object[]} Converted chat data
-     */
-    function convert(history: object) {
-        const starter = {
-            chat_metadata: {},
-            user_name: 'unused',
-            character_name: 'unused',
-        };
+function importCAIChat(userName: string, characterName: string, jsonData: Record<string, any>): string[] {
+    const histories = jsonData.histories?.histories;
+    if (!Array.isArray(histories)) return [];
 
-        // @ts-expect-error TS(2339) FIXME: Property 'msgs' does not exist on type 'object'.
-        const historyData = history.msgs.map(
-            (msg: { src: { is_human: boolean }; text: string }) => ({
-                name: msg.src.is_human ? userName : characterName,
-                is_user: msg.src.is_human,
+    const count = histories.length;
+    const newChats: string[] = Array.from({ length: count });
+
+    for (let i = 0; i < count; i++) {
+        const history = histories[i];
+        const msgs = history?.msgs;
+        if (!Array.isArray(msgs)) {
+            newChats[i] = JSON.stringify({ chat_metadata: {}, user_name: 'unused', character_name: 'unused' });
+            continue;
+        }
+
+        const msgCount = msgs.length;
+        const lines = Array.from<string>({ length: msgCount + 1 });
+        lines[0] = JSON.stringify({ chat_metadata: {}, user_name: 'unused', character_name: 'unused' });
+
+        for (let j = 0; j < msgCount; j++) {
+            const msg = msgs[j];
+            const isHuman = Boolean(msg.src?.is_human);
+            lines[j + 1] = JSON.stringify({
+                name: isHuman ? userName : characterName,
+                is_user: isHuman,
                 send_date: new Date().toISOString(),
                 mes: msg.text,
                 extra: {},
-            }),
-        );
-
-        return [starter, ...historyData];
+            });
+        }
+        newChats[i] = lines.join('\n');
     }
 
-    // @ts-expect-error TS(2339) FIXME: Property 'histories' does not exist on type 'objec... Remove this comment to see the full error message
-    const newChats = (jsonData.histories.histories ?? []).map((history: object) =>
-        newChats.push(
-            convert(history)
-                .map((obj) => JSON.stringify(obj))
-                .join('\n'),
-        ),
-    );
     return newChats;
 }
 
@@ -266,44 +268,46 @@ function importCAIChat(userName: string, characterName: string, jsonData: object
  * @param {object} data JSON data
  * @returns {string} Chat data
  */
-function importKoboldLiteChat(_userName: string, _characterName: string, data: object): string {
+function importKoboldLiteChat(_userName: string, _characterName: string, data: Record<string, any>): string {
+    const savedsettings = data.savedsettings || {};
+    const userName = String(savedsettings.chatname || _userName);
+    const opponentStr = String(savedsettings.chatopponent || _characterName);
+    const pipeIdx = opponentStr.indexOf('||$||');
+    const characterName = pipeIdx !== -1 ? opponentStr.slice(0, pipeIdx) : opponentStr;
+
     const inputToken = '{{[INPUT]}}';
     const outputToken = '{{[OUTPUT]}}';
 
-    /** @type {function(string): object} */
-    function processKoboldMessage(msg: string): object {
+    const actions = Array.isArray(data.actions) ? data.actions : [];
+    const hasPrompt = Boolean(data.prompt);
+    const totalMsgs = actions.length + (hasPrompt ? 1 : 0);
+
+    const lines: string[] = Array.from({ length: totalMsgs + 1 });
+    lines[0] = JSON.stringify({ chat_metadata: {}, user_name: 'unused', character_name: 'unused' });
+
+    let lineIdx = 1;
+
+    const processKoboldMessage = (msg: string) => {
         const isUser = msg.includes(inputToken);
-        return {
+        const cleanMes = msg.replaceAll(inputToken, '').replaceAll(outputToken, '').trim();
+        return JSON.stringify({
             name: isUser ? userName : characterName,
             is_user: isUser,
-            mes: msg.replaceAll(inputToken, '').replaceAll(outputToken, '').trim(),
+            mes: cleanMes,
             send_date: new Date().toISOString(),
             extra: {},
-        };
+        });
+    };
+
+    if (data.prompt) {
+        lines[lineIdx++] = processKoboldMessage(data.prompt);
     }
 
-    // Create the header
-    // @ts-expect-error TS(2339) FIXME: Property 'savedsettings' does not exist on type 'o... Remove this comment to see the full error message
-    const userName = String(data.savedsettings.chatname);
-    // @ts-expect-error TS(2339) FIXME: Property 'savedsettings' does not exist on type 'o... Remove this comment to see the full error message
-    const characterName = String(data.savedsettings.chatopponent).split('||$||')[0];
-    const header = {
-        chat_metadata: {},
-        user_name: 'unused',
-        character_name: 'unused',
-    };
-    // Format messages
-    // @ts-expect-error TS(2339) FIXME: Property 'actions' does not exist on type 'object'... Remove this comment to see the full error message
-    const formattedMessages = data.actions.map(processKoboldMessage);
-    // Add prompt if available
-    // @ts-expect-error TS(2339) FIXME: Property 'prompt' does not exist on type 'object'.
-    if (data.prompt) {
-        // @ts-expect-error TS(2339) FIXME: Property 'prompt' does not exist on type 'object'.
-        formattedMessages.unshift(processKoboldMessage(data.prompt));
+    for (let i = 0; i < actions.length; i++) {
+        lines[lineIdx++] = processKoboldMessage(actions[i]);
     }
-    // Combine header and messages
-    const chatData = [header, ...formattedMessages];
-    return chatData.map((obj) => JSON.stringify(obj)).join('\n');
+
+    return lines.join('\n');
 }
 
 /**
@@ -315,38 +319,37 @@ function importKoboldLiteChat(_userName: string, _characterName: string, data: o
  * @returns {string} Converted data
  */
 function flattenChubChat(userName: string, characterName: string, lines: string[]): string {
-    /**
-     * Flattens a swipe entry
-     * @param {{message?: string} | string} swipe Swipe entry
-     * @returns {string} The flattened swipe message
-     */
-    function flattenSwipe(swipe: { message?: string } | string): string {
-        return typeof swipe === 'object' && swipe.message ? swipe.message : String(swipe);
-    }
+    if (!Array.isArray(lines)) return '';
+    const count = lines.length;
+    const resultLines = Array.from<string>({ length: count });
 
-    /**
-     * Converts a single chat line
-     * @param {string} line Serialized chat line
-     * @returns {string} Converted chat line
-     */
-    function convert(line: string): string {
+    for (let i = 0; i < count; i++) {
+        const line = lines[i]!;
         const lineData = tryParse(line);
-        if (!lineData) return line;
-
-        if (lineData.mes && lineData.mes.message) {
-            lineData.mes = lineData?.mes.message;
+        if (!lineData) {
+            resultLines[i] = line;
+            continue;
         }
 
-        if (lineData?.swipes && Array.isArray(lineData.swipes)) {
-            lineData.swipes = lineData.swipes.map((swipe: { message?: string } | string) =>
-                flattenSwipe(swipe),
-            );
+        if (lineData.mes && typeof lineData.mes === 'object' && lineData.mes.message) {
+            lineData.mes = lineData.mes.message;
         }
 
-        return JSON.stringify(lineData);
+        if (Array.isArray(lineData.swipes)) {
+            const swipes = lineData.swipes;
+            for (let j = 0; j < swipes.length; j++) {
+                const swipe = swipes[j];
+                swipes[j] =
+                    typeof swipe === 'object' && swipe !== null && swipe.message
+                        ? swipe.message
+                        : String(swipe);
+            }
+        }
+
+        resultLines[i] = JSON.stringify(lineData);
     }
 
-    return (lines ?? []).map(convert).join('\n');
+    return resultLines.join('\n');
 }
 
 /**
@@ -356,30 +359,28 @@ function flattenChubChat(userName: string, characterName: string, lines: string[
  * @param {object} jsonData Imported chat data
  * @returns {string} Chat data
  */
-function importRisuChat(userName: string, characterName: string, jsonData: object): string {
-    /** @type {object[]} */
-    const chat = [
-        {
-            chat_metadata: {},
-            user_name: 'unused',
-            character_name: 'unused',
-        },
-    ];
+function importRisuChat(userName: string, characterName: string, jsonData: Record<string, any>): string {
+    const messages = jsonData?.data?.message;
+    if (!Array.isArray(messages)) return '';
 
-    // @ts-expect-error TS(2339) FIXME: Property 'data' does not exist on type 'object'.
-    for (const message of jsonData.data.message) {
+    const count = messages.length;
+    const lines = Array.from<string>({ length: count + 1 });
+    lines[0] = JSON.stringify({ chat_metadata: {}, user_name: 'unused', character_name: 'unused' });
+
+    for (let i = 0; i < count; i++) {
+        const message = messages[i];
         const isUser = message.role === 'user';
-        chat.push({
-            // @ts-expect-error TS(2345) FIXME: Argument of type '{ name: any; is_user: boolean; s... Remove this comment to see the full error message
+        const msgTime = message.time ? Number(message.time) : Date.now();
+        lines[i + 1] = JSON.stringify({
             name: message.name ?? (isUser ? userName : characterName),
             is_user: isUser,
-            send_date: new Date(Number(message.time ?? Date.now())).toISOString(),
+            send_date: new Date(msgTime).toISOString(),
             mes: message.data ?? '',
             extra: {},
         });
     }
 
-    return chat.map((obj) => JSON.stringify(obj)).join('\n');
+    return lines.join('\n');
 }
 
 /**
@@ -389,18 +390,16 @@ function importRisuChat(userName: string, characterName: string, jsonData: objec
  * @returns {Promise<boolean>} Whether the chat is intact
  */
 async function checkChatIntegrity(filePath: string, integritySlug: string): Promise<boolean> {
-    // If the chat file doesn't exist, assume it's intact
-    if (!fs.existsSync(filePath)) {
+    try {
+        await fsp.access(filePath);
+    } catch {
         return true;
     }
 
-    // Parse the first line of the chat file as JSON
     const firstLine = await readFirstLine(filePath);
-    // @ts-expect-error TS(2345) FIXME: Argument of type 'unknown' is not assignable to pa... Remove this comment to see the full error message
-    const jsonData = tryParse(firstLine);
+    const jsonData = tryParse(firstLine as string) as Record<string, any> | null;
     const chatIntegrity = jsonData?.chat_metadata?.integrity;
 
-    // If the chat has no integrity metadata, assume it's intact
     if (!chatIntegrity) {
         console.debug(
             `File "${filePath}" does not have integrity metadata matching "${integritySlug}". The integrity validation has been skipped.`,
@@ -408,21 +407,8 @@ async function checkChatIntegrity(filePath: string, integritySlug: string): Prom
         return true;
     }
 
-    // Check if the integrity matches
     return chatIntegrity === integritySlug;
 }
-
-/**
- * @typedef {object} ChatInfo
- * @property {string} [file_id] - The name of the chat file (without extension)
- * @property {string} [file_name] - The name of the chat file (with extension)
- * @property {string} [file_size] - The size of the chat file in a human-readable format
- * @property {number} [chat_items] - The number of chat items in the file
- * @property {string} [mes] - The last message in the chat
- * @property {number|string} [last_mes] - The timestamp of the last message
- * @property {object} [chat_metadata] - Additional chat metadata
- * @property {boolean} [match] - Whether the chat matches the search criteria
- */
 
 /**
  * Reads the information from a chat file.
@@ -430,35 +416,44 @@ async function checkChatIntegrity(filePath: string, integritySlug: string): Prom
  * @param {object} additionalData - Additional data to include in the result
  * @param {boolean} withMetadata - Whether to read chat metadata
  * @param {ChatMatchFunction|null} matcher - Optional function to match messages
- * @returns {Promise<ChatInfo>} Chat information
+ * @returns {Promise<Record<string, unknown>>} Chat information
  */
 export async function getChatInfo(
     pathToFile: string,
     additionalData: Record<string, unknown> = {},
     withMetadata = false,
     matcher: ChatMatchFunction | null = null,
-) {
-    return new Promise(async (res) => {
-        const parsedPath = path.parse(pathToFile);
-        const stats = await fs.promises.stat(pathToFile);
-        const hasMatcher = typeof matcher === 'function';
+): Promise<Record<string, unknown>> {
+    const lastSlash = Math.max(pathToFile.lastIndexOf('/'), pathToFile.lastIndexOf('\\'));
+    const fileName = lastSlash !== -1 ? pathToFile.slice(lastSlash + 1) : pathToFile;
+    const lastDot = fileName.lastIndexOf('.');
+    const fileId = lastDot !== -1 ? fileName.slice(0, lastDot) : fileName;
 
-        const chatData = {
-            match: false,
-            file_id: parsedPath.name,
-            file_name: parsedPath.base,
-            file_size: formatBytes(stats.size),
-            chat_items: 0,
-            mes: '[The chat is empty]',
-            last_mes: stats.mtimeMs,
-            ...additionalData,
-        };
+    let stats: fs.Stats;
+    try {
+        stats = await fsp.stat(pathToFile);
+    } catch {
+        return {};
+    }
 
-        if (stats.size === 0) {
-            res(chatData);
-            return;
-        }
+    const hasMatcher = typeof matcher === 'function';
 
+    const chatData: Record<string, unknown> = {
+        match: false,
+        file_id: fileId,
+        file_name: fileName,
+        file_size: formatBytes(stats.size),
+        chat_items: 0,
+        mes: '[The chat is empty]',
+        last_mes: stats.mtimeMs,
+        ...additionalData,
+    };
+
+    if (stats.size === 0) {
+        return chatData;
+    }
+
+    return new Promise((res) => {
         const fileStream = fs.createReadStream(pathToFile);
         const rl = readline.createInterface({
             input: fileStream,
@@ -469,17 +464,16 @@ export async function getChatInfo(
         let itemCounter = 0;
         let hasAnyMatch = false;
         let matchBuffer: string[] = [];
+
         rl.on('line', (line) => {
             if (withMetadata && itemCounter === 0) {
-                const jsonData = tryParse(line);
+                const jsonData = tryParse(line) as Record<string, any> | null;
                 if (jsonData && isObjectLike(jsonData.chat_metadata)) {
-                    // @ts-expect-error TS(2339) FIXME: Property 'chat_metadata' does not exist on type '{... Remove this comment to see the full error message
                     chatData.chat_metadata = jsonData.chat_metadata;
                 }
             }
-            // Skip matching if any match was already found
             if (hasMatcher && !hasAnyMatch && itemCounter > 0) {
-                const jsonData = tryParse(line);
+                const jsonData = tryParse(line) as Record<string, any> | null;
                 if (jsonData) {
                     matchBuffer.push(jsonData.mes || '');
                     if (matcher(matchBuffer)) {
@@ -491,11 +485,12 @@ export async function getChatInfo(
             itemCounter++;
             lastLine = line;
         });
+
         rl.on('close', () => {
             rl.close();
 
             if (lastLine) {
-                const jsonData = tryParse(lastLine);
+                const jsonData = tryParse(lastLine) as Record<string, any> | null;
                 if (
                     jsonData &&
                     (jsonData.name || jsonData.character_name || jsonData.chat_metadata)
@@ -511,19 +506,17 @@ export async function getChatInfo(
                     console.warn('Found an invalid or corrupted chat file:', pathToFile);
                     res({});
                 }
+            } else {
+                res(chatData);
             }
         });
     });
 }
 
-// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error
 class IntegrityMismatchError extends Error {
     date: Date;
     constructor(...params: unknown[]) {
-        // Pass remaining arguments (including vendor specific ones) to parent constructor
-        // @ts-expect-error TS(2769) FIXME: No overload matches this call.
-        super(...params);
-        // Maintains proper stack trace for where our error was thrown (non-standard)
+        super(...(params as [string?]));
         if (Error.captureStackTrace) {
             Error.captureStackTrace(this, IntegrityMismatchError);
         }
@@ -548,7 +541,12 @@ export async function trySaveChat(
     cardName: string,
     backupDirectory: string,
 ): Promise<void> {
-    const jsonlData = chatData?.map((m: unknown) => JSON.stringify(m)).join('\n');
+    const count = chatData ? chatData.length : 0;
+    const lines = Array.from<string>({ length: count });
+    for (let i = 0; i < count; i++) {
+        lines[i] = JSON.stringify(chatData[i]);
+    }
+    const jsonlData = lines.join('\n');
 
     const doIntegrityCheck = checkIntegrity && !skipIntegrityCheck;
     const chatIntegritySlug = doIntegrityCheck
@@ -560,21 +558,42 @@ export async function trySaveChat(
             `Chat integrity check failed for "${filePath}". The expected integrity slug was "${chatIntegritySlug}".`,
         );
     }
-    tryWriteFileSync(filePath, jsonlData);
+
+    await writeFileAtomic(filePath, jsonlData);
     getBackupFunction(handle)(backupDirectory, cardName, jsonlData);
+}
+
+export async function getChatDataAsync(chatFilePath: string): Promise<object[]> {
+    try {
+        const chatJSON = await fsp.readFile(chatFilePath, 'utf8');
+        if (chatJSON.length === 0) return [];
+
+        const lines = chatJSON.split('\n');
+        const count = lines.length;
+        const chatData: object[] = [];
+
+        for (let i = 0; i < count; i++) {
+            const parsed = tryParse(lines[i]!);
+            if (parsed) {
+                chatData.push(parsed as object);
+            }
+        }
+        return chatData;
+    } catch {
+        console.warn(`File not found: ${chatFilePath}. The chat does not exist or is empty.`);
+        return [];
+    }
 }
 
 export const router = new Elysia({ prefix: '/api/chats' })
 
     .post('/save', async (context) => {
         const { set } = context;
-        const body = context.body as Record<string, unknown> | undefined;
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
-        const directories = user?.directories as Record<string, string> | undefined;
-        const profile = user?.profile as Record<string, string> | undefined;
+        const ctx = context as Record<string, unknown>;
+        const body = ctx.body as Record<string, unknown> | undefined;
+        const user = ctx.user as UserContext | undefined;
+        const directories = user?.directories;
+        const profile = user?.profile;
 
         try {
             if (!body || !validateAvatarUrlField(body)) {
@@ -583,15 +602,18 @@ export const router = new Elysia({ prefix: '/api/chats' })
             }
 
             const handle = profile?.handle ?? '';
-            const cardName = String(body.avatar_url).replace('.png', '');
+            const avatarUrl = String(body.avatar_url);
+            const cardName = avatarUrl.endsWith('.png') ? avatarUrl.slice(0, -4) : avatarUrl;
             const chatData = body.chat;
             const chatFileName = `${String(body.file_name)}.jsonl`;
+            const chatsDir = directories?.chats ?? '';
             const chatFilePath = path.join(
-                directories?.chats ?? '',
+                chatsDir,
                 cardName,
                 sanitize(chatFileName),
             );
-            if (!isPathUnderParent(directories?.chats ?? '', chatFilePath)) {
+
+            if (!isPathUnderParent(chatsDir, chatFilePath)) {
                 set.status = 400;
                 return;
             }
@@ -600,7 +622,7 @@ export const router = new Elysia({ prefix: '/api/chats' })
                 await trySaveChat(
                     chatData as { chat_metadata?: { integrity?: string } }[],
                     chatFilePath,
-                    body.force as boolean,
+                    Boolean(body.force),
                     handle,
                     cardName,
                     directories?.backups ?? '',
@@ -622,14 +644,12 @@ export const router = new Elysia({ prefix: '/api/chats' })
         }
     })
 
-    .post('/get', (context) => {
+    .post('/get', async (context) => {
         const { set } = context;
-        const body = context.body as Record<string, unknown> | undefined;
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
-        const directories = user?.directories as Record<string, string> | undefined;
+        const ctx = context as Record<string, unknown>;
+        const body = ctx.body as Record<string, unknown> | undefined;
+        const user = ctx.user as UserContext | undefined;
+        const directories = user?.directories;
 
         try {
             if (!body || !validateAvatarUrlField(body)) {
@@ -637,17 +657,20 @@ export const router = new Elysia({ prefix: '/api/chats' })
                 return;
             }
 
-            const dirName = String(body.avatar_url).replace('.png', '');
-            const directoryPath = path.join(directories?.chats ?? '', dirName);
-            if (!isPathUnderParent(directories?.chats ?? '', directoryPath)) {
+            const avatarUrl = String(body.avatar_url);
+            const dirName = avatarUrl.endsWith('.png') ? avatarUrl.slice(0, -4) : avatarUrl;
+            const chatsDir = directories?.chats ?? '';
+            const directoryPath = path.join(chatsDir, dirName);
+
+            if (!isPathUnderParent(chatsDir, directoryPath)) {
                 set.status = 400;
                 return;
             }
-            const chatDirExists = fs.existsSync(directoryPath);
 
-            //if no chat dir for the character is found, make one with the character name
-            if (!chatDirExists) {
-                fs.mkdirSync(directoryPath);
+            try {
+                await fsp.access(directoryPath);
+            } catch {
+                await fsp.mkdir(directoryPath, { recursive: true });
                 return {};
             }
 
@@ -658,7 +681,7 @@ export const router = new Elysia({ prefix: '/api/chats' })
             const chatFileName = `${String(body.file_name)}.jsonl`;
             const chatFilePath = path.join(directoryPath, sanitize(chatFileName));
 
-            return getChatData(chatFilePath);
+            return await getChatDataAsync(chatFilePath);
         } catch (error) {
             console.error(error);
             return {};
@@ -667,12 +690,10 @@ export const router = new Elysia({ prefix: '/api/chats' })
 
     .post('/rename', async (context) => {
         const { set } = context;
-        const body = context.body as Record<string, unknown> | undefined;
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
-        const directories = user?.directories as Record<string, string> | undefined;
+        const ctx = context as Record<string, unknown>;
+        const body = ctx.body as Record<string, unknown> | undefined;
+        const user = ctx.user as UserContext | undefined;
+        const directories = user?.directories;
 
         try {
             if (!body || !validateAvatarUrlField(body)) {
@@ -685,13 +706,19 @@ export const router = new Elysia({ prefix: '/api/chats' })
                 return;
             }
 
+            const avatarUrl = String(body.avatar_url);
+            const avatarDir = avatarUrl.endsWith('.png') ? avatarUrl.slice(0, -4) : avatarUrl;
+            const chatsDir = directories?.chats ?? '';
+
             const pathToFolder = body.is_group
                 ? (directories?.groupChats ?? '')
-                : path.join(directories?.chats ?? '', String(body.avatar_url).replace('.png', ''));
-            if (!body.is_group && !isPathUnderParent(directories?.chats ?? '', pathToFolder)) {
+                : path.join(chatsDir, avatarDir);
+
+            if (!body.is_group && !isPathUnderParent(chatsDir, pathToFolder)) {
                 set.status = 400;
                 return;
             }
+
             const pathToOriginalFile = path.join(
                 pathToFolder,
                 sanitize(body.original_file as string),
@@ -700,18 +727,35 @@ export const router = new Elysia({ prefix: '/api/chats' })
                 pathToFolder,
                 sanitize(body.renamed_file as string),
             );
-            const sanitizedFileName = path.parse(pathToRenamedFile).name;
-            console.debug('Old chat name', pathToOriginalFile);
-            console.debug('New chat name', pathToRenamedFile);
 
-            if (!fs.existsSync(pathToOriginalFile) || fs.existsSync(pathToRenamedFile)) {
-                console.error('Either Source or Destination files are not available');
+            const lastSlash = Math.max(
+                pathToRenamedFile.lastIndexOf('/'),
+                pathToRenamedFile.lastIndexOf('\\'),
+            );
+            const baseFile = lastSlash !== -1 ? pathToRenamedFile.slice(lastSlash + 1) : pathToRenamedFile;
+            const lastDot = baseFile.lastIndexOf('.');
+            const sanitizedFileName = lastDot !== -1 ? baseFile.slice(0, lastDot) : baseFile;
+
+            try {
+                await fsp.access(pathToOriginalFile);
+            } catch {
+                console.error('Source file not available');
                 set.status = 400;
                 return { error: true };
             }
 
-            fs.copyFileSync(pathToOriginalFile, pathToRenamedFile);
-            fs.unlinkSync(pathToOriginalFile);
+            try {
+                await fsp.access(pathToRenamedFile);
+                console.error('Destination file already exists');
+                set.status = 400;
+                return { error: true };
+            } catch {
+                // target file does not exist, proceed
+            }
+
+            await fsp.copyFile(pathToOriginalFile, pathToRenamedFile);
+            await fsp.unlink(pathToOriginalFile);
+
             console.info('Successfully renamed chat file.');
             return { ok: true, sanitizedFileName };
         } catch (error) {
@@ -721,14 +765,12 @@ export const router = new Elysia({ prefix: '/api/chats' })
         }
     })
 
-    .post('/delete', (context) => {
+    .post('/delete', async (context) => {
         const { set } = context;
-        const body = context.body as Record<string, unknown> | undefined;
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
-        const directories = user?.directories as Record<string, string> | undefined;
+        const ctx = context as Record<string, unknown>;
+        const body = ctx.body as Record<string, unknown> | undefined;
+        const user = ctx.user as UserContext | undefined;
+        const directories = user?.directories;
 
         try {
             if (!body || !validateAvatarUrlField(body)) {
@@ -736,25 +778,30 @@ export const router = new Elysia({ prefix: '/api/chats' })
                 return;
             }
 
-            if (!path.extname(body.chatfile as string)) {
-                body.chatfile = (body.chatfile as string) + '.jsonl';
+            let chatFileStr = String(body.chatfile ?? '');
+            if (!chatFileStr.endsWith('.jsonl')) {
+                chatFileStr += '.jsonl';
             }
 
-            const dirName = String(body.avatar_url).replace('.png', '');
-            const chatFileName = String(body.chatfile);
+            const avatarUrl = String(body.avatar_url);
+            const dirName = avatarUrl.endsWith('.png') ? avatarUrl.slice(0, -4) : avatarUrl;
+            const chatsDir = directories?.chats ?? '';
+
             const chatFilePath = path.join(
-                directories?.chats ?? '',
+                chatsDir,
                 dirName,
-                sanitize(chatFileName),
+                sanitize(chatFileStr),
             );
-            if (!isPathUnderParent(directories?.chats ?? '', chatFilePath)) {
+
+            if (!isPathUnderParent(chatsDir, chatFilePath)) {
                 set.status = 400;
                 return;
             }
-            //Return success if the file was deleted.
-            if (tryDeleteFile(chatFilePath)) {
+
+            try {
+                await fsp.unlink(chatFilePath);
                 return { ok: true };
-            } else {
+            } catch {
                 console.error('The chat file was not deleted.');
                 set.status = 400;
                 return;
@@ -768,12 +815,10 @@ export const router = new Elysia({ prefix: '/api/chats' })
 
     .post('/export', async (context) => {
         const { set } = context;
-        const body = context.body as Record<string, unknown> | undefined;
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
-        const directories = user?.directories as Record<string, string> | undefined;
+        const ctx = context as Record<string, unknown>;
+        const body = ctx.body as Record<string, unknown> | undefined;
+        const user = ctx.user as UserContext | undefined;
+        const directories = user?.directories;
 
         if (!body || !validateAvatarUrlField(body)) {
             set.status = 400;
@@ -784,16 +829,26 @@ export const router = new Elysia({ prefix: '/api/chats' })
             set.status = 400;
             return;
         }
+
+        const avatarUrl = String(body.avatar_url ?? '');
+        const avatarDir = avatarUrl.endsWith('.png') ? avatarUrl.slice(0, -4) : avatarUrl;
+        const chatsDir = directories?.chats ?? '';
+
         const pathToFolder = body.is_group
             ? (directories?.groupChats ?? '')
-            : path.join(directories?.chats ?? '', String(body.avatar_url).replace('.png', ''));
+            : path.join(chatsDir, avatarDir);
+
         const filename = path.join(pathToFolder, sanitize(body.file as string));
-        if (!body.is_group && !isPathUnderParent(directories?.chats ?? '', filename)) {
+        if (!body.is_group && !isPathUnderParent(chatsDir, filename)) {
             set.status = 400;
             return;
         }
+
         const exportfilename = body.exportfilename as string;
-        if (!fs.existsSync(filename)) {
+
+        try {
+            await fsp.access(filename);
+        } catch {
             const errorMessage = {
                 message: `Could not find JSONL file to export. Source chat file: ${filename}.`,
             };
@@ -801,11 +856,11 @@ export const router = new Elysia({ prefix: '/api/chats' })
             set.status = 404;
             return errorMessage;
         }
+
         try {
-            // Short path for JSONL files
             if (body.format === 'jsonl') {
                 try {
-                    const rawFile = fs.readFileSync(filename, 'utf8');
+                    const rawFile = await fsp.readFile(filename, 'utf8');
                     const successMessage = {
                         message: `Chat saved to ${exportfilename}`,
                         result: rawFile,
@@ -829,22 +884,23 @@ export const router = new Elysia({ prefix: '/api/chats' })
             const rl = readline.createInterface({
                 input: readStream,
             });
+
             let buffer = '';
             rl.on('line', (line) => {
-                const data = JSON.parse(line);
-                // Skip non-printable/prompt-hidden messages
-                if (data.is_system) {
+                const data = tryParse(line) as Record<string, any> | null;
+                if (!data || data.is_system) {
                     return;
                 }
                 if (data.mes) {
                     const name = data.name;
-                    const message = (data?.extra?.display_text || data?.mes || '').replace(
+                    const message = String(data?.extra?.display_text || data?.mes || '').replace(
                         /\r?\n/g,
                         '\n',
                     );
                     buffer += `${name}: ${message}\n\n`;
                 }
             });
+
             await new Promise<void>((resolve) => {
                 rl.on('close', () => {
                     const successMessage = {
@@ -853,12 +909,12 @@ export const router = new Elysia({ prefix: '/api/chats' })
                     };
                     console.info(`Chat exported as ${exportfilename}`);
                     set.status = 200;
-                    // We can't return from inside the event handler, so store and resolve
-                    (context as unknown as Record<string, unknown>)._exportResult = successMessage;
+                    ctx._exportResult = successMessage;
                     resolve();
                 });
             });
-            return (context as unknown as Record<string, unknown>)._exportResult;
+
+            return ctx._exportResult;
         } catch (err) {
             console.error('chat export failed.', err);
             set.status = 400;
@@ -866,32 +922,26 @@ export const router = new Elysia({ prefix: '/api/chats' })
         }
     })
 
-    .post('/group/import', (context) => {
+    .post('/group/import', async (context) => {
         const { set } = context;
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
-        const directories = user?.directories as Record<string, string> | undefined;
-        const filedata = (context as unknown as Record<string, unknown>).file as Record<
-            string,
-            unknown
-        > | null;
+        const ctx = context as Record<string, unknown>;
+        const user = ctx.user as UserContext | undefined;
+        const directories = user?.directories;
+        const filedata = ctx.file as { destination?: string; filename?: string } | undefined;
 
         try {
-            if (!filedata) {
+            if (!filedata || !filedata.destination || !filedata.filename) {
                 set.status = 400;
                 return;
             }
 
             const chatname = humanizedDateTime();
-            const pathToUpload = path.join(
-                filedata.destination as string,
-                filedata.filename as string,
-            );
+            const pathToUpload = path.join(filedata.destination, filedata.filename);
             const pathToNewFile = path.join(directories?.groupChats ?? '', `${chatname}.jsonl`);
-            fs.copyFileSync(pathToUpload, pathToNewFile);
-            fs.unlinkSync(pathToUpload);
+
+            await fsp.copyFile(pathToUpload, pathToNewFile);
+            await fsp.unlink(pathToUpload);
+
             return { res: chatname };
         } catch (error) {
             console.error(error);
@@ -899,18 +949,13 @@ export const router = new Elysia({ prefix: '/api/chats' })
         }
     })
 
-    .post('/import', (context) => {
+    .post('/import', async (context) => {
         const { set } = context;
-        const body = context.body as Record<string, unknown> | undefined;
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
-        const directories = user?.directories as Record<string, string> | undefined;
-        const fileField = (context as unknown as Record<string, unknown>).file as Record<
-            string,
-            unknown
-        > | null;
+        const ctx = context as Record<string, unknown>;
+        const body = ctx.body as Record<string, unknown> | undefined;
+        const user = ctx.user as UserContext | undefined;
+        const directories = user?.directories;
+        const fileField = ctx.file as { destination?: string; filename?: string } | undefined;
 
         if (!body || !validateAvatarUrlField(body)) {
             set.status = 400;
@@ -918,98 +963,89 @@ export const router = new Elysia({ prefix: '/api/chats' })
         }
 
         const format = body.file_type as string;
-        const avatarUrl = (body.avatar_url as string).replace('.png', '');
+        const rawAvatarUrl = String(body.avatar_url ?? '');
+        const avatarUrl = rawAvatarUrl.endsWith('.png') ? rawAvatarUrl.slice(0, -4) : rawAvatarUrl;
+
         const characterName = sanitize((body.character_name as string) || 'Character');
         const userName = sanitize((body.user_name as string) || 'User');
         const fileNames: string[] = [];
 
-        if (!fileField) {
+        if (!fileField || !fileField.destination || !fileField.filename) {
             set.status = 400;
             return;
         }
 
-        const directoryPath = path.join(directories?.chats ?? '', avatarUrl);
-        if (!isPathUnderParent(directories?.chats ?? '', directoryPath)) {
+        const chatsDir = directories?.chats ?? '';
+        const directoryPath = path.join(chatsDir, avatarUrl);
+        if (!isPathUnderParent(chatsDir, directoryPath)) {
             set.status = 400;
             return;
         }
 
         try {
-            const pathToUpload = path.join(
-                fileField.destination as string,
-                fileField.filename as string,
-            );
-            const data = fs.readFileSync(pathToUpload, 'utf8');
+            const pathToUpload = path.join(fileField.destination, fileField.filename);
+            const data = await fsp.readFile(pathToUpload, 'utf8');
 
             if (format === 'json') {
-                fs.unlinkSync(pathToUpload);
+                await fsp.unlink(pathToUpload);
                 const jsonData = JSON.parse(data);
 
-                /** @type {function(string, string, object): string|string[]} */
-                let importFunc;
+                let importFunc: (u: string, c: string, d: any) => string | string[];
 
                 if (jsonData.savedsettings !== undefined) {
-                    // Kobold Lite format
                     importFunc = importKoboldLiteChat;
                 } else if (jsonData.histories !== undefined) {
-                    // CAI Tools format
                     importFunc = importCAIChat;
                 } else if (Array.isArray(jsonData.data_visible)) {
-                    // oobabooga's format
                     importFunc = importOobaChat;
                 } else if (Array.isArray(jsonData.messages)) {
-                    // Agnai's format
                     importFunc = importAgnaiChat;
                 } else if (jsonData.type === 'risuChat') {
-                    // RisuAI format
                     importFunc = importRisuChat;
                 } else {
-                    // Unknown format
                     console.error('Incorrect chat format .json');
                     return { error: true };
                 }
 
-                const handleChat = (chat: string) => {
+                const handleChat = async (chat: string) => {
                     const fileName = `${characterName} - ${humanizedDateTime()} imported.jsonl`;
                     const filePath = path.join(directoryPath, fileName);
                     fileNames.push(fileName);
-                    writeFileAtomicSync(filePath, chat, 'utf8');
+                    await writeFileAtomic(filePath, chat, 'utf8');
                 };
 
                 const chat = importFunc(userName, characterName, jsonData);
 
                 if (Array.isArray(chat)) {
-                    chat.forEach(handleChat);
+                    for (let i = 0; i < chat.length; i++) {
+                        await handleChat(chat[i]!);
+                    }
                 } else {
-                    handleChat(chat);
+                    await handleChat(chat);
                 }
 
                 return { res: true, fileNames };
             }
 
             if (format === 'jsonl') {
-                const lines = data.split('\n');
-                const header = lines[0];
+                const firstNewline = data.indexOf('\n');
+                const header = firstNewline !== -1 ? data.slice(0, firstNewline) : data;
 
-                const jsonData: Record<string, unknown> = JSON.parse(header!);
+                const jsonData = tryParse(header) as Record<string, unknown> | null;
 
                 if (
-                    !(
-                        jsonData.user_name !== undefined ||
-                        jsonData.name !== undefined ||
-                        jsonData.chat_metadata !== undefined
-                    )
+                    !jsonData ||
+                    (jsonData.user_name === undefined &&
+                        jsonData.name === undefined &&
+                        jsonData.chat_metadata === undefined)
                 ) {
                     console.error('Incorrect chat format .jsonl');
                     return { error: true };
                 }
 
-                // Do a tiny bit of work to import Chub Chat data
-                // Processing the entire file is so fast that it's not worth checking if it's a Chub chat first
+                const lines = data.split('\n');
                 let flattenedChat = data;
                 try {
-                    // flattening is unlikely to break, but it's not worth failing to
-                    // import normal chats in an attempt to import a Chub chat
                     flattenedChat = flattenChubChat(userName, characterName, lines);
                 } catch (error) {
                     console.warn('Failed to flatten Chub Chat data: ', error);
@@ -1018,12 +1054,13 @@ export const router = new Elysia({ prefix: '/api/chats' })
                 const fileName = `${characterName} - ${humanizedDateTime()} imported.jsonl`;
                 const filePath = path.join(directoryPath, fileName);
                 fileNames.push(fileName);
+
                 if (flattenedChat !== data) {
-                    writeFileAtomicSync(filePath, flattenedChat, 'utf8');
+                    await writeFileAtomic(filePath, flattenedChat, 'utf8');
                 } else {
-                    fs.copyFileSync(pathToUpload, filePath);
+                    await fsp.copyFile(pathToUpload, filePath);
                 }
-                fs.unlinkSync(pathToUpload);
+                await fsp.unlink(pathToUpload);
                 return { res: true, fileNames };
             }
         } catch (error) {
@@ -1032,34 +1069,30 @@ export const router = new Elysia({ prefix: '/api/chats' })
         }
     })
 
-    .post('/group/get', (context) => {
+    .post('/group/get', async (context) => {
         const { set } = context;
-        const body = context.body as Record<string, unknown> | undefined;
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
-        const directories = user?.directories as Record<string, string> | undefined;
+        const ctx = context as Record<string, unknown>;
+        const body = ctx.body as Record<string, unknown> | undefined;
+        const user = ctx.user as UserContext | undefined;
+        const directories = user?.directories;
 
         if (!body || !body.id) {
             set.status = 400;
             return;
         }
 
-        const id = body.id as string;
+        const id = String(body.id);
         const chatFilePath = path.join(directories?.groupChats ?? '', sanitize(`${id}.jsonl`));
 
-        return getChatData(chatFilePath);
+        return await getChatDataAsync(chatFilePath);
     })
 
     .post('/group/info', async (context) => {
         const { set } = context;
-        const body = context.body as Record<string, unknown> | undefined;
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
-        const directories = user?.directories as Record<string, string> | undefined;
+        const ctx = context as Record<string, unknown>;
+        const body = ctx.body as Record<string, unknown> | undefined;
+        const user = ctx.user as UserContext | undefined;
+        const directories = user?.directories;
 
         try {
             if (!body || !body.id) {
@@ -1067,11 +1100,10 @@ export const router = new Elysia({ prefix: '/api/chats' })
                 return;
             }
 
-            const id = body.id as string;
+            const id = String(body.id);
             const chatFilePath = path.join(directories?.groupChats ?? '', sanitize(`${id}.jsonl`));
 
-            const chatInfo = await getChatInfo(chatFilePath);
-            return chatInfo;
+            return await getChatInfo(chatFilePath);
         } catch (error) {
             console.error(error);
             set.status = 500;
@@ -1079,14 +1111,12 @@ export const router = new Elysia({ prefix: '/api/chats' })
         }
     })
 
-    .post('/group/delete', (context) => {
+    .post('/group/delete', async (context) => {
         const { set } = context;
-        const body = context.body as Record<string, unknown> | undefined;
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
-        const directories = user?.directories as Record<string, string> | undefined;
+        const ctx = context as Record<string, unknown>;
+        const body = ctx.body as Record<string, unknown> | undefined;
+        const user = ctx.user as UserContext | undefined;
+        const directories = user?.directories;
 
         try {
             if (!body || !body.id) {
@@ -1094,13 +1124,13 @@ export const router = new Elysia({ prefix: '/api/chats' })
                 return;
             }
 
-            const id = body.id as string;
+            const id = String(body.id);
             const chatFilePath = path.join(directories?.groupChats ?? '', sanitize(`${id}.jsonl`));
 
-            //Return success if the file was deleted.
-            if (tryDeleteFile(chatFilePath)) {
+            try {
+                await fsp.unlink(chatFilePath);
                 return { ok: true };
-            } else {
+            } catch {
                 console.error('The group chat file was not deleted.');
                 set.status = 400;
                 return;
@@ -1114,13 +1144,11 @@ export const router = new Elysia({ prefix: '/api/chats' })
 
     .post('/group/save', async (context) => {
         const { set } = context;
-        const body = context.body as Record<string, unknown> | undefined;
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
-        const directories = user?.directories as Record<string, string> | undefined;
-        const profile = user?.profile as Record<string, string> | undefined;
+        const ctx = context as Record<string, unknown>;
+        const body = ctx.body as Record<string, unknown> | undefined;
+        const user = ctx.user as UserContext | undefined;
+        const directories = user?.directories;
+        const profile = user?.profile;
 
         try {
             if (!body || !body.id) {
@@ -1128,7 +1156,7 @@ export const router = new Elysia({ prefix: '/api/chats' })
                 return;
             }
 
-            const id = body.id as string;
+            const id = String(body.id);
             const handle = profile?.handle ?? '';
             const chatFilePath = path.join(directories?.groupChats ?? '', sanitize(`${id}.jsonl`));
             const chatData = body.chat;
@@ -1137,7 +1165,7 @@ export const router = new Elysia({ prefix: '/api/chats' })
                 await trySaveChat(
                     chatData as { chat_metadata?: { integrity?: string } }[],
                     chatFilePath,
-                    body.force as boolean,
+                    Boolean(body.force),
                     handle,
                     id,
                     directories?.backups ?? '',
@@ -1161,12 +1189,10 @@ export const router = new Elysia({ prefix: '/api/chats' })
 
     .post('/search', async (context) => {
         const { set } = context;
-        const body = context.body as Record<string, unknown> | undefined;
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
-        const directories = user?.directories as Record<string, string> | undefined;
+        const ctx = context as Record<string, unknown>;
+        const body = ctx.body as Record<string, unknown> | undefined;
+        const user = ctx.user as UserContext | undefined;
+        const directories = user?.directories;
 
         try {
             if (!body || !validateAvatarUrlField(body)) {
@@ -1174,24 +1200,30 @@ export const router = new Elysia({ prefix: '/api/chats' })
                 return;
             }
 
-            const { query, avatar_url, group_id } = body as Record<string, unknown>;
-
-            /** @type {string[]} */
-            let chatFiles: string[] = [];
+            const { query, avatar_url, group_id } = body;
+            const chatFiles: string[] = [];
 
             if (group_id) {
-                // Find group's chat IDs first
                 const groupDir = directories?.groups ?? '';
-                const groupFiles = fs
-                    .readdirSync(groupDir)
-                    .filter((file) => path.extname(file) === '.json');
+                const groupFiles: string[] = [];
+                try {
+                    const files = await fsp.readdir(groupDir);
+                    for (let i = 0; i < files.length; i++) {
+                        const file = files[i]!;
+                        if (file.endsWith('.json')) {
+                            groupFiles.push(file);
+                        }
+                    }
+                } catch {
+                    // Group directory does not exist
+                }
 
                 let targetGroup: Record<string, unknown> | undefined;
-                for (const groupFile of groupFiles) {
+                for (let i = 0; i < groupFiles.length; i++) {
+                    const groupFile = groupFiles[i]!;
                     try {
-                        const groupData = JSON.parse(
-                            fs.readFileSync(path.join(groupDir, groupFile), 'utf8'),
-                        );
+                        const contents = await fsp.readFile(path.join(groupDir, groupFile), 'utf8');
+                        const groupData = JSON.parse(contents);
                         if (groupData.id === group_id) {
                             targetGroup = groupData;
                             break;
@@ -1202,74 +1234,75 @@ export const router = new Elysia({ prefix: '/api/chats' })
                 }
 
                 if (!Array.isArray(targetGroup?.chats)) {
-                    return [] as Record<string, unknown>[];
+                    return [];
                 }
 
-                // Find group chat files for given group ID
                 const groupChatsDir = directories?.groupChats ?? '';
-                chatFiles = (targetGroup.chats as string[])
-                    .map((chatId: string) => path.join(groupChatsDir, `${chatId}.jsonl`))
-                    .filter((fileName: string) => fs.existsSync(fileName));
-            } else {
-                // Regular character chat directory
-                const character_name = (avatar_url as string).replace('.png', '');
-                const directoryPath = path.join(directories?.chats ?? '', character_name);
-
-                if (!fs.existsSync(directoryPath)) {
-                    return [] as Record<string, unknown>[];
+                const rawChats = targetGroup.chats as string[];
+                for (let i = 0; i < rawChats.length; i++) {
+                    const chatPath = path.join(groupChatsDir, `${rawChats[i]}.jsonl`);
+                    try {
+                        await fsp.access(chatPath);
+                        chatFiles.push(chatPath);
+                    } catch {
+                        // File does not exist
+                    }
                 }
+            } else {
+                const avatarUrlStr = String(avatar_url ?? '');
+                const characterName = avatarUrlStr.endsWith('.png') ? avatarUrlStr.slice(0, -4) : avatarUrlStr;
+                const directoryPath = path.join(directories?.chats ?? '', characterName);
 
-                chatFiles = fs
-                    .readdirSync(directoryPath)
-                    .filter((file) => path.extname(file) === '.jsonl')
-                    .map((fileName) => path.join(directoryPath, fileName));
+                try {
+                    const files = await fsp.readdir(directoryPath);
+                    for (let i = 0; i < files.length; i++) {
+                        const file = files[i]!;
+                        if (file.endsWith('.jsonl')) {
+                            chatFiles.push(path.join(directoryPath, file));
+                        }
+                    }
+                } catch {
+                    return [];
+                }
             }
 
             const results: Record<string, unknown>[] = [];
-
-            /** @type {string[]} */
-            const fragments = query
-                ? (query as string)
-                      .trim()
-                      .toLowerCase()
-                      .split(/\s+/)
-                      .filter((x: string) => x)
+            const fragments = typeof query === 'string'
+                ? query.trim().toLowerCase().split(/\s+/).filter(Boolean)
                 : [];
 
-            /** @type {ChatMatchFunction} */
             const hasTextMatch = (textArray: string[]): boolean => {
                 if (fragments.length === 0) {
                     return true;
                 }
-                return fragments.every((fragment: string) =>
-                    textArray.some((text: string) =>
-                        String(text ?? '')
-                            .toLowerCase()
-                            .includes(fragment),
-                    ),
-                );
+                for (let i = 0; i < fragments.length; i++) {
+                    const frag = fragments[i]!;
+                    let found = false;
+                    for (let j = 0; j < textArray.length; j++) {
+                        if (String(textArray[j] ?? '').toLowerCase().includes(frag)) {
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found) return false;
+                }
+                return true;
             };
 
             for (const chatFile of chatFiles) {
                 const matcher = query ? hasTextMatch : null;
-                const chatInfo = (await getChatInfo(chatFile, {}, false, matcher)) as Record<
-                    string,
-                    unknown
-                >;
+                const chatInfo = await getChatInfo(chatFile, {}, false, matcher);
                 const hasMatch =
-                    chatInfo.match || hasTextMatch([(chatInfo.file_id as string) ?? '']);
+                    Boolean(chatInfo.match) || hasTextMatch([(chatInfo.file_id as string) ?? '']);
 
-                // Skip corrupted or invalid chat files
                 if (!chatInfo.file_name) {
                     continue;
                 }
 
-                // Empty chats without a file name match are skipped when searching with a query
                 if (query && chatInfo.chat_items === 0 && !hasMatch) {
                     continue;
                 }
 
-                // If no search query or a match was found, include the chat in results
                 if (!query || hasMatch) {
                     results.push({
                         file_name: chatInfo.file_id,
@@ -1291,15 +1324,12 @@ export const router = new Elysia({ prefix: '/api/chats' })
 
     .post('/recent', async (context) => {
         const { set } = context;
-        const body = context.body as Record<string, unknown> | undefined;
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
-        const directories = user?.directories as Record<string, string> | undefined;
+        const ctx = context as Record<string, unknown>;
+        const body = ctx.body as Record<string, unknown> | undefined;
+        const user = ctx.user as UserContext | undefined;
+        const directories = user?.directories;
 
         try {
-            /** @type {{pngFile?: string, groupId?: string, filePath: string, mtime: number}[]} */
             const allChatFiles: {
                 pngFile?: string;
                 groupId?: string;
@@ -1311,85 +1341,103 @@ export const router = new Elysia({ prefix: '/api/chats' })
                 : [];
 
             const getCharacterChatFiles = async () => {
-                const pngDirents = await fs.promises.readdir(directories?.characters ?? '', {
-                    withFileTypes: true,
-                });
-                const pngFiles = pngDirents
-                    .filter((e) => e.isFile() && path.extname(e.name) === '.png')
-                    .map((e) => e.name);
+                const charsDir = directories?.characters ?? '';
+                let dirents: fs.Dirent[];
+                try {
+                    dirents = await fsp.readdir(charsDir, { withFileTypes: true });
+                } catch {
+                    return;
+                }
 
-                for (const pngFile of pngFiles) {
-                    const chatsDirectory = pngFile.replace('.png', '');
-                    const pathToChats = path.join(directories?.chats ?? '', chatsDirectory);
-                    if (!fs.existsSync(pathToChats)) {
-                        continue;
+                const pngFiles: string[] = [];
+                for (const e of dirents) {
+                    if (e.isFile() && e.name.endsWith('.png')) {
+                        pngFiles.push(e.name);
                     }
-                    const pathStats = await fs.promises.stat(pathToChats);
-                    if (pathStats.isDirectory()) {
-                        const chatFiles = await fs.promises.readdir(pathToChats);
-                        const jsonlFiles = chatFiles.filter(
-                            (file) => path.extname(file) === '.jsonl',
-                        );
+                }
 
-                        for (const file of jsonlFiles) {
-                            const filePath = path.join(pathToChats, file);
-                            const stats = await fs.promises.stat(filePath);
-                            allChatFiles.push({ pngFile, filePath, mtime: stats.mtimeMs });
+                const chatsBaseDir = directories?.chats ?? '';
+                for (const pngFile of pngFiles) {
+                    const chatsDirectory = pngFile.slice(0, -4);
+                    const pathToChats = path.join(chatsBaseDir, chatsDirectory);
+
+                    try {
+                        const pathStats = await fsp.stat(pathToChats);
+                        if (pathStats.isDirectory()) {
+                            const chatFiles = await fsp.readdir(pathToChats);
+                            for (const file of chatFiles) {
+                                if (file.endsWith('.jsonl')) {
+                                    const filePath = path.join(pathToChats, file);
+                                    const stats = await fsp.stat(filePath);
+                                    allChatFiles.push({ pngFile, filePath, mtime: stats.mtimeMs });
+                                }
+                            }
                         }
+                    } catch {
+                        // Chats directory does not exist
                     }
                 }
             };
 
             const getGroupChatFiles = async () => {
-                const groupDirents = await fs.promises.readdir(directories?.groups ?? '', {
-                    withFileTypes: true,
-                });
-                const groups = groupDirents
-                    .filter((e) => e.isFile() && path.extname(e.name) === '.json')
-                    .map((e) => e.name);
+                const groupsDir = directories?.groups ?? '';
+                let groupDirents: fs.Dirent[];
+                try {
+                    groupDirents = await fsp.readdir(groupsDir, { withFileTypes: true });
+                } catch {
+                    return;
+                }
 
-                for (const group of groups) {
-                    try {
-                        const groupPath = path.join(directories?.groups ?? '', group);
-                        const groupContents = await fs.promises.readFile(groupPath, 'utf8');
-                        const groupData = JSON.parse(groupContents);
+                const groupChatsDir = directories?.groupChats ?? '';
 
-                        if (Array.isArray(groupData.chats)) {
-                            for (const chat of groupData.chats) {
-                                const filePath = path.join(
-                                    directories?.groupChats ?? '',
-                                    `${chat}.jsonl`,
-                                );
-                                if (!fs.existsSync(filePath)) {
-                                    continue;
+                for (const e of groupDirents) {
+                    if (e.isFile() && e.name.endsWith('.json')) {
+                        try {
+                            const groupPath = path.join(groupsDir, e.name);
+                            const groupContents = await fsp.readFile(groupPath, 'utf8');
+                            const groupData = JSON.parse(groupContents);
+
+                            if (Array.isArray(groupData.chats)) {
+                                for (const chatId of groupData.chats) {
+                                    const filePath = path.join(groupChatsDir, `${chatId}.jsonl`);
+                                    try {
+                                        const stats = await fsp.stat(filePath);
+                                        allChatFiles.push({
+                                            groupId: groupData.id,
+                                            filePath,
+                                            mtime: stats.mtimeMs,
+                                        });
+                                    } catch {
+                                        // Chat file missing
+                                    }
                                 }
-                                const stats = await fs.promises.stat(filePath);
-                                allChatFiles.push({
-                                    groupId: groupData.id,
-                                    filePath,
-                                    mtime: stats.mtimeMs,
-                                });
                             }
+                        } catch {
+                            // Skip invalid group file
                         }
-                    } catch {
-                        // Skip group files that can't be read or parsed
-                        continue;
                     }
                 }
             };
 
             const getRootChatFiles = async () => {
-                const dirents = await fs.promises.readdir(directories?.chats ?? '', {
-                    withFileTypes: true,
-                });
-                const chatFiles = dirents
-                    .filter((e) => e.isFile() && path.extname(e.name) === '.jsonl')
-                    .map((e) => e.name);
+                const chatsDir = directories?.chats ?? '';
+                let dirents: fs.Dirent[];
+                try {
+                    dirents = await fsp.readdir(chatsDir, { withFileTypes: true });
+                } catch {
+                    return;
+                }
 
-                for (const file of chatFiles) {
-                    const filePath = path.join(directories?.chats ?? '', file);
-                    const stats = await fs.promises.stat(filePath);
-                    allChatFiles.push({ filePath, mtime: stats.mtimeMs });
+                for (const e of dirents) {
+                    if (e.isFile() && e.name.endsWith('.jsonl')) {
+                        const filePath = path.join(chatsDir, e.name);
+                        try {
+                            const stats = await fsp.stat(filePath);
+                            allChatFiles.push({ filePath, mtime: stats.mtimeMs });
+                        } catch {
+                            // File unreadable
+                        }
+                    }
                 }
             };
 
@@ -1399,35 +1447,54 @@ export const router = new Elysia({ prefix: '/api/chats' })
                 getRootChatFiles(),
             ]);
 
-            const max = parseInt(String(body?.max ?? Number.MAX_SAFE_INTEGER)) + pinnedChats.length;
-            const isPinned = (chatFile: { pngFile?: string; groupId?: string; filePath: string }) =>
-                pinnedChats.some(
-                    (p: Record<string, unknown>) =>
-                        p.file_name === path.basename(chatFile.filePath) &&
-                        (p.avatar === chatFile.pngFile || p.group === chatFile.groupId),
-                );
-            const recentChats = allChatFiles
-                .toSorted((a, b) => {
-                    const isAPinned = isPinned(a);
-                    const isBPinned = isPinned(b);
+            const max = parseInt(String(body?.max ?? Number.MAX_SAFE_INTEGER), 10) + pinnedChats.length;
 
-                    if (isAPinned && !isBPinned) return -1;
-                    if (!isAPinned && isBPinned) return 1;
+            const isPinned = (chatFile: { pngFile?: string; groupId?: string; filePath: string }) => {
+                const lastSlash = Math.max(chatFile.filePath.lastIndexOf('/'), chatFile.filePath.lastIndexOf('\\'));
+                const baseName = lastSlash !== -1 ? chatFile.filePath.slice(lastSlash + 1) : chatFile.filePath;
 
-                    return b.mtime - a.mtime;
-                })
-                .slice(0, max);
-            const jsonFilesPromise = recentChats.map((file) => {
-                const withMetadata = !!body?.metadata;
-                return file.groupId
-                    ? getChatInfo(file.filePath, { group: file.groupId }, withMetadata)
-                    : getChatInfo(file.filePath, { avatar: file.pngFile }, withMetadata);
+                for (const p of pinnedChats) {
+                    if (
+                        p.file_name === baseName &&
+                        (p.avatar === chatFile.pngFile || p.group === chatFile.groupId)
+                    ) {
+                        return true;
+                    }
+                }
+                return false;
+            };
+
+            allChatFiles.sort((a, b) => {
+                const isAPinned = isPinned(a);
+                const isBPinned = isPinned(b);
+
+                if (isAPinned && !isBPinned) return -1;
+                if (!isAPinned && isBPinned) return 1;
+
+                return b.mtime - a.mtime;
             });
 
-            const chatData = (await Promise.allSettled(jsonFilesPromise))
-                .filter((x) => x.status === 'fulfilled')
-                .map((x) => x.value as { file_name?: string });
-            const validFiles = chatData.filter((i) => i.file_name);
+            const sliced = allChatFiles.slice(0, max);
+            const jsonFilesPromise = Array.from({ length: sliced.length });
+            const withMetadata = Boolean(body?.metadata);
+
+            for (let i = 0; i < sliced.length; i++) {
+                const file = sliced[i]!;
+                jsonFilesPromise[i] = file.groupId
+                    ? getChatInfo(file.filePath, { group: file.groupId }, withMetadata)
+                    : getChatInfo(file.filePath, { avatar: file.pngFile }, withMetadata);
+            }
+            const settled = await Promise.allSettled(jsonFilesPromise);
+            const validFiles: unknown[] = [];
+
+            for (const item of settled) {
+                if (item.status === 'fulfilled') {
+                    const val = item.value as Record<string, unknown> | undefined;
+                    if (val?.file_name) {
+                        validFiles.push(val);
+                    }
+                }
+            }
 
             return validFiles;
         } catch (error) {
@@ -1436,23 +1503,3 @@ export const router = new Elysia({ prefix: '/api/chats' })
             return;
         }
     });
-
-/**
- * Gets the chat as an object.
- * @param {string} chatFilePath The full chat file path.
- * @returns {Array}} If the chatFilePath cannot be read, this will return [].
- */
-export function getChatData(chatFilePath: string): object[] {
-    let chatData = [];
-
-    const chatJSON = tryReadFileSync(chatFilePath) ?? '';
-    if (chatJSON.length > 0) {
-        const lines = chatJSON.split('\n');
-        // Iterate through the array of strings and parse each line as JSON
-        chatData = lines.map((line) => tryParse(line)).filter((x) => x);
-    } else {
-        console.warn(`File not found: ${chatFilePath}. The chat does not exist or is empty.`);
-    }
-
-    return chatData;
-}
