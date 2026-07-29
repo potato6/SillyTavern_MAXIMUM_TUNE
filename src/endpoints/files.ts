@@ -1,55 +1,83 @@
 import path from 'node:path';
-import fs from 'node:fs';
+import fsp from 'node:fs/promises';
 import { Elysia } from 'elysia';
 import sanitize from 'sanitize-filename';
-import { sync as writeFileSyncAtomic } from 'write-file-atomic';
+import writeFileAtomic from 'write-file-atomic';
 
 import { validateAssetFileName } from './assets.js';
 import { clientRelativePath } from '../util.js';
 
+interface UserDirectories {
+    root?: string;
+    files?: string;
+    [key: string]: unknown;
+}
+
+interface UserProfile {
+    handle?: string;
+    [key: string]: unknown;
+}
+
+interface UserContext {
+    directories?: UserDirectories;
+    profile?: UserProfile;
+    [key: string]: unknown;
+}
+
 export const router = new Elysia({ prefix: '/api/files' })
     .post('/sanitize-filename', (context) => {
-        const body = context.body as Record<string, unknown>;
+        const { set } = context;
+        const ctx = context as Record<string, unknown>;
+        const body = ctx.body as Record<string, unknown> | undefined;
+
         try {
-            const fileName = String(body.fileName ?? '');
-            if (!fileName) {
-                return new Response('No fileName specified', { status: 400 });
+            const fileName = body?.fileName;
+            if (typeof fileName !== 'string' || fileName.length === 0) {
+                set.status = 400;
+                return 'No fileName specified';
             }
             return { fileName: sanitize(fileName) };
         } catch (error) {
             console.error(error);
-            return new Response(null, { status: 500 });
+            set.status = 500;
         }
     })
-    .post('/upload', (context) => {
+    .post('/upload', async (context) => {
         const { set } = context;
-        const body = context.body as Record<string, unknown>;
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
-        const directories = user?.directories as Record<string, string> | undefined;
-        const profile = user?.profile as Record<string, unknown> | undefined;
+        const ctx = context as Record<string, unknown>;
+        const body = ctx.body as Record<string, unknown> | undefined;
+        const user = ctx.user as UserContext | undefined;
+        const directories = user?.directories;
+        const profile = user?.profile;
 
         try {
-            const name = body.name as string;
-            const data = body.data as string;
+            const name = body?.name;
+            const data = body?.data;
 
-            if (!name) {
-                return new Response('No upload name specified', { status: 400 });
+            if (typeof name !== 'string' || name.length === 0) {
+                set.status = 400;
+                return 'No upload name specified';
             }
 
-            if (!data) {
-                return new Response('No upload data specified', { status: 400 });
+            if (typeof data !== 'string' || data.length === 0) {
+                set.status = 400;
+                return 'No upload data specified';
             }
 
             const validation = validateAssetFileName(name);
-            if (validation.error) return new Response(validation.message, { status: 400 });
+            if (validation.error) {
+                set.status = 400;
+                return validation.message;
+            }
 
-            const pathToUpload = path.join(directories?.files ?? '', name);
+            const filesDir = directories?.files ?? '';
+            const rootDir = directories?.root ?? '';
+            const pathToUpload = path.join(filesDir, name);
             const fileBuffer = Buffer.from(data, 'base64');
-            writeFileSyncAtomic(pathToUpload, fileBuffer);
-            const url = clientRelativePath(directories?.root ?? '', pathToUpload);
+
+            await writeFileAtomic(pathToUpload, fileBuffer);
+
+            const url = clientRelativePath(rootDir, pathToUpload);
             console.info(`Uploaded file: ${url} from ${profile?.handle}`);
             return { path: url };
         } catch (error) {
@@ -57,63 +85,88 @@ export const router = new Elysia({ prefix: '/api/files' })
             set.status = 500;
         }
     })
-    .post('/delete', (context) => {
+    .post('/delete', async (context) => {
         const { set } = context;
-        const body = context.body as Record<string, unknown>;
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
-        const directories = user?.directories as Record<string, string> | undefined;
+        const ctx = context as Record<string, unknown>;
+        const body = ctx.body as Record<string, unknown> | undefined;
+        const user = ctx.user as UserContext | undefined;
+        const directories = user?.directories;
 
         try {
-            const reqPath = body.path as string;
+            const reqPath = body?.path;
 
-            if (!reqPath) {
-                return new Response('No path specified', { status: 400 });
+            if (typeof reqPath !== 'string' || reqPath.length === 0) {
+                set.status = 400;
+                return 'No path specified';
             }
 
-            const pathToDelete = path.join(directories?.root ?? '', reqPath);
-            if (!pathToDelete.startsWith(directories?.files ?? '')) {
-                return new Response('Invalid path', { status: 400 });
+            const rootDir = directories?.root ?? '';
+            const filesDir = directories?.files ?? '';
+            const pathToDelete = path.join(rootDir, reqPath);
+
+            if (!pathToDelete.startsWith(filesDir)) {
+                set.status = 400;
+                return 'Invalid path';
             }
 
-            if (!fs.existsSync(pathToDelete)) {
-                return new Response('File not found', { status: 404 });
+            try {
+                await fsp.unlink(pathToDelete);
+                set.status = 204;
+            } catch (err: any) {
+                if (err?.code === 'ENOENT') {
+                    set.status = 404;
+                    return 'File not found';
+                }
+                throw err;
             }
-
-            fs.unlinkSync(pathToDelete);
-            set.status = 204;
         } catch (error) {
             console.error(error);
             set.status = 500;
         }
     })
-    .post('/verify', (context) => {
+    .post('/verify', async (context) => {
         const { set } = context;
-        const body = context.body as Record<string, unknown>;
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
-        const directories = user?.directories as Record<string, string> | undefined;
+        const ctx = context as Record<string, unknown>;
+        const body = ctx.body as Record<string, unknown> | undefined;
+        const user = ctx.user as UserContext | undefined;
+        const directories = user?.directories;
 
         try {
-            const urls = body.urls as string[];
+            const urls = body?.urls;
             if (!Array.isArray(urls)) {
-                return new Response('No URLs specified', { status: 400 });
+                set.status = 400;
+                return 'No URLs specified';
             }
 
+            const rootDir = directories?.root ?? '';
+            const filesDir = directories?.files ?? '';
             const verified: Record<string, boolean> = {};
 
-            for (const url of urls) {
-                const pathToVerify = path.join(directories?.root ?? '', url);
-                if (!pathToVerify.startsWith(directories?.files ?? '')) {
-                    console.warn(`File verification: Invalid path: ${pathToVerify}`);
-                    continue;
+            const results = await Promise.all(
+                urls.map(async (url) => {
+                    if (typeof url !== 'string') {
+                        return null;
+                    }
+
+                    const pathToVerify = path.join(rootDir, url);
+                    if (!pathToVerify.startsWith(filesDir)) {
+                        console.warn(`File verification: Invalid path: ${pathToVerify}`);
+                        return null;
+                    }
+
+                    try {
+                        await fsp.access(pathToVerify);
+                        return { url, exists: true } as const;
+                    } catch {
+                        return { url, exists: false } as const;
+                    }
+                }),
+            );
+
+            for (const res of results) {
+                if (res) {
+                    verified[res.url] = res.exists;
                 }
-                const fileExists = fs.existsSync(pathToVerify);
-                verified[url] = fileExists;
             }
 
             return verified;
