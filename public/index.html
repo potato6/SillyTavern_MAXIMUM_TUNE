@@ -19091,6 +19091,28 @@
                 }
                 return _append.apply(this, args);
             };
+            // Fix .find() to handle jQuery pseudo-selectors cash-dom doesn't support
+            // (cash-dom delegates to native querySelectorAll which doesn't know :selected, :checkbox, etc.)
+            (function () {
+                var _find = $.fn.find;
+                var JQUERY_PSEUDO_MAP = [
+                    // Order matters: more specific replacements first
+                    [/:selected\b/g, 'option:checked'],
+                    [/:(checkbox|radio|file|image|submit|reset|password|text)\b/g, '[type="$1"]'],
+                    [/:button\b/g, 'button, [type="button"]'],
+                    [/:input\b/g, 'input, select, textarea, button'],
+                    [/:header\b/g, 'h1, h2, h3, h4, h5, h6'],
+                    [/:parent\b/g, ':not(:empty)'],
+                ];
+                $.fn.find = function (selector) {
+                    if (typeof selector === 'string') {
+                        for (var i = 0; i < JQUERY_PSEUDO_MAP.length; i++) {
+                            selector = selector.replace(JQUERY_PSEUDO_MAP[i][0], JQUERY_PSEUDO_MAP[i][1]);
+                        }
+                    }
+                    return _find.call(this, selector);
+                };
+            })();
             (function () {
                 var c = $;
                 window.$ = function (s) {
