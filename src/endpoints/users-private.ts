@@ -5,7 +5,7 @@ import os from 'node:os';
 
 import storage from 'node-persist';
 import { Elysia } from 'elysia';
-import { Archiver } from 'archiver';
+import { ZipArchive } from 'archiver';
 
 import {
     getUserAvatar,
@@ -23,13 +23,39 @@ import { color, Cache, getConfigValue, generateTimestamp } from '../util.js';
 
 const RESET_CACHE = new Cache(5 * 60 * 1000);
 
+interface UserDirectories {
+    root?: string;
+    [key: string]: unknown;
+}
+
+interface UserProfile {
+    handle?: string;
+    name?: string;
+    admin?: boolean;
+    password?: string;
+    salt?: string;
+    created?: unknown;
+    [key: string]: unknown;
+}
+
+interface UserSession {
+    handle?: string | null;
+    csrfToken?: string | null;
+    version?: string | number | null;
+    [key: string]: unknown;
+}
+
+interface UserContext {
+    directories?: UserDirectories;
+    profile?: UserProfile;
+    [key: string]: unknown;
+}
+
 export const router = new Elysia({ prefix: '/api/users' })
     .post('/logout', (context) => {
         const { set } = context;
-        const session = (context as unknown as Record<string, unknown>).session as Record<
-            string,
-            unknown
-        > | null;
+        const ctx = context as Record<string, unknown>;
+        const session = ctx.session as UserSession | undefined;
 
         try {
             if (!session) {
@@ -49,68 +75,61 @@ export const router = new Elysia({ prefix: '/api/users' })
     })
     .get('/me', async (context) => {
         const { set } = context;
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
+        const ctx = context as Record<string, unknown>;
+        const user = ctx.user as UserContext | undefined;
 
         try {
-            if (!user) {
+            if (!user || !user.profile) {
                 set.status = 403;
                 return;
             }
 
-            const profile = user.profile as Record<string, unknown>;
-            const viewModel = {
-                handle: profile.handle,
+            const profile = user.profile;
+            const handle = profile.handle ?? '';
+
+            return {
+                handle,
                 name: profile.name,
-                avatar: await getUserAvatar(profile.handle as string),
+                avatar: await getUserAvatar(handle),
                 admin: profile.admin,
-                password: !!profile.password,
+                password: Boolean(profile.password),
                 created: profile.created,
             };
-
-            return viewModel;
         } catch (error) {
             console.error(error);
             set.status = 500;
         }
     })
     .post('/change-avatar', async (context) => {
-        const { body, set } = context;
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
-        const bodyAny = body as Record<string, unknown> | null;
+        const { set } = context;
+        const ctx = context as Record<string, unknown>;
+        const bodyAny = ctx.body as Record<string, unknown> | undefined;
+        const user = ctx.user as UserContext | undefined;
 
         try {
-            if (!bodyAny?.handle) {
+            const handle = bodyAny?.handle;
+            if (typeof handle !== 'string' || handle.length === 0) {
                 console.warn('Change avatar failed: Missing required fields');
                 set.status = 400;
                 return { error: 'Missing required fields' };
             }
 
-            const profile = user?.profile as Record<string, unknown> | undefined;
-            if (bodyAny.handle !== profile?.handle && !profile?.admin) {
+            const profile = user?.profile;
+            if (handle !== profile?.handle && !profile?.admin) {
                 console.error('Change avatar failed: Unauthorized');
                 set.status = 403;
                 return { error: 'Unauthorized' };
             }
 
-            // Avatar is not a data URL or not an empty string
-            const avatar = bodyAny.avatar as string;
-            if (!avatar.startsWith('data:image/') && avatar !== '') {
+            const avatar = bodyAny?.avatar;
+            if (typeof avatar !== 'string' || (!avatar.startsWith('data:image/') && avatar !== '')) {
                 console.warn('Change avatar failed: Invalid data URL');
                 set.status = 400;
                 return { error: 'Invalid data URL' };
             }
 
-            /** @type {import('../users.js').User} */
-            const existingUser = (await storage.getItem(toKey(bodyAny.handle as string))) as Record<
-                string,
-                unknown
-            > | null;
+            const userKey = toKey(handle);
+            const existingUser = await storage.getItem(userKey);
 
             if (!existingUser) {
                 console.error('Change avatar failed: User not found');
@@ -118,7 +137,7 @@ export const router = new Elysia({ prefix: '/api/users' })
                 return { error: 'User not found' };
             }
 
-            await storage.setItem(toAvatarKey(bodyAny.handle as string), avatar);
+            await storage.setItem(toAvatarKey(handle), avatar);
             set.status = 204;
         } catch (error) {
             console.error(error);
@@ -126,36 +145,29 @@ export const router = new Elysia({ prefix: '/api/users' })
         }
     })
     .post('/change-password', async (context) => {
-        const { body, set } = context;
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
-        const session = (context as unknown as Record<string, unknown>).session as Record<
-            string,
-            unknown
-        > | null;
-        const bodyAny = body as Record<string, unknown> | null;
+        const { set } = context;
+        const ctx = context as Record<string, unknown>;
+        const bodyAny = ctx.body as Record<string, unknown> | undefined;
+        const user = ctx.user as UserContext | undefined;
+        const session = ctx.session as UserSession | undefined;
 
         try {
-            if (!bodyAny?.handle) {
+            const handle = bodyAny?.handle;
+            if (typeof handle !== 'string' || handle.length === 0) {
                 console.warn('Change password failed: Missing required fields');
                 set.status = 400;
                 return { error: 'Missing required fields' };
             }
 
-            const profile = user?.profile as Record<string, unknown> | undefined;
-            if (bodyAny.handle !== profile?.handle && !profile?.admin) {
+            const profile = user?.profile;
+            if (handle !== profile?.handle && !profile?.admin) {
                 console.error('Change password failed: Unauthorized');
                 set.status = 403;
                 return { error: 'Unauthorized' };
             }
 
-            /** @type {import('../users.js').User} */
-            const existingUser = (await storage.getItem(toKey(bodyAny.handle as string))) as Record<
-                string,
-                unknown
-            > | null;
+            const userKey = toKey(handle);
+            const existingUser = (await storage.getItem(userKey)) as Record<string, any> | null;
 
             if (!existingUser) {
                 console.error('Change password failed: User not found');
@@ -169,29 +181,30 @@ export const router = new Elysia({ prefix: '/api/users' })
                 return { error: 'User is disabled' };
             }
 
+            const oldPassword = bodyAny?.oldPassword;
             if (
                 !profile?.admin &&
                 existingUser.password &&
                 existingUser.password !==
-                    getPasswordHash(bodyAny.oldPassword as string, existingUser.salt as string)
+                    getPasswordHash(typeof oldPassword === 'string' ? oldPassword : '', existingUser.salt)
             ) {
                 console.error('Change password failed: Incorrect password');
                 set.status = 403;
                 return { error: 'Incorrect password' };
             }
 
-            if (bodyAny.newPassword) {
+            const newPassword = bodyAny?.newPassword;
+            if (typeof newPassword === 'string' && newPassword.length > 0) {
                 const salt = getPasswordSalt();
-                existingUser.password = getPasswordHash(bodyAny.newPassword as string, salt);
+                existingUser.password = getPasswordHash(newPassword, salt);
                 existingUser.salt = salt;
             } else {
                 existingUser.password = '';
                 existingUser.salt = '';
             }
 
-            await storage.setItem(toKey(bodyAny.handle as string), existingUser);
+            await storage.setItem(userKey, existingUser);
 
-            // Update session version to keep the current session valid after password change
             if (session && session.handle === existingUser.handle) {
                 session.version = getAccountVersion(existingUser as any);
             }
@@ -203,11 +216,10 @@ export const router = new Elysia({ prefix: '/api/users' })
         }
     })
     .post('/backup', async (context) => {
-        const { body, set } = context;
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
+        const { set } = context;
+        const ctx = context as Record<string, unknown>;
+        const bodyAny = ctx.body as Record<string, unknown> | undefined;
+        const user = ctx.user as UserContext | undefined;
 
         try {
             const allowFullDataBackup = !!getConfigValue(
@@ -222,29 +234,26 @@ export const router = new Elysia({ prefix: '/api/users' })
                 return { error: 'Full data backup is disabled' };
             }
 
-            const bodyAny = body as Record<string, unknown> | null;
-            const handle = bodyAny?.handle as string;
-
-            if (!handle) {
+            const handle = bodyAny?.handle;
+            if (typeof handle !== 'string' || handle.length === 0) {
                 console.warn('Backup failed: Missing required fields');
                 set.status = 400;
                 return { error: 'Missing required fields' };
             }
 
-            const profile = user?.profile as Record<string, unknown> | undefined;
+            const profile = user?.profile;
             if (handle !== profile?.handle && !profile?.admin) {
                 console.error('Backup failed: Unauthorized');
                 set.status = 403;
                 return { error: 'Unauthorized' };
             }
 
-            // Create the backup archive to a temporary file instead of piping to Express response
             const directories = getUserDirectories(handle);
             const timestamp = generateTimestamp();
-            const tempFilePath = path.join(os.tmpdir(), `${handle}-${timestamp}.zip`);
+            const archiveName = `${handle}-${timestamp}.zip`;
+            const tempFilePath = path.join(os.tmpdir(), archiveName);
 
-            // @ts-expect-error FIXME: Archiver constructor overload mismatch
-            const archive = new Archiver('zip');
+            const archive = new ZipArchive();
             const output = createWriteStream(tempFilePath);
 
             await new Promise<void>((resolve, reject) => {
@@ -271,7 +280,7 @@ export const router = new Elysia({ prefix: '/api/users' })
 
             return new Response(Bun.file(tempFilePath), {
                 headers: {
-                    'Content-Disposition': `attachment; filename="${path.basename(tempFilePath)}"`,
+                    'Content-Disposition': `attachment; filename="${archiveName}"`,
                     'Content-Type': 'application/zip',
                 },
             });
@@ -281,33 +290,30 @@ export const router = new Elysia({ prefix: '/api/users' })
         }
     })
     .post('/reset-settings', async (context) => {
-        const { body, set } = context;
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
-        const bodyAny = body as Record<string, unknown> | null;
+        const { set } = context;
+        const ctx = context as Record<string, unknown>;
+        const bodyAny = ctx.body as Record<string, unknown> | undefined;
+        const user = ctx.user as UserContext | undefined;
 
         try {
-            const profile = user?.profile as Record<string, unknown> | undefined;
-            const password = bodyAny?.password as string;
+            const profile = user?.profile;
+            const password = typeof bodyAny?.password === 'string' ? bodyAny.password : '';
 
             if (
                 profile?.password &&
-                profile.password !== getPasswordHash(password, profile.salt as string)
+                profile.password !== getPasswordHash(password, profile.salt ?? '')
             ) {
                 console.warn('Reset settings failed: Incorrect password');
                 set.status = 403;
                 return { error: 'Incorrect password' };
             }
 
-            const directories = user?.directories as Record<string, string> | undefined;
-            const pathToFile = path.join(directories?.root ?? '', SETTINGS_FILE);
+            const directories = user?.directories;
+            const rootDir = directories?.root ?? '';
+            const pathToFile = path.join(rootDir, SETTINGS_FILE);
             await fsPromises.rm(pathToFile, { force: true });
 
-            const userDirs = user?.directories as
-                | import('../users.js').UserDirectoryList
-                | undefined;
+            const userDirs = directories as import('../users.js').UserDirectoryList | undefined;
             await checkForNewContent(userDirs ? [userDirs] : [], [CONTENT_TYPES.SETTINGS]);
 
             set.status = 204;
@@ -317,32 +323,30 @@ export const router = new Elysia({ prefix: '/api/users' })
         }
     })
     .post('/change-name', async (context) => {
-        const { body, set } = context;
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
-        const bodyAny = body as Record<string, unknown> | null;
+        const { set } = context;
+        const ctx = context as Record<string, unknown>;
+        const bodyAny = ctx.body as Record<string, unknown> | undefined;
+        const user = ctx.user as UserContext | undefined;
 
         try {
-            if (!bodyAny?.name || !bodyAny?.handle) {
+            const name = bodyAny?.name;
+            const handle = bodyAny?.handle;
+
+            if (typeof name !== 'string' || typeof handle !== 'string' || !name || !handle) {
                 console.warn('Change name failed: Missing required fields');
                 set.status = 400;
                 return { error: 'Missing required fields' };
             }
 
-            const profile = user?.profile as Record<string, unknown> | undefined;
-            if (bodyAny.handle !== profile?.handle && !profile?.admin) {
+            const profile = user?.profile;
+            if (handle !== profile?.handle && !profile?.admin) {
                 console.error('Change name failed: Unauthorized');
                 set.status = 403;
                 return { error: 'Unauthorized' };
             }
 
-            /** @type {import('../users.js').User} */
-            const existingUser = (await storage.getItem(toKey(bodyAny.handle as string))) as Record<
-                string,
-                unknown
-            > | null;
+            const userKey = toKey(handle);
+            const existingUser = (await storage.getItem(userKey)) as Record<string, any> | null;
 
             if (!existingUser) {
                 console.warn('Change name failed: User not found');
@@ -350,8 +354,8 @@ export const router = new Elysia({ prefix: '/api/users' })
                 return { error: 'User not found' };
             }
 
-            existingUser.name = bodyAny.name;
-            await storage.setItem(toKey(bodyAny.handle as string), existingUser);
+            existingUser.name = name;
+            await storage.setItem(userKey, existingUser);
 
             set.status = 204;
         } catch (error) {
@@ -361,22 +365,22 @@ export const router = new Elysia({ prefix: '/api/users' })
     })
     .post('/reset-step1', async (context) => {
         const { set } = context;
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
-        const profile = user?.profile as Record<string, unknown> | undefined;
+        const ctx = context as Record<string, unknown>;
+        const user = ctx.user as UserContext | undefined;
+        const profile = user?.profile;
 
         try {
+            const handle = profile?.handle ?? '';
             const resetCode = String(crypto.randomInt(1000, 9999));
             console.log();
             console.log(
                 color.magenta(
-                    `${(profile?.name as string) ?? 'User'}, your account reset code is: `,
+                    `${profile?.name ?? 'User'}, your account reset code is: `,
                 ) + color.red(resetCode),
             );
             console.log();
-            RESET_CACHE.set(profile?.handle as string, resetCode);
+
+            RESET_CACHE.set(handle, resetCode);
             set.status = 204;
         } catch (error) {
             console.error('Recover step 1 failed:', error);
@@ -384,52 +388,51 @@ export const router = new Elysia({ prefix: '/api/users' })
         }
     })
     .post('/reset-step2', async (context) => {
-        const { body, set } = context;
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
-        const profile = user?.profile as Record<string, unknown> | undefined;
-        const bodyAny = body as Record<string, unknown> | null;
+        const { set } = context;
+        const ctx = context as Record<string, unknown>;
+        const bodyAny = ctx.body as Record<string, unknown> | undefined;
+        const user = ctx.user as UserContext | undefined;
+        const profile = user?.profile;
 
         try {
-            if (!bodyAny?.code) {
+            const reqCode = bodyAny?.code;
+            if (typeof reqCode !== 'string' || reqCode.length === 0) {
                 console.warn('Recover step 2 failed: Missing required fields');
                 set.status = 400;
                 return { error: 'Missing required fields' };
             }
 
+            const reqPassword = typeof bodyAny?.password === 'string' ? bodyAny.password : '';
             if (
                 profile?.password &&
-                profile.password !==
-                    getPasswordHash(bodyAny.password as string, profile.salt as string)
+                profile.password !== getPasswordHash(reqPassword, profile.salt ?? '')
             ) {
                 console.warn('Recover step 2 failed: Incorrect password');
                 set.status = 400;
                 return { error: 'Incorrect password' };
             }
 
-            const code = RESET_CACHE.get(profile?.handle as string);
+            const handle = profile?.handle ?? '';
+            const code = RESET_CACHE.get(handle);
 
-            if (!code || code !== bodyAny.code) {
+            if (!code || code !== reqCode) {
                 console.warn('Recover step 2 failed: Incorrect code');
                 set.status = 400;
                 return { error: 'Incorrect code' };
             }
 
-            console.info('Resetting account data:', profile?.handle);
+            console.info('Resetting account data:', handle);
 
-            const directories = user?.directories as Record<string, string> | undefined;
-            await fsPromises.rm(directories?.root ?? '', { recursive: true, force: true });
+            const directories = user?.directories;
+            const rootDir = directories?.root ?? '';
+            await fsPromises.rm(rootDir, { recursive: true, force: true });
 
             await ensurePublicDirectoriesExist();
 
-            const userDirs = user?.directories as
-                | import('../users.js').UserDirectoryList
-                | undefined;
+            const userDirs = directories as import('../users.js').UserDirectoryList | undefined;
             await checkForNewContent(userDirs ? [userDirs] : []);
 
-            RESET_CACHE.remove(profile?.handle as string);
+            RESET_CACHE.remove(handle);
             set.status = 204;
         } catch (error) {
             console.error('Recover step 2 failed:', error);
