@@ -1,53 +1,81 @@
 import path from 'node:path';
-import fs from 'node:fs';
+import fsp from 'node:fs/promises';
 import { Elysia } from 'elysia';
 import sanitize from 'sanitize-filename';
-import { sync as writeFileAtomicSync } from 'write-file-atomic';
+import writeFileAtomic from 'write-file-atomic';
+
+interface UserDirectories {
+    themes?: string;
+    [key: string]: unknown;
+}
+
+interface UserContext {
+    directories?: UserDirectories;
+    [key: string]: unknown;
+}
 
 export const router = new Elysia({ prefix: '/api/themes' })
-    .post('/save', (context) => {
-        const { body, set } = context;
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
-        const directories = user?.directories as Record<string, string> | undefined;
-        const bodyAny = body as Record<string, unknown> | null;
+    .post('/save', async (context) => {
+        const { set } = context;
+        const ctx = context as Record<string, unknown>;
+        const bodyAny = ctx.body as Record<string, unknown> | undefined;
+        const user = ctx.user as UserContext | undefined;
+        const directories = user?.directories;
 
-        if (!bodyAny?.name) {
+        const rawName = bodyAny?.name;
+        if (typeof rawName !== 'string' || rawName.length === 0) {
             set.status = 400;
             return;
         }
 
-        const filename = path.join(directories?.themes ?? '', sanitize(`${bodyAny.name}.json`));
-        writeFileAtomicSync(filename, JSON.stringify(body, null, 4), 'utf8');
-
-        set.status = 204;
-    })
-    .post('/delete', (context) => {
-        const { body, set } = context;
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
-        const directories = user?.directories as Record<string, string> | undefined;
-        const bodyAny = body as Record<string, unknown> | null;
-
-        if (!bodyAny?.name) {
+        const name = sanitize(rawName);
+        if (name.length === 0) {
             set.status = 400;
             return;
         }
+
+        const themesDir = directories?.themes ?? '';
+        const filename = path.join(themesDir, `${name}.json`);
 
         try {
-            const filename = path.join(directories?.themes ?? '', sanitize(`${bodyAny.name}.json`));
-            if (!fs.existsSync(filename)) {
+            await writeFileAtomic(filename, JSON.stringify(ctx.body, null, 4), 'utf8');
+            set.status = 204;
+        } catch (error) {
+            console.error(error);
+            set.status = 500;
+        }
+    })
+    .post('/delete', async (context) => {
+        const { set } = context;
+        const ctx = context as Record<string, unknown>;
+        const bodyAny = ctx.body as Record<string, unknown> | undefined;
+        const user = ctx.user as UserContext | undefined;
+        const directories = user?.directories;
+
+        const rawName = bodyAny?.name;
+        if (typeof rawName !== 'string' || rawName.length === 0) {
+            set.status = 400;
+            return;
+        }
+
+        const name = sanitize(rawName);
+        if (name.length === 0) {
+            set.status = 400;
+            return;
+        }
+
+        const themesDir = directories?.themes ?? '';
+        const filename = path.join(themesDir, `${name}.json`);
+
+        try {
+            await fsp.unlink(filename);
+            set.status = 204;
+        } catch (error: any) {
+            if (error?.code === 'ENOENT') {
                 console.error('Theme file not found:', filename);
                 set.status = 404;
                 return;
             }
-            fs.unlinkSync(filename);
-            set.status = 204;
-        } catch (error) {
             console.error(error);
             set.status = 500;
         }
