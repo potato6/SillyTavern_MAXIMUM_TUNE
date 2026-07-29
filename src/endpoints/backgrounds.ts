@@ -37,8 +37,7 @@ interface MetadataIndex {
 
 export const router = new Elysia({ prefix: '/api/backgrounds' })
     .post('/all', async (context) => {
-        const ctx = context as Record<string, unknown>;
-        const user = ctx.user as UserContext | undefined;
+        const user = (context as Record<string, unknown>).user as UserContext | undefined;
         const directories = user?.directories;
         const backgroundsDir = directories?.backgrounds ?? '';
         const rootDir = directories?.root ?? '';
@@ -79,8 +78,7 @@ export const router = new Elysia({ prefix: '/api/backgrounds' })
         }
     })
     .post('/folders', async (context) => {
-        const ctx = context as Record<string, unknown>;
-        const user = ctx.user as UserContext | undefined;
+        const user = (context as Record<string, unknown>).user as UserContext | undefined;
         const rootDir = user?.directories?.root ?? '';
 
         try {
@@ -117,8 +115,7 @@ export const router = new Elysia({ prefix: '/api/backgrounds' })
     })
     .post('/delete', async (context) => {
         const { set } = context;
-        const ctx = context as Record<string, unknown>;
-        const body = ctx.body as Record<string, unknown> | undefined;
+        const body = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
 
         try {
             if (!body) {
@@ -139,7 +136,7 @@ export const router = new Elysia({ prefix: '/api/backgrounds' })
                 return;
             }
 
-            const user = ctx.user as UserContext | undefined;
+            const user = (context as Record<string, unknown>).user as UserContext | undefined;
             const directories = user?.directories;
             const backgroundsDir = directories?.backgrounds ?? '';
             const rootDir = directories?.root ?? '';
@@ -169,8 +166,7 @@ export const router = new Elysia({ prefix: '/api/backgrounds' })
     })
     .post('/rename', async (context) => {
         const { set } = context;
-        const ctx = context as Record<string, unknown>;
-        const body = ctx.body as Record<string, unknown> | undefined;
+        const body = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
 
         try {
             if (!body) {
@@ -189,7 +185,7 @@ export const router = new Elysia({ prefix: '/api/backgrounds' })
             const sanitizedOldBg = sanitize(oldBg);
             const sanitizedNewBg = sanitize(newBg);
 
-            const user = ctx.user as UserContext | undefined;
+            const user = (context as Record<string, unknown>).user as UserContext | undefined;
             const directories = user?.directories;
             const backgroundsDir = directories?.backgrounds ?? '';
             const rootDir = directories?.root ?? '';
@@ -234,9 +230,8 @@ export const router = new Elysia({ prefix: '/api/backgrounds' })
     })
     .post('/upload', async (context) => {
         const { set } = context;
-        const ctx = context as Record<string, unknown>;
-        const user = ctx.user as UserContext | undefined;
-        const file = ctx.file as
+        const user = (context as Record<string, unknown>).user as UserContext | undefined;
+        const file = (context as Record<string, unknown>).file as
             | { destination?: string; filename?: string; originalname?: string }
             | undefined;
 
