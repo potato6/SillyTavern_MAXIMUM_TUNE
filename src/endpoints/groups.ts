@@ -109,9 +109,7 @@ export async function migrateGroupChatsMetadataFormat(userDirectories: Record<st
                     const chats = groupData.chats;
                     if (!Array.isArray(chats)) {
                         console.warn(
-                            color.yellow(
-                                `Group ${fn} has no chats array, skipping migration.`,
-                            ),
+                            color.yellow(`Group ${fn} has no chats array, skipping migration.`),
                         );
                         continue;
                     }
