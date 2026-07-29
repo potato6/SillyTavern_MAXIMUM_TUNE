@@ -16,6 +16,21 @@ import {
 } from '../users.js';
 import { DEFAULT_USER } from '../constants.js';
 
+const NON_ALPHANUMERIC_REGEX = /[^a-z0-9]+/g;
+const TRIM_HYPHENS_REGEX = /^-+|-+$/g;
+
+interface UserProfile {
+    admin?: boolean;
+    handle?: string;
+    name?: string;
+    [key: string]: unknown;
+}
+
+interface UserContext {
+    profile?: UserProfile;
+    [key: string]: unknown;
+}
+
 /**
  * Slugifies a given text string.
  * - Converts to lowercase
@@ -26,104 +41,93 @@ import { DEFAULT_USER } from '../constants.js';
  * @param {string} text Text to slugify
  * @returns {string} Slugified text
  */
-function slugify(text: string) {
-    return deburr(
-        String(text ?? '')
-            .toLowerCase()
-            .trim(),
-    )
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-+|-+$/g, '');
+function slugify(text: string): string {
+    if (!text) return '';
+    const deburred = deburr(text.toLowerCase().trim());
+    return deburred.replace(NON_ALPHANUMERIC_REGEX, '-').replace(TRIM_HYPHENS_REGEX, '');
 }
 
 function requireAdmin(context: Record<string, unknown>): boolean {
-    const user = (context as unknown as Record<string, unknown>).user as Record<
-        string,
-        unknown
-    > | null;
-    if (!user) return false;
-    const profile = user.profile as Record<string, unknown> | null;
-    return !!profile?.admin;
+    const user = context.user as UserContext | undefined;
+    return Boolean(user?.profile?.admin);
 }
 
 export const router = new Elysia({ prefix: '/api/users' })
     .post('/get', async (context) => {
         const { set } = context;
+        const ctx = context as Record<string, unknown>;
+
         try {
-            if (!requireAdmin(context)) {
+            if (!requireAdmin(ctx)) {
                 set.status = 403;
                 return;
             }
 
-            /** @type {import('../users.js').User[]} */
-            const users = await storage.values((x: { key: string }) =>
+            const users = (await storage.values((x: { key: string }) =>
                 x.key.startsWith(KEY_PREFIX),
-            );
+            )) as any[];
 
-            /** @type {Promise<import('../users.js').UserViewModel>[]} */
-            const viewModelPromises = users.map(
-                (user: {
-                    handle: string;
-                    name: string;
-                    admin: boolean;
-                    enabled: boolean;
-                    created: number;
-                    password: string;
-                }) =>
-                    new Promise((resolve) => {
-                        getUserAvatar(user.handle).then((avatar: string) =>
-                            resolve({
-                                handle: user.handle,
-                                name: user.name,
-                                avatar: avatar,
-                                admin: user.admin,
-                                enabled: user.enabled,
-                                created: user.created,
-                                password: !!user.password,
-                            }),
-                        );
-                    }),
-            );
+            const count = users.length;
+            const promises: Promise<{
+                handle: string;
+                name: string;
+                avatar: string;
+                admin: boolean;
+                enabled: boolean;
+                created: number;
+                password: boolean;
+            }>[] = Array.from({ length: count });
 
-            const viewModels = await Promise.all(viewModelPromises);
-            viewModels.sort(
-                (x: unknown, y: unknown) =>
-                    ((x as { created: number }).created ?? 0) -
-                    ((y as { created: number }).created ?? 0),
-            );
+            for (let i = 0; i < count; i++) {
+                const user = users[i];
+                const handle = user.handle;
+                promises[i] = getUserAvatar(handle).then((avatar) => ({
+                    handle,
+                    name: user.name,
+                    avatar,
+                    admin: Boolean(user.admin),
+                    enabled: Boolean(user.enabled),
+                    created: Number(user.created || 0),
+                    password: Boolean(user.password),
+                }));
+            }
+
+            const viewModels = await Promise.all(promises);
+            viewModels.sort((a, b) => a.created - b.created);
+
             return viewModels;
         } catch (error) {
             console.error('User list failed:', error);
-            return new Response(null, { status: 500 });
+            set.status = 500;
         }
     })
     .post('/disable', async (context) => {
         const { set } = context;
-        const body = context.body as Record<string, unknown>;
-        const ctxUser = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
+        const ctx = context as Record<string, unknown>;
+        const body = (ctx.body ?? {}) as Record<string, unknown>;
+        const ctxUser = ctx.user as UserContext | undefined;
+
         try {
-            if (!requireAdmin(context)) {
+            if (!requireAdmin(ctx)) {
                 set.status = 403;
                 return;
             }
 
-            if (!body.handle) {
+            const handle = body.handle;
+            if (typeof handle !== 'string' || handle.length === 0) {
                 console.warn('Disable user failed: Missing required fields');
                 set.status = 400;
                 return { error: 'Missing required fields' };
             }
 
-            if (body.handle === (ctxUser?.profile as Record<string, unknown> | undefined)?.handle) {
+            if (handle === ctxUser?.profile?.handle) {
                 console.warn('Disable user failed: Cannot disable yourself');
                 set.status = 400;
                 return { error: 'Cannot disable yourself' };
             }
 
-            /** @type {import('../users.js').User} */
-            const user = await storage.getItem(toKey(body.handle as string));
+            const userKey = toKey(handle);
+            const user = (await storage.getItem(userKey)) as Record<string, any> | null;
 
             if (!user) {
                 console.error('Disable user failed: User not found');
@@ -131,31 +135,34 @@ export const router = new Elysia({ prefix: '/api/users' })
                 return { error: 'User not found' };
             }
 
-            (user as Record<string, unknown>).enabled = false;
-            await storage.setItem(toKey(body.handle as string), user);
+            user.enabled = false;
+            await storage.setItem(userKey, user);
             set.status = 204;
         } catch (error) {
             console.error('User disable failed:', error);
-            return new Response(null, { status: 500 });
+            set.status = 500;
         }
     })
     .post('/enable', async (context) => {
         const { set } = context;
-        const body = context.body as Record<string, unknown>;
+        const ctx = context as Record<string, unknown>;
+        const body = (ctx.body ?? {}) as Record<string, unknown>;
+
         try {
-            if (!requireAdmin(context)) {
+            if (!requireAdmin(ctx)) {
                 set.status = 403;
                 return;
             }
 
-            if (!body.handle) {
+            const handle = body.handle;
+            if (typeof handle !== 'string' || handle.length === 0) {
                 console.warn('Enable user failed: Missing required fields');
                 set.status = 400;
                 return { error: 'Missing required fields' };
             }
 
-            /** @type {import('../users.js').User} */
-            const user = await storage.getItem(toKey(body.handle as string));
+            const userKey = toKey(handle);
+            const user = (await storage.getItem(userKey)) as Record<string, any> | null;
 
             if (!user) {
                 console.error('Enable user failed: User not found');
@@ -163,31 +170,34 @@ export const router = new Elysia({ prefix: '/api/users' })
                 return { error: 'User not found' };
             }
 
-            (user as Record<string, unknown>).enabled = true;
-            await storage.setItem(toKey(body.handle as string), user);
+            user.enabled = true;
+            await storage.setItem(userKey, user);
             set.status = 204;
         } catch (error) {
             console.error('User enable failed:', error);
-            return new Response(null, { status: 500 });
+            set.status = 500;
         }
     })
     .post('/promote', async (context) => {
         const { set } = context;
-        const body = context.body as Record<string, unknown>;
+        const ctx = context as Record<string, unknown>;
+        const body = (ctx.body ?? {}) as Record<string, unknown>;
+
         try {
-            if (!requireAdmin(context)) {
+            if (!requireAdmin(ctx)) {
                 set.status = 403;
                 return;
             }
 
-            if (!body.handle) {
+            const handle = body.handle;
+            if (typeof handle !== 'string' || handle.length === 0) {
                 console.warn('Promote user failed: Missing required fields');
                 set.status = 400;
                 return { error: 'Missing required fields' };
             }
 
-            /** @type {import('../users.js').User} */
-            const user = await storage.getItem(toKey(body.handle as string));
+            const userKey = toKey(handle);
+            const user = (await storage.getItem(userKey)) as Record<string, any> | null;
 
             if (!user) {
                 console.error('Promote user failed: User not found');
@@ -195,41 +205,41 @@ export const router = new Elysia({ prefix: '/api/users' })
                 return { error: 'User not found' };
             }
 
-            (user as Record<string, unknown>).admin = true;
-            await storage.setItem(toKey(body.handle as string), user);
+            user.admin = true;
+            await storage.setItem(userKey, user);
             set.status = 204;
         } catch (error) {
             console.error('User promote failed:', error);
-            return new Response(null, { status: 500 });
+            set.status = 500;
         }
     })
     .post('/demote', async (context) => {
         const { set } = context;
-        const body = context.body as Record<string, unknown>;
-        const ctxUser = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
+        const ctx = context as Record<string, unknown>;
+        const body = (ctx.body ?? {}) as Record<string, unknown>;
+        const ctxUser = ctx.user as UserContext | undefined;
+
         try {
-            if (!requireAdmin(context)) {
+            if (!requireAdmin(ctx)) {
                 set.status = 403;
                 return;
             }
 
-            if (!body.handle) {
+            const handle = body.handle;
+            if (typeof handle !== 'string' || handle.length === 0) {
                 console.warn('Demote user failed: Missing required fields');
                 set.status = 400;
                 return { error: 'Missing required fields' };
             }
 
-            if (body.handle === (ctxUser?.profile as Record<string, unknown> | undefined)?.handle) {
+            if (handle === ctxUser?.profile?.handle) {
                 console.warn('Demote user failed: Cannot demote yourself');
                 set.status = 400;
                 return { error: 'Cannot demote yourself' };
             }
 
-            /** @type {import('../users.js').User} */
-            const user = await storage.getItem(toKey(body.handle as string));
+            const userKey = toKey(handle);
+            const user = (await storage.getItem(userKey)) as Record<string, any> | null;
 
             if (!user) {
                 console.error('Demote user failed: User not found');
@@ -237,31 +247,41 @@ export const router = new Elysia({ prefix: '/api/users' })
                 return { error: 'User not found' };
             }
 
-            (user as Record<string, unknown>).admin = false;
-            await storage.setItem(toKey(body.handle as string), user);
+            user.admin = false;
+            await storage.setItem(userKey, user);
             set.status = 204;
         } catch (error) {
             console.error('User demote failed:', error);
-            return new Response(null, { status: 500 });
+            set.status = 500;
         }
     })
     .post('/create', async (context) => {
         const { set } = context;
-        const body = context.body as Record<string, unknown>;
+        const ctx = context as Record<string, unknown>;
+        const body = (ctx.body ?? {}) as Record<string, unknown>;
+
         try {
-            if (!requireAdmin(context)) {
+            if (!requireAdmin(ctx)) {
                 set.status = 403;
                 return;
             }
 
-            if (!body.handle || !body.name) {
+            const rawHandle = body.handle;
+            const bodyName = body.name;
+
+            if (
+                typeof rawHandle !== 'string' ||
+                typeof bodyName !== 'string' ||
+                !rawHandle ||
+                !bodyName
+            ) {
                 console.warn('Create user failed: Missing required fields');
                 set.status = 400;
                 return { error: 'Missing required fields' };
             }
 
             const handles = await getAllUserHandles();
-            const handle = slugify(body.handle as string);
+            const handle = slugify(rawHandle);
 
             if (!handle) {
                 console.warn('Create user failed: Invalid handle');
@@ -269,7 +289,7 @@ export const router = new Elysia({ prefix: '/api/users' })
                 return { error: 'Invalid handle' };
             }
 
-            if (handles.some((x) => x === handle)) {
+            if (handles.includes(handle)) {
                 console.warn('Create user failed: User with that handle already exists');
                 set.status = 409;
                 return { error: 'User already exists' };
@@ -279,12 +299,12 @@ export const router = new Elysia({ prefix: '/api/users' })
             const password = body.password ? getPasswordHash(body.password as string, salt) : '';
 
             const newUser = {
-                handle: handle,
-                name: body.name || 'Anonymous',
+                handle,
+                name: bodyName,
                 created: Date.now(),
-                password: password,
-                salt: salt,
-                admin: !!body.admin,
+                password,
+                salt,
+                admin: Boolean(body.admin),
                 enabled: true,
             };
 
@@ -295,38 +315,39 @@ export const router = new Elysia({ prefix: '/api/users' })
             await ensurePublicDirectoriesExist();
             const directories = getUserDirectories(newUser.handle);
             await checkForNewContent([directories], [CONTENT_TYPES.SETTINGS]);
+
             return { handle: newUser.handle };
         } catch (error) {
             console.error('User create failed:', error);
-            return new Response(null, { status: 500 });
+            set.status = 500;
         }
     })
     .post('/delete', async (context) => {
         const { set } = context;
-        const body = context.body as Record<string, unknown>;
-        const ctxUser = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
+        const ctx = context as Record<string, unknown>;
+        const body = (ctx.body ?? {}) as Record<string, unknown>;
+        const ctxUser = ctx.user as UserContext | undefined;
+
         try {
-            if (!requireAdmin(context)) {
+            if (!requireAdmin(ctx)) {
                 set.status = 403;
                 return;
             }
 
-            if (!body.handle) {
+            const handle = body.handle;
+            if (typeof handle !== 'string' || handle.length === 0) {
                 console.warn('Delete user failed: Missing required fields');
                 set.status = 400;
                 return { error: 'Missing required fields' };
             }
 
-            if (body.handle === (ctxUser?.profile as Record<string, unknown> | undefined)?.handle) {
+            if (handle === ctxUser?.profile?.handle) {
                 console.warn('Delete user failed: Cannot delete yourself');
                 set.status = 400;
                 return { error: 'Cannot delete yourself' };
             }
 
-            if (body.handle === DEFAULT_USER.handle) {
+            if (handle === DEFAULT_USER.handle) {
                 console.warn('Delete user failed: Cannot delete default user');
                 set.status = 400;
                 return {
@@ -334,40 +355,42 @@ export const router = new Elysia({ prefix: '/api/users' })
                 };
             }
 
-            await storage.removeItem(toKey(body.handle as string));
+            await storage.removeItem(toKey(handle));
 
             if (body.purge) {
-                const directories = getUserDirectories(body.handle as string);
-                console.info('Deleting data directories for', body.handle);
+                const directories = getUserDirectories(handle);
+                console.info('Deleting data directories for', handle);
                 await fsPromises.rm(directories.root, { recursive: true, force: true });
             }
 
             set.status = 204;
         } catch (error) {
             console.error('User delete failed:', error);
-            return new Response(null, { status: 500 });
+            set.status = 500;
         }
     })
     .post('/slugify', async (context) => {
         const { set } = context;
-        const body = context.body as Record<string, unknown>;
+        const ctx = context as Record<string, unknown>;
+        const body = (ctx.body ?? {}) as Record<string, unknown>;
+
         try {
-            if (!requireAdmin(context)) {
+            if (!requireAdmin(ctx)) {
                 set.status = 403;
                 return;
             }
 
-            if (!body.text) {
+            const reqText = body.text;
+            if (typeof reqText !== 'string' || reqText.length === 0) {
                 console.warn('Slugify failed: Missing required fields');
                 set.status = 400;
                 return { error: 'Missing required fields' };
             }
 
-            const text = slugify(body.text as string);
-
-            return new Response(text);
+            const text = slugify(reqText);
+            return text;
         } catch (error) {
             console.error('Slugify failed:', error);
-            return new Response(null, { status: 500 });
+            set.status = 500;
         }
     });
