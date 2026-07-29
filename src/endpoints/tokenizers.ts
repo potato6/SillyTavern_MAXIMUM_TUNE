@@ -1,14 +1,13 @@
-import fs from 'node:fs';
+import fsp from 'node:fs/promises';
 import path from 'node:path';
 import { Buffer } from 'node:buffer';
 import zlib from 'node:zlib';
 import { promisify } from 'node:util';
 
 import { Elysia } from 'elysia';
-import { sync as writeFileAtomicSync } from 'write-file-atomic';
+import writeFileAtomic from 'write-file-atomic';
 
 import { Tokenizer } from '@agnai/web-tokenizers';
-// @ts-expect-error TS(2792) FIXME: Cannot find module '@agnai/sentencepiece-js'. Did ... Remove this comment to see the full error message
 import { SentencePieceProcessor } from '@agnai/sentencepiece-js';
 import { encoding_for_model, type TiktokenModel } from 'tiktoken';
 
@@ -18,7 +17,7 @@ import { setAdditionalHeaders } from '../additional-headers.js';
 import { getConfigValue, isValidUrl } from '../util.js';
 import { TEXT_COMPLETION_MODELS } from './text-completion-models.js';
 
-const tokenizersCache = {};
+const tokenizersCache: Record<string, import('tiktoken').Tiktoken> = {};
 
 const BYTES_PER_TOKEN = 3.35;
 const IS_DOWNLOAD_ALLOWED = getConfigValue(
@@ -27,6 +26,8 @@ const IS_DOWNLOAD_ALLOWED = getConfigValue(
     'boolean' as const,
 );
 const gunzip = promisify(zlib.gunzip);
+
+const TEXT_COMPLETION_MODELS_SET = new Set(TEXT_COMPLETION_MODELS);
 
 /**
  * Guesstimates the token count for a string.
@@ -51,41 +52,53 @@ async function getPathToTokenizer(model: string, fallbackModel: string | undefin
 
     try {
         const url = new URL(model);
+        const protocol = url.protocol;
 
-        if (!['https:', 'http:'].includes(url.protocol)) {
+        if (protocol !== 'https:' && protocol !== 'http:') {
             throw new Error('Invalid URL protocol');
         }
 
-        const fileName = url.pathname.split('/').pop();
+        const pathname = url.pathname;
+        const lastSlash = Math.max(pathname.lastIndexOf('/'), pathname.lastIndexOf('\\'));
+        const fileName = lastSlash !== -1 ? pathname.slice(lastSlash + 1) : pathname;
 
         if (!fileName) {
             throw new Error('Failed to extract the file name from the URL');
         }
 
         const CACHE_PATH = path.join(globalThis.DATA_ROOT, '_cache');
-        if (!fs.existsSync(CACHE_PATH)) {
-            fs.mkdirSync(CACHE_PATH, { recursive: true });
+        try {
+            await fsp.mkdir(CACHE_PATH, { recursive: true });
+        } catch {
+            // Cache directory exists
         }
 
-        // If an uncompressed version exists, return it
-        const isCompressed = path.extname(fileName) === '.gz';
-        const uncompressedName = path.basename(fileName, '.gz');
+        const isCompressed = fileName.endsWith('.gz');
+        const uncompressedName = isCompressed ? fileName.slice(0, -3) : fileName;
         const uncompressedPath = path.join(CACHE_PATH, uncompressedName);
-        if (isCompressed && fs.existsSync(uncompressedPath)) {
-            return uncompressedPath;
+
+        if (isCompressed) {
+            try {
+                await fsp.access(uncompressedPath);
+                return uncompressedPath;
+            } catch {
+                // Not found, proceed
+            }
         }
 
         const cachedFile = path.join(CACHE_PATH, fileName);
-        if (fs.existsSync(cachedFile)) {
-            // If the file was downloaded manually
+        try {
+            await fsp.access(cachedFile);
             if (isCompressed) {
-                const compressedBuffer = await fs.promises.readFile(cachedFile);
+                const compressedBuffer = await fsp.readFile(cachedFile);
                 const decompressedBuffer = await gunzip(compressedBuffer);
-                writeFileAtomicSync(uncompressedPath, decompressedBuffer);
-                await fs.promises.unlink(cachedFile);
+                await writeFileAtomic(uncompressedPath, decompressedBuffer);
+                await fsp.unlink(cachedFile);
                 return uncompressedPath;
             }
             return cachedFile;
+        } catch {
+            // File not cached locally
         }
 
         if (!IS_DOWNLOAD_ALLOWED) {
@@ -101,14 +114,19 @@ async function getPathToTokenizer(model: string, fallbackModel: string | undefin
         const arrayBuffer = await response.arrayBuffer();
         if (isCompressed) {
             const decompressedBuffer = await gunzip(arrayBuffer);
-            writeFileAtomicSync(uncompressedPath, decompressedBuffer);
+            await writeFileAtomic(uncompressedPath, decompressedBuffer);
             return uncompressedPath;
         }
 
-        writeFileAtomicSync(cachedFile, Buffer.from(arrayBuffer));
+        await writeFileAtomic(cachedFile, Buffer.from(arrayBuffer));
         return cachedFile;
     } catch (error) {
-        const getLastSegment = (str: string) => str?.split('/')?.pop() || '';
+        const getLastSegment = (str: string) => {
+            if (!str) return '';
+            const idx = Math.max(str.lastIndexOf('/'), str.lastIndexOf('\\'));
+            return idx !== -1 ? str.slice(idx + 1) : str;
+        };
+
         if (fallbackModel) {
             console.error(
                 `Could not get a tokenizer from ${getLastSegment(model)}. Reason: ${(error as any).message}. Using a fallback model: ${getLastSegment(fallbackModel)}.`,
@@ -127,34 +145,15 @@ async function getPathToTokenizer(model: string, fallbackModel: string | undefin
  * Sentencepiece tokenizer for tokenizing text.
  */
 class SentencePieceTokenizer {
-    /**
-     * @type {import('@agnai/sentencepiece-js').SentencePieceProcessor} Sentencepiece tokenizer instance
-     */
-    // @ts-expect-error TS(7008) FIXME: Member '#instance' implicitly has an 'any' type.
-    #instance;
-    /**
-     * @type {string} Path to the tokenizer model
-     */
-    #model;
-    /**
-     * @type {string|undefined} Path to the fallback model
-     */
-    #fallbackModel;
+    #instance: SentencePieceProcessor | null = null;
+    #model: string;
+    #fallbackModel: string | undefined;
 
-    /**
-     * Creates a new Sentencepiece tokenizer.
-     * @param {string} model Path to the tokenizer model
-     * @param {string} [fallbackModel] Path to the fallback model
-     */
     constructor(model: string, fallbackModel?: string) {
         this.#model = model;
         this.#fallbackModel = fallbackModel;
     }
 
-    /**
-     * Gets the Sentencepiece tokenizer instance.
-     * @returns {Promise<import('@agnai/sentencepiece-js').SentencePieceProcessor|null>} Sentencepiece tokenizer instance
-     */
     async get() {
         if (this.#instance) {
             return this.#instance;
@@ -164,7 +163,7 @@ class SentencePieceTokenizer {
             const pathToModel = await getPathToTokenizer(this.#model, this.#fallbackModel);
             this.#instance = new SentencePieceProcessor();
             await this.#instance.load(pathToModel);
-            console.info('Instantiated the tokenizer for', path.parse(pathToModel).name);
+            console.info('Instantiated the tokenizer for', path.basename(pathToModel));
             return this.#instance;
         } catch (error) {
             console.error('Sentencepiece tokenizer failed to load: ' + this.#model, error);
@@ -177,34 +176,15 @@ class SentencePieceTokenizer {
  * Web tokenizer for tokenizing text.
  */
 class WebTokenizer {
-    /**
-     * @type {Tokenizer} Web tokenizer instance
-     */
-    // @ts-expect-error TS(7008) FIXME: Member '#instance' implicitly has an 'any' type.
-    #instance;
-    /**
-     * @type {string} Path to the tokenizer model
-     */
-    #model;
-    /**
-     * @type {string|undefined} Path to the fallback model
-     */
-    #fallbackModel;
+    #instance: Tokenizer | null = null;
+    #model: string;
+    #fallbackModel: string | undefined;
 
-    /**
-     * Creates a new Web tokenizer.
-     * @param {string} model Path to the tokenizer model
-     * @param {string} [fallbackModel] Path to the fallback model
-     */
     constructor(model: string, fallbackModel?: string) {
         this.#model = model;
         this.#fallbackModel = fallbackModel;
     }
 
-    /**
-     * Gets the Web tokenizer instance.
-     * @returns {Promise<Tokenizer|null>} Web tokenizer instance
-     */
     async get() {
         if (this.#instance) {
             return this.#instance;
@@ -212,14 +192,14 @@ class WebTokenizer {
 
         try {
             const pathToModel = await getPathToTokenizer(this.#model, this.#fallbackModel);
-            const fileBuffer = await fs.promises.readFile(pathToModel);
+            const fileBuffer = await fsp.readFile(pathToModel);
             this.#instance = await Tokenizer.fromJSON(
                 fileBuffer.buffer.slice(
                     fileBuffer.byteOffset,
                     fileBuffer.byteOffset + fileBuffer.byteLength,
                 ),
             );
-            console.info('Instantiated the tokenizer for', path.parse(pathToModel).name);
+            console.info('Instantiated the tokenizer for', path.basename(pathToModel));
             return this.#instance;
         } catch (error) {
             console.error('Web tokenizer failed to load: ' + this.#model, error);
@@ -278,40 +258,22 @@ export const webTokenizers = [
     'deepseek',
 ];
 
+const sentencepieceSet = new Set(sentencepieceTokenizers);
+const webTokenizerSet = new Set(webTokenizers);
+
 /**
  * Gets the Sentencepiece tokenizer by the model name.
  * @param {string} model Sentencepiece model name
  * @returns {SentencePieceTokenizer|null} Sentencepiece tokenizer
  */
 export function getSentencepiceTokenizer(model: string) {
-    if (model.includes('llama')) {
-        return spp_llama;
-    }
-
-    if (model.includes('nerdstash')) {
-        return spp_nerd;
-    }
-
-    if (model.includes('mistral')) {
-        return spp_mistral;
-    }
-
-    if (model.includes('nerdstash_v2')) {
-        return spp_nerd_v2;
-    }
-
-    if (model.includes('yi')) {
-        return spp_yi;
-    }
-
-    if (model.includes('gemma')) {
-        return spp_gemma;
-    }
-
-    if (model.includes('jamba')) {
-        return spp_jamba;
-    }
-
+    if (model.includes('llama')) return spp_llama;
+    if (model.includes('nerdstash_v2')) return spp_nerd_v2;
+    if (model.includes('nerdstash')) return spp_nerd;
+    if (model.includes('mistral')) return spp_mistral;
+    if (model.includes('yi')) return spp_yi;
+    if (model.includes('gemma')) return spp_gemma;
+    if (model.includes('jamba')) return spp_jamba;
     return null;
 }
 
@@ -321,34 +283,13 @@ export function getSentencepiceTokenizer(model: string) {
  * @returns {WebTokenizer|null} Web tokenizer
  */
 export function getWebTokenizer(model: string) {
-    if (model.includes('llama3')) {
-        return llama3_tokenizer;
-    }
-
-    if (model.includes('claude')) {
-        return claude_tokenizer;
-    }
-
-    if (model.includes('command-r')) {
-        return commandRTokenizer;
-    }
-
-    if (model.includes('command-a')) {
-        return commandATokenizer;
-    }
-
-    if (model.includes('qwen2')) {
-        return qwen2Tokenizer;
-    }
-
-    if (model.includes('nemo')) {
-        return nemoTokenizer;
-    }
-
-    if (model.includes('deepseek')) {
-        return deepseekTokenizer;
-    }
-
+    if (model.includes('llama3')) return llama3_tokenizer;
+    if (model.includes('claude')) return claude_tokenizer;
+    if (model.includes('command-r')) return commandRTokenizer;
+    if (model.includes('command-a')) return commandATokenizer;
+    if (model.includes('qwen2')) return qwen2Tokenizer;
+    if (model.includes('nemo')) return nemoTokenizer;
+    if (model.includes('deepseek')) return deepseekTokenizer;
     return null;
 }
 
@@ -361,7 +302,6 @@ export function getWebTokenizer(model: string) {
 async function countSentencepieceTokens(tokenizer: SentencePieceTokenizer, text: string) {
     const instance = await tokenizer?.get();
 
-    // Fallback to strlen estimation
     if (!instance) {
         return {
             ids: [],
@@ -369,31 +309,36 @@ async function countSentencepieceTokens(tokenizer: SentencePieceTokenizer, text:
         };
     }
 
-    const cleaned = text; // cleanText(text); <-- cleaning text can result in an incorrect tokenization
-
-    const ids = instance.encodeIds(cleaned);
+    const ids = instance.encodeIds(text);
     return {
         ids,
         count: ids.length,
     };
 }
 
-/* Counts the tokens in the given array of objects using the Sentencepiece tokenizer.
+/**
+ * Counts the tokens in the given array of objects using the Sentencepiece tokenizer.
  * @param {SentencePieceTokenizer} tokenizer Sentencepiece tokenizer instance
  * @param {object[]} array Array of objects to tokenize
  * @returns {Promise<number>} Number of tokens
  */
-/**
- *
- * @param tokenizer
- * @param array
- */
 async function countSentencepieceArrayTokens(tokenizer: SentencePieceTokenizer, array: object[]) {
-    // @ts-expect-error TS(2345) FIXME: Argument of type '(x: Record<string, unknown>) => ... Remove this comment to see the full error message
-    const jsonBody = array.flatMap((x: Record<string, unknown>) => Object.values(x)).join('\n\n');
+    const count = array.length;
+    const values: string[] = [];
+
+    for (let i = 0; i < count; i++) {
+        const obj = array[i] as Record<string, unknown>;
+        if (obj && typeof obj === 'object') {
+            const objVals = Object.values(obj);
+            for (let j = 0; j < objVals.length; j++) {
+                values.push(String(objVals[j]));
+            }
+        }
+    }
+
+    const jsonBody = values.join('\n\n');
     const result = await countSentencepieceTokens(tokenizer, jsonBody);
-    const num_tokens = result.count;
-    return num_tokens;
+    return result.count;
 }
 
 /**
@@ -404,14 +349,12 @@ async function countSentencepieceArrayTokens(tokenizer: SentencePieceTokenizer, 
  */
 async function getTiktokenChunks(tokenizer: import('tiktoken').Tiktoken, ids: number[]) {
     const decoder = new TextDecoder();
-    const chunks = [];
+    const count = ids.length;
+    const chunks = Array.from<string>({ length: count });
 
-    for (let i = 0; i < ids.length; i++) {
-        const id = ids[i];
-        // @ts-expect-error TS(2769) FIXME: No overload matches this call.
-        const chunkTextBytes = await tokenizer.decode(new Uint32Array([id]));
-        const chunkText = decoder.decode(chunkTextBytes);
-        chunks.push(chunkText);
+    for (let i = 0; i < count; i++) {
+        const chunkTextBytes = await tokenizer.decode(new Uint32Array([ids[i]!]));
+        chunks[i] = decoder.decode(chunkTextBytes);
     }
 
     return chunks;
@@ -424,12 +367,13 @@ async function getTiktokenChunks(tokenizer: import('tiktoken').Tiktoken, ids: nu
  * @returns {string[]} Token chunks
  */
 function getWebTokenizersChunks(tokenizer: Tokenizer, ids: number[]) {
-    const chunks = [];
+    const chunks: string[] = [];
+    const count = ids.length;
 
-    for (let i = 0, lastProcessed = 0; i < ids.length; i++) {
+    for (let i = 0, lastProcessed = 0; i < count; i++) {
         const chunkIds = ids.slice(lastProcessed, i + 1);
         const chunkText = tokenizer.decode(new Int32Array(chunkIds));
-        if (chunkText === '�') {
+        if (chunkText === '') {
             continue;
         }
         chunks.push(chunkText);
@@ -449,12 +393,7 @@ export function getTokenizerModel(requestModel: string) {
         requestModel === 'o1' ||
         requestModel.includes('o1-preview') ||
         requestModel.includes('o1-mini') ||
-        requestModel.includes('o3-mini')
-    ) {
-        return 'o1';
-    }
-
-    if (
+        requestModel.includes('o3-mini') ||
         requestModel.includes('gpt-5') ||
         requestModel.includes('o3') ||
         requestModel.includes('o4-mini')
@@ -462,57 +401,30 @@ export function getTokenizerModel(requestModel: string) {
         return 'o1';
     }
 
-    if (requestModel.includes('gpt-4o') || requestModel.includes('chatgpt-4o-latest')) {
+    if (
+        requestModel.includes('gpt-4o') ||
+        requestModel.includes('chatgpt-4o-latest') ||
+        requestModel.includes('gpt-4.1') ||
+        requestModel.includes('gpt-4.5')
+    ) {
         return 'gpt-4o';
     }
 
-    if (requestModel.includes('gpt-4.1') || requestModel.includes('gpt-4.5')) {
-        return 'gpt-4o';
-    }
+    if (requestModel.includes('gpt-4-32k')) return 'gpt-4-32k';
+    if (requestModel.includes('gpt-4')) return 'gpt-4';
+    if (requestModel.includes('gpt-3.5-turbo-0301')) return 'gpt-3.5-turbo-0301';
+    if (requestModel.includes('gpt-3.5-turbo')) return 'gpt-3.5-turbo';
 
-    if (requestModel.includes('gpt-4-32k')) {
-        return 'gpt-4-32k';
-    }
-
-    if (requestModel.includes('gpt-4')) {
-        return 'gpt-4';
-    }
-
-    if (requestModel.includes('gpt-3.5-turbo-0301')) {
-        return 'gpt-3.5-turbo-0301';
-    }
-
-    if (requestModel.includes('gpt-3.5-turbo')) {
-        return 'gpt-3.5-turbo';
-    }
-
-    if (TEXT_COMPLETION_MODELS.includes(requestModel)) {
+    if (TEXT_COMPLETION_MODELS_SET.has(requestModel)) {
         return requestModel;
     }
 
-    if (requestModel.includes('claude')) {
-        return 'claude';
-    }
-
-    if (requestModel.includes('llama3') || requestModel.includes('llama-3')) {
-        return 'llama3';
-    }
-
-    if (requestModel.includes('llama')) {
-        return 'llama';
-    }
-
-    if (requestModel.includes('mistral')) {
-        return 'mistral';
-    }
-
-    if (requestModel.includes('yi')) {
-        return 'yi';
-    }
-
-    if (requestModel.includes('deepseek')) {
-        return 'deepseek';
-    }
+    if (requestModel.includes('claude')) return 'claude';
+    if (requestModel.includes('llama3') || requestModel.includes('llama-3')) return 'llama3';
+    if (requestModel.includes('llama')) return 'llama';
+    if (requestModel.includes('mistral')) return 'mistral';
+    if (requestModel.includes('yi')) return 'yi';
+    if (requestModel.includes('deepseek')) return 'deepseek';
 
     if (
         requestModel.includes('gemma') ||
@@ -522,27 +434,12 @@ export function getTokenizerModel(requestModel: string) {
         return 'gemma';
     }
 
-    if (requestModel.includes('jamba')) {
-        return 'jamba';
-    }
+    if (requestModel.includes('jamba')) return 'jamba';
+    if (requestModel.includes('qwen2')) return 'qwen2';
+    if (requestModel.includes('command-r')) return 'command-r';
+    if (requestModel.includes('command-a')) return 'command-a';
+    if (requestModel.includes('nemo')) return 'nemo';
 
-    if (requestModel.includes('qwen2')) {
-        return 'qwen2';
-    }
-
-    if (requestModel.includes('command-r')) {
-        return 'command-r';
-    }
-
-    if (requestModel.includes('command-a')) {
-        return 'command-a';
-    }
-
-    if (requestModel.includes('nemo')) {
-        return 'nemo';
-    }
-
-    // default
     return 'gpt-3.5-turbo';
 }
 
@@ -552,15 +449,12 @@ export function getTokenizerModel(requestModel: string) {
  * @returns {import('tiktoken').Tiktoken} Tiktoken tokenizer
  */
 export function getTiktokenTokenizer(model: string) {
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     if (tokenizersCache[model]) {
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         return tokenizersCache[model];
     }
 
     const tokenizer = encoding_for_model(model as TiktokenModel);
     console.info('Instantiated the tokenizer for', model);
-    // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
     tokenizersCache[model] = tokenizer;
     return tokenizer;
 }
@@ -572,16 +466,13 @@ export function getTiktokenTokenizer(model: string) {
  * @returns {number} Number of tokens
  */
 export function countWebTokenizerTokens(tokenizer: Tokenizer | null, messages: object[]) {
-    // Should be fine if we use the old conversion method instead of the messages API one i think?
     const convertedPrompt = convertClaudePrompt(messages, false, '', false, false, '', false);
 
-    // Fallback to strlen estimation
     if (!tokenizer) {
         return guesstimate(convertedPrompt);
     }
 
-    const count = tokenizer.encode(convertedPrompt).length;
-    return count;
+    return tokenizer.encode(convertedPrompt).length;
 }
 
 /**
@@ -625,7 +516,13 @@ function createSentencepieceDecodingHandler(tokenizer: SentencePieceTokenizer): 
             const ids = body.ids || [];
             const instance = await tokenizer?.get();
             if (!instance) throw new Error('Failed to load the Sentencepiece tokenizer');
-            const ops = ids.map((id: unknown) => instance.decodeIds([id]));
+
+            const count = ids.length;
+            const ops = Array.from({ length: count });
+            for (let i = 0; i < count; i++) {
+                ops[i] = instance.decodeIds([ids[i]!]);
+            }
+
             const chunks = await Promise.all(ops);
             const text = chunks.join('');
             return { text, chunks };
@@ -651,8 +548,8 @@ function createTiktokenEncodingHandler(modelId: string): any {
 
             const text = body.text || '';
             const tokenizer = getTiktokenTokenizer(modelId);
-            const tokens = Object.values(tokenizer.encode(text));
-            const chunks = await getTiktokenChunks(tokenizer, tokens as number[]);
+            const tokens = Array.from(tokenizer.encode(text));
+            const chunks = await getTiktokenChunks(tokenizer, tokens);
             return { ids: tokens, count: tokens.length, chunks };
         } catch (error) {
             console.error(error);
@@ -703,7 +600,7 @@ function createWebTokenizerEncodingHandler(tokenizer: WebTokenizer): any {
             const instance = await tokenizer?.get();
             if (!instance) throw new Error('Failed to load the Web tokenizer');
             const tokens = Array.from(instance.encode(text));
-            const chunks = getWebTokenizersChunks(instance, tokens as number[]);
+            const chunks = getWebTokenizersChunks(instance, tokens);
             return { ids: tokens, count: tokens.length, chunks };
         } catch (error) {
             console.error(error);
@@ -742,21 +639,13 @@ export const router = new Elysia({ prefix: '/api/tokenizers' });
 
 // ── Generic tokenizer endpoints (replaces per-tokenizer routes) ──────────────
 
-/**
- * Encode text to token IDs using the tokenizer named in the request body.
- *
- * POST /api/tokenizers/encode
- * Body: { text: string, tokenizer: string }
- * Response: { ids: number[], count: number, chunks?: string[] }
- */
 router.post('/encode', async (context: Record<string, unknown>) => {
     try {
-        const body = context.body as Record<string, unknown>;
+        const body = (context.body ?? {}) as Record<string, unknown>;
         const text: string = (body.text as string) || '';
         const tokenizerName: string = (body.tokenizer as string) || 'gpt-3.5-turbo';
 
-        // SentencePiece tokenizers
-        if (sentencepieceTokenizers.includes(tokenizerName)) {
+        if (sentencepieceSet.has(tokenizerName)) {
             const tokenizer = getSentencepiceTokenizer(tokenizerName);
             const instance = await tokenizer?.get();
             if (!instance) {
@@ -767,8 +656,7 @@ router.post('/encode', async (context: Record<string, unknown>) => {
             return { ids, count: ids.length, chunks };
         }
 
-        // Web tokenizers
-        if (webTokenizers.includes(tokenizerName)) {
+        if (webTokenizerSet.has(tokenizerName)) {
             const tokenizer = getWebTokenizer(tokenizerName);
             const instance = await tokenizer?.get();
             if (!instance) {
@@ -778,42 +666,36 @@ router.post('/encode', async (context: Record<string, unknown>) => {
             return { ids, count: ids.length };
         }
 
-        // Tiktoken (OpenAI-compatible)
         const tiktokenTokenizer = getTiktokenTokenizer(tokenizerName);
         const ids = Array.from(tiktokenTokenizer.encode(text));
         return { ids, count: ids.length };
     } catch (error) {
         console.error('Generic encode error:', error);
-        const body = context.body as Record<string, unknown>;
+        const body = (context.body ?? {}) as Record<string, unknown>;
         return { ids: [], count: guesstimate((body.text as string) || '') };
     }
 });
 
-/**
- * Decode token IDs to text using the tokenizer named in the request body.
- *
- * POST /api/tokenizers/decode
- * Body: { ids: number[], tokenizer: string }
- * Response: { text: string, chunks?: string[] }
- */
 router.post('/decode', async (context: Record<string, unknown>) => {
     try {
-        const body = context.body as Record<string, unknown>;
+        const body = (context.body ?? {}) as Record<string, unknown>;
         const ids: number[] = (body.ids as number[]) || [];
         const tokenizerName: string = (body.tokenizer as string) || 'gpt-3.5-turbo';
 
-        // SentencePiece tokenizers
-        if (sentencepieceTokenizers.includes(tokenizerName)) {
+        if (sentencepieceSet.has(tokenizerName)) {
             const tokenizer = getSentencepiceTokenizer(tokenizerName);
             const instance = await tokenizer?.get();
             if (!instance) return { text: '', chunks: [] };
-            const ops = ids.map((id: number) => instance.decodeIds([id]));
+            const count = ids.length;
+            const ops = Array.from({ length: count });
+            for (let i = 0; i < count; i++) {
+                ops[i] = instance.decodeIds([ids[i]!]);
+            }
             const chunks = await Promise.all(ops);
             return { text: chunks.join(''), chunks };
         }
 
-        // Web tokenizers
-        if (webTokenizers.includes(tokenizerName)) {
+        if (webTokenizerSet.has(tokenizerName)) {
             const tokenizer = getWebTokenizer(tokenizerName);
             const instance = await tokenizer?.get();
             if (!instance) return { text: '', chunks: [] };
@@ -821,7 +703,6 @@ router.post('/decode', async (context: Record<string, unknown>) => {
             return { text };
         }
 
-        // Tiktoken
         const tiktokenTokenizer = getTiktokenTokenizer(tokenizerName);
         const decoder = new TextDecoder();
         const bytes = tiktokenTokenizer.decode(new Uint32Array(ids));
@@ -832,100 +713,84 @@ router.post('/decode', async (context: Record<string, unknown>) => {
     }
 });
 
-/**
- * Count tokens using the tokenizer named in the request body.
- *
- * POST /api/tokenizers/count
- * Body: { text: string, tokenizer: string }
- * Response: { count: number }
- */
 router.post('/count', async (context: Record<string, unknown>) => {
     try {
-        const body = context.body as Record<string, unknown>;
+        const body = (context.body ?? {}) as Record<string, unknown>;
         const text: string = (body.text as string) || '';
         const tokenizerName: string = (body.tokenizer as string) || 'gpt-3.5-turbo';
 
-        // SentencePiece
-        if (sentencepieceTokenizers.includes(tokenizerName)) {
+        if (sentencepieceSet.has(tokenizerName)) {
             const tokenizer = getSentencepiceTokenizer(tokenizerName);
             if (!tokenizer) return { count: guesstimate(text) };
             const { count } = await countSentencepieceTokens(tokenizer, text);
             return { count };
         }
 
-        // Web tokenizers
-        if (webTokenizers.includes(tokenizerName)) {
+        if (webTokenizerSet.has(tokenizerName)) {
             const tokenizer = getWebTokenizer(tokenizerName);
             const instance = await tokenizer?.get();
             if (!instance) return { count: guesstimate(text) };
             return { count: instance.encode(text).length };
         }
 
-        // Tiktoken
         const tiktokenTokenizer = getTiktokenTokenizer(tokenizerName);
         return { count: tiktokenTokenizer.encode(text).length };
     } catch (error) {
         console.error('Generic count error:', error);
-        const body = context.body as Record<string, unknown>;
+        const body = (context.body ?? {}) as Record<string, unknown>;
         return { count: guesstimate((body.text as string) || '') };
     }
 });
 
 // ── Tokenizer map endpoint ────────────────────────────────────────────────────
 
-/**
- * Returns metadata about all known tokenizers so the frontend can build
- * its lookup tables (TOKENIZER_NAME_BY_ID, ENCODE_TOKENIZERS, etc.) at
- * runtime without hardcoded lists.
- *
- * GET /api/tokenizers/map
- * Response: { tokenizers: { id: number, name: string, supportsEncode: boolean, supportsDecode: boolean }[] }
- */
+const NAME_TO_ID_MAP: Record<string, number> = {
+    gpt2: 1,
+    llama: 3,
+    nerdstash: 4,
+    nerdstash_v2: 5,
+    mistral: 7,
+    yi: 8,
+    claude: 11,
+    llama3: 12,
+    gemma: 13,
+    jamba: 14,
+    qwen2: 15,
+    'command-r': 16,
+    nemo: 17,
+    deepseek: 18,
+    'command-a': 19,
+};
+
 router.get('/map', function (_context: Record<string, unknown>) {
-    const nameToId: Record<string, number> = {
-        gpt2: 1,
-        llama: 3,
-        nerdstash: 4,
-        nerdstash_v2: 5,
-        mistral: 7,
-        yi: 8,
-        claude: 11,
-        llama3: 12,
-        gemma: 13,
-        jamba: 14,
-        qwen2: 15,
-        'command-r': 16,
-        nemo: 17,
-        deepseek: 18,
-        'command-a': 19,
-    };
+    const spCount = sentencepieceTokenizers.length;
+    const webCount = webTokenizers.length;
+    const totalCount = spCount + webCount + 2;
+    const tokenizers = Array.from({ length: totalCount });
+    let idx = 0;
 
-    const tokenizers: {
-        id: number;
-        name: string;
-        supportsEncode: boolean;
-        supportsDecode: boolean;
-    }[] = [];
-
-    for (const name of sentencepieceTokenizers) {
-        tokenizers.push({
-            id: nameToId[name] ?? -1,
+    for (let i = 0; i < spCount; i++) {
+        const name = sentencepieceTokenizers[i];
+        tokenizers[idx++] = {
+            id: NAME_TO_ID_MAP[sentencepieceTokenizers[i]!] ?? -1,
             name,
             supportsEncode: true,
             supportsDecode: true,
-        });
+        };
     }
-    for (const name of webTokenizers) {
-        tokenizers.push({
-            id: nameToId[name] ?? -1,
+
+    for (let i = 0; i < webCount; i++) {
+        const name = webTokenizers[i];
+        tokenizers[idx++] = {
+            id: NAME_TO_ID_MAP[webTokenizers[i]!] ?? -1,
             name,
             supportsEncode: true,
             supportsDecode: true,
-        });
+        };
     }
-    // Tiktoken-compatible — gpt2 maps to id 1, everything else uses the openai id (2)
-    tokenizers.push({ id: 1, name: 'gpt2', supportsEncode: true, supportsDecode: true });
-    tokenizers.push({ id: 2, name: 'gpt-3.5-turbo', supportsEncode: true, supportsDecode: true });
+
+    tokenizers[idx++] = { id: 1, name: 'gpt2', supportsEncode: true, supportsDecode: true };
+    tokenizers[idx++] = { id: 2, name: 'gpt-3.5-turbo', supportsEncode: true, supportsDecode: true };
 
     return { tokenizers };
 });
@@ -965,7 +830,7 @@ router.post('/deepseek/decode', createWebTokenizerDecodingHandler(deepseekTokeni
 
 router.post('/openai/encode', async (context: Record<string, unknown>) => {
     try {
-        const query = context.query as Record<string, unknown>;
+        const query = (context.query ?? {}) as Record<string, unknown>;
         const queryModel = String(query.model || '');
 
         if (queryModel.includes('llama3') || queryModel.includes('llama-3')) {
@@ -1039,7 +904,7 @@ router.post('/openai/encode', async (context: Record<string, unknown>) => {
 
 router.post('/openai/decode', async (context: Record<string, unknown>) => {
     try {
-        const query = context.query as Record<string, unknown>;
+        const query = (context.query ?? {}) as Record<string, unknown>;
         const queryModel = String(query.model || '');
 
         if (queryModel.includes('llama3') || queryModel.includes('llama-3')) {
@@ -1113,7 +978,7 @@ router.post('/openai/decode', async (context: Record<string, unknown>) => {
 
 router.post('/openai/count', async (context: Record<string, unknown>) => {
     try {
-        const body = context.body as Record<string, unknown>;
+        const body = context.body as Record<string, unknown>[];
         const set = context.set as Record<string, unknown>;
         if (!body) {
             set.status = 400;
@@ -1121,7 +986,7 @@ router.post('/openai/count', async (context: Record<string, unknown>) => {
         }
 
         let num_tokens = 0;
-        const query = context.query as Record<string, unknown>;
+        const query = (context.query ?? {}) as Record<string, unknown>;
         const queryModel = String(query.model || '');
         const model = getTokenizerModel(queryModel);
 
@@ -1211,19 +1076,30 @@ router.post('/openai/count', async (context: Record<string, unknown>) => {
             return { token_count: num_tokens };
         }
 
-        const tokensPerName = queryModel.includes('gpt-3.5-turbo-0301') ? -1 : 1;
-        const tokensPerMessage = queryModel.includes('gpt-3.5-turbo-0301') ? 4 : 3;
+        const is0301 = queryModel.includes('gpt-3.5-turbo-0301');
+        const tokensPerName = is0301 ? -1 : 1;
+        const tokensPerMessage = is0301 ? 4 : 3;
         const tokensPadding = 3;
 
         const tokenizer = getTiktokenTokenizer(model);
+        const messages = body as Record<string, unknown>[];
 
-        for (const msg of body as unknown as object[]) {
+        for (let i = 0; i < messages.length; i++) {
+            const msg = messages[i];
+            if (!msg || typeof msg !== 'object') continue;
             try {
                 num_tokens += tokensPerMessage;
-                for (const [key, value] of Object.entries(msg)) {
-                    num_tokens += tokenizer.encode(value as string).length;
-                    if (key == 'name') {
-                        num_tokens += tokensPerName;
+                for (const key in msg) {
+                    if (Object.hasOwn(msg, key)) {
+                        const val = msg[key];
+                        if (typeof val === 'string') {
+                            num_tokens += tokenizer.encode(val).length;
+                        } else if (val !== null && val !== undefined) {
+                            num_tokens += tokenizer.encode(String(val)).length;
+                        }
+                        if (key === 'name') {
+                            num_tokens += tokensPerName;
+                        }
                     }
                 }
             } catch {
@@ -1232,14 +1108,9 @@ router.post('/openai/count', async (context: Record<string, unknown>) => {
         }
         num_tokens += tokensPadding;
 
-        // NB: Since 2023-10-14, the GPT-3.5 Turbo 0301 model shoves in 7-9 extra tokens to every message.
-        // More details: https://community.openai.com/t/gpt-3-5-turbo-0301-showing-different-behavior-suddenly/431326/14
-        if (queryModel.includes('gpt-3.5-turbo-0301')) {
+        if (is0301) {
             num_tokens += 9;
         }
-
-        // not needed for cached tokenizers
-        //tokenizer.free();
 
         return { token_count: num_tokens };
     } catch (error) {
@@ -1252,14 +1123,9 @@ router.post('/openai/count', async (context: Record<string, unknown>) => {
 
 // ── Tokenizer resolution ───────────────────────────────────────────────────────
 
-/**
- * Resolves the tokenizer model name for a given chat-completion source and AI model.
- * Delegates to the provider's resolveTokenizer() when available;
- * otherwise falls back to the generic model-name heuristic.
- */
 router.post('/resolve', async (context: Record<string, unknown>) => {
     try {
-        const body = context.body as Record<string, unknown>;
+        const body = (context.body ?? {}) as Record<string, unknown>;
         const set = context.set as Record<string, unknown>;
         const { source, model } = body as Record<string, string>;
         if (!source || !model) {
@@ -1267,7 +1133,6 @@ router.post('/resolve', async (context: Record<string, unknown>) => {
             return { error: 'source and model are required' };
         }
 
-        // Try the chat-completion provider first
         try {
             const { getChatProvider } = await import('./backends/chat-completions/registry.js');
             const provider = await getChatProvider(source);
@@ -1276,27 +1141,26 @@ router.post('/resolve', async (context: Record<string, unknown>) => {
                 return { tokenizer };
             }
         } catch {
-            // Provider doesn't exist for this source — fall through
+            // Provider doesn't exist for this source
         }
 
-        // Fall back to the generic model-name heuristic
         return { tokenizer: getTokenizerModel(model) };
     } catch (error) {
         console.error('Tokenizer resolution error:', error);
-        const body = context.body as Record<string, unknown>;
+        const body = (context.body ?? {}) as Record<string, unknown>;
         return { tokenizer: getTokenizerModel((body?.model as string) || '') };
     }
 });
 
 router.post('/remote/kobold/count', async (context: Record<string, unknown>) => {
-    const body = context.body as Record<string, unknown>;
+    const body = (context.body ?? {}) as Record<string, unknown>;
     const set = context.set as Record<string, unknown>;
-    if (!body) {
+    if (!context.body) {
         set.status = 400;
         return;
     }
-    const text = String(body.text) || '';
-    const baseUrl = String(body.url);
+    const text = String(body.text || '');
+    const baseUrl = String(body.url || '');
 
     try {
         const args = {
@@ -1305,7 +1169,7 @@ router.post('/remote/kobold/count', async (context: Record<string, unknown>) => 
             headers: { 'Content-Type': 'application/json' },
         };
 
-        let url = String(baseUrl).replace(/\/$/, '');
+        let url = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
         url += '/extra/tokencount';
 
         const result = await fetch(url, args);
@@ -1326,15 +1190,15 @@ router.post('/remote/kobold/count', async (context: Record<string, unknown>) => 
 });
 
 router.post('/remote/textgenerationwebui/encode', async (context: Record<string, unknown>) => {
-    const body = context.body as Record<string, unknown>;
+    const body = (context.body ?? {}) as Record<string, unknown>;
     const set = context.set as Record<string, unknown>;
-    if (!body) {
+    if (!context.body) {
         set.status = 400;
         return;
     }
-    const text = String(body.text) || '';
-    const baseUrl = String(body.url);
-    const model = String(body.model) || '';
+    const text = String(body.text || '');
+    const baseUrl = String(body.url || '');
+    const model = String(body.model || '');
 
     try {
         const args: Record<string, unknown> = {
@@ -1344,8 +1208,9 @@ router.post('/remote/textgenerationwebui/encode', async (context: Record<string,
 
         setAdditionalHeaders(context as any, args, baseUrl);
 
-        // Convert to string + remove trailing slash + /v1 suffix
-        let url = String(baseUrl).replace(/\/$/, '').replace(/\/v1$/, '');
+        let url = baseUrl;
+        if (url.endsWith('/')) url = url.slice(0, -1);
+        if (url.endsWith('/v1')) url = url.slice(0, -3);
 
         switch (body.api_type) {
             case TEXTGEN_TYPES.TABBY:

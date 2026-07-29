@@ -456,7 +456,8 @@ async function downloadChubLorebook(id: string) {
     const slashIdx2 = id.indexOf('/', slashIdx1 + 1);
 
     const lorebooks = slashIdx1 !== -1 ? id.slice(0, slashIdx1) : id;
-    const creatorName = slashIdx1 !== -1 && slashIdx2 !== -1 ? id.slice(slashIdx1 + 1, slashIdx2) : '';
+    const creatorName =
+        slashIdx1 !== -1 && slashIdx2 !== -1 ? id.slice(slashIdx1 + 1, slashIdx2) : '';
     const projectName = slashIdx2 !== -1 ? id.slice(slashIdx2 + 1) : '';
 
     const result = await fetch(
@@ -1165,7 +1166,10 @@ export const router = new Elysia({ prefix: '/api/content' })
             } else if (isAICC) {
                 const slashIdx1 = uuid.indexOf('/');
                 const slashIdx2 = uuid.indexOf('/', slashIdx1 + 1);
-                const author = slashIdx1 !== -1 && slashIdx2 !== -1 ? uuid.slice(slashIdx1 + 1, slashIdx2) : '';
+                const author =
+                    slashIdx1 !== -1 && slashIdx2 !== -1
+                        ? uuid.slice(slashIdx1 + 1, slashIdx2)
+                        : '';
                 const card = slashIdx2 !== -1 ? uuid.slice(slashIdx2 + 1) : '';
                 console.info('Downloading AICC character:', `${author}/${card}`);
                 result = await downloadAICCCharacter(`${author}/${card}`);

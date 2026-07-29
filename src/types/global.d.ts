@@ -77,3 +77,16 @@ declare module '@zeldafan0225/ai_horde' {
     const aiHorde: any;
     export default aiHorde;
 }
+
+/**
+ * Module '@agnai/sentencepiece-js' has no TypeScript declarations.
+ * @see src/endpoints/tokenizers.ts
+ */
+declare module '@agnai/sentencepiece-js' {
+    export class SentencePieceProcessor {
+        load(path: string): Promise<void>;
+        encodeIds(text: string): number[];
+        decodeIds(ids: number[]): string;
+        encodePieces(text: string): string[];
+    }
+}
