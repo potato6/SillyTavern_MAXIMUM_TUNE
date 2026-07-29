@@ -1,30 +1,37 @@
 import { Elysia } from 'elysia';
 import ipRegex from 'ip-regex';
-
 import { decode } from 'html-entities';
+
 import { readSecret, SECRET_KEYS } from './secrets.js';
 import { trimV1 } from '../util.js';
 import { setAdditionalHeadersByType } from '../additional-headers.js';
 
 export const router = new Elysia({ prefix: '/api/search' });
 
-// Cosplay as Chrome
+// Cosplay as browser
 const visitHeaders = {
-    Accept: 'text/html',
     'User-Agent':
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
-    'Accept-Language': 'en-US,en;q=0.5',
-    'Accept-Encoding': 'gzip, deflate, br',
-    Connection: 'keep-alive',
-    'Cache-Control': 'no-cache',
-    Pragma: 'no-cache',
-    TE: 'trailers',
-    DNT: '1',
-    'Sec-Fetch-Dest': 'document',
-    'Sec-Fetch-Mode': 'navigate',
-    'Sec-Fetch-Site': 'none',
-    'Sec-Fetch-User': '?1',
+        'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36',
 };
+
+const RE_XML_TRANSCRIPT = /<text start="([^"]*)" dur="([^"]*)">([^<]*)<\/text>/g;
+const CLIENT_CSS_REGEX = /href="(\/client.+\.css)"/;
+const IPV4_REGEX = ipRegex.v4({ exact: true });
+const IPV6_REGEX = ipRegex.v6({ exact: true });
+
+interface UserDirectories {
+    [key: string]: unknown;
+}
+
+interface UserContext {
+    directories?: UserDirectories;
+    [key: string]: unknown;
+}
+
+function getUserDirectories(ctx: Record<string, unknown>): UserDirectories | undefined {
+    const user = ctx.user as UserContext | undefined;
+    return user?.directories;
+}
 
 /**
  * Extract the transcript of a YouTube video
@@ -33,10 +40,9 @@ const visitHeaders = {
  * @returns {Promise<string>} Transcript text
  */
 async function extractTranscript(videoPageBody: string, lang: string) {
-    const RE_XML_TRANSCRIPT = /<text start="([^"]*)" dur="([^"]*)">([^<]*)<\/text>/g;
-    const splittedHTML = videoPageBody.split('"captions":');
+    const captionsIdx = videoPageBody.indexOf('"captions":');
 
-    if (splittedHTML.length <= 1) {
+    if (captionsIdx === -1) {
         if (videoPageBody.includes('class="g-recaptcha"')) {
             throw new Error('Too many requests');
         }
@@ -46,73 +52,82 @@ async function extractTranscript(videoPageBody: string, lang: string) {
         throw new Error('Transcript not available');
     }
 
-    const captions = (() => {
-        try {
-            // @ts-expect-error TS(2532) FIXME: Object is possibly 'undefined'.
-            return JSON.parse(splittedHTML[1].split(',"videoDetails')[0].replace('\\n', ''));
-        } catch {
-            return undefined;
-        }
-    })()?.playerCaptionsTracklistRenderer;
+    const startIdx = captionsIdx + 11;
+    const endIdx = videoPageBody.indexOf(',"videoDetails', startIdx);
+    const jsonChunk =
+        endIdx !== -1
+            ? videoPageBody.slice(startIdx, endIdx)
+            : videoPageBody.slice(startIdx);
+
+    let parsedCaptions: any;
+    try {
+        parsedCaptions = JSON.parse(jsonChunk.replace('\\n', ''));
+    } catch {
+        parsedCaptions = undefined;
+    }
+
+    const captions = parsedCaptions?.playerCaptionsTracklistRenderer;
 
     if (!captions) {
         throw new Error('Transcript disabled');
     }
 
-    if (!('captionTracks' in captions)) {
+    const tracks = captions.captionTracks;
+    if (!Array.isArray(tracks) || tracks.length === 0) {
         throw new Error('Transcript not available');
     }
 
-    if (
-        lang &&
-        !captions.captionTracks.some(
-            (track: { languageCode: string }) => track.languageCode === lang,
-        )
-    ) {
-        throw new Error('Transcript not available in this language');
+    let selectedTrack: { languageCode: string; baseUrl: string } | undefined;
+
+    if (lang) {
+        for (const track of tracks) {
+            if (track.languageCode === lang) {
+                selectedTrack = track;
+                break;
+            }
+        }
+        if (!selectedTrack) {
+            throw new Error('Transcript not available in this language');
+        }
+    } else {
+        selectedTrack = tracks[0];
     }
 
-    const transcriptURL = (
-        lang
-            ? captions.captionTracks.find(
-                  (track: { languageCode: string }) => track.languageCode === lang,
-              )
-            : captions.captionTracks[0]
-    ).baseUrl;
-    const transcriptResponse = await fetch(transcriptURL, {
-        headers: {
-            ...(lang && { 'Accept-Language': lang }),
-            'User-Agent': visitHeaders['User-Agent'],
-        },
-    });
+    const transcriptURL = selectedTrack!.baseUrl;
+    const headers: Record<string, string> = {
+        'User-Agent': visitHeaders['User-Agent'],
+    };
+    if (lang) {
+        headers['Accept-Language'] = lang;
+    }
+
+    const transcriptResponse = await fetch(transcriptURL, { headers });
 
     if (!transcriptResponse.ok) {
         throw new Error('Transcript request failed');
     }
 
     const transcriptBody = await transcriptResponse.text();
-    const results = [...transcriptBody.matchAll(RE_XML_TRANSCRIPT)];
-    const transcript = results.map((result) => ({
-        text: result[3],
-        // @ts-expect-error TS(2345) FIXME: Argument of type 'string | undefined' is not assig... Remove this comment to see the full error message
-        duration: parseFloat(result[2]),
-        // @ts-expect-error TS(2345) FIXME: Argument of type 'string | undefined' is not assig... Remove this comment to see the full error message
-        offset: parseFloat(result[1]),
-        lang: lang ?? captions.captionTracks[0].languageCode,
-    }));
-    // The text is double-encoded
-    const transcriptText = transcript.map((line) => decode(decode(line.text))).join(' ');
-    return transcriptText;
+    RE_XML_TRANSCRIPT.lastIndex = 0;
+
+    let match: RegExpExecArray | null;
+    const textPieces: string[] = [];
+
+    while ((match = RE_XML_TRANSCRIPT.exec(transcriptBody)) !== null) {
+        const rawText = match[3];
+        if (rawText) {
+            textPieces.push(decode(decode(rawText)));
+        }
+    }
+
+    return textPieces.join(' ');
 }
 
 router.post('/serpapi', async (context) => {
     const { set } = context;
-    const body = context.body as Record<string, unknown>;
-    const user = (context as unknown as Record<string, unknown>).user as Record<
-        string,
-        unknown
-    > | null;
-    const directories = user?.directories as Record<string, string> | undefined;
+    const ctx = context as Record<string, unknown>;
+    const body = (ctx.body ?? {}) as Record<string, unknown>;
+    const directories = getUserDirectories(ctx);
 
     try {
         const key = directories ? readSecret(directories as any, SECRET_KEYS.SERPAPI) : '';
@@ -123,7 +138,7 @@ router.post('/serpapi', async (context) => {
             return;
         }
 
-        const query = body.query as string;
+        const query = typeof body.query === 'string' ? body.query : '';
         const result = await fetch(
             `https://serpapi.com/search.json?q=${encodeURIComponent(query)}&api_key=${key}`,
         );
@@ -153,25 +168,31 @@ router.post('/serpapi', async (context) => {
  */
 router.post('/transcript', async (context) => {
     const { set } = context;
-    const body = context.body as Record<string, unknown>;
+    const ctx = context as Record<string, unknown>;
+    const body = (ctx.body ?? {}) as Record<string, unknown>;
 
     try {
         const id = body.id as string;
-        const lang = body.lang as string;
-        const json = body.json as boolean;
+        const lang = (body.lang as string) ?? '';
+        const json = Boolean(body.json);
 
-        if (!id) {
+        if (typeof id !== 'string' || id.length === 0) {
             console.error('Id is required for /transcript');
             set.status = 400;
             return;
         }
 
-        const videoPageResponse = await fetch(`https://www.youtube.com/watch?v=${id}`, {
-            headers: {
-                ...(lang && { 'Accept-Language': lang }),
-                'User-Agent': visitHeaders['User-Agent'],
-            },
-        });
+        const headers: Record<string, string> = {
+            'User-Agent': visitHeaders['User-Agent'],
+        };
+        if (lang) {
+            headers['Accept-Language'] = lang;
+        }
+
+        const videoPageResponse = await fetch(
+            `https://www.youtube.com/watch?v=${encodeURIComponent(id)}`,
+            { headers },
+        );
 
         const videoPageBody = await videoPageResponse.text();
 
@@ -193,15 +214,16 @@ router.post('/transcript', async (context) => {
 
 router.post('/searxng', async (context) => {
     const { set } = context;
-    const body = context.body as Record<string, unknown>;
+    const ctx = context as Record<string, unknown>;
+    const body = (ctx.body ?? {}) as Record<string, unknown>;
 
     try {
         const baseUrl = body.baseUrl as string;
         const query = body.query as string;
-        const preferences = body.preferences as string;
-        const categories = body.categories as string;
+        const preferences = body.preferences as string | undefined;
+        const categories = body.categories as string | undefined;
 
-        if (!baseUrl || !query) {
+        if (typeof baseUrl !== 'string' || typeof query !== 'string' || !baseUrl || !query) {
             console.error('Missing required parameters for /searxng');
             set.status = 400;
             return;
@@ -219,7 +241,8 @@ router.post('/searxng', async (context) => {
         }
 
         const mainPageText = await mainPageRequest.text();
-        const clientHref = mainPageText.match(/href="(\/client.+\.css)"/)?.[1];
+        const clientMatch = CLIENT_CSS_REGEX.exec(mainPageText);
+        const clientHref = clientMatch ? clientMatch[1] : undefined;
 
         if (clientHref) {
             const clientUrl = new URL(clientHref, baseUrl);
@@ -227,7 +250,7 @@ router.post('/searxng', async (context) => {
         }
 
         const searchUrl = new URL('/search', baseUrl);
-        const searchParams = new URLSearchParams();
+        const searchParams = searchUrl.searchParams;
         searchParams.append('q', query);
         if (preferences) {
             searchParams.append('preferences', preferences);
@@ -235,7 +258,6 @@ router.post('/searxng', async (context) => {
         if (categories) {
             searchParams.append('categories', categories);
         }
-        searchUrl.search = searchParams.toString();
 
         const searchResult = await fetch(searchUrl, { headers: visitHeaders });
 
@@ -246,8 +268,7 @@ router.post('/searxng', async (context) => {
             return text;
         }
 
-        const data = await searchResult.text();
-        return data;
+        return await searchResult.text();
     } catch (error) {
         console.error('SearXNG request failed', error);
         set.status = 500;
@@ -257,12 +278,9 @@ router.post('/searxng', async (context) => {
 
 router.post('/tavily', async (context) => {
     const { set } = context;
-    const body = context.body as Record<string, unknown>;
-    const user = (context as unknown as Record<string, unknown>).user as Record<
-        string,
-        unknown
-    > | null;
-    const directories = user?.directories as Record<string, string> | undefined;
+    const ctx = context as Record<string, unknown>;
+    const body = (ctx.body ?? {}) as Record<string, unknown>;
+    const directories = getUserDirectories(ctx);
 
     try {
         const apiKey = directories ? readSecret(directories as any, SECRET_KEYS.TAVILY) : '';
@@ -273,16 +291,17 @@ router.post('/tavily', async (context) => {
             return;
         }
 
-        const query = body.query as string;
-        const include_images = body.include_images as boolean;
+        const query = typeof body.query === 'string' ? body.query : '';
+        const include_images = Boolean(body.include_images);
+
         const requestBody = {
-            query: query,
+            query,
             api_key: apiKey,
             search_depth: 'basic',
             topic: 'general',
             include_answer: true,
             include_raw_content: false,
-            include_images: !!include_images,
+            include_images,
             include_image_descriptions: false,
             include_domains: [],
             max_results: 10,
@@ -317,18 +336,15 @@ router.post('/tavily', async (context) => {
 
 router.post('/koboldcpp', async (context) => {
     const { set } = context;
-    const body = context.body as Record<string, unknown>;
-    const user = (context as unknown as Record<string, unknown>).user as Record<
-        string,
-        unknown
-    > | null;
-    const directories = user?.directories as Record<string, string> | undefined;
+    const ctx = context as Record<string, unknown>;
+    const body = (ctx.body ?? {}) as Record<string, unknown>;
+    const directories = getUserDirectories(ctx);
 
     try {
         const query = body.query as string;
         const url = body.url as string;
 
-        if (!url) {
+        if (typeof url !== 'string' || url.length === 0) {
             console.error('No URL provided for KoboldCpp search');
             set.status = 400;
             return;
@@ -337,14 +353,15 @@ router.post('/koboldcpp', async (context) => {
         console.debug('KoboldCpp search query', query);
 
         const baseUrl = trimV1(url);
-        const args: Record<string, unknown> = {
+        const headers: Record<string, string> = {};
+        const args = {
             method: 'POST',
-            headers: {},
+            headers,
             body: JSON.stringify({ q: query }),
         };
 
         setAdditionalHeadersByType(
-            args.headers as Record<string, unknown>,
+            headers,
             body.api_type as string,
             baseUrl,
             directories as any,
@@ -372,15 +389,12 @@ router.post('/koboldcpp', async (context) => {
 
 router.post('/serper', async (context) => {
     const { set } = context;
-    const body = context.body as Record<string, unknown>;
-    const user = (context as unknown as Record<string, unknown>).user as Record<
-        string,
-        unknown
-    > | null;
-    const directories = user?.directories as Record<string, string> | undefined;
+    const ctx = context as Record<string, unknown>;
+    const body = (ctx.body ?? {}) as Record<string, unknown>;
+    const directories = getUserDirectories(ctx);
 
     try {
-        const key = directories ? readSecret(directories as any, SECRET_KEYS.SERPER) : '';
+        const key = directories ? await readSecret(directories as any, SECRET_KEYS.SERPER) : '';
 
         if (!key) {
             console.error('No Serper key found');
@@ -388,8 +402,8 @@ router.post('/serper', async (context) => {
             return;
         }
 
-        const query = body.query as string;
-        const images = body.images as boolean;
+        const query = typeof body.query === 'string' ? body.query : '';
+        const images = Boolean(body.images);
 
         const url = images
             ? 'https://google.serper.dev/images'
@@ -426,12 +440,9 @@ router.post('/serper', async (context) => {
 
 router.post('/zai', async (context) => {
     const { set } = context;
-    const body = context.body as Record<string, unknown>;
-    const user = (context as unknown as Record<string, unknown>).user as Record<
-        string,
-        unknown
-    > | null;
-    const directories = user?.directories as Record<string, string> | undefined;
+    const ctx = context as Record<string, unknown>;
+    const body = (ctx.body ?? {}) as Record<string, unknown>;
+    const directories = getUserDirectories(ctx);
 
     try {
         const key = directories ? readSecret(directories as any, SECRET_KEYS.ZAI) : '';
@@ -444,7 +455,7 @@ router.post('/zai', async (context) => {
 
         const query = body.query as string;
 
-        if (!query) {
+        if (typeof query !== 'string' || query.length === 0) {
             console.error('No query provided for /zai');
             set.status = 400;
             return;
@@ -459,7 +470,6 @@ router.post('/zai', async (context) => {
                 Authorization: `Bearer ${key}`,
             },
             body: JSON.stringify({
-                // TODO: There's only one engine option for now
                 search_engine: 'search-prime',
                 search_query: query,
             }),
@@ -484,13 +494,14 @@ router.post('/zai', async (context) => {
 
 router.post('/visit', async (context) => {
     const { set } = context;
-    const body = context.body as Record<string, unknown>;
+    const ctx = context as Record<string, unknown>;
+    const body = (ctx.body ?? {}) as Record<string, unknown>;
 
     try {
         const url = body.url as string;
         const html = Boolean(body.html ?? true);
 
-        if (!url) {
+        if (typeof url !== 'string' || url.length === 0) {
             console.error('No url provided for /visit');
             set.status = 400;
             return;
@@ -498,27 +509,22 @@ router.post('/visit', async (context) => {
 
         try {
             const urlObj = new URL(url);
+            const protocol = urlObj.protocol;
+            const hostname = urlObj.hostname;
 
-            // Reject relative URLs
-            if (urlObj.protocol === null || urlObj.host === null) {
+            if (!protocol || !urlObj.host) {
                 throw new Error('Invalid URL format');
             }
 
-            // Reject non-HTTP URLs
-            if (urlObj.protocol !== 'http:' && urlObj.protocol !== 'https:') {
+            if (protocol !== 'http:' && protocol !== 'https:') {
                 throw new Error('Invalid protocol');
             }
 
-            // Reject URLs with a non-standard port
             if (urlObj.port !== '') {
                 throw new Error('Invalid port');
             }
 
-            // Reject IP addresses
-            if (
-                ipRegex.v4({ exact: true }).test(urlObj.hostname) ||
-                ipRegex.v6({ exact: true }).test(urlObj.hostname)
-            ) {
+            if (IPV4_REGEX.test(hostname) || IPV6_REGEX.test(hostname)) {
                 throw new Error('Invalid hostname');
             }
         } catch {
@@ -537,7 +543,7 @@ router.post('/visit', async (context) => {
             return;
         }
 
-        const contentType = String(result.headers.get('content-type'));
+        const contentType = result.headers.get('content-type') || '';
 
         if (html) {
             if (!contentType.includes('text/html')) {
@@ -546,8 +552,7 @@ router.post('/visit', async (context) => {
                 return;
             }
 
-            const text = await result.text();
-            return text;
+            return await result.text();
         }
 
         set.headers['Content-Type'] = contentType;
