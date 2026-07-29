@@ -112,7 +112,7 @@ export async function generateThumbnail(
                     }
                 }
                 if (!forceGenerate) {
-                    const buffer = fs.readFileSync(pathToCachedFile);
+                    const buffer = Buffer.from(await Bun.file(pathToCachedFile).arrayBuffer());
                     const fileDimensions = sizeOf(buffer);
                     const ratio =
                         fileDimensions.height > 0
@@ -135,13 +135,13 @@ export async function generateThumbnail(
         const fileExtension = path.extname(file).toLowerCase();
 
         if (fileExtension === '.webp' && isKnownAnimated !== false) {
-            const buffer = fs.readFileSync(pathToOriginalFile);
+            const buffer = Buffer.from(await Bun.file(pathToOriginalFile).arrayBuffer());
             const isAnimated = isAnimatedWebP(buffer);
             if (isAnimated) return { path: null, aspectRatio: null, resolution: null };
         }
 
         if (fileExtension === '.png' && isKnownAnimated !== false) {
-            const buffer = fs.readFileSync(pathToOriginalFile);
+            const buffer = Buffer.from(await Bun.file(pathToOriginalFile).arrayBuffer());
             const isAnimated = isAnimatedApng(buffer);
             if (isAnimated) return { path: null, aspectRatio: null, resolution: null };
         }
@@ -177,7 +177,7 @@ async function processSingleImage(
     const pathToCachedFile = path.join(thumbnailFolder, file);
 
     try {
-        const fileBuffer = fs.readFileSync(pathToOriginalFile);
+        const fileBuffer = Buffer.from(await Bun.file(pathToOriginalFile).arrayBuffer());
         const metadata = await new Bun.Image(fileBuffer).metadata();
         const originalWidth = metadata.width ?? 0;
         const originalHeight = metadata.height ?? 0;

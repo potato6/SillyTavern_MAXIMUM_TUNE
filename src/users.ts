@@ -629,14 +629,12 @@ export async function initUserStorage(dataRoot: string) {
  * @param {string} dataRoot The root directory for user data
  * @returns {string} The cookie secret
  */
-export function getCookieSecret(dataRoot: string) {
+export async function getCookieSecret(dataRoot: string) {
     const cookieSecretPath = path.join(dataRoot, COOKIE_SECRET_PATH);
+    const cookieFile = Bun.file(cookieSecretPath);
 
-    if (fs.existsSync(cookieSecretPath)) {
-        const stat = fs.statSync(cookieSecretPath);
-        if (stat.size > 0) {
-            return fs.readFileSync(cookieSecretPath, 'utf8');
-        }
+    if (await cookieFile.exists() && cookieFile.size > 0) {
+        return await cookieFile.text();
     }
 
     const oldSecret = getConfigValue((STORAGE_KEYS as any).cookieSecret) as string | undefined;
@@ -775,19 +773,19 @@ export async function getUserAvatar(handle: string) {
         // Fallback to reading from files if custom avatar is not set
         const directory = getUserDirectories(handle);
         const pathToSettings = path.join(directory.root, SETTINGS_FILE);
-        const settings = fs.existsSync(pathToSettings)
-            ? JSON.parse(fs.readFileSync(pathToSettings, 'utf8'))
+        const settings = await Bun.file(pathToSettings).exists()
+            ? await Bun.file(pathToSettings).json()
             : {};
         const avatarFile = settings?.power_user?.default_persona || settings?.user_avatar;
         if (!avatarFile) {
             return PUBLIC_USER_AVATAR;
         }
         const avatarPath = path.join(directory.avatars, sanitize(avatarFile));
-        if (!fs.existsSync(avatarPath)) {
+        if (!(await Bun.file(avatarPath).exists())) {
             return PUBLIC_USER_AVATAR;
         }
         const mimeType = Bun.file(avatarPath).type;
-        const base64Content = fs.readFileSync(avatarPath, 'base64');
+        const base64Content = Buffer.from(await Bun.file(avatarPath).arrayBuffer()).toString('base64');
         return `data:${mimeType};base64,${base64Content}`;
     } catch {
         // Ignore errors

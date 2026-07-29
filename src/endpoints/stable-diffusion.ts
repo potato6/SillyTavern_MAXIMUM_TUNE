@@ -598,7 +598,7 @@ comfy.post('/workflow', async (context: any) => {
         if (!fs.existsSync(filePath)) {
             filePath = path.join(user.directories.comfyWorkflows, 'Default_Comfy_Workflow.json');
         }
-        const data = fs.readFileSync(filePath, { encoding: 'utf-8' });
+        const data = await Bun.file(filePath).text();
         return JSON.stringify(data);
     } catch (error) {
         console.error(error);

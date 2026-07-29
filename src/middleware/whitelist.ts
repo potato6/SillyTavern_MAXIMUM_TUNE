@@ -12,7 +12,7 @@ import {
     getIpFromRequest,
     getRealOrForwardedIp,
 } from '../express-common.js';
-import { color, getConfigValue, safeReadFileSync } from '../util.js';
+import { color, getConfigValue } from '../util.js';
 
 const whitelistPath = path.join(process.cwd(), './whitelist.txt');
 const enableForwardedWhitelist = !!getConfigValue('enableForwardedWhitelist', false, 'boolean');
@@ -76,10 +76,9 @@ async function addDockerHostsToWhitelist() {
  * @returns {Promise<import('express').RequestHandler>} Promise that resolves to the middleware function
  */
 export default async function getWhitelistMiddleware() {
+    const forbiddenPath = path.join(globalThis.DATA_ROOT, '_errors', 'forbidden-by-whitelist.html');
     const forbiddenWebpage = Handlebars.compile(
-        safeReadFileSync(
-            path.join(globalThis.DATA_ROOT, '_errors', 'forbidden-by-whitelist.html'),
-        ) ?? '',
+        (await Bun.file(forbiddenPath).exists()) ? await Bun.file(forbiddenPath).text() : '',
     );
 
     const noLogPaths = new Set(['/favicon.ico']);

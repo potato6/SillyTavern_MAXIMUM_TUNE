@@ -10,7 +10,7 @@ console.log(
  *
  */
 async function main() {
-    const cliArgs = new CommandLineParser().parse(process.argv);
+    const cliArgs = await new CommandLineParser().parse(process.argv);
     globalThis.DATA_ROOT = cliArgs.dataRoot;
     globalThis.COMMAND_LINE_ARGS = cliArgs as import('./src/command-line.js').CommandLineArguments;
     try {

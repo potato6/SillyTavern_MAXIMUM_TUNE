@@ -428,7 +428,7 @@ export const router = new Elysia({ prefix: '/api/speech', aot: false })
                     }
 
                     console.info('Processing audio file with ElevenLabs', file.path);
-                    const fileBuffer = fs.readFileSync(file.path as string);
+                    const fileBuffer = await Bun.file(file.path as string).arrayBuffer();
                     const formData = new FormData();
                     formData.append(
                         'file',

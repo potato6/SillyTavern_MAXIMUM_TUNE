@@ -168,13 +168,13 @@ function getAllKeys(obj: Record<string, unknown>, prefix = ''): string[] {
  * Compares the current config.yaml with the default config.yaml and adds any missing values.
  * @param {string} configPath Path to config.yaml
  */
-export function addMissingConfigValues(configPath: string) {
+export async function addMissingConfigValues(configPath: string) {
     try {
         const defaultConfig = yaml.parse(
-            fs.readFileSync(path.join(serverDirectory, './default/config.yaml'), 'utf8'),
+            await Bun.file(path.join(serverDirectory, './default/config.yaml')).text(),
         );
 
-        if (!fs.existsSync(configPath)) {
+        if (!(await Bun.file(configPath).exists())) {
             console.warn(
                 color.yellow(
                     `Warning: config.yaml not found at ${configPath}. Creating a new one with default values.`,
@@ -184,7 +184,7 @@ export function addMissingConfigValues(configPath: string) {
             return;
         }
 
-        let config = yaml.parse(fs.readFileSync(configPath, 'utf8'));
+        let config = yaml.parse(await Bun.file(configPath).text());
 
         // Migrate old keys to new keys
         const migratedKeys = [];
@@ -266,8 +266,8 @@ export function addMissingConfigValues(configPath: string) {
  * Performs early initialization tasks before the server starts.
  * @param {string} configPath Path to config.yaml
  */
-export function initConfig(configPath: string) {
+export async function initConfig(configPath: string) {
     console.log('Using config path:', color.green(configPath));
     setConfigFilePath(configPath);
-    addMissingConfigValues(configPath);
+    await addMissingConfigValues(configPath);
 }

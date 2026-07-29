@@ -999,7 +999,7 @@ function createTranscribeHandler({
             }
 
             console.info(`Processing audio file with ${providerName}`, file.path);
-            const fileBuffer = fs.readFileSync(file.path as string);
+            const fileBuffer = await Bun.file(file.path as string).arrayBuffer();
             const formData = new FormData();
             formData.append('file', new Blob([fileBuffer], { type: 'audio/wav' }), 'audio.wav');
             formData.append('model', body.model as string);
@@ -1094,7 +1094,8 @@ router.post('/chutes/transcribe-audio', async (context: any) => {
         }
 
         console.info('Processing audio file with Chutes', file.path);
-        const audioBase64 = fs.readFileSync(file.path as string).toString('base64');
+        const audioBuffer = await Bun.file(file.path as string).arrayBuffer();
+        const audioBase64 = Buffer.from(audioBuffer).toString('base64');
 
         const result = await fetch(`https://${String(body.model)}.chutes.ai/transcribe`, {
             method: 'POST',

@@ -90,7 +90,7 @@ export const parse = async (cardUrl: string, format: string) => {
 
     switch (fileFormat) {
         case 'png': {
-            const buffer = fs.readFileSync(cardUrl);
+            const buffer = Buffer.from(await Bun.file(cardUrl).arrayBuffer());
             return read(buffer);
         }
     }

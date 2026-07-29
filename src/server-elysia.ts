@@ -14,7 +14,7 @@ import { cors } from '@elysiajs/cors';
 import { staticPlugin } from '@elysiajs/static';
 
 import { serverDirectory } from './server-directory.js';
-import { safeReadFileSync, getConfigValue, setupLogLevel, getVersion } from './util.js';
+import { getConfigValue, setupLogLevel, getVersion } from './util.js';
 import { loadPlugins } from './plugin-loader.js';
 
 import hostWhitelistMiddleware from './middleware/hostWhitelist.js';
@@ -225,17 +225,17 @@ function sessionPlugin(config: { name: string; maxAge: number; secret: string })
 
 // ── App factory ────────────────────────────────────────────────────────────────
 
-export function buildApp() {
+export async function buildApp() {
     const cliArgs = globalThis.COMMAND_LINE_ARGS;
     const app = new Elysia({ aot: false });
 
     // 404 handler
-    app.onError(({ code, set }) => {
+    app.onError(async ({ code, set }) => {
         if (code === 'NOT_FOUND') {
-            const notFound =
-                safeReadFileSync(
-                    path.join(globalThis.DATA_ROOT, '_errors', 'url-not-found.html'),
-                ) ?? '';
+            const notFoundPath = path.join(globalThis.DATA_ROOT, '_errors', 'url-not-found.html');
+            const notFound = (await Bun.file(notFoundPath).exists())
+                ? await Bun.file(notFoundPath).text()
+                : '';
             set.status = 404;
             return new Response(notFound, {
                 headers: { 'Content-Type': 'text/html; charset=utf-8' },
@@ -321,7 +321,7 @@ export function buildApp() {
         sessionPlugin({
             name: getCookieSessionName(),
             maxAge: getSessionCookieAge() ?? 400 * 24 * 60 * 60 * 1000,
-            secret: getCookieSecret(globalThis.DATA_ROOT),
+            secret: await getCookieSecret(globalThis.DATA_ROOT),
         }),
     );
 
@@ -568,7 +568,7 @@ async function start() {
     await migratePublicOverrides();
     verifySecuritySettings();
 
-    const app = buildApp();
+    const app = await buildApp();
     const directories = await getUserDirectoriesList();
     await migrateGroupChatsMetadataFormat(directories);
     await checkForNewContent(directories);
@@ -596,8 +596,8 @@ async function start() {
     if (cliArgs.ssl && cliArgs.certPath && cliArgs.keyPath) {
         if (fs.existsSync(cliArgs.certPath) && fs.existsSync(cliArgs.keyPath)) {
             serverOptions.tls = {
-                cert: fs.readFileSync(cliArgs.certPath),
-                key: fs.readFileSync(cliArgs.keyPath),
+                cert: Bun.file(cliArgs.certPath),
+                key: Bun.file(cliArgs.keyPath),
                 passphrase: cliArgs.keyPassphrase ?? '',
             };
         } else {

@@ -8,7 +8,7 @@ import { initUserStorage, getPasswordSalt, getPasswordHash, toKey } from './user
  * @param {string} configPath - The path to the config file.
  */
 async function initStorage(configPath: string) {
-    const config = yaml.parse(fs.readFileSync(configPath, 'utf8'));
+    const config = yaml.parse(await Bun.file(configPath).text());
     const dataRoot = config.dataRoot;
 
     if (!dataRoot) {

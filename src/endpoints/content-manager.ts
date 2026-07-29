@@ -83,9 +83,9 @@ function getScopeByType(type: string) {
  * @param {UserDirectoryList} directories User directories
  * @returns {object[]} Array of default presets
  */
-export function getDefaultPresets(directories: UserDirectoryList) {
+export async function getDefaultPresets(directories: UserDirectoryList) {
     try {
-        const contentIndex = getContentIndex(CONTENT_SCOPE.USER);
+        const contentIndex = await getContentIndex(CONTENT_SCOPE.USER);
         const presets: ContentItem[] = [];
 
         for (const contentItem of contentIndex) {
@@ -255,8 +255,8 @@ export async function checkForNewContent(
             return;
         }
 
-        const userContentIndex = getContentIndex(CONTENT_SCOPE.USER);
-        const globalContentIndex = getContentIndex(CONTENT_SCOPE.GLOBAL);
+        const userContentIndex = await getContentIndex(CONTENT_SCOPE.USER);
+        const globalContentIndex = await getContentIndex(CONTENT_SCOPE.GLOBAL);
         let anyContentAdded = false;
 
         const globalSeedResult = await seedGlobalContent(globalContentIndex);
@@ -293,12 +293,11 @@ export async function checkForNewContent(
  * @param {string} scope Scope of content to get
  * @returns {ContentItem[]} Array of content index
  */
-function getContentIndex(scope = CONTENT_SCOPE.USER) {
+async function getContentIndex(scope = CONTENT_SCOPE.USER) {
     const result: ContentItem[] = [];
 
     try {
-        const scaffoldIndexText = fs.readFileSync(scaffoldIndexPath, 'utf8');
-        const scaffoldIndex = JSON.parse(scaffoldIndexText);
+        const scaffoldIndex = await Bun.file(scaffoldIndexPath).json();
         if (Array.isArray(scaffoldIndex)) {
             for (const item of scaffoldIndex) {
                 item.folder = scaffoldDirectory;
@@ -313,8 +312,7 @@ function getContentIndex(scope = CONTENT_SCOPE.USER) {
     }
 
     try {
-        const contentIndexText = fs.readFileSync(contentIndexPath, 'utf8');
-        const contentIndex = JSON.parse(contentIndexText);
+        const contentIndex = await Bun.file(contentIndexPath).json();
         if (Array.isArray(contentIndex)) {
             for (const item of contentIndex) {
                 item.folder = contentDirectory;
@@ -338,12 +336,12 @@ function getContentIndex(scope = CONTENT_SCOPE.USER) {
  * @param {string} scope Scope of content to get
  * @returns {string[]|Buffer[]|object[]} Array of content
  */
-export function getContentOfType(
+async function getContentFiles(
     type: string,
-    format: 'json' | 'string' | 'raw',
+    format: string,
     scope = CONTENT_SCOPE.USER,
 ) {
-    const contentIndex = getContentIndex(scope);
+    const contentIndex = await getContentIndex(scope);
     const files: (string | Buffer | object)[] = [];
 
     for (const item of contentIndex) {
@@ -352,7 +350,7 @@ export function getContentOfType(
         }
         try {
             const filePath = path.join(item.folder, item.filename);
-            const fileContent = fs.readFileSync(filePath);
+            const fileContent = Buffer.from(await Bun.file(filePath).arrayBuffer());
             if (format === 'json') {
                 files.push(JSON.parse(fileContent.toString('utf8')));
             } else if (format === 'string') {

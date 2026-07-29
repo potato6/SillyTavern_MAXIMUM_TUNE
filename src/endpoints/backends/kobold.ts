@@ -261,7 +261,8 @@ router.post('/transcribe-audio', async (context) => {
 
         console.debug('Transcribing audio with KoboldCpp', server);
 
-        const fileBase64 = fs.readFileSync(file.path as string).toString('base64');
+        const fileBuffer = await Bun.file(file.path as string).arrayBuffer();
+        const fileBase64 = Buffer.from(fileBuffer).toString('base64');
         fs.unlinkSync(file.path as string);
 
         const headers: Record<string, string> = {};

@@ -348,8 +348,8 @@ export async function getImageBuffers(zipFilePath: string) {
     }
 
     const imageBuffers: [string, Buffer][] = [];
-    const fileBuffer = fs.readFileSync(zipFilePath);
-    const zip = fflate.unzipSync(new Uint8Array(fileBuffer));
+    const fileBuffer = await Bun.file(zipFilePath).bytes();
+    const zip = fflate.unzipSync(fileBuffer);
 
     for (const [fileName, data] of Object.entries(zip)) {
         const mimeType = Bun.file(fileName).type;

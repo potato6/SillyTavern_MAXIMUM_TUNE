@@ -8,7 +8,7 @@ import type { Request, Response, NextFunction } from 'express';
 import storage from 'node-persist';
 import { RateLimiterMemory, RateLimiterRes } from 'rate-limiter-flexible';
 import { getAllUserHandles, toKey, getPasswordHash } from '../users.js';
-import { getConfigValue, safeReadFileSync } from '../util.js';
+import { getConfigValue } from '../util.js';
 import { getIpAddress, retryAfter } from '../express-common.js';
 
 const PER_USER_BASIC_AUTH = !!getConfigValue('perUserBasicAuth', false, 'boolean');
@@ -26,9 +26,11 @@ const basicAuthMiddleware = async function (
     response: Response,
     callback: NextFunction,
 ) {
-    const unauthorizedResponse = (res: Response) => {
-        const unauthorizedWebpage =
-            safeReadFileSync(path.join(globalThis.DATA_ROOT, '_errors', 'unauthorized.html')) ?? '';
+    const unauthorizedResponse = async (res: Response) => {
+        const unauthorizedPath = path.join(globalThis.DATA_ROOT, '_errors', 'unauthorized.html');
+        const unauthorizedWebpage = (await Bun.file(unauthorizedPath).exists())
+            ? await Bun.file(unauthorizedPath).text()
+            : '';
         res.set('WWW-Authenticate', 'Basic realm="SillyTavern", charset="UTF-8"');
         return res.status(401).send(unauthorizedWebpage);
     };

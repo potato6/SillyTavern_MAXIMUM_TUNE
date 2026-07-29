@@ -166,7 +166,7 @@ export const router = new Elysia({ prefix: '/api/presets', aot: false })
             const rawName = bodyAny?.name;
             const name = typeof rawName === 'string' ? sanitize(rawName) : '';
 
-            const defaultPresets = getDefaultPresets(directories as any);
+            const defaultPresets = await getDefaultPresets(directories as any);
             let defaultPreset: Record<string, unknown> | undefined;
 
             const targetFolder = settings.folder;

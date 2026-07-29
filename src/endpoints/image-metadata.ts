@@ -131,7 +131,7 @@ export async function generateImageMetadata(
     filePath: string,
     type: ThumbnailType,
 ): Promise<ImageMetadata> {
-    const buffer = await fs.readFile(filePath);
+    const buffer = Buffer.from(await Bun.file(filePath).arrayBuffer());
     const hash = crypto.createHash('sha256').update(buffer).digest('hex');
     const dimensions = imageSize(buffer);
 
@@ -183,8 +183,7 @@ export async function generateImageMetadata(
 export async function readMetadataIndex(userDataRoot: string): Promise<MetadataIndex> {
     const indexPath = path.join(userDataRoot, METADATA_FILE);
     try {
-        const rawData = await fs.readFile(indexPath, 'utf8');
-        return JSON.parse(rawData);
+        return await Bun.file(indexPath).json();
     } catch {
         return { version: 1, images: {}, folders: [] };
     }

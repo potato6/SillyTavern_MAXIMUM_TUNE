@@ -192,7 +192,7 @@ async function loadFromPackage(
     exitHooks: Array<() => unknown>,
 ): Promise<boolean> {
     try {
-        const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+        const packageJson = await Bun.file(packageJsonPath).json();
         if (packageJson.main) {
             const pluginFilePath = path.join(path.dirname(packageJsonPath), packageJson.main);
             return await loadFromFile(app, pluginFilePath, exitHooks);

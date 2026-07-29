@@ -106,7 +106,7 @@ export class CommandLineParser {
      * @param {string[]} args Process startup arguments.
      * @returns {CommandLineArguments} Parsed command line arguments.
      */
-    parse(args: string[]) {
+    async parse(args: string[]) {
         const cliArguments = yargs(hideBin(args))
             .usage(
                 'Usage: <your-start-script> [options]\nOptions that are not provided will be filled with config values.',
@@ -291,7 +291,7 @@ export class CommandLineParser {
         if (isGlobal && !fs.existsSync(path.dirname(configPath))) {
             fs.mkdirSync(path.dirname(configPath), { recursive: true });
         }
-        initConfig(configPath);
+        await initConfig(configPath);
 
         const dataRoot = isGlobal
             ? defaultConfig.dataRoot
