@@ -28,7 +28,7 @@ export const router = new Elysia({ prefix: '/api/files' })
     .post('/sanitize-filename', (context) => {
         const { set } = context;
 
-        const body = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
+        const body = context.body as Record<string, unknown> | undefined;
 
         try {
             const fileName = body?.fileName;
@@ -45,8 +45,8 @@ export const router = new Elysia({ prefix: '/api/files' })
     .post('/upload', async (context) => {
         const { set } = context;
 
-        const body = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
-        const user = (context as Record<string, unknown>).user as UserContext | undefined;
+        const body = context.body as Record<string, unknown> | undefined;
+        const user = context.user as UserContext | undefined;
         const directories = user?.directories;
         const profile = user?.profile;
 
@@ -88,8 +88,8 @@ export const router = new Elysia({ prefix: '/api/files' })
     .post('/delete', async (context) => {
         const { set } = context;
 
-        const body = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
-        const user = (context as Record<string, unknown>).user as UserContext | undefined;
+        const body = context.body as Record<string, unknown> | undefined;
+        const user = context.user as UserContext | undefined;
         const directories = user?.directories;
 
         try {
@@ -127,8 +127,8 @@ export const router = new Elysia({ prefix: '/api/files' })
     .post('/verify', async (context) => {
         const { set } = context;
 
-        const body = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
-        const user = (context as Record<string, unknown>).user as UserContext | undefined;
+        const body = context.body as Record<string, unknown> | undefined;
+        const user = context.user as UserContext | undefined;
         const directories = user?.directories;
 
         try {

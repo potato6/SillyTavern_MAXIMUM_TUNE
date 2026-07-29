@@ -17,10 +17,7 @@ export const router: any = new Elysia({ prefix: '/api/openai' });
 router.post('/caption-image', async (context: any) => {
     const { set } = context;
     const body = context.body as Record<string, unknown>;
-    const user = (context as unknown as Record<string, unknown>).user as Record<
-        string,
-        unknown
-    > | null;
+    const user = context.user as Record<string, unknown> | null;
     const directories = user?.directories as Record<string, string> | undefined;
 
     try {
@@ -312,10 +309,7 @@ router.post('/caption-image', async (context: any) => {
 router.post('/generate-voice', async (context: any) => {
     const { set } = context;
     const body = context.body as Record<string, unknown>;
-    const user = (context as unknown as Record<string, unknown>).user as Record<
-        string,
-        unknown
-    > | null;
+    const user = context.user as Record<string, unknown> | null;
     const directories = user?.directories as Record<string, string> | undefined;
 
     try {
@@ -374,10 +368,7 @@ router.post('/generate-voice', async (context: any) => {
 router.post('/electronhub/generate-voice', async (context: any) => {
     const { set } = context;
     const body = context.body as Record<string, unknown>;
-    const user = (context as unknown as Record<string, unknown>).user as Record<
-        string,
-        unknown
-    > | null;
+    const user = context.user as Record<string, unknown> | null;
     const directories = user?.directories as Record<string, string> | undefined;
 
     try {
@@ -457,10 +448,7 @@ router.post('/electronhub/generate-voice', async (context: any) => {
 // ElectronHub model list
 router.post('/electronhub/models', async (context: any) => {
     const { set } = context;
-    const user = (context as unknown as Record<string, unknown>).user as Record<
-        string,
-        unknown
-    > | null;
+    const user = context.user as Record<string, unknown> | null;
     const directories = user?.directories as Record<string, string> | undefined;
 
     try {
@@ -499,10 +487,7 @@ router.post('/electronhub/models', async (context: any) => {
 router.post('/chutes/generate-voice', async (context: any) => {
     const { set } = context;
     const body = context.body as Record<string, unknown>;
-    const user = (context as unknown as Record<string, unknown>).user as Record<
-        string,
-        unknown
-    > | null;
+    const user = context.user as Record<string, unknown> | null;
     const directories = user?.directories as Record<string, string> | undefined;
 
     try {
@@ -554,10 +539,7 @@ router.post('/chutes/generate-voice', async (context: any) => {
 
 router.post('/chutes/models/embedding', async (context: any) => {
     const { set } = context;
-    const user = (context as unknown as Record<string, unknown>).user as Record<
-        string,
-        unknown
-    > | null;
+    const user = context.user as Record<string, unknown> | null;
     const directories = user?.directories as Record<string, string> | undefined;
 
     try {
@@ -602,10 +584,7 @@ router.post('/chutes/models/embedding', async (context: any) => {
 
 router.post('/nanogpt/models/embedding', async (context: any) => {
     const { set } = context;
-    const user = (context as unknown as Record<string, unknown>).user as Record<
-        string,
-        unknown
-    > | null;
+    const user = context.user as Record<string, unknown> | null;
     const directories = user?.directories as Record<string, string> | undefined;
 
     try {
@@ -649,10 +628,7 @@ router.post('/nanogpt/models/embedding', async (context: any) => {
 router.post('/siliconflow/models/embedding', async (context: any) => {
     const { set } = context;
     const body = context.body as Record<string, unknown>;
-    const user = (context as unknown as Record<string, unknown>).user as Record<
-        string,
-        unknown
-    > | null;
+    const user = context.user as Record<string, unknown> | null;
     const directories = user?.directories as Record<string, string> | undefined;
 
     try {
@@ -701,10 +677,7 @@ router.post('/siliconflow/models/embedding', async (context: any) => {
 router.post('/workers-ai/models/embedding', async (context: any) => {
     const { set } = context;
     const body = context.body as Record<string, unknown>;
-    const user = (context as unknown as Record<string, unknown>).user as Record<
-        string,
-        unknown
-    > | null;
+    const user = context.user as Record<string, unknown> | null;
     const directories = user?.directories as Record<string, string> | undefined;
 
     try {
@@ -759,10 +732,7 @@ router.post('/workers-ai/models/embedding', async (context: any) => {
 router.post('/generate-image', async (context: any) => {
     const { set } = context;
     const body = context.body as Record<string, unknown>;
-    const user = (context as unknown as Record<string, unknown>).user as Record<
-        string,
-        unknown
-    > | null;
+    const user = context.user as Record<string, unknown> | null;
     const directories = user?.directories as Record<string, string> | undefined;
 
     try {
@@ -804,10 +774,7 @@ router.post('/generate-image', async (context: any) => {
 router.post('/generate-video', async (context: any) => {
     const { set } = context;
     const body = context.body as Record<string, unknown>;
-    const user = (context as unknown as Record<string, unknown>).user as Record<
-        string,
-        unknown
-    > | null;
+    const user = context.user as Record<string, unknown> | null;
     const directories = user?.directories as Record<string, string> | undefined;
 
     try {
@@ -942,10 +909,7 @@ const custom = new Elysia({ prefix: '/custom' });
 custom.post('/generate-voice', async (context) => {
     const { set } = context;
     const body = context.body as Record<string, unknown>;
-    const user = (context as unknown as Record<string, unknown>).user as Record<
-        string,
-        unknown
-    > | null;
+    const user = context.user as Record<string, unknown> | null;
     const directories = user?.directories as Record<string, string> | undefined;
 
     try {
@@ -1015,15 +979,9 @@ function createTranscribeHandler({
     return async (context: any) => {
         const { set } = context;
         const body = context.body as Record<string, unknown>;
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
+        const user = context.user as Record<string, unknown> | null;
         const directories = user?.directories as Record<string, string> | undefined;
-        const file = (context as unknown as Record<string, unknown>).file as Record<
-            string,
-            unknown
-        > | null;
+        const file = context.file as Record<string, unknown> | null;
 
         try {
             const key = await readSecret(directories as any, secretKey);
@@ -1116,15 +1074,9 @@ router.post(
 router.post('/chutes/transcribe-audio', async (context: any) => {
     const { set } = context;
     const body = context.body as Record<string, unknown>;
-    const user = (context as unknown as Record<string, unknown>).user as Record<
-        string,
-        unknown
-    > | null;
+    const user = context.user as Record<string, unknown> | null;
     const directories = user?.directories as Record<string, string> | undefined;
-    const file = (context as unknown as Record<string, unknown>).file as Record<
-        string,
-        unknown
-    > | null;
+    const file = context.file as Record<string, unknown> | null;
 
     try {
         const key = await readSecret(directories as any, SECRET_KEYS.CHUTES);

@@ -5,10 +5,7 @@ import { sync as writeFileAtomicSync } from 'write-file-atomic';
 
 export const router = new Elysia({ prefix: '/api/moving-ui' }).post('/save', (context) => {
     const { body, set } = context;
-    const user = (context as unknown as Record<string, unknown>).user as Record<
-        string,
-        unknown
-    > | null;
+    const user = context.user as Record<string, unknown> | null;
     const bodyAny = body as Record<string, unknown> | null;
     if (!bodyAny?.name) {
         set.status = 400;

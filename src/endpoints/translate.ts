@@ -13,14 +13,13 @@ export const router = new Elysia({ prefix: '/api/translate' });
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
-function getDirs(context: unknown) {
-
-    const user = (context as Record<string, unknown>).user as Record<string, unknown> | null;
+function getDirs(context: Record<string, unknown>) {
+    const user = context.user as Record<string, unknown> | null;
     return user?.directories as Record<string, string> | undefined;
 }
 
-function getBody(context: unknown) {
-    return (context as Record<string, unknown>).body as Record<string, unknown>;
+function getBody(context: Record<string, unknown>) {
+    return context.body as Record<string, unknown>;
 }
 
 // ── LibreTranslate ───────────────────────────────────────────────────────────

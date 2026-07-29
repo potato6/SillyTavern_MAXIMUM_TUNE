@@ -1039,7 +1039,7 @@ export const router = new Elysia({ prefix: '/api/content' })
     .post('/importURL', async (context) => {
         const { set } = context;
 
-        const bodyAny = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
+        const bodyAny = context.body as Record<string, unknown> | undefined;
 
         const rawUrl = bodyAny?.url;
         if (!rawUrl || typeof rawUrl !== 'string') {
@@ -1138,7 +1138,7 @@ export const router = new Elysia({ prefix: '/api/content' })
     .post('/importUUID', async (context) => {
         const { set } = context;
 
-        const bodyAny = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
+        const bodyAny = context.body as Record<string, unknown> | undefined;
 
         const rawUrl = bodyAny?.url;
         if (!rawUrl || typeof rawUrl !== 'string') {

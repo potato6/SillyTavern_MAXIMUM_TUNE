@@ -754,10 +754,7 @@ export class DataMaidService {
 export const router = new Elysia({ prefix: '/api/data-maid' })
     .post('/report', async (context) => {
         const { set } = context;
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
+        const user = context.user as Record<string, unknown> | null;
         try {
             if (!user || !user.directories) {
                 set.status = 403;
@@ -783,10 +780,7 @@ export const router = new Elysia({ prefix: '/api/data-maid' })
     })
     .post('/finalize', async (context) => {
         const { set } = context;
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
+        const user = context.user as Record<string, unknown> | null;
         try {
             if (!user || !user.directories) {
                 set.status = 403;
@@ -828,10 +822,7 @@ export const router = new Elysia({ prefix: '/api/data-maid' })
     })
     .get('/view', async (context) => {
         const { set, query } = context;
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
+        const user = context.user as Record<string, unknown> | null;
         try {
             if (!user || !user.directories) {
                 set.status = 403;
@@ -901,10 +892,7 @@ export const router = new Elysia({ prefix: '/api/data-maid' })
     })
     .post('/delete', async (context) => {
         const { set } = context;
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
+        const user = context.user as Record<string, unknown> | null;
         try {
             if (!user || !user.directories) {
                 set.status = 403;

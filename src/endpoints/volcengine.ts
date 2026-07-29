@@ -7,10 +7,7 @@ export const router = new Elysia({ prefix: '/api/volcengine' });
 router.post('/generate-voice', async (context) => {
     const { set } = context;
     const body = context.body as Record<string, unknown>;
-    const user = (context as unknown as Record<string, unknown>).user as Record<
-        string,
-        unknown
-    > | null;
+    const user = context.user as Record<string, unknown> | null;
     const directories = user?.directories as Record<string, string> | undefined;
 
     try {

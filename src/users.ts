@@ -1340,27 +1340,27 @@ export async function getAllEnabledUsers() {
 export const router = new Elysia();
 router.all(
     '/backgrounds/*',
-    createRouteHandler((context: any) => (context as any).user.directories.backgrounds),
+    createRouteHandler((context: any) => context.user.directories.backgrounds),
 );
 router.all(
     '/characters/*',
-    createRouteHandler((context: any) => (context as any).user.directories.characters),
+    createRouteHandler((context: any) => context.user.directories.characters),
 );
 router.all(
     '/User%20Avatars/*',
-    createRouteHandler((context: any) => (context as any).user.directories.avatars),
+    createRouteHandler((context: any) => context.user.directories.avatars),
 );
 router.all(
     '/assets/*',
-    createRouteHandler((context: any) => (context as any).user.directories.assets),
+    createRouteHandler((context: any) => context.user.directories.assets),
 );
 router.all(
     '/user/images/*',
-    createRouteHandler((context: any) => (context as any).user.directories.userImages),
+    createRouteHandler((context: any) => context.user.directories.userImages),
 );
 router.all(
     '/user/files/*',
-    createRouteHandler((context: any) => (context as any).user.directories.files),
+    createRouteHandler((context: any) => context.user.directories.files),
 );
 router.all('/scripts/extensions/third-party/*', async (context: any) => {
     const enabled = !!getConfigValue('extensions.enabled', true, 'boolean');
@@ -1368,8 +1368,6 @@ router.all('/scripts/extensions/third-party/*', async (context: any) => {
         context.set.status = 404;
         return;
     }
-    const handler = createExtensionsRouteHandler(
-        (ctx: any) => (ctx as any).user.directories.extensions,
-    );
+    const handler = createExtensionsRouteHandler((ctx: any) => ctx.user.directories.extensions);
     return handler(context);
 });

@@ -578,7 +578,7 @@ comfy.post('/vaes', async (context: any) => {
 
 comfy.post('/workflows', async (context: any) => {
     const set = context.set;
-    const user = (context as any).user;
+    const user = context.user;
     try {
         const data = getComfyWorkflows(user.directories);
         return data;
@@ -592,7 +592,7 @@ comfy.post('/workflows', async (context: any) => {
 comfy.post('/workflow', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
-    const user = (context as any).user;
+    const user = context.user;
     try {
         let filePath = path.join(user.directories.comfyWorkflows, sanitize(String(body.file_name)));
         if (!fs.existsSync(filePath)) {
@@ -610,7 +610,7 @@ comfy.post('/workflow', async (context: any) => {
 comfy.post('/save-workflow', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
-    const user = (context as any).user;
+    const user = context.user;
     try {
         const filePath = path.join(
             user.directories.comfyWorkflows,
@@ -629,7 +629,7 @@ comfy.post('/save-workflow', async (context: any) => {
 comfy.post('/delete-workflow', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
-    const user = (context as any).user;
+    const user = context.user;
     try {
         const filePath = path.join(
             user.directories.comfyWorkflows,
@@ -652,7 +652,7 @@ comfy.post(
     async (context: any) => {
         const body = context.body as Record<string, unknown>;
         const set = context.set;
-        const user = (context as any).user;
+        const user = context.user;
         try {
             const oldName = sanitize(String(body.old_name));
             const newName = sanitize(String(body.new_name));
@@ -830,7 +830,7 @@ const comfyRunPod = new Elysia({ prefix: '/comfyrunpod' });
 comfyRunPod.post('/ping', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
-    const user = (context as any).user;
+    const user = context.user;
     try {
         const key = await readSecret(user.directories, SECRET_KEYS.COMFY_RUNPOD);
 
@@ -867,7 +867,7 @@ comfyRunPod.post('/generate', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
     const req = context.request;
-    const user = (context as any).user;
+    const user = context.user;
     const response = context as any;
     try {
         const key = await readSecret(user.directories, SECRET_KEYS.COMFY_RUNPOD);
@@ -950,7 +950,7 @@ const together = new Elysia({ prefix: '/together' });
 
 together.post('/models', async (context: any) => {
     const set = context.set;
-    const user = (context as any).user;
+    const user = context.user;
     try {
         const key = await readSecret(user.directories, SECRET_KEYS.TOGETHERAI);
 
@@ -996,7 +996,7 @@ together.post('/models', async (context: any) => {
 together.post('/generate', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
-    const user = (context as any).user;
+    const user = context.user;
     try {
         const key = await readSecret(user.directories, SECRET_KEYS.TOGETHERAI);
 
@@ -1289,7 +1289,7 @@ pollinations.post('/models', async ({ set }) => {
 pollinations.post('/generate', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
-    const user = (context as any).user;
+    const user = context.user;
     try {
         const key = await readSecret(user.directories, SECRET_KEYS.POLLINATIONS);
         if (!key) {
@@ -1350,7 +1350,7 @@ const stability = new Elysia({ prefix: '/stability' });
 stability.post('/generate', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
-    const user = (context as any).user;
+    const user = context.user;
     try {
         const key = await readSecret(user.directories, SECRET_KEYS.STABILITY);
 
@@ -1417,7 +1417,7 @@ const huggingface = new Elysia({ prefix: '/huggingface' });
 huggingface.post('/generate', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
-    const user = (context as any).user;
+    const user = context.user;
     try {
         const key = await readSecret(user.directories, SECRET_KEYS.HUGGINGFACE);
 
@@ -1461,7 +1461,7 @@ const electronhub = new Elysia({ prefix: '/electronhub' });
 
 electronhub.post('/models', async (context: any) => {
     const set = context.set;
-    const user = (context as any).user;
+    const user = context.user;
     try {
         const key = await readSecret(user.directories, SECRET_KEYS.ELECTRONHUB);
 
@@ -1518,7 +1518,7 @@ electronhub.post('/models', async (context: any) => {
 electronhub.post('/generate', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
-    const user = (context as any).user;
+    const user = context.user;
     try {
         const key = await readSecret(user.directories, SECRET_KEYS.ELECTRONHUB);
 
@@ -1618,7 +1618,7 @@ const chutes = new Elysia({ prefix: '/chutes' });
 
 chutes.post('/models', async (context: any) => {
     const set = context.set;
-    const user = (context as any).user;
+    const user = context.user;
     try {
         const key = await readSecret(user.directories, SECRET_KEYS.CHUTES);
 
@@ -1663,7 +1663,7 @@ chutes.post('/models', async (context: any) => {
 chutes.post('/generate', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
-    const user = (context as any).user;
+    const user = context.user;
     try {
         const key = await readSecret(user.directories, SECRET_KEYS.CHUTES);
 
@@ -1716,7 +1716,7 @@ const nanogpt = new Elysia({ prefix: '/nanogpt' });
 
 nanogpt.post('/models', async (context: any) => {
     const set = context.set;
-    const user = (context as any).user;
+    const user = context.user;
     try {
         const key = await readSecret(user.directories, SECRET_KEYS.NANOGPT);
 
@@ -1763,7 +1763,7 @@ nanogpt.post('/models', async (context: any) => {
 nanogpt.post('/generate', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
-    const user = (context as any).user;
+    const user = context.user;
     try {
         const key = await readSecret(user.directories, SECRET_KEYS.NANOGPT);
 
@@ -1812,7 +1812,7 @@ const bfl = new Elysia({ prefix: '/bfl' });
 bfl.post('/generate', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
-    const user = (context as any).user;
+    const user = context.user;
     try {
         const key = await readSecret(user.directories, SECRET_KEYS.BFL);
 
@@ -1999,7 +1999,7 @@ falai.post('/models', async ({ set }) => {
 falai.post('/generate', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
-    const user = (context as any).user;
+    const user = context.user;
     try {
         const key = await readSecret(user.directories, SECRET_KEYS.FALAI);
 
@@ -2109,7 +2109,7 @@ const xai = new Elysia({ prefix: '/xai' });
 xai.post('/generate', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
-    const user = (context as any).user;
+    const user = context.user;
     try {
         const key = await readSecret(user.directories, SECRET_KEYS.XAI);
 
@@ -2172,7 +2172,7 @@ const aimlapi = new Elysia({ prefix: '/aimlapi' });
 
 aimlapi.post('/models', async (context: any) => {
     const set = context.set;
-    const user = (context as any).user;
+    const user = context.user;
     try {
         const key = await readSecret(user.directories, SECRET_KEYS.AIMLAPI);
 
@@ -2221,7 +2221,7 @@ aimlapi.post('/models', async (context: any) => {
 aimlapi.post('/generate-image', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
-    const user = (context as any).user;
+    const user = context.user;
     try {
         const key = await readSecret(user.directories, SECRET_KEYS.AIMLAPI);
         if (!key) {
@@ -2281,7 +2281,7 @@ const zai = new Elysia({ prefix: '/zai' });
 zai.post('/generate', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
-    const user = (context as any).user;
+    const user = context.user;
     try {
         const key = await readSecret(user.directories, SECRET_KEYS.ZAI);
 
@@ -2375,7 +2375,7 @@ zai.post('/generate-video', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
     const req = context.request;
-    const user = (context as any).user;
+    const user = context.user;
     try {
         const controller = new AbortController();
         (req as any).socket.removeAllListeners('close');
@@ -2503,7 +2503,7 @@ const workersai = new Elysia({ prefix: '/workersai' });
 workersai.post('/models', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
-    const user = (context as any).user;
+    const user = context.user;
     try {
         const key = await readSecret(user.directories, SECRET_KEYS.WORKERS_AI);
 
@@ -2561,7 +2561,7 @@ workersai.post('/models', async (context: any) => {
 workersai.post('/generate', async (context: any) => {
     const body = context.body as Record<string, unknown>;
     const set = context.set;
-    const user = (context as any).user;
+    const user = context.user;
     try {
         const key = await readSecret(user.directories, SECRET_KEYS.WORKERS_AI);
 

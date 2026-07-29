@@ -487,8 +487,7 @@ export const router = new Elysia({ prefix: '/api/stats' })
      * Handle a POST request to get the stats object
      */
     .post('/get', (context) => {
-
-        const user = (context as Record<string, unknown>).user as UserContext | undefined;
+        const user = context.user as UserContext | undefined;
         const profile = user?.profile;
         const handle = profile?.handle;
 
@@ -500,8 +499,7 @@ export const router = new Elysia({ prefix: '/api/stats' })
      * Triggers the recreation of statistics from chat files.
      */
     .post('/recreate', async (context) => {
-
-        const user = (context as Record<string, unknown>).user as UserContext | undefined;
+        const user = context.user as UserContext | undefined;
         const profile = user?.profile;
         const directories = user?.directories;
 
@@ -522,10 +520,9 @@ export const router = new Elysia({ prefix: '/api/stats' })
      * Handle a POST request to update the stats object
      */
     .post('/update', (context) => {
-
-        const user = (context as Record<string, unknown>).user as UserContext | undefined;
+        const user = context.user as UserContext | undefined;
         const profile = user?.profile;
-        const body = (context as Record<string, unknown>).body as Record<string, unknown> | null;
+        const body = context.body as Record<string, unknown> | null;
 
         if (!body) return new Response(null, { status: 400 });
 

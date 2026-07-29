@@ -59,11 +59,11 @@ function getPresetSettingsByAPI(
 }
 
 export const router = new Elysia({ prefix: '/api/presets' })
-    .post('/save', async (context) => {
+    .post('/save', async (context: any) => {
         const { set } = context;
 
-        const bodyAny = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
-        const user = (context as Record<string, unknown>).user as UserContext | undefined;
+        const bodyAny = context.body as Record<string, unknown> | undefined;
+        const user = context.user as UserContext | undefined;
         const directories = user?.directories;
 
         if (!bodyAny || !bodyAny.preset) {
@@ -100,11 +100,11 @@ export const router = new Elysia({ prefix: '/api/presets' })
         await writeFileAtomic(fullpath, JSON.stringify(bodyAny.preset, null, 4), 'utf-8');
         return { name };
     })
-    .post('/delete', async (context) => {
+    .post('/delete', async (context: any) => {
         const { set } = context;
 
-        const bodyAny = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
-        const user = (context as Record<string, unknown>).user as UserContext | undefined;
+        const bodyAny = context.body as Record<string, unknown> | undefined;
+        const user = context.user as UserContext | undefined;
         const directories = user?.directories;
 
         if (!bodyAny) {
@@ -149,11 +149,11 @@ export const router = new Elysia({ prefix: '/api/presets' })
             throw err;
         }
     })
-    .post('/restore', async (context) => {
+    .post('/restore', async (context: any) => {
         const { set } = context;
 
-        const bodyAny = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
-        const user = (context as Record<string, unknown>).user as UserContext | undefined;
+        const bodyAny = context.body as Record<string, unknown> | undefined;
+        const user = context.user as UserContext | undefined;
         const directories = user?.directories;
 
         try {

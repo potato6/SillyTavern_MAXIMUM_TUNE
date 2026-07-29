@@ -161,10 +161,7 @@ router.post('/models/image', async () => {
 
 router.post('/credits', async (context) => {
     const { set } = context;
-    const user = (context as unknown as Record<string, unknown>).user as Record<
-        string,
-        unknown
-    > | null;
+    const user = context.user as Record<string, unknown> | null;
     const directories = user?.directories as Record<string, string> | undefined;
 
     try {
@@ -205,10 +202,7 @@ router.post('/credits', async (context) => {
 router.post('/image/generate', async (context) => {
     const { body, set } = context;
     const bodyAny = body as Record<string, unknown>;
-    const user = (context as unknown as Record<string, unknown>).user as Record<
-        string,
-        unknown
-    > | null;
+    const user = context.user as Record<string, unknown> | null;
     const directories = user?.directories as Record<string, string> | undefined;
 
     try {

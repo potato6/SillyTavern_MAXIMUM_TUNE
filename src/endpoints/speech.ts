@@ -38,10 +38,7 @@ export const router = new Elysia({ prefix: '/api/speech' })
             .post('/generate', async (context) => {
                 const { set } = context;
                 const body = context.body as Record<string, unknown>;
-                const user = (context as unknown as Record<string, unknown>).user as Record<
-                    string,
-                    unknown
-                > | null;
+                const user = context.user as Record<string, unknown> | null;
                 const directories = user?.directories as Record<string, string> | undefined;
 
                 try {
@@ -117,10 +114,7 @@ export const router = new Elysia({ prefix: '/api/speech' })
         new Elysia({ prefix: '/elevenlabs' })
             .post('/voices', async (context) => {
                 const { set } = context;
-                const user = (context as unknown as Record<string, unknown>).user as Record<
-                    string,
-                    unknown
-                > | null;
+                const user = context.user as Record<string, unknown> | null;
                 const directories = user?.directories as Record<string, string> | undefined;
 
                 try {
@@ -157,10 +151,7 @@ export const router = new Elysia({ prefix: '/api/speech' })
             })
             .post('/voice-settings', async (context) => {
                 const { set } = context;
-                const user = (context as unknown as Record<string, unknown>).user as Record<
-                    string,
-                    unknown
-                > | null;
+                const user = context.user as Record<string, unknown> | null;
                 const directories = user?.directories as Record<string, string> | undefined;
 
                 try {
@@ -200,10 +191,7 @@ export const router = new Elysia({ prefix: '/api/speech' })
             .post('/synthesize', async (context) => {
                 const { set } = context;
                 const body = context.body as Record<string, unknown>;
-                const user = (context as unknown as Record<string, unknown>).user as Record<
-                    string,
-                    unknown
-                > | null;
+                const user = context.user as Record<string, unknown> | null;
                 const directories = user?.directories as Record<string, string> | undefined;
 
                 try {
@@ -258,10 +246,7 @@ export const router = new Elysia({ prefix: '/api/speech' })
             })
             .post('/history', async (context) => {
                 const { set } = context;
-                const user = (context as unknown as Record<string, unknown>).user as Record<
-                    string,
-                    unknown
-                > | null;
+                const user = context.user as Record<string, unknown> | null;
                 const directories = user?.directories as Record<string, string> | undefined;
 
                 try {
@@ -299,10 +284,7 @@ export const router = new Elysia({ prefix: '/api/speech' })
             .post('/history-audio', async (context) => {
                 const { set } = context;
                 const body = context.body as Record<string, unknown>;
-                const user = (context as unknown as Record<string, unknown>).user as Record<
-                    string,
-                    unknown
-                > | null;
+                const user = context.user as Record<string, unknown> | null;
                 const directories = user?.directories as Record<string, string> | undefined;
 
                 try {
@@ -351,10 +333,7 @@ export const router = new Elysia({ prefix: '/api/speech' })
             .post('/voices/add', async (context) => {
                 const { set } = context;
                 const body = context.body as Record<string, unknown>;
-                const user = (context as unknown as Record<string, unknown>).user as Record<
-                    string,
-                    unknown
-                > | null;
+                const user = context.user as Record<string, unknown> | null;
                 const directories = user?.directories as Record<string, string> | undefined;
 
                 try {
@@ -428,15 +407,9 @@ export const router = new Elysia({ prefix: '/api/speech' })
             .post('/recognize', async (context) => {
                 const { set } = context;
                 const body = context.body as Record<string, unknown>;
-                const user = (context as unknown as Record<string, unknown>).user as Record<
-                    string,
-                    unknown
-                > | null;
+                const user = context.user as Record<string, unknown> | null;
                 const directories = user?.directories as Record<string, string> | undefined;
-                const file = (context as unknown as Record<string, unknown>).file as Record<
-                    string,
-                    unknown
-                > | null;
+                const file = context.file as Record<string, unknown> | null;
 
                 try {
                     const apiKey = directories

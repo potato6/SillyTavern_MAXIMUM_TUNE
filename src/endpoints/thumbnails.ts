@@ -215,10 +215,7 @@ async function processSingleImage(
 // Public router (GET / — serve thumbnails)
 const publicRouter = new Elysia({ prefix: '/thumbnail' }).get('/', async (context) => {
     const { query, set } = context;
-    const user = (context as unknown as Record<string, unknown>).user as Record<
-        string,
-        unknown
-    > | null;
+    const user = context.user as Record<string, unknown> | null;
     const directories = user?.directories as Record<string, string> | undefined;
 
     try {

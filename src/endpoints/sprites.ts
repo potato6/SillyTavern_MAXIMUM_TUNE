@@ -126,12 +126,9 @@ export function importRisuSprites(
 }
 
 export const router = new Elysia({ prefix: '/api/sprites' })
-    .get('/get', (context) => {
+    .get('/get', (context: any) => {
         const { query } = context;
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
+        const user = context.user as Record<string, unknown> | null;
         const directories = user?.directories as Record<string, string> | undefined;
         const name = String(query.name);
         const isSubfolder = name.includes('/');
@@ -178,13 +175,10 @@ export const router = new Elysia({ prefix: '/api/sprites' })
         }
         return sprites;
     })
-    .post('/delete', async (context) => {
+    .post('/delete', async (context: any) => {
         const { body, set } = context;
         const bodyAny = body as Record<string, unknown>;
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
+        const user = context.user as Record<string, unknown> | null;
         const directories = user?.directories as Record<string, string> | undefined;
         const label = bodyAny.label as string;
         const name = String(bodyAny.name);
@@ -230,18 +224,12 @@ export const router = new Elysia({ prefix: '/api/sprites' })
             return;
         }
     })
-    .post('/upload-zip', async (context) => {
+    .post('/upload-zip', async (context: any) => {
         const { body, set } = context;
         const bodyAny = body as Record<string, unknown>;
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
+        const user = context.user as Record<string, unknown> | null;
         const directories = user?.directories as Record<string, string> | undefined;
-        const uploadedFile = (context as unknown as Record<string, unknown>).file as Record<
-            string,
-            unknown
-        > | null;
+        const uploadedFile = context.file as Record<string, unknown> | null;
         const name = String(bodyAny.name);
         const isSubfolder = name.includes('/');
 
@@ -305,18 +293,12 @@ export const router = new Elysia({ prefix: '/api/sprites' })
             return;
         }
     })
-    .post('/upload', async (context) => {
+    .post('/upload', async (context: any) => {
         const { body, set } = context;
         const bodyAny = body as Record<string, unknown>;
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
+        const user = context.user as Record<string, unknown> | null;
         const directories = user?.directories as Record<string, string> | undefined;
-        const uploadedFile = (context as unknown as Record<string, unknown>).file as Record<
-            string,
-            unknown
-        > | null;
+        const uploadedFile = context.file as Record<string, unknown> | null;
         const label = bodyAny.label as string;
         const name = String(bodyAny.name);
         const isSubfolder = name.includes('/');

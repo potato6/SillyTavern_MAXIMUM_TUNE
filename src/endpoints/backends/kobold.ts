@@ -185,10 +185,7 @@ router.post('/status', async (context) => {
         api_server = api_server.replace('localhost', '127.0.0.1');
     }
 
-    const user = (context as unknown as Record<string, unknown>).user as Record<
-        string,
-        unknown
-    > | null;
+    const user = context.user as Record<string, unknown> | null;
 
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
     setAdditionalHeadersByType(
@@ -254,10 +251,7 @@ router.post('/transcribe-audio', async (context) => {
             return;
         }
 
-        const file = (context as unknown as Record<string, unknown>).file as Record<
-            string,
-            unknown
-        > | null;
+        const file = context.file as Record<string, unknown> | null;
 
         if (!file) {
             console.error('No audio file found');
@@ -271,10 +265,7 @@ router.post('/transcribe-audio', async (context) => {
         fs.unlinkSync(file.path as string);
 
         const headers: Record<string, string> = {};
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
+        const user = context.user as Record<string, unknown> | null;
         setAdditionalHeadersByType(
             headers,
             TEXTGEN_TYPES.KOBOLDCPP,
@@ -326,10 +317,7 @@ router.post('/embed', async (context) => {
         }
 
         const headers: Record<string, string> = {};
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
+        const user = context.user as Record<string, unknown> | null;
         setAdditionalHeadersByType(
             headers,
             TEXTGEN_TYPES.KOBOLDCPP,

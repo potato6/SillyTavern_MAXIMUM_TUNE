@@ -44,8 +44,8 @@ async function abortKoboldCppRequest(url: string, headers: Record<string, string
 /**
  * Resolve the `user` object from the Elysia context (set by the resolve bridge).
  */
-function getUser(context: unknown): Record<string, unknown> | null {
-    return (context as Record<string, unknown>).user as Record<string, unknown> | null;
+function getUser(context: Record<string, unknown>): Record<string, unknown> | null {
+    return context.user as Record<string, unknown> | null;
 }
 
 /**

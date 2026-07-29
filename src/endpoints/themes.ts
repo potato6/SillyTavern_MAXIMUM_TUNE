@@ -15,11 +15,11 @@ interface UserContext {
 }
 
 export const router = new Elysia({ prefix: '/api/themes' })
-    .post('/save', async (context) => {
+    .post('/save', async (context: any) => {
         const { set } = context;
 
-        const bodyAny = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
-        const user = (context as Record<string, unknown>).user as UserContext | undefined;
+        const bodyAny = context.body as Record<string, unknown> | undefined;
+        const user = context.user as UserContext | undefined;
         const directories = user?.directories;
 
         const rawName = bodyAny?.name;
@@ -38,18 +38,18 @@ export const router = new Elysia({ prefix: '/api/themes' })
         const filename = path.join(themesDir, `${name}.json`);
 
         try {
-            await writeFileAtomic(filename, JSON.stringify((context as Record<string, unknown>).body, null, 4), 'utf8');
+            await writeFileAtomic(filename, JSON.stringify(context.body, null, 4), 'utf8');
             set.status = 204;
         } catch (error) {
             console.error(error);
             set.status = 500;
         }
     })
-    .post('/delete', async (context) => {
+    .post('/delete', async (context: any) => {
         const { set } = context;
 
-        const bodyAny = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
-        const user = (context as Record<string, unknown>).user as UserContext | undefined;
+        const bodyAny = context.body as Record<string, unknown> | undefined;
+        const user = context.user as UserContext | undefined;
         const directories = user?.directories;
 
         const rawName = bodyAny?.name;

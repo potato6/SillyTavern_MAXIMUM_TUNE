@@ -314,10 +314,7 @@ export const router = new Elysia({ prefix: '/api/novelai' })
             return;
         }
 
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
+        const user = context.user as Record<string, unknown> | null;
         const directories = user?.directories as Record<string, string> | undefined;
         const api_key_novel = directories ? readSecret(directories as any, SECRET_KEYS.NOVEL) : '';
 
@@ -360,10 +357,7 @@ export const router = new Elysia({ prefix: '/api/novelai' })
             return;
         }
 
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
+        const user = context.user as Record<string, unknown> | null;
         const directories = user?.directories as Record<string, string> | undefined;
         const api_key_novel = directories ? readSecret(directories as any, SECRET_KEYS.NOVEL) : '';
 
@@ -533,10 +527,7 @@ export const router = new Elysia({ prefix: '/api/novelai' })
             return;
         }
 
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
+        const user = context.user as Record<string, unknown> | null;
         const directories = user?.directories as Record<string, string> | undefined;
         const key = directories ? readSecret(directories as any, SECRET_KEYS.NOVEL) : '';
 
@@ -691,10 +682,7 @@ export const router = new Elysia({ prefix: '/api/novelai' })
         const { set } = context;
         const body = context.body as Record<string, unknown> | null;
 
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
+        const user = context.user as Record<string, unknown> | null;
         const directories = user?.directories as Record<string, string> | undefined;
         const token = directories ? readSecret(directories as any, SECRET_KEYS.NOVEL) : '';
 

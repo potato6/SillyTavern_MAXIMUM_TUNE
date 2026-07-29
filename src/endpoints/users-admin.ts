@@ -56,7 +56,6 @@ export const router = new Elysia({ prefix: '/api/users' })
     .post('/get', async (context) => {
         const { set } = context;
 
-
         try {
             if (!requireAdmin(context)) {
                 set.status = 403;
@@ -104,8 +103,8 @@ export const router = new Elysia({ prefix: '/api/users' })
     .post('/disable', async (context) => {
         const { set } = context;
 
-        const body = ((context as Record<string, unknown>).body ?? {}) as Record<string, unknown>;
-        const ctxUser = (context as Record<string, unknown>).user as UserContext | undefined;
+        const body = (context.body ?? {}) as Record<string, unknown>;
+        const ctxUser = context.user as UserContext | undefined;
 
         try {
             if (!requireAdmin(context)) {
@@ -146,7 +145,7 @@ export const router = new Elysia({ prefix: '/api/users' })
     .post('/enable', async (context) => {
         const { set } = context;
 
-        const body = ((context as Record<string, unknown>).body ?? {}) as Record<string, unknown>;
+        const body = (context.body ?? {}) as Record<string, unknown>;
 
         try {
             if (!requireAdmin(context)) {
@@ -181,7 +180,7 @@ export const router = new Elysia({ prefix: '/api/users' })
     .post('/promote', async (context) => {
         const { set } = context;
 
-        const body = ((context as Record<string, unknown>).body ?? {}) as Record<string, unknown>;
+        const body = (context.body ?? {}) as Record<string, unknown>;
 
         try {
             if (!requireAdmin(context)) {
@@ -216,8 +215,8 @@ export const router = new Elysia({ prefix: '/api/users' })
     .post('/demote', async (context) => {
         const { set } = context;
 
-        const body = ((context as Record<string, unknown>).body ?? {}) as Record<string, unknown>;
-        const ctxUser = (context as Record<string, unknown>).user as UserContext | undefined;
+        const body = (context.body ?? {}) as Record<string, unknown>;
+        const ctxUser = context.user as UserContext | undefined;
 
         try {
             if (!requireAdmin(context)) {
@@ -258,7 +257,7 @@ export const router = new Elysia({ prefix: '/api/users' })
     .post('/create', async (context) => {
         const { set } = context;
 
-        const body = ((context as Record<string, unknown>).body ?? {}) as Record<string, unknown>;
+        const body = (context.body ?? {}) as Record<string, unknown>;
 
         try {
             if (!requireAdmin(context)) {
@@ -325,8 +324,8 @@ export const router = new Elysia({ prefix: '/api/users' })
     .post('/delete', async (context) => {
         const { set } = context;
 
-        const body = ((context as Record<string, unknown>).body ?? {}) as Record<string, unknown>;
-        const ctxUser = (context as Record<string, unknown>).user as UserContext | undefined;
+        const body = (context.body ?? {}) as Record<string, unknown>;
+        const ctxUser = context.user as UserContext | undefined;
 
         try {
             if (!requireAdmin(context)) {
@@ -372,7 +371,7 @@ export const router = new Elysia({ prefix: '/api/users' })
     .post('/slugify', async (context) => {
         const { set } = context;
 
-        const body = ((context as Record<string, unknown>).body ?? {}) as Record<string, unknown>;
+        const body = (context.body ?? {}) as Record<string, unknown>;
 
         try {
             if (!requireAdmin(context)) {

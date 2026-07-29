@@ -72,7 +72,7 @@ export const router = new Elysia({ prefix: '/api/worldinfo' })
     .post('/list', async (context) => {
         const { set } = context;
 
-        const user = (context as Record<string, unknown>).user as UserContext | undefined;
+        const user = context.user as UserContext | undefined;
         const directories = user?.directories;
         const worldsDir = directories?.worlds ?? '';
 
@@ -133,8 +133,8 @@ export const router = new Elysia({ prefix: '/api/worldinfo' })
     .post('/get', async (context) => {
         const { set } = context;
 
-        const bodyAny = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
-        const user = (context as Record<string, unknown>).user as UserContext | undefined;
+        const bodyAny = context.body as Record<string, unknown> | undefined;
+        const user = context.user as UserContext | undefined;
         const directories = user?.directories;
 
         const name = bodyAny?.name;
@@ -153,8 +153,8 @@ export const router = new Elysia({ prefix: '/api/worldinfo' })
     .post('/delete', async (context) => {
         const { set } = context;
 
-        const bodyAny = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
-        const user = (context as Record<string, unknown>).user as UserContext | undefined;
+        const bodyAny = context.body as Record<string, unknown> | undefined;
+        const user = context.user as UserContext | undefined;
         const directories = user?.directories;
 
         const worldInfoName = bodyAny?.name;
@@ -178,10 +178,10 @@ export const router = new Elysia({ prefix: '/api/worldinfo' })
     .post('/import', async (context) => {
         const { set } = context;
 
-        const body = ((context as Record<string, unknown>).body ?? {}) as Record<string, unknown>;
-        const user = (context as Record<string, unknown>).user as UserContext | undefined;
+        const body = (context.body ?? {}) as Record<string, unknown>;
+        const user = context.user as UserContext | undefined;
         const directories = user?.directories;
-        const file = (context as Record<string, unknown>).file as
+        const file = context.file as
             | { destination?: string; filename?: string; originalname?: string }
             | undefined;
 
@@ -242,8 +242,8 @@ export const router = new Elysia({ prefix: '/api/worldinfo' })
     .post('/edit', async (context) => {
         const { set } = context;
 
-        const bodyAny = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
-        const user = (context as Record<string, unknown>).user as UserContext | undefined;
+        const bodyAny = context.body as Record<string, unknown> | undefined;
+        const user = context.user as UserContext | undefined;
         const directories = user?.directories;
 
         if (!bodyAny) {

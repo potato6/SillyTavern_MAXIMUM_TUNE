@@ -39,10 +39,7 @@ export const router = new Elysia({ prefix: '/api/assets' })
     .post('/upload', async (context: Record<string, unknown>) => {
         const set = context.set as Record<string, unknown>;
         const body = context.body as Record<string, unknown>;
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
+        const user = context.user as Record<string, unknown> | null;
         const directories = user?.directories as Record<string, string> | undefined;
 
         try {
@@ -141,10 +138,7 @@ export const router = new Elysia({ prefix: '/api/assets' })
     .post('/delete', (context: Record<string, unknown>) => {
         const set = context.set as Record<string, unknown>;
         const body = context.body as Record<string, unknown>;
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
+        const user = context.user as Record<string, unknown> | null;
         const directories = user?.directories as Record<string, string> | undefined;
 
         try {
@@ -175,10 +169,7 @@ export const router = new Elysia({ prefix: '/api/assets' })
     .post('/download', (context: Record<string, unknown>) => {
         const set = context.set as Record<string, unknown>;
         const body = context.body as Record<string, unknown>;
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
+        const user = context.user as Record<string, unknown> | null;
         const directories = user?.directories as Record<string, string> | undefined;
 
         try {
@@ -207,10 +198,7 @@ export const router = new Elysia({ prefix: '/api/assets' })
     .post('/list', (context: Record<string, unknown>) => {
         const set = context.set as Record<string, unknown>;
         const body = context.body as Record<string, unknown>;
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
+        const user = context.user as Record<string, unknown> | null;
         const directories = user?.directories as Record<string, string> | undefined;
 
         try {

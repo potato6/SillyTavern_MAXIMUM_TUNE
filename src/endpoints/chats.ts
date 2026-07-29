@@ -618,8 +618,8 @@ export const router = new Elysia({ prefix: '/api/chats' })
 
     .post('/save', async (context) => {
         const { set } = context;
-        const body = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
-        const user = (context as Record<string, unknown>).user as UserContext | undefined;
+        const body = context.body as Record<string, unknown> | undefined;
+        const user = context.user as UserContext | undefined;
         const directories = user?.directories;
         const profile = user?.profile;
 
@@ -670,8 +670,8 @@ export const router = new Elysia({ prefix: '/api/chats' })
 
     .post('/get', async (context) => {
         const { set } = context;
-        const body = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
-        const user = (context as Record<string, unknown>).user as UserContext | undefined;
+        const body = context.body as Record<string, unknown> | undefined;
+        const user = context.user as UserContext | undefined;
         const directories = user?.directories;
 
         try {
@@ -713,8 +713,8 @@ export const router = new Elysia({ prefix: '/api/chats' })
 
     .post('/rename', async (context) => {
         const { set } = context;
-        const body = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
-        const user = (context as Record<string, unknown>).user as UserContext | undefined;
+        const body = context.body as Record<string, unknown> | undefined;
+        const user = context.user as UserContext | undefined;
         const directories = user?.directories;
 
         try {
@@ -790,8 +790,8 @@ export const router = new Elysia({ prefix: '/api/chats' })
 
     .post('/delete', async (context) => {
         const { set } = context;
-        const body = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
-        const user = (context as Record<string, unknown>).user as UserContext | undefined;
+        const body = context.body as Record<string, unknown> | undefined;
+        const user = context.user as UserContext | undefined;
         const directories = user?.directories;
 
         try {
@@ -833,8 +833,8 @@ export const router = new Elysia({ prefix: '/api/chats' })
 
     .post('/export', async (context) => {
         const { set } = context;
-        const body = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
-        const user = (context as Record<string, unknown>).user as UserContext | undefined;
+        const body = context.body as Record<string, unknown> | undefined;
+        const user = context.user as UserContext | undefined;
         const directories = user?.directories;
 
         if (!body || !validateAvatarUrlField(body)) {
@@ -943,9 +943,9 @@ export const router = new Elysia({ prefix: '/api/chats' })
 
     .post('/group/import', async (context) => {
         const { set } = context;
-        const user = (context as Record<string, unknown>).user as UserContext | undefined;
+        const user = context.user as UserContext | undefined;
         const directories = user?.directories;
-        const filedata = (context as Record<string, unknown>).file as { destination?: string; filename?: string } | undefined;
+        const filedata = context.file as { destination?: string; filename?: string } | undefined;
 
         try {
             if (!filedata || !filedata.destination || !filedata.filename) {
@@ -969,10 +969,10 @@ export const router = new Elysia({ prefix: '/api/chats' })
 
     .post('/import', async (context) => {
         const { set } = context;
-        const body = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
-        const user = (context as Record<string, unknown>).user as UserContext | undefined;
+        const body = context.body as Record<string, unknown> | undefined;
+        const user = context.user as UserContext | undefined;
         const directories = user?.directories;
-        const fileField = (context as Record<string, unknown>).file as { destination?: string; filename?: string } | undefined;
+        const fileField = context.file as { destination?: string; filename?: string } | undefined;
 
         if (!body || !validateAvatarUrlField(body)) {
             set.status = 400;
@@ -1088,8 +1088,8 @@ export const router = new Elysia({ prefix: '/api/chats' })
 
     .post('/group/get', async (context) => {
         const { set } = context;
-        const body = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
-        const user = (context as Record<string, unknown>).user as UserContext | undefined;
+        const body = context.body as Record<string, unknown> | undefined;
+        const user = context.user as UserContext | undefined;
         const directories = user?.directories;
 
         if (!body || !body.id) {
@@ -1105,8 +1105,8 @@ export const router = new Elysia({ prefix: '/api/chats' })
 
     .post('/group/info', async (context) => {
         const { set } = context;
-        const body = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
-        const user = (context as Record<string, unknown>).user as UserContext | undefined;
+        const body = context.body as Record<string, unknown> | undefined;
+        const user = context.user as UserContext | undefined;
         const directories = user?.directories;
 
         try {
@@ -1128,8 +1128,8 @@ export const router = new Elysia({ prefix: '/api/chats' })
 
     .post('/group/delete', async (context) => {
         const { set } = context;
-        const body = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
-        const user = (context as Record<string, unknown>).user as UserContext | undefined;
+        const body = context.body as Record<string, unknown> | undefined;
+        const user = context.user as UserContext | undefined;
         const directories = user?.directories;
 
         try {
@@ -1158,8 +1158,8 @@ export const router = new Elysia({ prefix: '/api/chats' })
 
     .post('/group/save', async (context) => {
         const { set } = context;
-        const body = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
-        const user = (context as Record<string, unknown>).user as UserContext | undefined;
+        const body = context.body as Record<string, unknown> | undefined;
+        const user = context.user as UserContext | undefined;
         const directories = user?.directories;
         const profile = user?.profile;
 
@@ -1202,8 +1202,8 @@ export const router = new Elysia({ prefix: '/api/chats' })
 
     .post('/search', async (context) => {
         const { set } = context;
-        const body = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
-        const user = (context as Record<string, unknown>).user as UserContext | undefined;
+        const body = context.body as Record<string, unknown> | undefined;
+        const user = context.user as UserContext | undefined;
         const directories = user?.directories;
 
         try {
@@ -1343,8 +1343,8 @@ export const router = new Elysia({ prefix: '/api/chats' })
 
     .post('/recent', async (context) => {
         const { set } = context;
-        const body = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
-        const user = (context as Record<string, unknown>).user as UserContext | undefined;
+        const body = context.body as Record<string, unknown> | undefined;
+        const user = context.user as UserContext | undefined;
         const directories = user?.directories;
 
         try {

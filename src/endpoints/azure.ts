@@ -4,10 +4,7 @@ import { readSecret, SECRET_KEYS } from './secrets.js';
 export const router = new Elysia({ prefix: '/api/azure' })
     .post('/list', async (context) => {
         const { body, set } = context;
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
+        const user = context.user as Record<string, unknown> | null;
         const directories = user?.directories as Record<string, string> | undefined;
         const bodyAny = body as Record<string, unknown>;
 
@@ -50,10 +47,7 @@ export const router = new Elysia({ prefix: '/api/azure' })
     })
     .post('/generate', async (context) => {
         const { body, set } = context;
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
+        const user = context.user as Record<string, unknown> | null;
         const directories = user?.directories as Record<string, string> | undefined;
         const bodyAny = body as Record<string, unknown>;
 
