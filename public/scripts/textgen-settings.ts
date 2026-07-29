@@ -86,7 +86,6 @@ export const textgen_types = {
 };
 
 const {
-    GENERIC,
     MANCER,
     VLLM,
     APHRODITE,
@@ -100,7 +99,6 @@ const {
     OPENROUTER,
     KOBOLDCPP,
     HUGGINGFACE,
-    FEATHERLESS,
 } = textgen_types;
 
 const LLAMACPP_DEFAULT_ORDER = [

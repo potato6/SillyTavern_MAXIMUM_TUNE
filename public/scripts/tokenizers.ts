@@ -318,7 +318,7 @@ export function getTokenizerBestMatch(forApi) {
                 const model = openRouterModels.find((x) => x.id === modelId);
                 const arch = model as { architecture?: { tokenizer?: string } } | undefined;
                 const tokenizerName = arch?.architecture?.tokenizer;
-                return (tokenizerName && OPENROUTER_TOKENIZER_MAP[tokenizerName]) ?? tokenizers.OPENAI;
+                return OPENROUTER_TOKENIZER_MAP[tokenizerName ?? ''] ?? tokenizers.OPENAI;
             }
             if (
                 forApi === 'textgenerationwebui' &&

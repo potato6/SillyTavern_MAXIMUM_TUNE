@@ -69,3 +69,5 @@
  *   extra: Record<string, unknown>,
  * }} MacroEnv
  */
+
+export {};

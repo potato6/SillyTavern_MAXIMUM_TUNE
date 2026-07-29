@@ -820,9 +820,8 @@ comfy.post('/generate', async (context: any) => {
         return { format: format, data: Buffer.from(imgBuffer).toString('base64') };
     } catch (error) {
         console.error('ComfyUI error:', error);
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         set.status = 500;
-        return error.message;
+        return error instanceof Error ? error.message : String(error);
     }
 });
 
@@ -942,9 +941,8 @@ comfyRunPod.post('/generate', async (context: any) => {
         return { format: format, data: item.data };
     } catch (error) {
         console.error('ComfyUI error:', error);
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         set.status = 500;
-        return error.message;
+        return error instanceof Error ? error.message : String(error);
     }
 });
 
@@ -2101,9 +2099,8 @@ falai.post('/generate', async (context: any) => {
         }
     } catch (error) {
         console.error(error);
-        // @ts-expect-error TS(2571) FIXME: Object is of type 'unknown'.
         set.status = 500;
-        return error.cause || error.message;
+        return error instanceof Error ? (error.cause || error.message) : String(error);
     }
 });
 
