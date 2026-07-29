@@ -89,9 +89,9 @@ export const router = new Elysia({ prefix: '/api/extensions' })
     })
     .post('/install', async (context) => {
         const { set } = context;
-        const ctx = context as Record<string, unknown>;
-        const body = ctx.body as Record<string, unknown> | undefined;
-        const user = ctx.user as UserContext | undefined;
+
+        const body = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
+        const user = (context as Record<string, unknown>).user as UserContext | undefined;
         const directories = user?.directories;
         const profile = user?.profile;
 
@@ -185,9 +185,9 @@ export const router = new Elysia({ prefix: '/api/extensions' })
     })
     .post('/update', async (context) => {
         const { set } = context;
-        const ctx = context as Record<string, unknown>;
-        const body = ctx.body as Record<string, unknown> | undefined;
-        const user = ctx.user as UserContext | undefined;
+
+        const body = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
+        const user = (context as Record<string, unknown>).user as UserContext | undefined;
         const directories = user?.directories;
         const profile = user?.profile;
 
@@ -250,9 +250,9 @@ export const router = new Elysia({ prefix: '/api/extensions' })
     })
     .post('/branches', async (context) => {
         const { set } = context;
-        const ctx = context as Record<string, unknown>;
-        const body = ctx.body as Record<string, unknown> | undefined;
-        const user = ctx.user as UserContext | undefined;
+
+        const body = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
+        const user = (context as Record<string, unknown>).user as UserContext | undefined;
         const directories = user?.directories;
         const profile = user?.profile;
 
@@ -328,9 +328,9 @@ export const router = new Elysia({ prefix: '/api/extensions' })
     })
     .post('/switch', async (context) => {
         const { set } = context;
-        const ctx = context as Record<string, unknown>;
-        const body = ctx.body as Record<string, unknown> | undefined;
-        const user = ctx.user as UserContext | undefined;
+
+        const body = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
+        const user = (context as Record<string, unknown>).user as UserContext | undefined;
         const directories = user?.directories;
         const profile = user?.profile;
 
@@ -414,9 +414,9 @@ export const router = new Elysia({ prefix: '/api/extensions' })
     })
     .post('/move', async (context) => {
         const { set } = context;
-        const ctx = context as Record<string, unknown>;
-        const body = ctx.body as Record<string, unknown> | undefined;
-        const user = ctx.user as UserContext | undefined;
+
+        const body = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
+        const user = (context as Record<string, unknown>).user as UserContext | undefined;
         const directories = user?.directories;
         const profile = user?.profile;
 
@@ -494,9 +494,9 @@ export const router = new Elysia({ prefix: '/api/extensions' })
     })
     .post('/version', async (context) => {
         const { set } = context;
-        const ctx = context as Record<string, unknown>;
-        const body = ctx.body as Record<string, unknown> | undefined;
-        const user = ctx.user as UserContext | undefined;
+
+        const body = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
+        const user = (context as Record<string, unknown>).user as UserContext | undefined;
         const directories = user?.directories;
 
         try {
@@ -556,9 +556,9 @@ export const router = new Elysia({ prefix: '/api/extensions' })
     })
     .post('/delete', async (context) => {
         const { set } = context;
-        const ctx = context as Record<string, unknown>;
-        const body = ctx.body as Record<string, unknown> | undefined;
-        const user = ctx.user as UserContext | undefined;
+
+        const body = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
+        const user = (context as Record<string, unknown>).user as UserContext | undefined;
         const directories = user?.directories;
         const profile = user?.profile;
 
@@ -606,8 +606,8 @@ export const router = new Elysia({ prefix: '/api/extensions' })
         }
     })
     .get('/discover', async (context) => {
-        const ctx = context as Record<string, unknown>;
-        const user = ctx.user as UserContext | undefined;
+
+        const user = (context as Record<string, unknown>).user as UserContext | undefined;
         const directories = user?.directories;
         const profile = user?.profile;
 

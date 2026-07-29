@@ -333,9 +333,9 @@ function validateFileName(name: unknown): string | null {
 
 export const router = new Elysia({ prefix: '/api/settings' })
     .post('/save', async (context) => {
-        const ctx = context as Record<string, unknown>;
-        const body = ctx.body as Record<string, unknown> | undefined;
-        const user = ctx.user as UserContext | undefined;
+
+        const body = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
+        const user = (context as Record<string, unknown>).user as UserContext | undefined;
         const directories = user?.directories;
 
         try {
@@ -358,8 +358,8 @@ export const router = new Elysia({ prefix: '/api/settings' })
     })
     .post('/get', async (context) => {
         const { set } = context;
-        const ctx = context as Record<string, unknown>;
-        const user = ctx.user as UserContext | undefined;
+
+        const user = (context as Record<string, unknown>).user as UserContext | undefined;
         const directories = user?.directories;
 
         const rootDir = directories?.root ?? '';
@@ -463,8 +463,8 @@ export const router = new Elysia({ prefix: '/api/settings' })
     })
     .post('/get-snapshots', async (context) => {
         const { set } = context;
-        const ctx = context as Record<string, unknown>;
-        const user = ctx.user as UserContext | undefined;
+
+        const user = (context as Record<string, unknown>).user as UserContext | undefined;
         const directories = user?.directories;
         const handle = user?.profile?.handle ?? '';
 
@@ -509,9 +509,9 @@ export const router = new Elysia({ prefix: '/api/settings' })
     })
     .post('/load-snapshot', async (context) => {
         const { set } = context;
-        const ctx = context as Record<string, unknown>;
-        const body = ctx.body as Record<string, unknown> | undefined;
-        const user = ctx.user as UserContext | undefined;
+
+        const body = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
+        const user = (context as Record<string, unknown>).user as UserContext | undefined;
         const directories = user?.directories;
         const handle = user?.profile?.handle ?? '';
 
@@ -546,8 +546,8 @@ export const router = new Elysia({ prefix: '/api/settings' })
     })
     .post('/make-snapshot', async (context) => {
         const { set } = context;
-        const ctx = context as Record<string, unknown>;
-        const user = ctx.user as UserContext | undefined;
+
+        const user = (context as Record<string, unknown>).user as UserContext | undefined;
         const handle = user?.profile?.handle ?? '';
 
         try {
@@ -560,9 +560,9 @@ export const router = new Elysia({ prefix: '/api/settings' })
     })
     .post('/restore-snapshot', async (context) => {
         const { set } = context;
-        const ctx = context as Record<string, unknown>;
-        const body = ctx.body as Record<string, unknown> | undefined;
-        const user = ctx.user as UserContext | undefined;
+
+        const body = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
+        const user = (context as Record<string, unknown>).user as UserContext | undefined;
         const directories = user?.directories;
         const handle = user?.profile?.handle ?? '';
 

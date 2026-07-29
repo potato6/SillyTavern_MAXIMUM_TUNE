@@ -61,9 +61,9 @@ function getPresetSettingsByAPI(
 export const router = new Elysia({ prefix: '/api/presets' })
     .post('/save', async (context) => {
         const { set } = context;
-        const ctx = context as Record<string, unknown>;
-        const bodyAny = ctx.body as Record<string, unknown> | undefined;
-        const user = ctx.user as UserContext | undefined;
+
+        const bodyAny = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
+        const user = (context as Record<string, unknown>).user as UserContext | undefined;
         const directories = user?.directories;
 
         if (!bodyAny || !bodyAny.preset) {
@@ -102,9 +102,9 @@ export const router = new Elysia({ prefix: '/api/presets' })
     })
     .post('/delete', async (context) => {
         const { set } = context;
-        const ctx = context as Record<string, unknown>;
-        const bodyAny = ctx.body as Record<string, unknown> | undefined;
-        const user = ctx.user as UserContext | undefined;
+
+        const bodyAny = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
+        const user = (context as Record<string, unknown>).user as UserContext | undefined;
         const directories = user?.directories;
 
         if (!bodyAny) {
@@ -151,9 +151,9 @@ export const router = new Elysia({ prefix: '/api/presets' })
     })
     .post('/restore', async (context) => {
         const { set } = context;
-        const ctx = context as Record<string, unknown>;
-        const bodyAny = ctx.body as Record<string, unknown> | undefined;
-        const user = ctx.user as UserContext | undefined;
+
+        const bodyAny = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
+        const user = (context as Record<string, unknown>).user as UserContext | undefined;
         const directories = user?.directories;
 
         try {

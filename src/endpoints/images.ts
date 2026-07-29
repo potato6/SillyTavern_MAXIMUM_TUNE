@@ -21,9 +21,9 @@ interface UserContext {
 export const router = new Elysia({ prefix: '/api/images' })
     .post('/upload', async (context) => {
         const { set } = context;
-        const ctx = context as Record<string, unknown>;
-        const body = ctx.body as Record<string, unknown> | undefined;
-        const user = ctx.user as UserContext | undefined;
+
+        const body = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
+        const user = (context as Record<string, unknown>).user as UserContext | undefined;
         const directories = user?.directories;
 
         try {
@@ -79,9 +79,9 @@ export const router = new Elysia({ prefix: '/api/images' })
     })
     .post('/list/:folder?', async (context) => {
         const { params, set } = context;
-        const ctx = context as Record<string, unknown>;
-        const bodyAny = (ctx.body ?? {}) as Record<string, unknown>;
-        const user = ctx.user as UserContext | undefined;
+
+        const bodyAny = ((context as Record<string, unknown>).body ?? {}) as Record<string, unknown>;
+        const user = (context as Record<string, unknown>).user as UserContext | undefined;
         const directories = user?.directories;
 
         try {
@@ -126,8 +126,8 @@ export const router = new Elysia({ prefix: '/api/images' })
     })
     .post('/folders', async (context) => {
         const { set } = context;
-        const ctx = context as Record<string, unknown>;
-        const user = ctx.user as UserContext | undefined;
+
+        const user = (context as Record<string, unknown>).user as UserContext | undefined;
         const directories = user?.directories;
 
         try {
@@ -157,9 +157,9 @@ export const router = new Elysia({ prefix: '/api/images' })
     })
     .post('/delete', async (context) => {
         const { set } = context;
-        const ctx = context as Record<string, unknown>;
-        const bodyAny = (ctx.body ?? {}) as Record<string, unknown>;
-        const user = ctx.user as UserContext | undefined;
+
+        const bodyAny = ((context as Record<string, unknown>).body ?? {}) as Record<string, unknown>;
+        const user = (context as Record<string, unknown>).user as UserContext | undefined;
         const directories = user?.directories;
 
         try {

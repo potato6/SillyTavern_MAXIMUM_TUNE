@@ -79,8 +79,8 @@ router.post('/list', async (context) => {
 
 router.post('/login', async (context) => {
     const { set } = context;
-    const ctx = context as Record<string, unknown>;
-    const body = (ctx.body ?? {}) as Record<string, unknown>;
+
+    const body = ((context as Record<string, unknown>).body ?? {}) as Record<string, unknown>;
 
     try {
         const ip = getIpAddress(context as any, PREFER_REAL_IP_HEADER);
@@ -167,8 +167,8 @@ router.post('/login', async (context) => {
 
 router.post('/recover-step1', async (context) => {
     const { set } = context;
-    const ctx = context as Record<string, unknown>;
-    const body = (ctx.body ?? {}) as Record<string, unknown>;
+
+    const body = ((context as Record<string, unknown>).body ?? {}) as Record<string, unknown>;
 
     try {
         const ip = getIpAddress(context as any, PREFER_REAL_IP_HEADER);
@@ -226,8 +226,8 @@ router.post('/recover-step1', async (context) => {
 
 router.post('/recover-step2', async (context) => {
     const { set } = context;
-    const ctx = context as Record<string, unknown>;
-    const body = (ctx.body ?? {}) as Record<string, unknown>;
+
+    const body = ((context as Record<string, unknown>).body ?? {}) as Record<string, unknown>;
 
     try {
         const ip = getIpAddress(context as any, PREFER_REAL_IP_HEADER);

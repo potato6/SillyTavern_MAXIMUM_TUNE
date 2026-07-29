@@ -54,8 +54,8 @@ interface UserContext {
 export const router = new Elysia({ prefix: '/api/users' })
     .post('/logout', (context) => {
         const { set } = context;
-        const ctx = context as Record<string, unknown>;
-        const session = ctx.session as UserSession | undefined;
+
+        const session = (context as Record<string, unknown>).session as UserSession | undefined;
 
         try {
             if (!session) {
@@ -75,8 +75,8 @@ export const router = new Elysia({ prefix: '/api/users' })
     })
     .get('/me', async (context) => {
         const { set } = context;
-        const ctx = context as Record<string, unknown>;
-        const user = ctx.user as UserContext | undefined;
+
+        const user = (context as Record<string, unknown>).user as UserContext | undefined;
 
         try {
             if (!user || !user.profile) {
@@ -102,9 +102,9 @@ export const router = new Elysia({ prefix: '/api/users' })
     })
     .post('/change-avatar', async (context) => {
         const { set } = context;
-        const ctx = context as Record<string, unknown>;
-        const bodyAny = ctx.body as Record<string, unknown> | undefined;
-        const user = ctx.user as UserContext | undefined;
+
+        const bodyAny = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
+        const user = (context as Record<string, unknown>).user as UserContext | undefined;
 
         try {
             const handle = bodyAny?.handle;
@@ -149,10 +149,10 @@ export const router = new Elysia({ prefix: '/api/users' })
     })
     .post('/change-password', async (context) => {
         const { set } = context;
-        const ctx = context as Record<string, unknown>;
-        const bodyAny = ctx.body as Record<string, unknown> | undefined;
-        const user = ctx.user as UserContext | undefined;
-        const session = ctx.session as UserSession | undefined;
+
+        const bodyAny = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
+        const user = (context as Record<string, unknown>).user as UserContext | undefined;
+        const session = (context as Record<string, unknown>).session as UserSession | undefined;
 
         try {
             const handle = bodyAny?.handle;
@@ -223,9 +223,9 @@ export const router = new Elysia({ prefix: '/api/users' })
     })
     .post('/backup', async (context) => {
         const { set } = context;
-        const ctx = context as Record<string, unknown>;
-        const bodyAny = ctx.body as Record<string, unknown> | undefined;
-        const user = ctx.user as UserContext | undefined;
+
+        const bodyAny = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
+        const user = (context as Record<string, unknown>).user as UserContext | undefined;
 
         try {
             const allowFullDataBackup = !!getConfigValue(
@@ -297,9 +297,9 @@ export const router = new Elysia({ prefix: '/api/users' })
     })
     .post('/reset-settings', async (context) => {
         const { set } = context;
-        const ctx = context as Record<string, unknown>;
-        const bodyAny = ctx.body as Record<string, unknown> | undefined;
-        const user = ctx.user as UserContext | undefined;
+
+        const bodyAny = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
+        const user = (context as Record<string, unknown>).user as UserContext | undefined;
 
         try {
             const profile = user?.profile;
@@ -330,9 +330,9 @@ export const router = new Elysia({ prefix: '/api/users' })
     })
     .post('/change-name', async (context) => {
         const { set } = context;
-        const ctx = context as Record<string, unknown>;
-        const bodyAny = ctx.body as Record<string, unknown> | undefined;
-        const user = ctx.user as UserContext | undefined;
+
+        const bodyAny = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
+        const user = (context as Record<string, unknown>).user as UserContext | undefined;
 
         try {
             const name = bodyAny?.name;
@@ -371,8 +371,8 @@ export const router = new Elysia({ prefix: '/api/users' })
     })
     .post('/reset-step1', async (context) => {
         const { set } = context;
-        const ctx = context as Record<string, unknown>;
-        const user = ctx.user as UserContext | undefined;
+
+        const user = (context as Record<string, unknown>).user as UserContext | undefined;
         const profile = user?.profile;
 
         try {
@@ -394,9 +394,9 @@ export const router = new Elysia({ prefix: '/api/users' })
     })
     .post('/reset-step2', async (context) => {
         const { set } = context;
-        const ctx = context as Record<string, unknown>;
-        const bodyAny = ctx.body as Record<string, unknown> | undefined;
-        const user = ctx.user as UserContext | undefined;
+
+        const bodyAny = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
+        const user = (context as Record<string, unknown>).user as UserContext | undefined;
         const profile = user?.profile;
 
         try {

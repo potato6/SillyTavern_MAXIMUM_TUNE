@@ -17,8 +17,8 @@ interface UserContext {
 export const router = new Elysia({ prefix: '/api/backups' })
     .post('/chat/get', async (context) => {
         const { set } = context;
-        const ctx = context as Record<string, unknown>;
-        const user = ctx.user as UserContext | undefined;
+
+        const user = (context as Record<string, unknown>).user as UserContext | undefined;
         const backupDir = user?.directories?.backups ?? '';
 
         try {
@@ -51,8 +51,8 @@ export const router = new Elysia({ prefix: '/api/backups' })
     })
     .post('/chat/delete', async (context) => {
         const { set } = context;
-        const ctx = context as Record<string, unknown>;
-        const body = ctx.body as Record<string, unknown> | undefined;
+
+        const body = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
         const name = body?.name;
 
         if (typeof name !== 'string') {
@@ -69,7 +69,7 @@ export const router = new Elysia({ prefix: '/api/backups' })
                 return;
             }
 
-            const user = ctx.user as UserContext | undefined;
+            const user = (context as Record<string, unknown>).user as UserContext | undefined;
             const backupDir = user?.directories?.backups ?? '';
             const filePath = path.join(backupDir, sanitizedName);
 
@@ -90,8 +90,8 @@ export const router = new Elysia({ prefix: '/api/backups' })
     })
     .post('/chat/download', async (context) => {
         const { set } = context;
-        const ctx = context as Record<string, unknown>;
-        const body = ctx.body as Record<string, unknown> | undefined;
+
+        const body = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
         const name = body?.name;
 
         if (typeof name !== 'string') {
@@ -108,7 +108,7 @@ export const router = new Elysia({ prefix: '/api/backups' })
                 return;
             }
 
-            const user = ctx.user as UserContext | undefined;
+            const user = (context as Record<string, unknown>).user as UserContext | undefined;
             const backupDir = user?.directories?.backups ?? '';
             const filePath = path.join(backupDir, sanitizedName);
 

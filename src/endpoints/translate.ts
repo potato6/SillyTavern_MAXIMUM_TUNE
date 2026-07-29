@@ -14,8 +14,8 @@ export const router = new Elysia({ prefix: '/api/translate' });
 // ── helpers ──────────────────────────────────────────────────────────────────
 
 function getDirs(context: unknown) {
-    const ctx = context as Record<string, unknown>;
-    const user = ctx.user as Record<string, unknown> | null;
+
+    const user = (context as Record<string, unknown>).user as Record<string, unknown> | null;
     return user?.directories as Record<string, string> | undefined;
 }
 

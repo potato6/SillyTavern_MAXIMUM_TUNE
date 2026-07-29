@@ -123,9 +123,9 @@ async function extractTranscript(videoPageBody: string, lang: string) {
 
 router.post('/serpapi', async (context) => {
     const { set } = context;
-    const ctx = context as Record<string, unknown>;
-    const body = (ctx.body ?? {}) as Record<string, unknown>;
-    const directories = getUserDirectories(ctx);
+
+    const body = ((context as Record<string, unknown>).body ?? {}) as Record<string, unknown>;
+    const directories = getUserDirectories(context as Record<string, unknown>);
 
     try {
         const key = directories ? readSecret(directories as any, SECRET_KEYS.SERPAPI) : '';
@@ -166,8 +166,8 @@ router.post('/serpapi', async (context) => {
  */
 router.post('/transcript', async (context) => {
     const { set } = context;
-    const ctx = context as Record<string, unknown>;
-    const body = (ctx.body ?? {}) as Record<string, unknown>;
+
+    const body = ((context as Record<string, unknown>).body ?? {}) as Record<string, unknown>;
 
     try {
         const id = body.id as string;
@@ -212,8 +212,8 @@ router.post('/transcript', async (context) => {
 
 router.post('/searxng', async (context) => {
     const { set } = context;
-    const ctx = context as Record<string, unknown>;
-    const body = (ctx.body ?? {}) as Record<string, unknown>;
+
+    const body = ((context as Record<string, unknown>).body ?? {}) as Record<string, unknown>;
 
     try {
         const baseUrl = body.baseUrl as string;
@@ -276,9 +276,9 @@ router.post('/searxng', async (context) => {
 
 router.post('/tavily', async (context) => {
     const { set } = context;
-    const ctx = context as Record<string, unknown>;
-    const body = (ctx.body ?? {}) as Record<string, unknown>;
-    const directories = getUserDirectories(ctx);
+
+    const body = ((context as Record<string, unknown>).body ?? {}) as Record<string, unknown>;
+    const directories = getUserDirectories(context as Record<string, unknown>);
 
     try {
         const apiKey = directories ? readSecret(directories as any, SECRET_KEYS.TAVILY) : '';
@@ -334,9 +334,9 @@ router.post('/tavily', async (context) => {
 
 router.post('/koboldcpp', async (context) => {
     const { set } = context;
-    const ctx = context as Record<string, unknown>;
-    const body = (ctx.body ?? {}) as Record<string, unknown>;
-    const directories = getUserDirectories(ctx);
+
+    const body = ((context as Record<string, unknown>).body ?? {}) as Record<string, unknown>;
+    const directories = getUserDirectories(context as Record<string, unknown>);
 
     try {
         const query = body.query as string;
@@ -387,9 +387,9 @@ router.post('/koboldcpp', async (context) => {
 
 router.post('/serper', async (context) => {
     const { set } = context;
-    const ctx = context as Record<string, unknown>;
-    const body = (ctx.body ?? {}) as Record<string, unknown>;
-    const directories = getUserDirectories(ctx);
+
+    const body = ((context as Record<string, unknown>).body ?? {}) as Record<string, unknown>;
+    const directories = getUserDirectories(context as Record<string, unknown>);
 
     try {
         const key = directories ? await readSecret(directories as any, SECRET_KEYS.SERPER) : '';
@@ -438,9 +438,9 @@ router.post('/serper', async (context) => {
 
 router.post('/zai', async (context) => {
     const { set } = context;
-    const ctx = context as Record<string, unknown>;
-    const body = (ctx.body ?? {}) as Record<string, unknown>;
-    const directories = getUserDirectories(ctx);
+
+    const body = ((context as Record<string, unknown>).body ?? {}) as Record<string, unknown>;
+    const directories = getUserDirectories(context as Record<string, unknown>);
 
     try {
         const key = directories ? readSecret(directories as any, SECRET_KEYS.ZAI) : '';
@@ -492,8 +492,8 @@ router.post('/zai', async (context) => {
 
 router.post('/visit', async (context) => {
     const { set } = context;
-    const ctx = context as Record<string, unknown>;
-    const body = (ctx.body ?? {}) as Record<string, unknown>;
+
+    const body = ((context as Record<string, unknown>).body ?? {}) as Record<string, unknown>;
 
     try {
         const url = body.url as string;

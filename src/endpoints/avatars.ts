@@ -22,16 +22,16 @@ interface UserContext {
 
 export const router = new Elysia({ prefix: '/api/avatars' })
     .post('/get', (context) => {
-        const ctx = context as Record<string, unknown>;
-        const user = ctx.user as UserContext | undefined;
+
+        const user = (context as Record<string, unknown>).user as UserContext | undefined;
         const avatarsDir = user?.directories?.avatars ?? '';
 
         return getImages(avatarsDir);
     })
     .post('/delete', async (context) => {
         const { set } = context;
-        const ctx = context as Record<string, unknown>;
-        const body = ctx.body as Record<string, unknown> | undefined;
+
+        const body = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
         const avatar = body?.avatar;
 
         if (typeof avatar !== 'string') {
@@ -46,7 +46,7 @@ export const router = new Elysia({ prefix: '/api/avatars' })
             return;
         }
 
-        const user = ctx.user as UserContext | undefined;
+        const user = (context as Record<string, unknown>).user as UserContext | undefined;
         const directories = user?.directories;
         const avatarsDir = directories?.avatars ?? '';
         const fileName = path.join(avatarsDir, sanitizedAvatar);
@@ -62,10 +62,10 @@ export const router = new Elysia({ prefix: '/api/avatars' })
     })
     .post('/upload', async (context) => {
         const { set } = context;
-        const ctx = context as Record<string, unknown>;
-        const user = ctx.user as UserContext | undefined;
-        const uploadedFile = ctx.file as { destination?: string; filename?: string } | undefined;
-        const body = ctx.body as Record<string, unknown> | undefined;
+
+        const user = (context as Record<string, unknown>).user as UserContext | undefined;
+        const uploadedFile = (context as Record<string, unknown>).file as { destination?: string; filename?: string } | undefined;
+        const body = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
 
         const fileObj = body?.avatar;
 

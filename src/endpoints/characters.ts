@@ -1149,12 +1149,12 @@ async function mergeCharacterUpdate(
 export const router = new Elysia({ prefix: '/api/characters' })
     .post('/create', async (context) => {
         const { set } = context;
-        const ctx = context as Record<string, unknown>;
-        const body = ctx.body as Record<string, unknown> | undefined;
-        const user = ctx.user as UserContext | undefined;
+
+        const body = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
+        const user = (context as Record<string, unknown>).user as UserContext | undefined;
         const directories = user?.directories;
-        const uploadedFile = ctx.file as { destination?: string; filename?: string } | undefined;
-        const query = (ctx.query ?? {}) as Record<string, string>;
+        const uploadedFile = (context as Record<string, unknown>).file as { destination?: string; filename?: string } | undefined;
+        const query = ((context as Record<string, unknown>).query ?? {}) as Record<string, string>;
 
         const mockRequest = {
             user: {
@@ -1206,9 +1206,9 @@ export const router = new Elysia({ prefix: '/api/characters' })
     })
     .post('/rename', async (context) => {
         const { set: elysiaSet } = context;
-        const ctx = context as Record<string, unknown>;
-        const body = ctx.body as Record<string, unknown> | undefined;
-        const user = ctx.user as UserContext | undefined;
+
+        const body = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
+        const user = (context as Record<string, unknown>).user as UserContext | undefined;
         const directories = user?.directories;
 
         const mockRequest = {
@@ -1274,12 +1274,12 @@ export const router = new Elysia({ prefix: '/api/characters' })
     })
     .post('/edit', async (context) => {
         const { set } = context;
-        const ctx = context as Record<string, unknown>;
-        const body = ctx.body as Record<string, unknown> | undefined;
-        const user = ctx.user as UserContext | undefined;
+
+        const body = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
+        const user = (context as Record<string, unknown>).user as UserContext | undefined;
         const directories = user?.directories;
-        const uploadedFile = ctx.file as { destination?: string; filename?: string } | undefined;
-        const query = (ctx.query ?? {}) as Record<string, string>;
+        const uploadedFile = (context as Record<string, unknown>).file as { destination?: string; filename?: string } | undefined;
+        const query = ((context as Record<string, unknown>).query ?? {}) as Record<string, string>;
 
         const mockRequest = {
             user: {
@@ -1347,12 +1347,12 @@ export const router = new Elysia({ prefix: '/api/characters' })
     })
     .post('/edit-avatar', async (context) => {
         const { set } = context;
-        const ctx = context as Record<string, unknown>;
-        const body = ctx.body as Record<string, unknown> | undefined;
-        const user = ctx.user as UserContext | undefined;
+
+        const body = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
+        const user = (context as Record<string, unknown>).user as UserContext | undefined;
         const directories = user?.directories;
-        const uploadedFile = ctx.file as { destination?: string; filename?: string } | undefined;
-        const query = (ctx.query ?? {}) as Record<string, string>;
+        const uploadedFile = (context as Record<string, unknown>).file as { destination?: string; filename?: string } | undefined;
+        const query = ((context as Record<string, unknown>).query ?? {}) as Record<string, string>;
 
         const mockRequest = {
             user: {
@@ -1411,9 +1411,9 @@ export const router = new Elysia({ prefix: '/api/characters' })
     })
     .post('/edit-attribute', async (context) => {
         const { set } = context;
-        const ctx = context as Record<string, unknown>;
-        const body = ctx.body as Record<string, unknown> | undefined;
-        const user = ctx.user as UserContext | undefined;
+
+        const body = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
+        const user = (context as Record<string, unknown>).user as UserContext | undefined;
         const directories = user?.directories;
 
         const mockRequest = {
@@ -1481,9 +1481,9 @@ export const router = new Elysia({ prefix: '/api/characters' })
     })
     .post('/merge-attributes', async (context) => {
         const { set } = context;
-        const ctx = context as Record<string, unknown>;
-        const body = ctx.body as Record<string, unknown> | undefined;
-        const user = ctx.user as UserContext | undefined;
+
+        const body = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
+        const user = (context as Record<string, unknown>).user as UserContext | undefined;
         const directories = user?.directories;
 
         const mockRequest = {
@@ -1612,9 +1612,9 @@ export const router = new Elysia({ prefix: '/api/characters' })
     })
     .post('/delete', async (context) => {
         const { set } = context;
-        const ctx = context as Record<string, unknown>;
-        const body = ctx.body as Record<string, unknown> | undefined;
-        const user = ctx.user as UserContext | undefined;
+
+        const body = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
+        const user = (context as Record<string, unknown>).user as UserContext | undefined;
         const directories = user?.directories;
 
         const avatarUrl = body?.avatar_url;
@@ -1674,8 +1674,8 @@ export const router = new Elysia({ prefix: '/api/characters' })
     })
     .post('/all', async (context) => {
         const { set } = context;
-        const ctx = context as Record<string, unknown>;
-        const user = ctx.user as UserContext | undefined;
+
+        const user = (context as Record<string, unknown>).user as UserContext | undefined;
         const directories = user?.directories;
 
         try {
@@ -1716,9 +1716,9 @@ export const router = new Elysia({ prefix: '/api/characters' })
     })
     .post('/get', async (context) => {
         const { set } = context;
-        const ctx = context as Record<string, unknown>;
-        const body = ctx.body as Record<string, unknown> | undefined;
-        const user = ctx.user as UserContext | undefined;
+
+        const body = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
+        const user = (context as Record<string, unknown>).user as UserContext | undefined;
         const directories = user?.directories;
 
         const avatarUrl = body?.avatar_url;
@@ -1753,9 +1753,9 @@ export const router = new Elysia({ prefix: '/api/characters' })
     })
     .post('/chats', async (context) => {
         const { set } = context;
-        const ctx = context as Record<string, unknown>;
-        const body = ctx.body as Record<string, unknown> | undefined;
-        const user = ctx.user as UserContext | undefined;
+
+        const body = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
+        const user = (context as Record<string, unknown>).user as UserContext | undefined;
         const directories = user?.directories;
 
         const avatarUrl = body?.avatar_url;
@@ -1839,11 +1839,11 @@ export const router = new Elysia({ prefix: '/api/characters' })
     })
     .post('/import', async (context) => {
         const { set } = context;
-        const ctx = context as Record<string, unknown>;
-        const body = ctx.body as Record<string, unknown> | undefined;
-        const user = ctx.user as UserContext | undefined;
+
+        const body = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
+        const user = (context as Record<string, unknown>).user as UserContext | undefined;
         const directories = user?.directories;
-        const uploadedFile = ctx.file as { destination?: string; filename?: string } | undefined;
+        const uploadedFile = (context as Record<string, unknown>).file as { destination?: string; filename?: string } | undefined;
 
         const mockRequest = {
             user: {
@@ -1921,9 +1921,9 @@ export const router = new Elysia({ prefix: '/api/characters' })
     })
     .post('/duplicate', async (context) => {
         const { set } = context;
-        const ctx = context as Record<string, unknown>;
-        const body = ctx.body as Record<string, unknown> | undefined;
-        const user = ctx.user as UserContext | undefined;
+
+        const body = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
+        const user = (context as Record<string, unknown>).user as UserContext | undefined;
         const directories = user?.directories;
 
         const avatarUrl = body?.avatar_url;
@@ -1993,9 +1993,9 @@ export const router = new Elysia({ prefix: '/api/characters' })
     })
     .post('/export', async (context) => {
         const { set } = context;
-        const ctx = context as Record<string, unknown>;
-        const body = ctx.body as Record<string, unknown> | undefined;
-        const user = ctx.user as UserContext | undefined;
+
+        const body = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
+        const user = (context as Record<string, unknown>).user as UserContext | undefined;
         const directories = user?.directories;
 
         const avatarUrl = body?.avatar_url;

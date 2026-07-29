@@ -219,8 +219,8 @@ export async function migrateGroupChatsMetadataFormat(userDirectories: Record<st
 
 export const router = new Elysia({ prefix: '/api/groups' })
     .post('/all', async (context) => {
-        const ctx = context as Record<string, unknown>;
-        const user = ctx.user as UserContext | undefined;
+
+        const user = (context as Record<string, unknown>).user as UserContext | undefined;
         const directories = user?.directories;
         const groupsDir = directories?.groups ?? '';
         const groupChatsDir = directories?.groupChats ?? '';
@@ -316,9 +316,9 @@ export const router = new Elysia({ prefix: '/api/groups' })
     })
     .post('/create', async (context) => {
         const { set } = context;
-        const ctx = context as Record<string, unknown>;
-        const bodyAny = ctx.body as Record<string, unknown> | undefined;
-        const user = ctx.user as UserContext | undefined;
+
+        const bodyAny = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
+        const user = (context as Record<string, unknown>).user as UserContext | undefined;
         const directories = user?.directories;
 
         if (!bodyAny) {
@@ -357,9 +357,9 @@ export const router = new Elysia({ prefix: '/api/groups' })
     })
     .post('/edit', async (context) => {
         const { set } = context;
-        const ctx = context as Record<string, unknown>;
-        const bodyAny = ctx.body as Record<string, unknown> | undefined;
-        const user = ctx.user as UserContext | undefined;
+
+        const bodyAny = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
+        const user = (context as Record<string, unknown>).user as UserContext | undefined;
         const directories = user?.directories;
 
         if (!bodyAny || !bodyAny.id) {
@@ -388,9 +388,9 @@ export const router = new Elysia({ prefix: '/api/groups' })
     })
     .post('/delete', async (context) => {
         const { set } = context;
-        const ctx = context as Record<string, unknown>;
-        const bodyAny = ctx.body as Record<string, unknown> | undefined;
-        const user = ctx.user as UserContext | undefined;
+
+        const bodyAny = (context as Record<string, unknown>).body as Record<string, unknown> | undefined;
+        const user = (context as Record<string, unknown>).user as UserContext | undefined;
         const directories = user?.directories;
 
         if (!bodyAny || !bodyAny.id) {
