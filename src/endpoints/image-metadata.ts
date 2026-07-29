@@ -1,8 +1,3 @@
-/**
- * Generic image metadata service.
- * Provides on-demand metadata generation with file mtime-based caching.
- */
-
 import * as fs from 'node:fs/promises';
 import path from 'node:path';
 import crypto from 'node:crypto';
@@ -14,35 +9,45 @@ import { getConfigValue, isPathUnderParent, uuidv4 } from '../util.js';
 
 export const METADATA_FILE = 'image-metadata.json';
 
-/**
- * @typedef {object} ImageMetadata
- * @property {string} [hash] - SHA-256 hash of the image file.
- * @property {number} [aspectRatio] - Aspect ratio (width / height) of the image.
- * @property {boolean} [isAnimated] - Whether the image is animated.
- * @property {string} [dominantColor] - Dominant color in hex format (e.g., '#RRGGBB').
- * @property {string[]} folderIds - Array of virtual folder IDs the image belongs to.
- * @property {number} [addedTimestamp] - Timestamp when the image was added.
- * @property {number} [thumbnailResolution] - Thumbnail resolution (width * height) for cache invalidation.
- * @property {number} [mtime] - File modification time for cache invalidation (internal use).
- */
+export interface ImageMetadata {
+    hash?: string;
+    aspectRatio?: number;
+    isAnimated?: boolean;
+    dominantColor?: string;
+    folderIds: string[];
+    addedTimestamp?: number;
+    thumbnailResolution?: number;
+    mtime?: number;
+}
 
-/**
- * @typedef {object} MetadataIndex
- * @property {number} version - Metadata version.
- * @property {{[key: string]: ImageMetadata}} images - Mapping of relative paths to their metadata.
- * @property {Array<{id: string, name: string, thumbnailFile: string}>} folders - Virtual folders.
- */
+export interface MetadataIndex {
+    version: number;
+    images: Record<string, ImageMetadata>;
+    folders: Array<{ id: string; name: string; thumbnailFile: string }>;
+}
 
-/**
- * @typedef {'bg' | 'avatar' | 'persona'} ThumbnailType
- */
+export type ThumbnailType = 'bg' | 'avatar' | 'persona';
 
-/** @type {Record<string, number[]>} */
-export const thumbnailDimensions = {
+interface UserDirectories {
+    root?: string;
+    [key: string]: unknown;
+}
+
+interface UserContext {
+    directories?: UserDirectories;
+    [key: string]: unknown;
+}
+
+export const thumbnailDimensions: Record<string, number[]> = {
     bg: getConfigValue('thumbnails.dimensions.bg', [160, 90]) as number[],
     avatar: getConfigValue('thumbnails.dimensions.avatar', [96, 144]) as number[],
     persona: getConfigValue('thumbnails.dimensions.persona', [96, 144]) as number[],
 };
+
+function getUserRoot(ctx: Record<string, unknown>): string {
+    const user = ctx.user as UserContext | undefined;
+    return user?.directories?.root ?? '';
+}
 
 /**
  * Gets the configured resolution for a given thumbnail type.
@@ -52,7 +57,7 @@ export const thumbnailDimensions = {
 export function getThumbnailResolution(type: ThumbnailType): number {
     const dims = thumbnailDimensions[type];
     if (Array.isArray(dims) && dims.length >= 2) {
-        return Number(dims[0]) * Number(dims[1]);
+        return (dims[0] as number) * (dims[1] as number);
     }
     return 0;
 }
@@ -63,7 +68,8 @@ export function getThumbnailResolution(type: ThumbnailType): number {
  * @returns {boolean} True if the PNG is animated
  */
 export function isAnimatedApng(buffer: Buffer): boolean {
-    return buffer.subarray(0, 200).includes('acTL');
+    const header = buffer.length > 200 ? buffer.subarray(0, 200) : buffer;
+    return header.includes('acTL');
 }
 
 /**
@@ -72,8 +78,8 @@ export function isAnimatedApng(buffer: Buffer): boolean {
  * @returns {boolean} True if the WebP is animated
  */
 export function isAnimatedWebP(buffer: Buffer): boolean {
-    const headerBuffer = buffer.length > 200 ? buffer.subarray(0, 200) : buffer;
-    return headerBuffer.includes('ANIM') || headerBuffer.includes('ANMF');
+    const header = buffer.length > 200 ? buffer.subarray(0, 200) : buffer;
+    return header.includes('ANIM') || header.includes('ANMF');
 }
 
 /**
@@ -84,21 +90,27 @@ export function isAnimatedWebP(buffer: Buffer): boolean {
  */
 async function getAverageColor(buffer: Buffer): Promise<string> {
     try {
-        const pixel = new Uint8Array(await new Bun.Image(buffer).resize(1, 1).png().buffer());
+        const pngBuf = await new Bun.Image(buffer).resize(1, 1).png().buffer();
+        const pixel = new Uint8Array(pngBuf);
         let offset = 8;
-        while (offset < pixel.length) {
-            const length = new DataView(pixel.buffer, offset, 4).getUint32(0);
-            const type = String.fromCharCode(
-                pixel[offset + 4]!,
-                pixel[offset + 5]!,
-                pixel[offset + 6]!,
-                pixel[offset + 7]!,
-            );
-            if (type === 'IDAT') {
-                const compressed = pixel.slice(offset + 8, offset + 8 + length);
+        const len = pixel.length;
+        const view = new DataView(pixel.buffer, pixel.byteOffset, len);
+
+        while (offset < len) {
+            const length = view.getUint32(offset);
+            // Check chunk type 'IDAT' (I=73, D=68, A=65, T=84)
+            if (
+                pixel[offset + 4] === 73 &&
+                pixel[offset + 5] === 68 &&
+                pixel[offset + 6] === 65 &&
+                pixel[offset + 7] === 84
+            ) {
+                const compressed = pixel.subarray(offset + 8, offset + 8 + length);
                 const raw = inflateSync(compressed);
-                const toHex = (c: number) => c.toString(16).padStart(2, '0');
-                return `#${toHex(raw[1] as number)}${toHex(raw[2] as number)}${toHex(raw[3] as number)}`;
+                const r = (raw[1] as number).toString(16).padStart(2, '0');
+                const g = (raw[2] as number).toString(16).padStart(2, '0');
+                const b = (raw[3] as number).toString(16).padStart(2, '0');
+                return `#${r}${g}${b}`;
             }
             offset += 12 + length;
         }
@@ -142,14 +154,9 @@ export async function generateImageMetadata(
             break;
     }
 
-    let dominantColor;
-    if (isAnimated) {
-        dominantColor = '#808080';
-    } else {
-        dominantColor = await getAverageColor(buffer);
-    }
+    const dominantColor = isAnimated ? '#808080' : await getAverageColor(buffer);
 
-    let addedTimestamp;
+    let addedTimestamp: number;
     try {
         const stats = await fs.stat(filePath);
         addedTimestamp = Math.floor(stats.birthtimeMs || stats.mtimeMs);
@@ -159,7 +166,7 @@ export async function generateImageMetadata(
 
     return {
         hash,
-        aspectRatio: parseFloat(aspectRatio.toFixed(4)),
+        aspectRatio: Math.round(aspectRatio * 10000) / 10000,
         isAnimated,
         dominantColor,
         folderIds: [],
@@ -210,46 +217,41 @@ export async function getOrGenerateMetadataBatch(
     relativePaths: string[],
     type: ThumbnailType,
 ) {
-    /** @type {{[key: string]: ImageMetadata}} */
-    const results = {};
+    const results: Record<string, ImageMetadata> = {};
     const index = await readMetadataIndex(userDataRoot);
     let indexModified = false;
     let generatedCount = 0;
 
+    const isPosixSep = path.sep === '/';
+
     for (const relativePath of relativePaths) {
-        // Normalize the path to use forward slashes for consistent keys
-        const posixPath = relativePath.replaceAll(path.sep, path.posix.sep);
+        const posixPath = isPosixSep ? relativePath : relativePath.replaceAll('\\', '/');
         const fullPath = path.join(userDataRoot, relativePath);
 
         let stats;
         try {
             stats = await fs.stat(fullPath);
         } catch {
-            continue; // File doesn't exist, skip
+            continue;
         }
 
         const currentMtime = stats.mtimeMs;
         const cached = index.images[posixPath];
 
-        // If cached and not modified, use cached
         if (cached && cached.mtime === currentMtime) {
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             results[relativePath] = cached;
             continue;
         }
 
-        // Generate new metadata
         try {
             const metadata = await generateImageMetadata(fullPath, type);
             metadata.mtime = currentMtime;
 
-            // Preserve folderIds if they existed
             if (cached?.folderIds) {
                 metadata.folderIds = cached.folderIds;
             }
 
             index.images[posixPath] = metadata;
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             results[relativePath] = metadata;
             indexModified = true;
             generatedCount++;
@@ -261,7 +263,6 @@ export async function getOrGenerateMetadataBatch(
         }
     }
 
-    // Write index if modified
     if (indexModified) {
         await writeMetadataIndex(userDataRoot, index);
     }
@@ -275,15 +276,17 @@ export async function getOrGenerateMetadataBatch(
  * @param {string} relativePath - The relative path to remove
  */
 export async function removeMetadata(userDataRoot: string, relativePath: string): Promise<void> {
-    const posixPath = relativePath.replaceAll(path.sep, path.posix.sep);
+    const posixPath = path.sep === '/' ? relativePath : relativePath.replaceAll('\\', '/');
     const index = await readMetadataIndex(userDataRoot);
     if (index.images[posixPath]) {
         delete index.images[posixPath];
 
-        // Clear any folder thumbnailFile references that point to the deleted file
-        const deletedFileName = path.posix.basename(posixPath);
-        if (Array.isArray(index.folders)) {
-            for (const folder of index.folders) {
+        const lastSlash = posixPath.lastIndexOf('/');
+        const deletedFileName = lastSlash !== -1 ? posixPath.slice(lastSlash + 1) : posixPath;
+
+        const folders = index.folders;
+        if (Array.isArray(folders)) {
+            for (const folder of folders) {
                 if (folder.thumbnailFile === deletedFileName) {
                     folder.thumbnailFile = '';
                 }
@@ -306,8 +309,10 @@ export async function renameMetadata(
     oldRelativePath: string,
     newRelativePath: string,
 ): Promise<ImageMetadata | null> {
-    const posixOldPath = oldRelativePath.replaceAll(path.sep, path.posix.sep);
-    const posixNewPath = newRelativePath.replaceAll(path.sep, path.posix.sep);
+    const isPosixSep = path.sep === '/';
+    const posixOldPath = isPosixSep ? oldRelativePath : oldRelativePath.replaceAll('\\', '/');
+    const posixNewPath = isPosixSep ? newRelativePath : newRelativePath.replaceAll('\\', '/');
+
     const index = await readMetadataIndex(userDataRoot);
     const data = index.images[posixOldPath];
 
@@ -318,11 +323,15 @@ export async function renameMetadata(
     delete index.images[posixOldPath];
     index.images[posixNewPath] = data;
 
-    // Update any folder thumbnailFile references that point to the old filename
-    const oldFileName = path.posix.basename(posixOldPath);
-    const newFileName = path.posix.basename(posixNewPath);
+    const lastOld = posixOldPath.lastIndexOf('/');
+    const oldFileName = lastOld !== -1 ? posixOldPath.slice(lastOld + 1) : posixOldPath;
+
+    const lastNew = posixNewPath.lastIndexOf('/');
+    const newFileName = lastNew !== -1 ? posixNewPath.slice(lastNew + 1) : posixNewPath;
+
     if (oldFileName !== newFileName && Array.isArray(index.folders)) {
-        for (const folder of index.folders) {
+        const folders = index.folders;
+        for (const folder of folders) {
             if (folder.thumbnailFile === oldFileName) {
                 folder.thumbnailFile = newFileName;
             }
@@ -330,7 +339,6 @@ export async function renameMetadata(
     }
 
     await writeMetadataIndex(userDataRoot, index);
-
     return data;
 }
 
@@ -342,9 +350,9 @@ export async function renameMetadata(
  */
 export async function cleanupOrphanedMetadata(userDataRoot: string): Promise<string[]> {
     const index = await readMetadataIndex(userDataRoot);
-    const orphanedPaths = [];
+    const orphanedPaths: string[] = [];
 
-    for (const relativePath of Object.keys(index.images)) {
+    for (const [relativePath] of Object.entries(index.images)) {
         const fullPath = path.resolve(userDataRoot, relativePath);
 
         if (!isPathUnderParent(userDataRoot, fullPath)) {
@@ -356,7 +364,6 @@ export async function cleanupOrphanedMetadata(userDataRoot: string): Promise<str
         try {
             await fs.access(fullPath);
         } catch {
-            // File doesn't exist, mark for removal
             orphanedPaths.push(relativePath);
             delete index.images[relativePath];
         }
@@ -400,12 +407,15 @@ export async function setFolderThumbnailsBatch(
     updates: { id: string; thumbnailFile: string }[],
 ): Promise<void> {
     const index = await readMetadataIndex(userDataRoot);
-    for (const { id, thumbnailFile } of updates) {
-        const folder = index.folders.find(
-            (f: { id: string; name: string; thumbnailFile: string }) => f.id === id,
-        );
-        if (folder) {
-            folder.thumbnailFile = thumbnailFile;
+    const folders = index.folders;
+
+    for (const update of updates) {
+        const updateId = update.id;
+        for (const folder of folders) {
+            if (folder.id === updateId) {
+                folder.thumbnailFile = update.thumbnailFile;
+                break;
+            }
         }
     }
     await writeMetadataIndex(userDataRoot, index);
@@ -416,8 +426,6 @@ export async function setFolderThumbnailsBatch(
  * @param {string} userDataRoot User data directory root
  * @param {string} folderId Folder ID
  * @param {{name?: string, thumbnailFile?: string}} updates Fields to update
- * @param {string} [updates.name] New folder name
- * @param {string} [updates.thumbnailFile] New thumbnail filename
  * @returns {Promise<{id: string, name: string, thumbnailFile: string}>} The updated folder
  */
 export async function updateFolder(
@@ -426,9 +434,16 @@ export async function updateFolder(
     updates: { name?: string; thumbnailFile?: string },
 ): Promise<{ id: string; name: string; thumbnailFile: string }> {
     const index = await readMetadataIndex(userDataRoot);
-    const folder = index.folders.find(
-        (f: { id: string; name: string; thumbnailFile: string }) => f.id === folderId,
-    );
+    const folders = index.folders;
+    let folder: { id: string; name: string; thumbnailFile: string } | undefined;
+
+    for (const f of folders) {
+        if (f.id === folderId) {
+            folder = f;
+            break;
+        }
+    }
+
     if (!folder) throw new Error(`Folder '${folderId}' not found.`);
     if (updates.name !== undefined) folder.name = updates.name;
     if (updates.thumbnailFile !== undefined) folder.thumbnailFile = updates.thumbnailFile;
@@ -444,18 +459,27 @@ export async function updateFolder(
  */
 export async function deleteFolder(userDataRoot: string, folderId: string): Promise<void> {
     const index = await readMetadataIndex(userDataRoot);
-    const idx = index.folders.findIndex(
-        (f: { id: string; name: string; thumbnailFile: string }) => f.id === folderId,
-    );
+    const folders = index.folders;
+    let idx = -1;
+
+    for (let i = 0; i < folders.length; i++) {
+        const f = folders[i];
+        if (f && f.id === folderId) {
+            idx = i;
+            break;
+        }
+    }
+
     if (idx === -1) throw new Error(`Folder '${folderId}' not found.`);
-    index.folders.splice(idx, 1);
-    // Remove folderId from all images
+    folders.splice(idx, 1);
+
     for (const meta of Object.values(index.images)) {
         if (Array.isArray(meta.folderIds)) {
             const fi = meta.folderIds.indexOf(folderId);
             if (fi !== -1) meta.folderIds.splice(fi, 1);
         }
     }
+
     await writeMetadataIndex(userDataRoot, index);
 }
 
@@ -472,26 +496,30 @@ export async function assignImagesToFolder(
     relativePaths: string[],
 ): Promise<void> {
     const index = await readMetadataIndex(userDataRoot);
-    if (
-        !index.folders.some(
-            (f: { id: string; name: string; thumbnailFile: string }) => f.id === folderId,
-        )
-    ) {
+    const folders = index.folders;
+    let foundFolder = false;
+
+    for (const f of folders) {
+        if (f.id === folderId) {
+            foundFolder = true;
+            break;
+        }
+    }
+
+    if (!foundFolder) {
         throw new Error(`Folder '${folderId}' not found.`);
     }
-    for (const rp of relativePaths) {
-        const posixPath = rp.replaceAll(path.sep, path.posix.sep);
 
-        // Validate: must be a backgrounds/ path, and no path-traversal segments
+    const isPosixSep = path.sep === '/';
+
+    for (const rp of relativePaths) {
+        const posixPath = isPosixSep ? rp : rp.replaceAll('\\', '/');
+
         const normalized = path.posix.normalize(posixPath);
-        if (
-            !normalized.startsWith('backgrounds/') ||
-            normalized.split('/').some((seg) => seg === '..')
-        ) {
+        if (!normalized.startsWith('backgrounds/') || normalized.includes('..')) {
             throw new Error(`Invalid background path: '${posixPath}'`);
         }
 
-        // Validate: skip silently on missing files
         const absPath = path.join(userDataRoot, normalized);
         try {
             await fs.access(absPath);
@@ -502,7 +530,6 @@ export async function assignImagesToFolder(
 
         let meta = index.images[normalized];
         if (!meta) {
-            // Create a stub entry so folderIds can be stored even before full metadata generation
             meta = { folderIds: [] };
             index.images[normalized] = meta;
         }
@@ -527,8 +554,10 @@ export async function unassignImagesFromFolder(
     relativePaths: string[],
 ): Promise<void> {
     const index = await readMetadataIndex(userDataRoot);
+    const isPosixSep = path.sep === '/';
+
     for (const rp of relativePaths) {
-        const posixPath = rp.replaceAll(path.sep, path.posix.sep);
+        const posixPath = isPosixSep ? rp : rp.replaceAll('\\', '/');
         const meta = index.images[posixPath];
         if (!meta || !Array.isArray(meta.folderIds)) continue;
         const fi = meta.folderIds.indexOf(folderId);
@@ -545,7 +574,7 @@ export const router = new Elysia({ prefix: '/api/image-metadata' })
      */
     .post('/folders/get', async (ctx) => {
         try {
-            const index = await readMetadataIndex((ctx as any).user.directories.root);
+            const index = await readMetadataIndex(getUserRoot(ctx as any));
             return index.folders || [];
         } catch (error) {
             console.error('[ImageMetadata] Folders list error:', error);
@@ -560,13 +589,13 @@ export const router = new Elysia({ prefix: '/api/image-metadata' })
      */
     .post('/folders/create', async (ctx) => {
         try {
-            const body = ctx.body as Record<string, unknown>;
+            const body = (ctx.body ?? {}) as Record<string, unknown>;
             const name = body.name;
             if (!name || typeof name !== 'string') {
                 ctx.set.status = 400;
                 return { error: '"name" is required.' };
             }
-            const folder = await createFolder((ctx as any).user.directories.root, name.trim());
+            const folder = await createFolder(getUserRoot(ctx as any), name.trim());
             return folder;
         } catch (error) {
             console.error('[ImageMetadata] Folder create error:', error);
@@ -581,16 +610,16 @@ export const router = new Elysia({ prefix: '/api/image-metadata' })
      */
     .post('/folders/set-thumbnails', async (ctx) => {
         try {
-            const body = ctx.body as Record<string, unknown>;
+            const body = (ctx.body ?? {}) as Record<string, unknown>;
             const updates = body.updates;
             if (
                 !Array.isArray(updates) ||
-                (updates as any[]).some((u: any) => !u.id || typeof u.thumbnailFile !== 'string')
+                updates.some((u: any) => !u || !u.id || typeof u.thumbnailFile !== 'string')
             ) {
                 ctx.set.status = 400;
                 return { error: '"updates" must be an array of {id, thumbnailFile}.' };
             }
-            await setFolderThumbnailsBatch((ctx as any).user.directories.root, updates as any[]);
+            await setFolderThumbnailsBatch(getUserRoot(ctx as any), updates as any[]);
             return { ok: true };
         } catch (error) {
             console.error('[ImageMetadata] Folder set-thumbnails error:', error);
@@ -605,13 +634,13 @@ export const router = new Elysia({ prefix: '/api/image-metadata' })
      */
     .post('/folders/update', async (ctx) => {
         try {
-            const body = ctx.body as Record<string, unknown>;
+            const body = (ctx.body ?? {}) as Record<string, unknown>;
             const { id, ...updates } = body;
             if (!id || typeof id !== 'string') {
                 ctx.set.status = 400;
                 return { error: '"id" is required.' };
             }
-            const folder = await updateFolder((ctx as any).user.directories.root, id, updates);
+            const folder = await updateFolder(getUserRoot(ctx as any), id, updates);
             return folder;
         } catch (error) {
             if ((error as any).message.includes('not found')) {
@@ -630,13 +659,13 @@ export const router = new Elysia({ prefix: '/api/image-metadata' })
      */
     .post('/folders/delete', async (ctx) => {
         try {
-            const body = ctx.body as Record<string, unknown>;
+            const body = (ctx.body ?? {}) as Record<string, unknown>;
             const id = body.id;
             if (!id || typeof id !== 'string') {
                 ctx.set.status = 400;
                 return { error: '"id" is required.' };
             }
-            await deleteFolder((ctx as any).user.directories.root, id);
+            await deleteFolder(getUserRoot(ctx as any), id);
             return { ok: true };
         } catch (error) {
             if ((error as any).message.includes('not found')) {
@@ -655,7 +684,7 @@ export const router = new Elysia({ prefix: '/api/image-metadata' })
      */
     .post('/folders/assign', async (ctx) => {
         try {
-            const body = ctx.body as Record<string, unknown>;
+            const body = (ctx.body ?? {}) as Record<string, unknown>;
             const { id, paths } = body;
             if (!id || typeof id !== 'string') {
                 ctx.set.status = 400;
@@ -665,7 +694,7 @@ export const router = new Elysia({ prefix: '/api/image-metadata' })
                 ctx.set.status = 400;
                 return { error: '"paths" array is required.' };
             }
-            await assignImagesToFolder((ctx as any).user.directories.root, id, paths as string[]);
+            await assignImagesToFolder(getUserRoot(ctx as any), id, paths as string[]);
             return { ok: true };
         } catch (error) {
             if ((error as any).message.includes('not found')) {
@@ -684,7 +713,7 @@ export const router = new Elysia({ prefix: '/api/image-metadata' })
      */
     .post('/folders/unassign', async (ctx) => {
         try {
-            const body = ctx.body as Record<string, unknown>;
+            const body = (ctx.body ?? {}) as Record<string, unknown>;
             const { id, paths } = body;
             if (!id || typeof id !== 'string') {
                 ctx.set.status = 400;
@@ -695,7 +724,7 @@ export const router = new Elysia({ prefix: '/api/image-metadata' })
                 return { error: '"paths" array is required.' };
             }
             await unassignImagesFromFolder(
-                (ctx as any).user.directories.root,
+                getUserRoot(ctx as any),
                 id,
                 paths as string[],
             );
@@ -713,19 +742,18 @@ export const router = new Elysia({ prefix: '/api/image-metadata' })
      */
     .post('/', async (ctx) => {
         try {
-            const body = ctx.body as Record<string, unknown>;
+            const body = (ctx.body ?? {}) as Record<string, unknown>;
             const singlePath = body.path;
             const paths = body.paths;
-            const type = body.type as string | undefined;
+            const type = body.type as ThumbnailType | undefined;
 
             if (!singlePath && !paths) {
                 ctx.set.status = 400;
                 return { error: 'Either "path" or "paths" is required.' };
             }
 
-            const userDataRoot = (ctx as any).user.directories.root;
+            const userDataRoot = getUserRoot(ctx as any);
 
-            // Helper to validate a path is under user data directory
             const validatePath = (relativePath: string) => {
                 const fullPath = path.resolve(userDataRoot, relativePath);
                 if (!isPathUnderParent(userDataRoot, fullPath)) {
@@ -734,7 +762,6 @@ export const router = new Elysia({ prefix: '/api/image-metadata' })
                 return relativePath;
             };
 
-            // Handle single path
             if (singlePath && !paths) {
                 const relativePath = validatePath(singlePath as string);
                 const fullPath = path.join(userDataRoot, relativePath);
@@ -749,9 +776,9 @@ export const router = new Elysia({ prefix: '/api/image-metadata' })
                 const { results: metadataResults } = await getOrGenerateMetadataBatch(
                     userDataRoot,
                     [relativePath],
-                    type as any,
+                    type as ThumbnailType,
                 );
-                const metadata = (metadataResults as Record<string, unknown>)[relativePath];
+                const metadata = metadataResults[relativePath];
 
                 if (!metadata) {
                     ctx.set.status = 404;
@@ -761,13 +788,12 @@ export const router = new Elysia({ prefix: '/api/image-metadata' })
                 return metadata;
             }
 
-            // Handle multiple paths
             if (paths && Array.isArray(paths)) {
                 const results: Record<string, unknown> = {};
-                const validPaths = [];
+                const validPaths: string[] = [];
 
-                // Validate all paths first
-                for (const relativePath of paths as string[]) {
+                for (const rawPath of paths) {
+                    const relativePath = String(rawPath);
                     try {
                         validatePath(relativePath);
                         validPaths.push(relativePath);
@@ -776,18 +802,16 @@ export const router = new Elysia({ prefix: '/api/image-metadata' })
                     }
                 }
 
-                // Process all valid paths in a single batch
                 const { results: batchMetadata } = await getOrGenerateMetadataBatch(
                     userDataRoot,
                     validPaths,
-                    type as any,
+                    type as ThumbnailType,
                 );
 
                 for (const relativePath of validPaths) {
-                    if ((batchMetadata as Record<string, unknown>)[relativePath]) {
-                        results[relativePath] = (batchMetadata as Record<string, unknown>)[
-                            relativePath
-                        ];
+                    const md = batchMetadata[relativePath];
+                    if (md) {
+                        results[relativePath] = md;
                     } else {
                         results[relativePath] = { error: 'File not found or could not process.' };
                     }
@@ -812,17 +836,17 @@ export const router = new Elysia({ prefix: '/api/image-metadata' })
      */
     .post('/all', async (ctx) => {
         try {
-            const body = ctx.body as Record<string, unknown>;
-            const userDataRoot = (ctx as any).user.directories.root;
-            const prefix = String(body.prefix || '');
+            const body = (ctx.body ?? {}) as Record<string, unknown>;
+            const userDataRoot = getUserRoot(ctx as any);
+            const prefix = typeof body.prefix === 'string' ? body.prefix : '';
             const index = await readMetadataIndex(userDataRoot);
 
-            // If prefix specified, filter to only matching paths
-            if (prefix) {
-                const filteredImages: Record<string, unknown> = {};
-                for (const [key, value] of Object.entries(index.images)) {
-                    if (key.startsWith(prefix)) {
-                        filteredImages[key] = value;
+            if (prefix.length > 0) {
+                const filteredImages: Record<string, ImageMetadata> = {};
+                const images = index.images;
+                for (const key in images) {
+                    if (Object.hasOwn(images, key) && key.startsWith(prefix)) {
+                        filteredImages[key] = images[key]!;
                     }
                 }
                 return { version: index.version, images: filteredImages };
@@ -842,7 +866,7 @@ export const router = new Elysia({ prefix: '/api/image-metadata' })
      */
     .post('/cleanup', async (ctx) => {
         try {
-            const userDataRoot = (ctx as any).user.directories.root;
+            const userDataRoot = getUserRoot(ctx as any);
             const removed = await cleanupOrphanedMetadata(userDataRoot);
             return { removed, count: removed.length };
         } catch (error) {
