@@ -626,7 +626,7 @@ export const router = new Elysia({ prefix: '/api/chats' })
         try {
             if (!body || !validateAvatarUrlField(body)) {
                 set.status = 400;
-                return;
+                return { error: 'Invalid request body' };
             }
 
             const handle = profile?.handle ?? '';
@@ -639,7 +639,7 @@ export const router = new Elysia({ prefix: '/api/chats' })
 
             if (!isPathUnderParent(chatsDir, chatFilePath)) {
                 set.status = 400;
-                return;
+                return { error: 'Invalid path' };
             }
 
             if (Array.isArray(chatData)) {
@@ -678,7 +678,7 @@ export const router = new Elysia({ prefix: '/api/chats' })
         try {
             if (!body || !validateAvatarUrlField(body)) {
                 set.status = 400;
-                return;
+                return { error: 'Invalid request body' };
             }
 
             const avatarUrl = String(body.avatar_url);
@@ -688,7 +688,7 @@ export const router = new Elysia({ prefix: '/api/chats' })
 
             if (!isPathUnderParent(chatsDir, directoryPath)) {
                 set.status = 400;
-                return;
+                return { error: 'Invalid path' };
             }
 
             try {
