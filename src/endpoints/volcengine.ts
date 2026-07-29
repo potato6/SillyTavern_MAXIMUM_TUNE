@@ -21,10 +21,10 @@ router.post('/generate-voice', async (context) => {
         }
 
         const appId = directories
-            ? readSecret(directories as any, SECRET_KEYS.VOLCENGINE_APP_ID)
+            ? await readSecret(directories as any, SECRET_KEYS.VOLCENGINE_APP_ID)
             : '';
         const accessKey = directories
-            ? readSecret(directories as any, SECRET_KEYS.VOLCENGINE_ACCESS_KEY)
+            ? await readSecret(directories as any, SECRET_KEYS.VOLCENGINE_ACCESS_KEY)
             : '';
 
         if (!appId || !accessKey) {

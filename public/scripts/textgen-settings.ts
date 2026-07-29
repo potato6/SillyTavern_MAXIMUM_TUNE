@@ -195,7 +195,9 @@ interface ProviderConfig {
     /** Called after a successful status check to populate the model <select>. */
     loadModels?: (data: ApiModel[]) => void;
     /** Online-status text after model load. Default: settings[modelKey]. */
-    statusText?: string | ((settings: Record<string, unknown>, responseData?: Record<string, unknown>) => string);
+    statusText?:
+        | string
+        | ((settings: Record<string, unknown>, responseData?: Record<string, unknown>) => string);
     /** Custom model-name resolution for getTextGenModel(). Default: settings[modelKey]. */
     getModel?: (settings: Record<string, unknown>) => string;
     /** Which param-set to merge in createTextGenGenerationData(). */
@@ -522,11 +524,7 @@ export function getTextGenServer(type: string | null = null) {
         if (typeof provider.serverUrl === 'function') return provider.serverUrl();
         if (provider.serverUrl) return provider.serverUrl;
     }
-    return (
-        (textgenerationwebui_settings.server_urls as Record<string, string>)[
-            selectedType
-        ] ?? ''
-    );
+    return (textgenerationwebui_settings.server_urls as Record<string, string>)[selectedType] ?? '';
 }
 
 /**
@@ -938,8 +936,7 @@ async function getStatusTextgen() {
     BIAS_CACHE.delete(BIAS_KEY);
 
     if (
-        PROVIDERS[textgenerationwebui_settings.type as string]
-            ?.canBypassStatusCheck &&
+        PROVIDERS[textgenerationwebui_settings.type as string]?.canBypassStatusCheck &&
         textgenerationwebui_settings.bypass_status_check
     ) {
         setOnlineStatus(t`Status check bypassed`);
@@ -974,9 +971,13 @@ async function getStatusTextgen() {
         // Determine online status text
         if (provider) {
             if (provider.statusText) {
-                const st = typeof provider.statusText === 'function'
-                    ? provider.statusText(textgenerationwebui_settings, data as Record<string, unknown>)
-                    : provider.statusText;
+                const st =
+                    typeof provider.statusText === 'function'
+                        ? provider.statusText(
+                              textgenerationwebui_settings,
+                              data as Record<string, unknown>,
+                          )
+                        : provider.statusText;
                 setOnlineStatus(st);
             } else if (provider.modelKey) {
                 setOnlineStatus(textgenerationwebui_settings[provider.modelKey] as string);
@@ -1006,8 +1007,8 @@ async function getStatusTextgen() {
             !autoSelected && power_user.instruct.enabled && power_user.instruct_derived;
         const wantsContextDerivation = !autoSelected && power_user.context_derived;
         const wantsContextSize = power_user.context_size_derived;
-        const supportsChatTemplate = PROVIDERS[textgenerationwebui_settings.type as string]
-            ?.supportsChatTemplate;
+        const supportsChatTemplate =
+            PROVIDERS[textgenerationwebui_settings.type as string]?.supportsChatTemplate;
 
         if (
             supportsChatTemplate &&
@@ -1291,7 +1292,8 @@ export function initTextGenSettings() {
         samplerResetButton.addEventListener('click', function () {
             const inputs: Record<string, unknown> = {
                 temp_textgenerationwebui: 1,
-                top_k_textgenerationwebui: PROVIDERS[textgenerationwebui_settings.type as string]?.specialTopK
+                top_k_textgenerationwebui: PROVIDERS[textgenerationwebui_settings.type as string]
+                    ?.specialTopK
                     ? -1
                     : 0,
                 top_p_textgenerationwebui: 1,

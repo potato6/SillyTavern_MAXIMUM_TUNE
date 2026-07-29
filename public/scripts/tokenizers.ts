@@ -19,10 +19,7 @@ import {
     getTextGenServer,
     getTextGenModel,
 } from './textgen-settings.js';
-import {
-    getCurrentDreamGenModelTokenizer,
-    openRouterModels,
-} from './textgen-models.js';
+import { getCurrentDreamGenModelTokenizer, openRouterModels } from './textgen-models.js';
 
 /** @type {string} */
 let _csrfToken = '';
@@ -78,14 +75,14 @@ export const tokenizers = {
  * Lives here (not in textgen-models.ts) to avoid circular-dependency TDZ at module load.
  */
 export const OPENROUTER_TOKENIZER_MAP: Record<string, number> = {
-    'Llama2': tokenizers.LLAMA,
-    'Llama3': tokenizers.LLAMA3,
-    'Yi': tokenizers.YI,
-    'Mistral': tokenizers.MISTRAL,
-    'Gemini': tokenizers.GEMMA,
-    'Claude': tokenizers.CLAUDE,
-    'Cohere': tokenizers.COMMAND_R,
-    'Qwen': tokenizers.QWEN2,
+    Llama2: tokenizers.LLAMA,
+    Llama3: tokenizers.LLAMA3,
+    Yi: tokenizers.YI,
+    Mistral: tokenizers.MISTRAL,
+    Gemini: tokenizers.GEMMA,
+    Claude: tokenizers.CLAUDE,
+    Cohere: tokenizers.COMMAND_R,
+    Qwen: tokenizers.QWEN2,
 };
 
 // A list of local tokenizers that support encoding and decoding token ids.

@@ -94,7 +94,10 @@ function triggerAutoSave(handle: string) {
  * @param {string} fileExtension File extension
  * @returns {Promise<Array>} Parsed files
  */
-async function readAndParseFromDirectoryAsync(directoryPath: string, fileExtension = '.json'): Promise<unknown[]> {
+async function readAndParseFromDirectoryAsync(
+    directoryPath: string,
+    fileExtension = '.json',
+): Promise<unknown[]> {
     let dirents: fs.Dirent[];
     try {
         dirents = await fsp.readdir(directoryPath, { withFileTypes: true });
@@ -261,10 +264,7 @@ async function backupUserSettingsAsync(handle: string, preventDuplicates: boolea
  */
 async function areFilesEqualAsync(file1: string, file2: string): Promise<boolean> {
     try {
-        const [content1, content2] = await Promise.all([
-            fsp.readFile(file1),
-            fsp.readFile(file2),
-        ]);
+        const [content1, content2] = await Promise.all([fsp.readFile(file1), fsp.readFile(file2)]);
         return content1.equals(content2);
     } catch {
         return false;
@@ -301,7 +301,9 @@ async function getLatestBackupAsync(handle: string): Promise<string | null> {
         return null;
     }
 
-    const statsPromises: Promise<{ name: string; ctime: number }>[] = Array.from({ length: matchingFiles.length });
+    const statsPromises: Promise<{ name: string; ctime: number }>[] = Array.from({
+        length: matchingFiles.length,
+    });
     for (let i = 0; i < matchingFiles.length; i++) {
         const fn = matchingFiles[i]!;
         statsPromises[i] = fsp.stat(path.join(backupsDir, fn)).then((st) => ({
@@ -486,7 +488,8 @@ export const router = new Elysia({ prefix: '/api/settings' })
             }
 
             const count = matchedNames.length;
-            const statPromises: Promise<{ date: number; name: string; size: number }>[] = Array.from({ length: count });
+            const statPromises: Promise<{ date: number; name: string; size: number }>[] =
+                Array.from({ length: count });
 
             for (let i = 0; i < count; i++) {
                 const fn = matchedNames[i]!;

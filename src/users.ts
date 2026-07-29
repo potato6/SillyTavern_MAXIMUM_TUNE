@@ -715,7 +715,7 @@ export async function getCsrfSecret(request: import('express').Request) {
     }
 
     const { readSecret, writeSecret } = await import('./endpoints/' + 'secrets.js');
-    let csrfSecret = readSecret(request.user.directories, STORAGE_KEYS.csrfSecret);
+    let csrfSecret = await readSecret(request.user.directories, STORAGE_KEYS.csrfSecret);
 
     if (!csrfSecret) {
         csrfSecret = crypto.randomBytes(64).toString('base64');

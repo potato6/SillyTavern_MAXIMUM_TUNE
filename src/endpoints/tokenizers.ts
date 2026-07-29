@@ -790,7 +790,12 @@ router.get('/map', function (_context: Record<string, unknown>) {
     }
 
     tokenizers[idx++] = { id: 1, name: 'gpt2', supportsEncode: true, supportsDecode: true };
-    tokenizers[idx++] = { id: 2, name: 'gpt-3.5-turbo', supportsEncode: true, supportsDecode: true };
+    tokenizers[idx++] = {
+        id: 2,
+        name: 'gpt-3.5-turbo',
+        supportsEncode: true,
+        supportsDecode: true,
+    };
 
     return { tokenizers };
 });

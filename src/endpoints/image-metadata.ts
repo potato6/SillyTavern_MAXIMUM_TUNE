@@ -723,11 +723,7 @@ export const router = new Elysia({ prefix: '/api/image-metadata' })
                 ctx.set.status = 400;
                 return { error: '"paths" array is required.' };
             }
-            await unassignImagesFromFolder(
-                getUserRoot(ctx as any),
-                id,
-                paths as string[],
-            );
+            await unassignImagesFromFolder(getUserRoot(ctx as any), id, paths as string[]);
             return { ok: true };
         } catch (error) {
             console.error('[ImageMetadata] Folder unassign error:', error);

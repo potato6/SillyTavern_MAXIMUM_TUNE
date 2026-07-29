@@ -122,7 +122,10 @@ export const router = new Elysia({ prefix: '/api/users' })
             }
 
             const avatar = bodyAny?.avatar;
-            if (typeof avatar !== 'string' || (!avatar.startsWith('data:image/') && avatar !== '')) {
+            if (
+                typeof avatar !== 'string' ||
+                (!avatar.startsWith('data:image/') && avatar !== '')
+            ) {
                 console.warn('Change avatar failed: Invalid data URL');
                 set.status = 400;
                 return { error: 'Invalid data URL' };
@@ -186,7 +189,10 @@ export const router = new Elysia({ prefix: '/api/users' })
                 !profile?.admin &&
                 existingUser.password &&
                 existingUser.password !==
-                    getPasswordHash(typeof oldPassword === 'string' ? oldPassword : '', existingUser.salt)
+                    getPasswordHash(
+                        typeof oldPassword === 'string' ? oldPassword : '',
+                        existingUser.salt,
+                    )
             ) {
                 console.error('Change password failed: Incorrect password');
                 set.status = 403;
@@ -374,9 +380,8 @@ export const router = new Elysia({ prefix: '/api/users' })
             const resetCode = String(crypto.randomInt(1000, 9999));
             console.log();
             console.log(
-                color.magenta(
-                    `${profile?.name ?? 'User'}, your account reset code is: `,
-                ) + color.red(resetCode),
+                color.magenta(`${profile?.name ?? 'User'}, your account reset code is: `) +
+                    color.red(resetCode),
             );
             console.log();
 

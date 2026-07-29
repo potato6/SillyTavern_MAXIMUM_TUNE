@@ -51,7 +51,11 @@ const provider: ChatProvider = {
             apiUrl = new URL(req.body.reverse_proxy || API_MAKERSUITE);
             apiKey = req.body.reverse_proxy
                 ? req.body.proxy_password
-                : readSecret(req.user.directories, SECRET_KEYS.MAKERSUITE, req.body.secret_id);
+                : await readSecret(
+                      req.user.directories,
+                      SECRET_KEYS.MAKERSUITE,
+                      req.body.secret_id,
+                  );
             if (!req.body.reverse_proxy && !apiKey) {
                 console.warn(`${apiName} API key is missing.`);
                 res.status(400).send({ error: true });
@@ -257,7 +261,7 @@ const provider: ChatProvider = {
                         ? `https://aiplatform.googleapis.com/v1/projects/${projectId}/locations/${region}/publishers/google/models/${model}:${responseType}?key=${keyParam}${stream ? '&alt=sse' : ''}`
                         : `https://${region}-aiplatform.googleapis.com/v1/publishers/google/models/${model}:${responseType}?key=${keyParam}${stream ? '&alt=sse' : ''}`;
                 } else if (authType === 'full') {
-                    const serviceAccountJson = readSecret(
+                    const serviceAccountJson = await readSecret(
                         req.user.directories,
                         SECRET_KEYS.VERTEXAI_SERVICE_ACCOUNT,
                         req.body.secret_id,
@@ -368,7 +372,7 @@ const provider: ChatProvider = {
 
         const apiKey = req.body.reverse_proxy
             ? req.body.proxy_password
-            : readSecret(req.user.directories, SECRET_KEYS.MAKERSUITE, req.body.secret_id);
+            : await readSecret(req.user.directories, SECRET_KEYS.MAKERSUITE, req.body.secret_id);
 
         if (!apiKey && !req.body.reverse_proxy) return [];
 

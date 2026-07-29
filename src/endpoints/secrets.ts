@@ -523,7 +523,11 @@ export async function deleteSecret(directories: UserDirectoryList, key: string) 
  * @param {string?} id Secret ID (optional)
  * @returns {Promise<string>} Secret value
  */
-export async function readSecret(directories: UserDirectoryList, key: string, id: string | null = null) {
+export async function readSecret(
+    directories: UserDirectoryList,
+    key: string,
+    id: string | null = null,
+) {
     return await new SecretManager(directories).readSecret(key, id);
 }
 

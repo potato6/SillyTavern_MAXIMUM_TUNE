@@ -12,7 +12,9 @@ export const router = new Elysia({ prefix: '/api/azure' })
         const bodyAny = body as Record<string, unknown>;
 
         try {
-            const key = directories ? readSecret(directories as any, SECRET_KEYS.AZURE_TTS) : '';
+            const key = directories
+                ? await readSecret(directories as any, SECRET_KEYS.AZURE_TTS)
+                : '';
 
             if (!key) {
                 console.warn('Azure TTS API Key not set');
@@ -56,7 +58,9 @@ export const router = new Elysia({ prefix: '/api/azure' })
         const bodyAny = body as Record<string, unknown>;
 
         try {
-            const key = directories ? readSecret(directories as any, SECRET_KEYS.AZURE_TTS) : '';
+            const key = directories
+                ? await readSecret(directories as any, SECRET_KEYS.AZURE_TTS)
+                : '';
 
             if (!key) {
                 console.warn('Azure TTS API Key not set');

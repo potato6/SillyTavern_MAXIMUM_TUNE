@@ -31,8 +31,8 @@ router.post('/libre', async (context) => {
     const body = getBody(context);
 
     try {
-        const key = directories ? readSecret(directories as any, SECRET_KEYS.LIBRE) : '';
-        const url = directories ? readSecret(directories as any, SECRET_KEYS.LIBRE_URL) : '';
+        const key = directories ? await readSecret(directories as any, SECRET_KEYS.LIBRE) : '';
+        const url = directories ? await readSecret(directories as any, SECRET_KEYS.LIBRE_URL) : '';
 
         if (!url) {
             console.warn('LibreTranslate URL is not configured.');
@@ -177,7 +177,9 @@ router.post('/lingva', async (context) => {
     const body = getBody(context);
 
     try {
-        const secretUrl = directories ? readSecret(directories as any, SECRET_KEYS.LINGVA_URL) : '';
+        const secretUrl = directories
+            ? await readSecret(directories as any, SECRET_KEYS.LINGVA_URL)
+            : '';
         const baseUrl = secretUrl || LINGVA_DEFAULT;
 
         if (!secretUrl && baseUrl === LINGVA_DEFAULT) {
@@ -221,7 +223,7 @@ router.post('/deepl', async (context) => {
     const body = getBody(context);
 
     try {
-        const key = directories ? readSecret(directories as any, SECRET_KEYS.DEEPL) : '';
+        const key = directories ? await readSecret(directories as any, SECRET_KEYS.DEEPL) : '';
 
         if (!key) {
             console.warn('DeepL key is not configured.');
@@ -291,7 +293,7 @@ router.post('/onering', async (context) => {
 
     try {
         const secretUrl = directories
-            ? readSecret(directories as any, SECRET_KEYS.ONERING_URL)
+            ? await readSecret(directories as any, SECRET_KEYS.ONERING_URL)
             : '';
         const url = secretUrl || ONERING_URL_DEFAULT;
 
@@ -349,7 +351,9 @@ router.post('/deeplx', async (context) => {
     const body = getBody(context);
 
     try {
-        const secretUrl = directories ? readSecret(directories as any, SECRET_KEYS.DEEPLX_URL) : '';
+        const secretUrl = directories
+            ? await readSecret(directories as any, SECRET_KEYS.DEEPLX_URL)
+            : '';
         const url = secretUrl || DEEPLX_URL_DEFAULT;
 
         if (!url) {

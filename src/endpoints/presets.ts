@@ -84,7 +84,10 @@ export const router = new Elysia({ prefix: '/api/presets' })
         }
 
         const apiId = typeof bodyAny.apiId === 'string' ? bodyAny.apiId : '';
-        const settings = getPresetSettingsByAPI(apiId, (directories ?? {}) as Record<string, string>);
+        const settings = getPresetSettingsByAPI(
+            apiId,
+            (directories ?? {}) as Record<string, string>,
+        );
 
         if (!settings.folder || !settings.extension) {
             set.status = 400;
@@ -122,7 +125,10 @@ export const router = new Elysia({ prefix: '/api/presets' })
         }
 
         const apiId = typeof bodyAny.apiId === 'string' ? bodyAny.apiId : '';
-        const settings = getPresetSettingsByAPI(apiId, (directories ?? {}) as Record<string, string>);
+        const settings = getPresetSettingsByAPI(
+            apiId,
+            (directories ?? {}) as Record<string, string>,
+        );
 
         if (!settings.folder || !settings.extension) {
             set.status = 400;
@@ -152,7 +158,10 @@ export const router = new Elysia({ prefix: '/api/presets' })
 
         try {
             const apiId = typeof bodyAny?.apiId === 'string' ? bodyAny.apiId : '';
-            const settings = getPresetSettingsByAPI(apiId, (directories ?? {}) as Record<string, string>);
+            const settings = getPresetSettingsByAPI(
+                apiId,
+                (directories ?? {}) as Record<string, string>,
+            );
 
             const rawName = bodyAny?.name;
             const name = typeof rawName === 'string' ? sanitize(rawName) : '';

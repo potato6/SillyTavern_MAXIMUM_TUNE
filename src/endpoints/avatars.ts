@@ -92,7 +92,8 @@ export const router = new Elysia({ prefix: '/api/avatars' })
                     return;
                 }
                 const buffer = Buffer.from(await (fileObj as File).arrayBuffer());
-                const dataRoot = (globalThis as Record<string, unknown>).DATA_ROOT as string ?? '';
+                const dataRoot =
+                    ((globalThis as Record<string, unknown>).DATA_ROOT as string) ?? '';
                 const uploadsDir = path.join(dataRoot, UPLOADS_DIRECTORY);
                 const tempName = randomUUID();
                 pathToUpload = path.join(uploadsDir, tempName);

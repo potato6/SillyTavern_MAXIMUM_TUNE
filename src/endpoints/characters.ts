@@ -562,7 +562,10 @@ function charaFormatData(
 
     const tagsFormatted =
         typeof data.tags === 'string'
-            ? data.tags.split(',').map((x: string) => x.trim()).filter(Boolean)
+            ? data.tags
+                  .split(',')
+                  .map((x: string) => x.trim())
+                  .filter(Boolean)
             : data.tags || [];
 
     const depth_default = 4;
@@ -647,9 +650,7 @@ function charaFormatData(
     if (data.extensions) {
         try {
             const extensions =
-                typeof data.extensions === 'string'
-                    ? JSON.parse(data.extensions)
-                    : data.extensions;
+                typeof data.extensions === 'string' ? JSON.parse(data.extensions) : data.extensions;
             charData.extensions = deepMerge(charData.extensions, extensions);
         } catch {
             console.warn(`Failed to parse extensions JSON: ${data.extensions}`);
@@ -781,7 +782,8 @@ async function importFromCharX(
     unsetPrivateFields(processedCard);
     processedCard.create_date = new Date().toISOString();
 
-    const fileName = preservedFileName || getPngName(processedCard.name as string, request.user.directories);
+    const fileName =
+        preservedFileName || getPngName(processedCard.name as string, request.user.directories);
     const characterFolder = processedCard.name as string;
 
     if (auxiliaryAssets.length > 0) {
@@ -905,7 +907,10 @@ async function importFromByaf(
                 (name: string) => fs.existsSync(path.join(altImagesFolder, `${name}${extension}`)),
             );
             if (Buffer.isBuffer(icon.image)) {
-                await writeFileAtomic(path.join(altImagesFolder, `${file}${extension}`), icon.image);
+                await writeFileAtomic(
+                    path.join(altImagesFolder, `${file}${extension}`),
+                    icon.image,
+                );
                 console.log(`Created ${file}${extension} alternate icon from BYAF import`);
             }
         }
@@ -1175,8 +1180,7 @@ export const router = new Elysia({ prefix: '/api/characters' })
 
             const char = JSON.stringify(charaFormatData(body, directories as any));
             const internalName =
-                (fileNameParam as string) ||
-                getPngName(body.ch_name as string, directories as any);
+                (fileNameParam as string) || getPngName(body.ch_name as string, directories as any);
             const avatarName = `${internalName}.png`;
             const chatsPath = path.join(directories?.chats ?? '', internalName);
 
@@ -1187,7 +1191,10 @@ export const router = new Elysia({ prefix: '/api/characters' })
                 return avatarName;
             } else {
                 const crop = tryParse(String(query.crop ?? ''));
-                const uploadPath = path.join(uploadedFile.destination ?? '', uploadedFile.filename ?? '');
+                const uploadPath = path.join(
+                    uploadedFile.destination ?? '',
+                    uploadedFile.filename ?? '',
+                );
                 await writeCharacterData(uploadPath, char, internalName, mockRequest, crop);
                 await fsp.unlink(uploadPath);
                 return avatarName;
@@ -1225,7 +1232,9 @@ export const router = new Elysia({ prefix: '/api/characters' })
 
         const oldAvatarName = avatarUrl as string;
         const newName = sanitize(newNameRaw as string);
-        const oldInternalName = oldAvatarName.endsWith('.png') ? oldAvatarName.slice(0, -4) : oldAvatarName;
+        const oldInternalName = oldAvatarName.endsWith('.png')
+            ? oldAvatarName.slice(0, -4)
+            : oldAvatarName;
         const newInternalName = getPngName(newName, directories as any);
         const newAvatarName = `${newInternalName}.png`;
 
@@ -1313,9 +1322,18 @@ export const router = new Elysia({ prefix: '/api/characters' })
                 await writeCharacterData(avatarPath, charJsonString, targetFile, mockRequest);
             } else {
                 const crop = tryParse(String(query.crop ?? ''));
-                const newAvatarPath = path.join(uploadedFile.destination ?? '', uploadedFile.filename ?? '');
+                const newAvatarPath = path.join(
+                    uploadedFile.destination ?? '',
+                    uploadedFile.filename ?? '',
+                );
                 invalidateThumbnail(directories as any, 'avatar', avatarUrlStr);
-                await writeCharacterData(newAvatarPath, charJsonString, targetFile, mockRequest, crop);
+                await writeCharacterData(
+                    newAvatarPath,
+                    charJsonString,
+                    targetFile,
+                    mockRequest,
+                    crop,
+                );
                 await fsp.unlink(newAvatarPath);
 
                 set.headers['Clear-Site-Data'] = '"cache"';
@@ -1361,7 +1379,10 @@ export const router = new Elysia({ prefix: '/api/characters' })
             }
 
             const avatarUrlStr = avatarUrl as string;
-            const uploadPath = path.join(uploadedFile.destination ?? '', uploadedFile.filename ?? '');
+            const uploadPath = path.join(
+                uploadedFile.destination ?? '',
+                uploadedFile.filename ?? '',
+            );
             const charactersDir = directories?.characters ?? '';
             const characterPath = path.join(charactersDir, avatarUrlStr);
 
@@ -1372,7 +1393,9 @@ export const router = new Elysia({ prefix: '/api/characters' })
             }
 
             const crop = tryParse(String(query.crop ?? ''));
-            const fileName = avatarUrlStr.endsWith('.png') ? avatarUrlStr.slice(0, -4) : avatarUrlStr;
+            const fileName = avatarUrlStr.endsWith('.png')
+                ? avatarUrlStr.slice(0, -4)
+                : avatarUrlStr;
             await writeCharacterData(uploadPath, data, fileName, mockRequest, crop);
 
             await fsp.unlink(uploadPath);
@@ -1446,7 +1469,9 @@ export const router = new Elysia({ prefix: '/api/characters' })
             }
 
             const newCharJSON = JSON.stringify(char);
-            const targetFile = avatarUrlStr.endsWith('.png') ? avatarUrlStr.slice(0, -4) : avatarUrlStr;
+            const targetFile = avatarUrlStr.endsWith('.png')
+                ? avatarUrlStr.slice(0, -4)
+                : avatarUrlStr;
             await writeCharacterData(avatarPath, newCharJSON, targetFile, mockRequest);
             return;
         } catch (err) {
@@ -1517,7 +1542,8 @@ export const router = new Elysia({ prefix: '/api/characters' })
                     const avatarPath = path.join(charactersDir, avatar);
 
                     try {
-                        let shouldSkip: ((character: Record<string, unknown>) => boolean) | null = null;
+                        let shouldSkip: ((character: Record<string, unknown>) => boolean) | null =
+                            null;
 
                         if (filter && typeof filter.path === 'string') {
                             shouldSkip = (character: Record<string, unknown>) => {
@@ -1558,11 +1584,11 @@ export const router = new Elysia({ prefix: '/api/characters' })
             }
 
             const update = body;
-            const avatarPath = path.join(directories?.characters ?? '', (update as any).avatar);
+            const avatarPath = path.join(directories?.characters ?? '', String((update as Record<string, unknown>).avatar));
 
             const result = await mergeCharacterUpdate(
                 avatarPath,
-                (update as any).avatar,
+                String((update as Record<string, unknown>).avatar),
                 update,
                 mockRequest,
             );
@@ -1572,7 +1598,7 @@ export const router = new Elysia({ prefix: '/api/characters' })
                 console.warn(result.error);
                 set.status = 400;
                 return {
-                    message: `Validation failed for ${(update as any).avatar}`,
+                    message: `Validation failed for ${String((update as Record<string, unknown>).avatar)}`,
                     error: result.error,
                 };
             }
@@ -1620,7 +1646,9 @@ export const router = new Elysia({ prefix: '/api/characters' })
         }
 
         invalidateThumbnail(directories as any, 'avatar', sanitizedAvatar);
-        const dirName = sanitizedAvatar.endsWith('.png') ? sanitizedAvatar.slice(0, -4) : sanitizedAvatar;
+        const dirName = sanitizedAvatar.endsWith('.png')
+            ? sanitizedAvatar.slice(0, -4)
+            : sanitizedAvatar;
 
         if (!dirName.length) {
             console.error('Malicious dirname prevented');
@@ -1742,7 +1770,9 @@ export const router = new Elysia({ prefix: '/api/characters' })
                 return;
             }
 
-            const characterDirectory = avatarUrl.endsWith('.png') ? avatarUrl.slice(0, -4) : avatarUrl;
+            const characterDirectory = avatarUrl.endsWith('.png')
+                ? avatarUrl.slice(0, -4)
+                : avatarUrl;
             const chatsDirectory = path.join(directories?.chats ?? '', characterDirectory);
 
             let files: fs.Dirent[];
@@ -1781,7 +1811,9 @@ export const router = new Elysia({ prefix: '/api/characters' })
             const withMetadata = Boolean(body.metadata);
             const chatsDirBase = directories?.chats ?? '';
             const count = jsonFiles.length;
-            const jsonFilesPromise: Promise<Record<string, unknown>>[] = Array.from({ length: count });
+            const jsonFilesPromise: Promise<Record<string, unknown>>[] = Array.from({
+                length: count,
+            });
 
             for (let i = 0; i < count; i++) {
                 const file = jsonFiles[i]!;
@@ -1829,10 +1861,7 @@ export const router = new Elysia({ prefix: '/api/characters' })
         const elysiaFile = body.avatar;
 
         if (uploadedFile) {
-            uploadPath = path.join(
-                uploadedFile.destination ?? '',
-                uploadedFile.filename ?? '',
-            );
+            uploadPath = path.join(uploadedFile.destination ?? '', uploadedFile.filename ?? '');
         } else if (
             typeof elysiaFile === 'object' &&
             elysiaFile !== null &&
@@ -1840,7 +1869,7 @@ export const router = new Elysia({ prefix: '/api/characters' })
         ) {
             const fileObj = elysiaFile as File;
             const buffer = Buffer.from(await fileObj.arrayBuffer());
-            const dataRoot = (globalThis as Record<string, unknown>).DATA_ROOT as string ?? '';
+            const dataRoot = ((globalThis as Record<string, unknown>).DATA_ROOT as string) ?? '';
             const uploadsDir = path.join(dataRoot, UPLOADS_DIRECTORY);
             const tempName = randomUUID();
             uploadPath = path.join(uploadsDir, tempName);
@@ -1996,7 +2025,10 @@ export const router = new Elysia({ prefix: '/api/characters' })
                 case 'png': {
                     const rawBuffer = await fsp.readFile(filename);
                     const rawData = read(rawBuffer);
-                    const mutatedData = mutateJsonString(rawData, unsetPrivateFields as (obj: unknown) => void);
+                    const mutatedData = mutateJsonString(
+                        rawData,
+                        unsetPrivateFields as (obj: unknown) => void,
+                    );
                     const mutatedBuffer = write(rawBuffer, mutatedData);
                     const contentType = Bun.file(filename).type;
                     set.headers['Content-Type'] = contentType;

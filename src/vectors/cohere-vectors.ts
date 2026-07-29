@@ -14,7 +14,7 @@ export async function getBatchVector(
     directories: import('../users.js').UserDirectoryList,
     model: string,
 ) {
-    const key = readSecret(directories, SECRET_KEYS.COHERE);
+    const key = await readSecret(directories, SECRET_KEYS.COHERE);
 
     if (!key) {
         console.warn('No API key found');

@@ -262,10 +262,7 @@ export const router = new Elysia({ prefix: '/api/backgrounds' })
 
             const relativePath = path.join('backgrounds', filename);
             getOrGenerateMetadataBatch(rootDir, [relativePath], 'bg').catch((err: Error) => {
-                console.warn(
-                    '[Backgrounds] Failed to generate metadata for upload:',
-                    err.message,
-                );
+                console.warn('[Backgrounds] Failed to generate metadata for upload:', err.message);
             });
 
             return filename;

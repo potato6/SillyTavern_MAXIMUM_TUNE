@@ -98,7 +98,10 @@ export const router = new Elysia({ prefix: '/api/worldinfo' })
 
                 try {
                     const fileContents = await fsp.readFile(filePath, 'utf8');
-                    const fileContentsParsed = (tryParse(fileContents) || {}) as Record<string, any>;
+                    const fileContentsParsed = (tryParse(fileContents) || {}) as Record<
+                        string,
+                        any
+                    >;
                     const fileExtensions = fileContentsParsed.extensions;
                     const fileNameWithoutExt = fileName.toLowerCase().endsWith('.json')
                         ? fileName.slice(0, -5)
@@ -140,7 +143,11 @@ export const router = new Elysia({ prefix: '/api/worldinfo' })
             return;
         }
 
-        const file = await readWorldInfoFileAsync((directories ?? {}) as Record<string, string>, name, true);
+        const file = await readWorldInfoFileAsync(
+            (directories ?? {}) as Record<string, string>,
+            name,
+            true,
+        );
         return file;
     })
     .post('/delete', async (context) => {
@@ -174,7 +181,9 @@ export const router = new Elysia({ prefix: '/api/worldinfo' })
         const body = (ctx.body ?? {}) as Record<string, unknown>;
         const user = ctx.user as UserContext | undefined;
         const directories = user?.directories;
-        const file = ctx.file as { destination?: string; filename?: string; originalname?: string } | undefined;
+        const file = ctx.file as
+            | { destination?: string; filename?: string; originalname?: string }
+            | undefined;
 
         if (!file || typeof file.originalname !== 'string') {
             set.status = 400;
@@ -183,7 +192,8 @@ export const router = new Elysia({ prefix: '/api/worldinfo' })
 
         const sanitizedOriginal = sanitize(file.originalname);
         const lastDot = sanitizedOriginal.lastIndexOf('.');
-        const rawWorldName = lastDot !== -1 ? sanitizedOriginal.slice(0, lastDot) : sanitizedOriginal;
+        const rawWorldName =
+            lastDot !== -1 ? sanitizedOriginal.slice(0, lastDot) : sanitizedOriginal;
 
         if (!rawWorldName) {
             set.status = 400;
@@ -211,7 +221,11 @@ export const router = new Elysia({ prefix: '/api/worldinfo' })
 
         try {
             const worldContent = JSON.parse(fileContents);
-            if (!worldContent || typeof worldContent !== 'object' || !Object.hasOwn(worldContent, 'entries')) {
+            if (
+                !worldContent ||
+                typeof worldContent !== 'object' ||
+                !Object.hasOwn(worldContent, 'entries')
+            ) {
                 throw new Error('File must contain a world info entries list');
             }
         } catch {
@@ -256,4 +270,4 @@ export const router = new Elysia({ prefix: '/api/worldinfo' })
 
         await writeFileAtomic(pathToFile, JSON.stringify(dataObj, null, 4));
         return { ok: true };
-    })
+    });

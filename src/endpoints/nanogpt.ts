@@ -64,7 +64,7 @@ router.post('/credits', async (context) => {
     const directories = user?.directories as Record<string, string> | undefined;
 
     try {
-        const key = directories ? readSecret(directories as any, SECRET_KEYS.NANOGPT) : '';
+        const key = directories ? await readSecret(directories as any, SECRET_KEYS.NANOGPT) : '';
 
         if (!key) {
             console.warn('NanoGPT API key not found');

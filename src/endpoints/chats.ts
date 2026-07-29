@@ -149,7 +149,11 @@ process.on('exit', () => {
  * @param {object} jsonData JSON data
  * @returns {string} Chat data
  */
-function importOobaChat(userName: string, characterName: string, jsonData: Record<string, any>): string {
+function importOobaChat(
+    userName: string,
+    characterName: string,
+    jsonData: Record<string, any>,
+): string {
     const dataVisible = jsonData.data_visible;
     if (!Array.isArray(dataVisible)) return '';
 
@@ -195,7 +199,11 @@ function importOobaChat(userName: string, characterName: string, jsonData: Recor
  * @param {object} jsonData Chat data
  * @returns {string} Chat data
  */
-function importAgnaiChat(userName: string, characterName: string, jsonData: Record<string, any>): string {
+function importAgnaiChat(
+    userName: string,
+    characterName: string,
+    jsonData: Record<string, any>,
+): string {
     const messages = jsonData.messages;
     if (!Array.isArray(messages)) return '';
 
@@ -225,7 +233,11 @@ function importAgnaiChat(userName: string, characterName: string, jsonData: Reco
  * @param {object} jsonData JSON data
  * @returns {string[]} Converted data
  */
-function importCAIChat(userName: string, characterName: string, jsonData: Record<string, any>): string[] {
+function importCAIChat(
+    userName: string,
+    characterName: string,
+    jsonData: Record<string, any>,
+): string[] {
     const histories = jsonData.histories?.histories;
     if (!Array.isArray(histories)) return [];
 
@@ -236,13 +248,21 @@ function importCAIChat(userName: string, characterName: string, jsonData: Record
         const history = histories[i];
         const msgs = history?.msgs;
         if (!Array.isArray(msgs)) {
-            newChats[i] = JSON.stringify({ chat_metadata: {}, user_name: 'unused', character_name: 'unused' });
+            newChats[i] = JSON.stringify({
+                chat_metadata: {},
+                user_name: 'unused',
+                character_name: 'unused',
+            });
             continue;
         }
 
         const msgCount = msgs.length;
         const lines = Array.from<string>({ length: msgCount + 1 });
-        lines[0] = JSON.stringify({ chat_metadata: {}, user_name: 'unused', character_name: 'unused' });
+        lines[0] = JSON.stringify({
+            chat_metadata: {},
+            user_name: 'unused',
+            character_name: 'unused',
+        });
 
         for (let j = 0; j < msgCount; j++) {
             const msg = msgs[j];
@@ -268,7 +288,11 @@ function importCAIChat(userName: string, characterName: string, jsonData: Record
  * @param {object} data JSON data
  * @returns {string} Chat data
  */
-function importKoboldLiteChat(_userName: string, _characterName: string, data: Record<string, any>): string {
+function importKoboldLiteChat(
+    _userName: string,
+    _characterName: string,
+    data: Record<string, any>,
+): string {
     const savedsettings = data.savedsettings || {};
     const userName = String(savedsettings.chatname || _userName);
     const opponentStr = String(savedsettings.chatopponent || _characterName);
@@ -359,7 +383,11 @@ function flattenChubChat(userName: string, characterName: string, lines: string[
  * @param {object} jsonData Imported chat data
  * @returns {string} Chat data
  */
-function importRisuChat(userName: string, characterName: string, jsonData: Record<string, any>): string {
+function importRisuChat(
+    userName: string,
+    characterName: string,
+    jsonData: Record<string, any>,
+): string {
     const messages = jsonData?.data?.message;
     if (!Array.isArray(messages)) return '';
 
@@ -607,11 +635,7 @@ export const router = new Elysia({ prefix: '/api/chats' })
             const chatData = body.chat;
             const chatFileName = `${String(body.file_name)}.jsonl`;
             const chatsDir = directories?.chats ?? '';
-            const chatFilePath = path.join(
-                chatsDir,
-                cardName,
-                sanitize(chatFileName),
-            );
+            const chatFilePath = path.join(chatsDir, cardName, sanitize(chatFileName));
 
             if (!isPathUnderParent(chatsDir, chatFilePath)) {
                 set.status = 400;
@@ -732,7 +756,8 @@ export const router = new Elysia({ prefix: '/api/chats' })
                 pathToRenamedFile.lastIndexOf('/'),
                 pathToRenamedFile.lastIndexOf('\\'),
             );
-            const baseFile = lastSlash !== -1 ? pathToRenamedFile.slice(lastSlash + 1) : pathToRenamedFile;
+            const baseFile =
+                lastSlash !== -1 ? pathToRenamedFile.slice(lastSlash + 1) : pathToRenamedFile;
             const lastDot = baseFile.lastIndexOf('.');
             const sanitizedFileName = lastDot !== -1 ? baseFile.slice(0, lastDot) : baseFile;
 
@@ -787,11 +812,7 @@ export const router = new Elysia({ prefix: '/api/chats' })
             const dirName = avatarUrl.endsWith('.png') ? avatarUrl.slice(0, -4) : avatarUrl;
             const chatsDir = directories?.chats ?? '';
 
-            const chatFilePath = path.join(
-                chatsDir,
-                dirName,
-                sanitize(chatFileStr),
-            );
+            const chatFilePath = path.join(chatsDir, dirName, sanitize(chatFileStr));
 
             if (!isPathUnderParent(chatsDir, chatFilePath)) {
                 set.status = 400;
@@ -1250,7 +1271,9 @@ export const router = new Elysia({ prefix: '/api/chats' })
                 }
             } else {
                 const avatarUrlStr = String(avatar_url ?? '');
-                const characterName = avatarUrlStr.endsWith('.png') ? avatarUrlStr.slice(0, -4) : avatarUrlStr;
+                const characterName = avatarUrlStr.endsWith('.png')
+                    ? avatarUrlStr.slice(0, -4)
+                    : avatarUrlStr;
                 const directoryPath = path.join(directories?.chats ?? '', characterName);
 
                 try {
@@ -1267,9 +1290,10 @@ export const router = new Elysia({ prefix: '/api/chats' })
             }
 
             const results: Record<string, unknown>[] = [];
-            const fragments = typeof query === 'string'
-                ? query.trim().toLowerCase().split(/\s+/).filter(Boolean)
-                : [];
+            const fragments =
+                typeof query === 'string'
+                    ? query.trim().toLowerCase().split(/\s+/).filter(Boolean)
+                    : [];
 
             const hasTextMatch = (textArray: string[]): boolean => {
                 if (fragments.length === 0) {
@@ -1279,7 +1303,11 @@ export const router = new Elysia({ prefix: '/api/chats' })
                     const frag = fragments[i]!;
                     let found = false;
                     for (let j = 0; j < textArray.length; j++) {
-                        if (String(textArray[j] ?? '').toLowerCase().includes(frag)) {
+                        if (
+                            String(textArray[j] ?? '')
+                                .toLowerCase()
+                                .includes(frag)
+                        ) {
                             found = true;
                             break;
                         }
@@ -1447,11 +1475,20 @@ export const router = new Elysia({ prefix: '/api/chats' })
                 getRootChatFiles(),
             ]);
 
-            const max = parseInt(String(body?.max ?? Number.MAX_SAFE_INTEGER), 10) + pinnedChats.length;
+            const max =
+                parseInt(String(body?.max ?? Number.MAX_SAFE_INTEGER), 10) + pinnedChats.length;
 
-            const isPinned = (chatFile: { pngFile?: string; groupId?: string; filePath: string }) => {
-                const lastSlash = Math.max(chatFile.filePath.lastIndexOf('/'), chatFile.filePath.lastIndexOf('\\'));
-                const baseName = lastSlash !== -1 ? chatFile.filePath.slice(lastSlash + 1) : chatFile.filePath;
+            const isPinned = (chatFile: {
+                pngFile?: string;
+                groupId?: string;
+                filePath: string;
+            }) => {
+                const lastSlash = Math.max(
+                    chatFile.filePath.lastIndexOf('/'),
+                    chatFile.filePath.lastIndexOf('\\'),
+                );
+                const baseName =
+                    lastSlash !== -1 ? chatFile.filePath.slice(lastSlash + 1) : chatFile.filePath;
 
                 for (const p of pinnedChats) {
                     if (

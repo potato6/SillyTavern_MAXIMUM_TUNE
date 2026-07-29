@@ -46,7 +46,7 @@ export const router = new Elysia({ prefix: '/api/speech' })
 
                 try {
                     const key = directories
-                        ? readSecret(directories as any, SECRET_KEYS.POLLINATIONS)
+                        ? await readSecret(directories as any, SECRET_KEYS.POLLINATIONS)
                         : '';
                     if (!key) {
                         console.warn('No API key saved for Pollinations TTS.');
@@ -125,7 +125,7 @@ export const router = new Elysia({ prefix: '/api/speech' })
 
                 try {
                     const apiKey = directories
-                        ? readSecret(directories as any, SECRET_KEYS.ELEVENLABS)
+                        ? await readSecret(directories as any, SECRET_KEYS.ELEVENLABS)
                         : '';
                     if (!apiKey) {
                         console.warn('ElevenLabs API key not found');
@@ -165,7 +165,7 @@ export const router = new Elysia({ prefix: '/api/speech' })
 
                 try {
                     const apiKey = directories
-                        ? readSecret(directories as any, SECRET_KEYS.ELEVENLABS)
+                        ? await readSecret(directories as any, SECRET_KEYS.ELEVENLABS)
                         : '';
                     if (!apiKey) {
                         console.warn('ElevenLabs API key not found');
@@ -208,7 +208,7 @@ export const router = new Elysia({ prefix: '/api/speech' })
 
                 try {
                     const apiKey = directories
-                        ? readSecret(directories as any, SECRET_KEYS.ELEVENLABS)
+                        ? await readSecret(directories as any, SECRET_KEYS.ELEVENLABS)
                         : '';
                     if (!apiKey) {
                         console.warn('ElevenLabs API key not found');
@@ -266,7 +266,7 @@ export const router = new Elysia({ prefix: '/api/speech' })
 
                 try {
                     const apiKey = directories
-                        ? readSecret(directories as any, SECRET_KEYS.ELEVENLABS)
+                        ? await readSecret(directories as any, SECRET_KEYS.ELEVENLABS)
                         : '';
                     if (!apiKey) {
                         console.warn('ElevenLabs API key not found');
@@ -307,7 +307,7 @@ export const router = new Elysia({ prefix: '/api/speech' })
 
                 try {
                     const apiKey = directories
-                        ? readSecret(directories as any, SECRET_KEYS.ELEVENLABS)
+                        ? await readSecret(directories as any, SECRET_KEYS.ELEVENLABS)
                         : '';
                     if (!apiKey) {
                         console.warn('ElevenLabs API key not found');
@@ -359,7 +359,7 @@ export const router = new Elysia({ prefix: '/api/speech' })
 
                 try {
                     const apiKey = directories
-                        ? readSecret(directories as any, SECRET_KEYS.ELEVENLABS)
+                        ? await readSecret(directories as any, SECRET_KEYS.ELEVENLABS)
                         : '';
                     if (!apiKey) {
                         console.warn('ElevenLabs API key not found');
@@ -440,7 +440,7 @@ export const router = new Elysia({ prefix: '/api/speech' })
 
                 try {
                     const apiKey = directories
-                        ? readSecret(directories as any, SECRET_KEYS.ELEVENLABS)
+                        ? await readSecret(directories as any, SECRET_KEYS.ELEVENLABS)
                         : '';
                     if (!apiKey) {
                         console.warn('ElevenLabs API key not found');

@@ -55,9 +55,7 @@ async function extractTranscript(videoPageBody: string, lang: string) {
     const startIdx = captionsIdx + 11;
     const endIdx = videoPageBody.indexOf(',"videoDetails', startIdx);
     const jsonChunk =
-        endIdx !== -1
-            ? videoPageBody.slice(startIdx, endIdx)
-            : videoPageBody.slice(startIdx);
+        endIdx !== -1 ? videoPageBody.slice(startIdx, endIdx) : videoPageBody.slice(startIdx);
 
     let parsedCaptions: any;
     try {

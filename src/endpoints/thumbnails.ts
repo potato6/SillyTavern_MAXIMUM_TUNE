@@ -188,13 +188,15 @@ async function processSingleImage(
         let pipeline = new Bun.Image(fileBuffer);
 
         if (type === 'bg') {
-            const [configWidth, configHeight] = dimensions[type];
+            const dims = dimensions[type] ?? [];
+            const [configWidth, configHeight] = dims;
             const targetPixelArea = configWidth! * configHeight!;
             const thumbWidth = Math.round(Math.sqrt(targetPixelArea * aspectRatio));
             const thumbHeight = Math.round(Math.sqrt(targetPixelArea / aspectRatio));
             pipeline = pipeline.resize(thumbWidth, thumbHeight);
         } else if (type === 'avatar' || type === 'persona') {
-            const [configWidth, configHeight] = dimensions[type];
+            const dims = dimensions[type] ?? [];
+            const [configWidth, configHeight] = dims;
             pipeline = pipeline.resize(configWidth!, configHeight!);
         }
 

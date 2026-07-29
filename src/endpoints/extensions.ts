@@ -617,7 +617,9 @@ export const router = new Elysia({ prefix: '/api/extensions' })
         }
         await fsp.mkdir(PUBLIC_DIRECTORIES.globalExtensions, { recursive: true });
 
-        const builtInDirents = await fsp.readdir(PUBLIC_DIRECTORIES.extensions, { withFileTypes: true });
+        const builtInDirents = await fsp.readdir(PUBLIC_DIRECTORIES.extensions, {
+            withFileTypes: true,
+        });
         const builtInExtensions: { type: string; name: string }[] = [];
         for (const entry of builtInDirents) {
             if (entry.isDirectory() && entry.name !== 'third-party') {
@@ -646,7 +648,9 @@ export const router = new Elysia({ prefix: '/api/extensions' })
 
         const globalExtensions: { type: string; name: string }[] = [];
         try {
-            const globalDirents = await fsp.readdir(PUBLIC_DIRECTORIES.globalExtensions, { withFileTypes: true });
+            const globalDirents = await fsp.readdir(PUBLIC_DIRECTORIES.globalExtensions, {
+                withFileTypes: true,
+            });
             for (const entry of globalDirents) {
                 if (entry.isDirectory()) {
                     const fullName = `third-party/${entry.name}`;

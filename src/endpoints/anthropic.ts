@@ -45,7 +45,10 @@ export const router = new Elysia({ prefix: '/api/anthropic' }).post(
             const apiKey = body.reverse_proxy
                 ? (body.proxy_password as string)
                 : directories
-                  ? readSecret(directories as Parameters<typeof readSecret>[0], SECRET_KEYS.CLAUDE)
+                  ? await readSecret(
+                        directories as Parameters<typeof readSecret>[0],
+                        SECRET_KEYS.CLAUDE,
+                    )
                   : '';
             const result = await fetch(url, {
                 body: JSON.stringify(apiBody),

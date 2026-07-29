@@ -68,7 +68,7 @@ export async function getVertexAIAuth(request: any) {
     }
 
     if (authMode === 'express') {
-        const apiKey = readSecret(request.user.directories, SECRET_KEYS.VERTEXAI);
+        const apiKey = await readSecret(request.user.directories, SECRET_KEYS.VERTEXAI);
         if (apiKey) {
             return {
                 authHeader: `Bearer ${apiKey}`,
@@ -78,7 +78,7 @@ export async function getVertexAIAuth(request: any) {
         throw new Error('API key is required for Vertex AI Express mode');
     } else if (authMode === 'full') {
         // Get service account JSON from backend storage
-        const serviceAccountJson = readSecret(
+        const serviceAccountJson = await readSecret(
             request.user.directories,
             SECRET_KEYS.VERTEXAI_SERVICE_ACCOUNT,
         );
@@ -225,7 +225,7 @@ export async function getGoogleApiConfig(
         } else if (authType === 'full') {
             // Full mode: use project-specific URL with Authorization header
             // Get project ID from Service Account JSON
-            const serviceAccountJson = readSecret(
+            const serviceAccountJson = await readSecret(
                 request.user.directories,
                 SECRET_KEYS.VERTEXAI_SERVICE_ACCOUNT,
             );
@@ -258,7 +258,7 @@ export async function getGoogleApiConfig(
         // Google AI Studio
         const apiKey = request.body.reverse_proxy
             ? request.body.proxy_password
-            : readSecret(request.user.directories, SECRET_KEYS.MAKERSUITE);
+            : await readSecret(request.user.directories, SECRET_KEYS.MAKERSUITE);
         const apiUrl = trimTrailingSlash(request.body.reverse_proxy || API_MAKERSUITE);
         const apiVersion = getConfigValue('gemini.apiVersion', 'v1beta');
         baseUrl = `${apiUrl}/${apiVersion}`;

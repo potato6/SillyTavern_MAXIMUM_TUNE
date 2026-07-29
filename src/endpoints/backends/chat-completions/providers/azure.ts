@@ -24,7 +24,7 @@ const provider: ChatProvider = {
 
     async chat(req, res): Promise<void> {
         const { azure_base_url, azure_deployment_name, azure_api_version } = req.body;
-        const apiKey = readSecret(
+        const apiKey = await readSecret(
             req.user.directories,
             SECRET_KEYS.AZURE_OPENAI,
             req.body.secret_id,
@@ -123,7 +123,7 @@ const provider: ChatProvider = {
 
     async listModels(req): Promise<ModelEntry[]> {
         const { azure_base_url, azure_deployment_name, azure_api_version } = req.body;
-        const apiKey = readSecret(
+        const apiKey = await readSecret(
             req.user.directories,
             SECRET_KEYS.AZURE_OPENAI,
             req.body.secret_id,

@@ -153,7 +153,7 @@ router.post('/status', async (context: Record<string, unknown>) => {
                 ).toString();
                 apiKey = body.reverse_proxy
                     ? (body.proxy_password as string)
-                    : readSecret(
+                    : await readSecret(
                           (context.user as Record<string, unknown>)?.directories as any,
                           SECRET_KEYS.OPENAI,
                           body.secret_id as string,
@@ -161,7 +161,7 @@ router.post('/status', async (context: Record<string, unknown>) => {
                 break;
             case CHAT_COMPLETION_SOURCES.OPENROUTER:
                 apiUrl = 'https://openrouter.ai/api/v1';
-                apiKey = readSecret(
+                apiKey = await readSecret(
                     (context.user as Record<string, unknown>)?.directories as any,
                     SECRET_KEYS.OPENROUTER,
                     body.secret_id as string,
@@ -173,7 +173,7 @@ router.post('/status', async (context: Record<string, unknown>) => {
                 ).toString();
                 apiKey = body.reverse_proxy
                     ? (body.proxy_password as string)
-                    : readSecret(
+                    : await readSecret(
                           (context.user as Record<string, unknown>)?.directories as any,
                           SECRET_KEYS.MISTRALAI,
                           body.secret_id as string,
@@ -181,7 +181,7 @@ router.post('/status', async (context: Record<string, unknown>) => {
                 break;
             case CHAT_COMPLETION_SOURCES.CUSTOM:
                 apiUrl = body.custom_url as string;
-                apiKey = readSecret(
+                apiKey = await readSecret(
                     (context.user as Record<string, unknown>)?.directories as any,
                     SECRET_KEYS.CUSTOM,
                     body.secret_id as string,
@@ -189,7 +189,7 @@ router.post('/status', async (context: Record<string, unknown>) => {
                 break;
             case CHAT_COMPLETION_SOURCES.COHERE:
                 apiUrl = 'https://api.cohere.ai/v1';
-                apiKey = readSecret(
+                apiKey = await readSecret(
                     (context.user as Record<string, unknown>)?.directories as any,
                     SECRET_KEYS.COHERE,
                     body.secret_id as string,
@@ -197,7 +197,7 @@ router.post('/status', async (context: Record<string, unknown>) => {
                 break;
             case CHAT_COMPLETION_SOURCES.CHUTES:
                 apiUrl = 'https://llm.chutes.ai/v1';
-                apiKey = readSecret(
+                apiKey = await readSecret(
                     (context.user as Record<string, unknown>)?.directories as any,
                     SECRET_KEYS.CHUTES,
                     body.secret_id as string,
@@ -205,7 +205,7 @@ router.post('/status', async (context: Record<string, unknown>) => {
                 break;
             case CHAT_COMPLETION_SOURCES.ELECTRONHUB:
                 apiUrl = 'https://api.electronhub.ai/v1';
-                apiKey = readSecret(
+                apiKey = await readSecret(
                     (context.user as Record<string, unknown>)?.directories as any,
                     SECRET_KEYS.ELECTRONHUB,
                     body.secret_id as string,
@@ -213,7 +213,7 @@ router.post('/status', async (context: Record<string, unknown>) => {
                 break;
             case CHAT_COMPLETION_SOURCES.NANOGPT:
                 apiUrl = 'https://nano-gpt.com/api/v1';
-                apiKey = readSecret(
+                apiKey = await readSecret(
                     (context.user as Record<string, unknown>)?.directories as any,
                     SECRET_KEYS.NANOGPT,
                     body.secret_id as string,
@@ -225,7 +225,7 @@ router.post('/status', async (context: Record<string, unknown>) => {
                 ).toString();
                 apiKey = body.reverse_proxy
                     ? (body.proxy_password as string)
-                    : readSecret(
+                    : await readSecret(
                           (context.user as Record<string, unknown>)?.directories as any,
                           SECRET_KEYS.DEEPSEEK,
                           body.secret_id as string,
@@ -237,7 +237,7 @@ router.post('/status', async (context: Record<string, unknown>) => {
                 ).toString();
                 apiKey = body.reverse_proxy
                     ? (body.proxy_password as string)
-                    : readSecret(
+                    : await readSecret(
                           (context.user as Record<string, unknown>)?.directories as any,
                           SECRET_KEYS.XAI,
                           body.secret_id as string,
@@ -245,7 +245,7 @@ router.post('/status', async (context: Record<string, unknown>) => {
                 break;
             case CHAT_COMPLETION_SOURCES.AIMLAPI:
                 apiUrl = 'https://api.aimlapi.com/v1';
-                apiKey = readSecret(
+                apiKey = await readSecret(
                     (context.user as Record<string, unknown>)?.directories as any,
                     SECRET_KEYS.AIMLAPI,
                     body.secret_id as string,
@@ -253,7 +253,7 @@ router.post('/status', async (context: Record<string, unknown>) => {
                 break;
             case CHAT_COMPLETION_SOURCES.POLLINATIONS:
                 apiUrl = 'https://gen.pollinations.ai/text';
-                apiKey = readSecret(
+                apiKey = await readSecret(
                     (context.user as Record<string, unknown>)?.directories as any,
                     SECRET_KEYS.POLLINATIONS,
                     body.secret_id as string,
@@ -261,7 +261,7 @@ router.post('/status', async (context: Record<string, unknown>) => {
                 break;
             case CHAT_COMPLETION_SOURCES.GROQ:
                 apiUrl = 'https://api.groq.com/openai/v1';
-                apiKey = readSecret(
+                apiKey = await readSecret(
                     (context.user as Record<string, unknown>)?.directories as any,
                     SECRET_KEYS.GROQ,
                     body.secret_id as string,
@@ -275,7 +275,7 @@ router.post('/status', async (context: Record<string, unknown>) => {
                 ).toString();
                 apiKey = body.reverse_proxy
                     ? (body.proxy_password as string)
-                    : readSecret(
+                    : await readSecret(
                           (context.user as Record<string, unknown>)?.directories as any,
                           SECRET_KEYS.MOONSHOT,
                           body.secret_id as string,
@@ -283,7 +283,7 @@ router.post('/status', async (context: Record<string, unknown>) => {
                 break;
             case CHAT_COMPLETION_SOURCES.FIREWORKS:
                 apiUrl = 'https://api.fireworks.ai/inference/v1';
-                apiKey = readSecret(
+                apiKey = await readSecret(
                     (context.user as Record<string, unknown>)?.directories as any,
                     SECRET_KEYS.FIREWORKS,
                     body.secret_id as string,
@@ -295,7 +295,7 @@ router.post('/status', async (context: Record<string, unknown>) => {
                     body.siliconflow_endpoint === SILICONFLOW_ENDPOINT.CN
                         ? 'https://api.siliconflow.cn/v1'
                         : 'https://api.siliconflow.com/v1';
-                apiKey = readSecret(
+                apiKey = await readSecret(
                     (context.user as Record<string, unknown>)?.directories as any,
                     SECRET_KEYS.SILICONFLOW,
                     body.secret_id as string,
@@ -312,7 +312,7 @@ router.post('/status', async (context: Record<string, unknown>) => {
                 ).toString();
                 apiKey = body.reverse_proxy
                     ? (body.proxy_password as string)
-                    : readSecret(
+                    : await readSecret(
                           (context.user as Record<string, unknown>)?.directories as any,
                           SECRET_KEYS.ZAI,
                           body.secret_id as string,
@@ -325,7 +325,7 @@ router.post('/status', async (context: Record<string, unknown>) => {
                     body.minimax_endpoint === MINIMAX_ENDPOINT.CN
                         ? 'https://api.minimaxi.com/v1'
                         : 'https://api.minimax.io/v1';
-                apiKey = readSecret(
+                apiKey = await readSecret(
                     (context.user as Record<string, unknown>)?.directories as any,
                     SECRET_KEYS.MINIMAX,
                     body.secret_id as string,
@@ -336,7 +336,7 @@ router.post('/status', async (context: Record<string, unknown>) => {
                 apiUrl = new URL(
                     (body.reverse_proxy as string) || 'https://api.anthropic.com/v1',
                 ).toString();
-                apiKey = readSecret(
+                apiKey = await readSecret(
                     (context.user as Record<string, unknown>)?.directories as any,
                     SECRET_KEYS.CLAUDE,
                     body.secret_id as string,
@@ -344,7 +344,7 @@ router.post('/status', async (context: Record<string, unknown>) => {
                 break;
             case CHAT_COMPLETION_SOURCES.AI21:
                 apiUrl = 'https://api.ai21.com/studio/v1';
-                apiKey = readSecret(
+                apiKey = await readSecret(
                     (context.user as Record<string, unknown>)?.directories as any,
                     SECRET_KEYS.AI21,
                     body.secret_id as string,
@@ -756,7 +756,7 @@ multimodalModels.post('/chutes', async (context: Record<string, unknown>) => {
     try {
         const user = context.user as Record<string, unknown> | null;
         const directories = user?.directories as Record<string, string> | undefined;
-        const key = directories ? readSecret(directories as any, SECRET_KEYS.CHUTES) : '';
+        const key = directories ? await readSecret(directories as any, SECRET_KEYS.CHUTES) : '';
         if (!key) return [];
         const data = (await fetchModels('https://llm.chutes.ai/v1/models', {
             Authorization: 'Bearer ' + key,
@@ -775,7 +775,7 @@ multimodalModels.post('/mistral', async (context: Record<string, unknown>) => {
     try {
         const user = context.user as Record<string, unknown> | null;
         const directories = user?.directories as Record<string, string> | undefined;
-        const key = directories ? readSecret(directories as any, SECRET_KEYS.MISTRALAI) : '';
+        const key = directories ? await readSecret(directories as any, SECRET_KEYS.MISTRALAI) : '';
         if (!key) return [];
         const data = (await fetchModels('https://api.mistral.ai/v1/models', {
             Authorization: 'Bearer ' + key,
@@ -794,7 +794,7 @@ multimodalModels.post('/xai', async (context: Record<string, unknown>) => {
     try {
         const user = context.user as Record<string, unknown> | null;
         const directories = user?.directories as Record<string, string> | undefined;
-        const key = directories ? readSecret(directories as any, SECRET_KEYS.XAI) : '';
+        const key = directories ? await readSecret(directories as any, SECRET_KEYS.XAI) : '';
         if (!key) return [];
         const data = (await fetchModels('https://api.x.ai/v1/language-models', {
             Authorization: 'Bearer ' + key,
@@ -814,7 +814,7 @@ multimodalModels.post('/moonshot', async (context: Record<string, unknown>) => {
     try {
         const user = context.user as Record<string, unknown> | null;
         const directories = user?.directories as Record<string, string> | undefined;
-        const key = directories ? readSecret(directories as any, SECRET_KEYS.MOONSHOT) : '';
+        const key = directories ? await readSecret(directories as any, SECRET_KEYS.MOONSHOT) : '';
         if (!key) return [];
         const data = (await fetchModels('https://api.moonshot.ai/v1/models', {
             Authorization: 'Bearer ' + key,
@@ -834,7 +834,7 @@ multimodalModels.post('/workers_ai', async (context: Record<string, unknown>) =>
         const user = context.user as Record<string, unknown> | null;
         const directories = user?.directories as Record<string, string> | undefined;
         const body = context.body as Record<string, unknown> | undefined;
-        const key = directories ? readSecret(directories as any, SECRET_KEYS.WORKERS_AI) : '';
+        const key = directories ? await readSecret(directories as any, SECRET_KEYS.WORKERS_AI) : '';
         const accountId = String((body?.workers_ai_account_id as string) || '').trim();
         if (!key || !accountId) return [];
         const data = (await fetchModels(

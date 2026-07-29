@@ -29,15 +29,15 @@ router.post('/caption-image', async (context: any) => {
         const bodyParams: Record<string, unknown> = {};
 
         if (body.api === 'openai' && !body.reverse_proxy) {
-            key = readSecret(directories as any, SECRET_KEYS.OPENAI);
+            key = await readSecret(directories as any, SECRET_KEYS.OPENAI);
         }
 
         if (body.api === 'xai' && !body.reverse_proxy) {
-            key = readSecret(directories as any, SECRET_KEYS.XAI);
+            key = await readSecret(directories as any, SECRET_KEYS.XAI);
         }
 
         if (body.api === 'mistral' && !body.reverse_proxy) {
-            key = readSecret(directories as any, SECRET_KEYS.MISTRALAI);
+            key = await readSecret(directories as any, SECRET_KEYS.MISTRALAI);
         }
 
         if (body.reverse_proxy && body.proxy_password) {
@@ -45,62 +45,62 @@ router.post('/caption-image', async (context: any) => {
         }
 
         if (body.api === 'custom') {
-            key = readSecret(directories as any, SECRET_KEYS.CUSTOM);
+            key = await readSecret(directories as any, SECRET_KEYS.CUSTOM);
             mergeObjectWithYaml(bodyParams, body.custom_include_body as string);
             mergeObjectWithYaml(headers, body.custom_include_headers as string);
         }
 
         if (body.api === 'openrouter') {
-            key = readSecret(directories as any, SECRET_KEYS.OPENROUTER);
+            key = await readSecret(directories as any, SECRET_KEYS.OPENROUTER);
         }
 
         if (body.api === 'ooba') {
-            key = readSecret(directories as any, SECRET_KEYS.OOBA);
+            key = await readSecret(directories as any, SECRET_KEYS.OOBA);
             bodyParams.temperature = 0.1;
         }
 
         if (body.api === 'koboldcpp') {
-            key = readSecret(directories as any, SECRET_KEYS.KOBOLDCPP);
+            key = await readSecret(directories as any, SECRET_KEYS.KOBOLDCPP);
         }
 
         if (body.api === 'llamacpp') {
-            key = readSecret(directories as any, SECRET_KEYS.LLAMACPP);
+            key = await readSecret(directories as any, SECRET_KEYS.LLAMACPP);
         }
 
         if (body.api === 'vllm') {
-            key = readSecret(directories as any, SECRET_KEYS.VLLM);
+            key = await readSecret(directories as any, SECRET_KEYS.VLLM);
         }
 
         if (body.api === 'aimlapi') {
-            key = readSecret(directories as any, SECRET_KEYS.AIMLAPI);
+            key = await readSecret(directories as any, SECRET_KEYS.AIMLAPI);
         }
 
         if (body.api === 'groq') {
-            key = readSecret(directories as any, SECRET_KEYS.GROQ);
+            key = await readSecret(directories as any, SECRET_KEYS.GROQ);
         }
 
         if (body.api === 'cohere') {
-            key = readSecret(directories as any, SECRET_KEYS.COHERE);
+            key = await readSecret(directories as any, SECRET_KEYS.COHERE);
         }
 
         if (body.api === 'moonshot' && !body.reverse_proxy) {
-            key = readSecret(directories as any, SECRET_KEYS.MOONSHOT);
+            key = await readSecret(directories as any, SECRET_KEYS.MOONSHOT);
         }
 
         if (body.api === 'nanogpt') {
-            key = readSecret(directories as any, SECRET_KEYS.NANOGPT);
+            key = await readSecret(directories as any, SECRET_KEYS.NANOGPT);
         }
 
         if (body.api === 'chutes') {
-            key = readSecret(directories as any, SECRET_KEYS.CHUTES);
+            key = await readSecret(directories as any, SECRET_KEYS.CHUTES);
         }
 
         if (body.api === 'electronhub') {
-            key = readSecret(directories as any, SECRET_KEYS.ELECTRONHUB);
+            key = await readSecret(directories as any, SECRET_KEYS.ELECTRONHUB);
         }
 
         if (body.api === 'zai' && !body.reverse_proxy) {
-            key = readSecret(directories as any, SECRET_KEYS.ZAI);
+            key = await readSecret(directories as any, SECRET_KEYS.ZAI);
         }
 
         if (body.api === 'zai') {
@@ -108,12 +108,12 @@ router.post('/caption-image', async (context: any) => {
         }
 
         if (body.api === 'pollinations') {
-            key = readSecret(directories as any, SECRET_KEYS.POLLINATIONS);
+            key = await readSecret(directories as any, SECRET_KEYS.POLLINATIONS);
             bodyParams.seed = Math.floor(Math.random() * Math.pow(2, 32));
         }
 
         if (body.api === 'workers_ai') {
-            key = readSecret(directories as any, SECRET_KEYS.WORKERS_AI);
+            key = await readSecret(directories as any, SECRET_KEYS.WORKERS_AI);
         }
 
         const noKeyTypes = ['custom', 'ooba', 'koboldcpp', 'vllm', 'llamacpp'];
@@ -319,7 +319,7 @@ router.post('/generate-voice', async (context: any) => {
     const directories = user?.directories as Record<string, string> | undefined;
 
     try {
-        const key = readSecret(directories as any, SECRET_KEYS.OPENAI);
+        const key = await readSecret(directories as any, SECRET_KEYS.OPENAI);
 
         if (!key) {
             console.warn('No OpenAI key found');
@@ -381,7 +381,7 @@ router.post('/electronhub/generate-voice', async (context: any) => {
     const directories = user?.directories as Record<string, string> | undefined;
 
     try {
-        const key = readSecret(directories as any, SECRET_KEYS.ELECTRONHUB);
+        const key = await readSecret(directories as any, SECRET_KEYS.ELECTRONHUB);
 
         if (!key) {
             console.warn('No ElectronHub key found');
@@ -464,7 +464,7 @@ router.post('/electronhub/models', async (context: any) => {
     const directories = user?.directories as Record<string, string> | undefined;
 
     try {
-        const key = readSecret(directories as any, SECRET_KEYS.ELECTRONHUB);
+        const key = await readSecret(directories as any, SECRET_KEYS.ELECTRONHUB);
 
         if (!key) {
             console.warn('No ElectronHub key found');
@@ -506,7 +506,7 @@ router.post('/chutes/generate-voice', async (context: any) => {
     const directories = user?.directories as Record<string, string> | undefined;
 
     try {
-        const key = readSecret(directories as any, SECRET_KEYS.CHUTES);
+        const key = await readSecret(directories as any, SECRET_KEYS.CHUTES);
 
         if (!key) {
             console.warn('No Chutes key found');
@@ -561,7 +561,7 @@ router.post('/chutes/models/embedding', async (context: any) => {
     const directories = user?.directories as Record<string, string> | undefined;
 
     try {
-        const key = readSecret(directories as any, SECRET_KEYS.CHUTES);
+        const key = await readSecret(directories as any, SECRET_KEYS.CHUTES);
 
         if (!key) {
             console.warn('No Chutes key found');
@@ -609,7 +609,7 @@ router.post('/nanogpt/models/embedding', async (context: any) => {
     const directories = user?.directories as Record<string, string> | undefined;
 
     try {
-        const key = readSecret(directories as any, SECRET_KEYS.NANOGPT);
+        const key = await readSecret(directories as any, SECRET_KEYS.NANOGPT);
 
         if (!key) {
             console.warn('No NanoGPT key found');
@@ -656,7 +656,7 @@ router.post('/siliconflow/models/embedding', async (context: any) => {
     const directories = user?.directories as Record<string, string> | undefined;
 
     try {
-        const key = readSecret(directories as any, SECRET_KEYS.SILICONFLOW);
+        const key = await readSecret(directories as any, SECRET_KEYS.SILICONFLOW);
 
         if (!key) {
             console.warn('No SiliconFlow key found');
@@ -708,7 +708,7 @@ router.post('/workers-ai/models/embedding', async (context: any) => {
     const directories = user?.directories as Record<string, string> | undefined;
 
     try {
-        const key = readSecret(directories as any, SECRET_KEYS.WORKERS_AI);
+        const key = await readSecret(directories as any, SECRET_KEYS.WORKERS_AI);
 
         if (!key) {
             console.warn('No Workers AI key found');
@@ -766,7 +766,7 @@ router.post('/generate-image', async (context: any) => {
     const directories = user?.directories as Record<string, string> | undefined;
 
     try {
-        const key = readSecret(directories as any, SECRET_KEYS.OPENAI);
+        const key = await readSecret(directories as any, SECRET_KEYS.OPENAI);
 
         if (!key) {
             console.warn('No OpenAI key found');
@@ -817,7 +817,7 @@ router.post('/generate-video', async (context: any) => {
             signal.addEventListener('abort', () => controller.abort(), { once: true });
         }
 
-        const key = readSecret(directories as any, SECRET_KEYS.OPENAI);
+        const key = await readSecret(directories as any, SECRET_KEYS.OPENAI);
 
         if (!key) {
             console.warn('No OpenAI key found');
@@ -949,7 +949,7 @@ custom.post('/generate-voice', async (context) => {
     const directories = user?.directories as Record<string, string> | undefined;
 
     try {
-        const key = readSecret(directories as any, SECRET_KEYS.CUSTOM_OPENAI_TTS);
+        const key = await readSecret(directories as any, SECRET_KEYS.CUSTOM_OPENAI_TTS);
         const { input, provider_endpoint, response_format, voice, speed, model } = body;
 
         if (!provider_endpoint) {
@@ -1026,7 +1026,7 @@ function createTranscribeHandler({
         > | null;
 
         try {
-            const key = readSecret(directories as any, secretKey);
+            const key = await readSecret(directories as any, secretKey);
 
             if (!key) {
                 console.warn(`No ${providerName} key found`);
@@ -1127,7 +1127,7 @@ router.post('/chutes/transcribe-audio', async (context: any) => {
     > | null;
 
     try {
-        const key = readSecret(directories as any, SECRET_KEYS.CHUTES);
+        const key = await readSecret(directories as any, SECRET_KEYS.CHUTES);
 
         if (!key) {
             console.warn('No Chutes key found');

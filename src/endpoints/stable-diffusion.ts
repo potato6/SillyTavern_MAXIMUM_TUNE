@@ -832,7 +832,7 @@ comfyRunPod.post('/ping', async (context: any) => {
     const set = context.set;
     const user = (context as any).user;
     try {
-        const key = readSecret(user.directories, SECRET_KEYS.COMFY_RUNPOD);
+        const key = await readSecret(user.directories, SECRET_KEYS.COMFY_RUNPOD);
 
         if (!key) {
             console.warn('RunPod key not found.');
@@ -870,7 +870,7 @@ comfyRunPod.post('/generate', async (context: any) => {
     const user = (context as any).user;
     const response = context as any;
     try {
-        const key = readSecret(user.directories, SECRET_KEYS.COMFY_RUNPOD);
+        const key = await readSecret(user.directories, SECRET_KEYS.COMFY_RUNPOD);
 
         if (!key) {
             console.warn('RunPod key not found.');
@@ -952,7 +952,7 @@ together.post('/models', async (context: any) => {
     const set = context.set;
     const user = (context as any).user;
     try {
-        const key = readSecret(user.directories, SECRET_KEYS.TOGETHERAI);
+        const key = await readSecret(user.directories, SECRET_KEYS.TOGETHERAI);
 
         if (!key) {
             console.warn('TogetherAI key not found.');
@@ -998,7 +998,7 @@ together.post('/generate', async (context: any) => {
     const set = context.set;
     const user = (context as any).user;
     try {
-        const key = readSecret(user.directories, SECRET_KEYS.TOGETHERAI);
+        const key = await readSecret(user.directories, SECRET_KEYS.TOGETHERAI);
 
         if (!key) {
             console.warn('TogetherAI key not found.');
@@ -1291,7 +1291,7 @@ pollinations.post('/generate', async (context: any) => {
     const set = context.set;
     const user = (context as any).user;
     try {
-        const key = readSecret(user.directories, SECRET_KEYS.POLLINATIONS);
+        const key = await readSecret(user.directories, SECRET_KEYS.POLLINATIONS);
         if (!key) {
             console.warn('Pollinations API key not found.');
             set.status = 400;
@@ -1352,7 +1352,7 @@ stability.post('/generate', async (context: any) => {
     const set = context.set;
     const user = (context as any).user;
     try {
-        const key = readSecret(user.directories, SECRET_KEYS.STABILITY);
+        const key = await readSecret(user.directories, SECRET_KEYS.STABILITY);
 
         if (!key) {
             console.warn('Stability AI key not found.');
@@ -1419,7 +1419,7 @@ huggingface.post('/generate', async (context: any) => {
     const set = context.set;
     const user = (context as any).user;
     try {
-        const key = readSecret(user.directories, SECRET_KEYS.HUGGINGFACE);
+        const key = await readSecret(user.directories, SECRET_KEYS.HUGGINGFACE);
 
         if (!key) {
             console.warn('Hugging Face key not found.');
@@ -1463,7 +1463,7 @@ electronhub.post('/models', async (context: any) => {
     const set = context.set;
     const user = (context as any).user;
     try {
-        const key = readSecret(user.directories, SECRET_KEYS.ELECTRONHUB);
+        const key = await readSecret(user.directories, SECRET_KEYS.ELECTRONHUB);
 
         if (!key) {
             console.warn('Electron Hub key not found.');
@@ -1520,7 +1520,7 @@ electronhub.post('/generate', async (context: any) => {
     const set = context.set;
     const user = (context as any).user;
     try {
-        const key = readSecret(user.directories, SECRET_KEYS.ELECTRONHUB);
+        const key = await readSecret(user.directories, SECRET_KEYS.ELECTRONHUB);
 
         if (!key) {
             console.warn('Electron Hub key not found.');
@@ -1620,7 +1620,7 @@ chutes.post('/models', async (context: any) => {
     const set = context.set;
     const user = (context as any).user;
     try {
-        const key = readSecret(user.directories, SECRET_KEYS.CHUTES);
+        const key = await readSecret(user.directories, SECRET_KEYS.CHUTES);
 
         if (!key) {
             console.warn('Chutes key not found.');
@@ -1665,7 +1665,7 @@ chutes.post('/generate', async (context: any) => {
     const set = context.set;
     const user = (context as any).user;
     try {
-        const key = readSecret(user.directories, SECRET_KEYS.CHUTES);
+        const key = await readSecret(user.directories, SECRET_KEYS.CHUTES);
 
         if (!key) {
             console.warn('Chutes key not found.');
@@ -1718,7 +1718,7 @@ nanogpt.post('/models', async (context: any) => {
     const set = context.set;
     const user = (context as any).user;
     try {
-        const key = readSecret(user.directories, SECRET_KEYS.NANOGPT);
+        const key = await readSecret(user.directories, SECRET_KEYS.NANOGPT);
 
         if (!key) {
             console.warn('NanoGPT key not found.');
@@ -1765,7 +1765,7 @@ nanogpt.post('/generate', async (context: any) => {
     const set = context.set;
     const user = (context as any).user;
     try {
-        const key = readSecret(user.directories, SECRET_KEYS.NANOGPT);
+        const key = await readSecret(user.directories, SECRET_KEYS.NANOGPT);
 
         if (!key) {
             console.warn('NanoGPT key not found.');
@@ -1814,7 +1814,7 @@ bfl.post('/generate', async (context: any) => {
     const set = context.set;
     const user = (context as any).user;
     try {
-        const key = readSecret(user.directories, SECRET_KEYS.BFL);
+        const key = await readSecret(user.directories, SECRET_KEYS.BFL);
 
         if (!key) {
             console.warn('BFL key not found.');
@@ -2001,7 +2001,7 @@ falai.post('/generate', async (context: any) => {
     const set = context.set;
     const user = (context as any).user;
     try {
-        const key = readSecret(user.directories, SECRET_KEYS.FALAI);
+        const key = await readSecret(user.directories, SECRET_KEYS.FALAI);
 
         if (!key) {
             console.warn('FAL.AI key not found.');
@@ -2100,7 +2100,7 @@ falai.post('/generate', async (context: any) => {
     } catch (error) {
         console.error(error);
         set.status = 500;
-        return error instanceof Error ? (error.cause || error.message) : String(error);
+        return error instanceof Error ? error.cause || error.message : String(error);
     }
 });
 
@@ -2111,7 +2111,7 @@ xai.post('/generate', async (context: any) => {
     const set = context.set;
     const user = (context as any).user;
     try {
-        const key = readSecret(user.directories, SECRET_KEYS.XAI);
+        const key = await readSecret(user.directories, SECRET_KEYS.XAI);
 
         if (!key) {
             console.warn('xAI key not found.');
@@ -2174,7 +2174,7 @@ aimlapi.post('/models', async (context: any) => {
     const set = context.set;
     const user = (context as any).user;
     try {
-        const key = readSecret(user.directories, SECRET_KEYS.AIMLAPI);
+        const key = await readSecret(user.directories, SECRET_KEYS.AIMLAPI);
 
         if (!key) {
             console.warn('AI/ML API key not found.');
@@ -2223,7 +2223,7 @@ aimlapi.post('/generate-image', async (context: any) => {
     const set = context.set;
     const user = (context as any).user;
     try {
-        const key = readSecret(user.directories, SECRET_KEYS.AIMLAPI);
+        const key = await readSecret(user.directories, SECRET_KEYS.AIMLAPI);
         if (!key) {
             set.status = 400;
             return;
@@ -2283,7 +2283,7 @@ zai.post('/generate', async (context: any) => {
     const set = context.set;
     const user = (context as any).user;
     try {
-        const key = readSecret(user.directories, SECRET_KEYS.ZAI);
+        const key = await readSecret(user.directories, SECRET_KEYS.ZAI);
 
         if (!key) {
             console.warn('Z.AI key not found.');
@@ -2383,7 +2383,7 @@ zai.post('/generate-video', async (context: any) => {
             controller.abort();
         });
 
-        const key = readSecret(user.directories, SECRET_KEYS.ZAI);
+        const key = await readSecret(user.directories, SECRET_KEYS.ZAI);
 
         if (!key) {
             console.warn('Z.AI key not found.');
@@ -2505,7 +2505,7 @@ workersai.post('/models', async (context: any) => {
     const set = context.set;
     const user = (context as any).user;
     try {
-        const key = readSecret(user.directories, SECRET_KEYS.WORKERS_AI);
+        const key = await readSecret(user.directories, SECRET_KEYS.WORKERS_AI);
 
         if (!key) {
             console.warn('Cloudflare Workers AI API key not found.');
@@ -2563,7 +2563,7 @@ workersai.post('/generate', async (context: any) => {
     const set = context.set;
     const user = (context as any).user;
     try {
-        const key = readSecret(user.directories, SECRET_KEYS.WORKERS_AI);
+        const key = await readSecret(user.directories, SECRET_KEYS.WORKERS_AI);
 
         if (!key) {
             console.warn('Cloudflare Workers AI API key not found.');

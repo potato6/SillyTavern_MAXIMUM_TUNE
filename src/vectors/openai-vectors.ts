@@ -105,7 +105,7 @@ export async function getBatchVector(
         throw new Error('Unknown source');
     }
 
-    const key = readSecret(directories, config.secretKey);
+    const key = await readSecret(directories, config.secretKey);
 
     if (!key) {
         console.warn('No API key found');
