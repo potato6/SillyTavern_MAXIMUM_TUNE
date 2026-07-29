@@ -1,157 +1,217 @@
 import fs from 'node:fs';
+import fsp from 'node:fs/promises';
 import path from 'node:path';
 import { Elysia } from 'elysia';
 import sanitize from 'sanitize-filename';
-import { sync as writeFileAtomicSync } from 'write-file-atomic';
+import writeFileAtomic from 'write-file-atomic';
 import { tryParse } from '../util.js';
 
+interface UserDirectories {
+    worlds?: string;
+    [key: string]: unknown;
+}
+
+interface UserContext {
+    directories?: UserDirectories;
+    [key: string]: unknown;
+}
+
+/**
+ * Synchronous world info file reader (kept for backwards compatibility).
+ */
 export function readWorldInfoFile(
     directories: Record<string, string>,
     worldInfoName: string,
     allowDummy: boolean,
 ) {
-    const dummyObject = allowDummy ? { entries: {} } : null;
-
     if (!worldInfoName) {
-        return dummyObject;
+        return allowDummy ? { entries: {} } : null;
     }
 
-    const filename = sanitize(`${worldInfoName}.json`);
-    const pathToWorldInfo = path.join(directories.worlds!, filename);
+    const sanitizedName = sanitize(worldInfoName);
+    const filename = `${sanitizedName}.json`;
+    const worldsDir = directories.worlds ?? '';
+    const pathToWorldInfo = path.join(worldsDir, filename);
 
-    if (!fs.existsSync(pathToWorldInfo)) {
+    try {
+        const worldInfoText = fs.readFileSync(pathToWorldInfo, 'utf8');
+        return JSON.parse(worldInfoText);
+    } catch {
         console.error(`World info file ${filename} doesn't exist.`);
-        return dummyObject;
+        return allowDummy ? { entries: {} } : null;
+    }
+}
+
+/**
+ * Asynchronous world info file reader for non-blocking route execution.
+ */
+export async function readWorldInfoFileAsync(
+    directories: Record<string, string>,
+    worldInfoName: string,
+    allowDummy: boolean,
+) {
+    if (!worldInfoName) {
+        return allowDummy ? { entries: {} } : null;
     }
 
-    const worldInfoText = fs.readFileSync(pathToWorldInfo, 'utf8');
-    const worldInfo = JSON.parse(worldInfoText);
-    return worldInfo;
+    const sanitizedName = sanitize(worldInfoName);
+    const filename = `${sanitizedName}.json`;
+    const worldsDir = directories.worlds ?? '';
+    const pathToWorldInfo = path.join(worldsDir, filename);
+
+    try {
+        const worldInfoText = await fsp.readFile(pathToWorldInfo, 'utf8');
+        return JSON.parse(worldInfoText);
+    } catch {
+        console.error(`World info file ${filename} doesn't exist.`);
+        return allowDummy ? { entries: {} } : null;
+    }
 }
 
 export const router = new Elysia({ prefix: '/api/worldinfo' })
     .post('/list', async (context) => {
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
-        const directories = user?.directories as Record<string, string> | undefined;
+        const { set } = context;
+        const ctx = context as Record<string, unknown>;
+        const user = ctx.user as UserContext | undefined;
+        const directories = user?.directories;
+        const worldsDir = directories?.worlds ?? '';
 
         try {
-            const data: Array<Record<string, unknown>> = [];
-            const jsonFiles = (
-                await fs.promises.readdir(directories?.worlds ?? '', { withFileTypes: true })
-            )
-                .filter(
-                    (file) => file.isFile() && path.extname(file.name).toLowerCase() === '.json',
-                )
-                .toSorted((a, b) => a.name.localeCompare(b.name));
+            let dirents: fs.Dirent[];
+            try {
+                dirents = await fsp.readdir(worldsDir, { withFileTypes: true });
+            } catch {
+                return [];
+            }
 
-            for (const file of jsonFiles) {
+            const jsonFileNames: string[] = [];
+            for (const entry of dirents) {
+                if (entry.isFile() && entry.name.toLowerCase().endsWith('.json')) {
+                    jsonFileNames.push(entry.name);
+                }
+            }
+
+            jsonFileNames.sort((a, b) => a.localeCompare(b));
+
+            const readPromises = jsonFileNames.map(async (fileName) => {
+                const filePath = path.join(worldsDir, fileName);
+
                 try {
-                    const filePath = path.join(directories?.worlds ?? '', file.name);
-                    const fileContents = await fs.promises.readFile(filePath, 'utf8');
-                    const fileContentsParsed = tryParse(fileContents) || {};
-                    const fileExtensions =
-                        (fileContentsParsed as Record<string, unknown>)?.extensions || {};
-                    const fileNameWithoutExt = path.parse(file.name).name;
-                    const fileData = {
+                    const fileContents = await fsp.readFile(filePath, 'utf8');
+                    const fileContentsParsed = (tryParse(fileContents) || {}) as Record<string, any>;
+                    const fileExtensions = fileContentsParsed.extensions;
+                    const fileNameWithoutExt = fileName.toLowerCase().endsWith('.json')
+                        ? fileName.slice(0, -5)
+                        : fileName;
+
+                    return {
                         file_id: fileNameWithoutExt,
-                        name:
-                            (fileContentsParsed as Record<string, unknown>)?.name ||
-                            fileNameWithoutExt,
+                        name: fileContentsParsed.name || fileNameWithoutExt,
                         extensions:
                             typeof fileExtensions === 'object' && fileExtensions !== null
                                 ? fileExtensions
                                 : {},
                     };
-                    data.push(fileData);
                 } catch (error) {
-                    console.warn(`Error reading or parsing World Info file ${file.name}:`, error);
+                    console.warn(`Error reading or parsing World Info file ${fileName}:`, error);
+                    return null;
                 }
-            }
+            });
+
+            const rawResults = await Promise.all(readPromises);
+            const data = rawResults.filter((r) => r !== null) as Record<string, unknown>[];
 
             return data;
         } catch (error) {
             console.error('Error reading World Info directory:', error);
-            return new Response(null, { status: 500 });
+            set.status = 500;
         }
     })
-    .post('/get', (context) => {
-        const { body, set } = context;
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
-        const directories = user?.directories as Record<string, string> | undefined;
-        const bodyAny = body as Record<string, unknown>;
+    .post('/get', async (context) => {
+        const { set } = context;
+        const ctx = context as Record<string, unknown>;
+        const bodyAny = ctx.body as Record<string, unknown> | undefined;
+        const user = ctx.user as UserContext | undefined;
+        const directories = user?.directories;
 
-        if (!bodyAny?.name) {
+        const name = bodyAny?.name;
+        if (typeof name !== 'string' || name.length === 0) {
             set.status = 400;
             return;
         }
 
-        const file = readWorldInfoFile(directories ?? {}, bodyAny.name as string, true);
+        const file = await readWorldInfoFileAsync((directories ?? {}) as Record<string, string>, name, true);
         return file;
     })
-    .post('/delete', (context) => {
-        const { body, set } = context;
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
-        const directories = user?.directories as Record<string, string> | undefined;
-        const bodyAny = body as Record<string, unknown>;
+    .post('/delete', async (context) => {
+        const { set } = context;
+        const ctx = context as Record<string, unknown>;
+        const bodyAny = ctx.body as Record<string, unknown> | undefined;
+        const user = ctx.user as UserContext | undefined;
+        const directories = user?.directories;
 
-        if (!bodyAny?.name) {
+        const worldInfoName = bodyAny?.name;
+        if (typeof worldInfoName !== 'string' || worldInfoName.length === 0) {
             set.status = 400;
             return;
         }
 
-        const worldInfoName = bodyAny.name as string;
-        const filename = sanitize(`${worldInfoName}.json`);
-        const pathToWorldInfo = path.join(directories?.worlds ?? '', filename);
+        const sanitizedName = sanitize(worldInfoName);
+        const filename = `${sanitizedName}.json`;
+        const worldsDir = directories?.worlds ?? '';
+        const pathToWorldInfo = path.join(worldsDir, filename);
 
-        if (!fs.existsSync(pathToWorldInfo)) {
+        try {
+            await fsp.unlink(pathToWorldInfo);
+            set.status = 204;
+        } catch {
             throw new Error(`World info file ${filename} doesn't exist.`);
         }
-
-        fs.unlinkSync(pathToWorldInfo);
-        set.status = 204;
     })
-    .post('/import', (context) => {
+    .post('/import', async (context) => {
         const { set } = context;
-        const body = context.body as Record<string, unknown>;
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
-        const directories = user?.directories as Record<string, string> | undefined;
-        const file = (context as unknown as Record<string, unknown>).file as Record<
-            string,
-            unknown
-        > | null;
+        const ctx = context as Record<string, unknown>;
+        const body = (ctx.body ?? {}) as Record<string, unknown>;
+        const user = ctx.user as UserContext | undefined;
+        const directories = user?.directories;
+        const file = ctx.file as { destination?: string; filename?: string; originalname?: string } | undefined;
 
-        if (!file) {
+        if (!file || typeof file.originalname !== 'string') {
             set.status = 400;
             return;
         }
 
-        const filename = `${path.parse(sanitize(file.originalname as string)).name}.json`;
+        const sanitizedOriginal = sanitize(file.originalname);
+        const lastDot = sanitizedOriginal.lastIndexOf('.');
+        const rawWorldName = lastDot !== -1 ? sanitizedOriginal.slice(0, lastDot) : sanitizedOriginal;
 
-        let fileContents: string | null = null;
+        if (!rawWorldName) {
+            set.status = 400;
+            return 'World file must have a name';
+        }
 
-        if (body.convertedData) {
-            fileContents = body.convertedData as string;
+        const filename = `${rawWorldName}.json`;
+        let fileContents: string;
+
+        if (typeof body.convertedData === 'string' && body.convertedData.length > 0) {
+            fileContents = body.convertedData;
         } else {
-            const pathToUpload = path.join(file.destination as string, file.filename as string);
-            fileContents = fs.readFileSync(pathToUpload, 'utf8');
-            fs.unlinkSync(pathToUpload);
+            const uploadDest = file.destination ?? '';
+            const uploadFile = file.filename ?? '';
+            const pathToUpload = path.join(uploadDest, uploadFile);
+
+            try {
+                fileContents = await fsp.readFile(pathToUpload, 'utf8');
+                await fsp.unlink(pathToUpload);
+            } catch {
+                set.status = 400;
+                return 'Is not a valid world info file';
+            }
         }
 
         try {
             const worldContent = JSON.parse(fileContents);
-            if (!('entries' in worldContent)) {
+            if (!worldContent || typeof worldContent !== 'object' || !Object.hasOwn(worldContent, 'entries')) {
                 throw new Error('File must contain a world info entries list');
             }
         } catch {
@@ -159,48 +219,41 @@ export const router = new Elysia({ prefix: '/api/worldinfo' })
             return 'Is not a valid world info file';
         }
 
-        const pathToNewFile = path.join(directories?.worlds ?? '', filename);
-        const worldName = path.parse(pathToNewFile).name;
+        const worldsDir = directories?.worlds ?? '';
+        const pathToNewFile = path.join(worldsDir, filename);
 
-        if (!worldName) {
-            set.status = 400;
-            return 'World file must have a name';
-        }
-
-        writeFileAtomicSync(pathToNewFile, fileContents);
-        return { name: worldName };
+        await writeFileAtomic(pathToNewFile, fileContents);
+        return { name: rawWorldName };
     })
-    .post('/edit', (context) => {
-        const { body, set } = context;
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
-        const directories = user?.directories as Record<string, string> | undefined;
-        const bodyAny = body as Record<string, unknown>;
+    .post('/edit', async (context) => {
+        const { set } = context;
+        const ctx = context as Record<string, unknown>;
+        const bodyAny = ctx.body as Record<string, unknown> | undefined;
+        const user = ctx.user as UserContext | undefined;
+        const directories = user?.directories;
 
         if (!bodyAny) {
             set.status = 400;
             return;
         }
 
-        if (!bodyAny.name) {
+        const rawName = bodyAny.name;
+        if (typeof rawName !== 'string' || rawName.length === 0) {
             set.status = 400;
             return 'World file must have a name';
         }
 
-        try {
-            if (!('entries' in (bodyAny.data as Record<string, unknown>))) {
-                throw new Error('World info must contain an entries list');
-            }
-        } catch {
+        const dataObj = bodyAny.data;
+        if (!dataObj || typeof dataObj !== 'object' || !Object.hasOwn(dataObj, 'entries')) {
             set.status = 400;
             return 'Is not a valid world info file';
         }
 
-        const filename = sanitize(`${bodyAny.name as string}.json`);
-        const pathToFile = path.join(directories?.worlds ?? '', filename);
+        const sanitizedName = sanitize(rawName);
+        const filename = `${sanitizedName}.json`;
+        const worldsDir = directories?.worlds ?? '';
+        const pathToFile = path.join(worldsDir, filename);
 
-        writeFileAtomicSync(pathToFile, JSON.stringify(bodyAny.data, null, 4));
+        await writeFileAtomic(pathToFile, JSON.stringify(dataObj, null, 4));
         return { ok: true };
-    });
+    })

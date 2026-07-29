@@ -57,13 +57,15 @@ router.post('/list', async (context) => {
         for (let i = 0; i < enabledUsers.length; i++) {
             const user = enabledUsers[i];
             const handle = user.handle;
-            promises.push(getUserAvatar(handle).then((avatar) => ({
-                handle,
-                name: user.name,
-                created: user.created,
-                avatar,
-                password: Boolean(user.password),
-            })));
+            promises.push(
+                getUserAvatar(handle).then((avatar) => ({
+                    handle,
+                    name: user.name,
+                    created: user.created,
+                    avatar,
+                    password: Boolean(user.password),
+                })),
+            );
         }
 
         const viewModels = await Promise.all(promises);
