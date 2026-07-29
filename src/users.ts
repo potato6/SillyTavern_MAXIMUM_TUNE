@@ -633,7 +633,7 @@ export async function getCookieSecret(dataRoot: string) {
     const cookieSecretPath = path.join(dataRoot, COOKIE_SECRET_PATH);
     const cookieFile = Bun.file(cookieSecretPath);
 
-    if (await cookieFile.exists() && cookieFile.size > 0) {
+    if ((await cookieFile.exists()) && cookieFile.size > 0) {
         return await cookieFile.text();
     }
 
@@ -773,7 +773,7 @@ export async function getUserAvatar(handle: string) {
         // Fallback to reading from files if custom avatar is not set
         const directory = getUserDirectories(handle);
         const pathToSettings = path.join(directory.root, SETTINGS_FILE);
-        const settings = await Bun.file(pathToSettings).exists()
+        const settings = (await Bun.file(pathToSettings).exists())
             ? await Bun.file(pathToSettings).json()
             : {};
         const avatarFile = settings?.power_user?.default_persona || settings?.user_avatar;
@@ -785,7 +785,9 @@ export async function getUserAvatar(handle: string) {
             return PUBLIC_USER_AVATAR;
         }
         const mimeType = Bun.file(avatarPath).type;
-        const base64Content = Buffer.from(await Bun.file(avatarPath).arrayBuffer()).toString('base64');
+        const base64Content = Buffer.from(await Bun.file(avatarPath).arrayBuffer()).toString(
+            'base64',
+        );
         return `data:${mimeType};base64,${base64Content}`;
     } catch {
         // Ignore errors

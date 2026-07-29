@@ -25,7 +25,11 @@ const provider: ChatProvider = {
     },
 
     async chat(req, res) {
-        const apiKey = readSecret(req.user.directories, SECRET_KEYS.WORKERS_AI, req.body.secret_id);
+        const apiKey = await readSecret(
+            req.user.directories,
+            SECRET_KEYS.WORKERS_AI,
+            req.body.secret_id,
+        );
         const accountId = String(req.body.workers_ai_account_id || '').trim();
 
         if (!apiKey) {
@@ -85,7 +89,11 @@ const provider: ChatProvider = {
     },
 
     async listModels(req): Promise<ModelEntry[]> {
-        const apiKey = readSecret(req.user.directories, SECRET_KEYS.WORKERS_AI, req.body.secret_id);
+        const apiKey = await readSecret(
+            req.user.directories,
+            SECRET_KEYS.WORKERS_AI,
+            req.body.secret_id,
+        );
         const accountId = String(req.body.workers_ai_account_id || '').trim();
 
         if (!apiKey || !accountId) return [];

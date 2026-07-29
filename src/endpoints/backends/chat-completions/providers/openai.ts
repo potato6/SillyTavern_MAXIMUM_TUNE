@@ -31,7 +31,7 @@ const provider: ChatProvider = {
         const apiUrl = new URL(req.body.reverse_proxy || API_OPENAI).toString();
         const apiKey = req.body.reverse_proxy
             ? req.body.proxy_password
-            : readSecret(req.user.directories, SECRET_KEYS.OPENAI, req.body.secret_id);
+            : await readSecret(req.user.directories, SECRET_KEYS.OPENAI, req.body.secret_id);
 
         if (!apiKey && !req.body.reverse_proxy) {
             console.warn('OpenAI API key is missing.');
@@ -139,7 +139,7 @@ const provider: ChatProvider = {
         const apiUrl = new URL(req.body.reverse_proxy || API_OPENAI).toString();
         const apiKey = req.body.reverse_proxy
             ? req.body.proxy_password
-            : readSecret(req.user.directories, SECRET_KEYS.OPENAI, req.body.secret_id);
+            : await readSecret(req.user.directories, SECRET_KEYS.OPENAI, req.body.secret_id);
         if (!apiKey && !req.body.reverse_proxy) return [];
 
         const response = await globalThis.fetch(`${apiUrl}/models`, {

@@ -66,7 +66,11 @@ const provider: ChatProvider = {
     },
 
     async chat(req, res): Promise<any> {
-        const apiKey = readSecret(req.user.directories, SECRET_KEYS.OPENROUTER, req.body.secret_id);
+        const apiKey = await readSecret(
+            req.user.directories,
+            SECRET_KEYS.OPENROUTER,
+            req.body.secret_id,
+        );
         if (!apiKey) {
             console.warn('OpenRouter API key is missing.');
             res.status(400).send({ error: true });
@@ -182,7 +186,11 @@ const provider: ChatProvider = {
     },
 
     async listModels(req): Promise<ModelEntry[]> {
-        const apiKey = readSecret(req.user.directories, SECRET_KEYS.OPENROUTER, req.body.secret_id);
+        const apiKey = await readSecret(
+            req.user.directories,
+            SECRET_KEYS.OPENROUTER,
+            req.body.secret_id,
+        );
         if (!apiKey) return [];
 
         const response = await globalThis.fetch(`${API_OPENROUTER}/models`, {

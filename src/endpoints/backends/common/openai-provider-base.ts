@@ -87,7 +87,9 @@ export function createOAIChatProvider(cfg: OAIConfig): ChatProvider {
             const apiKey =
                 supportsReverseProxy && req.body.reverse_proxy
                     ? req.body.proxy_password
-                    : (await import('../../secrets.js')).readSecret(
+                    : await (
+                          await import('../../secrets.js')
+                      ).readSecret(
                           req.user.directories,
                           deriveStorageKey(secretKey),
                           req.body.secret_id,
@@ -160,7 +162,9 @@ export function createOAIChatProvider(cfg: OAIConfig): ChatProvider {
             const apiKey =
                 supportsReverseProxy && req.body.reverse_proxy
                     ? req.body.proxy_password
-                    : (await import('../../secrets.js')).readSecret(
+                    : await (
+                          await import('../../secrets.js')
+                      ).readSecret(
                           req.user.directories,
                           deriveStorageKey(secretKey),
                           req.body.secret_id,

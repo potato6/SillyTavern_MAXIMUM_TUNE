@@ -26,7 +26,11 @@ const provider: ChatProvider = {
     async chat(req, res): Promise<void> {
         const apiUrl =
             req.body.minimax_endpoint === MINIMAX_ENDPOINT.CN ? API_MINIMAX_CN : API_MINIMAX;
-        const apiKey = readSecret(req.user.directories, SECRET_KEYS.MINIMAX, req.body.secret_id);
+        const apiKey = await readSecret(
+            req.user.directories,
+            SECRET_KEYS.MINIMAX,
+            req.body.secret_id,
+        );
         if (!apiKey) {
             console.warn('MiniMax key is missing.');
             res.status(400).send({ error: true });
@@ -97,7 +101,11 @@ const provider: ChatProvider = {
     async listModels(req): Promise<ModelEntry[]> {
         const apiUrl =
             req.body.minimax_endpoint === MINIMAX_ENDPOINT.CN ? API_MINIMAX_CN : API_MINIMAX;
-        const apiKey = readSecret(req.user.directories, SECRET_KEYS.MINIMAX, req.body.secret_id);
+        const apiKey = await readSecret(
+            req.user.directories,
+            SECRET_KEYS.MINIMAX,
+            req.body.secret_id,
+        );
         if (!apiKey) return [];
 
         const response = await globalThis.fetch(`${apiUrl}/models`, {

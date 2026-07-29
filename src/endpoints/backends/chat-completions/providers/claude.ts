@@ -47,7 +47,7 @@ const provider: ChatProvider = {
         const apiUrl = new URL(req.body.reverse_proxy || API_CLAUDE).toString();
         const apiKey = req.body.reverse_proxy
             ? req.body.proxy_password
-            : readSecret(req.user.directories, SECRET_KEYS.CLAUDE, req.body.secret_id);
+            : await readSecret(req.user.directories, SECRET_KEYS.CLAUDE, req.body.secret_id);
         const divider = '-'.repeat(process.stdout.columns);
 
         if (!apiKey) {
@@ -264,7 +264,7 @@ const provider: ChatProvider = {
         const apiUrl = new URL(req.body.reverse_proxy || API_CLAUDE).toString();
         const apiKey = req.body.reverse_proxy
             ? req.body.proxy_password
-            : readSecret(req.user.directories, SECRET_KEYS.CLAUDE, req.body.secret_id);
+            : await readSecret(req.user.directories, SECRET_KEYS.CLAUDE, req.body.secret_id);
         if (!apiKey) return [];
 
         const response = await globalThis.fetch(`${apiUrl}/models`, {

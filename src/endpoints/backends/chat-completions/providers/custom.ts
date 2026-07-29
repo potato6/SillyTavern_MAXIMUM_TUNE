@@ -25,7 +25,11 @@ const provider: ChatProvider = {
 
     async chat(req, res): Promise<void> {
         const apiUrl = req.body.custom_url;
-        const apiKey = readSecret(req.user.directories, SECRET_KEYS.CUSTOM, req.body.secret_id);
+        const apiKey = await readSecret(
+            req.user.directories,
+            SECRET_KEYS.CUSTOM,
+            req.body.secret_id,
+        );
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const bodyParams: Record<string, any> = {
@@ -146,7 +150,11 @@ const provider: ChatProvider = {
 
     async listModels(req): Promise<ModelEntry[]> {
         const apiUrl = req.body.custom_url;
-        const apiKey = readSecret(req.user.directories, SECRET_KEYS.CUSTOM, req.body.secret_id);
+        const apiKey = await readSecret(
+            req.user.directories,
+            SECRET_KEYS.CUSTOM,
+            req.body.secret_id,
+        );
 
         const response = await globalThis.fetch(`${apiUrl}/models`, {
             headers: apiKey ? { Authorization: 'Bearer ' + apiKey } : {},
