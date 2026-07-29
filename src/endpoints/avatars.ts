@@ -1,120 +1,133 @@
 import path from 'node:path';
-import fs from 'node:fs';
 import fsp from 'node:fs/promises';
+import { randomUUID } from 'node:crypto';
 import { Elysia } from 'elysia';
 import sanitize from 'sanitize-filename';
-import { sync as writeFileAtomicSync } from 'write-file-atomic';
+import writeFileAtomic from 'write-file-atomic';
 
 import { getImages, tryParse } from '../util.js';
 import { applyAvatarCropResize } from './characters.js';
 import { invalidateThumbnail } from './thumbnails.js';
 import { UPLOADS_DIRECTORY } from '../constants.js';
 
+interface UserDirectories {
+    avatars?: string;
+    [key: string]: unknown;
+}
+
+interface UserContext {
+    directories?: UserDirectories;
+    [key: string]: unknown;
+}
+
 export const router = new Elysia({ prefix: '/api/avatars' })
     .post('/get', (context) => {
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
-        const directories = user?.directories as Record<string, string> | undefined;
-        const images = getImages(directories?.avatars ?? '');
-        return images;
-    })
-    .post('/delete', (context) => {
-        const { body, set } = context;
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
-        const directories = user?.directories as Record<string, string> | undefined;
-        const bodyAny = body as Record<string, unknown>;
+        const ctx = context as Record<string, unknown>;
+        const user = ctx.user as UserContext | undefined;
+        const avatarsDir = user?.directories?.avatars ?? '';
 
-        const avatar = bodyAny.avatar as string;
-        if (avatar !== sanitize(avatar)) {
+        return getImages(avatarsDir);
+    })
+    .post('/delete', async (context) => {
+        const { set } = context;
+        const ctx = context as Record<string, unknown>;
+        const body = ctx.body as Record<string, unknown> | undefined;
+        const avatar = body?.avatar;
+
+        if (typeof avatar !== 'string') {
+            set.status = 404;
+            return;
+        }
+
+        const sanitizedAvatar = sanitize(avatar);
+        if (avatar !== sanitizedAvatar) {
             console.error('Malicious avatar name prevented');
             set.status = 403;
             return;
         }
 
-        const fileName = path.join(directories?.avatars ?? '', sanitize(avatar));
+        const user = ctx.user as UserContext | undefined;
+        const directories = user?.directories;
+        const avatarsDir = directories?.avatars ?? '';
+        const fileName = path.join(avatarsDir, sanitizedAvatar);
 
-        if (fs.existsSync(fileName)) {
-            fs.unlinkSync(fileName);
-            invalidateThumbnail(directories as any, 'persona', sanitize(avatar));
+        try {
+            await fsp.unlink(fileName);
+            invalidateThumbnail(directories as any, 'persona', sanitizedAvatar);
             return { result: 'ok' };
+        } catch {
+            set.status = 404;
+            return;
         }
-
-        set.status = 404;
     })
     .post('/upload', async (context) => {
-        const { body, set } = context;
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
-        const directories = user?.directories as Record<string, string> | undefined;
-        const uploadedFile = (context as unknown as Record<string, unknown>).file as Record<
-            string,
-            unknown
-        > | null;
+        const { set } = context;
+        const ctx = context as Record<string, unknown>;
+        const user = ctx.user as UserContext | undefined;
+        const uploadedFile = ctx.file as { destination?: string; filename?: string } | undefined;
+        const body = ctx.body as Record<string, unknown> | undefined;
 
-        if (!uploadedFile && (!body || !(body as Record<string, unknown>).avatar)) {
+        const fileObj = body?.avatar;
+
+        if (!uploadedFile && (!body || !fileObj)) {
             set.status = 400;
             return;
         }
 
-        try {
-            let pathToUpload: string | null = null;
-            let needsCleanup = false;
+        let pathToUpload: string | null = null;
+        let needsCleanup = false;
 
+        try {
             if (uploadedFile) {
                 // Express bridge mode — multer already wrote the file to disk
                 pathToUpload = path.join(
-                    uploadedFile.destination as string,
-                    uploadedFile.filename as string,
+                    uploadedFile.destination ?? '',
+                    uploadedFile.filename ?? '',
                 );
                 needsCleanup = true;
             } else {
                 // Elysia-native mode — file is a File object in body.avatar
-                const fileObj = (body as Record<string, unknown>).avatar as File;
                 if (typeof fileObj !== 'object' || !fileObj || !('arrayBuffer' in fileObj)) {
                     set.status = 400;
                     return;
                 }
-                const buffer = Buffer.from(await fileObj.arrayBuffer());
-                const uploadsDir = path.join(globalThis.DATA_ROOT as string, UPLOADS_DIRECTORY);
-                const tempName = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+                const buffer = Buffer.from(await (fileObj as File).arrayBuffer());
+                const dataRoot = (globalThis as Record<string, unknown>).DATA_ROOT as string ?? '';
+                const uploadsDir = path.join(dataRoot, UPLOADS_DIRECTORY);
+                const tempName = randomUUID();
                 pathToUpload = path.join(uploadsDir, tempName);
                 await fsp.writeFile(pathToUpload, buffer);
                 needsCleanup = true;
             }
 
-            const crop = tryParse((body as Record<string, unknown>).crop as string);
-            const fileBuffer = fs.readFileSync(pathToUpload!);
+            const crop = tryParse(body?.crop as string);
+            const fileBuffer = await fsp.readFile(pathToUpload);
             const image = await applyAvatarCropResize(fileBuffer, crop);
 
-            if ((body as Record<string, unknown>).overwrite_name) {
-                invalidateThumbnail(
-                    directories as any,
-                    'persona',
-                    sanitize((body as Record<string, unknown>).overwrite_name as string),
-                );
+            const overwriteNameRaw = body?.overwrite_name as string | undefined;
+            let filename: string;
+
+            if (overwriteNameRaw) {
+                filename = sanitize(overwriteNameRaw);
+                invalidateThumbnail(user?.directories as any, 'persona', filename);
+            } else {
+                filename = `${Date.now()}.png`;
             }
 
-            const filename = sanitize(
-                ((body as Record<string, unknown>).overwrite_name as string) || `${Date.now()}.png`,
-            );
-            const pathToNewFile = path.join(directories?.avatars ?? '', filename);
-            writeFileAtomicSync(pathToNewFile, image);
+            const directories = user?.directories;
+            const avatarsDir = directories?.avatars ?? '';
+            const pathToNewFile = path.join(avatarsDir, filename);
 
-            if (needsCleanup && pathToUpload && fs.existsSync(pathToUpload)) {
-                fs.unlinkSync(pathToUpload);
-            }
+            await writeFileAtomic(pathToNewFile, image);
 
             return { path: filename };
         } catch (err) {
             console.error('Error uploading user avatar:', err);
             set.status = 400;
             return 'Is not a valid image';
+        } finally {
+            if (needsCleanup && pathToUpload) {
+                fsp.unlink(pathToUpload).catch(() => {});
+            }
         }
     });
