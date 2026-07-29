@@ -19091,6 +19091,15 @@
                 }
                 return _append.apply(this, args);
             };
+            // Polyfill jQuery.fx for external themes that reference jQuery.fx.off
+            // cash-dom doesn't include jQuery's effects module (fx)
+            if (!$.fx) {
+                var _fxOff = false;
+                $.fx = {
+                    get off() { return _fxOff; },
+                    set off(v) { _fxOff = !!v; },
+                };
+            }
             // Fix .find() to handle jQuery pseudo-selectors cash-dom doesn't support
             // (cash-dom delegates to native querySelectorAll which doesn't know :selected, :checkbox, etc.)
             (function () {
