@@ -1,4 +1,3 @@
-import fs from 'node:fs';
 import { Buffer } from 'node:buffer';
 
 import encode from './png/encode.js';

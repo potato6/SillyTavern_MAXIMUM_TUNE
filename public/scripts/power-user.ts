@@ -3323,7 +3323,7 @@ export function renderStoryString(
 
         // substitute {{macro}} params that are not defined in the story string
         output = substituteParams(output, {
-            user: params.user as string,
+            user: params.user as unknown as string,
             char: params.char as string,
         } as unknown as string);
 

@@ -920,10 +920,6 @@ export const router = new Elysia({ prefix: '/api/chats', aot: false })
 
             await new Promise<void>((resolve) => {
                 rl.on('close', () => {
-                    const successMessage = {
-                        message: `Chat saved to ${exportfilename}`,
-                        result: buffer,
-                    };
                     console.info(`Chat exported as ${exportfilename}`);
                     set.status = 200;
                     resolve();

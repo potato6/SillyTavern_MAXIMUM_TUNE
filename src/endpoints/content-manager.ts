@@ -1,4 +1,3 @@
-import fs from 'node:fs';
 import fsp from 'node:fs/promises';
 import path from 'node:path';
 import zlib from 'node:zlib';
@@ -327,42 +326,6 @@ async function getContentIndex(scope = CONTENT_SCOPE.USER) {
     }
 
     return result;
-}
-
-/**
- * Gets content by type and format.
- * @param {string} type Type of content
- * @param {'json'|'string'|'raw'} format Format of content
- * @param {string} scope Scope of content to get
- * @returns {string[]|Buffer[]|object[]} Array of content
- */
-async function getContentFiles(
-    type: string,
-    format: string,
-    scope = CONTENT_SCOPE.USER,
-) {
-    const contentIndex = await getContentIndex(scope);
-    const files: (string | Buffer | object)[] = [];
-
-    for (const item of contentIndex) {
-        if (item.type !== type || !item.folder) {
-            continue;
-        }
-        try {
-            const filePath = path.join(item.folder, item.filename);
-            const fileContent = Buffer.from(await Bun.file(filePath).arrayBuffer());
-            if (format === 'json') {
-                files.push(JSON.parse(fileContent.toString('utf8')));
-            } else if (format === 'string') {
-                files.push(fileContent.toString('utf8'));
-            } else if (format === 'raw') {
-                files.push(fileContent);
-            }
-        } catch {
-            // Ignore unreadable file
-        }
-    }
-    return files;
 }
 
 /**

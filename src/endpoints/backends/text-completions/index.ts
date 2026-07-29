@@ -58,7 +58,7 @@ function buildAdditionalHeaders(
     context: unknown,
     secretId: string | null,
 ): void {
-    const user = getUser(context);
+    const user = getUser(context as Record<string, unknown>);
     setAdditionalHeadersByType(
         headers,
         apiType,
@@ -251,7 +251,7 @@ router.post('/generate', async (context) => {
         const onAbort = async function () {
             if (apiType === TEXTGEN_TYPES.KOBOLDCPP) {
                 const abortHeaders: Record<string, string> = {};
-                const user = getUser(context);
+                const user = getUser(context as Record<string, unknown>);
                 setAdditionalHeadersByType(
                     abortHeaders,
                     apiType,

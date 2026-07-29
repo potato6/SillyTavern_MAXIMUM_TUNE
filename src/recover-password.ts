@@ -1,4 +1,3 @@
-import fs from 'node:fs';
 import yaml from 'yaml';
 import storage from 'node-persist';
 import { initUserStorage, getPasswordSalt, getPasswordHash, toKey } from './users.js';

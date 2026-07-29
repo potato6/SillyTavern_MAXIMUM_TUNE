@@ -64,7 +64,7 @@ const provider: ChatProvider = {
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if (getConfigValue('openai.randomizeUserId', false as any, 'boolean' as any)) {
-            bodyParams.user = uuidv4();
+            bodyParams.user = uuidv4() as any;
         }
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
