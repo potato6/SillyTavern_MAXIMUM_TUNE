@@ -115,7 +115,7 @@ export function createElysiaApp(config?: ElysiaAppConfig): Elysia {
     const cfg = config ?? {};
     const bridgeMode = cfg.bridgeMode ?? false;
 
-    let app: any = new Elysia({ normalize: true });
+    let app: any = new Elysia({ normalize: true, aot: false });
 
     // ── Bridge resolve (x-elysia-ctx header) ────────────────────────────────
     if (bridgeMode) {
