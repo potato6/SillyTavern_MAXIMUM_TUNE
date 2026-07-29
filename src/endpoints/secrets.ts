@@ -1,13 +1,24 @@
-import fs from 'node:fs';
+import fsp from 'node:fs/promises';
 import path from 'node:path';
 
 import { Elysia } from 'elysia';
-import { sync as writeFileAtomicSync } from 'write-file-atomic';
+import writeFileAtomic from 'write-file-atomic';
 import { color, getConfigValue, uuidv4 } from '../util.js';
 
 export const SECRETS_FILE = 'secrets.json';
 import { CHAT_COMPLETION_SOURCES, TEXTGEN_TYPES } from '../constants.js';
 import type { UserDirectoryList } from '../users.js';
+
+interface UserDirectories {
+    root: string;
+    backups: string;
+    [key: string]: unknown;
+}
+
+interface UserContext {
+    directories?: UserDirectories;
+    [key: string]: unknown;
+}
 
 const KEY_OVERRIDES = {
     _MIGRATED: '_migrated',
@@ -67,6 +78,12 @@ export const SECRET_KEYS = Object.fromEntries(
  * @property {string} label The label for the secret
  * @property {boolean} active Whether the secret is currently active
  */
+interface SecretValue {
+    id: string;
+    value: string;
+    label: string;
+    active: boolean;
+}
 
 /**
  * @typedef {object} SecretState
@@ -84,6 +101,8 @@ export const SECRET_KEYS = Object.fromEntries(
  * @typedef {{[key: string]: SecretValue[]}} SecretKeys
  * @typedef {{[key: string]: string}} FlatSecretKeys
  */
+type SecretKeys = Record<string, SecretValue[]>;
+type FlatSecretKeys = Record<string, string>;
 
 // These are the keys that are safe to expose, even if allowKeysExposure is false
 const EXPORTABLE_KEYS = new Set([
@@ -95,6 +114,11 @@ const EXPORTABLE_KEYS = new Set([
 
 export const allowKeysExposure = !!getConfigValue('allowKeysExposure', false, 'boolean');
 
+const MASK_THRESHOLD = 10;
+const MASK_EXPOSED_CHARS = 3;
+const MASK_FULL_PLACEHOLDER = '**********';
+const MASK_PREFIX_PLACEHOLDER = '*******';
+
 /**
  * SecretManager class to handle all secret operations
  */
@@ -102,6 +126,7 @@ export class SecretManager {
     defaultSecrets: Record<string, never>;
     directories: UserDirectoryList;
     filePath: string;
+
     /**
      * @param {UserDirectoryList} directories User directories
      */
@@ -115,21 +140,27 @@ export class SecretManager {
      * Ensures the secrets file exists, creating an empty one if necessary
      * @private
      */
-    _ensureSecretsFile() {
-        if (!fs.existsSync(this.filePath)) {
-            writeFileAtomicSync(this.filePath, JSON.stringify(this.defaultSecrets), 'utf-8');
+    async _ensureSecretsFile() {
+        try {
+            await fsp.access(this.filePath);
+        } catch {
+            await writeFileAtomic(this.filePath, JSON.stringify(this.defaultSecrets), 'utf-8');
         }
     }
 
     /**
      * Reads and parses the secrets file
      * @private
-     * @returns {SecretKeys} The parsed secrets from the file
+     * @returns {Promise<SecretKeys>} The parsed secrets from the file
      */
-    _readSecretsFile() {
-        this._ensureSecretsFile();
-        const fileContents = fs.readFileSync(this.filePath, 'utf-8');
-        return /** @type {SecretKeys} */ (JSON.parse(fileContents));
+    async _readSecretsFile(): Promise<SecretKeys> {
+        await this._ensureSecretsFile();
+        try {
+            const fileContents = await fsp.readFile(this.filePath, 'utf-8');
+            return JSON.parse(fileContents);
+        } catch {
+            return {};
+        }
     }
 
     /**
@@ -137,9 +168,8 @@ export class SecretManager {
      * @private
      * @param {SecretKeys} secrets The secrets object to write
      */
-    // @ts-expect-error TS(2304) FIXME: Cannot find name 'SecretKeys'.
-    _writeSecretsFile(secrets: SecretKeys) {
-        writeFileAtomicSync(this.filePath, JSON.stringify(secrets, null, 4), 'utf-8');
+    async _writeSecretsFile(secrets: SecretKeys) {
+        await writeFileAtomic(this.filePath, JSON.stringify(secrets, null, 4), 'utf-8');
     }
 
     /**
@@ -147,12 +177,10 @@ export class SecretManager {
      * @private
      * @param {SecretValue[]} secretArray Array of secrets to deactivate
      */
-    // @ts-expect-error TS(2304) FIXME: Cannot find name 'SecretValue'.
     _deactivateAllSecrets(secretArray: SecretValue[]) {
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'SecretValue'.
-        secretArray.forEach((secret: SecretValue) => {
-            secret.active = false;
-        });
+        for (let i = 0; i < secretArray.length; i++) {
+            secretArray[i]!.active = false;
+        }
     }
 
     /**
@@ -162,9 +190,8 @@ export class SecretManager {
      * @param {string} key The secret key to validate
      * @returns {boolean} Whether the key exists and has a valid secret array
      */
-    // @ts-expect-error TS(2304) FIXME: Cannot find name 'SecretKeys'.
     _validateSecretKey(secrets: SecretKeys, key: string) {
-        return Object.hasOwn(secrets, key) && Array.isArray(secrets[key]);
+        return Array.isArray(secrets[key]);
     }
 
     /**
@@ -174,19 +201,16 @@ export class SecretManager {
      * @returns {string} A masked version of the value for peeking
      */
     getMaskedValue(value: string, key: string) {
-        // No masking if exposure is allowed
         if (allowKeysExposure || EXPORTABLE_KEYS.has(key)) {
             return value;
         }
-        const threshold = 10;
-        const exposedChars = 3;
-        const placeholder = '*';
-        if (value.length <= threshold) {
-            return placeholder.repeat(threshold);
+
+        if (value.length <= MASK_THRESHOLD) {
+            return MASK_FULL_PLACEHOLDER;
         }
-        const visibleEnd = value.slice(-exposedChars);
-        const maskedMiddle = placeholder.repeat(threshold - exposedChars);
-        return `${maskedMiddle}${visibleEnd}`;
+
+        const visibleEnd = value.slice(-MASK_EXPOSED_CHARS);
+        return `${MASK_PREFIX_PLACEHOLDER}${visibleEnd}`;
     }
 
     /**
@@ -194,10 +218,10 @@ export class SecretManager {
      * @param {string} key Secret key
      * @param {string} value Secret value
      * @param {string} label Label for the secret
-     * @returns {string} The ID of the newly created secret
+     * @returns {Promise<string>} The ID of the newly created secret
      */
-    writeSecret(key: string, value: string, label = 'Unlabeled') {
-        const secrets = this._readSecretsFile();
+    async writeSecret(key: string, value: string, label = 'Unlabeled') {
+        const secrets = await this._readSecretsFile();
 
         if (!Array.isArray(secrets[key])) {
             secrets[key] = [];
@@ -205,15 +229,15 @@ export class SecretManager {
 
         this._deactivateAllSecrets(secrets[key]);
 
-        const secret = {
+        const secret: SecretValue = {
             id: uuidv4(),
-            value: value,
-            label: label,
+            value,
+            label,
             active: true,
         };
         secrets[key].push(secret);
 
-        this._writeSecretsFile(secrets);
+        await this._writeSecretsFile(secrets);
         return secret.id;
     }
 
@@ -222,59 +246,69 @@ export class SecretManager {
      * @param {string} key Secret key
      * @param {string?} id Secret ID to delete
      */
-    deleteSecret(key: string, id: string | null) {
-        if (!fs.existsSync(this.filePath)) {
-            return;
-        }
-
-        const secrets = this._readSecretsFile();
+    async deleteSecret(key: string, id: string | null) {
+        const secrets = await this._readSecretsFile();
 
         if (!this._validateSecretKey(secrets, key)) {
             return;
         }
 
         const secretArray = secrets[key];
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'SecretValue'.
-        const targetIndex = secretArray.findIndex((s: SecretValue) =>
-            id ? s.id === id : s.active,
-        );
 
-        // Delete the secret if found
+        if (!secretArray) {
+            return;
+        }
+
+        let targetIndex = -1;
+
+        for (let i = 0; i < secretArray.length; i++) {
+            const s = secretArray[i]!;
+            if (id ? s.id === id : s.active) {
+                targetIndex = i;
+                break;
+            }
+        }
+
         if (targetIndex !== -1) {
             secretArray.splice(targetIndex, 1);
         }
 
-        // Reactivate the first secret if none are active
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'SecretValue'.
-        if (secretArray.length && !secretArray.some((s: SecretValue) => s.active)) {
-            secretArray[0].active = true;
+        let hasActive = false;
+        for (let i = 0; i < secretArray.length; i++) {
+            if (secretArray[i]!.active) {
+                hasActive = true;
+                break;
+            }
         }
 
-        // Remove the key if no secrets left
+        if (secretArray.length > 0 && !hasActive) {
+            secretArray[0]!.active = true;
+        }
+
         if (secretArray.length === 0) {
             delete secrets[key];
         }
 
-        this._writeSecretsFile(secrets);
+        await this._writeSecretsFile(secrets);
     }
 
     /**
      * Reads the active secret value for a given key
      * @param {string} key Secret key
      * @param {string?} id ID of the secret to read (optional)
-     * @returns {string} Secret value or empty string if not found
+     * @returns {Promise<string>} Secret value or empty string if not found
      */
-    readSecret(key: string, id: string | null = null) {
-        if (!fs.existsSync(this.filePath)) {
-            return '';
-        }
-
-        const secrets = this._readSecretsFile();
+    async readSecret(key: string, id: string | null = null): Promise<string> {
+        const secrets = await this._readSecretsFile();
         const secretArray = secrets[key];
 
         if (Array.isArray(secretArray) && secretArray.length > 0) {
-            const activeSecret = secretArray.find((s) => (id ? s.id === id : s.active));
-            return activeSecret?.value || '';
+            for (let i = 0; i < secretArray.length; i++) {
+                const s = secretArray[i]!;
+                if (id ? s.id === id : s.active) {
+                    return s.value || '';
+                }
+            }
         }
 
         return '';
@@ -285,20 +319,27 @@ export class SecretManager {
      * @param {string} key Secret key to rotate
      * @param {string} id ID of the secret to activate
      */
-    rotateSecret(key: string, id: string) {
-        if (!fs.existsSync(this.filePath)) {
-            return;
-        }
-
-        const secrets = this._readSecretsFile();
+    async rotateSecret(key: string, id: string) {
+        const secrets = await this._readSecretsFile();
 
         if (!this._validateSecretKey(secrets, key)) {
             return;
         }
 
         const secretArray = secrets[key];
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'SecretValue'.
-        const targetIndex = secretArray.findIndex((s: SecretValue) => s.id === id);
+
+        if (!secretArray) {
+            return;
+        }
+
+        let targetIndex = -1;
+
+        for (let i = 0; i < secretArray.length; i++) {
+            if (secretArray[i]!.id === id) {
+                targetIndex = i;
+                break;
+            }
+        }
 
         if (targetIndex === -1) {
             console.warn(`Secret with ID ${id} not found for key ${key}`);
@@ -306,9 +347,9 @@ export class SecretManager {
         }
 
         this._deactivateAllSecrets(secretArray);
-        secretArray[targetIndex].active = true;
+        secretArray[targetIndex]!.active = true;
 
-        this._writeSecretsFile(secrets);
+        await this._writeSecretsFile(secrets);
     }
 
     /**
@@ -317,52 +358,67 @@ export class SecretManager {
      * @param {string} id ID of the secret to rename
      * @param {string} label New label for the secret
      */
-    renameSecret(key: string, id: string, label: string) {
-        const secrets = this._readSecretsFile();
+    async renameSecret(key: string, id: string, label: string) {
+        const secrets = await this._readSecretsFile();
 
         if (!this._validateSecretKey(secrets, key)) {
             return;
         }
 
         const secretArray = secrets[key];
-        // @ts-expect-error TS(2304) FIXME: Cannot find name 'SecretValue'.
-        const targetIndex = secretArray.findIndex((s: SecretValue) => s.id === id);
+
+        if (!secretArray) {
+            return;
+        }
+
+        let targetIndex = -1;
+
+        for (let i = 0; i < secretArray.length; i++) {
+            if (secretArray[i]!.id === id) {
+                targetIndex = i;
+                break;
+            }
+        }
 
         if (targetIndex === -1) {
             console.warn(`Secret with ID ${id} not found for key ${key}`);
             return;
         }
 
-        secretArray[targetIndex].label = label;
-        this._writeSecretsFile(secrets);
+        secretArray[targetIndex]!.label = label;
+        await this._writeSecretsFile(secrets);
     }
 
     /**
      * Gets the state of all secrets (whether they exist or not)
-     * @returns {SecretStateMap} Secret state
+     * @returns {Promise<Record<string, any>>} Secret state
      */
-    getSecretState() {
-        const secrets = this._readSecretsFile();
-        /** @type {SecretStateMap} */
-        const state = {};
+    async getSecretState() {
+        const secrets = await this._readSecretsFile();
+        const state: Record<string, any> = {};
+        const secretKeyValues = Object.values(SECRET_KEYS);
+        const count = secretKeyValues.length;
 
-        for (const key of Object.values(SECRET_KEYS)) {
-            // Skip migration marker
+        for (let i = 0; i < count; i++) {
+            const key = secretKeyValues[i]!;
             if (key === SECRET_KEYS._MIGRATED) {
                 continue;
             }
             const value = secrets[key];
-            if (value && Array.isArray(value) && value.length > 0) {
-                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                state[key] = value.map((secret) => ({
-                    id: secret.id,
-                    value: this.getMaskedValue(secret.value, key),
-                    label: secret.label,
-                    active: secret.active,
-                }));
+            if (Array.isArray(value) && value.length > 0) {
+                const valCount = value.length;
+                const mapped = Array(valCount);
+                for (let j = 0; j < valCount; j++) {
+                    const secret = value[j]!;
+                    mapped[j] = {
+                        id: secret.id,
+                        value: this.getMaskedValue(secret.value, key),
+                        label: secret.label,
+                        active: secret.active,
+                    };
+                }
+                state[key] = mapped;
             } else {
-                // No secrets for this key
-                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 state[key] = null;
             }
         }
@@ -372,25 +428,26 @@ export class SecretManager {
 
     /**
      * Gets all secrets (for admin viewing)
-     * @returns {SecretKeys} All secrets
+     * @returns {Promise<SecretKeys>} All secrets
      */
-    getAllSecrets() {
-        return this._readSecretsFile();
+    async getAllSecrets() {
+        return await this._readSecretsFile();
     }
 
     /**
      * Migrates legacy flat secrets format to new format
      */
-    migrateFlatSecrets() {
-        if (!fs.existsSync(this.filePath)) {
+    async migrateFlatSecrets() {
+        try {
+            await fsp.access(this.filePath);
+        } catch {
             return;
         }
 
-        const fileContents = fs.readFileSync(this.filePath, 'utf8');
-        const secrets = /** @type {FlatSecretKeys} */ (JSON.parse(fileContents));
+        const fileContents = await fsp.readFile(this.filePath, 'utf8');
+        const secrets = (JSON.parse(fileContents) || {}) as FlatSecretKeys;
         const values = Object.values(secrets);
 
-        // Check if already migrated
         if (
             secrets[SECRET_KEYS._MIGRATED] ||
             values.length === 0 ||
@@ -399,16 +456,16 @@ export class SecretManager {
             return;
         }
 
-        /** @type {SecretKeys} */
-        const migratedSecrets = {};
+        const migratedSecrets: SecretKeys = {};
+        const entries = Object.entries(secrets);
 
-        for (const [key, value] of Object.entries(secrets)) {
+        for (let i = 0; i < entries.length; i++) {
+            const [key, value] = entries[i]!;
             if (typeof value === 'string' && value.trim()) {
-                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 migratedSecrets[key] = [
                     {
                         id: uuidv4(),
-                        value: value,
+                        value,
                         label: key,
                         active: true,
                     },
@@ -416,18 +473,20 @@ export class SecretManager {
             }
         }
 
-        // Mark as migrated
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
         migratedSecrets[SECRET_KEYS._MIGRATED] = [];
 
-        // Save backup of the old secrets file
         const backupFilePath = path.join(
             this.directories.backups,
             `secrets_migration_${Date.now()}.json`,
         );
-        fs.cpSync(this.filePath, backupFilePath);
 
-        this._writeSecretsFile(migratedSecrets);
+        try {
+            await fsp.cp(this.filePath, backupFilePath);
+        } catch {
+            // Backup copy fallback
+        }
+
+        await this._writeSecretsFile(migratedSecrets);
         console.info(
             color.green('Secrets migrated successfully, old secrets backed up to:'),
             backupFilePath,
@@ -441,20 +500,20 @@ export class SecretManager {
  * @param {UserDirectoryList} directories User directories
  * @param {string} key Secret key
  * @param {string} value Secret value
- * @returns {string} The ID of the newly created secret
+ * @returns {Promise<string>} The ID of the newly created secret
  */
-export function writeSecret(directories: UserDirectoryList, key: string, value: string) {
-    return new SecretManager(directories).writeSecret(key, value);
+export async function writeSecret(directories: UserDirectoryList, key: string, value: string) {
+    return await new SecretManager(directories).writeSecret(key, value);
 }
 
 /**
  * Deletes a secret from the secrets file
  * @param {UserDirectoryList} directories User directories
  * @param {string} key Secret key
- * @returns {void}
+ * @returns {Promise<void>}
  */
-export function deleteSecret(directories: UserDirectoryList, key: string) {
-    return new SecretManager(directories).deleteSecret(key, null);
+export async function deleteSecret(directories: UserDirectoryList, key: string) {
+    return await new SecretManager(directories).deleteSecret(key, null);
 }
 
 /**
@@ -462,48 +521,57 @@ export function deleteSecret(directories: UserDirectoryList, key: string) {
  * @param {UserDirectoryList} directories User directories
  * @param {string} key Secret key
  * @param {string?} id Secret ID (optional)
- * @returns {string} Secret value
+ * @returns {Promise<string>} Secret value
  */
-export function readSecret(directories: UserDirectoryList, key: string, id: string | null = null) {
-    return new SecretManager(directories).readSecret(key, id);
+export async function readSecret(directories: UserDirectoryList, key: string, id: string | null = null) {
+    return await new SecretManager(directories).readSecret(key, id);
 }
 
 /**
  * Reads the secret state from the secrets file
  * @param {UserDirectoryList} directories User directories
- * @returns {Record<string, boolean>} Secret state
+ * @returns {Promise<Record<string, boolean>>} Secret state
  */
-export function readSecretState(directories: UserDirectoryList) {
-    const state = new SecretManager(directories).getSecretState();
-    const result = /** @type {Record<string, boolean>} */ ({});
-    for (const key of Object.values(SECRET_KEYS)) {
-        // Skip migration marker
+export async function readSecretState(directories: UserDirectoryList) {
+    const state = await new SecretManager(directories).getSecretState();
+    const result: Record<string, boolean> = {};
+    const keys = Object.values(SECRET_KEYS);
+
+    for (let i = 0; i < keys.length; i++) {
+        const key = keys[i]!;
         if (key === SECRET_KEYS._MIGRATED) {
             continue;
         }
-        // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-        result[key] = Array.isArray(state[key]) && state[key].length > 0;
+        result[key] = Array.isArray(state[key]) && state[key]!.length > 0;
     }
+
     return result;
 }
 
 /**
  * Reads all secrets from the secrets file
  * @param {UserDirectoryList} directories User directories
- * @returns {Record<string, string>} Secrets
+ * @returns {Promise<Record<string, string>>} Secrets
  */
-export function getAllSecrets(directories: UserDirectoryList) {
-    const secrets = new SecretManager(directories).getAllSecrets();
-    const result = /** @type {Record<string, string>} */ ({});
-    for (const [key, values] of Object.entries(secrets)) {
-        // Skip migration marker
+export async function getAllSecrets(directories: UserDirectoryList) {
+    const secrets = await new SecretManager(directories).getAllSecrets();
+    const result: Record<string, string> = {};
+    const entries = Object.entries(secrets);
+
+    for (let i = 0; i < entries.length; i++) {
+        const [key, values] = entries[i]!;
         if (key === SECRET_KEYS._MIGRATED) {
             continue;
         }
         if (Array.isArray(values) && values.length > 0) {
-            const activeSecret = values.find((secret) => secret.active);
+            let activeSecret: SecretValue | undefined;
+            for (let j = 0; j < values.length; j++) {
+                if (values[j]!.active) {
+                    activeSecret = values[j]!;
+                    break;
+                }
+            }
             if (activeSecret) {
-                // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
                 result[key] = activeSecret.value;
             }
         }
@@ -516,11 +584,12 @@ export function getAllSecrets(directories: UserDirectoryList) {
  * Migrates legacy flat secrets format to the new format for all user directories
  * @param {UserDirectoryList[]} directoriesList User directories
  */
-export function migrateFlatSecrets(directoriesList: UserDirectoryList[]) {
-    for (const directories of directoriesList) {
+export async function migrateFlatSecrets(directoriesList: UserDirectoryList[]) {
+    for (let i = 0; i < directoriesList.length; i++) {
+        const directories = directoriesList[i]!;
         try {
             const manager = new SecretManager(directories);
-            manager.migrateFlatSecrets();
+            await manager.migrateFlatSecrets();
         } catch (error) {
             console.warn(color.red(`Failed to migrate secrets for ${directories.root}:`), error);
         }
@@ -530,14 +599,15 @@ export function migrateFlatSecrets(directoriesList: UserDirectoryList[]) {
 export const router = new Elysia({ prefix: '/api/secrets' })
     .post('/write', async (context) => {
         const { set } = context;
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
-        const directories = user?.directories as Record<string, string> | undefined;
+        const ctx = context as Record<string, unknown>;
+        const user = ctx.user as UserContext | undefined;
+        const directories = user?.directories;
+
         try {
-            const body = context.body as Record<string, unknown>;
-            const { key, value, label } = body as { key: string; value: string; label: string };
+            const body = ctx.body as Record<string, unknown> | undefined;
+            const key = body?.key as string;
+            const value = body?.value;
+            const label = (body?.label as string) ?? 'Unlabeled';
 
             if (!key || typeof value !== 'string') {
                 set.status = 400;
@@ -545,7 +615,7 @@ export const router = new Elysia({ prefix: '/api/secrets' })
             }
 
             const manager = new SecretManager(directories as any);
-            const id = manager.writeSecret(key, value, label);
+            const id = await manager.writeSecret(key, value, label);
 
             return { id };
         } catch (error) {
@@ -555,18 +625,17 @@ export const router = new Elysia({ prefix: '/api/secrets' })
     })
     .post('/read', async (context) => {
         const { set } = context;
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
-        const directories = user?.directories as Record<string, string> | undefined;
+        const ctx = context as Record<string, unknown>;
+        const user = ctx.user as UserContext | undefined;
+        const directories = user?.directories;
+
         if (!directories) {
             set.status = 401;
             return { error: 'Not authenticated' };
         }
         try {
             const manager = new SecretManager(directories as any);
-            const state = manager.getSecretState();
+            const state = await manager.getSecretState();
             return state;
         } catch (error) {
             console.error('Error reading secret state:', error);
@@ -575,11 +644,10 @@ export const router = new Elysia({ prefix: '/api/secrets' })
     })
     .post('/view', async (context) => {
         const { set } = context;
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
-        const directories = user?.directories as Record<string, string> | undefined;
+        const ctx = context as Record<string, unknown>;
+        const user = ctx.user as UserContext | undefined;
+        const directories = user?.directories;
+
         try {
             if (!allowKeysExposure) {
                 console.error(
@@ -589,7 +657,7 @@ export const router = new Elysia({ prefix: '/api/secrets' })
                 return;
             }
 
-            const secrets = getAllSecrets(directories as any);
+            const secrets = await getAllSecrets(directories as any);
 
             if (!secrets) {
                 set.status = 404;
@@ -604,14 +672,14 @@ export const router = new Elysia({ prefix: '/api/secrets' })
     })
     .post('/find', async (context) => {
         const { set } = context;
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
-        const directories = user?.directories as Record<string, string> | undefined;
+        const ctx = context as Record<string, unknown>;
+        const body = ctx.body as Record<string, unknown> | undefined;
+        const user = ctx.user as UserContext | undefined;
+        const directories = user?.directories;
+
         try {
-            const body = context.body as Record<string, unknown>;
-            const { key, id } = body as { key: string; id: string };
+            const key = body?.key as string;
+            const id = body?.id as string;
 
             if (!key) {
                 set.status = 400;
@@ -627,15 +695,14 @@ export const router = new Elysia({ prefix: '/api/secrets' })
             }
 
             const manager = new SecretManager(directories as any);
-            const state = manager.getSecretState();
+            const state = await manager.getSecretState();
 
-            // @ts-expect-error TS(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
             if (!state[key]) {
                 set.status = 404;
                 return;
             }
 
-            const secretValue = manager.readSecret(key, id);
+            const secretValue = await manager.readSecret(key, id);
             return { value: secretValue };
         } catch (error) {
             console.error('Error finding secret:', error);
@@ -644,14 +711,14 @@ export const router = new Elysia({ prefix: '/api/secrets' })
     })
     .post('/delete', async (context) => {
         const { set } = context;
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
-        const directories = user?.directories as Record<string, string> | undefined;
+        const ctx = context as Record<string, unknown>;
+        const body = ctx.body as Record<string, unknown> | undefined;
+        const user = ctx.user as UserContext | undefined;
+        const directories = user?.directories;
+
         try {
-            const body = context.body as Record<string, unknown>;
-            const { key, id } = body as { key: string; id: string };
+            const key = body?.key as string;
+            const id = body?.id as string;
 
             if (!key) {
                 set.status = 400;
@@ -659,7 +726,7 @@ export const router = new Elysia({ prefix: '/api/secrets' })
             }
 
             const manager = new SecretManager(directories as any);
-            manager.deleteSecret(key, id);
+            await manager.deleteSecret(key, id);
 
             set.status = 204;
             return;
@@ -670,14 +737,14 @@ export const router = new Elysia({ prefix: '/api/secrets' })
     })
     .post('/rotate', async (context) => {
         const { set } = context;
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
-        const directories = user?.directories as Record<string, string> | undefined;
+        const ctx = context as Record<string, unknown>;
+        const body = ctx.body as Record<string, unknown> | undefined;
+        const user = ctx.user as UserContext | undefined;
+        const directories = user?.directories;
+
         try {
-            const body = context.body as Record<string, unknown>;
-            const { key, id } = body as { key: string; id: string };
+            const key = body?.key as string;
+            const id = body?.id as string;
 
             if (!key || !id) {
                 set.status = 400;
@@ -685,7 +752,7 @@ export const router = new Elysia({ prefix: '/api/secrets' })
             }
 
             const manager = new SecretManager(directories as any);
-            manager.rotateSecret(key, id);
+            await manager.rotateSecret(key, id);
 
             set.status = 204;
             return;
@@ -696,14 +763,15 @@ export const router = new Elysia({ prefix: '/api/secrets' })
     })
     .post('/rename', async (context) => {
         const { set } = context;
-        const user = (context as unknown as Record<string, unknown>).user as Record<
-            string,
-            unknown
-        > | null;
-        const directories = user?.directories as Record<string, string> | undefined;
+        const ctx = context as Record<string, unknown>;
+        const body = ctx.body as Record<string, unknown> | undefined;
+        const user = ctx.user as UserContext | undefined;
+        const directories = user?.directories;
+
         try {
-            const body = context.body as Record<string, unknown>;
-            const { key, id, label } = body as { key: string; id: string; label: string };
+            const key = body?.key as string;
+            const id = body?.id as string;
+            const label = body?.label as string;
 
             if (!key || !id || !label) {
                 set.status = 400;
@@ -711,7 +779,7 @@ export const router = new Elysia({ prefix: '/api/secrets' })
             }
 
             const manager = new SecretManager(directories as any);
-            manager.renameSecret(key, id, label);
+            await manager.renameSecret(key, id, label);
 
             set.status = 204;
             return;
