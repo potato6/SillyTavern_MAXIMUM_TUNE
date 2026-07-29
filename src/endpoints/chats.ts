@@ -722,12 +722,12 @@ export const router = new Elysia({ prefix: '/api/chats' })
         try {
             if (!body || !validateAvatarUrlField(body)) {
                 set.status = 400;
-                return;
+                return { error: 'Invalid request body' };
             }
 
             if (!body.original_file || !body.renamed_file) {
                 set.status = 400;
-                return;
+                return { error: 'Missing original_file or renamed_file' };
             }
 
             const avatarUrl = String(body.avatar_url);
@@ -740,7 +740,7 @@ export const router = new Elysia({ prefix: '/api/chats' })
 
             if (!body.is_group && !isPathUnderParent(chatsDir, pathToFolder)) {
                 set.status = 400;
-                return;
+                return { error: 'Invalid path' };
             }
 
             const pathToOriginalFile = path.join(
@@ -800,7 +800,7 @@ export const router = new Elysia({ prefix: '/api/chats' })
         try {
             if (!body || !validateAvatarUrlField(body)) {
                 set.status = 400;
-                return;
+                return { error: true };
             }
 
             let chatFileStr = String(body.chatfile ?? '');
@@ -816,7 +816,7 @@ export const router = new Elysia({ prefix: '/api/chats' })
 
             if (!isPathUnderParent(chatsDir, chatFilePath)) {
                 set.status = 400;
-                return;
+                return { error: true };
             }
 
             try {
@@ -825,7 +825,7 @@ export const router = new Elysia({ prefix: '/api/chats' })
             } catch {
                 console.error('The chat file was not deleted.');
                 set.status = 400;
-                return;
+                return { error: true };
             }
         } catch (error) {
             console.error(error);
@@ -843,12 +843,12 @@ export const router = new Elysia({ prefix: '/api/chats' })
 
         if (!body || !validateAvatarUrlField(body)) {
             set.status = 400;
-            return;
+            return { error: true };
         }
 
         if (!body.file || (!body.avatar_url && body.is_group === false)) {
             set.status = 400;
-            return;
+            return { error: true };
         }
 
         const avatarUrl = String(body.avatar_url ?? '');
@@ -862,7 +862,7 @@ export const router = new Elysia({ prefix: '/api/chats' })
         const filename = path.join(pathToFolder, sanitize(body.file as string));
         if (!body.is_group && !isPathUnderParent(chatsDir, filename)) {
             set.status = 400;
-            return;
+            return { error: true };
         }
 
         const exportfilename = body.exportfilename as string;
@@ -939,7 +939,7 @@ export const router = new Elysia({ prefix: '/api/chats' })
         } catch (err) {
             console.error('chat export failed.', err);
             set.status = 400;
-            return;
+            return { error: true };
         }
     })
 
@@ -953,7 +953,7 @@ export const router = new Elysia({ prefix: '/api/chats' })
         try {
             if (!filedata || !filedata.destination || !filedata.filename) {
                 set.status = 400;
-                return;
+                return { error: true };
             }
 
             const chatname = humanizedDateTime();
@@ -980,7 +980,7 @@ export const router = new Elysia({ prefix: '/api/chats' })
 
         if (!body || !validateAvatarUrlField(body)) {
             set.status = 400;
-            return;
+            return { error: true };
         }
 
         const format = body.file_type as string;
@@ -993,14 +993,14 @@ export const router = new Elysia({ prefix: '/api/chats' })
 
         if (!fileField || !fileField.destination || !fileField.filename) {
             set.status = 400;
-            return;
+            return { error: true };
         }
 
         const chatsDir = directories?.chats ?? '';
         const directoryPath = path.join(chatsDir, avatarUrl);
         if (!isPathUnderParent(chatsDir, directoryPath)) {
             set.status = 400;
-            return;
+            return { error: true };
         }
 
         try {
@@ -1099,7 +1099,7 @@ export const router = new Elysia({ prefix: '/api/chats' })
 
         if (!body || !body.id) {
             set.status = 400;
-            return;
+            return { error: true };
         }
 
         const id = String(body.id);
@@ -1118,7 +1118,7 @@ export const router = new Elysia({ prefix: '/api/chats' })
         try {
             if (!body || !body.id) {
                 set.status = 400;
-                return;
+                return { error: true };
             }
 
             const id = String(body.id);
@@ -1142,7 +1142,7 @@ export const router = new Elysia({ prefix: '/api/chats' })
         try {
             if (!body || !body.id) {
                 set.status = 400;
-                return;
+                return { error: true };
             }
 
             const id = String(body.id);
@@ -1154,7 +1154,7 @@ export const router = new Elysia({ prefix: '/api/chats' })
             } catch {
                 console.error('The group chat file was not deleted.');
                 set.status = 400;
-                return;
+                return { error: true };
             }
         } catch (error) {
             console.error(error);
@@ -1174,7 +1174,7 @@ export const router = new Elysia({ prefix: '/api/chats' })
         try {
             if (!body || !body.id) {
                 set.status = 400;
-                return;
+                return { error: true };
             }
 
             const id = String(body.id);
@@ -1218,7 +1218,7 @@ export const router = new Elysia({ prefix: '/api/chats' })
         try {
             if (!body || !validateAvatarUrlField(body)) {
                 set.status = 400;
-                return;
+                return { error: true };
             }
 
             const { query, avatar_url, group_id } = body;
